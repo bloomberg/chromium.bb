@@ -9,9 +9,8 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "services/device/public/mojom/constants.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 namespace assistant {
@@ -39,12 +38,12 @@ base::TimeDelta ClockNow(clockid_t clk_id) {
 }  // namespace
 
 PowerManagerProviderImpl::PowerManagerProviderImpl(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     scoped_refptr<base::SequencedTaskRunner> main_thread_task_runner)
-    : connector_(connector),
+    : client_(client),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       weak_factory_(this) {
-  DCHECK(connector_);
+  DCHECK(client_);
 }
 
 PowerManagerProviderImpl::~PowerManagerProviderImpl() = default;
@@ -135,13 +134,12 @@ void PowerManagerProviderImpl::AcquireWakeLockOnMainThread() {
   // this shouldn't wake the display up. Hence, the wake lock acquired is of
   // type kPreventAppSuspension.
   if (!wake_lock_) {
-    device::mojom::WakeLockProviderPtr provider;
-    connector_->BindInterface(device::mojom::kServiceName,
-                              mojo::MakeRequest(&provider));
+    mojo::Remote<device::mojom::WakeLockProvider> provider;
+    client_->RequestWakeLockProvider(provider.BindNewPipeAndPassReceiver());
     provider->GetWakeLockWithoutContext(
         device::mojom::WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockReason,
-        mojo::MakeRequest(&wake_lock_));
+        wake_lock_.BindNewPipeAndPassReceiver());
   }
 
   DVLOG(1) << "Wake lock new acquire";

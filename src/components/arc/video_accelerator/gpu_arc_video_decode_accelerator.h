@@ -13,7 +13,7 @@
 #include "base/callback_forward.h"
 #include "base/files/scoped_file.h"
 #include "base/threading/thread_checker.h"
-#include "components/arc/common/video_decode_accelerator.mojom.h"
+#include "components/arc/mojom/video_decode_accelerator.mojom.h"
 #include "gpu/config/gpu_preferences.h"
 #include "media/video/video_decode_accelerator.h"
 
@@ -64,8 +64,7 @@ class GpuArcVideoDecodeAccelerator
                   mojom::VideoDecodeClientPtr client,
                   InitializeCallback callback) override;
   void Decode(mojom::BitstreamBufferPtr bitstream_buffer) override;
-  void AssignPictureBuffersDeprecated(uint32_t count) override;
-  void AssignPictureBuffers(uint32_t count, const gfx::Size& size) override;
+  void AssignPictureBuffers(uint32_t count) override;
   void ImportBufferForPicture(int32_t picture_buffer_id,
                               mojom::HalPixelFormat format,
                               mojo::ScopedHandle handle,
@@ -152,6 +151,7 @@ class GpuArcVideoDecodeAccelerator
 
   bool secure_mode_ = false;
   size_t output_buffer_count_ = 0;
+  bool assign_picture_buffers_called_ = false;
 
   THREAD_CHECKER(thread_checker_);
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoDecodeAccelerator);

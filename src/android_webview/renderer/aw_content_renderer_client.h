@@ -14,6 +14,7 @@
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "services/service_manager/public/cpp/local_interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
@@ -69,6 +70,9 @@ class AwContentRendererClient : public content::ContentRendererClient,
 
   std::unique_ptr<AwRenderThreadObserver> aw_render_thread_observer_;
   std::unique_ptr<visitedlink::VisitedLinkSlave> visited_link_slave_;
+
+  scoped_refptr<blink::ThreadSafeBrowserInterfaceBrokerProxy>
+      browser_interface_broker_;
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   std::unique_ptr<SpellCheck> spellcheck_;

@@ -69,10 +69,6 @@ TraceStorage::TraceStorage() {
 
 TraceStorage::~TraceStorage() {}
 
-void TraceStorage::ResetStorage() {
-  *this = TraceStorage();
-}
-
 uint32_t TraceStorage::SqlStats::RecordQueryBegin(const std::string& query,
                                                   int64_t time_queued,
                                                   int64_t time_started) {
@@ -128,6 +124,9 @@ std::pair<int64_t, int64_t> TraceStorage::GetTraceTimestampBoundsNs() const {
                     android_log_.timestamps().end(), &start_ns, &end_ns);
   MaybeUpdateMinMax(raw_events_.timestamps().begin(),
                     raw_events_.timestamps().end(), &start_ns, &end_ns);
+  MaybeUpdateMinMax(heap_profile_allocations_.timestamps().begin(),
+                    heap_profile_allocations_.timestamps().end(), &start_ns,
+                    &end_ns);
 
   if (start_ns == std::numeric_limits<int64_t>::max()) {
     return std::make_pair(0, 0);

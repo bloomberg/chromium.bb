@@ -24,6 +24,7 @@ class MetricEvaluatorsHelperWin : public MetricEvaluatorsHelper {
   // MetricEvaluatorsHelper:
   base::Optional<int> GetFreePhysicalMemoryMb() override;
   base::Optional<float> GetDiskIdleTimePercent() override;
+  base::Optional<int> GetChromeTotalResidentSetEstimateMb() override;
 
   bool wmi_refresher_initialized_for_testing() {
     return wmi_refresher_initialized_;
@@ -60,7 +61,7 @@ class MetricEvaluatorsHelperWin : public MetricEvaluatorsHelper {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<MetricEvaluatorsHelperWin> weak_factory_;
+  base::WeakPtrFactory<MetricEvaluatorsHelperWin> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MetricEvaluatorsHelperWin);
 };

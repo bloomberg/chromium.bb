@@ -50,7 +50,6 @@ class SequencedTaskRunner;
 namespace blink {
 
 class WebServiceWorkerContextProxy;
-class WebServiceWorkerNetworkProvider;
 class WebString;
 
 // Used to pass the mojom struct blink.mojom.FetchEventPreloadHandle across the
@@ -65,8 +64,8 @@ struct WebFetchEventPreloadHandle {
 // WebServiceWorkerContextClient is a "client" of a service worker execution
 // context. This interface is implemented by the embedder and allows the
 // embedder to communicate with the service worker execution context.  It is
-// created on the main thread and then passed on to the worker thread by a newly
-// created ServiceWorkerGlobalScope.
+// created on the initiator thread (the main thread or the IO thread) and then
+// passed on to the worker thread by a newly created ServiceWorkerGlobalScope.
 //
 // Unless otherwise noted, all methods of this class are called on the worker
 // thread.
@@ -77,13 +76,15 @@ class WebServiceWorkerContextClient {
   virtual ~WebServiceWorkerContextClient() = default;
 
   // ServiceWorker has prepared everything for script loading and is now ready
-  // for DevTools inspection. Called on the main thread.
-  virtual void WorkerReadyForInspectionOnMainThread() {}
+  // for DevTools inspection. Called on the initiator thread.
+  virtual void WorkerReadyForInspectionOnInitiatorThread(
+      mojo::ScopedMessagePipeHandle devtools_agent_ptr_info,
+      mojo::ScopedMessagePipeHandle devtools_agent_host_request) {}
 
   // Starting the worker failed. This could happen when loading the worker
   // script failed, or the worker was asked to terminate before startup
-  // completed. Called on the main thread.
-  virtual void WorkerContextFailedToStartOnMainThread() {}
+  // completed. Called on the initiator thread.
+  virtual void WorkerContextFailedToStartOnInitiatorThread() {}
 
   // The worker started but it could not execute because loading the classic
   // script failed on the worker thread. This is called only for installed
@@ -93,13 +94,6 @@ class WebServiceWorkerContextClient {
   // The worker started but it could not execute because fetching module script
   // failed.
   virtual void FailedToFetchModuleScript() {}
-
-  // The worker script was successfully loaded by ResourceLoader. Called on the
-  // main thread.
-  //
-  // This is called before WorkerContextStarted(). Script evaluation does not
-  // start until WillEvaluateScript().
-  virtual void WorkerScriptLoadedOnMainThread() {}
 
   // The worker script was successfully loaded on the worker thread.
   // When off-the-main-thread script fetch is on, this is called for both
@@ -124,7 +118,7 @@ class WebServiceWorkerContextClient {
   // WorkerScriptLoadedOnWorkerThread().
   //
   // For installed workers, this is called before
-  // WorkerScriptLoadedOnMainThread().
+  // WorkerScriptLoadedOnInitiatorThread().
   //
   // Script evaluation does not start until WillEvaluateScript().
   virtual void WorkerContextStarted(
@@ -135,7 +129,10 @@ class WebServiceWorkerContextClient {
   // This means all setup is finally complete: the script has been loaded, the
   // worker thread has started, the script has been passed to the worker thread,
   // and CSP and ReferrerPolicy information has been set on the worker thread.
-  virtual void WillEvaluateScript() {}
+  //
+  // |v8_context| is the V8 context of the worker and is used to support
+  // service workers in Chrome extensions.
+  virtual void WillEvaluateScript(v8::Local<v8::Context> v8_context) {}
 
   // Called when initial script evaluation finished for the main script.
   // |success| is true if the evaluation completed with no uncaught exception.
@@ -144,23 +141,6 @@ class WebServiceWorkerContextClient {
   // Called when the worker context is going to be initialized. This is the
   // initial method call after creating the worker scheduler.
   virtual void WillInitializeWorkerContext() {}
-
-  // Called when the worker context is initialized. This is probably called
-  // after WorkerContextStarted(). (WorkerThread::InitializeOnWorkerThread()
-  // calls WorkerContextStarted() via
-  // WorkerReportingProxy::DidCreateWorkerGlobalScope(),
-  // and then initializes the worker context if "needed" and calls
-  // DidInitializeWorkerContext(), but it's not clear when the context would
-  // already be initialized.)
-  //
-  // |context_proxy| is valid until WillDestroyWorkerContext() is called.
-  //
-  // This function is used to support service workers in Chrome extensions.
-  //
-  // TODO(nhiroki): Can you clarify this code and comment?
-  virtual void DidInitializeWorkerContext(
-      WebServiceWorkerContextProxy* context_proxy,
-      v8::Local<v8::Context> v8_context) {}
 
   // WorkerGlobalScope is about to be destroyed. The client should clear
   // the WebServiceWorkerGlobalScopeProxy when this is called.
@@ -196,25 +176,11 @@ class WebServiceWorkerContextClient {
   // timeout.
   virtual void RequestTermination(RequestTerminationCallback) {}
 
-  // On-main-thread start up:
-  // Creates a network provider for the main script fetch.
-  // This is called on the main thread.
-  virtual std::unique_ptr<WebServiceWorkerNetworkProvider>
-  CreateServiceWorkerNetworkProviderOnMainThread() = 0;
-
-  // On-main-thread start up:
-  // Creates a WebWorkerFetchContext for subresource fetches on a service
-  // worker. This is called on the main thread.
-  virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateWorkerFetchContextOnMainThreadLegacy(WebServiceWorkerNetworkProvider*) {
-    return nullptr;
-  }
-
   // Off-main-thread start up:
   // Creates a WebWorkerFetchContext for subresource fetches on a service
-  // worker. This is called on the main thread.
+  // worker. This is called on the initiator thread.
   virtual scoped_refptr<blink::WebWorkerFetchContext>
-  CreateWorkerFetchContextOnMainThread() = 0;
+  CreateWorkerFetchContextOnInitiatorThread() = 0;
 };
 
 }  // namespace blink

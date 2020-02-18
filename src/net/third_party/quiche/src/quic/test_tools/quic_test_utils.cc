@@ -259,6 +259,11 @@ bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& /*header*/) {
 void NoOpFramerVisitor::OnCoalescedPacket(
     const QuicEncryptedPacket& /*packet*/) {}
 
+void NoOpFramerVisitor::OnUndecryptablePacket(
+    const QuicEncryptedPacket& /*packet*/,
+    EncryptionLevel /*decryption_level*/,
+    bool /*has_decryption_key*/) {}
+
 bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
   return true;
 }
@@ -524,7 +529,8 @@ MockQuicSession::MockQuicSession(QuicConnection* connection,
     : QuicSession(connection,
                   nullptr,
                   DefaultQuicConfig(),
-                  connection->supported_versions()) {
+                  connection->supported_versions(),
+                  /*num_expected_unidirectional_static_streams = */ 0) {
   if (create_mock_crypto_stream) {
     crypto_stream_ = QuicMakeUnique<MockQuicCryptoStream>(this);
   }
@@ -633,9 +639,6 @@ TestQuicSpdyServerSession::TestQuicSpdyServerSession(
                             crypto_config,
                             compressed_certs_cache) {
   Initialize();
-  ON_CALL(helper_, GenerateConnectionIdForReject(_, _))
-      .WillByDefault(testing::Return(
-          QuicUtils::CreateRandomConnectionId(connection->random_generator())));
   ON_CALL(helper_, CanAcceptClientHello(_, _, _, _, _))
       .WillByDefault(testing::Return(true));
 }
@@ -1158,8 +1161,8 @@ QuicStreamId GetNthClientInitiatedBidirectionalStreamId(
     QuicTransportVersion version,
     int n) {
   int num = n;
-  if (!VersionLacksHeadersStream(version)) {
-    num++;  // + 1 because spdy_session contains headers stream.
+  if (!VersionUsesQpack(version)) {
+    num++;
   }
   return QuicUtils::GetFirstBidirectionalStreamId(version,
                                                   Perspective::IS_CLIENT) +

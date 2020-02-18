@@ -6,9 +6,10 @@
 #include "base/command_line.h"
 #include "base/i18n/icu_util.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/viz/demo/host/demo_host.h"
@@ -30,7 +31,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"
+#include "ui/platform_window/x11/x11_window.h"  // nogncheck
 #endif
 
 namespace {
@@ -49,8 +50,7 @@ class InitBase {
  private:
   // The exit manager is in charge of calling the dtors of singleton objects.
   base::AtExitManager exit_manager_;
-  base::SingleThreadTaskExecutor main_task_executor_{
-      base::MessagePump::Type::UI};
+  base::SingleThreadTaskExecutor main_task_executor_{base::MessagePumpType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(InitBase);
 };
@@ -61,7 +61,7 @@ class InitMojo {
   InitMojo() : thread_("Mojo thread") {
     mojo::core::Init();
     thread_.StartWithOptions(
-        base::Thread::Options(base::MessagePump::Type::IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     ipc_support_ = std::make_unique<mojo::core::ScopedIPCSupport>(
         thread_.task_runner(),
         mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
@@ -119,7 +119,9 @@ class DemoWindow : public ui::PlatformWindowDelegate {
 #elif defined(OS_WIN)
     return std::make_unique<ui::WinWindow>(this, props.bounds);
 #elif defined(USE_X11)
-    return std::make_unique<ui::X11Window>(this, props.bounds);
+    auto x11_window = std::make_unique<ui::X11Window>(this);
+    x11_window->Initialize(std::move(props));
+    return x11_window;
 #else
     NOTIMPLEMENTED();
     return nullptr;

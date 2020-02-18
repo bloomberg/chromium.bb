@@ -6,11 +6,15 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/modules/idle/idle_options.h"
 #include "third_party/blink/renderer/modules/idle/idle_state.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -52,7 +56,7 @@ IdleDetector* IdleDetector::Create(ScriptState* script_state,
 }
 
 IdleDetector::IdleDetector(ExecutionContext* context, base::TimeDelta threshold)
-    : ContextClient(context), threshold_(threshold), binding_(this) {}
+    : ContextClient(context), threshold_(threshold), receiver_(this) {}
 
 IdleDetector::~IdleDetector() = default;
 
@@ -98,7 +102,7 @@ void IdleDetector::stop() {
 }
 
 void IdleDetector::StartMonitoring() {
-  if (binding_.is_bound()) {
+  if (receiver_.is_bound()) {
     return;
   }
 
@@ -107,20 +111,21 @@ void IdleDetector::StartMonitoring() {
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
 
   if (!service_) {
-    GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&service_, task_runner));
+    GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
+        service_.BindNewPipeAndPassReceiver(task_runner));
   }
 
-  mojom::blink::IdleMonitorPtr monitor_ptr;
-  binding_.Bind(mojo::MakeRequest(&monitor_ptr, task_runner), task_runner);
+  mojo::PendingRemote<mojom::blink::IdleMonitor> idle_monitor_remote;
+  receiver_.Bind(idle_monitor_remote.InitWithNewPipeAndPassReceiver(),
+                 task_runner);
 
   service_->AddMonitor(
-      threshold_, std::move(monitor_ptr),
+      threshold_, std::move(idle_monitor_remote),
       WTF::Bind(&IdleDetector::OnAddMonitor, WrapWeakPersistent(this)));
 }
 
 void IdleDetector::StopMonitoring() {
-  binding_.Close();
+  receiver_.reset();
 }
 
 void IdleDetector::OnAddMonitor(mojom::blink::IdleStatePtr state) {
@@ -132,7 +137,7 @@ blink::IdleState* IdleDetector::state() const {
 }
 
 void IdleDetector::Update(mojom::blink::IdleStatePtr state) {
-  DCHECK(binding_.is_bound());
+  DCHECK(receiver_.is_bound());
   if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return;
 

@@ -21,7 +21,7 @@
 namespace tracing {
 
 ProducerClient::ProducerClient(PerfettoTaskRunner* task_runner)
-    : PerfettoProducer(task_runner), weak_ptr_factory_(this) {
+    : PerfettoProducer(task_runner) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
@@ -50,6 +50,10 @@ void ProducerClient::BindClientAndHostPipesForTesting(
       base::BindOnce(&ProducerClient::BindClientAndHostPipesOnSequence,
                      base::Unretained(this), std::move(producer_client_request),
                      std::move(producer_host_info)));
+}
+
+void ProducerClient::ResetSequenceForTesting() {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 // The Mojo binding should run on the same sequence as the one we get
@@ -102,6 +106,7 @@ perfetto::SharedMemoryArbiter* ProducerClient::GetSharedMemoryArbiter() {
 }
 
 bool ProducerClient::IsTracingActive() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return data_sources_tracing_ > 0;
 }
 

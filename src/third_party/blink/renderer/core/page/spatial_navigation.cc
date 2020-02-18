@@ -63,7 +63,7 @@ FocusCandidate::FocusCandidate(Node* node, SpatialNavigationDirection direction)
   DCHECK(node);
   DCHECK(node->IsElementNode());
 
-  if (auto* area = ToHTMLAreaElementOrNull(*node)) {
+  if (auto* area = DynamicTo<HTMLAreaElement>(*node)) {
     HTMLImageElement* image = area->ImageElement();
     if (!image || !image->GetLayoutObject())
       return;
@@ -263,7 +263,7 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
     case SpatialNavigationDirection::kRight:
       // TODO(bokan, https://crbug.com/952326): Fix this DCHECK.
       //  DCHECK_GT(container->GetLayoutBox()->ScrollWidth(),
-      //            container->GetLayoutBox()->ScrollLeft() +
+      //            container->GetScrollableArea()->ScrollPosition().X() +
       //                container->GetLayoutBox()->ClientWidth());
       dx = pixels_per_line_step;
       break;
@@ -273,7 +273,7 @@ bool ScrollInDirection(Node* container, SpatialNavigationDirection direction) {
     case SpatialNavigationDirection::kDown:
       // TODO(bokan, https://crbug.com/952326): Fix this DCHECK.
       //  DCHECK_GT(container->GetLayoutBox()->ScrollHeight(),
-      //            container->GetLayoutBox()->ScrollTop() +
+      //            container->GetScrollableArea()->ScrollPosition().Y() +
       //                container->GetLayoutBox()->ClientHeight());
       dy = pixels_per_line_step;
       break;
@@ -358,26 +358,33 @@ bool CanScrollInDirection(const Node* container,
   if (!IsScrollableNode(container))
     return false;
 
+  const Element* container_element = DynamicTo<Element>(container);
+  if (!container_element)
+    return false;
+  auto* scrollable_area = container_element->GetScrollableArea();
+  if (!scrollable_area)
+    return false;
+
   DCHECK(container->GetLayoutObject());
   switch (direction) {
     case SpatialNavigationDirection::kLeft:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollLeft() > 0);
+              scrollable_area->ScrollPosition().X() > 0);
     case SpatialNavigationDirection::kUp:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollTop() > 0);
+              scrollable_area->ScrollPosition().Y() > 0);
     case SpatialNavigationDirection::kRight:
       return (container->GetLayoutObject()->Style()->OverflowX() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollLeft() +
+              LayoutUnit(scrollable_area->ScrollPosition().X()) +
                       container->GetLayoutBox()->ClientWidth() <
                   container->GetLayoutBox()->ScrollWidth());
     case SpatialNavigationDirection::kDown:
       return (container->GetLayoutObject()->Style()->OverflowY() !=
                   EOverflow::kHidden &&
-              container->GetLayoutBox()->ScrollTop() +
+              LayoutUnit(scrollable_area->ScrollPosition().Y()) +
                       container->GetLayoutBox()->ClientHeight() <
                   container->GetLayoutBox()->ScrollHeight());
     default:
@@ -398,11 +405,11 @@ bool CanScrollInDirection(const LocalFrame* frame,
   layoutView->CalculateScrollbarModes(horizontal_mode, vertical_mode);
   if ((direction == SpatialNavigationDirection::kLeft ||
        direction == SpatialNavigationDirection::kRight) &&
-      kScrollbarAlwaysOff == horizontal_mode)
+      ScrollbarMode::kAlwaysOff == horizontal_mode)
     return false;
   if ((direction == SpatialNavigationDirection::kUp ||
        direction == SpatialNavigationDirection::kDown) &&
-      kScrollbarAlwaysOff == vertical_mode)
+      ScrollbarMode::kAlwaysOff == vertical_mode)
     return false;
   ScrollableArea* scrollable_area = frame->View()->GetScrollableArea();
   LayoutSize size(scrollable_area->ContentsSize());
@@ -739,7 +746,7 @@ PhysicalRect SearchOrigin(const PhysicalRect& viewport_rect_of_root_frame,
     return OppositeEdge(direction, viewport_rect_of_root_frame);
   }
 
-  auto* area_element = ToHTMLAreaElementOrNull(focus_node);
+  auto* area_element = DynamicTo<HTMLAreaElement>(focus_node);
   if (area_element)
     focus_node = area_element->ImageElement();
 

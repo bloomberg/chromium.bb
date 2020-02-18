@@ -39,18 +39,18 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
   // and allows null ModuleRecord.
   static JSModuleScript* CreateForTest(
       Modulator*,
-      ModuleRecord,
+      v8::Local<v8::Module>,
       const KURL& base_url,
       const ScriptFetchOptions& = ScriptFetchOptions());
 
   // Do not call this constructor. Use Create() instead. This is public only for
   // MakeGarbageCollected.
   JSModuleScript(Modulator* settings_object,
-                 ModuleRecord record,
+                 v8::Local<v8::Module> record,
                  const KURL& source_url,
                  const KURL& base_url,
                  const ScriptFetchOptions&,
-                 const ParkableString& source_text,
+                 size_t source_text_length,
                  const TextPosition& start_position,
                  ModuleRecordProduceCacheData*);
   ~JSModuleScript() override = default;
@@ -64,9 +64,9 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
   friend class ModuleScriptTest;
 
   static JSModuleScript* CreateInternal(
-      const ParkableString& source_text,
+      size_t source_text_length,
       Modulator*,
-      ModuleRecord,
+      v8::Local<v8::Module>,
       const KURL& source_url,
       const KURL& base_url,
       const ScriptFetchOptions&,
@@ -74,10 +74,9 @@ class CORE_EXPORT JSModuleScript final : public ModuleScript,
       ModuleRecordProduceCacheData* produce_cache_data);
 
   const TextPosition& StartPosition() const { return start_position_; }
-  String InlineSourceTextForCSP() const override;
 
-  // For CSP check.
-  const ParkableString source_text_;
+  // For V8CodeCache statistics.
+  const size_t source_text_length_;
 
   const TextPosition start_position_;
 

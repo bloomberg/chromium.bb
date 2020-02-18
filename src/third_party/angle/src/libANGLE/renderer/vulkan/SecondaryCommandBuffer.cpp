@@ -187,12 +187,30 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
                     vkCmdDrawIndexed(cmdBuffer, params->indexCount, params->instanceCount, 0, 0, 0);
                     break;
                 }
+                case CommandID::DrawIndexedInstancedBaseVertexBaseInstance:
+                {
+                    const DrawIndexedInstancedBaseVertexBaseInstanceParams *params =
+                        getParamPtr<DrawIndexedInstancedBaseVertexBaseInstanceParams>(
+                            currentCommand);
+                    vkCmdDrawIndexed(cmdBuffer, params->indexCount, params->instanceCount,
+                                     params->firstIndex, params->vertexOffset,
+                                     params->firstInstance);
+                    break;
+                }
                 case CommandID::DrawInstanced:
                 {
                     const DrawInstancedParams *params =
                         getParamPtr<DrawInstancedParams>(currentCommand);
                     vkCmdDraw(cmdBuffer, params->vertexCount, params->instanceCount,
                               params->firstVertex, 0);
+                    break;
+                }
+                case CommandID::DrawInstancedBaseInstance:
+                {
+                    const DrawInstancedBaseInstanceParams *params =
+                        getParamPtr<DrawInstancedBaseInstanceParams>(currentCommand);
+                    vkCmdDraw(cmdBuffer, params->vertexCount, params->instanceCount,
+                              params->firstVertex, params->firstInstance);
                     break;
                 }
                 case CommandID::EndQuery:
@@ -326,6 +344,27 @@ void SecondaryCommandBuffer::executeCommands(VkCommandBuffer cmdBuffer)
     }
 }
 
+void SecondaryCommandBuffer::getMemoryUsageStats(size_t *usedMemoryOut,
+                                                 size_t *allocatedMemoryOut) const
+{
+    *allocatedMemoryOut = kBlockSize * mCommands.size();
+
+    *usedMemoryOut = 0;
+    for (const CommandHeader *command : mCommands)
+    {
+        const CommandHeader *commandEnd = command;
+        while (commandEnd->id != CommandID::Invalid)
+        {
+            commandEnd = NextCommand(commandEnd);
+        }
+
+        *usedMemoryOut += reinterpret_cast<const uint8_t *>(commandEnd) -
+                          reinterpret_cast<const uint8_t *>(command) + sizeof(CommandHeader::id);
+    }
+
+    ASSERT(*usedMemoryOut <= *allocatedMemoryOut);
+}
+
 std::string SecondaryCommandBuffer::dumpCommands(const char *separator) const
 {
     std::string result;
@@ -381,6 +420,9 @@ std::string SecondaryCommandBuffer::dumpCommands(const char *separator) const
                     break;
                 case CommandID::Dispatch:
                     result += "Dispatch";
+                    break;
+                case CommandID::DispatchIndirect:
+                    result += "DispatchIndirect";
                     break;
                 case CommandID::Draw:
                     result += "Draw";

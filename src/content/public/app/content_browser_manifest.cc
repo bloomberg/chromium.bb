@@ -13,15 +13,16 @@
 namespace content {
 
 const service_manager::Manifest& GetContentBrowserManifest() {
+  // clang-format off
   static base::NoDestructor<service_manager::Manifest> manifest{
       service_manager::ManifestBuilder()
           .WithServiceName(mojom::kBrowserServiceName)
           .WithDisplayName("Content (browser process)")
           .WithOptions(service_manager::ManifestOptionsBuilder()
-                           .CanConnectToInstancesInAnyGroup(true)
-                           .CanConnectToInstancesWithAnyId(true)
-                           .CanRegisterOtherServiceInstances(true)
-                           .Build())
+                          .CanConnectToInstancesInAnyGroup(true)
+                          .CanConnectToInstancesWithAnyId(true)
+                          .CanRegisterOtherServiceInstances(true)
+                          .Build())
           .ExposeCapability("field_trials",
                             std::set<const char*>{
                                 "content.mojom.FieldTrialRecorder",
@@ -71,6 +72,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.PluginRegistry",
                   "blink.mojom.PushMessaging",
                   "blink.mojom.ReportingServiceProxy",
+                  "blink.mojom.SpeechSynthesis",
                   "blink.mojom.StoragePartitionService",
                   "blink.mojom.WebDatabaseHost",
                   "content.mojom.ClipboardHost",
@@ -105,9 +107,13 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
                   "media.mojom.AndroidOverlayProvider",
               })
+          .RequireCapability("data_decoder", "bundled_exchanges_parser_factory")
           .RequireCapability("data_decoder", "image_decoder")
           .RequireCapability("data_decoder", "json_parser")
           .RequireCapability("data_decoder", "xml_parser")
+  #if defined(OS_CHROMEOS)
+          .RequireCapability("data_decoder", "ble_scan_parser")
+  #endif  // OS_CHROMEOS
           .RequireCapability("cdm", "media:cdm")
           .RequireCapability("shape_detection", "barcode_detection")
           .RequireCapability("shape_detection", "face_detection")
@@ -122,7 +128,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("content", "navigation")
           .RequireCapability("resource_coordinator", "service_callbacks")
           .RequireCapability("service_manager",
-                             "service_manager:service_manager")
+              "service_manager:service_manager")
           .RequireCapability("chromecast", "multizone")
           .RequireCapability("content_plugin", "browser")
           .RequireCapability("metrics", "url_keyed_metrics")
@@ -135,7 +141,10 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("device", "device:input_service")
           .RequireCapability("device", "device:mtp")
           .RequireCapability("device", "device:nfc")
+          .RequireCapability("device", "device:power_monitor")
+          .RequireCapability("device", "device:screen_orientation")
           .RequireCapability("device", "device:serial")
+          .RequireCapability("device", "device:time_zone_monitor")
           .RequireCapability("device", "device:usb")
           .RequireCapability("device", "device:usb_test")
           .RequireCapability("device", "device:vibration")
@@ -153,11 +162,13 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .RequireCapability("audio", "stream_factory")
           .RequireCapability("audio", "testing_api")
           .RequireCapability("content_gpu", "browser")
+          .RequireCapability("resource_coordinator", "app")
+          .RequireCapability("resource_coordinator", "heap_profiler_helper")
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:shared_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.CacheStorage", "blink.mojom.FileSystemManager",
-                  "blink.mojom.IDBFactory", "blink.mojom.LockManager",
+                  "blink.mojom.CacheStorage", "blink.mojom.IDBFactory",
+                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
@@ -173,14 +184,15 @@ const service_manager::Manifest& GetContentBrowserManifest() {
               std::set<const char*>{
                   "blink.mojom.CacheStorage",
                   "blink.mojom.DedicatedWorkerHostFactory",
-                  "blink.mojom.FileSystemManager", "blink.mojom.IDBFactory",
-                  "blink.mojom.IdleManager", "blink.mojom.LockManager",
+                  "blink.mojom.IDBFactory",
+                  "blink.mojom.LockManager",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.PermissionService",
                   "blink.mojom.QuotaDispatcherHost",
-                  "blink.mojom.SerialService", "blink.mojom.WebUsbService",
-                  "blink.mojom.SmsReceiver", "blink.mojom.WebSocketConnector",
+                  "blink.mojom.SerialService",
+                  "blink.mojom.WebUsbService", "blink.mojom.SmsReceiver",
+                  "blink.mojom.WebSocketConnector",
                   "media.mojom.VideoDecodePerfHistory",
                   "payments.mojom.PaymentManager",
                   "shape_detection.mojom.BarcodeDetectionProvider",
@@ -189,7 +201,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .ExposeInterfaceFilterCapability_Deprecated(
               "navigation:service_worker", "renderer",
               std::set<const char*>{
-                  "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage", "blink.mojom.CookieStore",
                   "blink.mojom.ContentIndexService", "blink.mojom.IDBFactory",
                   "blink.mojom.LockManager",
@@ -210,7 +221,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "autofill.mojom.AutofillDriver",
                   "autofill.mojom.PasswordManagerDriver",
                   "blink.mojom.AnchorElementMetricsHost",
-                  "blink.mojom.BackgroundFetchService",
                   "blink.mojom.CacheStorage",
                   "blink.mojom.ColorChooserFactory",
                   "blink.mojom.ContactsManager",
@@ -219,11 +229,9 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.DisplayCutoutHost",
                   "blink.mojom.DedicatedWorkerHostFactory",
                   "blink.mojom.FileChooser",
-                  "blink.mojom.FileSystemManager",
                   "blink.mojom.GeolocationService",
                   "blink.mojom.HidService",
                   "blink.mojom.IDBFactory",
-                  "blink.mojom.IdleManager",
                   "blink.mojom.InsecureInputService",
                   "blink.mojom.KeyboardLockService",
                   "blink.mojom.LockManager",
@@ -258,6 +266,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "device.mojom.VibrationManager",
                   "device.mojom.VRService",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",
+                  "media.mojom.FuchsiaCdmProvider",
                   "media.mojom.ImageCapture",
                   "media.mojom.InterfaceFactory",
                   "media.mojom.MediaMetricsProvider",
@@ -280,6 +289,7 @@ const service_manager::Manifest& GetContentBrowserManifest() {
           .PackageService(file::GetManifest())
           .Build()};
   return *manifest;
+  // clang-format on
 }
 
 }  // namespace content

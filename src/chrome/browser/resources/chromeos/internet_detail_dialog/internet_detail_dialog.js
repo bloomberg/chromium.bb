@@ -7,12 +7,15 @@
  * 'internet-detail-dialog' is used in the login screen to show a subset of
  * internet details and allow configuration of proxy, IP, and nameservers.
  */
+(function() {
+'use strict';
+
 Polymer({
   is: 'internet-detail-dialog',
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
     I18nBehavior,
   ],
 
@@ -20,11 +23,14 @@ Polymer({
     /** The network GUID to display details for. */
     guid: String,
 
-    /**
-     * The current properties for the network matching |guid|.
-     * @type {!CrOnc.NetworkProperties|undefined}
-     */
-    networkProperties: Object,
+    /** @private {!chromeos.networkConfig.mojom.ManagedProperties|undefined} */
+    managedProperties_: Object,
+
+    /** @private {?OncMojo.DeviceStateProperties} */
+    deviceState_: {
+      type: Object,
+      value: null,
+    },
 
     /**
      * Interface for networkingPrivate calls, passed from internet_page.
@@ -53,20 +59,34 @@ Polymer({
    * prevents setProperties from being called when setting default properties.
    * @private {boolean}
    */
-  networkPropertiesReceived_: false,
+  propertiesReceived_: false,
+
+  /**
+   * This UI will use both the networkingPrivate extension API and the
+   * networkConfig mojo API until we provide all of the required functionality
+   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
+   */
+  networkConfig_: null,
+
+  /** @override */
+  created: function() {
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
+  },
 
   /** @override */
   attached: function() {
-    var dialogArgs = chrome.getVariableValue('dialogArguments');
-    var type, name;
+    const dialogArgs = chrome.getVariableValue('dialogArguments');
+    let type, name;
     if (dialogArgs) {
-      var args = JSON.parse(dialogArgs);
+      const args = JSON.parse(dialogArgs);
       this.guid = args.guid || '';
       type = args.type || 'WiFi';
       name = args.name || type;
     } else {
       // For debugging
-      var params = new URLSearchParams(document.location.search.substring(1));
+      const params = new URLSearchParams(document.location.search.substring(1));
       this.guid = params.get('guid') || '';
       type = params.get('type') || 'WiFi';
       name = params.get('name') || type;
@@ -77,14 +97,11 @@ Polymer({
       this.close_();
     }
 
-    // Set basic networkProperties until they are loaded.
-    this.networkProperties = {
-      GUID: this.guid,
-      Type: type,
-      ConnectionState: CrOnc.ConnectionState.NOT_CONNECTED,
-      Name: {Active: name},
-    };
-    this.networkPropertiesReceived_ = false;
+    // Set default managedProperties_ until they are loaded.
+    this.propertiesReceived_ = false;
+    this.deviceState_ = null;
+    this.managedProperties_ = OncMojo.getDefaultManagedProperties(
+        OncMojo.getNetworkTypeFromString(type), this.guid, name);
     this.getNetworkDetails_();
   },
 
@@ -97,7 +114,6 @@ Polymer({
       OncTypeTether: loadTimeData.getString('OncTypeTether'),
       OncTypeVPN: loadTimeData.getString('OncTypeVPN'),
       OncTypeWiFi: loadTimeData.getString('OncTypeWiFi'),
-      OncTypeWiMAX: loadTimeData.getString('OncTypeWiMAX'),
       networkListItemConnected:
           loadTimeData.getString('networkListItemConnected'),
       networkListItemConnecting:
@@ -126,12 +142,12 @@ Polymer({
    * @param {!Array<OncMojo.NetworkStateProperties>} networks
    */
   onActiveNetworksChanged: function(networks) {
-    if (!this.guid || !this.networkProperties) {
+    if (!this.guid || !this.managedProperties_) {
       return;
     }
     // If the network was or is active, request an update.
-    if (this.networkProperties.ConnectionState !=
-            CrOnc.ConnectionState.NOT_CONNECTED ||
+    if (this.managedProperties_.connectionState !=
+            chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected ||
         networks.find(network => network.guid == this.guid)) {
       this.getNetworkDetails_();
     }
@@ -141,70 +157,72 @@ Polymer({
    * CrosNetworkConfigObserver impl
    * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
    */
-  onDeviceStateListChanged: function() {
-    if (!this.guid || !this.networkProperties) {
+  onNetworkStateChanged: function(network) {
+    if (!this.guid || !this.managedProperties_) {
       return;
     }
+    if (network.guid == this.guid) {
+      this.getNetworkDetails_();
+    }
+  },
+
+  /** CrosNetworkConfigObserver impl */
+  onDeviceStateListChanged: function() {
+    if (!this.guid || !this.managedProperties_) {
+      return;
+    }
+    this.getDeviceState_();
     this.getNetworkDetails_();
   },
 
-  /**
-   * Calls networkingPrivate.getProperties for this.guid.
-   * @private
-   */
+  /** @private */
   getNetworkDetails_: function() {
     assert(this.guid);
-    this.networkingPrivate.getManagedProperties(
-        this.guid, this.getPropertiesCallback_.bind(this));
-  },
-
-  /**
-   * networkingPrivate.getProperties callback.
-   * @param {!CrOnc.NetworkProperties} properties The network properties.
-   * @private
-   */
-  getPropertiesCallback_: function(properties) {
-    if (chrome.runtime.lastError) {
-      var message = chrome.runtime.lastError.message;
-      if (message == 'Error.InvalidNetworkGuid') {
-        console.error('Details page: GUID no longer exists: ' + this.guid);
-      } else {
-        console.error(
-            'Unexpected networkingPrivate.getManagedProperties error: ' +
-            message + ' For: ' + this.guid);
+    this.networkConfig_.getManagedProperties(this.guid).then(response => {
+      if (!response.result) {
+        // Edge case, may occur when disabling. Close this.
+        this.close_();
+        return;
       }
-      this.close_();
+      this.managedProperties_ = response.result;
+      this.propertiesReceived_ = true;
+      if (!this.deviceState_) {
+        this.getDeviceState_();
+      }
+    });
+  },
+
+  /** @private */
+  getDeviceState_: function() {
+    if (!this.managedProperties_) {
       return;
     }
-    if (!properties) {
-      console.error('No properties for: ' + this.guid);
-      this.close_();
-      return;
-    }
-    this.networkProperties = properties;
-    this.networkPropertiesReceived_ = true;
+    const type = this.managedProperties_.type;
+    this.networkConfig_.getDeviceStateList().then(response => {
+      const devices = response.result;
+      this.deviceState_ = devices.find(device => device.type == type) || null;
+    });
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} properties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {!OncMojo.NetworkStateProperties}
    */
-  getNetworkState_: function(properties) {
-    return OncMojo.oncPropertiesToNetworkState(properties);
+  getNetworkState_: function(managedProperties) {
+    return OncMojo.managedPropertiesToNetworkState(managedProperties);
   },
 
   /**
-   * @param {!chrome.networkingPrivate.NetworkConfigProperties} onc The ONC
-   *     network properties.
+   * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
    * @private
    */
-  setNetworkProperties_: function(onc) {
-    if (!this.networkPropertiesReceived_)
+  setMojoNetworkProperties_: function(config) {
+    if (!this.propertiesReceived_ || !this.guid) {
       return;
-
-    assert(this.guid);
-    this.networkingPrivate.setProperties(this.guid, onc, () => {
-      if (chrome.runtime.lastError) {
+    }
+    this.networkConfig_.setProperties(this.guid, config).then(response => {
+      if (!response.success) {
+        console.error('Unable to set properties: ' + JSON.stringify(config));
         // An error typically indicates invalid input; request the properties
         // to update any invalid fields.
         this.getNetworkDetails_();
@@ -213,326 +231,242 @@ Polymer({
   },
 
   /**
-   * @return {!chrome.networkingPrivate.NetworkConfigProperties} An ONC
-   *     dictionary with just the Type property set. Used for passing properties
-   *     to setNetworkProperties_.
-   * @private
-   */
-  getEmptyNetworkProperties_: function() {
-    return {Type: this.networkProperties.Type};
-  },
-
-  /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getStateText_: function(networkProperties) {
-    if (!networkProperties.ConnectionState)
+  getStateText_: function(managedProperties) {
+    if (!managedProperties) {
       return '';
-    return this.i18n('Onc' + networkProperties.ConnectionState);
+    }
+    return this.i18n(
+        OncMojo.getConnectionStateString(managedProperties.connectionState));
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getNameText_: function(networkProperties) {
-    return CrOnc.getNetworkName(networkProperties);
+  getNameText_: function(managedProperties) {
+    return OncMojo.getNetworkName(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean} True if the network is connected.
    * @private
    */
-  isConnectedState_: function(networkProperties) {
-    return networkProperties.ConnectionState == CrOnc.ConnectionState.CONNECTED;
+  isConnectedState_: function(managedProperties) {
+    return OncMojo.connectionStateIsConnected(
+        managedProperties.connectionState);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isRemembered_: function(networkProperties) {
-    var source = networkProperties.Source;
-    return !!source && source != CrOnc.Source.NONE;
+  isRemembered_: function(managedProperties) {
+    return managedProperties.source !=
+        chromeos.networkConfig.mojom.OncSource.kNone;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isRememberedOrConnected_: function(networkProperties) {
-    return this.isRemembered_(networkProperties) ||
-        this.isConnectedState_(networkProperties);
+  isRememberedOrConnected_: function(managedProperties) {
+    return this.isRemembered_(managedProperties) ||
+        this.isConnectedState_(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  isCellular_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!networkProperties.Cellular;
+  isCellular_: function(managedProperties) {
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showCellularSim_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!networkProperties.Cellular &&
-        networkProperties.Cellular.Family != 'CDMA';
+  showCellularSim_: function(managedProperties) {
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular &&
+        managedProperties.cellular.family != 'CDMA';
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showCellularChooseNetwork_: function(networkProperties) {
-    return networkProperties.Type == CrOnc.Type.CELLULAR &&
-        !!this.get('Cellular.SupportNetworkScan', this.networkProperties);
+  showCellularChooseNetwork_: function(managedProperties) {
+    return managedProperties.type ==
+        chromeos.networkConfig.mojom.NetworkType.kCellular &&
+        managedProperties.cellular.supportNetworkScan;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
-  getConnectDisconnectText_: function(networkProperties) {
-    if (this.showConnect_(networkProperties)) {
+  getConnectDisconnectText_: function(managedProperties) {
+    if (this.showConnect_(managedProperties)) {
       return this.i18n('networkButtonConnect');
     }
     return this.i18n('networkButtonDisconnect');
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showConnectDisconnect_: function(networkProperties) {
-    return this.showConnect_(networkProperties) ||
-        this.showDisconnect_(networkProperties);
+  showConnectDisconnect_: function(managedProperties) {
+    return this.showConnect_(managedProperties) ||
+        this.showDisconnect_(managedProperties);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showConnect_: function(networkProperties) {
-    return networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState ==
-        CrOnc.ConnectionState.NOT_CONNECTED;
+  showConnect_: function(managedProperties) {
+    return managedProperties.connectable &&
+        managedProperties.type !=
+        chromeos.networkConfig.mojom.NetworkType.kEthernet &&
+        managedProperties.connectionState ==
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  showDisconnect_: function(networkProperties) {
-    return networkProperties.Type != CrOnc.Type.ETHERNET &&
-        networkProperties.ConnectionState !=
-        CrOnc.ConnectionState.NOT_CONNECTED;
+  showDisconnect_: function(managedProperties) {
+    return managedProperties.type !=
+        chromeos.networkConfig.mojom.NetworkType.kEthernet &&
+        managedProperties.connectionState !=
+        chromeos.networkConfig.mojom.ConnectionStateType.kNotConnected;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  shouldShowProxyPolicyIndicator_: function(networkProperties) {
-    var property = this.get('ProxySettings.Type', networkProperties);
-    return !!property &&
-        this.isNetworkPolicyEnforced(
-            /** @type {!CrOnc.ManagedProperty} */ (property));
+  shouldShowProxyPolicyIndicator_: function(managedProperties) {
+    if (!managedProperties.proxySettings) {
+      return false;
+    }
+    return this.isNetworkPolicyEnforced(managedProperties.proxySettings.type);
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean}
    * @private
    */
-  enableConnectDisconnect_: function(networkProperties) {
-    if (!this.showConnectDisconnect_(networkProperties)) {
+  enableConnectDisconnect_: function(managedProperties) {
+    if (!this.showConnectDisconnect_(managedProperties)) {
       return false;
     }
 
-    if (this.showConnect_(networkProperties)) {
-      return this.enableConnect_(networkProperties);
+    if (this.showConnect_(managedProperties)) {
+      return this.enableConnect_(managedProperties);
     }
 
     return true;
   },
 
   /**
-   * @param {!CrOnc.NetworkProperties} networkProperties
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {boolean} Whether or not to enable the network connect button.
    * @private
    */
-  enableConnect_: function(networkProperties) {
-    if (!this.showConnect_(networkProperties))
-      return false;
-    if (networkProperties.Type == CrOnc.Type.CELLULAR &&
-        CrOnc.isSimLocked(networkProperties)) {
-      return false;
-    }
-    return true;
+  enableConnect_: function(managedProperties) {
+    return this.showConnect_(managedProperties);
   },
 
   /** @private */
   onConnectDisconnectClick_: function() {
-    assert(this.networkProperties);
-    if (!this.showConnect_(this.networkProperties)) {
+    if (!this.managedProperties_) {
+      return;
+    }
+    if (!this.showConnect_(this.managedProperties_)) {
       this.networkingPrivate.startDisconnect(this.guid);
       return;
     }
 
-    var properties = this.networkProperties;
-    this.networkingPrivate.startConnect(properties.GUID, function() {
+    const guid = this.managedProperties_.guid;
+    this.networkingPrivate.startConnect(guid, function() {
       if (chrome.runtime.lastError) {
-        var message = chrome.runtime.lastError.message;
+        const message = chrome.runtime.lastError.message;
         if (message == 'connecting' || message == 'connect-canceled' ||
             message == 'connected' || message == 'Error.InvalidNetworkGuid') {
           return;
         }
         console.error(
             'Unexpected networkingPrivate.startConnect error: ' + message +
-            ' For: ' + properties.GUID);
+            ' For: ' + guid);
       }
     });
   },
 
   /**
-   * Event triggered for elements associated with network properties.
-   * @param {!CustomEvent<!{field: string, value: (string|!Object)}>} event
+   * @param {!CustomEvent<!chromeos.networkConfig.mojom.ApnProperties>} event
    * @private
    */
-  onNetworkPropertyChange_: function(event) {
-    if (!this.networkProperties)
-      return;
-    var field = event.detail.field;
-    var value = event.detail.value;
-    var onc = this.getEmptyNetworkProperties_();
-    if (field == 'APN') {
-      CrOnc.setTypeProperty(onc, 'APN', value);
-    } else if (field == 'SIMLockStatus') {
-      CrOnc.setTypeProperty(onc, 'SIMLockStatus', value);
-    } else {
-      console.error('Unexpected property change event: ' + field);
+  onApnChange_: function(event) {
+    if (!this.propertiesReceived_) {
       return;
     }
-    this.setNetworkProperties_(onc);
+    const apn = event.detail;
+    const config = {cellular: {apn: apn}};
+    this.setMojoNetworkProperties_(config);
   },
 
   /**
    * Event triggered when the IP Config or NameServers element changes.
-   * TODO(stevenjb): Move this logic down to network_ip_config.js and
-   * network_nameservers.js and remove it from here and internet_detail_page.js.
    * @param {!CustomEvent<!{
    *     field: string,
-   *     value: (string|!CrOnc.IPConfigProperties|!Array<string>)
+   *     value: (string|!chromeos.networkConfig.mojom.IPConfigProperties|
+   *             !Array<string>)
    * }>} event The network-ip-config or network-nameservers change event.
    * @private
    */
   onIPConfigChange_: function(event) {
-    if (!this.networkProperties)
-      return;
-    var field = event.detail.field;
-    var value = event.detail.value;
-    // Get an empty ONC dictionary and set just the IP Config properties that
-    // need to change.
-    var onc = this.getEmptyNetworkProperties_();
-    var ipConfigType =
-        /** @type {chrome.networkingPrivate.IPConfigType|undefined} */ (
-            CrOnc.getActiveValue(this.networkProperties.IPAddressConfigType));
-    if (field == 'IPAddressConfigType') {
-      var newIpConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType} */ (value);
-      if (newIpConfigType == ipConfigType)
-        return;
-      onc.IPAddressConfigType = newIpConfigType;
-    } else if (field == 'NameServersConfigType') {
-      var nsConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType|undefined} */ (
-              CrOnc.getActiveValue(
-                  this.networkProperties.NameServersConfigType));
-      var newNsConfigType =
-          /** @type {chrome.networkingPrivate.IPConfigType} */ (value);
-      if (newNsConfigType == nsConfigType)
-        return;
-      onc.NameServersConfigType = newNsConfigType;
-    } else if (field == 'StaticIPConfig') {
-      if (ipConfigType == CrOnc.IPConfigType.STATIC) {
-        var staticIpConfig = this.networkProperties.StaticIPConfig;
-        var ipConfigValue = /** @type {!Object} */ (value);
-        if (staticIpConfig &&
-            this.allPropertiesMatch_(staticIpConfig, ipConfigValue)) {
-          return;
-        }
-      }
-      onc.IPAddressConfigType = CrOnc.IPConfigType.STATIC;
-      if (!onc.StaticIPConfig) {
-        onc.StaticIPConfig =
-            /** @type {!chrome.networkingPrivate.IPConfigProperties} */ ({});
-      }
-      // Only copy Static IP properties.
-      var keysToCopy = ['Type', 'IPAddress', 'RoutingPrefix', 'Gateway'];
-      for (var i = 0; i < keysToCopy.length; ++i) {
-        var key = keysToCopy[i];
-        if (key in value)
-          onc.StaticIPConfig[key] = value[key];
-      }
-    } else if (field == 'NameServers') {
-      // If a StaticIPConfig property is specified and its NameServers value
-      // matches the new value, no need to set anything.
-      var nameServers = /** @type {!Array<string>} */ (value);
-      if (onc.NameServersConfigType == CrOnc.IPConfigType.STATIC &&
-          onc.StaticIPConfig && onc.StaticIPConfig.NameServers == nameServers) {
-        return;
-      }
-      onc.NameServersConfigType = CrOnc.IPConfigType.STATIC;
-      if (!onc.StaticIPConfig) {
-        onc.StaticIPConfig =
-            /** @type {!chrome.networkingPrivate.IPConfigProperties} */ ({});
-      }
-      onc.StaticIPConfig.NameServers = nameServers;
-    } else {
-      console.error('Unexpected change field: ' + field);
+    if (!this.managedProperties_) {
       return;
     }
-    // setValidStaticIPConfig will fill in any other properties from
-    // networkProperties. This is necessary since we update IP Address and
-    // NameServers independently.
-    CrOnc.setValidStaticIPConfig(onc, this.networkProperties);
-    this.setNetworkProperties_(onc);
+    const config = OncMojo.getUpdatedIPConfigProperties(
+        this.managedProperties_, event.detail.field, event.detail.value);
+    if (config) {
+      this.setMojoNetworkProperties_(config);
+    }
   },
 
   /**
    * Event triggered when the Proxy configuration element changes.
-   * @param {!CustomEvent<!{field: string, value: !CrOnc.ProxySettings}>} event
-   *     The network-proxy change event.
+   * @param {!CustomEvent<!chromeos.networkConfig.mojom.ProxySettings>} event
    * @private
    */
   onProxyChange_: function(event) {
-    if (!this.networkProperties)
+    if (!this.propertiesReceived_) {
       return;
-    if (event.detail.field != 'ProxySettings')
-      return;
-    var onc = this.getEmptyNetworkProperties_();
-    CrOnc.setProperty(
-        onc, 'ProxySettings', /** @type {!Object} */ (event.detail.value));
-    this.setNetworkProperties_(onc);
+    }
+    this.setMojoNetworkProperties_({proxySettings: event.detail});
   },
 
   /**
@@ -542,7 +476,7 @@ Polymer({
    */
   hasVisibleFields_: function(fields) {
     return fields.some((field) => {
-      var value = this.get(field, this.networkProperties);
+      const value = this.get(field, this.managedProperties_);
       return value !== undefined && value !== '';
     });
   },
@@ -560,35 +494,19 @@ Polymer({
    * @private
    */
   getInfoFields_: function() {
-    /** @type {!Array<string>} */ var fields = [];
-    var type = this.networkProperties.Type;
-    if (type == CrOnc.Type.CELLULAR && this.networkProperties.Cellular) {
+    /** @type {!Array<string>} */ const fields = [];
+    const type = this.managedProperties_.type;
+    if (type == chromeos.networkConfig.mojom.NetworkType.kCellular) {
       fields.push(
-          'Cellular.HomeProvider.Name', 'Cellular.ServingOperator.Name',
-          'Cellular.ActivationState', 'Cellular.RoamingState',
-          'RestrictedConnectivity', 'Cellular.MEID', 'Cellular.ESN',
-          'Cellular.ICCID', 'Cellular.IMEI', 'Cellular.IMSI', 'Cellular.MDN',
-          'Cellular.MIN');
-    } else if (type == CrOnc.Type.WI_FI) {
-      fields.push('RestrictedConnectivity');
-    } else if (type == CrOnc.Type.WI_MAX) {
-      fields.push('RestrictedConnectivity', 'WiMAX.EAP.Identity');
+          'cellular.homeProvider.name', 'cellular.servingOperator.name',
+          'cellular.activationState', 'cellular.roamingState',
+          'restrictedConnectivity', 'cellular.meid', 'cellular.esn',
+          'cellular.iccid', 'cellular.imei', 'cellular.imsi', 'cellular.mdn',
+          'cellular.min');
+    } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
+      fields.push('restrictedConnectivity');
     }
-    fields.push('MacAddress');
     return fields;
   },
-
-  /**
-   * @param {!Object} curValue
-   * @param {!Object} newValue
-   * @return {boolean} True if all properties set in |newValue| are equal to
-   *     the corresponding properties in |curValue|. Note: Not all properties
-   *     of |curValue| need to be specified in |newValue| for this to return
-   *     true.
-   * @private
-   */
-  allPropertiesMatch_: function(curValue, newValue) {
-    return Object.getOwnPropertyNames(newValue).every(
-        key => newValue[key] == curValue[key]);
-  }
 });
+})();

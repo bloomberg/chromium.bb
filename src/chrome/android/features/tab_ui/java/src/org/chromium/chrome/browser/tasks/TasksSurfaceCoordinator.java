@@ -4,52 +4,59 @@
 
 package org.chromium.chrome.browser.tasks;
 
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+import static org.chromium.chrome.browser.tasks.TasksSurfaceProperties.IS_TAB_CAROUSEL;
+
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.tab_ui.R;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for displaying task-related surfaces (Tab Switcher, MV Tiles, Omnibox, etc.).
  *  Concrete implementation of {@link TasksSurface}.
  */
 public class TasksSurfaceCoordinator implements TasksSurface {
-    private final TabSwitcher mGridTabSwitcher;
-    private final LinearLayout mLayout;
-    private final FrameLayout mGridContainerLayout;
+    private final TabSwitcher mTabSwitcher;
+    private final TasksView mView;
+    private final PropertyModelChangeProcessor mPropertyModelChangeProcessor;
 
-    public TasksSurfaceCoordinator(ChromeActivity activity) {
-        mLayout = new LinearLayout(activity);
-        mLayout.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.MATCH_PARENT));
-        mLayout.setOrientation(LinearLayout.VERTICAL);
-
-        mGridContainerLayout = new FrameLayout(activity);
-        mGridContainerLayout.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
-
-        mLayout.addView(mGridContainerLayout);
-
-        activity.getCompositorViewHolder().addView(mLayout);
-
-        mGridTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
-                activity, mGridContainerLayout);
+    public TasksSurfaceCoordinator(
+            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
+        mView = (TasksView) LayoutInflater.from(activity).inflate(R.layout.tasks_view_layout, null);
+        mPropertyModelChangeProcessor =
+                PropertyModelChangeProcessor.create(propertyModel, mView, TasksViewBinder::bind);
+        if (isTabCarousel) {
+            propertyModel.set(IS_TAB_CAROUSEL, true);
+            mTabSwitcher = TabManagementModuleProvider.getDelegate().createCarouselTabSwitcher(
+                    activity, mView.getTabSwitcherContainer());
+        } else {
+            mTabSwitcher = TabManagementModuleProvider.getDelegate().createGridTabSwitcher(
+                    activity, mView.getTabSwitcherContainer());
+        }
     }
 
     @Override
     public void setOnTabSelectingListener(TabSwitcher.OnTabSelectingListener listener) {
-        mGridTabSwitcher.setOnTabSelectingListener(listener);
+        mTabSwitcher.setOnTabSelectingListener(listener);
     }
 
     @Override
     public TabSwitcher.Controller getController() {
-        return mGridTabSwitcher.getController();
+        return mTabSwitcher.getController();
     }
 
     @Override
     public TabSwitcher.TabListDelegate getTabListDelegate() {
-        return mGridTabSwitcher.getTabListDelegate();
+        return mTabSwitcher.getTabListDelegate();
+    }
+
+    @Override
+    public ViewGroup getContainerView() {
+        return mView;
     }
 }

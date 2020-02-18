@@ -20,8 +20,9 @@
 #include "components/content_settings/core/test/content_settings_mock_provider.h"
 #include "components/content_settings/core/test/content_settings_test_utils.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -63,7 +64,7 @@ class SiteSettingsHelperTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
@@ -457,9 +458,10 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
         device_manager_.CreateAndAddDevice(6354, 0, "Google", "Gadget", "");
 
     auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
-    chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
+    chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
     chooser_context->GetDevices(
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();
@@ -490,7 +492,7 @@ class SiteSettingsHelperChooserExceptionTest : public testing::Test {
   device::FakeUsbDeviceManager device_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

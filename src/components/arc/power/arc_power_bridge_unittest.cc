@@ -7,11 +7,11 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
-#include "components/arc/common/power.mojom.h"
+#include "components/arc/mojom/power.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_power_instance.h"
@@ -103,7 +103,7 @@ class ArcPowerBridgeTest : public testing::Test {
     return chromeos::FakePowerManagerClient::Get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   service_manager::TestConnectorFactory connector_factory_;
 

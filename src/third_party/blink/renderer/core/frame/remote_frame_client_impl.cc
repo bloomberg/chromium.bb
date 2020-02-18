@@ -109,7 +109,7 @@ void RemoteFrameClientImpl::Navigate(
     bool is_opener_navigation,
     bool has_download_sandbox_flag,
     bool initiator_frame_is_ad,
-    mojom::blink::BlobURLTokenPtr blob_url_token) {
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token) {
   bool blocking_downloads_in_sandbox_without_user_activation_enabled =
       RuntimeEnabledFeatures::
           BlockingDownloadsInSandboxWithoutUserActivationEnabled();
@@ -118,7 +118,7 @@ void RemoteFrameClientImpl::Navigate(
         WrappedResourceRequest(request), should_replace_current_entry,
         is_opener_navigation, has_download_sandbox_flag,
         blocking_downloads_in_sandbox_without_user_activation_enabled,
-        initiator_frame_is_ad, blob_url_token.PassInterface().PassHandle());
+        initiator_frame_is_ad, blob_url_token.PassPipe());
   }
 }
 
@@ -137,13 +137,11 @@ void RemoteFrameClientImpl::CheckCompleted() {
 void RemoteFrameClientImpl::ForwardPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> target,
-    LocalFrame* source_frame,
-    bool has_user_gesture) const {
+    LocalFrame* source_frame) const {
   if (web_frame_->Client()) {
     web_frame_->Client()->ForwardPostMessage(
         WebLocalFrameImpl::FromFrame(source_frame), web_frame_,
-        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event),
-        has_user_gesture);
+        WebSecurityOrigin(std::move(target)), WebDOMMessageEvent(event));
   }
 }
 

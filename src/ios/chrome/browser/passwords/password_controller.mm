@@ -65,7 +65,7 @@
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
@@ -81,6 +81,8 @@ using base::SysNSStringToUTF16;
 using base::SysUTF16ToNSString;
 using l10n_util::GetNSString;
 using l10n_util::GetNSStringF;
+using password_manager::metrics_util::LogPasswordDropdownShown;
+using password_manager::metrics_util::PasswordDropdownState;
 using password_manager::AccountSelectFillData;
 using password_manager::FillData;
 using password_manager::GetPageURLAndCheckTrustLevel;
@@ -96,18 +98,6 @@ namespace {
 // Types of password infobars to display.
 enum class PasswordInfoBarType { SAVE, UPDATE };
 
-// Types of password suggestion in the keyboard accessory. Used for metrics
-// collection.
-enum class PasswordSuggestionType {
-  // Credentials are listed.
-  CREDENTIALS = 0,
-  // "Show All" is listed.
-  SHOW_ALL = 1,
-  // "Suggest Password" is listed.
-  SUGGESTED = 2,
-  COUNT = 3,
-};
-
 // Password is considered not generated when user edits it below 4 characters.
 constexpr int kMinimumLengthForEditedPassword = 4;
 
@@ -116,16 +106,6 @@ constexpr int kNotifyAutoSigninDuration = 3;  // seconds
 
 // The string ' •••' appended to the username in the suggestion.
 NSString* const kSuggestionSuffix = @" ••••••••";
-
-void LogSuggestionClicked(PasswordSuggestionType type) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SuggestionClicked", type,
-                            PasswordSuggestionType::COUNT);
-}
-
-void LogSuggestionShown(PasswordSuggestionType type) {
-  UMA_HISTOGRAM_ENUMERATION("PasswordManager.SuggestionShown", type,
-                            PasswordSuggestionType::COUNT);
-}
 }  // namespace
 
 @interface PasswordController ()<PasswordSuggestionHelperDelegate>
@@ -231,8 +211,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
     _passwordManager.reset(new PasswordManager(_passwordManagerClient.get()));
     _passwordManagerDriver.reset(new IOSChromePasswordManagerDriver(self));
 
-    if (features::IsAutomaticPasswordGenerationEnabled() &&
-        !_passwordManagerClient->IsIncognito()) {
+    if (!_passwordManagerClient->IsIncognito()) {
       _passwordGenerationHelper.reset(new PasswordGenerationFrameHelper(
           _passwordManagerClient.get(), _passwordManagerDriver.get()));
     }
@@ -423,8 +402,9 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                      icon:nil
                                identifier:0]];
   }
+  base::Optional<PasswordDropdownState> suggestion_state;
   if (suggestions.count) {
-    LogSuggestionShown(PasswordSuggestionType::CREDENTIALS);
+    suggestion_state = PasswordDropdownState::kStandard;
   }
 
   if ([self canGeneratePasswordForForm:formName
@@ -440,7 +420,12 @@ void LogSuggestionShown(PasswordSuggestionType type) {
                                icon:nil
                          identifier:autofill::
                                         POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY]];
-    LogSuggestionShown(PasswordSuggestionType::SUGGESTED);
+    suggestion_state = PasswordDropdownState::kStandardGenerate;
+  }
+
+  if (suggestion_state) {
+    LogPasswordDropdownShown(*suggestion_state,
+                             _passwordManagerClient->IsIncognito());
   }
 
   completion([suggestions copy], self);
@@ -456,7 +441,10 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       // Navigate to the settings list.
       [self.delegate displaySavedPasswordList];
       completion();
-      LogSuggestionClicked(PasswordSuggestionType::SHOW_ALL);
+      password_manager::metrics_util::LogPasswordDropdownItemSelected(
+          password_manager::metrics_util::PasswordDropdownSelectedOption::
+              kShowAll,
+          _passwordManagerClient->IsIncognito());
       return;
     }
     case autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY: {
@@ -464,11 +452,17 @@ void LogSuggestionShown(PasswordSuggestionType type) {
       // whether user injects a generated password or cancels.
       [self generatePasswordForFormName:formName
                         fieldIdentifier:fieldIdentifier];
-      LogSuggestionClicked(PasswordSuggestionType::SUGGESTED);
+      password_manager::metrics_util::LogPasswordDropdownItemSelected(
+          password_manager::metrics_util::PasswordDropdownSelectedOption::
+              kGenerate,
+          _passwordManagerClient->IsIncognito());
       return;
     }
     default: {
-      LogSuggestionClicked(PasswordSuggestionType::CREDENTIALS);
+      password_manager::metrics_util::LogPasswordDropdownItemSelected(
+          password_manager::metrics_util::PasswordDropdownSelectedOption::
+              kPassword,
+          _passwordManagerClient->IsIncognito());
       DCHECK([suggestion.value hasSuffix:kSuggestionSuffix]);
       NSString* username = [suggestion.value
           substringToIndex:suggestion.value.length - kSuggestionSuffix.length];
@@ -720,8 +714,7 @@ void LogSuggestionShown(PasswordSuggestionType type) {
 - (BOOL)canGeneratePasswordForForm:(NSString*)formName
                    fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType {
-  if (!features::IsAutomaticPasswordGenerationEnabled() ||
-      _passwordManagerClient->IsIncognito() ||
+  if (_passwordManagerClient->IsIncognito() ||
       !_passwordManagerDriver->GetPasswordGenerationHelper()
            ->IsGenerationEnabled(
                /*log_debug_data*/ true))

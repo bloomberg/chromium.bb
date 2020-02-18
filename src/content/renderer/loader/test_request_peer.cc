@@ -6,6 +6,7 @@
 
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
 
@@ -67,12 +68,12 @@ void TestRequestPeer::OnTransferSizeUpdated(int transfer_size_diff) {
     dispatcher_->SetDefersLoading(context_->request_id, true);
 }
 
-void TestRequestPeer::OnReceivedCachedMetadata(const char* data, int len) {
+void TestRequestPeer::OnReceivedCachedMetadata(mojo_base::BigBuffer data) {
   EXPECT_TRUE(context_->received_response);
   EXPECT_FALSE(context_->complete);
   if (context_->cancelled)
     return;
-  context_->cached_metadata = std::vector<char>(data, data + len);
+  context_->cached_metadata = std::move(data);
 }
 
 void TestRequestPeer::OnCompletedRequest(

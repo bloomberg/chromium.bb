@@ -2,6 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_tabs/cr_tabs.m.js';
+// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
+// #import {keyDownOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// clang-format on
+
 suite('cr_tabs_test', function() {
   /** @type {?CrTabsElement} */
   let tabs = null;
@@ -11,7 +18,7 @@ suite('cr_tabs_test', function() {
     document.body.innerHTML = `<cr-tabs></cr-tabs>`;
     tabs = document.querySelector('cr-tabs');
     tabs.tabNames = ['tab1', 'tab2', 'tab3'];
-    return PolymerTest.flushTasks();
+    return test_util.flushTasks();
   });
 
   /**
@@ -123,7 +130,7 @@ suite('cr_tabs_test', function() {
     tabs.tabNames = ['tab1', 'tab2'];
     assertEquals(undefined, tabs.selected);
     tabs.selected = 0;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertNotEquals(fullyExpanded, underline.style.transform);
     underline.style.transform = fullyExpanded;
     const wait = test_util.eventToPromise('transitionend', underline);

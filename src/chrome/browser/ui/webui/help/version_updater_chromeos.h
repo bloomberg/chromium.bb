@@ -59,7 +59,8 @@ class VersionUpdaterCros : public VersionUpdater,
 
   // Callback from UpdateEngineClient::GetEolStatus().
   void OnGetEolStatus(EolStatusCallback cb,
-                      update_engine::EndOfLifeStatus status);
+                      update_engine::EndOfLifeStatus status,
+                      base::Optional<int32_t> number_of_milestones);
 
   // BrowserContext in which the class was instantiated.
   content::BrowserContext* context_;
@@ -73,7 +74,7 @@ class VersionUpdaterCros : public VersionUpdater,
   // True if an update check should be scheduled when the update engine is idle.
   bool check_for_update_when_idle_;
 
-  base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_;
+  base::WeakPtrFactory<VersionUpdaterCros> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(VersionUpdaterCros);
 };

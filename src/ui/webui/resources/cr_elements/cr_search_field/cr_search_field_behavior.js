@@ -7,7 +7,7 @@
  * <settings-subpage-search> for a simple implementation.
  * @polymerBehavior
  */
-const CrSearchFieldBehavior = {
+/* #export */ const CrSearchFieldBehavior = {
   properties: {
     label: {
       type: String,
@@ -55,6 +55,11 @@ const CrSearchFieldBehavior = {
     const updated = this.updateEffectiveValue_(value);
     this.getSearchInput().value = this.effectiveValue_;
     if (!updated) {
+      // If the input is only whitespace and value is empty, |hasSearchText|
+      // needs to be updated.
+      if (value == '' && this.hasSearchText) {
+        this.hasSearchText = false;
+      }
       return;
     }
 

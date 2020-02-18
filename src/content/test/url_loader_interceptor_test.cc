@@ -17,7 +17,7 @@
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/filename_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -160,23 +160,24 @@ class TestBrowserClientWithHeaderClient
       content::BrowserContext* browser_context,
       content::RenderFrameHost* frame,
       int render_process_id,
-      bool is_navigation,
-      bool is_download,
+      URLLoaderFactoryType type,
       const url::Origin& request_initiator,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+          header_client,
       bool* bypass_redirect_checks) override {
     if (header_client)
-      bindings_.AddBinding(this, mojo::MakeRequest(header_client));
+      receivers_.Add(this, header_client->InitWithNewPipeAndPassReceiver());
     return true;
   }
 
   // network::mojom::TrustedURLLoaderHeaderClient:
   void OnLoaderCreated(
       int32_t request_id,
-      network::mojom::TrustedHeaderClientRequest request) override {}
+      mojo::PendingReceiver<network::mojom::TrustedHeaderClient> receiver)
+      override {}
 
-  mojo::BindingSet<network::mojom::TrustedURLLoaderHeaderClient> bindings_;
+  mojo::ReceiverSet<network::mojom::TrustedURLLoaderHeaderClient> receivers_;
 };
 
 IN_PROC_BROWSER_TEST_F(URLLoaderInterceptorTest,

@@ -126,6 +126,7 @@ extern const char kMakeDefaultBrowser[];
 extern const char kMonitoringDestinationID[];
 extern const char kNativeMessagingConnectHost[];
 extern const char kNativeMessagingConnectExtension[];
+extern const char kNativeMessagingConnectId[];
 extern const char kNewNetErrorPageUI[];
 extern const char kNoDefaultBrowserCheck[];
 extern const char kNoExperiments[];
@@ -211,7 +212,6 @@ extern const char kWebApkServerUrl[];
 extern const char kCroshCommand[];
 extern const char kDisableLoggingRedirect[];
 extern const char kDisableLoginScreenApps[];
-extern const char kMashServiceName[];
 extern const char kShortMergeSessionTimeoutForTest[];
 extern const char kSchedulerConfiguration[];
 extern const char kSchedulerConfigurationConservative[];
@@ -250,6 +250,7 @@ extern const char kPrefetchArgumentBrowserBackground[];
 extern const char kPrefetchArgumentWatcher[];
 extern const char kShowIcons[];
 extern const char kUninstall[];
+extern const char kUserDataMigrated[];
 extern const char kWatcherProcess[];
 #endif  // defined(OS_WIN)
 

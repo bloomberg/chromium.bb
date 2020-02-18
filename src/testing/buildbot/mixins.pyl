@@ -295,6 +295,20 @@
       },
     },
   },
+  'linux_intel_uhd_630': {
+    'swarming': {
+      'dimensions': {
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'intel-uhd-630-ubuntu-stable',
+        'os': 'Ubuntu-19.04',
+        'pool': 'Chrome-GPU',
+      },
+      # Same long expiration as win10_intel_uhd_630_stable due to capacity.
+      # TODO(https://crbug.com/986939): Remove this when more devices
+      # are added.
+      'expiration': 14400,
+    }
+  },
   'linux_nvidia_quadro_p400': {
     'swarming': {
       'dimensions': {
@@ -368,10 +382,10 @@
       },
     },
   },
-  'mac_10.14_beta': {
+  'mac_10.15_beta': {
     'swarming': {
       'dimensions': {
-        'os': 'Mac-10.14.6',
+        'os': 'Mac-10.15',
       },
     },
   },
@@ -489,7 +503,7 @@
   'oreo_fleet': {
     'swarming': {
       'dimensions': {
-        'device_os': 'OPM1.171019.021',
+        'device_os': 'OPM4.171019.021.P2',
         'device_os_flavor': 'google',
       },
     },
@@ -498,6 +512,45 @@
     'swarming': {
       'dimensions': {
         'device_os': 'P',
+      },
+    },
+  },
+  'pie-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-name=20190716T160000Z_android_28_google_apis_x86',
+        '--emulator-home=../../.android',
+      ],
+    },
+    'swarming': {
+      'cipd_packages': [
+        {
+          'cipd_package': 'chromium/third_party/android_sdk/public/avds/android-28/google_apis/x86',
+          'location': '.android',
+          'revision': 'J5MFTg7OhekLKsOX7bmkVTSCDzohydCvXrn4sJzy0xsC',
+        },
+        {
+          'cipd_package': 'chromium/third_party/android_sdk/public/emulator',
+          'location': 'third_party/android_sdk/public',
+          'revision': 'xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC',
+        },
+        {
+          'cipd_package': 'chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86',
+          'location': 'third_party/android_sdk/public',
+          'revision': 'LDa0XkTjgGYx7Amzg5qjIRgCfc4F_pq7rKMJVdACYx8C',
+        },
+      ],
+      'dimensions': {
+        'device_os': None,
+        'device_type': None,
+      },
+    },
+  },
+  'pie_fleet': {
+    'swarming': {
+      'dimensions': {
+        'device_os': 'PQ3A.190801.002',
+        'device_os_flavor': 'google',
       },
     },
   },
@@ -531,6 +584,13 @@
       },
     },
   },
+  'win10-1803': {
+    'swarming': {
+      'dimensions': {
+        'os': 'Windows-10-17134',
+      },
+    },
+  },
   'win10_amd_rx_550': {
     'swarming': {
       'dimensions': {
@@ -544,7 +604,7 @@
     # Currently same as stable version.
     'swarming': {
       'dimensions': {
-        'gpu': '8086:5912-24.20.100.6286',
+        'gpu': '8086:5912-26.20.100.6912',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },
@@ -560,6 +620,22 @@
       },
     },
   },
+  'win10_intel_uhd_630_stable': {
+    'swarming': {
+      'dimensions': {
+        # Defined in bot_config.py in internal infradata/config workspace
+        'gpu': 'intel-uhd-630-win10-stable',
+        'os': 'Windows-10',
+        'pool': 'Chrome-GPU',
+      },
+      # ~50% of the WebGL2 conformance tests time out with the default
+      # 1 hour expiration, but the last shard times out with a 3 hour
+      # expiration, so use 4 hours.
+      # TODO(https://crbug.com/986939): Remove this when more devices
+      # are added.
+      'expiration': 14400,
+    },
+  },
   'win10_nvidia_geforce_gtx_1660': {
     'swarming': {
       'dimensions': {
@@ -572,7 +648,7 @@
   'win10_nvidia_quadro_p400_experimental': {
     'swarming': {
       'dimensions': {
-        'gpu': '10de:1cb3-24.21.14.1195',
+        'gpu': '10de:1cb3-26.21.14.3102',
         'os': 'Windows-10',
         'pool': 'Chrome-GPU',
       },

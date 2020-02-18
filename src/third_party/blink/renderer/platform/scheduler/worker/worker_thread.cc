@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/message_loop/message_pump.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
@@ -51,6 +52,7 @@ WorkerThread::~WorkerThread() {
         const_cast<scheduler::WorkerThread*>(this));
   }
   thread_->Quit();
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   thread_->Join();
 }
 
@@ -101,7 +103,7 @@ WorkerThread::SimpleThreadImpl::SimpleThreadImpl(
   // thread?
   sequence_manager_ = base::sequence_manager::CreateUnboundSequenceManager(
       base::sequence_manager::SequenceManager::Settings::Builder()
-          .SetMessagePumpType(base::MessagePump::Type::DEFAULT)
+          .SetMessagePumpType(base::MessagePumpType::DEFAULT)
           .SetRandomisedSamplingEnabled(true)
           .Build());
   internal_task_queue_ = sequence_manager_->CreateTaskQueue(
@@ -117,6 +119,7 @@ void WorkerThread::SimpleThreadImpl::WaitForInit() {
   internal_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&base::WaitableEvent::Signal,
                                 base::Unretained(&initialized)));
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   initialized.Wait();
 }
 
@@ -143,7 +146,7 @@ void WorkerThread::SimpleThreadImpl::Run() {
   auto scoped_sequence_manager = std::move(sequence_manager_);
   auto scoped_internal_task_queue = std::move(internal_task_queue_);
   scoped_sequence_manager->BindToMessagePump(
-      base::MessagePump::Create(base::MessagePump::Type::DEFAULT));
+      base::MessagePump::Create(base::MessagePumpType::DEFAULT));
   non_main_thread_scheduler_ =
       std::move(scheduler_factory_).Run(scoped_sequence_manager.get());
   non_main_thread_scheduler_->Init();

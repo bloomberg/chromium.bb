@@ -7,7 +7,7 @@
 
 #include "base/metrics/user_metrics.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/metrics/desktop_session_duration/desktop_session_duration_tracker.h"
 #include "chrome/browser/profiles/profile_activity_metrics_recorder.h"
@@ -18,7 +18,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -30,10 +30,10 @@ constexpr base::TimeDelta kInactivityTimeout = base::TimeDelta::FromMinutes(5);
 class ProfileActivityMetricsRecorderTest : public testing::Test {
  public:
   ProfileActivityMetricsRecorderTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    base::SetRecordActionTaskRunner(thread_bundle_.GetMainThreadTaskRunner());
+    base::SetRecordActionTaskRunner(
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   void SetUp() override {
@@ -81,10 +81,12 @@ class ProfileActivityMetricsRecorderTest : public testing::Test {
 
   TestingProfileManager* profile_manager() { return &profile_manager_; }
   base::HistogramTester* histograms() { return &histogram_tester_; }
-  content::TestBrowserThreadBundle* thread_bundle() { return &thread_bundle_; }
+  content::BrowserTaskEnvironment* task_environment() {
+    return &task_environment_;
+  }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   TestingProfileManager profile_manager_;
   base::HistogramTester histogram_tester_;
@@ -156,7 +158,7 @@ TEST_F(ProfileActivityMetricsRecorderTest, MultipleProfiles) {
   SimulateUserActionAndExpectRecording(/*bucket=*/1);
 
   // Profile 1: Session lasts 2 minutes.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
 
   // Profile 3: Browser is activated for the first time. The profile is assigned
   // bucket 2.
@@ -170,7 +172,7 @@ TEST_F(ProfileActivityMetricsRecorderTest, MultipleProfiles) {
                                   /*bucket=*/1, /*count=*/2);
 
   // Profile 3: Session lasts 2 minutes.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
 
   // Profile 2: Browser is activated for the first time. The profile is assigned
   // bucket 3.
@@ -194,11 +196,11 @@ TEST_F(ProfileActivityMetricsRecorderTest, SessionInactivityNotRecorded) {
                                   /*bucket=*/1, /*count=*/1);
 
   // Wait 2 minutes before doing another user interaction.
-  thread_bundle()->FastForwardBy(base::TimeDelta::FromMinutes(2));
+  task_environment()->FastForwardBy(base::TimeDelta::FromMinutes(2));
   SimulateUserEvent();
 
   // Stay inactive so the session ends.
-  thread_bundle()->FastForwardBy(kInactivityTimeout * 2);
+  task_environment()->FastForwardBy(kInactivityTimeout * 2);
 
   // The inactive time is not recorded.
   histograms()->ExpectBucketCount("Profile.SessionDuration.PerProfile",

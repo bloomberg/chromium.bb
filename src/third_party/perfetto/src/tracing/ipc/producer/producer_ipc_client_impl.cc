@@ -19,6 +19,7 @@
 #include <inttypes.h>
 #include <string.h>
 
+#include "perfetto/base/logging.h"
 #include "perfetto/base/task_runner.h"
 #include "perfetto/ext/ipc/client.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
@@ -107,6 +108,14 @@ void ProducerIPCClientImpl::OnConnect() {
           protos::InitializeConnectionRequest::SMB_SCRAPING_DISABLED);
       break;
   }
+
+#if PERFETTO_DCHECK_IS_ON()
+  req.set_build_flags(
+      protos::InitializeConnectionRequest::BUILD_FLAGS_DCHECKS_ON);
+#else
+  req.set_build_flags(
+      protos::InitializeConnectionRequest::BUILD_FLAGS_DCHECKS_OFF);
+#endif
   producer_port_.InitializeConnection(req, std::move(on_init));
 
   // Create the back channel to receive commands from the Service.
@@ -347,10 +356,12 @@ void ProducerIPCClientImpl::ActivateTriggers(
 }
 
 std::unique_ptr<TraceWriter> ProducerIPCClientImpl::CreateTraceWriter(
-    BufferID target_buffer) {
+    BufferID target_buffer,
+    BufferExhaustedPolicy buffer_exhausted_policy) {
   // This method can be called by different threads. |shared_memory_arbiter_| is
   // thread-safe but be aware of accessing any other state in this function.
-  return shared_memory_arbiter_->CreateTraceWriter(target_buffer);
+  return shared_memory_arbiter_->CreateTraceWriter(target_buffer,
+                                                   buffer_exhausted_policy);
 }
 
 SharedMemoryArbiter* ProducerIPCClientImpl::GetInProcessShmemArbiter() {

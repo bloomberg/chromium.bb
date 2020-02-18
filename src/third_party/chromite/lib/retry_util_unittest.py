@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import itertools
-import mock
 import os
 import time
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -33,7 +34,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     counter = itertools.count()
     @retry_util.WithRetry(max_retry=3)
     def _run():
-      current = counter.next()
+      current = next(counter)
       # Failed twice, then success.
       if current < 2:
         raise Exception()
@@ -108,7 +109,7 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
       """Get function that fails once with ValueError, Then AssertionError."""
       source = itertools.count()
       def _TestMain():
-        if source.next() == 0:
+        if next(source) == 0:
           raise ValueError()
         else:
           raise AssertionError()
@@ -194,12 +195,12 @@ class TestRetries(cros_test_lib.MockTempDirTestCase):
     }
     osutils.WriteFile(
         path,
-        "import sys\n"
-        "val = int(open(%(store)r).read())\n"
-        "stop_val = int(open(%(stop)r).read())\n"
+        'import sys\n'
+        'val = int(open(%(store)r).read())\n'
+        'stop_val = int(open(%(stop)r).read())\n'
         "open(%(store)r, 'w').write(str(val + 1))\n"
-        "print val\n"
-        "sys.exit(0 if val == stop_val else 1)\n" % paths)
+        'print val\n'
+        'sys.exit(0 if val == stop_val else 1)\n' % paths)
 
     os.chmod(path, 0o755)
 

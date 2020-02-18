@@ -82,12 +82,27 @@ RankingItemType RankingItemTypeFromSearchResult(
       return RankingItemType::kIgnored;
     case ash::SearchResultType::kArcAppShortcut:
       return RankingItemType::kArcAppShortcut;
+    case ash::SearchResultType::kZeroStateFile:
+      return RankingItemType::kZeroStateFile;
+    case ash::SearchResultType::kDriveQuickAccess:
+      return RankingItemType::kDriveQuickAccess;
   }
 }
 
 RankingItemType RankingItemTypeFromChromeAppListItem(
     const ChromeAppListItem& item) {
   return RankingItemType::kApp;
+}
+
+std::string NormalizeAppId(const std::string& id) {
+  std::string app_id(id);
+  // No existing scheme names include the delimiter string "://".
+  std::size_t delimiter_index = app_id.find("://");
+  if (delimiter_index != std::string::npos)
+    app_id.erase(0, delimiter_index + 3);
+  if (!app_id.empty() && app_id.back() == '/')
+    app_id.pop_back();
+  return app_id;
 }
 
 std::string SimplifyUrlId(const std::string& url_id) {

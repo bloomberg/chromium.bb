@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/animation/css_custom_list_interpolation_type.h"
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/underlying_length_checker.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -94,9 +94,43 @@ void CSSCustomListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  // TODO(andruud): Properly support composition once behavior is defined.
-  // https://github.com/w3c/css-houdini-drafts/issues/799
-  underlying_value_owner.Set(*this, value);
+  // This adapts a ListInterpolationFunctions::CompositeItemCallback function
+  // such that we can use the InterpolationType::Composite function of the
+  // inner interpolation type to get the answer.
+  //
+  // TODO(andruud): Make InterpolationType::Composite take an UnderlyingValue
+  // rather than an UnderlyingValueOwner.
+  auto composite_callback =
+      [](const CSSInterpolationType* interpolation_type,
+         double interpolation_fraction, UnderlyingValue& underlying_value,
+         double underlying_fraction,
+         const InterpolableValue& interpolable_value,
+         const NonInterpolableValue* non_interpolable_value) {
+        UnderlyingValueOwner owner;
+        owner.Set(*interpolation_type,
+                  InterpolationValue(
+                      underlying_value.MutableInterpolableValue().Clone(),
+                      underlying_value.GetNonInterpolableValue()));
+
+        InterpolationValue interpolation_value(interpolable_value.Clone(),
+                                               non_interpolable_value);
+        interpolation_type->Composite(owner, underlying_fraction,
+                                      interpolation_value,
+                                      interpolation_fraction);
+
+        underlying_value.SetInterpolableValue(
+            owner.Value().Clone().interpolable_value);
+        underlying_value.SetNonInterpolableValue(
+            owner.GetNonInterpolableValue());
+      };
+
+  ListInterpolationFunctions::Composite(
+      underlying_value_owner, underlying_fraction, *this, value,
+      ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      GetNonInterpolableValuesAreCompatibleCallback(),
+      WTF::BindRepeating(composite_callback,
+                         WTF::Unretained(inner_interpolation_type_.get()),
+                         interpolation_fraction));
 }
 
 PairwiseInterpolationValue CSSCustomListInterpolationType::MaybeMergeSingles(
@@ -107,6 +141,16 @@ PairwiseInterpolationValue CSSCustomListInterpolationType::MaybeMergeSingles(
       ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
       WTF::BindRepeating(&CSSInterpolationType::MaybeMergeSingles,
                          WTF::Unretained(inner_interpolation_type_.get())));
+}
+
+ListInterpolationFunctions::NonInterpolableValuesAreCompatibleCallback
+CSSCustomListInterpolationType::GetNonInterpolableValuesAreCompatibleCallback()
+    const {
+  // TODO(https://crbug.com/981537): Add support for <image> here.
+  // TODO(https://crbug.com/981538): Add support for <transform-function> here.
+  // TODO(https://crbug.com/981542): Add support for <transform-list> here.
+  return WTF::BindRepeating(
+      ListInterpolationFunctions::VerifyNoNonInterpolableValues);
 }
 
 }  // namespace blink

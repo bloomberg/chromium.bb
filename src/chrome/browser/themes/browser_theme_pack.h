@@ -225,17 +225,6 @@ class BrowserThemePack : public CustomThemeSupplier {
   // color has been specified.  Must be called after GenerateFrameImages().
   void CreateTabBackgroundImagesAndColors(ImageCache* images);
 
-  // Generates any text colors which have not already been set.
-  void GenerateMissingTextColors();
-
-  // Generates text color for the specified id |text_color_id|, based on the
-  // background color of the tab |tab_color_id|, and using the color already
-  // defined for |source_color_id| as a starting point (if it exists).
-  void GenerateMissingTextColorForID(int text_color_id,
-                                     int tab_color_id,
-                                     int frame_color_id,
-                                     int source_color_id);
-
   // Generates missing NTP related colors.
   void GenerateMissingNtpColors();
 
@@ -280,6 +269,9 @@ class BrowserThemePack : public CustomThemeSupplier {
 
   // All structs written to disk need to be packed; no alignment tricks here,
   // please.
+  // NOTE: This structs can only contain primary data types to be reliably
+  // seralized and de-seralized. Not even nested structs will work across
+  // different machines, see crbug.com/988055.
 #pragma pack(push,1)
   // Header that is written to disk.
   struct BrowserThemePackHeader {

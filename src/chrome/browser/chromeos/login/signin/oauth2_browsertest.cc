@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/login/test/js_checker.h"
 #include "chrome/browser/chromeos/login/test/network_portal_detector_mixin.h"
 #include "chrome/browser/chromeos/login/test/oobe_base_test.h"
+#include "chrome/browser/chromeos/login/test/session_manager_state_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/extensions/chrome_extension_test_notification_observer.h"
@@ -214,10 +215,9 @@ class RequestDeferrer {
 
   void InterceptRequest(const HttpRequest& request) {
     start_event_.Signal();
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
-                       base::Unretained(this)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&RequestDeferrer::QuitRunnerOnUIThread,
+                                  base::Unretained(this)));
     blocking_event_.Wait();
   }
 
@@ -387,10 +387,7 @@ class OAuth2Test : public OobeBaseTest {
                              account_id);
     user_context.SetKey(Key(password));
     controller->Login(user_context, SigninSpecifics());
-    content::WindowedNotificationObserver(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources())
-        .Wait();
+    test::WaitForPrimaryUserSessionStart();
     const user_manager::UserList& logged_users =
         user_manager::UserManager::Get()->GetLoggedInUsers();
     for (user_manager::UserList::const_iterator it = logged_users.begin();
@@ -431,10 +428,6 @@ class OAuth2Test : public OobeBaseTest {
     SimulateNetworkOnline();
     WaitForGaiaPageLoad();
 
-    content::WindowedNotificationObserver session_start_waiter(
-        chrome::NOTIFICATION_SESSION_STARTED,
-        content::NotificationService::AllSources());
-
     // Use capitalized and dotted user name on purpose to make sure
     // our email normalization kicks in.
     LoginDisplayHost::default_host()
@@ -442,7 +435,7 @@ class OAuth2Test : public OobeBaseTest {
         ->GetView<GaiaScreenHandler>()
         ->ShowSigninScreenForTest(kTestRawEmail, kTestAccountPassword,
                                   kTestAccountServices);
-    session_start_waiter.Wait();
+    test::WaitForPrimaryUserSessionStart();
 
     if (wait_for_merge) {
       // Wait for the session merge to finish.
@@ -701,7 +694,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test, VerifyInAdvancedProtectionAfterOnlineAuth) {
       IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile());
   EXPECT_TRUE(
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              kTestEmail)
           ->is_under_advanced_protection);
 }
 
@@ -715,7 +709,8 @@ IN_PROC_BROWSER_TEST_F(OAuth2Test,
       IdentityManagerFactory::GetInstance()->GetForProfile(GetProfile());
   EXPECT_FALSE(
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(kTestEmail)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              kTestEmail)
           ->is_under_advanced_protection);
 }
 
@@ -805,9 +800,9 @@ class FakeGoogle {
     std::unique_ptr<BasicHttpResponse> http_response(new BasicHttpResponse());
     if (request_path == kHelloPagePath) {  // Serving "google" page.
       start_event_.Signal();
-      base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                               base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
-                                              base::Unretained(this)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&FakeGoogle::QuitRunnerOnUIThread,
+                                    base::Unretained(this)));
 
       http_response->set_code(net::HTTP_OK);
       http_response->set_content_type("text/html");
@@ -818,10 +813,9 @@ class FakeGoogle {
       http_response->set_content(kRandomPageContent);
     } else if (hang_merge_session_ && request_path == kMergeSessionPath) {
       merge_session_event_.Signal();
-      base::PostTaskWithTraits(
-          FROM_HERE, {content::BrowserThread::UI},
-          base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
-                         base::Unretained(this)));
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&FakeGoogle::QuitMergeRunnerOnUIThread,
+                                    base::Unretained(this)));
       return std::make_unique<HungResponse>();
     } else {
       return std::unique_ptr<HttpResponse>();  // Request not understood.
@@ -1091,7 +1085,8 @@ IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRThrottle) {
   EXPECT_TRUE(fake_google_.IsPageRequested());
 }
 
-IN_PROC_BROWSER_TEST_P(MergeSessionTest, XHRNotThrottled) {
+// TODO(https://crbug.com/990844): Re-enable once flakiness is fixed.
+IN_PROC_BROWSER_TEST_P(MergeSessionTest, DISABLED_XHRNotThrottled) {
   StartNewUserSession(/*wait_for_merge=*/false,
                       /*is_under_advanced_protection=*/false);
 

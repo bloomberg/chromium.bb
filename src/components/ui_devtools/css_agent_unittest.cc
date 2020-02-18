@@ -6,6 +6,8 @@
 
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/task_environment.h"
+#include "components/ui_devtools/agent_util.h"
 #include "components/ui_devtools/dom_agent.h"
 #include "components/ui_devtools/ui_devtools_unittest_utils.h"
 #include "components/ui_devtools/ui_element.h"
@@ -30,6 +32,9 @@ class FakeUIElement : public UIElement {
   }
   bool visible() const { return visible_; }
   gfx::Rect bounds() const { return bounds_; }
+  void AddSource(std::string path, int line) {
+    UIElement::AddSource(path, line);
+  }
 
  private:
   gfx::Rect bounds_;
@@ -84,6 +89,7 @@ class CSSAgentTest : public testing::Test {
   }
 
  protected:
+  base::test::TaskEnvironment task_environment_;
   using StyleArray = protocol::Array<protocol::CSS::CSSStyle>;
 
   std::pair<bool, std::unique_ptr<StyleArray>>
@@ -115,11 +121,19 @@ class CSSAgentTest : public testing::Test {
     }
     return std::string();
   }
+
   int GetStyleSheetChangedCount(std::string stylesheet_id) {
     return frontend_channel_->CountProtocolNotificationMessage(
         "{\"method\":\"CSS.styleSheetChanged\",\"params\":{"
         "\"styleSheetId\":\"" +
         stylesheet_id + "\"}}");
+  }
+
+  std::pair<bool, std::string> GetSourceForElement() {
+    std::string output;
+    auto response = css_agent_->getStyleSheetText(
+        BuildStylesheetUId(element()->node_id(), 0), &output);
+    return {response.isSuccess(), output};
   }
 
   CSSAgent* css_agent() { return css_agent_.get(); }
@@ -156,6 +170,35 @@ TEST_F(CSSAgentTest, UnrecognizedValueFails) {
   element()->SetBounds(gfx::Rect(1, 2, 3, 4));
 
   auto result = SetStyle("visibility : banana", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+}
+
+TEST_F(CSSAgentTest, BadInputsFail) {
+  element()->SetVisible(true);
+  element()->SetBounds(gfx::Rect(1, 2, 3, 4));
+
+  // Input with no property name.
+  auto result = SetStyle(": 1;", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+
+  // Input with no property value.
+  result = SetStyle("visibility:", element()->node_id());
+  EXPECT_FALSE(result.first);
+  EXPECT_FALSE(result.second);
+  // Ensure element didn't change.
+  EXPECT_TRUE(element()->visible());
+  EXPECT_EQ(element()->bounds(), gfx::Rect(1, 2, 3, 4));
+
+  // Blank input.
+  result = SetStyle(":", element()->node_id());
   EXPECT_FALSE(result.first);
   EXPECT_FALSE(result.second);
   // Ensure element didn't change.
@@ -271,6 +314,26 @@ TEST_F(CSSAgentTest, UpdateOnBoundsChange) {
   css_agent()->OnElementBoundsChanged(&another_element);
   EXPECT_EQ(1, GetStyleSheetChangedCount(element_stylesheet_id));
   EXPECT_EQ(2, GetStyleSheetChangedCount(another_element_stylesheet_id));
+}
+
+TEST_F(CSSAgentTest, GetSource) {
+  // Tests CSSAgent::getStyleSheetText() with one source file.
+  std::string file = "components/test/data/ui_devtools/test_file.cc";
+  element()->AddSource(file, 0);
+  auto result = GetSourceForElement();
+
+  // Ensure that test_file.cc was read in correctly.
+  EXPECT_TRUE(result.first);
+  EXPECT_NE(std::string::npos,
+            result.second.find("This file is for testing GetSource."));
+}
+
+TEST_F(CSSAgentTest, BadPathFails) {
+  element()->AddSource("not/a/real/path", 0);
+  auto result = GetSourceForElement();
+
+  EXPECT_FALSE(result.first);
+  EXPECT_EQ(result.second, "");
 }
 
 }  // namespace ui_devtools

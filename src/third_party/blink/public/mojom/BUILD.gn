@@ -24,6 +24,7 @@ mojom("mojom_platform") {
     "background_fetch/background_fetch.mojom",
     "background_sync/background_sync.mojom",
     "badging/badging.mojom",
+    "browser_interface_broker.mojom",
     "cache_storage/cache_storage.mojom",
     "choosers/color_chooser.mojom",
     "choosers/date_time_chooser.mojom",
@@ -49,6 +50,7 @@ mojom("mojom_platform") {
     "filesystem/file_system.mojom",
     "frame/document_interface_broker.mojom",
     "frame/find_in_page.mojom",
+    "frame/frame.mojom",
     "frame/frame_host_test_interface.mojom",
     "frame/lifecycle.mojom",
     "frame/navigation_initiator.mojom",
@@ -82,7 +84,6 @@ mojom("mojom_platform") {
     "native_file_system/native_file_system_file_writer.mojom",
     "native_file_system/native_file_system_manager.mojom",
     "native_file_system/native_file_system_transfer_token.mojom",
-    "net/ip_address_space.mojom",
     "notifications/notification.mojom",
     "notifications/notification_service.mojom",
     "oom_intervention/oom_intervention.mojom",
@@ -102,6 +103,7 @@ mojom("mojom_platform") {
     "renderer_preference_watcher.mojom",
     "renderer_preferences.mojom",
     "reporting/reporting.mojom",
+    "screen_enumeration/screen_enumeration.mojom",
     "script/script_type.mojom",
     "selection_menu/selection_menu_behavior.mojom",
     "service_worker/controller_service_worker_mode.mojom",
@@ -122,8 +124,8 @@ mojom("mojom_platform") {
     "speech/speech_recognition_grammar.mojom",
     "speech/speech_recognition_result.mojom",
     "speech/speech_recognizer.mojom",
+    "speech/speech_synthesis.mojom",
     "ukm/ukm.mojom",
-    "use_counter/css_property_id.mojom",
     "user_agent/user_agent_metadata.mojom",
     "v8_cache_options.mojom",
     "wake_lock/wake_lock.mojom",
@@ -132,6 +134,7 @@ mojom("mojom_platform") {
     "webdatabase/web_database.mojom",
     "websockets/websocket_connector.mojom",
     "window_features/window_features.mojom",
+    "worker/dedicated_worker_host.mojom",
     "worker/shared_worker.mojom",
     "worker/shared_worker_client.mojom",
     "worker/shared_worker_connector.mojom",
@@ -164,12 +167,12 @@ mojom("mojom_platform") {
     "//services/network/public/mojom:data_pipe_interfaces",
     "//services/network/public/mojom:websocket_mojom",
     "//services/service_manager/public/mojom",
-    "//services/viz/public/interfaces",
-    "//skia/public/interfaces",
+    "//services/viz/public/mojom",
+    "//skia/public/mojom",
     "//third_party/blink/public/mojom/usb",
-    "//ui/base/ime/mojo",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
+    "//ui/base/ime/mojom",
+    "//ui/gfx/geometry/mojom",
+    "//ui/gfx/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -178,7 +181,7 @@ mojom("mojom_platform") {
   if (!is_ios) {
     public_deps += [
       "//media/capture/mojom:video_capture",
-      "//media/mojo/interfaces",
+      "//media/mojo/mojom",
     ]
   }
 
@@ -238,7 +241,7 @@ mojom("android_mojo_bindings") {
   # This Android unhandled-tap feature uses another mojo source, add it in.
   if (enable_unhandled_tap) {
     sources += [ "unhandled_tap_notifier/unhandled_tap_notifier.mojom" ]
-    public_deps += [ "//ui/gfx/geometry/mojo" ]
+    public_deps += [ "//ui/gfx/geometry/mojom" ]
   }
 
   export_class_attribute = "BLINK_COMMON_EXPORT"
@@ -263,6 +266,7 @@ mojom("android_mojo_bindings") {
 mojom("mojom_core") {
   sources = [
     "messaging/cloneable_message.mojom",
+    "messaging/message_port_descriptor.mojom",
     "messaging/transferable_message.mojom",
     "messaging/user_activation_snapshot.mojom",
     "portal/portal.mojom",
@@ -293,7 +297,7 @@ mojom("mojom_core") {
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -424,6 +428,7 @@ mojom("mojom_mhtml_load_result") {
 # dependencies.
 mojom_component("web_feature_mojo_bindings") {
   sources = [
+    "use_counter/css_property_id.mojom",
     "web_feature/web_feature.mojom",
   ]
 
@@ -450,7 +455,7 @@ mojom("embedded_frame_sink_mojo_bindings") {
     "frame_sinks/embedded_frame_sink.mojom",
   ]
   deps = [
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
   ]
 
   component_output_prefix = "blink_embedded_frame_sink_mojo_bindings"

@@ -17,8 +17,13 @@ namespace views {
 
 namespace {
 
+constexpr int kChildViewPadding = 5;
 constexpr gfx::Size kMinimumSize(40, 50);
 constexpr gfx::Size kPreferredSize(100, 90);
+constexpr gfx::Size kSquarishSize(10, 11);
+constexpr gfx::Size kLongSize(20, 8);
+constexpr gfx::Size kTallSize(4, 22);
+constexpr gfx::Size kLargeSize(30, 28);
 
 // Dummy class that minimally implements LayoutManagerBase for basic
 // functionality testing.
@@ -45,6 +50,61 @@ class TestLayoutManagerBase : public LayoutManagerBase {
                  size_bounds.height().value_or(kPreferredSize.height())));
     return layout;
   }
+};
+
+// This layout layout lays out included child views in the upper-left of the
+// host view with kChildViewPadding around them. Views that will not fit are
+// made invisible. Child views are expected to overlap as they all have the
+// same top-left corner.
+class MockLayoutManagerBase : public LayoutManagerBase {
+ public:
+  using LayoutManagerBase::AddOwnedLayout;
+  using LayoutManagerBase::InvalidateHost;
+
+  int num_invalidations() const { return num_invalidations_; }
+  int num_layouts_generated() const { return num_layouts_generated_; }
+
+  // LayoutManagerBase:
+  ProposedLayout CalculateProposedLayout(
+      const SizeBounds& size_bounds) const override {
+    ProposedLayout layout;
+    layout.host_size = {kChildViewPadding, kChildViewPadding};
+    for (auto it = host_view()->children().begin();
+         it != host_view()->children().end(); ++it) {
+      if (!IsChildIncludedInLayout(*it))
+        continue;
+      const gfx::Size preferred_size = (*it)->GetPreferredSize();
+      bool visible = false;
+      gfx::Rect bounds;
+      const int required_width = preferred_size.width() + 2 * kChildViewPadding;
+      const int required_height =
+          preferred_size.height() + 2 * kChildViewPadding;
+      if ((!size_bounds.width() || required_width <= *size_bounds.width()) &&
+          (!size_bounds.height() || required_height <= *size_bounds.height())) {
+        visible = true;
+        bounds = gfx::Rect(kChildViewPadding, kChildViewPadding,
+                           preferred_size.width(), preferred_size.height());
+        layout.host_size.set_width(std::max(
+            layout.host_size.width(), bounds.right() + kChildViewPadding));
+        layout.host_size.set_height(std::max(
+            layout.host_size.height(), bounds.bottom() + kChildViewPadding));
+      }
+      layout.child_layouts.push_back({*it, visible, bounds});
+    }
+    ++num_layouts_generated_;
+    return layout;
+  }
+
+  void OnLayoutChanged() override {
+    LayoutManagerBase::OnLayoutChanged();
+    ++num_invalidations_;
+  }
+
+  using LayoutManagerBase::ApplyLayout;
+
+ private:
+  mutable int num_layouts_generated_ = 0;
+  mutable int num_invalidations_ = 0;
 };
 
 void ExpectSameViews(const std::vector<const View*>& expected,
@@ -75,12 +135,13 @@ TEST(LayoutManagerBaseTest, GetPreferredHeightForWidth) {
 }
 
 TEST(LayoutManagerBaseTest, Installed) {
-  TestLayoutManagerBase layout;
-  EXPECT_EQ(nullptr, layout.host_view());
+  auto layout_ptr = std::make_unique<TestLayoutManagerBase>();
+  LayoutManagerBase* layout = layout_ptr.get();
+  EXPECT_EQ(nullptr, layout->host_view());
 
   View view;
-  layout.Installed(&view);
-  EXPECT_EQ(&view, layout.host_view());
+  view.SetLayoutManager(std::move(layout_ptr));
+  EXPECT_EQ(&view, layout->host_view());
 }
 
 TEST(LayoutManagerBaseTest, SetChildIncludedInLayout) {
@@ -89,98 +150,159 @@ TEST(LayoutManagerBaseTest, SetChildIncludedInLayout) {
   View* const child2 = view.AddChildView(std::make_unique<View>());
   View* const child3 = view.AddChildView(std::make_unique<View>());
 
-  TestLayoutManagerBase layout;
-  layout.Installed(&view);
+  auto layout_ptr = std::make_unique<TestLayoutManagerBase>();
+  TestLayoutManagerBase* layout = layout_ptr.get();
+  view.SetLayoutManager(std::move(layout_ptr));
 
   // All views should be present.
-  ExpectSameViews({child1, child2, child3}, layout.GetIncludedChildViews());
+  ExpectSameViews({child1, child2, child3}, layout->GetIncludedChildViews());
 
   // Remove one.
-  layout.SetChildViewIgnoredByLayout(child2, true);
-  ExpectSameViews({child1, child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child2, true);
+  ExpectSameViews({child1, child3}, layout->GetIncludedChildViews());
 
   // Remove another.
-  layout.SetChildViewIgnoredByLayout(child1, true);
-  ExpectSameViews({child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child1, true);
+  ExpectSameViews({child3}, layout->GetIncludedChildViews());
 
   // Removing it again should have no effect.
-  layout.SetChildViewIgnoredByLayout(child1, true);
-  ExpectSameViews({child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child1, true);
+  ExpectSameViews({child3}, layout->GetIncludedChildViews());
 
   // Add one back.
-  layout.SetChildViewIgnoredByLayout(child1, false);
-  ExpectSameViews({child1, child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child1, false);
+  ExpectSameViews({child1, child3}, layout->GetIncludedChildViews());
 
   // Adding it back again should have no effect.
-  layout.SetChildViewIgnoredByLayout(child1, false);
-  ExpectSameViews({child1, child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child1, false);
+  ExpectSameViews({child1, child3}, layout->GetIncludedChildViews());
 
   // Add the other view back.
-  layout.SetChildViewIgnoredByLayout(child2, false);
-  ExpectSameViews({child1, child2, child3}, layout.GetIncludedChildViews());
+  layout->SetChildViewIgnoredByLayout(child2, false);
+  ExpectSameViews({child1, child2, child3}, layout->GetIncludedChildViews());
+}
+
+TEST(LayoutManagerBaseTest, InvalidateHost_NotInstalled) {
+  MockLayoutManagerBase root_layout;
+  MockLayoutManagerBase* const child1 =
+      root_layout.AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+  MockLayoutManagerBase* const child2 =
+      root_layout.AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+  MockLayoutManagerBase* const grandchild =
+      child1->AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+
+  root_layout.InvalidateHost(false);
+  EXPECT_EQ(0, root_layout.num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  child1->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout.num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  child2->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout.num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  grandchild->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout.num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  root_layout.InvalidateHost(true);
+  EXPECT_EQ(1, root_layout.num_invalidations());
+  EXPECT_EQ(1, child1->num_invalidations());
+  EXPECT_EQ(1, child2->num_invalidations());
+  EXPECT_EQ(1, grandchild->num_invalidations());
+
+  child1->InvalidateHost(true);
+  EXPECT_EQ(2, root_layout.num_invalidations());
+  EXPECT_EQ(2, child1->num_invalidations());
+  EXPECT_EQ(2, child2->num_invalidations());
+  EXPECT_EQ(2, grandchild->num_invalidations());
+
+  child2->InvalidateHost(true);
+  EXPECT_EQ(3, root_layout.num_invalidations());
+  EXPECT_EQ(3, child1->num_invalidations());
+  EXPECT_EQ(3, child2->num_invalidations());
+  EXPECT_EQ(3, grandchild->num_invalidations());
+
+  grandchild->InvalidateHost(true);
+  EXPECT_EQ(4, root_layout.num_invalidations());
+  EXPECT_EQ(4, child1->num_invalidations());
+  EXPECT_EQ(4, child2->num_invalidations());
+  EXPECT_EQ(4, grandchild->num_invalidations());
+}
+
+TEST(LayoutManagerBaseTest, InvalidateHost_Installed) {
+  View view;
+  MockLayoutManagerBase* const root_layout =
+      view.SetLayoutManager(std::make_unique<MockLayoutManagerBase>());
+  MockLayoutManagerBase* const child1 =
+      root_layout->AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+  MockLayoutManagerBase* const child2 =
+      root_layout->AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+  MockLayoutManagerBase* const grandchild =
+      child1->AddOwnedLayout(std::make_unique<MockLayoutManagerBase>());
+
+  root_layout->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout->num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  child1->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout->num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  child2->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout->num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  grandchild->InvalidateHost(false);
+  EXPECT_EQ(0, root_layout->num_invalidations());
+  EXPECT_EQ(0, child1->num_invalidations());
+  EXPECT_EQ(0, child2->num_invalidations());
+  EXPECT_EQ(0, grandchild->num_invalidations());
+
+  root_layout->InvalidateHost(true);
+  EXPECT_EQ(1, root_layout->num_invalidations());
+  EXPECT_EQ(1, child1->num_invalidations());
+  EXPECT_EQ(1, child2->num_invalidations());
+  EXPECT_EQ(1, grandchild->num_invalidations());
+
+  child1->InvalidateHost(true);
+  EXPECT_EQ(2, root_layout->num_invalidations());
+  EXPECT_EQ(2, child1->num_invalidations());
+  EXPECT_EQ(2, child2->num_invalidations());
+  EXPECT_EQ(2, grandchild->num_invalidations());
+
+  child2->InvalidateHost(true);
+  EXPECT_EQ(3, root_layout->num_invalidations());
+  EXPECT_EQ(3, child1->num_invalidations());
+  EXPECT_EQ(3, child2->num_invalidations());
+  EXPECT_EQ(3, grandchild->num_invalidations());
+
+  grandchild->InvalidateHost(true);
+  EXPECT_EQ(4, root_layout->num_invalidations());
+  EXPECT_EQ(4, child1->num_invalidations());
+  EXPECT_EQ(4, child2->num_invalidations());
+  EXPECT_EQ(4, grandchild->num_invalidations());
 }
 
 // Test LayoutManager functionality of LayoutManagerBase:
 
 namespace {
-
-constexpr int kChildViewPadding = 5;
-constexpr gfx::Size kSquarishSize(10, 11);
-constexpr gfx::Size kLongSize(20, 8);
-constexpr gfx::Size kTallSize(4, 22);
-constexpr gfx::Size kLargeSize(30, 28);
-
-// This layout layout lays out included child views in the upper-left of the
-// host view with kChildViewPadding around them. Views that will not fit are
-// made invisible. Child views are expected to overlap as they all have the
-// same top-left corner.
-class MockLayoutManagerBase : public LayoutManagerBase {
- public:
-  int num_invalidations() const { return num_invalidations_; }
-  int num_layouts_generated() const { return num_layouts_generated_; }
-
-  // LayoutManagerBase:
-  ProposedLayout CalculateProposedLayout(
-      const SizeBounds& size_bounds) const override {
-    ProposedLayout layout;
-    layout.host_size = {kChildViewPadding, kChildViewPadding};
-    for (auto it = host_view()->children().begin();
-         it != host_view()->children().end(); ++it) {
-      if (!IsChildIncludedInLayout(*it))
-        continue;
-      const gfx::Size preferred_size = (*it)->GetPreferredSize();
-      bool visible = false;
-      gfx::Rect bounds;
-      const int required_width = preferred_size.width() + 2 * kChildViewPadding;
-      const int required_height =
-          preferred_size.height() + 2 * kChildViewPadding;
-      if ((!size_bounds.width() || required_width <= *size_bounds.width()) &&
-          (!size_bounds.height() || required_height <= *size_bounds.height())) {
-        visible = true;
-        bounds = gfx::Rect(kChildViewPadding, kChildViewPadding,
-                           preferred_size.width(), preferred_size.height());
-        layout.host_size.set_width(std::max(
-            layout.host_size.width(), bounds.right() + kChildViewPadding));
-        layout.host_size.set_height(std::max(
-            layout.host_size.height(), bounds.bottom() + kChildViewPadding));
-      }
-      layout.child_layouts.push_back({*it, bounds, visible});
-    }
-    ++num_layouts_generated_;
-    return layout;
-  }
-
-  void InvalidateLayout() override {
-    LayoutManagerBase::InvalidateLayout();
-    ++num_invalidations_;
-  }
-
-  using LayoutManagerBase::ApplyLayout;
-
- private:
-  mutable int num_layouts_generated_ = 0;
-  mutable int num_invalidations_ = 0;
-};
 
 // Base for tests that evaluate the LayoutManager functionality of
 // LayoutManagerBase (rather than the LayoutManagerBase-specific behavior).
@@ -225,12 +347,9 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout) {
   // Set the child visibility and bounds.
   constexpr gfx::Rect kChild1Bounds(3, 4, 10, 15);
   constexpr gfx::Rect kChild3Bounds(20, 21, 12, 14);
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(0), kChild1Bounds, true});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(1), gfx::Rect(), false});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(2), kChild3Bounds, true});
+  layout.child_layouts.push_back({child(0), true, kChild1Bounds});
+  layout.child_layouts.push_back({child(1), false});
+  layout.child_layouts.push_back({child(2), true, kChild3Bounds});
 
   layout_manager()->ApplyLayout(layout);
 
@@ -251,10 +370,8 @@ TEST_F(LayoutManagerBaseManagerTest, ApplyLayout_SkipsOmittedViews) {
   // Set the child visibility and bounds.
   constexpr gfx::Rect kChild1Bounds(3, 4, 10, 15);
   constexpr gfx::Rect kChild2Bounds(1, 2, 3, 4);
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(0), kChild1Bounds, true});
-  layout.child_layouts.push_back(
-      LayoutManagerBase::ChildLayout{child(2), gfx::Rect(), false});
+  layout.child_layouts.push_back({child(0), true, kChild1Bounds});
+  layout.child_layouts.push_back({child(2), false});
 
   // We'll set the second child separately.
   child(1)->SetVisible(true);
@@ -474,6 +591,41 @@ TEST_F(LayoutManagerBaseManagerTest, ViewRemoved) {
 
   // Required since we removed it from the parent view.
   delete child_view;
+}
+
+TEST(LayoutManagerBase_ProposedLayoutTest, Equality) {
+  View* ptr0 = nullptr;
+  View* ptr1 = ptr0 + 1;
+  View* ptr2 = ptr0 + 2;
+  using ProposedLayout = LayoutManagerBase::ProposedLayout;
+  ProposedLayout a;
+  ProposedLayout b;
+  EXPECT_TRUE(a == b);
+  a.host_size = {1, 2};
+  EXPECT_FALSE(a == b);
+  b.host_size = {1, 2};
+  EXPECT_TRUE(a == b);
+  a.child_layouts.push_back({ptr0, true, {1, 1, 2, 2}});
+  EXPECT_FALSE(a == b);
+  b.child_layouts.push_back(a.child_layouts[0]);
+  EXPECT_TRUE(a == b);
+  a.child_layouts[0].visible = false;
+  EXPECT_FALSE(a == b);
+  b.child_layouts[0].visible = false;
+  EXPECT_TRUE(a == b);
+  b.child_layouts[0].bounds = {0, 0, 3, 3};
+  // Since |visible| == false, changing bounds doesn't change anything.
+  EXPECT_TRUE(a == b);
+  a.child_layouts[0].visible = true;
+  b.child_layouts[0].visible = true;
+  EXPECT_FALSE(a == b);
+  a.child_layouts[0].visible = false;
+  b.child_layouts[0].visible = false;
+  a.child_layouts.push_back({ptr1, true, {1, 2, 3, 4}});
+  b.child_layouts.push_back({ptr2, true, {1, 2, 3, 4}});
+  EXPECT_FALSE(a == b);
+  b.child_layouts[1].child_view = ptr1;
+  EXPECT_TRUE(a == b);
 }
 
 }  // namespace views

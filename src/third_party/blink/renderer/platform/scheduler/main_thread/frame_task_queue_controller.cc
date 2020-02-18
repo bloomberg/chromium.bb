@@ -14,6 +14,8 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/frame_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/web_scheduling_task_queue_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/public/web_scheduling_priority.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -37,80 +39,18 @@ FrameTaskQueueController::FrameTaskQueueController(
 FrameTaskQueueController::~FrameTaskQueueController() = default;
 
 scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::LoadingTaskQueue() {
-  if (!loading_task_queue_)
-    CreateLoadingTaskQueue();
-  DCHECK(loading_task_queue_);
-  return loading_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::LoadingControlTaskQueue() {
-  if (!loading_control_task_queue_)
-    CreateLoadingControlTaskQueue();
-  DCHECK(loading_control_task_queue_);
-  return loading_control_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::BestEffortTaskQueue() {
-  if (!best_effort_task_queue_) {
-    best_effort_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
-        MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kIdle)
-            .SetFrameScheduler(frame_scheduler_impl_)
-            .SetFixedPriority(TaskQueue::QueuePriority::kBestEffortPriority));
-    TaskQueueCreated(best_effort_task_queue_);
-  }
-  return best_effort_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::VeryHighPriorityTaskQueue() {
-  if (!very_high_priority_task_queue_) {
-    very_high_priority_task_queue_ = main_thread_scheduler_impl_->NewTaskQueue(
-        MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kDefault)
-            .SetFixedPriority(TaskQueue::QueuePriority::kVeryHighPriority));
-  }
-  return very_high_priority_task_queue_;
-}
-
-scoped_refptr<MainThreadTaskQueue>
-FrameTaskQueueController::NonLoadingTaskQueue(
+FrameTaskQueueController::GetTaskQueue(
     MainThreadTaskQueue::QueueTraits queue_traits) {
-  if (!non_loading_task_queues_.Contains(queue_traits.Key()))
-    CreateNonLoadingTaskQueue(queue_traits);
-  auto it = non_loading_task_queues_.find(queue_traits.Key());
-  DCHECK(it != non_loading_task_queues_.end());
+  if (!task_queues_.Contains(queue_traits.Key()))
+    CreateTaskQueue(queue_traits);
+  auto it = task_queues_.find(queue_traits.Key());
+  DCHECK(it != task_queues_.end());
   return it->value;
 }
 
 const Vector<FrameTaskQueueController::TaskQueueAndEnabledVoterPair>&
 FrameTaskQueueController::GetAllTaskQueuesAndVoters() const {
   return all_task_queues_and_voters_;
-}
-
-void FrameTaskQueueController::CreateLoadingTaskQueue() {
-  DCHECK(!loading_task_queue_);
-  // |main_thread_scheduler_impl_| can be null in unit tests.
-  DCHECK(main_thread_scheduler_impl_);
-
-  loading_task_queue_ = main_thread_scheduler_impl_->NewLoadingTaskQueue(
-      MainThreadTaskQueue::QueueType::kFrameLoading, frame_scheduler_impl_);
-  TaskQueueCreated(loading_task_queue_);
-}
-
-void FrameTaskQueueController::CreateLoadingControlTaskQueue() {
-  DCHECK(!loading_control_task_queue_);
-  // |main_thread_scheduler_impl_| can be null in unit tests.
-  DCHECK(main_thread_scheduler_impl_);
-
-  loading_control_task_queue_ =
-      main_thread_scheduler_impl_->NewLoadingTaskQueue(
-          MainThreadTaskQueue::QueueType::kFrameLoadingControl,
-          frame_scheduler_impl_);
-  TaskQueueCreated(loading_control_task_queue_);
 }
 
 scoped_refptr<MainThreadTaskQueue>
@@ -123,9 +63,27 @@ FrameTaskQueueController::NewResourceLoadingTaskQueue() {
   return task_queue;
 }
 
-void FrameTaskQueueController::CreateNonLoadingTaskQueue(
+scoped_refptr<MainThreadTaskQueue>
+FrameTaskQueueController::NewWebSchedulingTaskQueue(
+    QueueTraits queue_traits,
+    WebSchedulingPriority priority) {
+  // Note: we only track this |task_queue| in |all_task_queues_and_voters_|.
+  // It's interacted with through the WebSchedulingTaskQueueImpl that
+  // will wrap it, rather than through this class like other task queues.
+  scoped_refptr<MainThreadTaskQueue> task_queue =
+      main_thread_scheduler_impl_->NewTaskQueue(
+          MainThreadTaskQueue::QueueCreationParams(
+              MainThreadTaskQueue::QueueType::kWebScheduling)
+              .SetQueueTraits(queue_traits)
+              .SetWebSchedulingPriority(priority)
+              .SetFrameScheduler(frame_scheduler_impl_));
+  TaskQueueCreated(task_queue);
+  return task_queue;
+}
+
+void FrameTaskQueueController::CreateTaskQueue(
     QueueTraits queue_traits) {
-  DCHECK(!non_loading_task_queues_.Contains(queue_traits.Key()));
+  DCHECK(!task_queues_.Contains(queue_traits.Key()));
   // |main_thread_scheduler_impl_| can be null in unit tests.
   DCHECK(main_thread_scheduler_impl_);
 
@@ -144,15 +102,27 @@ void FrameTaskQueueController::CreateNonLoadingTaskQueue(
           .SetFreezeWhenKeepActive(queue_traits.can_be_throttled)
           .SetFrameScheduler(frame_scheduler_impl_);
 
-  if (queue_traits.is_high_priority) {
-    queue_creation_params = queue_creation_params.SetFixedPriority(
+  switch (queue_traits.prioritisation_type) {
+    case QueueTraits::PrioritisationType::kVeryHigh:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
+        TaskQueue::QueuePriority::kVeryHighPriority);
+      break;
+    case QueueTraits::PrioritisationType::kHigh:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
         TaskQueue::QueuePriority::kHighPriority);
+      break;
+    case QueueTraits::PrioritisationType::kBestEffort:
+      queue_creation_params = queue_creation_params.SetFixedPriority(
+        TaskQueue::QueuePriority::kBestEffortPriority);
+      break;
+    default:
+      break;
   }
 
   scoped_refptr<MainThreadTaskQueue> task_queue =
       main_thread_scheduler_impl_->NewTaskQueue(queue_creation_params);
   TaskQueueCreated(task_queue);
-  non_loading_task_queues_.insert(queue_traits.Key(), task_queue);
+  task_queues_.insert(queue_traits.Key(), task_queue);
 }
 
 void FrameTaskQueueController::TaskQueueCreated(
@@ -210,16 +180,8 @@ bool FrameTaskQueueController::RemoveResourceLoadingTaskQueue(
 
 void FrameTaskQueueController::AsValueInto(
     base::trace_event::TracedValue* state) const {
-  if (loading_task_queue_) {
-    state->SetString("loading_task_queue",
-                     PointerToString(loading_task_queue_.get()));
-  }
-  if (loading_control_task_queue_) {
-    state->SetString("loading_control_task_queue",
-                     PointerToString(loading_control_task_queue_.get()));
-  }
-  state->BeginArray("non_loading_task_queues");
-  for (const auto it : non_loading_task_queues_) {
+  state->BeginArray("task_queues");
+  for (const auto it : task_queues_) {
     state->AppendString(PointerToString(it.value.get()));
   }
   state->EndArray();
@@ -234,6 +196,14 @@ void FrameTaskQueueController::AsValueInto(
 // static
 MainThreadTaskQueue::QueueType
 FrameTaskQueueController::QueueTypeFromQueueTraits(QueueTraits queue_traits) {
+  // Order matters here, the priority decisions need to be at the top since
+  // loading/loading control TQs set some of these other bits.
+  if (queue_traits.prioritisation_type ==
+      QueueTraits::PrioritisationType::kLoading)
+    return MainThreadTaskQueue::QueueType::kFrameLoading;
+  if (queue_traits.prioritisation_type ==
+      QueueTraits::PrioritisationType::kLoadingControl)
+    return MainThreadTaskQueue::QueueType::kFrameLoadingControl;
   if (queue_traits.can_be_throttled)
     return MainThreadTaskQueue::QueueType::kFrameThrottleable;
   if (queue_traits.can_be_deferred)

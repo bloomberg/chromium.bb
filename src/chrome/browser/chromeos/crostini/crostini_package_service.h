@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "storage/browser/fileapi/file_system_url.h"
 
 namespace crostini {
 
@@ -53,16 +54,8 @@ class CrostiniPackageService : public KeyedService,
   void GetLinuxPackageInfo(
       const std::string& vm_name,
       const std::string& container_name,
-      const std::string& package_path,
+      const storage::FileSystemURL& package_url,
       CrostiniManager::GetLinuxPackageInfoCallback callback);
-
-  // Install a Linux package. If successfully started, a system notification
-  // will be used to display further updates.
-  void InstallLinuxPackage(
-      const std::string& vm_name,
-      const std::string& container_name,
-      const std::string& package_path,
-      CrostiniManager::InstallLinuxPackageCallback callback);
 
   // LinuxPackageOperationProgressObserver:
   void OnInstallLinuxPackageProgress(const std::string& vm_name,
@@ -83,17 +76,27 @@ class CrostiniPackageService : public KeyedService,
   // VmShutdownObserver
   void OnVmShutdown(const std::string& vm_name) override;
 
+  // (Eventually) install a Linux package. If successfully started, a system
+  // notification will be used to display further updates.
+  void QueueInstallLinuxPackage(
+      const std::string& vm_name,
+      const std::string& container_name,
+      const storage::FileSystemURL& package_url,
+      CrostiniManager::InstallLinuxPackageCallback callback);
+
   // (Eventually) uninstall the package identified by |app_id|. If successfully
   // started, a system notification will be used to display further updates.
   void QueueUninstallApplication(const std::string& app_id);
 
  private:
-  // The user can request new uninstalls while a different operation is in
+  // The user can request new operations while a different operation is in
   // progress. Rather than sending a request which will fail, just queue the
   // request until the previous one is done.
+  struct QueuedInstall;
   struct QueuedUninstall;
 
   bool ContainerHasRunningOperation(const ContainerId& container_id) const;
+  bool ContainerHasQueuedOperation(const ContainerId& container_id) const;
 
   // Creates a new notification and adds it to running_notifications_.
   // |app_name| is the name of the application being modified, if any -- for
@@ -111,6 +114,12 @@ class CrostiniPackageService : public KeyedService,
                              const std::string& app_id,
                              const std::string& app_name);
 
+  // Creates a new install notification and adds it to queued_installs_.
+  void CreateQueuedInstall(
+      const ContainerId& container_id,
+      const std::string& package,
+      CrostiniManager::InstallLinuxPackageCallback callback);
+
   // Sets the operation status of the current operation. Sets the notification
   // window's current state and updates containers_with_running_operations_.
   // Note that if status is |SUCCEEDED| or |FAILED|, this may kick off another
@@ -118,6 +127,16 @@ class CrostiniPackageService : public KeyedService,
   void UpdatePackageOperationStatus(const ContainerId& container_id,
                                     PackageOperationStatus status,
                                     int progress_percent);
+
+  // Callback between sharing and invoking GetLinuxPackageInfo().
+  void OnSharePathForGetLinuxPackageInfo(
+      const std::string& vm_name,
+      const std::string& container_name,
+      const storage::FileSystemURL& package_url,
+      const base::FilePath& package_path,
+      CrostiniManager::GetLinuxPackageInfoCallback callback,
+      bool share_success,
+      const std::string& share_failure_reason);
 
   // Wraps the callback provided in GetLinuxPackageInfo().
   void OnGetLinuxPackageInfo(
@@ -135,7 +154,7 @@ class CrostiniPackageService : public KeyedService,
 
   // Kicks off an uninstall of the given app. Never queues the operation. Helper
   // for QueueUninstallApplication (if the operation can be performed
-  // immediately) and StartQueuedUninstall.
+  // immediately) and StartQueuedOperation.
   void UninstallApplication(
       const CrostiniRegistryService::Registration& registration,
       const std::string& app_id);
@@ -151,7 +170,7 @@ class CrostiniPackageService : public KeyedService,
                                     CrostiniResult result);
 
   // Kick off the next operation in the queue for the given container.
-  void StartQueuedUninstall(const ContainerId& container_id);
+  void StartQueuedOperation(const ContainerId& container_id);
 
   std::string GetUniqueNotificationId();
 
@@ -161,12 +180,10 @@ class CrostiniPackageService : public KeyedService,
   std::map<ContainerId, std::unique_ptr<CrostiniPackageNotification>>
       running_notifications_;
 
-  // Containers that have an install waiting for its initial response. We don't
-  // display notifications for these, but they still need to cause uninstalls
-  // to queue.
-  std::set<ContainerId> containers_with_pending_installs_;
+  // Installs we want to run when the current operation is done.
+  std::map<ContainerId, std::queue<QueuedInstall>> queued_installs_;
 
-  // Uninstalls we want to run when the current one is done.
+  // Uninstalls we want to run when the current operation is done.
   std::map<ContainerId, std::queue<QueuedUninstall>> queued_uninstalls_;
 
   // Notifications in a finished state (either SUCCEEDED or FAILED). We need
@@ -185,7 +202,7 @@ class CrostiniPackageService : public KeyedService,
 
   int next_notification_id_ = 0;
 
-  base::WeakPtrFactory<CrostiniPackageService> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniPackageService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniPackageService);
 };

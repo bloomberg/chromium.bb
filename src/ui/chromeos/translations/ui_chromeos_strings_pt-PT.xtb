@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Resolução da imagem</translation>
 <translation id="1943097386230153518">Instalar novo serviço</translation>
 <translation id="1947424002851288782">Teclado alemão</translation>
+<translation id="1972984168337863910">Expandir painéis de comentários dos ficheiros</translation>
 <translation id="197560921582345123">Pode editar</translation>
 <translation id="1984603991036629094">Teclado fonético em arménio</translation>
 <translation id="2001796770603320721">Gerir no Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Tem de estar online para aceder a este ficheiro.</translation>
 <translation id="4212740939091998969">A pasta com o nome "<ph name="FOLDER_NAME" />" já existe. Escolha um nome diferente.</translation>
 <translation id="4215448920900139318">A fazer uma cópia de segurança de <ph name="FILE_COUNT" />...</translation>
-<translation id="4242533952199664413">Abrir definições</translation>
 <translation id="426015154560005552">Teclado árabe</translation>
 <translation id="4261901459838235729">Apresentação do Google</translation>
 <translation id="4290535918735525311">1 pasta partilhada com o Linux.</translation>
-<translation id="42981349822642051">Expandir</translation>
 <translation id="4298972503445160211">Teclado dinamarquês</translation>
 <translation id="4299729908419173967">Português (Brasil)</translation>
 <translation id="4309915981827077375">Informação geral</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Correção automática</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4886021172213954916">Teclado tâmil (máquina de escrever)</translation>
-<translation id="4892969127351273348">Não é possível abrir com a aplicação <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Pronto para fazer uma cópia de segurança de <ph name="FILE_COUNT" />.</translation>
 <translation id="4924638091161556692">Corrigida</translation>
 <translation id="4935975195727477204">Flor</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Francês suíço</translation>
 <translation id="5234764350956374838">Ignorar</translation>
 <translation id="5241298539944515331">Teclado vietnamita (VIQR)</translation>
-<translation id="52446585071384036">Para abrir ficheiros com a aplicação <ph name="APP_NAME" />, copie primeiro para a pasta de ficheiros do Linux.</translation>
 <translation id="5253070652067921974">Criado por</translation>
 <translation id="5257456363153333584">Libélula</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Aceda a ficheiros a partir de qualquer local, mesmo offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Coreano</translation>
 <translation id="5819442873484330149">Hangul 3 Set (final)</translation>
 <translation id="5833610766403489739">Este ficheiro está perdido algures. Verifique a definição da sua localização de transferências e tente novamente.</translation>
-<translation id="5838051104334203064">As aplicações da Play Store não podem aceder a este dispositivo</translation>
 <translation id="5838451609423551646">Removeu todas as entradas da seleção.</translation>
 <translation id="5838825566232597749">Workman internacional dos EUA</translation>
 <translation id="5850516540536751549">Este tipo de ficheiro não é suportado. Visite a <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> para encontrar uma aplicação que consiga abrir este tipo de ficheiro.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Para guardar estes ficheiros para utilização offline, ligue-se novamente à Internet, clique com o botão direito do rato nos ficheiros e selecione a opção <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Abortar</translation>
 <translation id="8261506727792406068">Eliminar</translation>
+<translation id="8269755669432358899">Reduzir painéis de comentários dos ficheiros</translation>
 <translation id="8279388322240498158">Teclado curdo sorani baseado no inglês</translation>
 <translation id="8280151743281770066">Fonético arménio</translation>
 <translation id="8294431847097064396">Origem</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Selecione um ficheiro para abrir</translation>
 <translation id="8579285237314169903">A sincronizar <ph name="NUMBER_OF_FILES" /> itens...</translation>
 <translation id="8600173386174225982">A lista de ficheiros foi alterada para a vista de miniatura.</translation>
+<translation id="8601932370724196034">Ficheiro de imagem do Crostini</translation>
 <translation id="8669949407341943408">A mover...</translation>
 <translation id="8671210955687109937">Pode comentar</translation>
 <translation id="8686213429977032554">Este ficheiro do Google Drive ainda não foi partilhado</translation>

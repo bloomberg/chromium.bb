@@ -15,11 +15,10 @@
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/quic/platform/impl/quic_export_impl.h"
 
 namespace quic {
-
-typedef uint64_t QuicRoundTripCount;
 
 template <typename T>
 class QUIC_EXPORT_PRIVATE Limits {
@@ -88,7 +87,8 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   QuicRoundTripCount startup_full_bw_rounds = 3;
 
   // The minimum number of loss marking events to exit STARTUP.
-  int64_t startup_full_loss_count = 8;
+  int64_t startup_full_loss_count =
+      GetQuicFlag(FLAGS_quic_bbr2_default_startup_full_loss_count);
 
   /*
    * DRAIN parameters.
@@ -111,11 +111,13 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
 
   // Minimum duration for BBR-native probes.
   QuicTime::Delta probe_bw_probe_base_duration =
-      QuicTime::Delta::FromSeconds(2);
+      QuicTime::Delta::FromMilliseconds(
+          GetQuicFlag(FLAGS_quic_bbr2_default_probe_bw_base_duration_ms));
 
-  // The upper bound of the random amound of BBR-native probes.
+  // The upper bound of the random amount of BBR-native probes.
   QuicTime::Delta probe_bw_probe_max_rand_duration =
-      QuicTime::Delta::FromSeconds(1);
+      QuicTime::Delta::FromMilliseconds(
+          GetQuicFlag(FLAGS_quic_bbr2_default_probe_bw_max_rand_duration_ms));
 
   // Multiplier to get target inflight (as multiple of BDP) for PROBE_UP phase.
   float probe_bw_probe_inflight_gain = 1.25;
@@ -131,6 +133,8 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
    * PROBE_RTT parameters.
    */
   float probe_rtt_inflight_target_bdp_fraction = 0.5;
+  QuicTime::Delta probe_rtt_period = QuicTime::Delta::FromMilliseconds(
+      GetQuicFlag(FLAGS_quic_bbr2_default_probe_rtt_period_ms));
   QuicTime::Delta probe_rtt_duration = QuicTime::Delta::FromMilliseconds(200);
 
   /*
@@ -144,7 +148,7 @@ struct QUIC_EXPORT_PRIVATE Bbr2Params {
   float inflight_hi_headroom = 0.15;
 
   // Estimate startup/bw probing has gone too far if loss rate exceeds this.
-  float loss_threshold = 0.02;
+  float loss_threshold = GetQuicFlag(FLAGS_quic_bbr2_default_loss_threshold);
 
   Limits<QuicByteCount> cwnd_limits;
 };
@@ -267,32 +271,6 @@ struct QUIC_EXPORT_PRIVATE Bbr2CongestionEvent {
 QUIC_EXPORT_PRIVATE const SendTimeState& SendStateOfLargestPacket(
     const Bbr2CongestionEvent& congestion_event);
 
-class QUIC_EXPORT_PRIVATE Bbr2MaxAckHeightTracker {
- public:
-  explicit Bbr2MaxAckHeightTracker(QuicRoundTripCount initial_filter_window)
-      : max_ack_height_filter_(initial_filter_window, 0, 0) {}
-
-  QuicByteCount Get() const { return max_ack_height_filter_.GetBest(); }
-
-  QuicByteCount Update(const QuicBandwidth& bandwidth_estimate,
-                       QuicRoundTripCount round_trip_count,
-                       QuicTime ack_time,
-                       QuicByteCount bytes_acked);
-
- private:
-  // Tracks the maximum number of bytes acked faster than the sending rate.
-  typedef WindowedFilter<QuicByteCount,
-                         MaxFilter<QuicByteCount>,
-                         QuicRoundTripCount,
-                         QuicRoundTripCount>
-      MaxAckHeightFilter;
-  MaxAckHeightFilter max_ack_height_filter_;
-
-  // The time this aggregation started and the number of bytes acked during it.
-  QuicTime aggregation_epoch_start_time_ = QuicTime::Zero();
-  QuicByteCount aggregation_epoch_bytes_ = 0;
-};
-
 // Bbr2NetworkModel takes low level congestion signals(packets sent/acked/lost)
 // as input and produces BBRv2 model parameters like inflight_(hi|lo),
 // bandwidth_(hi|lo), bandwidth and rtt estimates, etc.
@@ -348,7 +326,9 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
 
   QuicBandwidth MaxBandwidth() const { return max_bandwidth_filter_.Get(); }
 
-  QuicByteCount MaxAckHeight() const { return max_ack_height_tracker_.Get(); }
+  QuicByteCount MaxAckHeight() const {
+    return bandwidth_sampler_.max_ack_height();
+  }
 
   bool MaybeExpireMinRtt(const Bbr2CongestionEvent& congestion_event);
 
@@ -427,8 +407,6 @@ class QUIC_EXPORT_PRIVATE Bbr2NetworkModel {
   // trips.
   Bbr2MaxBandwidthFilter max_bandwidth_filter_;
   MinRttFilter min_rtt_filter_;
-
-  Bbr2MaxAckHeightTracker max_ack_height_tracker_;
 
   // Bytes lost in the current round. Updated once per congestion event.
   QuicByteCount bytes_lost_in_round_ = 0;

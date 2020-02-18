@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/module_record.h"
 
+#include "third_party/blink/renderer/bindings/core/v8/boxed_v8_module.h"
 #include "third_party/blink/renderer/bindings/core/v8/referrer_script_info.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_script_runner.h"
@@ -41,20 +42,7 @@ void ModuleRecordProduceCacheData::Trace(blink::Visitor* visitor) {
   visitor->Trace(unbound_script_.UnsafeCast<v8::Value>());
 }
 
-ModuleRecord::ModuleRecord() = default;
-
-ModuleRecord::ModuleRecord(v8::Isolate* isolate,
-                           v8::Local<v8::Module> module,
-                           const KURL& source_url)
-    : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
-      identity_hash_(static_cast<unsigned>(module->GetIdentityHash())),
-      source_url_(source_url.GetString()) {
-  DCHECK(!module_->IsEmpty());
-}
-
-ModuleRecord::~ModuleRecord() = default;
-
-ModuleRecord ModuleRecord::Compile(
+v8::Local<v8::Module> ModuleRecord::Compile(
     v8::Isolate* isolate,
     const String& source,
     const KURL& source_url,
@@ -90,7 +78,7 @@ ModuleRecord ModuleRecord::Compile(
            .ToLocal(&module)) {
     DCHECK(try_catch.HasCaught());
     exception_state.RethrowV8Exception(try_catch.Exception());
-    return ModuleRecord();
+    return v8::Local<v8::Module>();
   }
   DCHECK(!try_catch.HasCaught());
 
@@ -100,20 +88,22 @@ ModuleRecord ModuleRecord::Compile(
             isolate, cache_handler, produce_cache_options, module);
   }
 
-  return ModuleRecord(isolate, module, source_url);
+  return module;
 }
 
-ScriptValue ModuleRecord::Instantiate(ScriptState* script_state) {
+ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
+                                      v8::Local<v8::Module> record,
+
+                                      const KURL& source_url) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::TryCatch try_catch(isolate);
   try_catch.SetVerbose(true);
 
-  DCHECK(!IsNull());
+  DCHECK(!record.IsEmpty());
   v8::Local<v8::Context> context = script_state->GetContext();
-  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url_);
+  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url);
   bool success;
-  if (!NewLocal(script_state->GetIsolate())
-           ->InstantiateModule(context, &ResolveModuleCallback)
+  if (!record->InstantiateModule(context, &ResolveModuleCallback)
            .To(&success) ||
       !success) {
     DCHECK(try_catch.HasCaught());
@@ -123,7 +113,9 @@ ScriptValue ModuleRecord::Instantiate(ScriptState* script_state) {
   return ScriptValue();
 }
 
-ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
+ScriptValue ModuleRecord::Evaluate(ScriptState* script_state,
+                                   v8::Local<v8::Module> record,
+                                   const KURL& source_url) {
   v8::Isolate* isolate = script_state->GetIsolate();
 
   // Isolate exceptions that occur when executing the code. These exceptions
@@ -132,13 +124,12 @@ ScriptValue ModuleRecord::Evaluate(ScriptState* script_state) const {
   v8::TryCatch try_catch(isolate);
 
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
-  probe::ExecuteScript probe(execution_context, source_url_);
+  probe::ExecuteScript probe(execution_context, source_url);
 
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
-  if (!V8ScriptRunner::EvaluateModule(isolate, execution_context,
-                                      module_->NewLocal(isolate),
+  if (!V8ScriptRunner::EvaluateModule(isolate, execution_context, record,
                                       script_state->GetContext())
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
@@ -153,45 +144,43 @@ void ModuleRecord::ReportException(ScriptState* script_state,
   V8ScriptRunner::ReportException(script_state->GetIsolate(), exception);
 }
 
-Vector<String> ModuleRecord::ModuleRequests(ScriptState* script_state) {
-  if (IsNull())
+Vector<String> ModuleRecord::ModuleRequests(ScriptState* script_state,
+                                            v8::Local<v8::Module> record) {
+  if (record.IsEmpty())
     return Vector<String>();
-
-  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
 
   Vector<String> ret;
 
-  int length = module->GetModuleRequestsLength();
+  int length = record->GetModuleRequestsLength();
   ret.ReserveInitialCapacity(length);
   for (int i = 0; i < length; ++i) {
-    v8::Local<v8::String> v8_name = module->GetModuleRequest(i);
+    v8::Local<v8::String> v8_name = record->GetModuleRequest(i);
     ret.push_back(ToCoreString(v8_name));
   }
   return ret;
 }
 
 Vector<TextPosition> ModuleRecord::ModuleRequestPositions(
-    ScriptState* script_state) {
-  if (IsNull())
+    ScriptState* script_state,
+    v8::Local<v8::Module> record) {
+  if (record.IsEmpty())
     return Vector<TextPosition>();
-  v8::Local<v8::Module> module = module_->NewLocal(script_state->GetIsolate());
 
   Vector<TextPosition> ret;
 
-  int length = module->GetModuleRequestsLength();
+  int length = record->GetModuleRequestsLength();
   ret.ReserveInitialCapacity(length);
   for (int i = 0; i < length; ++i) {
-    v8::Location v8_loc = module->GetModuleRequestLocation(i);
+    v8::Location v8_loc = record->GetModuleRequestLocation(i);
     ret.emplace_back(OrdinalNumber::FromZeroBasedInt(v8_loc.GetLineNumber()),
                      OrdinalNumber::FromZeroBasedInt(v8_loc.GetColumnNumber()));
   }
   return ret;
 }
 
-v8::Local<v8::Value> ModuleRecord::V8Namespace(v8::Isolate* isolate) {
-  DCHECK(!IsNull());
-  v8::Local<v8::Module> module = module_->NewLocal(isolate);
-  return module->GetModuleNamespace();
+v8::Local<v8::Value> ModuleRecord::V8Namespace(v8::Local<v8::Module> record) {
+  DCHECK(!record.IsEmpty());
+  return record->GetModuleNamespace();
 }
 
 v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
@@ -202,15 +191,14 @@ v8::MaybeLocal<v8::Module> ModuleRecord::ResolveModuleCallback(
   Modulator* modulator = Modulator::From(ScriptState::From(context));
   DCHECK(modulator);
 
-  // TODO(shivanisha): Can a valid source url be passed to the constructor.
-  ModuleRecord referrer_record(isolate, referrer, KURL());
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ModuleRecord", "resolveModuleCallback");
-  ModuleRecord resolved = modulator->GetModuleRecordResolver()->Resolve(
-      ToCoreStringWithNullCheck(specifier), referrer_record, exception_state);
-  DCHECK(!resolved.IsNull());
+  v8::Local<v8::Module> resolved =
+      modulator->GetModuleRecordResolver()->Resolve(
+          ToCoreStringWithNullCheck(specifier), referrer, exception_state);
+  DCHECK(!resolved.IsEmpty());
   DCHECK(!exception_state.HadException());
-  return resolved.module_->NewLocal(isolate);
+  return resolved;
 }
 
 }  // namespace blink

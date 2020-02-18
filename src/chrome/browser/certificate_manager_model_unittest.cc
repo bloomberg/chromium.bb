@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/certificate_manager_model.h"
+
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/scoped_test_nss_db.h"
 #include "net/cert/nss_cert_database.h"
 #include "net/cert/scoped_nss_types.h"
@@ -18,6 +19,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
+#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #endif
 
@@ -99,7 +101,7 @@ class CertificateManagerModelTest : public testing::Test {
     run_loop.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   crypto::ScopedTestNSSDB test_nssdb_;
   std::unique_ptr<net::NSSCertDatabase> nss_cert_db_;
   std::unique_ptr<FakeObserver> fake_observer_;
@@ -202,7 +204,11 @@ class FakePolicyCertificateProvider
     observer_list_.RemoveObserver(observer);
   }
 
-  net::CertificateList GetAllServerAndAuthorityCertificates() const override {
+  net::CertificateList GetAllServerAndAuthorityCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
+    // The CertificateManagerModel only retrieves profile-wide certificates.
+    EXPECT_EQ(chromeos::onc::CertificateScope::Default(), scope);
+
     net::CertificateList merged;
     merged.insert(merged.end(), web_trusted_certs_.begin(),
                   web_trusted_certs_.end());
@@ -211,18 +217,34 @@ class FakePolicyCertificateProvider
     return merged;
   }
 
-  net::CertificateList GetAllAuthorityCertificates() const override {
+  net::CertificateList GetAllAuthorityCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
     // This function is not called by CertificateManagerModel.
     NOTREACHED();
     return net::CertificateList();
   }
 
-  net::CertificateList GetWebTrustedCertificates() const override {
+  net::CertificateList GetWebTrustedCertificates(
+      const chromeos::onc::CertificateScope& scope) const override {
+    // The CertificateManagerModel only retrieves profile-wide certificates.
+    EXPECT_EQ(chromeos::onc::CertificateScope::Default(), scope);
+
     return web_trusted_certs_;
   }
 
-  net::CertificateList GetCertificatesWithoutWebTrust() const override {
+  net::CertificateList GetCertificatesWithoutWebTrust(
+      const chromeos::onc::CertificateScope& scope) const override {
+    // The CertificateManagerModel only retrieves profile-wide certificates.
+    EXPECT_EQ(chromeos::onc::CertificateScope::Default(), scope);
+
     return not_web_trusted_certs_;
+  }
+
+  const std::set<std::string>& GetExtensionIdsWithPolicyCertificates()
+      const override {
+    // This function is not called by CertificateManagerModel.
+    NOTREACHED();
+    return kNoExtensions;
   }
 
   void SetPolicyProvidedCertificates(
@@ -233,14 +255,8 @@ class FakePolicyCertificateProvider
   }
 
   void NotifyObservers() {
-    net::CertificateList all_server_and_authority_certs =
-        GetAllServerAndAuthorityCertificates();
-    net::CertificateList trust_anchors = GetWebTrustedCertificates();
-
-    for (auto& observer : observer_list_) {
-      observer.OnPolicyProvidedCertsChanged(all_server_and_authority_certs,
-                                            trust_anchors);
-    }
+    for (auto& observer : observer_list_)
+      observer.OnPolicyProvidedCertsChanged();
   }
 
  private:
@@ -248,6 +264,7 @@ class FakePolicyCertificateProvider
                      true /* check_empty */>::Unchecked observer_list_;
   net::CertificateList web_trusted_certs_;
   net::CertificateList not_web_trusted_certs_;
+  const std::set<std::string> kNoExtensions = {};
 };
 
 class FakeExtensionCertificateProvider : public chromeos::CertificateProvider {

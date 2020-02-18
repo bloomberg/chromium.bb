@@ -300,7 +300,6 @@ class CORE_EXPORT LocalFrameView final
   const ObjectSet& BackgroundAttachmentFixedObjects() const {
     return background_attachment_fixed_objects_;
   }
-  bool HasBackgroundAttachmentFixedDescendants(const LayoutObject&) const;
   void InvalidateBackgroundAttachmentFixedDescendantsOnScroll(
       const LayoutObject& scrolled_object);
 
@@ -409,6 +408,7 @@ class CORE_EXPORT LocalFrameView final
                           bool should_scroll = true);
   FragmentAnchor* GetFragmentAnchor() { return fragment_anchor_; }
   void InvokeFragmentAnchor();
+  void DismissFragmentAnchor();
 
   // Methods to convert points and rects between the coordinate space of the
   // layoutObject, and this view.
@@ -464,10 +464,15 @@ class CORE_EXPORT LocalFrameView final
   // the bottom right of the object. We keep track of these resizer areas for
   // checking if touches (implemented using Scroll gesture) are targeting the
   // resizer.
+  // TODO(pdr): The resizers do not need to be tracked with
+  // PaintNonFastScrollableRegions and can be removed once that ships.
   typedef HashSet<LayoutBox*> ResizerAreaSet;
   void AddResizerArea(LayoutBox&);
   void RemoveResizerArea(LayoutBox&);
-  const ResizerAreaSet* ResizerAreas() const { return resizer_areas_.get(); }
+  const ResizerAreaSet* ResizerAreas() const {
+    DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+    return resizer_areas_.get();
+  }
 
   void ScheduleAnimation();
 
@@ -488,6 +493,7 @@ class CORE_EXPORT LocalFrameView final
   using PluginSet = HeapHashSet<Member<WebPluginContainerImpl>>;
   const PluginSet& Plugins() const { return plugins_; }
   void AddPlugin(WebPluginContainerImpl*);
+  void RemovePlugin(WebPluginContainerImpl*);
   // Custom scrollbars in PaintLayerScrollableArea need to be called with
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
@@ -599,6 +605,9 @@ class CORE_EXPORT LocalFrameView final
   bool ShouldThrottleRendering() const;
 
   bool CanThrottleRendering() const override;
+  void UpdateRenderThrottlingStatus(bool hidden_for_throttling,
+                                    bool subtree_throttled,
+                                    bool recurse = false) override;
 
   void BeginLifecycleUpdates();
 
@@ -621,18 +630,6 @@ class CORE_EXPORT LocalFrameView final
   // Only for CompositeAfterPaint.
   std::unique_ptr<JSONObject> CompositedLayersAsJSON(LayerTreeFlags);
 
-  // Recursively update frame tree. Each frame has its only
-  // scroll on main reason. Given the following frame tree
-  // .. A...
-  // ../.\..
-  // .B...C.
-  // .|.....
-  // .D.....
-  // If B has fixed background-attachment but other frames
-  // don't, both A and C should scroll on cc. Frame D should
-  // scrolled on main thread as its ancestor B.
-  void UpdateSubFrameScrollOnMainReason(const Frame&,
-                                        MainThreadScrollingReasons);
   String MainThreadScrollingReasonsAsText();
   // Main thread scrolling reasons including reasons from ancestors.
   MainThreadScrollingReasons GetMainThreadScrollingReasons() const;
@@ -664,12 +661,6 @@ class CORE_EXPORT LocalFrameView final
   // scrolling should continue in the parent process.
   void ScrollRectToVisibleInRemoteParent(const PhysicalRect&,
                                          const WebScrollIntoViewParams&);
-
-  PaintArtifactCompositor* GetPaintArtifactCompositorForTesting() {
-    DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-           RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-    return paint_artifact_compositor_.get();
-  }
 
   PaintArtifactCompositor* GetPaintArtifactCompositor() const;
 
@@ -716,7 +707,7 @@ class CORE_EXPORT LocalFrameView final
   void NotifyFrameRectsChangedIfNeeded();
   void SetViewportIntersection(const IntRect& viewport_intersection,
                                FrameOcclusionState occlusion_state) override {}
-  void RenderThrottlingStatusChanged() override;
+  void VisibilityForThrottlingChanged() override;
   bool LifecycleUpdatesThrottled() const override {
     return lifecycle_updates_throttled_;
   }
@@ -788,6 +779,7 @@ class CORE_EXPORT LocalFrameView final
   DocumentLifecycle& Lifecycle() const;
 
   void RunIntersectionObserverSteps();
+  void RenderThrottlingStatusChanged();
 
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.
@@ -969,14 +961,12 @@ class CORE_EXPORT LocalFrameView final
   std::unique_ptr<Vector<ObjectPaintInvalidation>>
       tracked_object_paint_invalidations_;
 
-  // For BlinkGenPropertyTrees/CompositeAfterPaint only. It's created lazily
-  // when it's used.
-  // - For BlinkGenPropertyTrees, we use it in PushPaintArtifactToCompositor()
-  //   to collect GraphicsLayers as foreign layers. It's transient, but may live
-  //   across frame updates until GraphicsLayersDidChange() is called.
-  // - For CompositeAfterPaint, we use it in PaintTree() for all paintings of
-  //   the frame tree in PaintTree(). It caches display items and subsequences
-  //   across frame updates and repaints.
+  // Currently used in PushPaintArtifactToCompositor() to collect GraphicsLayers
+  // as foreign layers. It's transient, but may live across frame updates until
+  // GraphicsLayersDidChange() is called.
+  // For CompositeAfterPaint, we use it in PaintTree() for all paintings of the
+  // frame tree in PaintTree(). It caches display items and subsequences across
+  // frame updates and repaints.
   std::unique_ptr<PaintController> paint_controller_;
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
 

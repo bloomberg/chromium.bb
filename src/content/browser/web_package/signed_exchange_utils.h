@@ -24,7 +24,6 @@ struct ResourceResponseHead;
 namespace content {
 
 class BrowserContext;
-class ResourceContext;
 class SignedExchangeDevToolsProxy;
 
 namespace signed_exchange_utils {
@@ -48,10 +47,7 @@ void ReportErrorAndTraceEvent(
         base::nullopt);
 
 // Returns true when SignedHTTPExchange feature is enabled. This must be called
-// on the IO thread.
-CONTENT_EXPORT bool IsSignedExchangeHandlingEnabledOnIO(
-    ResourceContext* context);
-// Same as above but called on UI thread.
+// on the UI thread.
 CONTENT_EXPORT bool IsSignedExchangeHandlingEnabled(BrowserContext* context);
 
 // Returns true when SignedExchangeReportingForDistributors feature is enabled.
@@ -92,6 +88,18 @@ net::RedirectInfo CreateRedirectInfo(
 network::ResourceResponseHead CreateRedirectResponseHead(
     const network::ResourceResponseHead& outer_response,
     bool is_fallback_redirect);
+
+// Creates a new request ID for browser initiated requests. Can be called on
+// any thread.
+int MakeRequestID();
+
+// Returns the time to be used for verifying signed exchange. Can be overridden
+// using SetVerificationTimeForTesting().
+base::Time GetVerificationTime();
+
+// Override the time which is used for verifying signed exchange.
+CONTENT_EXPORT void SetVerificationTimeForTesting(
+    base::Optional<base::Time> verification_time_for_testing);
 
 }  // namespace signed_exchange_utils
 }  // namespace content

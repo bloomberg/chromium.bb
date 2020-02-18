@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/chrome_content_browser_client.h"
@@ -143,10 +143,6 @@ class TestNetworkQualityObserver
 
 class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
  public:
-  NetworkQualityEstimatorPrefsBrowserTest() {
-    EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
-  }
-
   // Simulates a network quality change.
   void SimulateNetworkQualityChange(net::EffectiveConnectionType type) {
     if (!content::IsOutOfProcessNetworkService()) {
@@ -173,12 +169,7 @@ class NetworkQualityEstimatorPrefsBrowserTest : public InProcessBrowserTest {
     run_loop.Run();
   }
 
-  base::FilePath GetTempDirectory() { return temp_dir_.GetPath(); }
-
   base::HistogramTester histogram_tester;
-
- private:
-  base::ScopedTempDir temp_dir_;
 };
 
 // Verify that prefs are read at startup, and the read prefs are notified to the
@@ -206,7 +197,8 @@ IN_PROC_BROWSER_TEST_F(NetworkQualityEstimatorPrefsBrowserTest,
   network::mojom::NetworkContextParamsPtr context_params =
       network::mojom::NetworkContextParams::New();
   context_params->http_server_properties_path =
-      GetTempDirectory().Append(FILE_PATH_LITERAL("Network Persistent State"));
+      browser()->profile()->GetPath().Append(
+          FILE_PATH_LITERAL("Temp Network Persistent State"));
 
   auto state = base::MakeRefCounted<JsonPrefStore>(
       context_params->http_server_properties_path.value());

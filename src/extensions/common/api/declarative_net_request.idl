@@ -56,6 +56,62 @@ namespace declarativeNetRequest {
     removeHeaders
   };
 
+  // Represents a query key-value pair.
+  dictionary QueryKeyValue {
+    DOMString key;
+    DOMString value;
+  };
+
+  // Describes modification to the url query.
+  dictionary QueryTransform {
+     // The list of query keys to be removed.
+     DOMString[]? removeParams;
+     // The list of query key-value pairs to be added or replaced.
+     QueryKeyValue[]? addOrReplaceParams;
+  };
+
+  // Describes modification to various url components.
+  dictionary URLTransform {
+     // The new scheme for the request. Allowed values are "http", "https",
+     // "ftp" and "chrome-extension".
+     DOMString? scheme;
+
+     // The new host for the request.
+     DOMString? host;
+
+     // The new port for the request. If empty, the existing port is cleared.
+     DOMString? port;
+
+     // The new path for the request. If empty, the existing path is cleared.
+     DOMString? path;
+
+     // The new query for the request. Should be either empty, in which case the
+     // existing query is cleared; or should begin with '?'.
+     DOMString? query;
+
+     // Add, remove or replace query key-value pairs.
+     QueryTransform? queryTransform;
+
+     // The new fragment for the request. Should be either empty, in which case
+     // the existing fragment is cleared; or should begin with '#'.
+     DOMString? fragment;
+
+     // The new username for the request.
+     DOMString? username;
+
+     // The new password for the request.
+     DOMString? password;
+  };
+
+  dictionary Redirect {
+     // Path relative to the extension directory. Should start with '/'.
+     DOMString? extensionPath;
+     // Url transformations to perform.
+     URLTransform? transform;
+     // The redirect url. Redirects to JavaScript urls are not allowed.
+     DOMString? url;
+  };
+
   dictionary RuleCondition {
 
     // The pattern which is matched against the network request url.
@@ -128,10 +184,9 @@ namespace declarativeNetRequest {
     // The type of action to perform.
     RuleActionType type;
 
-    // The redirect url. Only valid if RuleActionType is "redirect". Can be
-    // specified as an absolute url or a relative url (starting with '/'), which
-    // is relative to the extension which specified the rule.
-    DOMString? redirectUrl;
+    // Describes how the redirect should be performed. Only valid for redirect
+    // rules.
+    Redirect? redirect;
 
     // The headers to remove from the request. Only valid if RuleActionType is
     // "removeHeaders".

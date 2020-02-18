@@ -12,6 +12,7 @@
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
 #include "ash/root_window_controller.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
@@ -36,7 +37,7 @@ std::unique_ptr<views::Widget> CreateWidget(aura::Window* context) {
   params.delegate = new views::WidgetDelegateView();
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  widget->Init(params);
+  widget->Init(std::move(params));
   return widget;
 }
 
@@ -102,16 +103,22 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_TRUE(pip_widget->IsActive());
   EXPECT_FALSE(widget->IsActive());
 
-  auto* shelf = AshTestBase::GetPrimaryShelf()->shelf_widget();
+  auto* navigation_widget =
+      AshTestBase::GetPrimaryShelf()->shelf_widget()->navigation_widget();
+  auto* hotseat_widget =
+      AshTestBase::GetPrimaryShelf()->shelf_widget()->hotseat_widget();
   auto* status_area =
       Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
 
   // Cycle Backward.
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(shelf->IsActive());
+  EXPECT_TRUE(hotseat_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(status_area->IsActive());
+
+  generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(navigation_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_BACK, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(widget->IsActive());
@@ -124,13 +131,19 @@ TEST_F(PipTest, ShortcutNavigation) {
   EXPECT_TRUE(widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(navigation_widget->IsActive());
+
+  generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(status_area->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
-  EXPECT_TRUE(shelf->IsActive());
+  EXPECT_TRUE(hotseat_widget->IsActive());
 
   generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
   EXPECT_TRUE(pip_widget->IsActive());
+
+  generator->PressKey(ui::VKEY_BROWSER_FORWARD, ui::EF_CONTROL_DOWN);
+  EXPECT_TRUE(widget->IsActive());
 }
 
 TEST_F(PipTest, PipInitialPositionAvoidsObstacles) {

@@ -10,6 +10,7 @@ import android.support.annotation.Nullable;
 
 import org.chromium.base.Callback;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.ProcessInitException;
@@ -21,13 +22,19 @@ import org.chromium.base.library_loader.ProcessInitException;
  */
 @JNINamespace("android_webview")
 public final class AwCookieManager {
+    private long mNativeCookieManager;
 
     public AwCookieManager() {
+        this(AwCookieManagerJni.get().getDefaultCookieManager());
+    }
+
+    public AwCookieManager(long nativeCookieManager) {
         try {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
         } catch (ProcessInitException e) {
             throw new RuntimeException("Error initializing WebView library", e);
         }
+        mNativeCookieManager = nativeCookieManager;
     }
 
     /**
@@ -35,7 +42,8 @@ public final class AwCookieManager {
      * @param accept TRUE if accept cookie
      */
     public void setAcceptCookie(boolean accept) {
-        nativeSetShouldAcceptCookies(accept);
+        AwCookieManagerJni.get().setShouldAcceptCookies(
+                mNativeCookieManager, AwCookieManager.this, accept);
     }
 
     /**
@@ -43,7 +51,8 @@ public final class AwCookieManager {
      * @return TRUE if accept cookie
      */
     public boolean acceptCookie() {
-        return nativeGetShouldAcceptCookies();
+        return AwCookieManagerJni.get().getShouldAcceptCookies(
+                mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
@@ -51,21 +60,23 @@ public final class AwCookieManager {
      */
     public void setCookie(String url, String value) {
         UrlValue pair = fixupUrlValue(url, value);
-        nativeSetCookieSync(pair.mUrl, pair.mValue);
+        AwCookieManagerJni.get().setCookieSync(
+                mNativeCookieManager, AwCookieManager.this, pair.mUrl, pair.mValue);
     }
 
     /**
      * Deprecated synchronous version of removeSessionCookies.
      */
     public void removeSessionCookies() {
-        nativeRemoveSessionCookiesSync();
+        AwCookieManagerJni.get().removeSessionCookiesSync(
+                mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
      * Deprecated synchronous version of removeAllCookies.
      */
     public void removeAllCookies() {
-        nativeRemoveAllCookiesSync();
+        AwCookieManagerJni.get().removeAllCookiesSync(mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
@@ -79,7 +90,8 @@ public final class AwCookieManager {
     public void setCookie(final String url, final String value, final Callback<Boolean> callback) {
         try {
             UrlValue pair = fixupUrlValue(url, value);
-            nativeSetCookie(pair.mUrl, pair.mValue, new CookieCallback(callback));
+            AwCookieManagerJni.get().setCookie(mNativeCookieManager, AwCookieManager.this,
+                    pair.mUrl, pair.mValue, new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "SetCookie must be called on a thread with a running Looper.");
@@ -93,7 +105,8 @@ public final class AwCookieManager {
      * @return The cookies in the format of NAME=VALUE [; NAME=VALUE]
      */
     public String getCookie(final String url) {
-        String cookie = nativeGetCookie(url.toString());
+        String cookie = AwCookieManagerJni.get().getCookie(
+                mNativeCookieManager, AwCookieManager.this, url.toString());
         // Return null if the string is empty to match legacy behavior
         return cookie == null || cookie.trim().isEmpty() ? null : cookie;
     }
@@ -105,7 +118,8 @@ public final class AwCookieManager {
      */
     public void removeSessionCookies(Callback<Boolean> callback) {
         try {
-            nativeRemoveSessionCookies(new CookieCallback(callback));
+            AwCookieManagerJni.get().removeSessionCookies(
+                    mNativeCookieManager, AwCookieManager.this, new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "removeSessionCookies must be called on a thread with a running Looper.");
@@ -119,7 +133,8 @@ public final class AwCookieManager {
      */
     public void removeAllCookies(Callback<Boolean> callback) {
         try {
-            nativeRemoveAllCookies(new CookieCallback(callback));
+            AwCookieManagerJni.get().removeAllCookies(
+                    mNativeCookieManager, AwCookieManager.this, new CookieCallback(callback));
         } catch (IllegalStateException e) {
             throw new IllegalStateException(
                     "removeAllCookies must be called on a thread with a running Looper.");
@@ -130,25 +145,26 @@ public final class AwCookieManager {
      *  Return true if there are stored cookies.
      */
     public boolean hasCookies() {
-        return nativeHasCookies();
+        return AwCookieManagerJni.get().hasCookies(mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
      * Remove all expired cookies
      */
     public void removeExpiredCookies() {
-        nativeRemoveExpiredCookies();
+        AwCookieManagerJni.get().removeExpiredCookies(mNativeCookieManager, AwCookieManager.this);
     }
 
     public void flushCookieStore() {
-        nativeFlushCookieStore();
+        AwCookieManagerJni.get().flushCookieStore(mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
      * Whether cookies are accepted for file scheme URLs.
      */
     public boolean allowFileSchemeCookies() {
-        return nativeAllowFileSchemeCookies();
+        return AwCookieManagerJni.get().allowFileSchemeCookies(
+                mNativeCookieManager, AwCookieManager.this);
     }
 
     /**
@@ -161,7 +177,8 @@ public final class AwCookieManager {
      * instance has been created.
      */
     public void setAcceptFileSchemeCookies(boolean accept) {
-        nativeSetAcceptFileSchemeCookies(accept);
+        AwCookieManagerJni.get().setAcceptFileSchemeCookies(
+                mNativeCookieManager, AwCookieManager.this, accept);
     }
 
     /**
@@ -172,7 +189,7 @@ public final class AwCookieManager {
      * the native method |RunBooleanCallbackAndroid| to call CookieCallback#onResult which posts a
      * Runnable on the handler of the original thread which in turn calls Callback#onResult.
      */
-    private static class CookieCallback implements Callback<Boolean> {
+    static class CookieCallback implements Callback<Boolean> {
         @Nullable
         Callback<Boolean> mCallback;
         @Nullable
@@ -234,22 +251,28 @@ public final class AwCookieManager {
         return new UrlValue(url, value);
     }
 
-    private native void nativeSetShouldAcceptCookies(boolean accept);
-    private native boolean nativeGetShouldAcceptCookies();
-
-    private native void nativeSetCookie(String url, String value, CookieCallback callback);
-    private native void nativeSetCookieSync(String url, String value);
-    private native String nativeGetCookie(String url);
-
-    private native void nativeRemoveSessionCookies(CookieCallback callback);
-    private native void nativeRemoveSessionCookiesSync();
-    private native void nativeRemoveAllCookies(CookieCallback callback);
-    private native void nativeRemoveAllCookiesSync();
-    private native void nativeRemoveExpiredCookies();
-    private native void nativeFlushCookieStore();
-
-    private native boolean nativeHasCookies();
-
-    private native boolean nativeAllowFileSchemeCookies();
-    private native void nativeSetAcceptFileSchemeCookies(boolean accept);
+    @NativeMethods
+    interface Natives {
+        long getDefaultCookieManager();
+        void setShouldAcceptCookies(
+                long nativeCookieManager, AwCookieManager caller, boolean accept);
+        boolean getShouldAcceptCookies(long nativeCookieManager, AwCookieManager caller);
+        void setCookie(long nativeCookieManager, AwCookieManager caller, String url, String value,
+                CookieCallback callback);
+        void setCookieSync(
+                long nativeCookieManager, AwCookieManager caller, String url, String value);
+        String getCookie(long nativeCookieManager, AwCookieManager caller, String url);
+        void removeSessionCookies(
+                long nativeCookieManager, AwCookieManager caller, CookieCallback callback);
+        void removeSessionCookiesSync(long nativeCookieManager, AwCookieManager caller);
+        void removeAllCookies(
+                long nativeCookieManager, AwCookieManager caller, CookieCallback callback);
+        void removeAllCookiesSync(long nativeCookieManager, AwCookieManager caller);
+        void removeExpiredCookies(long nativeCookieManager, AwCookieManager caller);
+        void flushCookieStore(long nativeCookieManager, AwCookieManager caller);
+        boolean hasCookies(long nativeCookieManager, AwCookieManager caller);
+        boolean allowFileSchemeCookies(long nativeCookieManager, AwCookieManager caller);
+        void setAcceptFileSchemeCookies(
+                long nativeCookieManager, AwCookieManager caller, boolean accept);
+    }
 }

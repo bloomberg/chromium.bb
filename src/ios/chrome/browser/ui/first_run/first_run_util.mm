@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/public/web_state/web_state.h"
 #import "ui/gfx/ios/NSString+CrStringDrawing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -145,9 +144,10 @@ void WriteFirstRunSentinelAndRecordMetrics(
     ios::ChromeBrowserState* browserState,
     BOOL sign_in_attempted,
     BOOL has_sso_account) {
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-                           base::BindOnce(&CreateSentinel));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&CreateSentinel));
   RecordFirstRunMetricsInternal(browserState, sign_in_attempted,
                                 has_sso_account);
 }

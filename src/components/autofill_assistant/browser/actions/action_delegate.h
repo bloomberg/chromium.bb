@@ -36,8 +36,10 @@ namespace autofill_assistant {
 class ClientMemory;
 class ClientStatus;
 struct ClientSettings;
-struct PaymentRequestOptions;
+struct UserData;
+struct CollectUserDataOptions;
 class UserAction;
+class WebsiteLoginFetcher;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -106,10 +108,10 @@ class ActionDelegate {
   // Have the UI leave the prompt state and go back to its previous state.
   virtual void CancelPrompt() = 0;
 
-  // Asks the user to provide the data used by UseAddressAction and
-  // UseCreditCardAction.
-  virtual void GetPaymentInformation(
-      std::unique_ptr<PaymentRequestOptions> options) = 0;
+  // Asks the user to provide the requested user data.
+  virtual void CollectUserData(
+      std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+      std::unique_ptr<UserData> user_data) = 0;
 
   using GetFullCardCallback =
       base::OnceCallback<void(std::unique_ptr<autofill::CreditCard> card,
@@ -254,8 +256,15 @@ class ActionDelegate {
   // Get current personal data manager.
   virtual autofill::PersonalDataManager* GetPersonalDataManager() = 0;
 
+  // Get current login fetcher.
+  virtual WebsiteLoginFetcher* GetWebsiteLoginFetcher() = 0;
+
   // Get associated web contents.
   virtual content::WebContents* GetWebContents() = 0;
+
+  // Returns the e-mail address that corresponds to the access token or an empty
+  // string.
+  virtual std::string GetAccountEmailAddress() = 0;
 
   // Sets or updates contextual information.
   // Passing nullptr clears the contextual information.

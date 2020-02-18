@@ -25,12 +25,11 @@
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/renderer/renderer_url_loader_throttle.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/service_names.mojom.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -112,21 +111,15 @@ void SetExtensionThrottleManagerTestPolicy(
 }  // namespace
 
 URLLoaderThrottleProviderImpl::URLLoaderThrottleProviderImpl(
+    blink::ThreadSafeBrowserInterfaceBrokerProxy* broker,
     content::URLLoaderThrottleProviderType type,
     ChromeContentRendererClient* chrome_content_renderer_client)
     : type_(type),
       chrome_content_renderer_client_(chrome_content_renderer_client) {
   DETACH_FROM_THREAD(thread_checker_);
-
-  content::RenderThread::Get()->GetConnector()->BindInterface(
-      content::mojom::kBrowserServiceName,
-      mojo::MakeRequest(&safe_browsing_info_));
-
-  if (data_reduction_proxy::params::IsEnabledWithNetworkService()) {
-    content::RenderThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kBrowserServiceName,
-        mojo::MakeRequest(&data_reduction_proxy_info_));
-  }
+  broker->GetInterface(mojo::MakeRequest(&safe_browsing_info_));
+  if (data_reduction_proxy::params::IsEnabledWithNetworkService())
+    broker->GetInterface(mojo::MakeRequest(&data_reduction_proxy_info_));
 }
 
 URLLoaderThrottleProviderImpl::~URLLoaderThrottleProviderImpl() {
@@ -157,14 +150,14 @@ URLLoaderThrottleProviderImpl::Clone() {
   return base::WrapUnique(new URLLoaderThrottleProviderImpl(*this));
 }
 
-std::vector<std::unique_ptr<content::URLLoaderThrottle>>
+std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
 URLLoaderThrottleProviderImpl::CreateThrottles(
     int render_frame_id,
     const blink::WebURLRequest& request,
     content::ResourceType resource_type) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  std::vector<std::unique_ptr<content::URLLoaderThrottle>> throttles;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
 
   // Some throttles have already been added in the browser for frame resources.
   // Don't add them for frame requests.
@@ -249,7 +242,7 @@ URLLoaderThrottleProviderImpl::CreateThrottles(
       SetExtensionThrottleManagerTestPolicy(extension_throttle_manager_.get());
     }
 
-    std::unique_ptr<content::URLLoaderThrottle> throttle =
+    std::unique_ptr<blink::URLLoaderThrottle> throttle =
         extension_throttle_manager_->MaybeCreateURLLoaderThrottle(request);
     if (throttle)
       throttles.push_back(std::move(throttle));

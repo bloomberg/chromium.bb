@@ -438,7 +438,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
   /**
    * @return {number}
    */
-  _focusedSectionIndex() {
+  focusedSectionIndex() {
     let index = 0;
     for (const block of this._sectionBlocks) {
       for (const section of block.sections) {
@@ -448,6 +448,16 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
       }
     }
     return -1;
+  }
+
+  /**
+   * @param {number} sectionIndex
+   * @param {number} propertyIndex
+   */
+  continueEditingElement(sectionIndex, propertyIndex) {
+    const section = this.allSections()[sectionIndex];
+    if (section)
+      section.propertiesTreeOutline.rootElement().childAt(propertyIndex).startEditing();
   }
 
   /**
@@ -462,7 +472,7 @@ Elements.StylesSidebarPane = class extends Elements.ElementsSidebarPane {
       this._needsForceUpdate = false;
     else if (this._isEditingStyle || this._userOperation)
       return;
-    const focusedIndex = this._focusedSectionIndex();
+    const focusedIndex = this.focusedSectionIndex();
 
     this._linkifier.reset();
     this._sectionsContainer.removeChildren();
@@ -782,7 +792,7 @@ Elements.SectionBlock = class {
     const separatorElement = createElement('div');
     separatorElement.className = 'sidebar-separator';
     separatorElement.createTextChild(ls`Inherited from${' '}`);
-    const link = await Common.Linkifier.linkify(node);
+    const link = await Common.Linkifier.linkify(node, {preventKeyboardFocus: true});
     separatorElement.appendChild(link);
     return new Elements.SectionBlock(separatorElement);
   }
@@ -932,7 +942,7 @@ Elements.StylePropertiesSection = class {
       return createTextNode(Common.UIString('via inspector'));
 
     if (header && header.ownerNode) {
-      const link = Elements.DOMLinkifier.linkifyDeferredNodeReference(header.ownerNode);
+      const link = Elements.DOMLinkifier.linkifyDeferredNodeReference(header.ownerNode, {preventKeyboardFocus: true});
       link.textContent = '<style>';
       return link;
     }
@@ -2275,7 +2285,7 @@ Elements.StylesSidebarPane.CSSPropertyPrompt = class extends UI.TextPrompt {
       }
     });
     if (this._isColorAware && !this._isEditingName) {
-      results.stableSort((a, b) => {
+      results.sort((a, b) => {
         if (!!a.subtitleRenderer === !!b.subtitleRenderer)
           return 0;
         return a.subtitleRenderer ? -1 : 1;

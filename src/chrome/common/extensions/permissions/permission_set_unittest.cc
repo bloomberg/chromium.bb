@@ -766,13 +766,13 @@ TEST(PermissionsTest, PermissionMessages) {
   skip.insert(APIPermission::kDns);
   skip.insert(APIPermission::kDownloadsShelf);
   skip.insert(APIPermission::kEmbeddedExtensionOptions);
-  skip.insert(APIPermission::kExtensionView);
   skip.insert(APIPermission::kFontSettings);
   skip.insert(APIPermission::kFullscreen);
   skip.insert(APIPermission::kGcm);
   skip.insert(APIPermission::kIdle);
   skip.insert(APIPermission::kImeWindowEnabled);
   skip.insert(APIPermission::kIdltest);
+  skip.insert(APIPermission::kLoginState);
   skip.insert(APIPermission::kOverrideEscFullscreen);
   skip.insert(APIPermission::kPointerLock);
   skip.insert(APIPermission::kPower);

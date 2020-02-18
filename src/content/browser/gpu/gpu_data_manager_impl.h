@@ -65,9 +65,10 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void AppendGpuCommandLine(base::CommandLine* command_line,
                             GpuProcessKind kind) override;
 
-  void RequestGpuSupportedRuntimeVersion() const;
+  void RequestGpuSupportedRuntimeVersion(bool delayed) const;
   bool GpuProcessStartAllowed() const;
 
+  bool IsDx12VulkanVersionAvailable() const;
   bool IsGpuFeatureInfoAvailable() const;
   gpu::GpuFeatureStatus GetFeatureStatus(gpu::GpuFeatureType feature) const;
 
@@ -78,6 +79,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void UpdateDx12VulkanInfo(
       const gpu::Dx12VulkanVersionInfo& dx12_vulkan_version_info);
   void UpdateDxDiagNode(const gpu::DxDiagNode& dx_diagnostics);
+  void UpdateDx12VulkanRequestStatus(bool request_continues);
 #endif
   // Update the GPU feature info. This updates the blacklist and enabled status
   // of GPU rasterization. In the future this will be used for more features.
@@ -92,6 +94,13 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   gpu::GpuFeatureInfo GetGpuFeatureInfoForHardwareGpu() const;
 
   gpu::GpuExtraInfo GetGpuExtraInfo() const;
+
+  bool IsGpuCompositingDisabled() const;
+
+  // This only handles the state of GPU compositing. Instead call
+  // ImageTransportFactory::DisableGpuCompositing() to perform a fallback to
+  // software compositing.
+  void SetGpuCompositingDisabled();
 
   // Update GpuPreferences based on blacklisting decisions.
   void UpdateGpuPreferences(gpu::GpuPreferences* gpu_preferences,
@@ -130,10 +139,6 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   // Set the active gpu.
   // Return true if it's a different GPU from the previous active one.
   bool UpdateActiveGpu(uint32_t vendor_id, uint32_t device_id);
-
-  // Notify all observers whenever there is a GPU info or GPU feature
-  // status update.
-  void NotifyGpuInfoUpdate();
 
   // Return mode describing what the GPU process will be launched to run.
   gpu::GpuMode GetGpuMode() const;

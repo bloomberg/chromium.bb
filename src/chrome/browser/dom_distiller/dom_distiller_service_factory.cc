@@ -15,7 +15,6 @@
 #include "components/dom_distiller/core/distiller.h"
 #include "components/dom_distiller/core/dom_distiller_store.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/leveldb_proto/content/proto_database_provider_factory.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/leveldb_proto/public/proto_database_provider.h"
 #include "content/public/browser/browser_context.h"
@@ -51,7 +50,6 @@ DomDistillerServiceFactory::DomDistillerServiceFactory()
     : BrowserContextKeyedServiceFactory(
           "DomDistillerService",
           BrowserContextDependencyManager::GetInstance()) {
-  DependsOn(leveldb_proto::ProtoDatabaseProviderFactory::GetInstance());
 }
 
 DomDistillerServiceFactory::~DomDistillerServiceFactory() {}
@@ -60,15 +58,15 @@ KeyedService* DomDistillerServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
 
   base::FilePath database_dir(
       context->GetPath().Append(FILE_PATH_LITERAL("Articles")));
 
   leveldb_proto::ProtoDatabaseProvider* db_provider =
-      leveldb_proto::ProtoDatabaseProviderFactory::GetForKey(
-          profile->GetProfileKey());
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetProtoDatabaseProvider();
 
   auto db = db_provider->GetDB<ArticleEntry>(
       leveldb_proto::ProtoDbType::DOM_DISTILLER_STORE, database_dir,

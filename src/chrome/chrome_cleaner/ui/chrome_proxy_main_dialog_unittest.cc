@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/ipc/mock_chrome_prompt_ipc.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
 #include "chrome/chrome_cleaner/test/test_pup_data.h"
@@ -48,8 +48,8 @@ TEST_F(ChromeProxyMainDialogTest, Create) {
 }
 
 TEST_F(ChromeProxyMainDialogTest, NoPUPsFound) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 
   base::RunLoop run_loop;
   EXPECT_CALL(delegate_, OnClose())
@@ -94,8 +94,8 @@ TEST_P(ConfirmCleanupChromeProxyMainDialogTest, ConfirmCleanup) {
       prompt_acceptance == PromptAcceptance::ACCEPTED_WITHOUT_LOGS;
   bool logs_allowed = prompt_acceptance == PromptAcceptance::ACCEPTED_WITH_LOGS;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 
   EXPECT_CALL(mock_settings_,
               set_logs_allowed_in_cleanup_mode(Eq(logs_allowed)))

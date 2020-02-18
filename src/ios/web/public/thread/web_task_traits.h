@@ -26,10 +26,10 @@ struct NonNestable {};
 // to a WebThread.
 //
 // To post a task to the UI thread (analogous for IO thread):
-//     base::PostTaskWithTraits(FROM_HERE, {WebThread::UI}, task);
+//     base::PostTask(FROM_HERE, {WebThread::UI}, task);
 //
 // To obtain a TaskRunner for the UI thread (analogous for the IO thread):
-//     base::CreateSingleThreadTaskRunnerWithTraits({WebThread::UI});
+//     base::CreateSingleThreadTaskRunner({WebThread::UI});
 //
 // Tasks posted to the same WebThread with the same traits will be executed
 // in the order they were posted, regardless of the TaskRunners they were
@@ -57,7 +57,7 @@ class WebTaskTraitsExtension {
           base::trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value>>
   constexpr WebTaskTraitsExtension(ArgTypes... args)
       : web_thread_(base::trait_helpers::GetEnum<WebThread::ID>(args...)),
-        nestable_(!base::trait_helpers::HasTrait<NonNestable>(args...)) {}
+        nestable_(!base::trait_helpers::HasTrait<NonNestable, ArgTypes...>()) {}
 
   constexpr base::TaskTraitsExtensionStorage Serialize() const {
     static_assert(8 == sizeof(WebTaskTraitsExtension),

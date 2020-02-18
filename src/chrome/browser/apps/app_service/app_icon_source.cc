@@ -58,7 +58,7 @@ std::string AppIconSource::GetSource() {
 
 void AppIconSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   std::string path_lower = base::ToLowerASCII(path);
   std::vector<std::string> path_parts = base::SplitString(
@@ -78,7 +78,9 @@ void AppIconSource::StartDataRequest(
     LoadDefaultImage(callback);
     return;
   }
-  int size_in_dip = apps_util::ConvertPxToDip(size);
+  constexpr bool quantize_to_supported_scale_factor = true;
+  int size_in_dip =
+      apps_util::ConvertPxToDip(size, quantize_to_supported_scale_factor);
 
   apps::AppServiceProxy* app_service_proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile_);

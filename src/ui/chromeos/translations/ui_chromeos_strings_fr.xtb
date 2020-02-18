@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Résolution de l'image</translation>
 <translation id="1943097386230153518">Installer un nouveau service</translation>
 <translation id="1947424002851288782">Clavier allemand</translation>
+<translation id="1972984168337863910">Développer les panneaux de commentaires sur les fichiers</translation>
 <translation id="197560921582345123">Éditeur</translation>
 <translation id="1984603991036629094">Clavier phonétique arménien</translation>
 <translation id="2001796770603320721">Gérer dans Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Pour accéder à ce fichier, vous devez être connecté à Internet.</translation>
 <translation id="4212740939091998969">Le nom "<ph name="FOLDER_NAME" />" est déjà attribué à un dossier. Veuillez en choisir un autre.</translation>
 <translation id="4215448920900139318">Sauvegarde de <ph name="FILE_COUNT" />…</translation>
-<translation id="4242533952199664413">Ouvrir les paramètres</translation>
 <translation id="426015154560005552">Clavier arabe</translation>
 <translation id="4261901459838235729">Présentation Google</translation>
 <translation id="4290535918735525311">1 dossier partagé avec Linux</translation>
-<translation id="42981349822642051">Développer</translation>
 <translation id="4298972503445160211">Clavier danois</translation>
 <translation id="4299729908419173967">brésilien</translation>
 <translation id="4309915981827077375">Informations générales</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Correction automatique</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4886021172213954916">Clavier tamoul (machine à écrire)</translation>
-<translation id="4892969127351273348">Impossible d'ouvrir le fichier avec <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Prêt à sauvegarder <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Corrigé</translation>
 <translation id="4935975195727477204">Fleur de gazania</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Français suisse</translation>
 <translation id="5234764350956374838">Ignorer</translation>
 <translation id="5241298539944515331">Clavier vietnamien (VIQR)</translation>
-<translation id="52446585071384036">Pour ouvrir un fichier avec <ph name="APP_NAME" />, copiez-le d'abord dans le dossier "Fichiers Linux".</translation>
 <translation id="5253070652067921974">Créé par</translation>
 <translation id="5257456363153333584">Libellule</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accédez à vos fichiers où que vous soyez, même hors connexion.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Coréen</translation>
 <translation id="5819442873484330149">Hangûl sebeol-sik (final)</translation>
 <translation id="5833610766403489739">Ce fichier s'est égaré. Veuillez vérifier le paramètre correspondant à votre emplacement de téléchargement, puis réessayer.</translation>
-<translation id="5838051104334203064">Les applications du Play Store n'ont pas accès à cet appareil</translation>
 <translation id="5838451609423551646">Tous les éléments sélectionnés ont été supprimés.</translation>
 <translation id="5838825566232597749">Clavier Workman international américain</translation>
 <translation id="5850516540536751549">Ce type de fichier n'est pas compatible. Veuillez accéder au <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> pour trouver une application qui permet de l'ouvrir.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Pour enregistrer ces fichiers en vue d'une utilisation hors connexion, reconnectez-vous, cliquez sur les fichiers à l'aide du bouton droit de la souris, puis sélectionnez l'option <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Annuler</translation>
 <translation id="8261506727792406068">Supprimer</translation>
+<translation id="8269755669432358899">Réduire les panneaux de commentaires sur les fichiers</translation>
 <translation id="8279388322240498158">Clavier kurde sorani (anglais)</translation>
 <translation id="8280151743281770066">Arménien phonétique</translation>
 <translation id="8294431847097064396">Source</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Sélectionnez le fichier à ouvrir</translation>
 <translation id="8579285237314169903">Synchronisation de <ph name="NUMBER_OF_FILES" /> éléments en cours…</translation>
 <translation id="8600173386174225982">Les fichiers s'affichent désormais sous forme de vignettes.</translation>
+<translation id="8601932370724196034">Fichier image Crostini</translation>
 <translation id="8669949407341943408">Déplacement en cours…</translation>
 <translation id="8671210955687109937">Commentateur</translation>
 <translation id="8686213429977032554">Ce fichier Drive n'a pas encore été partagé</translation>

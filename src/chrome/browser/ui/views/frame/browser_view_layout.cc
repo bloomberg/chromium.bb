@@ -132,19 +132,25 @@ BrowserViewLayout::BrowserViewLayout(
     views::View* top_container,
     views::View* tab_strip_region_view,
     TabStrip* tab_strip,
+    views::View* webui_tab_strip,
+    views::View* webui_tab_strip_caption_buttons,
     views::View* toolbar,
     InfoBarContainerView* infobar_container,
     views::View* contents_container,
-    ImmersiveModeController* immersive_mode_controller)
+    ImmersiveModeController* immersive_mode_controller,
+    views::View* web_footer_experiment)
     : delegate_(std::move(delegate)),
       browser_(browser),
       browser_view_(browser_view),
       top_container_(top_container),
       tab_strip_region_view_(tab_strip_region_view),
+      webui_tab_strip_(webui_tab_strip),
+      webui_tab_strip_caption_buttons_(webui_tab_strip_caption_buttons),
       toolbar_(toolbar),
       infobar_container_(infobar_container),
       contents_container_(contents_container),
       immersive_mode_controller_(immersive_mode_controller),
+      web_footer_experiment_(web_footer_experiment),
       tab_strip_(tab_strip),
       dialog_host_(std::make_unique<WebContentsModalDialogHostViews>(this)) {}
 
@@ -195,9 +201,9 @@ gfx::Size BrowserViewLayout::GetMinimumSize(const views::View* host) const {
   // TODO(pkotwicz): Adjust the minimum height for the find bar.
 
   gfx::Size contents_size(contents_container_->GetMinimumSize());
-  contents_size.SetToMax(browser()->is_type_popup()
-                             ? kContentsMinimumSize
-                             : kMainBrowserContentsMinimumSize);
+  contents_size.SetToMax(browser()->is_type_normal()
+                             ? kMainBrowserContentsMinimumSize
+                             : kContentsMinimumSize);
 
   const int min_height =
       delegate_->GetTopInsetInBrowserView() + tabstrip_size.height() +
@@ -291,11 +297,11 @@ int BrowserViewLayout::NonClientHitTest(const gfx::Point& point) {
     }
   }
 
-  // If the point's y coordinate is below the top of the toolbar and otherwise
-  // within the bounds of this view, the point is considered to be within the
-  // client area.
+  // If the point's y coordinate is below the top of the topmost view and
+  // otherwise within the bounds of this view, the point is considered to be
+  // within the client area.
   gfx::Rect bounds_from_toolbar_top = browser_view_->bounds();
-  bounds_from_toolbar_top.Inset(0, toolbar_->y(), 0, 0);
+  bounds_from_toolbar_top.Inset(0, GetClientAreaTop(), 0, 0);
   if (bounds_from_toolbar_top.Contains(point))
     return HTCLIENT;
 
@@ -330,6 +336,7 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
                                     browser_view_->GetMirroredX() +
                                     delegate_->GetThemeBackgroundXInset());
   }
+  top = LayoutWebUITabStrip(top);
   top = LayoutToolbar(top);
 
   top = LayoutBookmarkAndInfoBars(top, browser_view->y());
@@ -337,7 +344,12 @@ void BrowserViewLayout::Layout(views::View* browser_view) {
   // Top container requires updated toolbar and bookmark bar to compute bounds.
   UpdateTopContainerBounds();
 
-  LayoutContentsContainerView(top, LayoutDownloadShelf(browser_view->height()));
+  // Layout items at the bottom of the view.
+  int bottom = LayoutWebFooterExperiment(browser_view->height());
+  bottom = LayoutDownloadShelf(bottom);
+
+  // Layout the contents container in the remaining space.
+  LayoutContentsContainerView(top, bottom);
 
   if (contents_border_widget_ && contents_border_widget_->IsVisible()) {
     gfx::Point contents_top_left;
@@ -400,11 +412,30 @@ int BrowserViewLayout::LayoutTabStripRegion(int top) {
          GetLayoutConstant(TABSTRIP_TOOLBAR_OVERLAP);
 }
 
+int BrowserViewLayout::LayoutWebUITabStrip(int top) {
+  if (!webui_tab_strip_ || !webui_tab_strip_->GetVisible())
+    return top;
+  constexpr int kWebUiTabStripHeightDp = 262;
+  webui_tab_strip_->SetBounds(vertical_layout_rect_.x(), top,
+                              vertical_layout_rect_.width(),
+                              kWebUiTabStripHeightDp);
+  return webui_tab_strip_->bounds().bottom();
+}
+
 int BrowserViewLayout::LayoutToolbar(int top) {
   int browser_view_width = vertical_layout_rect_.width();
   bool toolbar_visible = delegate_->IsToolbarVisible();
   int height = toolbar_visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(toolbar_visible);
+  if (webui_tab_strip_caption_buttons_) {
+    webui_tab_strip_caption_buttons_->SetVisible(toolbar_visible);
+    const int preferred_webui_tab_strip_caption_buttons_width =
+        webui_tab_strip_caption_buttons_->GetPreferredSize().width();
+    browser_view_width -= preferred_webui_tab_strip_caption_buttons_width;
+    webui_tab_strip_caption_buttons_->SetBounds(
+        vertical_layout_rect_.x() + browser_view_width, top,
+        preferred_webui_tab_strip_caption_buttons_width, height);
+  }
   toolbar_->SetBounds(vertical_layout_rect_.x(), top, browser_view_width,
                       height);
   return toolbar_->bounds().bottom();
@@ -520,6 +551,23 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
     download_shelf_->Layout();
     bottom -= height;
   }
+  return bottom;
+}
+
+int BrowserViewLayout::GetClientAreaTop() {
+  // If webui_tab_strip is displayed, the client area starts at its top,
+  // otherwise at the top of the toolbar.
+  return webui_tab_strip_ && webui_tab_strip_->GetVisible()
+             ? webui_tab_strip_->y()
+             : toolbar_->y();
+}
+
+int BrowserViewLayout::LayoutWebFooterExperiment(int bottom) {
+  if (!web_footer_experiment_)
+    return bottom;
+  bottom -= 1;
+  web_footer_experiment_->SetBounds(vertical_layout_rect_.x(), bottom,
+                                    vertical_layout_rect_.width(), 1);
   return bottom;
 }
 

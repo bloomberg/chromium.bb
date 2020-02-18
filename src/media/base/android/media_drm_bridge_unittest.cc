@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/android/media_drm_bridge.h"
 #include "media/base/provision_fetcher.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -116,7 +116,7 @@ class MediaDrmBridgeTest : public ProvisionFetcher, public testing::Test {
     return std::make_unique<ProvisionFetcherWrapper>(this);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MediaDrmBridgeTest, IsKeySystemSupported_Widevine) {

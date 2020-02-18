@@ -384,6 +384,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       NetworkChangeNotifier::NetworkHandle default_network,
       quic::QuicTime::Delta retransmittable_on_wire_timeout,
       bool migrate_idle_session,
+      bool allow_port_migration,
       base::TimeDelta idle_migration_period,
       base::TimeDelta max_time_on_non_default_network,
       int max_migrations_to_non_default_network_on_write_error,
@@ -465,12 +466,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       quic::QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      spdy::SpdyPriority priority,
+      const spdy::SpdyStreamPrecedence& precedence,
       quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override;
   void UnregisterStreamPriority(quic::QuicStreamId id, bool is_static) override;
-  void UpdateStreamPriority(quic::QuicStreamId id,
-                            spdy::SpdyPriority new_priority) override;
+  void UpdateStreamPriority(
+      quic::QuicStreamId id,
+      const spdy::SpdyStreamPrecedence& new_precedence) override;
 
   // quic::QuicSession methods:
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
@@ -503,9 +505,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                           quic::ConnectionCloseSource source) override;
   void OnSuccessfulVersionNegotiation(
       const quic::ParsedQuicVersion& version) override;
-  void OnConnectivityProbeReceived(
-      const quic::QuicSocketAddress& self_address,
-      const quic::QuicSocketAddress& peer_address) override;
+  void OnPacketReceived(const quic::QuicSocketAddress& self_address,
+                        const quic::QuicSocketAddress& peer_address,
+                        bool is_connectivity_probe) override;
   void OnPathDegrading() override;
   bool ShouldKeepConnectionAlive() const override;
 
@@ -692,9 +694,25 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void CancelAllRequests(int net_error);
   void NotifyRequestsOfConfirmation(int net_error);
 
-  ProbingResult StartProbeNetwork(NetworkChangeNotifier::NetworkHandle network,
+  // Probe on <network, peer_address>.
+  // If <network, peer_addres> is identical to the current path, the probe
+  // is sent on a different port.
+  ProbingResult StartProbing(NetworkChangeNotifier::NetworkHandle network,
+                             const quic::QuicSocketAddress& peer_address,
+                             const NetLogWithSource& migration_net_log);
+
+  // Perform a few checks before StartProbing. If any of those checks fails,
+  // StartProbing will be skipped.
+  ProbingResult MaybeStartProbing(NetworkChangeNotifier::NetworkHandle network,
                                   const quic::QuicSocketAddress& peer_address,
                                   const NetLogWithSource& migration_net_log);
+
+  // Helper method to perform a few checks and initiate connection migration
+  // attempt when path degrading is detected.
+  void MaybeMigrateToAlternateNetworkOnPathDegrading();
+
+  // Helper method to initiate a port migration on path degrading is detected.
+  void MaybeMigrateToDifferentPortOnPathDegrading();
 
   // Called when there is only one possible working network: |network|, If any
   // error encountered, this session will be closed.
@@ -704,18 +722,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   //  - If now on the default network, cancel timer to migrate back to default
   //    network.
   void MigrateNetworkImmediately(NetworkChangeNotifier::NetworkHandle network);
-
-  // Called when probe |network| succeeded.
-  void OnProbeNetworkSucceeded(
-      NetworkChangeNotifier::NetworkHandle network,
-      const quic::QuicSocketAddress& peer_address,
-      const quic::QuicSocketAddress& self_address,
-      std::unique_ptr<DatagramClientSocket> socket,
-      std::unique_ptr<QuicChromiumPacketWriter> writer,
-      std::unique_ptr<QuicChromiumPacketReader> reader);
-  // Called when probe |network| failed.
-  void OnProbeNetworkFailed(NetworkChangeNotifier::NetworkHandle network,
-                            const quic::QuicSocketAddress& peer_address);
 
   void StartMigrateBackToDefaultNetworkTimer(base::TimeDelta delay);
   void CancelMigrateBackToDefaultNetworkTimer();
@@ -761,6 +767,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
   bool migrate_idle_session_;
+  bool allow_port_migration_;
   // Session can be migrated if its idle time is within this period.
   base::TimeDelta idle_migration_period_;
   base::TimeDelta max_time_on_non_default_network_;
@@ -841,7 +848,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool ignore_read_error_;
 
   // If true, client headers will include HTTP/2 stream dependency info derived
-  // from spdy::SpdyPriority.
+  // from spdy::SpdyStreamPrecedence.
   bool headers_include_h2_stream_dependency_;
   Http2PriorityDependencies priority_dependency_state_;
 

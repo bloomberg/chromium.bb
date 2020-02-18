@@ -10,17 +10,18 @@
 
 #include "base/command_line.h"
 #include "base/feature_list.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/driver/sync_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -101,8 +102,10 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
     datatypes.push_back(syncer::AUTOFILL_WALLET_METADATA);
     datatypes.push_back(syncer::BOOKMARKS);
     datatypes.push_back(syncer::DEVICE_INFO);
-    datatypes.push_back(syncer::FAVICON_TRACKING);
-    datatypes.push_back(syncer::FAVICON_IMAGES);
+    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes)) {
+      datatypes.push_back(syncer::FAVICON_TRACKING);
+      datatypes.push_back(syncer::FAVICON_IMAGES);
+    }
     datatypes.push_back(syncer::HISTORY_DELETE_DIRECTIVES);
     if (!base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
       // Password store factory is null for testing. For directory
@@ -150,7 +153,7 @@ class ProfileSyncServiceFactoryTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 };
 

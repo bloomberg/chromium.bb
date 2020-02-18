@@ -95,7 +95,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool remote_fonts_enabled;
   bool javascript_can_access_clipboard;
   bool xslt_enabled;
-  bool xss_auditor_enabled;
   // We don't use dns_prefetching_enabled to disable DNS prefetching.  Instead,
   // we disable the feature at a lower layer so that we catch non-WebKit uses
   // of DNS prefetch as well.
@@ -126,7 +125,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool mock_scrollbars_enabled;
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
-  int minimum_accelerated_2d_canvas_size;
   bool antialiased_2d_canvas_disabled;
   bool antialiased_clips_2d_canvas_enabled;
   int accelerated_2d_canvas_msaa_sample_count;
@@ -280,6 +278,12 @@ struct CONTENT_EXPORT WebPreferences {
   // WebView sets this to false to retain old documentElement behaviour
   // (http://crbug.com/761016).
   bool scroll_top_left_interop_enabled;
+  // Disable features such as offscreen canvas that depend on the viz
+  // architecture of surface embedding. Android WebView does not support this
+  // architecture yet.
+  bool disable_features_depending_on_viz;
+  // Don't accelerate small canvases to avoid crashes TODO(crbug.com/1004304)
+  bool disable_accelerated_small_canvases;
 #endif  // defined(OS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark

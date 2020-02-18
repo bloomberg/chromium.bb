@@ -26,6 +26,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/child_process_logging.h"
@@ -358,11 +359,10 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
       // This list must match the CDM that is being bundled with Chrome.
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
       capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
+      capability->video_codecs.push_back(media::VideoCodec::kCodecAV1);
       // TODO(crbug.com/899403): Update this and tests after Widevine CDM
       // supports VP9 profile 2.
       capability->supports_vp9_profile2 = false;
-      // TODO(crbug.com/953504): Update this and tests after Widevine CDM
-      // supports AV1.
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
       capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
@@ -495,7 +495,7 @@ void ChromeContentClient::AddPepperPlugins(
   if (max_flash) {
     plugins->push_back(*max_flash);
   } else if (!disable_bundled_flash) {
-#if defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(FLAPPER_AVAILABLE)
     // Add a fake Flash plugin even though it doesn't actually exist - if a
     // web page requests it, it will be component-updated on-demand. There is
     // nothing that guarantees the component update will give us the
@@ -504,7 +504,7 @@ void ChromeContentClient::AddPepperPlugins(
     plugins->push_back(
         CreatePepperFlashInfo(base::FilePath(ChromeContentClient::kNotPresent),
                               FLAPPER_VERSION_STRING, false));
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(FLAPPER_AVAILABLE)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(FLAPPER_AVAILABLE)
   }
 #endif  // BUILDFLAG(ENABLE_PLUGINS)
 }
@@ -670,10 +670,6 @@ base::RefCountedMemory* ChromeContentClient::GetDataResourceBytes(
     int resource_id) {
   return ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
       resource_id);
-}
-
-bool ChromeContentClient::IsDataResourceGzipped(int resource_id) {
-  return ui::ResourceBundle::GetSharedInstance().IsGzipped(resource_id);
 }
 
 gfx::Image& ChromeContentClient::GetNativeImageNamed(int resource_id) {

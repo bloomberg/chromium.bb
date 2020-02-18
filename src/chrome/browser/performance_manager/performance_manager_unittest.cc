@@ -6,11 +6,14 @@
 
 #include <utility>
 
+#include "base/callback.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace performance_manager {
@@ -38,8 +41,6 @@ class PerformanceManagerTest : public testing::Test {
     task_environment_.RunUntilIdle();
   }
 
-  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
-
  protected:
   PerformanceManager* performance_manager() {
     return performance_manager_.get();
@@ -47,17 +48,18 @@ class PerformanceManagerTest : public testing::Test {
 
  private:
   std::unique_ptr<PerformanceManager> performance_manager_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceManagerTest);
 };
 
 TEST_F(PerformanceManagerTest, InstantiateNodes) {
   std::unique_ptr<ProcessNodeImpl> process_node =
-      performance_manager()->CreateProcessNode();
+      performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   EXPECT_NE(nullptr, process_node.get());
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
   EXPECT_NE(nullptr, page_node.get());
 
   // Create a node of each type.
@@ -75,9 +77,10 @@ TEST_F(PerformanceManagerTest, InstantiateNodes) {
 TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
   // Create a page node and a small hierarchy of frames.
   std::unique_ptr<ProcessNodeImpl> process_node =
-      performance_manager()->CreateProcessNode();
+      performance_manager()->CreateProcessNode(RenderProcessHostProxy());
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
 
   std::unique_ptr<FrameNodeImpl> parent1_frame =
       performance_manager()->CreateFrameNode(
@@ -120,15 +123,55 @@ TEST_F(PerformanceManagerTest, BatchDeleteNodes) {
 TEST_F(PerformanceManagerTest, CallOnGraph) {
   // Create a page node for something to target.
   std::unique_ptr<PageNodeImpl> page_node =
-      performance_manager()->CreatePageNode(WebContentsProxy(), false, false);
-
-  PerformanceManager::GraphCallback graph_callback = base::BindLambdaForTesting(
-      [&page_node](GraphImpl* graph) { EXPECT_EQ(page_node->graph(), graph); });
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
+  base::RunLoop run_loop;
+  base::OnceClosure quit_closure = run_loop.QuitClosure();
+  EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
+  PerformanceManager::GraphCallback graph_callback =
+      base::BindLambdaForTesting([&](GraphImpl* graph) {
+        EXPECT_TRUE(
+            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+        EXPECT_EQ(page_node.get()->graph(), graph);
+        std::move(quit_closure).Run();
+      });
 
   performance_manager()->CallOnGraph(FROM_HERE, std::move(graph_callback));
-  RunUntilIdle();
+  run_loop.Run();
 
   performance_manager()->DeleteNode(std::move(page_node));
+}
+
+TEST_F(PerformanceManagerTest, CallOnGraphAndReplyWithResult) {
+  // Create a page node for something to target.
+  std::unique_ptr<PageNodeImpl> page_node =
+      performance_manager()->CreatePageNode(WebContentsProxy(), std::string(),
+                                            false, false);
+  base::RunLoop run_loop;
+
+  EXPECT_FALSE(performance_manager()->OnPMTaskRunnerForTesting());
+  base::OnceCallback<int(GraphImpl*)> task =
+      base::BindLambdaForTesting([&](GraphImpl* graph) {
+        EXPECT_TRUE(
+            PerformanceManager::GetInstance()->OnPMTaskRunnerForTesting());
+        EXPECT_EQ(page_node.get()->graph(), graph);
+        return 1;
+      });
+
+  bool reply_called = false;
+  base::OnceCallback<void(int)> reply = base::BindLambdaForTesting([&](int i) {
+    EXPECT_EQ(i, 1);
+    reply_called = true;
+    std::move(run_loop.QuitClosure()).Run();
+  });
+
+  performance_manager()->CallOnGraphAndReplyWithResult(
+      FROM_HERE, std::move(task), std::move(reply));
+  run_loop.Run();
+
+  performance_manager()->DeleteNode(std::move(page_node));
+
+  EXPECT_TRUE(reply_called);
 }
 
 }  // namespace performance_manager

@@ -4,21 +4,21 @@
 
 #include <memory>
 #include <set>
-#include "modules/skparagraph/src/TextLine.h"
 #include "include/core/SkFontMgr.h"
 #include "include/core/SkRefCnt.h"
 #include "include/private/SkTHash.h"
 #include "modules/skparagraph/include/FontCollection.h"
 #include "modules/skparagraph/include/TextStyle.h"
+#include "modules/skparagraph/src/TextLine.h"
 #include "src/core/SkSpan.h"
 
 namespace skia {
 namespace textlayout {
 
 struct FontDescr {
-    FontDescr() {}
+    FontDescr() { }
     FontDescr(SkFont font, SkScalar height)
-            : fFont(font), fHeight(height), fStart(EMPTY_INDEX) {}
+            : fFont(font), fHeight(height), fStart(EMPTY_INDEX) { }
     bool operator==(const FontDescr& a) const {
         return this->fFont == a.fFont && this->fHeight == a.fHeight;
     }
@@ -33,18 +33,22 @@ public:
     FontResolver() = default;
     ~FontResolver() = default;
 
-    void findAllFontsForAllStyledBlocks(SkSpan<const char> utf8,
-                                        SkSpan<Block> styles,
-                                        sk_sp<FontCollection> fontCollection);
+    void findAllFontsForAllStyledBlocks(ParagraphImpl* master);
     bool findNext(const char* codepoint, SkFont* font, SkScalar* height);
+    void getFirstFont(SkFont* font, SkScalar* height);
 
-    SkTArray<FontDescr>& switches() { return fFontSwitches; }
+    const SkTArray<FontDescr>& switches() const { return fFontSwitches; }
+
+    bool isEmpty();
+
+    bool allWhitespaces() const { return fUnresolved == SkToU32(fWhitespaces.count()); }
 
 private:
     void findAllFontsForStyledBlock(const TextStyle& style, TextRange textRange);
     FontDescr makeFont(sk_sp<SkTypeface> typeface, SkScalar size, SkScalar height);
     size_t resolveAllCharactersByFont(const FontDescr& fontDescr);
     void addResolvedWhitespacesToMapping();
+    void setLastResortFont();
 
     struct Hash {
         uint32_t operator()(const FontDescr& key) const {
@@ -58,8 +62,8 @@ private:
 
     sk_sp<FontCollection> fFontCollection;
     SkSpan<const char> fText;
-    TextRange fTextRange;
     SkSpan<Block> fStyles;
+    TextStyle fDefaultStyle;
 
     SkTArray<FontDescr> fFontSwitches;
     FontDescr* fFontIterator;

@@ -49,7 +49,7 @@ DawnBufferDescriptor AsDawnType(const GPUBufferDescriptor* webgpu_desc) {
 
   DawnBufferDescriptor dawn_desc = {};
   dawn_desc.nextInChain = nullptr;
-  dawn_desc.usage = AsDawnEnum<DawnBufferUsageBit>(webgpu_desc->usage());
+  dawn_desc.usage = AsDawnEnum<DawnBufferUsage>(webgpu_desc->usage());
   dawn_desc.size = webgpu_desc->size();
 
   return dawn_desc;
@@ -169,7 +169,7 @@ void GPUBuffer::OnMapAsyncCallback(ScriptPromiseResolver* resolver,
           DOMExceptionCode::kOperationError));
       break;
     case DAWN_BUFFER_MAP_ASYNC_STATUS_UNKNOWN:
-    case DAWN_BUFFER_MAP_ASYNC_STATUS_CONTEXT_LOST:
+    case DAWN_BUFFER_MAP_ASYNC_STATUS_DEVICE_LOST:
       resolver->Reject(
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError));
       break;
@@ -256,7 +256,7 @@ void GPUBuffer::DetachArrayBufferForCurrentMapping(ScriptState* script_state) {
   }
   v8::Isolate* isolate = script_state->GetIsolate();
   DOMArrayBuffer* mapped_buffer = mapped_buffer_.Release();
-  DCHECK(mapped_buffer->IsNeuterable(isolate));
+  DCHECK(mapped_buffer->IsDetachable(isolate));
 
   // Detach the array buffer by transferring the contents out and dropping them.
   WTF::ArrayBufferContents contents;

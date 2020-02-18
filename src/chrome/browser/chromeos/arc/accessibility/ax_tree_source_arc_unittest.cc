@@ -6,7 +6,7 @@
 
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_node_info_data_wrapper.h"
 #include "chrome/browser/chromeos/arc/accessibility/accessibility_window_info_data_wrapper.h"
-#include "components/arc/common/accessibility_helper.mojom.h"
+#include "components/arc/mojom/accessibility_helper.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 
@@ -612,7 +612,7 @@ TEST_F(AXTreeSourceArcTest, GetTreeDataAppliesFocus) {
 
   // Nothing should be focused when there are no nodes.
   EXPECT_TRUE(CallGetTreeData(&data));
-  EXPECT_EQ(-1, data.focus_id);
+  EXPECT_EQ(ui::AXNode::kInvalidAXID, data.focus_id);
 
   // Add a child node.
   root->root_node_id = 2;

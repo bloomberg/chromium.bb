@@ -16,12 +16,12 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/features.h"
 #include "components/content_settings/core/common/pref_names.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/navigation_simulator.h"
@@ -1171,7 +1171,9 @@ TEST_F(UkmPageLoadMetricsObserverTest, LayoutInstabilitySubframeAggregation) {
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, false);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOff));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1195,7 +1197,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
        ThirdPartyCookieBlockingFeatureDisabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1218,7 +1222,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
 TEST_F(UkmPageLoadMetricsObserverTest, ThirdPartyCookieBlockingEnabled) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
 
   NavigateAndCommit(GURL(kTestUrl1));
 
@@ -1242,7 +1248,9 @@ TEST_F(UkmPageLoadMetricsObserverTest,
        ThirdPartyCookieBlockingDisabledForSite) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndEnableFeature(content_settings::kImprovedCookieControls);
-  profile()->GetPrefs()->SetBoolean(prefs::kCookieControlsEnabled, true);
+  profile()->GetPrefs()->SetInteger(
+      prefs::kCookieControlsMode,
+      static_cast<int>(content_settings::CookieControlsMode::kOn));
   auto cookie_settings = CookieSettingsFactory::GetForProfile(profile());
   cookie_settings->SetThirdPartyCookieSetting(GURL(kTestUrl1),
                                               CONTENT_SETTING_ALLOW);

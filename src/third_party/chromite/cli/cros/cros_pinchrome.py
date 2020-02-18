@@ -247,9 +247,6 @@ class UprevList(object):
     return self
 
   def __next__(self):
-    return self.next()
-
-  def next(self):
     before = self.last.sha if self.last else None
     try:
       self.last = ChromeUprev(self.chrome_path, before=before)
@@ -258,6 +255,9 @@ class UprevList(object):
     ver = self.last.from_parts.version + ' (%s)' % self.last.date
     self.uprevs.append(self.last)
     return ver
+
+  # Python 2 glue.
+  next = __next__
 
 
 # Tools to find the binhost updates in the private overlay which go with the
@@ -360,7 +360,7 @@ class PinchromeCommand(command.CliCommand):
     parser.add_argument('--nowipe', help='Preserve the working directory',
                         default=True, dest='wipe', action='store_false')
     parser.add_argument('--dryrun', action='store_true',
-                        help='Prepare pinning CLs but don\'t upload them')
+                        help="Prepare pinning CLs but don't upload them")
 
   def CommitMessage(self, subject, cq_depend=None, change_id=None):
     """Generate a commit message
@@ -452,7 +452,7 @@ class PinchromeCommand(command.CliCommand):
 
     pub_cid = git.Commit(overlay, 'Public overlay commit')
     if not pub_cid:
-      raise Exception('Don\'t know the commit ID of the public overlay CL.')
+      raise Exception("Don't know the commit ID of the public overlay CL.")
 
     # Find out what package directory the binhost configs should point to.
     binhost_dir = os.path.join(overlay, 'chromeos', 'binhost')
@@ -480,7 +480,7 @@ class PinchromeCommand(command.CliCommand):
     commit_message = self.CommitMessage(commit_subject, pub_cid)
     priv_cid = git.Commit(priv_overlay, commit_message)
     if not priv_cid:
-      raise Exception('Don\'t know the commit ID of the private overlay CL.')
+      raise Exception("Don't know the commit ID of the private overlay CL.")
 
     # Update the commit message on the public overlay CL.
     commit_message = self.CommitMessage(commit_subject, '*' + priv_cid, pub_cid)

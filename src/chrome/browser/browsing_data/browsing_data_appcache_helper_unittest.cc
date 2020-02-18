@@ -16,20 +16,20 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/storage_usage_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
  public:
   CannedBrowsingDataAppCacheHelperTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD) {}
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD) {}
 
   void TearDown() override {
     // Make sure we run all pending tasks on IO thread before testing
     // profile is destructed.
     content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
@@ -49,7 +49,7 @@ class CannedBrowsingDataAppCacheHelperTest : public testing::Test {
                         }) != collection.end();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 };
 

@@ -202,8 +202,22 @@ bool BluetoothAdapterFactory::HasSharedInstanceForTesting() {
   return default_adapter.Get() != nullptr;
 }
 
-BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting()
-    : weak_ptr_factory_(this) {}
+#if defined(OS_CHROMEOS)
+// static
+void BluetoothAdapterFactory::SetBleScanParserCallback(
+    BleScanParserCallback callback) {
+  Get().ble_scan_parser_ = callback;
+}
+
+// static
+BluetoothAdapterFactory::BleScanParserCallback
+BluetoothAdapterFactory::GetBleScanParserCallback() {
+  return Get().ble_scan_parser_;
+}
+#endif  // defined(OS_CHROMEOS)
+
+BluetoothAdapterFactory::GlobalValuesForTesting::GlobalValuesForTesting() =
+    default;
 
 BluetoothAdapterFactory::GlobalValuesForTesting::~GlobalValuesForTesting() =
     default;

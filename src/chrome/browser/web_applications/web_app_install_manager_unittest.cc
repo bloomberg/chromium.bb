@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/test/test_data_retriever.h"
 #include "chrome/browser/web_applications/test/test_install_finalizer.h"
 #include "chrome/browser/web_applications/test/test_web_app_url_loader.h"
+#include "chrome/browser/web_applications/test/web_app_icon_test_utils.h"
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -157,7 +158,7 @@ TEST_F(WebAppInstallManagerTest,
       app1_id, CreateWebAppInfo(url1),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app1_id, installed_app_id);
             event_order.push_back(Event::App1_CallbackCalled);
             app1_installed_run_loop.Quit();
@@ -173,7 +174,7 @@ TEST_F(WebAppInstallManagerTest,
       app2_id, CreateWebAppInfo(url2),
       base::BindLambdaForTesting(
           [&](const AppId& installed_app_id, InstallResultCode code) {
-            EXPECT_EQ(InstallResultCode::kSuccess, code);
+            EXPECT_EQ(InstallResultCode::kSuccessNewInstall, code);
             EXPECT_EQ(app2_id, installed_app_id);
             event_order.push_back(Event::App2_CallbackCalled);
             app2_installed_run_loop.Quit();
@@ -205,7 +206,7 @@ TEST_F(WebAppInstallManagerTest,
 }
 
 TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_InstallManagerShutdown) {
+       InstallOrUpdateWebAppFromSync_InstallManagerDestroyed) {
   const GURL app_url("https://example.com/path");
   const AppId app_id = GenerateAppIdFromURL(app_url);
   NavigateAndCommit(app_url);
@@ -233,50 +234,17 @@ TEST_F(WebAppInstallManagerTest,
 
   install_manager().InstallOrUpdateWebAppFromSync(
       app_id, CreateWebAppInfo(app_url),
-      base::BindLambdaForTesting(
-          [](const web_app::AppId& installed_app_id,
-             web_app::InstallResultCode code) { NOTREACHED(); }));
+      base::BindLambdaForTesting([](const web_app::AppId& installed_app_id,
+                                    web_app::InstallResultCode code) {
+        EXPECT_EQ(InstallResultCode::kWebContentsDestroyed, code);
+      }));
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
-  // Wait for the task started.
+  // Wait for the task to start.
   run_loop.Run();
   EXPECT_TRUE(install_manager().has_web_contents_for_testing());
 
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager().Shutdown();
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  // Delete InstallManager object.
-  DestroyManagers();
-}
-
-TEST_F(WebAppInstallManagerTest,
-       InstallOrUpdateWebAppFromSync_InstallAfterShutdown) {
-  const GURL app1_url("https://example.com/path");
-  const AppId app1_id = GenerateAppIdFromURL(app1_url);
-
-  install_manager().InstallOrUpdateWebAppFromSync(
-      app1_id, CreateWebAppInfo(app1_url),
-      base::BindLambdaForTesting(
-          [&](const web_app::AppId& installed_app_id,
-              web_app::InstallResultCode code) { NOTREACHED(); }));
-  EXPECT_TRUE(install_manager().has_web_contents_for_testing());
-
-  // Destroy InstallManager: Call Shutdown as if Profile gets destroyed.
-  install_manager().Shutdown();
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  const GURL app2_url("https://example.org/path");
-  const AppId app2_id = GenerateAppIdFromURL(app2_url);
-
-  install_manager().InstallOrUpdateWebAppFromSync(
-      app2_id, CreateWebAppInfo(app2_url),
-      base::BindLambdaForTesting(
-          [&](const web_app::AppId& installed_app_id,
-              web_app::InstallResultCode code) { NOTREACHED(); }));
-  EXPECT_FALSE(install_manager().has_web_contents_for_testing());
-
-  // Delete InstallManager object.
+  // Simulate Profile getting destroyed.
   DestroyManagers();
 }
 
@@ -293,7 +261,7 @@ TEST_F(WebAppInstallManagerTest,
       app_id, CreateWebAppInfo(app_url),
       base::BindLambdaForTesting([&](const web_app::AppId& installed_app_id,
                                      web_app::InstallResultCode code) {
-        EXPECT_EQ(InstallResultCode::kAlreadyInstalled, code);
+        EXPECT_EQ(InstallResultCode::kSuccessAlreadyInstalled, code);
         EXPECT_EQ(app_id, installed_app_id);
         run_loop.Quit();
       }));

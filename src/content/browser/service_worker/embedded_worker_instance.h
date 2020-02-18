@@ -18,22 +18,22 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
+#include "base/threading/sequence_bound.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "content/public/browser/content_browser_client.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
-#include "third_party/blink/public/mojom/devtools/console_message.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/controller_service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
-#include "third_party/blink/public/web/web_console_message.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -52,7 +52,7 @@ FORWARD_DECLARE_TEST(ServiceWorkerNewScriptLoaderTest, AccessedNetwork);
 // may be 'in-waiting' or running in one of the child processes added by
 // AddProcessReference().
 //
-// Owned by ServiceWorkerVersion. Lives on the IO thread.
+// Owned by ServiceWorkerVersion. Lives on the core thread.
 class CONTENT_EXPORT EmbeddedWorkerInstance
     : public blink::mojom::EmbeddedWorkerInstanceHost {
  public:
@@ -202,10 +202,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Called when the worker is doomed.
   void OnWorkerVersionDoomed();
 
-  // Add message to the devtools console.
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                           const std::string& message);
-
   static std::string StatusToString(EmbeddedWorkerStatus status);
   static std::string StartingPhaseToString(StartingPhase phase);
 
@@ -242,9 +238,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // The below can only be called on the UI thread. The returned factory may be
   // later supplied to UpdateLoaderFactories().
   static std::unique_ptr<blink::URLLoaderFactoryBundleInfo>
-  CreateFactoryBundleOnUI(RenderProcessHost* rph,
-                          int routing_id,
-                          const url::Origin& origin);
+  CreateFactoryBundleOnUI(
+      RenderProcessHost* rph,
+      int routing_id,
+      const url::Origin& origin,
+      ContentBrowserClient::URLLoaderFactoryType factory_type);
 
  private:
   typedef base::ObserverList<Listener>::Unchecked ListenerList;
@@ -273,10 +271,12 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   void SendStartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params);
 
   // Implements blink::mojom::EmbeddedWorkerInstanceHost.
-  // These functions all run on the IO thread.
+  // These functions all run on the core thread.
   void RequestTermination(RequestTerminationCallback callback) override;
   void CountFeature(blink::mojom::WebFeature feature) override;
-  void OnReadyForInspection() override;
+  void OnReadyForInspection(
+      mojo::PendingRemote<blink::mojom::DevToolsAgent>,
+      mojo::PendingReceiver<blink::mojom::DevToolsAgentHost>) override;
   void OnScriptLoaded() override;
   void OnScriptEvaluationStart() override;
   // Changes the internal worker status from STARTING to RUNNING.
@@ -307,7 +307,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                      blink::ServiceWorkerStatusCode status);
 
   // Called when a foreground service worker is added/removed in a process.
-  // Called on the IO thread and dispatches task to the UI thread.
+  // Called on the core thread and dispatches task to the UI thread.
   void NotifyForegroundServiceWorkerAdded();
   void NotifyForegroundServiceWorkerRemoved();
 
@@ -331,10 +331,11 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // |client_| is used to send messages to the renderer process. The browser
   // process should not disconnect the pipe because associated interfaces may be
   // using it. The renderer process will disconnect the pipe when appropriate.
-  blink::mojom::EmbeddedWorkerInstanceClientPtr client_;
+  mojo::Remote<blink::mojom::EmbeddedWorkerInstanceClient> client_;
 
-  // Binding for EmbeddedWorkerInstanceHost, runs on IO thread.
-  mojo::AssociatedBinding<EmbeddedWorkerInstanceHost> instance_host_binding_;
+  // Receiver for EmbeddedWorkerInstanceHost, runs on core thread.
+  mojo::AssociatedReceiver<EmbeddedWorkerInstanceHost> instance_host_receiver_{
+      this};
 
   // Whether devtools is attached or not.
   bool devtools_attached_;
@@ -357,7 +358,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   ServiceWorkerMetrics::StartSituation start_situation_ =
       ServiceWorkerMetrics::StartSituation::UNKNOWN;
 
-  std::unique_ptr<ServiceWorkerContentSettingsProxyImpl> content_settings_;
+  // TODO(crbug.com/824858): Remove SequenceBound when the core is the UI
+  // thread.
+  base::SequenceBound<ServiceWorkerContentSettingsProxyImpl> content_settings_;
 
   mojo::StrongBindingPtr<network::mojom::URLLoaderFactory>
       script_loader_factory_;

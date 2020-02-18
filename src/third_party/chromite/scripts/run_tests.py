@@ -83,8 +83,6 @@ SPECIAL_TESTS = {
     'lib/paygen/signer_payloads_client_unittest': INSIDE,
     'lib/upgrade_table_unittest': INSIDE,
     'lib/vm_unittest': INSIDE,
-    'mobmonitor/checkfile/manager_unittest': INSIDE,
-    'mobmonitor/scripts/mobmonitor_unittest': INSIDE,
     'scripts/cros_extract_deps_unittest': INSIDE,
     'scripts/cros_generate_update_payload_unittest': INSIDE,
     'scripts/cros_mark_android_as_stable_unittest': INSIDE,
@@ -175,7 +173,7 @@ def RunTest(test, cmd, tmpfile, finished, total):
     except (IOError, ValueError):
       cache = {}
     if test in cache:
-      seconds = (cache[test] + seconds) / 2
+      seconds = (cache[test] + seconds) // 2
     cache[test] = seconds
     json.dump(cache, open(TIMING_CACHE_FILE, 'w'))
 

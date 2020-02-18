@@ -67,6 +67,9 @@ class TraceWrapperV8Reference;
 // specific trace method due an issue with the Windows compiler which
 // instantiates even unused variables. This causes problems
 // in header files where we have only forward declarations of classes.
+//
+// This interface is safe to use on concurrent threads. All accesses (reads)
+// from member are done atomically.
 template <typename T, void (T::*method)(Visitor*)>
 struct TraceMethodDelegate {
   STATIC_ONLY(TraceMethodDelegate);
@@ -102,8 +105,8 @@ class PLATFORM_EXPORT Visitor {
   // Member version of the one-argument templated trace method.
   template <typename T>
   void Trace(const Member<T>& t) {
-    DCHECK(!t.IsHashTableDeletedValue());
-    Trace(t.Get());
+    DCHECK(!t.IsHashTableDeletedValueSafe());
+    Trace(t.GetSafe());
   }
 
   template <typename T>
@@ -178,15 +181,16 @@ class PLATFORM_EXPORT Visitor {
     static_assert(IsGarbageCollectedType<T>::value,
                   "T needs to be a garbage collected object");
 
-    if (!t.Get())
+    T* weak_member = t.GetSafe();
+
+    if (!weak_member)
       return;
 
-    DCHECK(!t.IsHashTableDeletedValue());
-    VisitWeak(const_cast<void*>(reinterpret_cast<const void*>(t.Get())),
-              reinterpret_cast<void**>(
-                  const_cast<typename std::remove_const<T>::type**>(t.Cell())),
-              TraceTrait<T>::GetTraceDescriptor(
-                  const_cast<void*>(reinterpret_cast<const void*>(t.Get()))),
+    DCHECK(!t.IsHashTableDeletedValueSafe());
+    VisitWeak(const_cast<void*>(reinterpret_cast<const void*>(weak_member)),
+              reinterpret_cast<void*>(const_cast<WeakMember<T>*>(&t)),
+              TraceTrait<T>::GetTraceDescriptor(const_cast<void*>(
+                  reinterpret_cast<const void*>(weak_member))),
               &HandleWeakCell<T>);
   }
 
@@ -233,7 +237,7 @@ class PLATFORM_EXPORT Visitor {
   virtual void Visit(void*, TraceDescriptor) = 0;
 
   // Visits an object through a weak reference.
-  virtual void VisitWeak(void*, void**, TraceDescriptor, WeakCallback) = 0;
+  virtual void VisitWeak(void*, void*, TraceDescriptor, WeakCallback) = 0;
 
   // Visitors for collection backing stores.
   virtual void VisitBackingStoreStrongly(void*, void**, TraceDescriptor) = 0;
@@ -250,9 +254,8 @@ class PLATFORM_EXPORT Visitor {
 
   // Registers backing store pointers so that they can be moved and properly
   // updated.
-  virtual void RegisterBackingStoreCallback(void** slot,
-                                            MovingObjectCallback,
-                                            void* callback_data) = 0;
+  virtual void RegisterBackingStoreCallback(void* backing,
+                                            MovingObjectCallback) = 0;
 
   // Used to register ephemeron callbacks.
   virtual bool RegisterWeakTable(const void* closure,

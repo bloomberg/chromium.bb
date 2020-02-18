@@ -14,7 +14,7 @@
 #include "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/common/features.h"
 #import "ios/web/net/cookies/wk_cookie_util.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -76,7 +76,7 @@ using SystemCookieStoreUtilTest = PlatformTest;
 // Tests that web::CreateSystemCookieStore returns a SystemCookieStore object
 // that is backed by the correct internal cookiestore based on the iOS version.
 TEST_F(SystemCookieStoreUtilTest, CreateSystemCookieStore) {
-  web::TestWebThreadBundle thread_bundle;
+  web::WebTaskEnvironment task_environment;
   net::ScopedTestingCookieStoreIOSClient scoped_cookie_store_ios_client(
       std::make_unique<net::TestCookieStoreIOSClient>());
 

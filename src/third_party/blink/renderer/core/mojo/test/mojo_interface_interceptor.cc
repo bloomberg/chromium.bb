@@ -4,8 +4,9 @@
 
 #include "third_party/blink/renderer/core/mojo/test/mojo_interface_interceptor.h"
 
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -28,6 +29,7 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     ExecutionContext* context,
     const String& interface_name,
     const String& scope,
+    bool use_browser_interface_broker,
     ExceptionState& exception_state) {
   bool process_scope = scope == "process";
   if (process_scope && !context->IsDocument()) {
@@ -37,8 +39,9 @@ MojoInterfaceInterceptor* MojoInterfaceInterceptor::Create(
     return nullptr;
   }
 
-  return MakeGarbageCollected<MojoInterfaceInterceptor>(context, interface_name,
-                                                        process_scope);
+  return MakeGarbageCollected<MojoInterfaceInterceptor>(
+      context, interface_name, process_scope,
+      UseBrowserInterfaceBroker(use_browser_interface_broker));
 }
 
 MojoInterfaceInterceptor::~MojoInterfaceInterceptor() = default;
@@ -58,26 +61,42 @@ void MojoInterfaceInterceptor::start(ExceptionState& exception_state) {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    service_manager::Connector* connector = Platform::Current()->GetConnector();
-    auto browser_service_filter = service_manager::ServiceFilter::ByName(
-        Platform::Current()->GetBrowserServiceName());
-    if (connector->HasBinderOverrideForTesting(browser_service_filter,
-                                               interface_name)) {
+    ThreadSafeBrowserInterfaceBrokerProxy* proxy =
+        Platform::Current()->GetBrowserInterfaceBrokerProxy();
+    started_ = true;
+    if (!proxy->SetBinderForTesting(
+            interface_name,
+            WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                               WrapWeakPersistent(this)))) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kInvalidModificationError,
           "Interface " + interface_name_ +
               " is already intercepted by another MojoInterfaceInterceptor.");
-      return;
     }
 
-    started_ = true;
-    connector->OverrideBinderForTesting(
-        browser_service_filter, interface_name,
-        WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
-                           WrapWeakPersistent(this)));
     return;
   }
 
+  if (use_browser_interface_broker_) {
+    ExecutionContext* context = GetExecutionContext();
+
+    if (!context)
+      return;
+
+    started_ = true;
+    if (!context->GetBrowserInterfaceBroker().SetBinderForTesting(
+            interface_name,
+            WTF::BindRepeating(&MojoInterfaceInterceptor::OnInterfaceRequest,
+                               WrapWeakPersistent(this)))) {
+      exception_state.ThrowDOMException(
+          DOMExceptionCode::kInvalidModificationError,
+          "Interface " + interface_name_ +
+              " is already intercepted by another MojoInterfaceInterceptor.");
+    }
+    return;
+  }
+
+  // TODO(crbug.com/994843): remove when no longer used.
   service_manager::InterfaceProvider::TestApi test_api(interface_provider);
   if (test_api.HasBinderForName(interface_name)) {
     exception_state.ThrowDOMException(
@@ -102,15 +121,20 @@ void MojoInterfaceInterceptor::stop() {
   std::string interface_name = interface_name_.Utf8();
 
   if (process_scope_) {
-    auto filter = service_manager::ServiceFilter::ByName(
-        Platform::Current()->GetBrowserServiceName());
-    service_manager::Connector::TestApi test_api(
-        Platform::Current()->GetConnector());
-    DCHECK(test_api.HasBinderOverride(filter, interface_name));
-    test_api.ClearBinderOverride(filter, interface_name);
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->SetBinderForTesting(
+        interface_name, {});
     return;
   }
 
+  if (use_browser_interface_broker_) {
+    ExecutionContext* context = GetExecutionContext();
+    DCHECK(context);
+    context->GetBrowserInterfaceBroker().SetBinderForTesting(interface_name,
+                                                             {});
+    return;
+  }
+
+  // TODO(crbug.com/994843): remove when no longer used.
   // GetInterfaceProvider() is guaranteed not to return nullptr because this
   // method is called when the context is destroyed.
   service_manager::InterfaceProvider::TestApi test_api(GetInterfaceProvider());
@@ -139,12 +163,15 @@ void MojoInterfaceInterceptor::ContextDestroyed(ExecutionContext*) {
   stop();
 }
 
-MojoInterfaceInterceptor::MojoInterfaceInterceptor(ExecutionContext* context,
-                                                   const String& interface_name,
-                                                   bool process_scope)
+MojoInterfaceInterceptor::MojoInterfaceInterceptor(
+    ExecutionContext* context,
+    const String& interface_name,
+    bool process_scope,
+    UseBrowserInterfaceBroker use_browser_interface_broker)
     : ContextLifecycleObserver(context),
       interface_name_(interface_name),
-      process_scope_(process_scope) {}
+      process_scope_(process_scope),
+      use_browser_interface_broker_(use_browser_interface_broker) {}
 
 service_manager::InterfaceProvider*
 MojoInterfaceInterceptor::GetInterfaceProvider() const {

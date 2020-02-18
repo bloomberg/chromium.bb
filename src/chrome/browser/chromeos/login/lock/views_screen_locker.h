@@ -57,6 +57,9 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
       base::OnceCallback<void(bool)> callback) override;
   void HandleAuthenticateUserWithEasyUnlock(
       const AccountId& account_id) override;
+  void HandleAuthenticateUserWithChallengeResponse(
+      const AccountId& account_id,
+      base::OnceCallback<void(bool)> callback) override;
   void HandleHardlockPod(const AccountId& account_id) override;
   void HandleOnFocusPod(const AccountId& account_id) override;
   void HandleOnNoPodFocused() override;
@@ -80,6 +83,7 @@ class ViewsScreenLocker : public LoginScreenClient::Delegate,
 
  private:
   void UpdatePinKeyboardState(const AccountId& account_id);
+  void UpdateChallengeResponseAuthAvailability(const AccountId& account_id);
   void OnAllowedInputMethodsChanged();
   void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
   void OnExternalBinaryAuthTimeout();

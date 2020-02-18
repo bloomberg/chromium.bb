@@ -38,21 +38,31 @@
 -keepclasseswithmembers class ** {
   @org.chromium.base.annotations.UsedByReflection <fields>;
 }
--keepclasseswithmembers,includedescriptorclasses class ** {
+# Even unused methods kept due to explicit jni registration:
+# https://crbug.com/688465.
+-keepclasseswithmembers,includedescriptorclasses class !org.chromium.base.library_loader.**,** {
+  native <methods>;
+}
+-keepclasseswithmembernames,includedescriptorclasses class org.chromium.base.library_loader.** {
   native <methods>;
 }
 
-# Remove methods annotated with this if their return value is unused.
 -assumenosideeffects class ** {
+  # Remove @RemovableInRelease methods so long as return values are unused.
   @org.chromium.base.annotations.RemovableInRelease <methods>;
+  # Remove object @RemovableInRelease methods even when return value is used.
+  # Note: * in return type does not match primitives.
+  @org.chromium.base.annotations.RemovableInRelease * *(...) return null;
+  # Remove boolean @RemovableInRelease methods even when return value is used.
+  @org.chromium.base.annotations.RemovableInRelease boolean *(...) return false;
 }
 
 # Never inline classes or methods with this annotation, but allow shrinking and
 # obfuscation.
--keepnames,allowobfuscation @org.chromium.base.annotations.DoNotInline class ** {
-  *;
+-keep,allowobfuscation,allowoptimization @org.chromium.base.annotations.DoNotInline class ** {
+  <methods>;
 }
--keepclassmembernames,allowobfuscation class ** {
+-keepclassmembers,allowobfuscation,allowoptimization class ** {
   @org.chromium.base.annotations.DoNotInline <methods>;
 }
 

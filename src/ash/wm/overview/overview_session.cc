@@ -45,6 +45,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/hit_test.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/screen.h"
@@ -66,6 +67,11 @@ constexpr int kNoItemsIndicatorVerticalPaddingDp = 8;
 constexpr SkColor kNoItemsIndicatorBackgroundColor =
     SkColorSetA(SK_ColorBLACK, 204);
 constexpr SkColor kNoItemsIndicatorTextColor = SK_ColorWHITE;
+
+// Values for scrolling the grid by using the keyboard.
+// TODO(sammiequon): See if we can use the same values used for web scrolling.
+constexpr int kKeyboardPressScrollingDp = 25;
+constexpr int kKeyboardHoldScrollingDp = 5;
 
 // Returns the bounds for the overview window grid according to the split view
 // state. If split view mode is active, the overview window should open on the
@@ -261,7 +267,7 @@ void OverviewSession::Init(const WindowList& windows,
   params.name = "OverviewModeFocusedWidget";
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_StatusContainer);
-  overview_focus_widget_->Init(params);
+  overview_focus_widget_->Init(std::move(params));
 
   UMA_HISTOGRAM_COUNTS_100("Ash.WindowSelector.Items", num_items_);
 
@@ -357,8 +363,8 @@ void OverviewSession::OnGridEmpty() {
     EndOverview();
 }
 
-void OverviewSession::IncrementSelection(int increment) {
-  Move(increment < 0);
+void OverviewSession::IncrementSelection(bool forward) {
+  Move(/*reverse=*/!forward);
 }
 
 bool OverviewSession::AcceptSelection() {
@@ -468,10 +474,12 @@ void OverviewSession::RemoveItem(OverviewItem* overview_item) {
 
 void OverviewSession::InitiateDrag(OverviewItem* item,
                                    const gfx::PointF& location_in_screen,
-                                   bool allow_drag_to_close) {
+                                   bool is_touch_dragging) {
+  if (Shell::Get()->split_view_controller()->IsDividerAnimating())
+    return;
   highlight_controller_->SetFocusHighlightVisibility(false);
   window_drag_controller_ = std::make_unique<OverviewWindowDragController>(
-      this, item, allow_drag_to_close);
+      this, item, is_touch_dragging);
   window_drag_controller_->InitiateDrag(location_in_screen);
 
   for (std::unique_ptr<OverviewGrid>& grid : grid_list_)
@@ -634,15 +642,20 @@ void OverviewSession::UpdateRoundedCornersAndShadow() {
       window->UpdateRoundedCornersAndShadow();
 }
 
-void OverviewSession::OnStartingAnimationComplete(bool canceled) {
+void OverviewSession::OnStartingAnimationComplete(bool canceled,
+                                                  bool should_focus_overview) {
   for (auto& grid : grid_list_)
     grid->OnStartingAnimationComplete(canceled);
 
-  if (!canceled) {
-    if (overview_focus_widget_)
+  if (canceled)
+    return;
+  if (overview_focus_widget_) {
+    if (should_focus_overview)
       overview_focus_widget_->Show();
-    Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
+    else
+      overview_focus_widget_->ShowInactive();
   }
+  Shell::Get()->overview_controller()->DelayedUpdateRoundedCornersAndShadow();
 }
 
 void OverviewSession::OnWindowActivating(
@@ -669,12 +682,19 @@ void OverviewSession::OnWindowActivating(
     return;
   }
 
-  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
-  if (!grid)
+  // If app list is open in clamshell mode, end overview. Note: we have special
+  // logic to end overview when app list (i.e., home launcher) is open in tablet
+  // mode, so do not handle it here.
+  if (gained_active == Shell::Get()->app_list_controller()->GetWindow() &&
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    ResetFocusRestoreWindow(false);
+    EndOverview();
     return;
+  }
 
-  // Do not cancel overview mode if the window activation was caused by
-  // snapping window to one side of the screen.
+  // Do not cancel overview mode if the window activation happens when split
+  // view mode is also active. SplitViewController will do the right thing to
+  // handle the window activation change.
   if (Shell::Get()->split_view_controller()->InSplitViewMode())
     return;
 
@@ -682,9 +702,6 @@ void OverviewSession::OnWindowActivating(
   // dragging overview mode offscreen.
   if (IsSlidingOutOverviewFromShelf())
     return;
-
-  // Don't restore focus on exit if a window was just activated.
-  ResetFocusRestoreWindow(false);
 
   // Do not cancel overview mode while a window or overview item is being
   // dragged as evidenced by the presence of a drop target. (Dragging to close
@@ -694,6 +711,8 @@ void OverviewSession::OnWindowActivating(
       return;
   }
 
+  auto* grid = GetGridWithRootWindow(gained_active->GetRootWindow());
+  DCHECK(grid);
   const auto& windows = grid->window_list();
   auto iter = std::find_if(
       windows.begin(), windows.end(),
@@ -703,6 +722,9 @@ void OverviewSession::OnWindowActivating(
 
   if (iter != windows.end())
     selected_item_ = iter->get();
+
+  // Don't restore focus on exit if a window was just activated.
+  ResetFocusRestoreWindow(false);
   EndOverview();
 }
 
@@ -755,9 +777,14 @@ void OverviewSession::OnHighlightedItemClosed(OverviewItem* item) {
   item->CloseWindow();
 }
 
-void OverviewSession::OnDisplayRemoved(const display::Display& display) {
-  // TODO(flackr): Keep window selection active on remaining displays.
+void OverviewSession::OnDisplayAdded(const display::Display& display) {
   EndOverview();
+}
+
+void OverviewSession::OnDisplayRemoved(const display::Display& display) {
+  // Removing a display causes a window activation which will end overview mode
+  // so that |OnDisplayRemoved| is never called.
+  NOTREACHED();
 }
 
 void OverviewSession::OnDisplayMetricsChanged(const display::Display& display,
@@ -810,6 +837,11 @@ void OverviewSession::OnWindowHierarchyChanged(
 }
 
 void OverviewSession::OnWindowDestroying(aura::Window* window) {
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(l10n_util::GetStringFUTF8(
+          IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT, window->GetTitle()));
+
   window->RemoveObserver(this);
   observed_windows_.erase(window);
   if (window == restore_focus_window_)
@@ -824,23 +856,22 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
   // TODO(crbug.com/952315): Explore better ways to handle this splitview +
   // overview + applist case.
   Shell* shell = Shell::Get();
-  if (shell->app_list_controller() &&
-      shell->app_list_controller()->IsVisible() &&
-      Shell::Get()->split_view_controller()->InClamshellSplitViewMode()) {
+  if (!shell->tablet_mode_controller()->InTabletMode() &&
+      shell->app_list_controller()->IsVisible()) {
     return;
   }
 
-  if (event->type() != ui::ET_KEY_PRESSED)
+  const bool process_released_key_event =
+      (event->key_code() == ui::VKEY_LEFT ||
+       event->key_code() == ui::VKEY_RIGHT) &&
+      ShouldUseTabletModeGridLayout();
+  if (event->type() != ui::ET_KEY_PRESSED && !process_released_key_event)
     return;
 
   switch (event->key_code()) {
     case ui::VKEY_BROWSER_BACK:
-      FALLTHROUGH;
     case ui::VKEY_ESCAPE:
-      // Cancel overview unless we're in single split mode with no overview
-      // windows.
-      if (!(IsEmpty() && shell->split_view_controller()->InSplitViewMode()))
-        EndOverview();
+      EndOverview();
       break;
     case ui::VKEY_UP:
       ++num_key_presses_;
@@ -851,17 +882,22 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
       Move(/*reverse=*/false);
       break;
     case ui::VKEY_RIGHT:
-    case ui::VKEY_TAB:
-      if (event->key_code() == ui::VKEY_RIGHT ||
-          !(event->flags() & ui::EF_SHIFT_DOWN)) {
+      if (!ProcessForScrolling(*event)) {
         ++num_key_presses_;
         Move(/*reverse=*/false);
-        break;
       }
-      FALLTHROUGH;
-    case ui::VKEY_LEFT:
+      break;
+    case ui::VKEY_TAB: {
+      const bool reverse = event->flags() & ui::EF_SHIFT_DOWN;
       ++num_key_presses_;
-      Move(/*reverse=*/true);
+      Move(reverse);
+      break;
+    }
+    case ui::VKEY_LEFT:
+      if (!ProcessForScrolling(*event)) {
+        ++num_key_presses_;
+        Move(/*reverse=*/true);
+      }
       break;
     case ui::VKEY_W: {
       if (!(event->flags() & ui::EF_CONTROL_DOWN))
@@ -885,7 +921,15 @@ void OverviewSession::OnKeyEvent(ui::KeyEvent* event) {
 }
 
 void OverviewSession::OnShellDestroying() {
-  // Cancel selection will call |Shutodnw()|, which will remove observer.
+  // Cancel selection will call |Shutdown()|, which will remove observer.
+  EndOverview();
+}
+
+void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window) {
+  // When the shelf alignment changes while in overview, the display work area
+  // doesn't get updated anyways (see https://crbug.com/834400). In this case,
+  // even updating the grid bounds won't make any difference, so we simply exit
+  // overview.
   EndOverview();
 }
 
@@ -920,9 +964,10 @@ void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
   for (auto& grid : grid_list_)
     grid->UpdateCannotSnapWarningVisibility();
 
-  // Notify |split_view_drag_indicators_| if split view mode ended.
-  if (split_view_drag_indicators_ && state == SplitViewState::kNoSnap)
-    split_view_drag_indicators_->OnSplitViewModeEnded();
+  // Transfer focus from |window| to |overview_focus_widget_| to match the
+  // behavior of entering overview mode in the beginning.
+  DCHECK(overview_focus_widget_);
+  wm::ActivateWindow(GetOverviewFocusWindow());
 }
 
 void OverviewSession::OnSplitViewDividerPositionChanged() {
@@ -969,6 +1014,37 @@ void OverviewSession::Move(bool reverse) {
     return;
 
   highlight_controller_->MoveHighlight(reverse);
+}
+
+bool OverviewSession::ProcessForScrolling(const ui::KeyEvent& event) {
+  if (!ShouldUseTabletModeGridLayout() ||
+      !(event.flags() & ui::EF_CONTROL_DOWN)) {
+    return false;
+  }
+
+  const bool press = (event.type() == ui::ET_KEY_PRESSED);
+  const bool repeat = event.is_repeat();
+  DCHECK(event.key_code() == ui::VKEY_LEFT ||
+         event.key_code() == ui::VKEY_RIGHT);
+  const bool reverse = event.key_code() == ui::VKEY_LEFT;
+
+  // TODO(sammiequon): This only works for tablet mode at the moment, so using
+  // the primary display works. If this feature is adapted for multi display
+  // then this needs to be revisited.
+  auto* grid = GetGridWithRootWindow(Shell::GetPrimaryRootWindow());
+  if (press && !repeat) {
+    grid->StartScroll();
+    grid->UpdateScrollOffset(kKeyboardPressScrollingDp * (reverse ? 1 : -1));
+    return true;
+  }
+
+  if (press && repeat) {
+    grid->UpdateScrollOffset(kKeyboardHoldScrollingDp * (reverse ? 1 : -1));
+    return true;
+  }
+
+  grid->EndScroll();
+  return true;
 }
 
 void OverviewSession::RemoveAllObservers() {
@@ -1018,11 +1094,11 @@ void OverviewSession::UpdateNoWindowsWidget() {
     params.message_id = IDS_ASH_OVERVIEW_NO_RECENT_ITEMS;
     params.parent = Shell::GetPrimaryRootWindow()->GetChildById(
         desks_util::GetActiveDeskContainerId());
+    params.hide_in_mini_view = true;
     no_windows_widget_ = std::make_unique<RoundedLabelWidget>();
-    no_windows_widget_->Init(params);
+    no_windows_widget_->Init(std::move(params));
 
     aura::Window* widget_window = no_windows_widget_->GetNativeWindow();
-    widget_window->SetProperty(kHideInDeskMiniViewKey, true);
     widget_window->parent()->StackChildAtBottom(widget_window);
     ScopedOverviewAnimationSettings settings(OVERVIEW_ANIMATION_NO_RECENTS_FADE,
                                              widget_window);

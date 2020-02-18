@@ -12,6 +12,7 @@ import json
 import os
 import subprocess
 import sys
+import platform
 
 script_dir = sys.path[0]
 root_dir = os.path.abspath(os.path.join(script_dir, '..'))
@@ -37,8 +38,18 @@ def rebase_script_path(script_path, relative_path):
     return os.path.relpath(os.path.join(os.path.dirname(script_path), relative_path), root_dir)
 
 
+# Check if we need a module from vpython
+def get_executable_name(first_line):
+    if 'vpython' in first_line:
+        return 'vpython.bat' if platform.system() == 'Windows' else 'vpython'
+    return 'python'
+
+
 def grab_from_script(script, param):
-    res = subprocess.check_output(['python', script, param]).strip()
+    res = ''
+    f = open(os.path.basename(script), "r")
+    res = subprocess.check_output([get_executable_name(f.readline()), script, param]).strip()
+    f.close()
     if res == '':
         return []
     return [clean_path_slashes(rebase_script_path(script, name)) for name in res.split(',')]
@@ -76,6 +87,8 @@ generators = {
         'scripts/generate_loader.py',
     'GL/EGL entry points':
         'scripts/generate_entry_points.py',
+    'GLenum value to string map':
+        'scripts/gen_gl_enum_utils.py',
     'GL format map':
         'src/libANGLE/gen_format_map.py',
     'uniform type':
@@ -92,10 +105,14 @@ generators = {
         'src/libANGLE/renderer/vulkan/gen_vk_mandatory_format_support_table.py',
     'Vulkan internal shader programs':
         'src/libANGLE/renderer/vulkan/gen_vk_internal_shaders.py',
+    'overlay fonts':
+        'src/libANGLE/gen_overlay_fonts.py',
+    'overlay widgets':
+        'src/libANGLE/gen_overlay_widgets.py',
     'Emulated HLSL functions':
         'src/compiler/translator/gen_emulated_builtin_function_tables.py',
-    'ESSL static builtins':
-        'src/compiler/translator/gen_builtin_symbols.py',
+    'Static builtins':
+        'src/compiler/translator/gen_builtin_symbols.py'
 }
 
 
@@ -183,8 +200,12 @@ def main():
                 os.chdir(get_child_script_dirname(script))
 
                 print('Running ' + name + ' code generator')
-                if subprocess.call(['python', os.path.basename(script)]) != 0:
+
+                f = open(os.path.basename(script), "r")
+                if subprocess.call([get_executable_name(f.readline()),
+                                    os.path.basename(script)]) != 0:
                     sys.exit(1)
+                f.close()
 
         # Update the hash dictionary.
         all_new_hashes[fname] = new_hashes

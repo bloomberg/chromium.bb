@@ -111,6 +111,16 @@ FCMNetworkHandler::~FCMNetworkHandler() {
   StopListening();
 }
 
+// static
+std::unique_ptr<syncer::FCMNetworkHandler> FCMNetworkHandler::Create(
+    gcm::GCMDriver* gcm_driver,
+    instance_id::InstanceIDDriver* instance_id_driver,
+    const std::string& sender_id,
+    const std::string& app_id) {
+  return std::make_unique<syncer::FCMNetworkHandler>(
+      gcm_driver, instance_id_driver, sender_id, app_id);
+}
+
 void FCMNetworkHandler::StartListening() {
   if (IsListening()) {
     StopListening();
@@ -123,7 +133,7 @@ void FCMNetworkHandler::StartListening() {
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope,
       /*options=*/std::map<std::string, std::string>(),
-      /*is_lazy=*/true,
+      /*flags=*/{InstanceID::Flags::kIsLazy},
       base::BindRepeating(&FCMNetworkHandler::DidRetrieveToken,
                           weak_ptr_factory_.GetWeakPtr()));
 }
@@ -183,7 +193,7 @@ void FCMNetworkHandler::StartTokenValidation() {
   diagnostic_info_.token_validation_requested_num++;
   instance_id_driver_->GetInstanceID(app_id_)->GetToken(
       sender_id_, kGCMScope, std::map<std::string, std::string>(),
-      /*is_lazy=*/true,
+      /*flags=*/{InstanceID::Flags::kIsLazy},
       base::Bind(&FCMNetworkHandler::DidReceiveTokenForValidation,
                  weak_ptr_factory_.GetWeakPtr()));
 }

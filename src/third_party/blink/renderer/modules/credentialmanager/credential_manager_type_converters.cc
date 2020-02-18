@@ -22,7 +22,6 @@
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_request_options.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_rp_entity.h"
 #include "third_party/blink/renderer/modules/credentialmanager/public_key_credential_user_entity.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 // Time to wait for an authenticator to successfully complete an operation.
@@ -207,7 +206,8 @@ PublicKeyCredentialType TypeConverter<PublicKeyCredentialType, String>::Convert(
 }
 
 // static
-AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
+base::Optional<AuthenticatorTransport>
+TypeConverter<base::Optional<AuthenticatorTransport>, String>::Convert(
     const String& transport) {
   if (transport == "usb")
     return AuthenticatorTransport::USB;
@@ -219,8 +219,7 @@ AuthenticatorTransport TypeConverter<AuthenticatorTransport, String>::Convert(
     return AuthenticatorTransport::CABLE;
   if (transport == "internal")
     return AuthenticatorTransport::INTERNAL;
-  NOTREACHED();
-  return AuthenticatorTransport::USB;
+  return base::nullopt;
 }
 
 // static
@@ -353,8 +352,11 @@ TypeConverter<PublicKeyCredentialDescriptorPtr,
   mojo_descriptor->id = ConvertTo<Vector<uint8_t>>(descriptor->id());
   if (descriptor->hasTransports() && !descriptor->transports().IsEmpty()) {
     for (const auto& transport : descriptor->transports()) {
-      mojo_descriptor->transports.push_back(
-          ConvertTo<AuthenticatorTransport>(transport));
+      auto maybe_transport(
+          ConvertTo<base::Optional<AuthenticatorTransport>>(transport));
+      if (maybe_transport) {
+        mojo_descriptor->transports.push_back(*maybe_transport);
+      }
     }
   } else {
     mojo_descriptor->transports = {
@@ -468,6 +470,9 @@ TypeConverter<PublicKeyCredentialCreationOptionsPtr,
     }
     if (extensions->hasHmacCreateSecret()) {
       mojo_options->hmac_create_secret = extensions->hmacCreateSecret();
+    }
+    if (extensions->hasAppidExclude()) {
+      mojo_options->appid_exclude = extensions->appidExclude();
     }
 #if defined(OS_ANDROID)
     if (extensions->hasUvm()) {

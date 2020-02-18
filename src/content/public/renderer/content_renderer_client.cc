@@ -5,11 +5,9 @@
 #include "content/public/renderer/content_renderer_client.h"
 
 #include "media/base/renderer_factory.h"
-#include "third_party/blink/public/platform/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "third_party/blink/public/platform/web_audio_device.h"
-#include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
-#include "third_party/blink/public/platform/web_speech_synthesizer.h"
+#include "third_party/blink/public/web/modules/mediastream/web_media_stream_renderer_factory.h"
 #include "ui/gfx/icc_profile.h"
 #include "url/gurl.h"
 
@@ -79,12 +77,6 @@ ContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
   return nullptr;
 }
 
-std::unique_ptr<blink::WebSpeechSynthesizer>
-ContentRendererClient::OverrideSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
-  return nullptr;
-}
-
 void ContentRendererClient::PostIOThreadCreated(
     base::SingleThreadTaskRunner* io_thread_task_runner) {}
 
@@ -146,11 +138,6 @@ bool ContentRendererClient::IsLinkVisited(uint64_t link_hash) {
 blink::WebPrescientNetworking*
 ContentRendererClient::GetPrescientNetworking() {
   return nullptr;
-}
-
-bool ContentRendererClient::IsPrerenderingFrame(
-    const RenderFrame* render_frame) {
-  return false;
 }
 
 bool ContentRendererClient::IsExternalPepperPlugin(
@@ -271,5 +258,8 @@ ContentRendererClient::GetAudioRendererAlgorithmParameters(
     media::AudioParameters audio_parameters) {
   return base::nullopt;
 }
+
+void ContentRendererClient::BindReceiverOnMainThread(
+    mojo::GenericPendingReceiver receiver) {}
 
 }  // namespace content

@@ -15,7 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
-#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/common/custom_handlers/protocol_handler.h"
@@ -23,10 +22,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/child_process_security_policy.h"
-#include "net/base/network_delegate.h"
-#include "net/url_request/url_request_redirect_job.h"
 
 using content::BrowserThread;
 using content::ChildProcessSecurityPolicy;
@@ -74,64 +70,6 @@ GURL TranslateUrl(
 }
 
 }  // namespace
-
-// IOThreadDelegate ------------------------------------------------------------
-
-ProtocolHandlerRegistry::IOThreadDelegate::IOThreadDelegate(bool)
-    : enabled_(true) {}
-ProtocolHandlerRegistry::IOThreadDelegate::~IOThreadDelegate() {}
-
-bool ProtocolHandlerRegistry::IOThreadDelegate::IsHandledProtocol(
-    const std::string& scheme) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return enabled_ && !LookupHandler(default_handlers_, scheme).IsEmpty();
-}
-
-void ProtocolHandlerRegistry::IOThreadDelegate::ClearDefault(
-    const std::string& scheme) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  default_handlers_.erase(scheme);
-}
-
-void ProtocolHandlerRegistry::IOThreadDelegate::SetDefault(
-    const ProtocolHandler& handler) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  ClearDefault(handler.protocol());
-  default_handlers_.insert(std::make_pair(handler.protocol(), handler));
-}
-
-GURL ProtocolHandlerRegistry::IOThreadDelegate::Translate(
-    const GURL& url) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return TranslateUrl(default_handlers_, url);
-}
-
-// Create a new job for the supplied |URLRequest| if a default handler
-// is registered and the associated handler is able to interpret
-// the url from |request|.
-net::URLRequestJob* ProtocolHandlerRegistry::IOThreadDelegate::MaybeCreateJob(
-    net::URLRequest* request, net::NetworkDelegate* network_delegate) const {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  GURL translated_url(Translate(request->url()));
-  if (translated_url.is_empty())
-    return nullptr;
-
-  return new net::URLRequestRedirectJob(
-      request, network_delegate, translated_url,
-      net::URLRequestRedirectJob::REDIRECT_307_TEMPORARY_REDIRECT,
-      "Protocol Handler Registry");
-}
-
-void ProtocolHandlerRegistry::IOThreadDelegate::Enable() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  enabled_ = true;
-}
-
-void ProtocolHandlerRegistry::IOThreadDelegate::Disable() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  enabled_ = false;
-}
 
 // Delegate --------------------------------------------------------------------
 
@@ -187,8 +125,7 @@ ProtocolHandlerRegistry::ProtocolHandlerRegistry(
       delegate_(delegate),
       enabled_(true),
       is_loading_(false),
-      is_loaded_(false),
-      io_thread_delegate_(new IOThreadDelegate(enabled_)) {}
+      is_loaded_(false) {}
 
 bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
     const ProtocolHandler& handler) {
@@ -207,7 +144,8 @@ bool ProtocolHandlerRegistry::SilentlyHandleRegisterHandlerRequest(
 void ProtocolHandlerRegistry::OnAcceptRegisterProtocolHandler(
     const ProtocolHandler& handler) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  RegisterProtocolHandler(handler, USER);
+  if (!RegisterProtocolHandler(handler, USER))
+    return;
   SetDefault(handler);
   Save();
   NotifyChanged();
@@ -267,9 +205,6 @@ void ProtocolHandlerRegistry::ClearDefault(const std::string& scheme) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   default_handlers_.erase(scheme);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&IOThreadDelegate::ClearDefault,
-                                          io_thread_delegate_, scheme));
   Save();
   NotifyChanged();
 }
@@ -529,11 +464,6 @@ void ProtocolHandlerRegistry::RemoveHandler(
       // NOTE We pass a copy because SetDefault() modifies handlers.
       SetDefault(ProtocolHandler(handlers[0]));
     } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&IOThreadDelegate::ClearDefault, io_thread_delegate_,
-                         q->second.protocol()));
-
       default_handlers_.erase(q);
     }
   }
@@ -570,10 +500,6 @@ void ProtocolHandlerRegistry::Enable() {
     return;
   }
   enabled_ = true;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&IOThreadDelegate::Enable, io_thread_delegate_));
-
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
     delegate_->RegisterExternalHandler(p->first);
@@ -588,9 +514,6 @@ void ProtocolHandlerRegistry::Disable() {
     return;
   }
   enabled_ = false;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&IOThreadDelegate::Disable, io_thread_delegate_));
 
   ProtocolHandlerMap::const_iterator p;
   for (p = default_handlers_.begin(); p != default_handlers_.end(); ++p) {
@@ -678,9 +601,6 @@ void ProtocolHandlerRegistry::SetDefault(const ProtocolHandler& handler) {
   default_handlers_.erase(handler.protocol());
   default_handlers_.insert(std::make_pair(handler.protocol(), handler));
   PromoteHandler(handler);
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&IOThreadDelegate::SetDefault,
-                                          io_thread_delegate_, handler));
 }
 
 void ProtocolHandlerRegistry::InsertHandler(const ProtocolHandler& handler) {
@@ -728,23 +648,29 @@ void ProtocolHandlerRegistry::NotifyChanged() {
     observer.OnProtocolHandlerRegistryChanged();
 }
 
-void ProtocolHandlerRegistry::RegisterProtocolHandler(
+bool ProtocolHandlerRegistry::RegisterProtocolHandler(
     const ProtocolHandler& handler,
     const HandlerSource source) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(CanSchemeBeOverridden(handler.protocol()));
   DCHECK(!handler.IsEmpty());
+
+  // Ignore invalid handlers.
+  if (!handler.IsValid())
+    return false;
+
   ProtocolHandlerMultiMap& map =
       (source == POLICY) ? policy_protocol_handlers_ : user_protocol_handlers_;
   ProtocolHandlerList& list = map[handler.protocol()];
   if (!HandlerExists(handler, list))
     list.push_back(handler);
   if (IsRegistered(handler)) {
-    return;
+    return true;
   }
   if (enabled_ && !delegate_->IsExternalHandlerRegistered(handler.protocol()))
     delegate_->RegisterExternalHandler(handler.protocol());
   InsertHandler(handler);
+  return true;
 }
 
 std::vector<const base::DictionaryValue*>
@@ -780,7 +706,8 @@ void ProtocolHandlerRegistry::RegisterProtocolHandlersFromPref(
        p != registered_handlers.end();
        ++p) {
     ProtocolHandler handler = ProtocolHandler::CreateProtocolHandler(*p);
-    RegisterProtocolHandler(handler, source);
+    if (!RegisterProtocolHandler(handler, source))
+      continue;
     bool is_default = false;
     if ((*p)->GetBoolean("default", &is_default) && is_default) {
       SetDefault(handler);

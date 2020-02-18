@@ -6,6 +6,8 @@
 
 #include <memory>
 
+#include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
+
 namespace quic {
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
@@ -20,7 +22,7 @@ QuicConnectionCloseFrame::QuicConnectionCloseFrame(QuicErrorCode error_code,
     // Default close type ensures that existing, pre-V99 code works as expected.
     : close_type(GOOGLE_QUIC_CONNECTION_CLOSE),
       quic_error_code(error_code),
-      extracted_error_code(QUIC_IETF_GQUIC_ERROR_MISSING),
+      extracted_error_code(error_code),
       error_details(std::move(error_details)),
       transport_close_frame_type(0) {}
 
@@ -49,39 +51,28 @@ std::ostream& operator<<(
     std::ostream& os,
     const QuicConnectionCloseFrame& connection_close_frame) {
   os << "{ Close type: " << connection_close_frame.close_type
-     << ", error_code: "
-     << ((connection_close_frame.close_type ==
-          IETF_QUIC_TRANSPORT_CONNECTION_CLOSE)
-             ? static_cast<uint16_t>(
-                   connection_close_frame.transport_error_code)
-             : ((connection_close_frame.close_type ==
-                 IETF_QUIC_APPLICATION_CONNECTION_CLOSE)
-                    ? connection_close_frame.application_error_code
-                    : static_cast<uint16_t>(
-                          connection_close_frame.quic_error_code)))
-     << ", extracted_error_code: "
-     << connection_close_frame.extracted_error_code << ", error_details: '"
-     << connection_close_frame.error_details
-     << "', frame_type: " << connection_close_frame.transport_close_frame_type
-     << "}\n";
-  return os;
-}
-
-std::ostream& operator<<(std::ostream& os, const QuicConnectionCloseType type) {
-  switch (type) {
-    case GOOGLE_QUIC_CONNECTION_CLOSE:
-      os << "GOOGLE_QUIC_CONNECTION_CLOSE";
-      break;
+     << ", error_code: ";
+  switch (connection_close_frame.close_type) {
     case IETF_QUIC_TRANSPORT_CONNECTION_CLOSE:
-      os << "IETF_QUIC_TRANSPORT_CONNECTION_CLOSE";
+      os << connection_close_frame.transport_error_code;
       break;
     case IETF_QUIC_APPLICATION_CONNECTION_CLOSE:
-      os << "IETF_QUIC_APPLICATION_CONNECTION_CLOSE";
+      os << connection_close_frame.application_error_code;
       break;
-    default:
-      os << "Unknown: " << static_cast<int>(type);
+    case GOOGLE_QUIC_CONNECTION_CLOSE:
+      os << connection_close_frame.quic_error_code;
       break;
   }
+  os << ", extracted_error_code: "
+     << QuicErrorCodeToString(connection_close_frame.extracted_error_code)
+     << ", error_details: '" << connection_close_frame.error_details << "'";
+  if (connection_close_frame.close_type ==
+      IETF_QUIC_TRANSPORT_CONNECTION_CLOSE) {
+    os << ", frame_type: "
+       << static_cast<QuicIetfFrameType>(
+              connection_close_frame.transport_close_frame_type);
+  }
+  os << "}\n";
   return os;
 }
 

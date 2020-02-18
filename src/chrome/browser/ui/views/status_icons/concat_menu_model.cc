@@ -33,10 +33,6 @@ base::string16 ConcatMenuModel::GetLabelAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetLabelAt, index);
 }
 
-base::string16 ConcatMenuModel::GetSublabelAt(int index) const {
-  return GetterImpl(&ui::MenuModel::GetSublabelAt, index);
-}
-
 base::string16 ConcatMenuModel::GetMinorTextAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetMinorTextAt, index);
 }
@@ -62,7 +58,7 @@ int ConcatMenuModel::GetGroupIdAt(int index) const {
   return GetterImpl(&ui::MenuModel::GetGroupIdAt, index);
 }
 
-bool ConcatMenuModel::GetIconAt(int index, gfx::Image* icon) {
+bool ConcatMenuModel::GetIconAt(int index, gfx::Image* icon) const {
   return GetterImpl(&ui::MenuModel::GetGroupIdAt, index);
 }
 

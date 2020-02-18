@@ -26,16 +26,15 @@
 #include "phonenumbers/stl_util.h"
 #include "phonenumbers/stringutil.h"
 
-#ifdef USE_RE2
+#ifdef I18N_PHONENUMBERS_USE_RE2
 #include "phonenumbers/regexp_adapter_re2.h"
 #else
 #include "phonenumbers/regexp_adapter_icu.h"
-#endif  // USE_RE2
+#endif  // I18N_PHONENUMBERS_USE_RE2
 
 namespace i18n {
 namespace phonenumbers {
 
-using std::string;
 using std::vector;
 
 // Structure that contains the attributes used to test an implementation of the
@@ -61,18 +60,16 @@ struct RegExpTestContext {
 class RegExpAdapterTest : public testing::Test {
  protected:
   RegExpAdapterTest() {
-#ifdef USE_RE2
+#ifdef I18N_PHONENUMBERS_USE_RE2
     contexts_.push_back(
         new RegExpTestContext("RE2", new RE2RegExpFactory()));
 #else
     contexts_.push_back(
         new RegExpTestContext("ICU Regex", new ICURegExpFactory()));
-#endif  // USE_RE2
+#endif  // I18N_PHONENUMBERS_USE_RE2
   }
 
-  ~RegExpAdapterTest() {
-    STLDeleteElements(&contexts_);
-  }
+  ~RegExpAdapterTest() { gtl::STLDeleteElements(&contexts_); }
 
   static string ErrorMessage(const RegExpTestContext& context) {
     return StrCat("Test failed with ", context.name, " implementation.");

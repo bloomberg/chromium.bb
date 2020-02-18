@@ -19,7 +19,7 @@
 #include "ios/chrome/browser/sync/sync_setup_service.h"
 #include "ios/chrome/browser/sync/sync_setup_service_factory.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -77,7 +77,7 @@ class SettingsNavigationControllerTest : public PlatformTest {
     }
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   id mockDelegate_;
@@ -102,7 +102,7 @@ TEST_F(SettingsNavigationControllerTest, PopController) {
         [settingsController popViewControllerAnimated:NO];
     EXPECT_NSEQ(viewController, poppedViewController);
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
-    [settingsController settingsWillBeDismissed];
+    [settingsController cleanUpSettings];
   }
 }
 
@@ -118,7 +118,7 @@ TEST_F(SettingsNavigationControllerTest, DontPopRootController) {
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
 
     EXPECT_FALSE([settingsController popViewControllerAnimated:NO]);
-    [settingsController settingsWillBeDismissed];
+    [settingsController cleanUpSettings];
   }
 }
 
@@ -141,7 +141,7 @@ TEST_F(SettingsNavigationControllerTest,
     [settingsController popViewControllerOrCloseSettingsAnimated:NO];
     EXPECT_EQ(1U, [[settingsController viewControllers] count]);
     EXPECT_OCMOCK_VERIFY(mockDelegate_);
-    [settingsController settingsWillBeDismissed];
+    [settingsController cleanUpSettings];
   }
 }
 
@@ -160,7 +160,7 @@ TEST_F(SettingsNavigationControllerTest,
     [[mockDelegate_ expect] closeSettings];
     [settingsController popViewControllerOrCloseSettingsAnimated:NO];
     EXPECT_OCMOCK_VERIFY(mockDelegate_);
-    [settingsController settingsWillBeDismissed];
+    [settingsController cleanUpSettings];
   }
 }
 

@@ -23,7 +23,7 @@ class ComputeIndirectValidationTest : public ValidationTest {
         ValidationTest::SetUp();
 
         dawn::ShaderModule computeModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
                 #version 450
                 layout(local_size_x = 1) in;
                 void main() {
@@ -34,12 +34,8 @@ class ComputeIndirectValidationTest : public ValidationTest {
 
         dawn::ComputePipelineDescriptor csDesc;
         csDesc.layout = pl;
-
-        dawn::PipelineStageDescriptor computeStage;
-        computeStage.module = computeModule;
-        computeStage.entryPoint = "main";
-        csDesc.computeStage = &computeStage;
-
+        csDesc.computeStage.module = computeModule;
+        csDesc.computeStage.entryPoint = "main";
         pipeline = device.CreateComputePipeline(&csDesc);
     }
 
@@ -54,8 +50,8 @@ class ComputeIndirectValidationTest : public ValidationTest {
     void TestIndirectOffset(utils::Expectation expectation,
                             std::initializer_list<uint32_t> bufferList,
                             uint64_t indirectOffset) {
-        dawn::Buffer indirectBuffer = utils::CreateBufferFromData<uint32_t>(
-            device, dawn::BufferUsageBit::Indirect, bufferList);
+        dawn::Buffer indirectBuffer =
+            utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsage::Indirect, bufferList);
 
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();
         dawn::ComputePassEncoder pass = encoder.BeginComputePass();

@@ -23,7 +23,6 @@
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/supervised_user/experimental/supervised_user_blacklist.h"
 #include "chrome/browser/supervised_user/kids_management_url_checker_client.h"
 #include "chrome/common/chrome_features.h"
@@ -218,8 +217,9 @@ SupervisedUserURLFilter::SupervisedUserURLFilter()
     : default_behavior_(ALLOW),
       contents_(new Contents()),
       blacklist_(nullptr),
-      blocking_task_runner_(base::CreateTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      blocking_task_runner_(base::CreateTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})) {}
 
 SupervisedUserURLFilter::~SupervisedUserURLFilter() {
@@ -534,8 +534,7 @@ void SupervisedUserURLFilter::SetManualURLs(std::map<GURL, bool> url_map) {
 }
 
 void SupervisedUserURLFilter::InitAsyncURLChecker(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    signin::IdentityManager* identity_manager) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   std::string country;
   variations::VariationsService* variations_service =
       g_browser_process->variations_service();
@@ -549,8 +548,8 @@ void SupervisedUserURLFilter::InitAsyncURLChecker(
 
   if ((base::FeatureList::IsEnabled(
           features::kKidsManagementUrlClassification))) {
-    url_checker_client = std::make_unique<KidsManagementURLCheckerClient>(
-        std::move(url_loader_factory), country, identity_manager);
+    url_checker_client =
+        std::make_unique<KidsManagementURLCheckerClient>(country);
   } else {
     // TODO(crbug.com/940454): remove safe_search_checker
     net::NetworkTrafficAnnotationTag traffic_annotation =

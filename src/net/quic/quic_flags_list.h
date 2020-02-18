@@ -72,6 +72,10 @@ QUIC_FLAG(uint32_t, FLAGS_quic_buffered_data_threshold, 8192u)
 // Max size of data slice in bytes for QUIC stream send buffer.
 QUIC_FLAG(uint32_t, FLAGS_quic_send_buffer_max_data_slice_size, 4096u)
 
+// Anti-amplification factor. Before address validation, server will
+// send no more than factor times bytes received.
+QUIC_FLAG(int32_t, FLAGS_quic_anti_amplification_factor, 3)
+
 // If true, QUIC supports both QUIC Crypto and TLS 1.3 for the handshake
 // protocol.
 QUIC_FLAG(bool, FLAGS_quic_supports_tls_handshake, false)
@@ -174,16 +178,11 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_bbr_startup_rate_reduction,
           false)
 
-// If true, log leaf cert subject name into warning log.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_log_cert_name_for_empty_sct,
-          true)
-
 // If true, enable QUIC version 47.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_47, false)
 
 // If true, enable QUIC version 48.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_48_2, true)
 
 // If true, disable QUIC version 39.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_39, false)
@@ -211,12 +210,6 @@ QUIC_FLAG(bool,
 // If true, set burst token to 2 in cwnd bootstrapping experiment.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_conservative_bursts, false)
 
-// When true, QuicFramer will not override connection IDs in headers and will
-// instead respect the source/destination direction as expected by IETF QUIC.
-QUIC_FLAG(bool,
-          FLAGS_quic_restart_flag_quic_do_not_override_connection_id,
-          true)
-
 // If true, export number of packets written per write operation histogram.")
 QUIC_FLAG(bool, FLAGS_quic_export_server_num_packets_per_write_histogram, false)
 
@@ -225,30 +218,10 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_conservative_cwnd_and_pacing_gains,
           false)
 
-// When true, QuicConnectionId will allocate long connection IDs on the heap
-// instead of inline in the object.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_use_allocated_connection_ids, true)
-
-// If enabled, do not call OnStreamFrame() with empty frame after receiving
-// empty or too large headers with FIN.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_avoid_empty_frame_after_empty_headers,
-          true)
-
-// If true, disable QUIC version 44.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_44, true)
-
 // If true, ignore TLPR if there is no pending stream data.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_ignore_tlpr_if_no_pending_stream_data,
           true)
-
-// If true, when detecting losses, use packets_acked of corresponding packet
-// number space.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_packets_acked, true)
-
-// QUIC version 99 will use this stream ID for the headers stream.
-QUIC_FLAG(int64_t, FLAGS_quic_headers_stream_id_in_v99, 0)
 
 // When true, QuicDispatcher will drop packets that have an initial destination
 // connection ID that is too short, instead of responding with a Version
@@ -262,7 +235,7 @@ QUIC_FLAG(
 // versions.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_version_negotiation_grease,
-          false)
+          true)
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
@@ -283,20 +256,20 @@ QUIC_FLAG(
 // a READ_UNIDIRECTIONAL stream.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_no_window_update_on_read_only_stream,
-          false)
+          true)
 
 // If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
 // for pacing.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
-    false)
+    true)
 
 // If true, QuicSpdySession::GetSpdyDataStream() will close the connection
 // if the returned stream is static.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_handle_staticness_for_spdy_stream,
-          false)
+          true)
 
 // If true, do not add connection ID of packets with unknown connection ID
 // and no version to time wait list, instead, send appropriate responses
@@ -307,17 +280,17 @@ QUIC_FLAG(
     false)
 
 // When true, QuicConnectionId::Hash uses SipHash instead of XOR.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, false)
+QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_connection_id_use_siphash, true)
 
 // If true, when RTO fires and there is no packet to be RTOed, let connection
 // send.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission, true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_rto_retransmission3, true)
 
 // If true, QuicSession::GetOrCreateDynamicStream() is deprecated, and its
 // contents are moved to GetOrCreateStream().
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_inline_getorcreatedynamicstream,
-          false)
+          true)
 
 // Maximum number of tracked packets.
 QUIC_FLAG(int64_t, FLAGS_quic_max_tracked_packet_count, 10000)
@@ -340,3 +313,99 @@ QUIC_FLAG(
     bool,
     FLAGS_quic_restart_flag_quic_dispatcher_hands_chlo_extractor_one_version,
     true)
+
+// If true, will negotiate the ACK delay time.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_negotiate_ack_delay_time, false)
+
+// When true, QuicDispatcher will always use QuicFramer::ParsePublicHeader
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_use_parse_public_header, false)
+
+// If true, QuicFramer::WriteClientVersionNegotiationProbePacket uses
+// length-prefixed connection IDs.
+QUIC_FLAG(bool, FLAGS_quic_prober_uses_length_prefixed_connection_ids, false)
+
+// If true and H2PR connection option is received, write_blocked_streams_ uses
+// HTTP2 (tree-style) priority write scheduler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_http2_priority_write_scheduler,
+          true)
+
+// If true, close connection if there are too many (> 1000) buffered control
+// frames.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames,
+    true)
+
+// If true, static streams should never be closed before QuicSession
+// destruction.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_active_streams_never_negative,
+          true)
+
+// If true and FIFO connection option is received, write_blocked_streams uses
+// FIFO(stream with smallest ID has highest priority) write scheduler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_fifo_write_scheduler,
+          true)
+
+// If true and LIFO connection option is received, write_blocked_streams uses
+// LIFO(stream with largest ID has highest priority) write scheduler.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_enable_lifo_write_scheduler,
+          true)
+
+// When true, remove obsolete functionality intended to test IETF QUIC recovery.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_sent_packet_manager_cleanup,
+          false)
+
+// If true, QUIC will track max ack height in BandwidthSampler.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_track_ack_height_in_bandwidth_sampler2,
+    false)
+
+// If true, QuicSession::ShouldKeepConnectionAlive() will not consider locally
+// closed streams whose highest byte offset is not received yet.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
+          true)
+
+// If true, QuicStreamSequencer will not take in new data if the stream is
+// reset.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_no_stream_data_after_reset,
+          true)
+
+// When true, QuicDispatcher::MaybeDispatchPacket will use
+// packet_info.use_length_prefix instead of an incorrect local computation.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_use_length_prefix_from_packet_info,
+          false)
+
+// If true, enable IETF style probe timeout.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pto, true)
+
+// When true, QuicFramer will use QueueUndecryptablePacket on all QUIC versions.
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_framer_uses_undecryptable_upcall,
+          false)
+
+// When true, QuicUtils::GenerateStatelessResetToken will hash connection IDs
+// instead of XORing the bytes
+QUIC_FLAG(bool,
+          FLAGS_quic_restart_flag_quic_use_hashed_stateless_reset_tokens,
+          false)
+
+// This flag enables a temporary workaround which makes us reply to a specific
+// invalid packet that is sent by an Android UDP network conformance test.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_reply_to_old_android_conformance_test,
+          false)
+
+// If true, no SPDY SETTINGS will be sent after handshake is confirmed.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_do_not_send_settings, true)
+
+// The maximum amount of CRYPTO frame data that can be buffered.
+QUIC_FLAG(int32_t, FLAGS_quic_max_buffered_crypto_bytes, 16 * 1024)

@@ -22,8 +22,8 @@
 #include "content/browser/renderer_host/media/media_stream_ui_proxy.h"
 #include "content/browser/renderer_host/media/video_capture_manager.h"
 #include "content/public/browser/media_device_id.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
@@ -31,7 +31,8 @@
 #include "media/base/media_switches.h"
 #include "media/capture/video/fake_video_capture_device_factory.h"
 #include "media/capture/video/video_capture_system_impl.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -71,14 +72,15 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
                void(blink::MediaDeviceType,
                     const blink::WebMediaDeviceInfoArray&));
 
-  blink::mojom::MediaDevicesListenerPtr CreateInterfacePtrAndBind() {
-    blink::mojom::MediaDevicesListenerPtr listener;
-    bindings_.AddBinding(this, mojo::MakeRequest(&listener));
+  mojo::PendingRemote<blink::mojom::MediaDevicesListener>
+  CreatePendingRemoteAndBind() {
+    mojo::PendingRemote<blink::mojom::MediaDevicesListener> listener;
+    receivers_.Add(this, listener.InitWithNewPipeAndPassReceiver());
     return listener;
   }
 
  private:
-  mojo::BindingSet<blink::mojom::MediaDevicesListener> bindings_;
+  mojo::ReceiverSet<blink::mojom::MediaDevicesListener> receivers_;
 };
 
 }  // namespace
@@ -86,7 +88,7 @@ class MockMediaDevicesListener : public blink::mojom::MediaDevicesListener {
 class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
  public:
   MediaDevicesDispatcherHostTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         origin_(url::Origin::Create(GetParam())) {
     // Make sure we use fake devices to avoid long delays.
@@ -369,7 +371,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
           type == blink::MEDIA_DEVICE_TYPE_AUDIO_INPUT,
           type == blink::MEDIA_DEVICE_TYPE_VIDEO_INPUT,
           type == blink::MEDIA_DEVICE_TYPE_AUDIO_OUTPUT,
-          device_change_listener.CreateInterfacePtrAndBind());
+          device_change_listener.CreatePendingRemoteAndBind());
       blink::WebMediaDeviceInfoArray changed_devices;
       EXPECT_CALL(device_change_listener, OnDevicesChanged(type, _))
           .WillRepeatedly(SaveArg<1>(&changed_devices));
@@ -399,7 +401,7 @@ class MediaDevicesDispatcherHostTest : public testing::TestWithParam<GURL> {
   // MediaStreamManager expects to be destroyed after the IO thread has been
   // uninitialized.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<MediaDevicesDispatcherHost> host_;
 
   std::unique_ptr<media::AudioManager> audio_manager_;

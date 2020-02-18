@@ -15,8 +15,8 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
@@ -55,17 +55,14 @@ class ServiceWorkerContextWrapperTest : public testing::Test {
     // Init() posts a couple tasks to the IO thread. Let them finish.
     base::RunLoop().RunUntilIdle();
 
-    base::RunLoop loop;
-    storage()->LazyInitializeForTest(loop.QuitClosure());
-    loop.Run();
+    storage()->LazyInitializeForTest();
   }
 
   ServiceWorkerContextCore* context() { return wrapper_->context(); }
   ServiceWorkerStorage* storage() { return context()->storage(); }
 
  protected:
-  TestBrowserThreadBundle browser_thread_bundle_{
-      TestBrowserThreadBundle::IO_MAINLOOP};
+  BrowserTaskEnvironment task_environment_{BrowserTaskEnvironment::IO_MAINLOOP};
   base::ScopedTempDir user_data_directory_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter_;

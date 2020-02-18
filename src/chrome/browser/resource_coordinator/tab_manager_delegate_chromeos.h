@@ -25,7 +25,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chromeos/dbus/debug_daemon_client.h"
-#include "components/arc/common/process.mojom.h"
+#include "components/arc/mojom/process.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -227,7 +227,7 @@ class TabManagerDelegate : public wm::ActivationChangeObserver,
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
 
   // Weak pointer factory used for posting tasks to other threads.
-  base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;
+  base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabManagerDelegate);
 };

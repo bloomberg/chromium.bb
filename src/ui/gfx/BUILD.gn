@@ -44,6 +44,8 @@ jumbo_component("geometry_skia") {
     "geometry_skia_export.h",
     "rrect_f.cc",
     "rrect_f.h",
+    "rrect_f_builder.cc",
+    "rrect_f_builder.h",
     "skia_util.cc",
     "skia_util.h",
     "transform.cc",
@@ -296,7 +298,6 @@ jumbo_component("gfx") {
     set_sources_assignment_filter([])
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
     set_sources_assignment_filter(sources_assignment_filter)
-    deps += [ "//third_party/google_toolbox_for_mac" ]
   } else {
     public_deps += [ "//cc/paint" ]
     deps += [ "//third_party:freetype_harfbuzz" ]
@@ -722,7 +723,7 @@ test("gfx_unittests") {
       "image/image_mac_unittest.mm",
       "image/image_util_unittest.cc",
       "mac/coordinate_conversion_unittest.mm",
-      "mojo/struct_traits_unittest.cc",
+      "mojom/mojom_traits_unittest.cc",
       "nine_image_painter_unittest.cc",
       "overlay_transform_utils_unittest.cc",
       "paint_vector_icon_unittest.cc",
@@ -744,7 +745,7 @@ test("gfx_unittests") {
     data += [ "$root_out_dir/ui_test.pak" ]
   }
 
-  if (is_linux || is_android || is_fuchsia) {
+  if (is_linux || is_android || is_fuchsia || is_win) {
     sources += [ "platform_font_skia_unittest.cc" ]
   }
 
@@ -838,10 +839,10 @@ test("gfx_unittests") {
       "//mojo/core/embedder",
       "//mojo/public/cpp/bindings",
       "//mojo/public/cpp/test_support:test_utils",
-      "//ui/gfx/geometry/mojo:unit_test",
-      "//ui/gfx/image/mojo:unit_test",
-      "//ui/gfx/mojo:test_interfaces",
-      "//ui/gfx/range/mojo:unit_test",
+      "//ui/gfx/geometry/mojom:unit_test",
+      "//ui/gfx/image/mojom:unit_test",
+      "//ui/gfx/mojom:test_interfaces",
+      "//ui/gfx/range/mojom:unit_test",
     ]
   }
 

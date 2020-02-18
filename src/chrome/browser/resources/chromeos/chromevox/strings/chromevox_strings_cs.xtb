@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Skrýt filtry streamů událostí</translation>
 <translation id="1088219014394087294">Žádné nadpisy.</translation>
 <translation id="1106741348836243114">Zapnout nebo vypnout zvukové signály.</translation>
-<translation id="1120743664840974483">{"a": "adam", "á": "dlouhé a", "b": "božena", "c": "cyril", "č": "čeněk", "d": "david", "ď": "ďáblice", "e": "emil", "ě": "e s háčkem", "é": "dlouhé e", "f": "františek", "g": "gustav", "h": "helena", "ch": "chrudim", "i": "ivan", "í": "dlouhé měkké i", "j": "josef", "k": "karel", "l": "ludvík", "m": "marie", "n": "neruda", "ň": "nina", "o": "otakar", "ó": "dlouhé o", "p": "petr", "q": "quido", "r": "rudolf", "ř": "řehoř", "s": "svatopluk", "š": "šimon", "t": "tomáš", "ť": "těšnov", "u": "urban", "ů": "u s kroužkem", "ú": "u s čárkou", "v": "václav", "w": "dvojité v", "x": "xaver", "y": "ypsilon", "ý": "dlouhé tvrdé y", "z": "zuzana", "ž": "žofie"}</translation>
+<translation id="1120743664840974483">{"a": "adam", "á": "dlouhé a", "b": "božena", "c": "cyril", "č": "čeněk", "d": "david", "ď": "ďáblice", "e": "emil", "ě": "e s háčkem", "é": "dlouhé e", "f": "františek", "g": "gustav", "h": "helena", "ch": "chrudim", "i": "ivan", "í": "dlouhé měkké i", "j": "josef", "k": "karel", "l": "ludvík", "m": "marie", "n": "neruda", "ň": "ňouma", "o": "otakar", "ó": "dlouhé o", "p": "petr", "q": "quido", "r": "rudolf", "ř": "řehoř", "s": "svatopluk", "š": "šimon", "t": "tomáš", "ť": "těšnov", "u": "urban", "ů": "u s kroužkem", "ú": "u s čárkou", "v": "václav", "w": "dvojité v", "x": "xaver", "y": "ypsilon", "ý": "dlouhé tvrdé y", "z": "zuzana", "ž": "žofie"}</translation>
 <translation id="1120938014254001895">Přejeďte dvěma prsty nahoru</translation>
 <translation id="1124771028211010580">Aktuální styl zobrazení je vedle sebe.</translation>
 <translation id="1126928665165112660">Není kurzíva</translation>
@@ -69,7 +69,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1385214448885562192">Klávesou Enter položku přijmete, klávesou Esc zrušíte akci, šipkou dolů přejdete na další položku a šipkou nahoru na předchozí položku.</translation>
 <translation id="1396114365388024581">seznam karet</translation>
-<translation id="139902759009894363">Oznamovat atributy formátovaného textu</translation>
 <translation id="1405567553485452995">Světle zelená</translation>
 <translation id="1417889266572670458">Námořnická modrá</translation>
 <translation id="1431911867058218151">Švestková</translation>
@@ -169,6 +168,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="2220529011494928058">Nahlásit problém</translation>
 <translation id="2223693656926968778">Provést akci s aktuální položkou</translation>
 <translation id="225732394367814946">Zvýšit rychlost řeči</translation>
+<translation id="2267538686624070261">Opuštění překlepu</translation>
 <translation id="2267945578749931355">Další znak</translation>
 <translation id="2278490101488436824">Přejeďte třemi prsty doleva</translation>
 <translation id="2281234842553884450">Předchozí posuvník</translation>
@@ -207,6 +207,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="257674075312929031">Skupina</translation>
 <translation id="2582407057977008361">Stranou</translation>
 <translation id="2592212930811759050">Úpravu spustíte dvojitým klepnutím</translation>
+<translation id="2598495320872286378">Gramatická chyba</translation>
 <translation id="2606210917827248971">s {COUNT,plural, =1{# položkou}few{# položkami}many{# položky}other{# položkami}}</translation>
 <translation id="2614981083756825552">Rozvržení MathML</translation>
 <translation id="2624431853467395961">Otevřít režim výuky</translation>
@@ -422,7 +423,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4039983576244166038">Prázdné záhlaví řádku</translation>
 <translation id="4042843249978639960">Žádný další nadpis 2. úrovně.</translation>
 <translation id="4043348641337972076">Žádný předchozí orientační bod ARIA.</translation>
-<translation id="4045764028670444336">Začátek chybně zadaného slova</translation>
 <translation id="4047216625641135770">Zvýraznění</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Limetkově zelená</translation>
@@ -484,6 +484,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4372705107434148843">Zastavit řeč</translation>
 <translation id="4373197658375206385">Žádná předchozí položka, která není odkaz.</translation>
 <translation id="4376316291247992553">Zobrazit grafiku na hmatovém displeji</translation>
+<translation id="437809255587011096">Oznamovat styl textu</translation>
 <translation id="4378308539633073595">Posunout vpřed</translation>
 <translation id="4384583879834880242">Dotazy</translation>
 <translation id="4391478986194775161">info o obsahu</translation>
@@ -504,7 +505,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="4547556996012970016">Další nadpis 5. úrovně</translation>
 <translation id="4562381607973973258">Nadpis</translation>
 <translation id="4569941707103739422">Navigovat lze pomocí šipky nahoru nebo dolů, možnost aktivujete pomocí klávesy Enter.</translation>
-<translation id="4570424871453628777">Konec chybně zadaného slova</translation>
 <translation id="4591507479202817876">, vybráno</translation>
 <translation id="4597532268155981612">formulář</translation>
 <translation id="4597896406374528575">Duben</translation>
@@ -727,7 +727,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6037602951055904232">Posunout dopředu</translation>
 <translation id="6042826534790431634">Lze aktivovat stisknutím kláves Hledat + mezerník.</translation>
 <translation id="6044160928851315051">Ztmavit obrazovku</translation>
-<translation id="6065293622157674001">Začátek gramatické chyby</translation>
 <translation id="6082768461603900813">Základní navigace</translation>
 <translation id="6118126368611144850">Aplikace Android pro Chrome. Pokud na zařízení máte Obchod Play, můžete ChromeVox vyzkoušet s aplikacemi pro Android. Tuto experimentální funkci získáte tak, že si z Obchodu Play stáhnete Google Chrome Canary.</translation>
 <translation id="611827076493383239">navštív</translation>
@@ -760,7 +759,6 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6348869651006731065">Kouřově šedá</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{odrážka}few{# odrážky}many{# odrážky}other{# odrážek}}</translation>
 <translation id="6355910664415701303">Žádná předchozí položka seznamu.</translation>
-<translation id="6360318852623800555">Atributy formátovaného textu</translation>
 <translation id="6364795331201459219">nadp 6</translation>
 <translation id="6368143427468974988">Předchozí záhlaví</translation>
 <translation id="6376999910001533545">Kaštanová</translation>
@@ -824,6 +822,7 @@ Chcete-li výukový program ukončit, přejděte pomocí nástroje ChromeVox na 
 <translation id="6833103209700200188">Zápatí</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Přejeďte jedním prstem doleva</translation>
+<translation id="6865519907510167493">Překlep</translation>
 <translation id="6871161210040114857">Velká a malá písmena jsou ignorována.</translation>
 <translation id="6877435256196695200">Žádný další obrázek.</translation>
 <translation id="6897341342232909480">Posunout doleva</translation>
@@ -869,7 +868,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="7143207342074048698">Připojování</translation>
 <translation id="7153618581592392745">Levandulová</translation>
 <translation id="7157306005867877619">Abstrakt</translation>
-<translation id="7161425887892204659">Konec shody textu</translation>
 <translation id="7161771961008409533">Tlačítko s vyskakovacím oknem</translation>
 <translation id="7165714724802225287">Aktuální styl zobrazení je prokládání.</translation>
 <translation id="7167657087543110">vyslovovat znaky</translation>
@@ -907,7 +905,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="737396357417333429">klikatelné</translation>
 <translation id="7374104575779636480">Opouští se tabulka.</translation>
 <translation id="738899727977260036">Břidlicová modrá</translation>
-<translation id="7392145451309930991">Začátek shody textu</translation>
 <translation id="739763518212184081">Předchozí řádek</translation>
 <translation id="7400575256015741911">Zjištěna pravopisná chyba</translation>
 <translation id="7408482676469142474">tab</translation>
@@ -1086,7 +1083,6 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8153880621934657047">Mimo tabulku.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{podtržítko}few{# podtržítka}many{# underscores}other{# podtržítek}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Automaticky zjistit a přepnout jazyk nástroje ChromeVox</translation>
 <translation id="8184828902145951186">řádek</translation>
 <translation id="8186185314313222077">přepnout zobrazení na celou obrazovku</translation>
 <translation id="8199231515320852133">Oznámit záhlaví aktuální buňky</translation>
@@ -1117,12 +1113,13 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="8446884382197647889">Další informace</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">má přístupový klíč <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Opuštění gramatické chyby</translation>
 <translation id="847154984256717791">zaneprázdněno</translation>
 <translation id="8476408756881832830">Při hlasové odezvě ChromeVox pozastavit přehrávání</translation>
 <translation id="8476508772960940536">přehled okna</translation>
 <translation id="8503360654911991865">Snížit rozlišovací schopnost navigace</translation>
-<translation id="8504695234784218301">Konec gramatické chyby</translation>
 <translation id="8520472399088452386">Číselník</translation>
+<translation id="8534394844575788431">Formátování</translation>
 <translation id="8538744478902126321">Odhadnout záhlaví řádku aktuální buňky</translation>
 <translation id="8540054775867439484">Skok na začátek</translation>
 <translation id="8542271685829952264">Chcete-li prozkoumat všechny příkazy a klávesové zkratky nástroje ChromeVox, stiskněte Hledat + Tečka a poté nabídky procházejte pomocí kláves se šipkami. Příkaz aktivujete stisknutím klávesy Enter. Sem se vrátíte tak, že stisknete klávesy Hledat+o a poté klávesu t.</translation>
@@ -1202,6 +1199,7 @@ Chcete-li otevřít nabídku prohlížeče Chrome, stiskněte Alt + F.</translat
 <translation id="9149560530563164529">oddíl</translation>
 <translation id="9150735707954472829">Karta</translation>
 <translation id="9151211641321628915">Oznamuje stručný popis současné pozice</translation>
+<translation id="9151249085738989067">Automaticky přepínat hlas čtečky ChromeVox podle jazyka</translation>
 <translation id="9153606228985488238">Výška <ph name="PERCENT" /> procent</translation>
 <translation id="9160096769946561184">Přejít na konec aktuálního sloupce</translation>
 <translation id="9173115498289768110">Hlasitost <ph name="PERCENT" /> procent</translation>

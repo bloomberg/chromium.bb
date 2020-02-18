@@ -10,8 +10,10 @@
 #include "ash/app_list/test/app_list_test_helper.h"
 #include "ash/app_list/views/app_list_view.h"
 #include "ash/shelf/shelf.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_view_test_api.h"
+#include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -27,7 +29,9 @@ class BackButtonTest : public AshTestBase {
   BackButtonTest() = default;
   ~BackButtonTest() override = default;
 
-  BackButton* back_button() { return test_api_->shelf_view()->GetBackButton(); }
+  BackButton* back_button() {
+    return test_api_->shelf_view()->shelf_widget()->GetBackButton();
+  }
   ShelfViewTestAPI* test_api() { return test_api_.get(); }
 
   void SetUp() override {
@@ -81,7 +85,12 @@ TEST_F(BackButtonTest, VisibilityWithVerticalShelf) {
 TEST_F(BackButtonTest, BackKeySequenceGenerated) {
   // Enter tablet mode; the back button is not visible in non tablet mode.
   Shell::Get()->tablet_mode_controller()->SetEnabledForTest(true);
-  test_api()->RunMessageLoopUntilAnimationsDone();
+  // Wait for the navigation widget's animation.
+  test_api()->RunMessageLoopUntilAnimationsDone(
+      GetPrimaryShelf()
+          ->shelf_widget()
+          ->navigation_widget()
+          ->get_bounds_animator_for_testing());
 
   AcceleratorControllerImpl* controller =
       Shell::Get()->accelerator_controller();

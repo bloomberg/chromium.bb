@@ -13,7 +13,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/request_priority.h"
 #include "net/base/test_completion_callback.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -159,7 +159,7 @@ struct GurlAndString {
 
 }  // namespace
 
-class URLRequestThrottlerEntryTest : public TestWithScopedTaskEnvironment {
+class URLRequestThrottlerEntryTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerEntryTest()
       : request_(context_.CreateRequest(GURL(),
@@ -310,7 +310,7 @@ TEST_F(URLRequestThrottlerEntryTest, SlidingWindow) {
   EXPECT_EQ(time_4, entry_->sliding_window_release_time());
 }
 
-class URLRequestThrottlerManagerTest : public TestWithScopedTaskEnvironment {
+class URLRequestThrottlerManagerTest : public TestWithTaskEnvironment {
  protected:
   URLRequestThrottlerManagerTest()
       : request_(context_.CreateRequest(GURL(),

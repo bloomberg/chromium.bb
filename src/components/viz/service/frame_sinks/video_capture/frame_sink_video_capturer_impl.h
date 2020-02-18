@@ -30,7 +30,7 @@
 #include "media/base/video_frame.h"
 #include "media/capture/content/video_capture_oracle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -195,6 +195,7 @@ class VIZ_SERVICE_EXPORT FrameSinkVideoCapturerImpl final
                     const gfx::Rect& content_rect,
                     VideoCaptureOverlay::OnceRenderer overlay_renderer,
                     scoped_refptr<media::VideoFrame> frame,
+                    base::TimeTicks request_time,
                     std::unique_ptr<CopyOutputResult> result);
 
   // Places the frame in the |delivery_queue_| and calls MaybeDeliverFrame(),

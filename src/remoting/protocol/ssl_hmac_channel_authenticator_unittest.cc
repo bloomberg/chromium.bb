@@ -12,7 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/timer/timer.h"
 #include "crypto/rsa_private_key.h"
@@ -136,7 +136,7 @@ class SslHmacChannelAuthenticatorTest : public testing::Test {
     client_socket_ = std::move(socket);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   scoped_refptr<RsaKeyPair> key_pair_;
   std::string host_cert_;

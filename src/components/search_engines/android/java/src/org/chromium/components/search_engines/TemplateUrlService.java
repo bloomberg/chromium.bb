@@ -289,6 +289,29 @@ public class TemplateUrlService {
         return nativeGetSearchEngineTypeFromTemplateUrl(mNativeTemplateUrlServiceAndroid, keyword);
     }
 
+    /**
+     * Adds a search engine, set by Play API.
+     * @param name The name of the search engine to be added.
+     * @param keyword The keyword of the search engine to be added.
+     * @param searchUrl Search url of the search engine to be added.
+     * @param suggestUrl Url for retrieving search suggestions.
+     * @param faviconUrl Favicon url of the search engine to be added.
+     * @return True if search engine was successfully added, false if search engine from Play API
+     *         with such keyword already existed (e.g. from previous attempt to set search engine).
+     */
+    public boolean setPlayAPISearchEngine(
+            String name, String keyword, String searchUrl, String suggestUrl, String faviconUrl) {
+        return nativeSetPlayAPISearchEngine(
+                mNativeTemplateUrlServiceAndroid, name, keyword, searchUrl, suggestUrl, faviconUrl);
+    }
+    // TODO(crbug/1002271): This API is called from clank repo. Helper function below will be
+    // removed once clank repo is updated.
+    public boolean setPlayAPISearchEngine(
+            String name, String keyword, String searchUrl, String faviconUrl) {
+        return nativeSetPlayAPISearchEngine(
+                mNativeTemplateUrlServiceAndroid, name, keyword, searchUrl, null, faviconUrl);
+    }
+
     @VisibleForTesting
     public String addSearchEngineForTesting(String keyword, int ageInDays) {
         return nativeAddSearchEngineForTesting(
@@ -321,6 +344,8 @@ public class TemplateUrlService {
             long nativeTemplateUrlServiceAndroid, String keyword);
     private native String nativeAddSearchEngineForTesting(
             long nativeTemplateUrlServiceAndroid, String keyword, int offset);
+    private native boolean nativeSetPlayAPISearchEngine(long nativeTemplateUrlServiceAndroid,
+            String name, String keyword, String searchUrl, String suggestUrl, String faviconUrl);
     private native String nativeUpdateLastVisitedForTesting(
             long nativeTemplateUrlServiceAndroid, String keyword);
     private native void nativeGetTemplateUrls(

@@ -12,6 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {LoadingManager} from '../controller/loading_manager';
+
 import {RawQueryResult, TraceProcessor} from './protos';
 import {TimeSpan} from './time';
 
@@ -28,8 +30,13 @@ import {TimeSpan} from './time';
  */
 export abstract class Engine {
   abstract readonly id: string;
-  private _numCpus?: number;
+  private _cpus?: number[];
   private _numGpus?: number;
+  private loadingManager: LoadingManager;
+
+  constructor() {
+    this.loadingManager = LoadingManager.getInstance;
+  }
 
   /**
    * Push trace data into the engine. The engine is supposed to automatically
@@ -53,7 +60,10 @@ export abstract class Engine {
    */
   query(sqlQuery: string): Promise<RawQueryResult> {
     const timeQueuedNs = Math.floor(performance.now() * 1e6);
-    return this.rpc.rawQuery({sqlQuery, timeQueuedNs});
+    this.loadingManager.beginLoading();
+    return this.rpc.rawQuery({sqlQuery, timeQueuedNs}).finally(() => {
+      this.loadingManager.endLoading();
+    });
   }
 
   async queryOneRow(query: string): Promise<number[]> {
@@ -64,13 +74,13 @@ export abstract class Engine {
   }
 
   // TODO(hjd): When streaming must invalidate this somehow.
-  async getNumberOfCpus(): Promise<number> {
-    if (!this._numCpus) {
-      const result = await this.query(
-          'select count(distinct(cpu)) as cpuCount from sched;');
-      this._numCpus = +result.columns[0].longValues![0];
+  async getCpus(): Promise<number[]> {
+    if (!this._cpus) {
+      const result =
+          await this.query('select distinct(cpu) from sched order by cpu;');
+      this._cpus = result.columns[0].longValues!.map(n => +n);
     }
-    return this._numCpus;
+    return this._cpus;
   }
 
   async getNumberOfGpus(): Promise<number> {

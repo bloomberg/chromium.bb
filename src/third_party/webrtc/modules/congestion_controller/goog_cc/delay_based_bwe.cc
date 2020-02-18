@@ -17,9 +17,9 @@
 #include <utility>
 
 #include "absl/memory/memory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event.h"
 #include "logging/rtc_event_log/events/rtc_event_bwe_update_delay_based.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/congestion_controller/goog_cc/trendline_estimator.h"
 #include "modules/remote_bitrate_estimator/test/bwe_test_logging.h"
 #include "rtc_base/checks.h"
@@ -158,9 +158,10 @@ void DelayBasedBwe::IncomingPacketFeedback(const PacketResult& packet_feedback,
       packet_feedback.sent_packet.size.bytes(), &ts_delta, &t_delta,
       &size_delta);
   double ts_delta_ms = (1000.0 * ts_delta) / (1 << kInterArrivalShift);
-  delay_detector_->Update(t_delta, ts_delta_ms,
-                          packet_feedback.sent_packet.send_time.ms(),
-                          packet_feedback.receive_time.ms(), calculated_deltas);
+  delay_detector_->Update(
+      t_delta, ts_delta_ms, packet_feedback.sent_packet.send_time.ms(),
+      packet_feedback.receive_time.ms(),
+      packet_feedback.sent_packet.size.bytes(), calculated_deltas);
 }
 
 DataRate DelayBasedBwe::TriggerOveruse(Timestamp at_time,

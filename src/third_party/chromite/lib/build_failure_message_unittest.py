@@ -26,7 +26,7 @@ failure_message_helper = failure_message_lib_unittest.FailureMessageHelper()
 class BuildFailureMessageTests(cros_test_lib.MockTestCase):
   """Tests for BuildFailureMessage."""
 
-  def ConstructBuildFailureMessage(self, message_summary="message_summary",
+  def ConstructBuildFailureMessage(self, message_summary='message_summary',
                                    failure_messages=None, internal=True,
                                    reason='reason', builder='builder'):
     return build_failure_message.BuildFailureMessage(

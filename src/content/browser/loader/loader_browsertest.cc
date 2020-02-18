@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/browser/resource_dispatcher_host.h"
-
 #include <memory>
 #include <utility>
 #include <vector>
@@ -20,21 +18,17 @@
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/view_messages.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/previews_state.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
@@ -43,7 +37,6 @@
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/shell/browser/shell_content_browser_client.h"
-#include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/test_content_browser_client.h"
 #include "net/base/filename_util.h"
 #include "net/base/load_flags.h"
@@ -54,9 +47,9 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/url_request/url_request_failed_job.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
-#include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 using base::ASCIIToUTF16;
@@ -73,12 +66,11 @@ class LoaderBrowserTest : public ContentBrowserTest,
  protected:
   void SetUpOnMainThread() override {
     base::FilePath path = GetTestFilePath("", "");
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&net::URLRequestMockHTTPJob::AddUrlHandlers, path));
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
     host_resolver()->AddRule("*", "127.0.0.1");
   }
 
@@ -146,17 +138,6 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DynamicTitle2) {
       << "Actual title: " << title;
 }
 
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffHTMLWithNoContentType) {
-  // Covered by URLLoaderTest.SniffMimeType.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test0.html"),
-      "Content Sniffer Test 0");
-  EXPECT_EQ("text/html", shell()->web_contents()->GetContentsMimeType());
-}
-
 // Tests that the renderer does not crash when issuing a stale-revalidation
 // request when the enable_referrers renderer preference is `false`. See
 // https://crbug.com/966140.
@@ -196,38 +177,6 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   // never completely blocked from the time the test starts.
   EXPECT_TRUE(ExecuteScript(shell(), "runTest()"));
   ASSERT_EQ(expected_title, title_watcher.WaitAndGetTitle());
-}
-
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, RespectNoSniffDirective) {
-  // Covered by URLLoaderTest.RespectNoSniff.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  CheckTitleTest(net::URLRequestMockHTTPJob::GetMockUrl("nosniff-test.html"),
-                 "mock.http/nosniff-test.html");
-  EXPECT_EQ("text/plain", shell()->web_contents()->GetContentsMimeType());
-}
-
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DoNotSniffHTMLFromTextPlain) {
-  // Covered by URLLoaderTest.SniffTextPlainDoesNotResultInHTML.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test1.html"),
-      "mock.http/content-sniffer-test1.html");
-  EXPECT_EQ("text/plain", shell()->web_contents()->GetContentsMimeType());
-}
-
-IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, DoNotSniffHTMLFromImageGIF) {
-  // Covered by URLLoaderTest.DoNotSniffHTMLFromImageGIF.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
-  CheckTitleTest(
-      net::URLRequestMockHTTPJob::GetMockUrl("content-sniffer-test2.html"),
-      "mock.http/content-sniffer-test2.html");
-  EXPECT_EQ("image/gif", shell()->web_contents()->GetContentsMimeType());
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SniffNoContentTypeNoData) {
@@ -323,8 +272,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
 namespace {
 
 // Responds with a HungResponse for the specified URL to hang on the request.
-// If the network service is enabled, crashes the process. If it's disabled,
-// cancels all requests from specifield |child_id|.
+// It crashes the process.
 //
 // |crash_network_service_callback| crashes the network service when invoked,
 // and must be called on the UI thread.
@@ -336,16 +284,8 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
   if (request.relative_url != relative_url)
     return nullptr;
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             crash_network_service_callback);
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::IO},
-        base::BindOnce(&ResourceDispatcherHostImpl::CancelRequestsForProcess,
-                       base::Unretained(ResourceDispatcherHostImpl::Get()),
-                       child_id));
-  }
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 crash_network_service_callback);
 
   return std::make_unique<net::test_server::HungResponse>();
 }
@@ -357,10 +297,8 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // response to call to AsyncResourceHandler::OnResponseComplete.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SyncXMLHttpRequest_Cancelled) {
   // If network service is running in-process, we can't simulate a crash.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      IsInProcessNetworkService()) {
+  if (IsInProcessNetworkService())
     return;
-  }
 
   embedded_test_server()->RegisterRequestHandler(base::Bind(
       &CancelOnRequest, "/hung",
@@ -634,54 +572,21 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, CookiePolicy) {
       "http://localhost:%u/set_cookie.html", embedded_test_server()->port()));
   GURL url(embedded_test_server()->GetURL("/redirect?" + set_cookie_url));
 
-  ShellNetworkDelegate::SetBlockThirdPartyCookies(true);
-
   CheckTitleTest(url, "cookie set");
 }
-
-class PageTransitionResourceDispatcherHostDelegate
-    : public ResourceDispatcherHostDelegate {
- public:
-  explicit PageTransitionResourceDispatcherHostDelegate(GURL watch_url)
-      : watch_url_(watch_url) {}
-
-  // ResourceDispatcherHostDelegate implementation:
-  void RequestBeginning(
-      net::URLRequest* request,
-      ResourceContext* resource_context,
-      AppCacheService* appcache_service,
-      ResourceType resource_type,
-      std::vector<std::unique_ptr<ResourceThrottle>>* throttles) override {
-    if (request->url() == watch_url_) {
-      ResourceRequestInfo* info = ResourceRequestInfo::ForRequest(request);
-      page_transition_ = info->GetPageTransition();
-    }
-  }
-
-  ui::PageTransition page_transition() { return page_transition_; }
-
- private:
-  GURL watch_url_;
-  ui::PageTransition page_transition_;
-};
 
 // Test that ui::PAGE_TRANSITION_CLIENT_REDIRECT is correctly set
 // when encountering a meta refresh tag.
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, PageTransitionClientRedirect) {
-  // TODO(crbug.com/818445): Fix the flakiness on Network Service.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   ASSERT_TRUE(embedded_test_server()->Start());
-
-  PageTransitionResourceDispatcherHostDelegate delegate(
-      embedded_test_server()->GetURL("/title1.html"));
-  ResourceDispatcherHost::Get()->SetDelegate(&delegate);
 
   NavigateToURLBlockUntilNavigationsComplete(
       shell(), embedded_test_server()->GetURL("/client_redirect.html"), 2);
 
-  EXPECT_TRUE(delegate.page_transition() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetLastCommittedEntry();
+
+  EXPECT_TRUE(entry->GetTransitionType() & ui::PAGE_TRANSITION_CLIENT_REDIRECT);
 }
 
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, SubresourceRedirectToDataURLBlocked) {
@@ -1183,7 +1088,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest,
   }
 }
 
-class URLModifyingThrottle : public URLLoaderThrottle {
+class URLModifyingThrottle : public blink::URLLoaderThrottle {
  public:
   URLModifyingThrottle(bool modify_start, bool modify_redirect)
       : modify_start_(modify_start), modify_redirect_(modify_redirect) {}
@@ -1210,10 +1115,6 @@ class URLModifyingThrottle : public URLLoaderThrottle {
       return;
 
     modified_request_headers->SetHeader("Foo", "Bar");
-
-    // This is only supported if the network service is enabled.
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-      return;
 
     if (modified_redirect_url_)
       return;  // Only need to do this once.
@@ -1242,26 +1143,18 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
   ~ThrottleContentBrowserClient() override {}
 
   // ContentBrowserClient overrides:
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottlesOnIO(
-      const network::ResourceRequest& request,
-      ResourceContext* resource_context,
-      const base::RepeatingCallback<WebContents*()>& wc_getter,
-      NavigationUIData* navigation_ui_data,
-      int frame_tree_node_id) override {
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles;
-    auto throttle =
-        std::make_unique<URLModifyingThrottle>(modify_start_, modify_redirect_);
-    throttles.push_back(std::move(throttle));
-    return throttles;
-  }
-  std::vector<std::unique_ptr<URLLoaderThrottle>> CreateURLLoaderThrottles(
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>>
+  CreateURLLoaderThrottles(
       const network::ResourceRequest& request,
       BrowserContext* browser_context,
       const base::RepeatingCallback<WebContents*()>& wc_getter,
       NavigationUIData* navigation_ui_data,
       int frame_tree_node_id) override {
-    return CreateURLLoaderThrottlesOnIO(request, nullptr, wc_getter,
-                                        navigation_ui_data, frame_tree_node_id);
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles;
+    auto throttle =
+        std::make_unique<URLModifyingThrottle>(modify_start_, modify_redirect_);
+    throttles.push_back(std::move(throttle));
+    return throttles;
   }
 
  private:
@@ -1271,8 +1164,8 @@ class ThrottleContentBrowserClient : public TestContentBrowserClient {
   DISALLOW_COPY_AND_ASSIGN(ThrottleContentBrowserClient);
 };
 
-// Ensures if a URLLoaderThrottle modifies a URL in WillStartRequest the new
-// request matches
+// Ensures if a URLLoaderThrottle modifies a URL in WillStartRequest the
+// new request matches
 IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleStartModify) {
   base::Lock lock;
   ThrottleContentBrowserClient content_browser_client(true, false);
@@ -1327,11 +1220,7 @@ IN_PROC_BROWSER_TEST_F(LoaderBrowserTest, URLLoaderThrottleRedirectModify) {
   NavigateToURL(shell(), url);
 
   GURL expected_url;
-  // This is only supported if the network service is enabled.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    expected_url = embedded_test_server()->GetURL("/simple_page.html?foo=bar");
-  else
-    expected_url = embedded_test_server()->GetURL("/simple_page.html");
+  expected_url = embedded_test_server()->GetURL("/simple_page.html?foo=bar");
 
   {
     base::AutoLock auto_lock(lock);

@@ -13,7 +13,7 @@
 #include "chromeos/dbus/arc_oemcrypto_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
-#include "components/arc/common/protected_buffer_manager.mojom.h"
+#include "components/arc/mojom/protected_buffer_manager.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -61,7 +61,7 @@ ArcOemCryptoBridge* ArcOemCryptoBridge::GetForBrowserContext(
 
 ArcOemCryptoBridge::ArcOemCryptoBridge(content::BrowserContext* context,
                                        ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service), weak_factory_(this) {
+    : arc_bridge_service_(bridge_service) {
   arc_bridge_service_->oemcrypto()->SetHost(this);
 }
 
@@ -148,8 +148,7 @@ void ArcOemCryptoBridge::ConnectToDaemon(
   // We need to get the GPU interface on the IO thread, then after that is
   // done it will run the Mojo call on our thread.
   base::PostTaskAndReplyWithResult(
-      base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
-          .get(),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}).get(),
       FROM_HERE, base::BindOnce(&GetGpuBufferManagerOnIOThread),
       base::BindOnce(&ArcOemCryptoBridge::FinishConnectingToDaemon,
                      weak_factory_.GetWeakPtr(), std::move(request)));

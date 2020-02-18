@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/contacts_picker/contacts_manager.h"
 
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -70,12 +68,12 @@ namespace blink {
 ContactsManager::ContactsManager() = default;
 ContactsManager::~ContactsManager() = default;
 
-mojom::blink::ContactsManagerPtr& ContactsManager::GetContactsManager(
-    ScriptState* script_state) {
+mojo::Remote<mojom::blink::ContactsManager>&
+ContactsManager::GetContactsManager(ScriptState* script_state) {
   if (!contacts_manager_) {
     ExecutionContext::From(script_state)
         ->GetInterfaceProvider()
-        ->GetInterface(mojo::MakeRequest(&contacts_manager_));
+        ->GetInterface(contacts_manager_.BindNewPipeAndPassReceiver());
   }
   return contacts_manager_;
 }
@@ -84,11 +82,20 @@ ScriptPromise ContactsManager::select(ScriptState* script_state,
                                       const Vector<String>& properties,
                                       ContactsSelectOptions* options) {
   Document* document = To<Document>(ExecutionContext::From(script_state));
+
+  if (document->ParentDocument()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(
+            DOMExceptionCode::kInvalidStateError,
+            "The contacts API can only be used in the top frame"));
+  }
+
   if (!LocalFrame::HasTransientUserActivation(document ? document->GetFrame()
                                                        : nullptr)) {
-    return ScriptPromise::Reject(
-        script_state, V8ThrowException::CreateTypeError(
-                          script_state->GetIsolate(),
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSecurityError,
                           "A user gesture is required to call this method"));
   }
 

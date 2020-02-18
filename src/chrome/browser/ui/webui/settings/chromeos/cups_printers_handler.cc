@@ -260,8 +260,7 @@ CupsPrintersHandler::CupsPrintersHandler(
       printer_configurer_(std::move(printer_configurer)),
       printers_manager_(printers_manager),
       endpoint_resolver_(std::make_unique<local_discovery::EndpointResolver>()),
-      printers_manager_observer_(this),
-      weak_factory_(this) {}
+      printers_manager_observer_(this) {}
 
 // static
 std::unique_ptr<CupsPrintersHandler> CupsPrintersHandler::Create(
@@ -745,7 +744,8 @@ void CupsPrintersHandler::OnAddedOrEditedPrinterCommon(
       UMA_HISTOGRAM_ENUMERATION("Printing.CUPS.PrinterAdded",
                                 printer.GetProtocol(), Printer::kProtocolMax);
       PRINTER_LOG(USER) << "Performing printer setup";
-      printers_manager_->PrinterInstalled(printer, is_automatic);
+      printers_manager_->PrinterInstalled(printer, is_automatic,
+                                          PrinterSetupSource::kSettings);
       printers_manager_->SavePrinter(printer);
       if (printer.IsUsbProtocol()) {
         // Record UMA for USB printer setup source.
@@ -945,8 +945,9 @@ void CupsPrintersHandler::FileSelected(const base::FilePath& path,
   // VerifyPpdContents() in order to determine whether the file appears to be a
   // PPD file. The task's priority is USER_BLOCKING because the this task
   // updates the UI as a result of a direct user action.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&ReadFileToStringWithMaxSize, path, kPpdMaxLineLength),
       base::BindOnce(&CupsPrintersHandler::VerifyPpdContents,
                      weak_factory_.GetWeakPtr(), path));

@@ -38,12 +38,12 @@ public:
     bool valid();
     bool reset();
     void swap();
-    bool gotNativeConfig(int& vid);
+    bool gotNativeConfig(intptr_t& vid);
     void getVisualConfig(GLVisualConfig& vc);
 
 private:
     using api_proc = void (*)();
-    static api_proc load_proc(const char *name, void *userptr);
+    static api_proc load_proc(void *userptr, const char *name);
 
     SharedLibrary wgl_library_;
     HDC hdc_;

@@ -19,7 +19,7 @@
 #include "perfetto/ext/traced/traced.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "perfetto/ext/tracing/ipc/service_ipc_host.h"
-#include "src/traced/service/lazy_producer.h"
+#include "src/traced/service/builtin_producer.h"
 
 namespace perfetto {
 
@@ -29,7 +29,7 @@ int __attribute__((visibility("default"))) ServiceMain(int, char**) {
   svc = ServiceIPCHost::CreateInstance(&task_runner);
 
   // When built as part of the Android tree, the two socket are created and
-  // bonund by init and their fd number is passed in two env variables.
+  // bound by init and their fd number is passed in two env variables.
   // See libcutils' android_get_control_socket().
   const char* env_prod = getenv("ANDROID_SOCKET_traced_producer");
   const char* env_cons = getenv("ANDROID_SOCKET_traced_consumer");
@@ -50,9 +50,8 @@ int __attribute__((visibility("default"))) ServiceMain(int, char**) {
     return 1;
   }
 
-  LazyProducer lazy_heapprofd(&task_runner, /*delay_ms=*/30000,
-                              "android.heapprofd", "traced.lazy.heapprofd");
-  lazy_heapprofd.ConnectInProcess(svc->service());
+  BuiltinProducer builtin_producer(&task_runner, /*lazy_stop_delay_ms=*/30000);
+  builtin_producer.ConnectInProcess(svc->service());
 
   // Set the CPU limit and start the watchdog running. The memory limit will
   // be set inside the service code as it relies on the size of buffers.

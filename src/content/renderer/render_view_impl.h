@@ -26,7 +26,6 @@
 #include "build/build_config.h"
 #include "cc/input/browser_controls_state.h"
 #include "content/common/content_export.h"
-#include "content/common/frame_message_enums.h"
 #include "content/public/common/browser_controls_state.h"
 #include "content/public/common/drop_data.h"
 #include "content/public/common/page_zoom.h"
@@ -37,7 +36,7 @@
 #include "content/renderer/render_widget.h"
 #include "content/renderer/render_widget_delegate.h"
 #include "ipc/ipc_platform_file.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/mojom/renderer_preference_watcher.mojom.h"
@@ -60,7 +59,6 @@
 #include "ui/surface/transport_dib.h"
 
 namespace blink {
-class WebGestureEvent;
 class WebMouseEvent;
 class WebURLRequest;
 struct WebPluginAction;
@@ -94,6 +92,10 @@ class CreateViewParams;
 // a local frame for this view, then it also manages a RenderWidget for the
 // main frame.
 //
+// The main distinction between RenderView and RenderWidget is that the
+// RenderView holds synchronized state across all processes participating in the
+// frame tree, whereas the RenderWidget holds per-root-frame state.
+//
 // TODO(419087): Currently even though the RenderViewImpl "manages" the
 // RenderWidget, the RenderWidget owns the RenderViewImpl. This is due to
 // RenderViewImpl historically being a subclass of RenderWidget. Breaking
@@ -104,8 +106,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
                                       public RenderWidgetDelegate,
                                       public RenderView {
  public:
-  ~RenderViewImpl() override;
-
   // Creates a new RenderView. Note that if the original opener has been closed,
   // |params.window_was_created_with_opener| will be true and
   // |params.opener_frame_route_id| will be MSG_ROUTING_NONE.
@@ -119,6 +119,11 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
       mojom::CreateViewParamsPtr params,
       RenderWidget::ShowCallback show_callback,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
+
+  // Instances of this object are created by and destroyed by the browser
+  // process. This method must be called exactly once by the IPC subsystem when
+  // the browser wishes the object to be destroyed.
+  void Destroy();
 
   // Used by web_test_support to hook into the creation of RenderViewImpls.
   static void InstallCreateHook(RenderViewImpl* (*create_render_view_impl)(
@@ -205,7 +210,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // Registers a watcher to observe changes in the
   // blink::mojom::RendererPreferences.
   void RegisterRendererPreferenceWatcher(
-      blink::mojom::RendererPreferenceWatcherPtr watcher);
+      mojo::PendingRemote<blink::mojom::RendererPreferenceWatcher> watcher);
 
   // IPC::Listener implementation (via RenderWidget inheritance).
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -294,6 +299,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
  protected:
   RenderViewImpl(CompositorDependencies* compositor_deps,
                  const mojom::CreateViewParams& params);
+  ~RenderViewImpl() override;
 
   // Called when Page visibility is changed, to update the View/Page in blink.
   // This is separate from the IPC handlers as tests may call this and need to
@@ -370,22 +376,18 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // to accidentally call virtual functions. All RenderViewImpl creation is
   // fronted by the Create() method which ensures Initialize() is always called
   // before any other code can interact with instances of this call.
-  void Initialize(RenderWidget* render_widget,
+  void Initialize(CompositorDependencies* compositor_deps,
                   mojom::CreateViewParamsPtr params,
                   RenderWidget::ShowCallback show_callback,
                   scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // RenderWidgetDelegate implementation ----------------------------------
 
-  blink::WebWidget* GetWebWidgetForWidget() const override;
   bool RenderWidgetWillHandleMouseEventForWidget(
       const blink::WebMouseEvent& event) override;
   void SetActiveForWidget(bool active) override;
   bool SupportsMultipleWindowsForWidget() override;
-  void DidHandleGestureEventForWidget(
-      const blink::WebGestureEvent& event) override;
   bool ShouldAckSyntheticInputImmediately() override;
-  void DidCloseWidget() override;
   void CancelPagePopupForWidget() override;
   void ApplyNewDisplayModeForWidget(
       const blink::WebDisplayMode& new_display_mode) override;
@@ -394,7 +396,6 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void DisableAutoResizeForWidget() override;
   void ScrollFocusedNodeIntoViewForWidget() override;
   void DidReceiveSetFocusEventForWidget() override;
-  void DidChangeFocusForWidget() override;
   void DidCommitCompositorFrameForWidget() override;
   void DidCompletePageScaleAnimationForWidget() override;
   void ResizeWebWidgetForWidget(
@@ -462,6 +463,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   void OnUpdateScreenInfo(const ScreenInfo& screen_info);
   void OnUpdatePageVisualProperties(const gfx::Size& visible_viewport_size);
   void SetPageFrozen(bool frozen);
+  void PutPageIntoBackForwardCache();
+  void RestorePageFromBackForwardCache();
   void OnTextAutosizerPageInfoChanged(
       const blink::WebTextAutosizerPageInfo& page_info);
 
@@ -519,16 +522,13 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   // it in the same order in the .cc file as it was in the header.
   // ---------------------------------------------------------------------------
 
-  // This is the |render_widget_| for the main frame. Its lifetime is controlled
-  // via IPC messages to RenderWidget (see WidgetMsg_Close). RenderView
-  // holds a weak reference to this object and relies on
-  // RenderWidgetDelegate::DidCloseWidget() to avoid UaF.
+  // This is the |render_widget_| for the main frame.
   //
   // Instances of RenderWidget for child frame local roots, popups, and
   // fullscreen widgets are never contained by this pointer. Child frame
   // local roots are owned by a RenderFrame. The others are owned by the IPC
   // system.
-  RenderWidget* render_widget_ = nullptr;
+  std::unique_ptr<RenderWidget> render_widget_;
 
   // Routing ID that allows us to communicate with the corresponding
   // RenderViewHost in the parent browser process.
@@ -545,7 +545,7 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
   blink::mojom::RendererPreferences renderer_preferences_;
   // These are observing changes in |renderer_preferences_|. This is used for
   // keeping WorkerFetchContext in sync.
-  mojo::InterfacePtrSet<blink::mojom::RendererPreferenceWatcher>
+  mojo::RemoteSet<blink::mojom::RendererPreferenceWatcher>
       renderer_preference_watchers_;
 
   // Whether content state (such as form state, scroll position and page
@@ -619,6 +619,8 @@ class CONTENT_EXPORT RenderViewImpl : public blink::WebViewClient,
 
   // View ----------------------------------------------------------------------
 
+  // This class owns this member, and is responsible for calling
+  // WebView::Close().
   blink::WebView* webview_ = nullptr;
 
   // Cache the preferred size of the page in order to prevent sending the IPC

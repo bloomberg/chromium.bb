@@ -10,13 +10,11 @@
 
 #include "base/macros.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/background_fetch/background_fetch_registration_service_impl.h"
 #include "content/common/background_fetch/background_fetch_types.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/background_fetch/background_fetch.mojom.h"
 
@@ -63,17 +61,16 @@ class TestRegistrationObserver
         blink::mojom::BackgroundFetchFailureReason::NONE;
   };
 
-  TestRegistrationObserver() : binding_(this) {}
+  TestRegistrationObserver() = default;
   ~TestRegistrationObserver() override = default;
 
   // Closes the bindings associated with this observer.
-  void Close() { binding_.Close(); }
+  void Close() { receiver_.reset(); }
 
   // Returns an InterfacePtr to this observer.
-  blink::mojom::BackgroundFetchRegistrationObserverPtr GetPtr() {
-    blink::mojom::BackgroundFetchRegistrationObserverPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<blink::mojom::BackgroundFetchRegistrationObserver>
+  GetRemote() {
+    return receiver_.BindNewPipeAndPassRemote();
   }
 
   // Returns the vector of progress updates received by this observer.
@@ -111,7 +108,8 @@ class TestRegistrationObserver
  private:
   std::vector<ProgressUpdate> progress_updates_;
   CompletedRequests completed_requests_;
-  mojo::Binding<blink::mojom::BackgroundFetchRegistrationObserver> binding_;
+  mojo::Receiver<blink::mojom::BackgroundFetchRegistrationObserver> receiver_{
+      this};
   bool records_available_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(TestRegistrationObserver);
@@ -129,12 +127,12 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
   void Notify(const std::string& unique_id,
               blink::mojom::BackgroundFetchRegistrationDataPtr registration) {
     notifier_->Notify(unique_id, *registration);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void NotifyRecordsUnavailable(const std::string& unique_id) {
     notifier_->NotifyRecordsUnavailable(unique_id);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void NotifyRequestCompleted(const std::string& unique_id,
@@ -142,16 +140,16 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
                               blink::mojom::FetchAPIResponsePtr response) {
     notifier_->NotifyRequestCompleted(unique_id, std::move(request),
                                       std::move(response));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void AddObservedUrl(const std::string& unique_id, const GURL& url) {
     notifier_->AddObservedUrl(unique_id, url);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<BackgroundFetchRegistrationNotifier> notifier_;
 
@@ -162,7 +160,7 @@ class BackgroundFetchRegistrationNotifierTest : public ::testing::Test {
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifySingleObserver) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
-  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
   Notify(kPrimaryUniqueId,
@@ -192,11 +190,11 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyMultipleObservers) {
   auto secondary_observer = std::make_unique<TestRegistrationObserver>();
 
   for (auto& observer : primary_observers) {
-    notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+    notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
     ASSERT_EQ(observer->progress_updates().size(), 0u);
   }
 
-  notifier_->AddObserver(kSecondaryUniqueId, secondary_observer->GetPtr());
+  notifier_->AddObserver(kSecondaryUniqueId, secondary_observer->GetRemote());
   ASSERT_EQ(secondary_observer->progress_updates().size(), 0u);
 
   // Notify the |kPrimaryUniqueId|.
@@ -227,7 +225,7 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
        NotifyFollowingObserverInitiatedRemoval) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
-  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
   Notify(kPrimaryUniqueId,
@@ -255,7 +253,7 @@ TEST_F(BackgroundFetchRegistrationNotifierTest,
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyWithoutObservers) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
-  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
   ASSERT_EQ(observer->progress_updates().size(), 0u);
 
   Notify(kSecondaryUniqueId,
@@ -274,7 +272,7 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
   notifier_->NoteTotalRequests(kPrimaryUniqueId, /* num_total_requests= */ 1);
-  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
   ASSERT_TRUE(observer->records_available());
 
   NotifyRecordsUnavailable(kPrimaryUniqueId);
@@ -284,7 +282,7 @@ TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRecordsUnavailable) {
 TEST_F(BackgroundFetchRegistrationNotifierTest, NotifyRequestCompleted) {
   auto observer = std::make_unique<TestRegistrationObserver>();
 
-  notifier_->AddObserver(kPrimaryUniqueId, observer->GetPtr());
+  notifier_->AddObserver(kPrimaryUniqueId, observer->GetRemote());
   notifier_->NoteTotalRequests(kPrimaryUniqueId, /* num_total_requests= */ 1);
 
   // No observed URLs. Observers shouldn't have been notified.

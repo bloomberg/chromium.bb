@@ -27,11 +27,12 @@
 #include "src/trace_processor/trace_blob_view.h"
 #include "src/trace_processor/trace_storage.h"
 
-#include "perfetto/trace/profiling/profile_common.pbzero.h"
-#include "perfetto/trace/track_event/debug_annotation.pbzero.h"
-#include "perfetto/trace/track_event/source_location.pbzero.h"
-#include "perfetto/trace/track_event/task_execution.pbzero.h"
-#include "perfetto/trace/track_event/track_event.pbzero.h"
+#include "protos/perfetto/trace/profiling/profile_common.pbzero.h"
+#include "protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
+#include "protos/perfetto/trace/track_event/log_message.pbzero.h"
+#include "protos/perfetto/trace/track_event/source_location.pbzero.h"
+#include "protos/perfetto/trace/track_event/task_execution.pbzero.h"
+#include "protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -58,7 +59,7 @@ struct StorageReferences<protos::pbzero::EventCategory> {
 };
 
 template <>
-struct StorageReferences<protos::pbzero::LegacyEventName> {
+struct StorageReferences<protos::pbzero::EventName> {
   StringId name_id;
 };
 
@@ -71,6 +72,12 @@ template <>
 struct StorageReferences<protos::pbzero::SourceLocation> {
   StringId file_name_id;
   StringId function_name_id;
+  uint32_t line_number;
+};
+
+template <>
+struct StorageReferences<protos::pbzero::LogMessageBody> {
+  StringId body_id;
 };
 
 }  // namespace proto_incremental_state_internal
@@ -180,11 +187,12 @@ class ProtoIncrementalState {
     int64_t track_event_thread_instruction_count_ = 0;
 
     InternedDataMap<protos::pbzero::EventCategory> event_categories_;
-    InternedDataMap<protos::pbzero::LegacyEventName> legacy_event_names_;
+    InternedDataMap<protos::pbzero::EventName> event_names_;
     InternedDataMap<protos::pbzero::DebugAnnotationName>
         debug_annotation_names_;
     InternedDataMap<protos::pbzero::SourceLocation> source_locations_;
     InternedDataMap<protos::pbzero::InternedString> interned_strings_;
+    InternedDataMap<protos::pbzero::LogMessageBody> interned_log_messages_;
     InternedDataMap<protos::pbzero::Mapping> mappings_;
     InternedDataMap<protos::pbzero::Frame> frames_;
     InternedDataMap<protos::pbzero::Callstack> callstacks_;
@@ -215,10 +223,10 @@ ProtoIncrementalState::PacketSequenceState::GetInternedDataMap<
 }
 
 template <>
-inline ProtoIncrementalState::InternedDataMap<protos::pbzero::LegacyEventName>*
+inline ProtoIncrementalState::InternedDataMap<protos::pbzero::EventName>*
 ProtoIncrementalState::PacketSequenceState::GetInternedDataMap<
-    protos::pbzero::LegacyEventName>() {
-  return &legacy_event_names_;
+    protos::pbzero::EventName>() {
+  return &event_names_;
 }
 
 template <>
@@ -234,6 +242,13 @@ inline ProtoIncrementalState::InternedDataMap<protos::pbzero::SourceLocation>*
 ProtoIncrementalState::PacketSequenceState::GetInternedDataMap<
     protos::pbzero::SourceLocation>() {
   return &source_locations_;
+}
+
+template <>
+inline ProtoIncrementalState::InternedDataMap<protos::pbzero::LogMessageBody>*
+ProtoIncrementalState::PacketSequenceState::GetInternedDataMap<
+    protos::pbzero::LogMessageBody>() {
+  return &interned_log_messages_;
 }
 
 template <>

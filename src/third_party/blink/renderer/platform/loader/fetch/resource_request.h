@@ -37,8 +37,8 @@
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "services/network/public/mojom/cors.mojom-blink.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
+#include "services/network/public/mojom/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/resource_request_blocked_reason.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_load_priority.h"
@@ -49,7 +49,6 @@
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -67,55 +66,6 @@ class PLATFORM_EXPORT ResourceRequest final {
 
  public:
   enum class RedirectStatus : uint8_t { kFollowedRedirect, kNoRedirect };
-  // TODO(domfarolino): Remove these location enums when Referer header crash
-  // debugging is done.
-  enum class SetHttpReferrerLocation : uint8_t {
-    kCreateRedirectRequest,
-    kFrameLoaderResourceRequestForReload,
-    kFrameLoadRequest,
-    kInspectorNetworkAgent,
-    kLocalDomWindow,
-    kResourceFetcher,
-    kWebURLRequest,
-  };
-  enum class SetReferrerStringLocation : uint8_t {
-    kCSSFontFaceSrcValueFetch,
-    kCSSImageSetValueCacheImage,
-    kCSSImageValueCacheImage,
-    kHistoryItem,
-    kModuleScriptLoader,
-    kPerformHTTPFetch,
-    kPingLoader,
-    kPreloadRequestStart,
-    kResourceFetcher,
-    kThreadableLoaderCreateAccessControlPreflightRequest,
-    kThreadableLoaderPrepareCrossOriginRequest,
-    kWebLocalFrameImpl,
-    kWebURLRequest,
-  };
-  enum class SetReferrerPolicyLocation : uint8_t {
-    kAnchorElement,
-    kCSSFontFaceSrcValueFetch,
-    kCSSImageSetValueCacheImage,
-    kCSSImageValueCacheImage,
-    kFrameOwnerLoadOrRedirectSubframe,
-    kHistoryItem,
-    kImageLoader,
-    kLinkImport,
-    kLoadStylesheet,
-    kModuleLoader,
-    kPerformHTTPFetch,
-    kPingLoader,
-    kPrefetchIfNeeded,
-    kPreloadIfNeeded,
-    kPreloadRequestStart,
-    kResourceFetcher,
-    kSFOCreateFetchParameters,
-    kThreadableLoaderCreateAccessControlPreflightRequest,
-    kThreadableLoaderPrepareCrossOriginRequest,
-    kWebLocalFrameImpl,
-  };
-
   ResourceRequest();
   explicit ResourceRequest(const String& url_string);
   explicit ResourceRequest(const KURL&);
@@ -199,36 +149,21 @@ class PLATFORM_EXPORT ResourceRequest final {
   const AtomicString& HttpReferrer() const {
     return HttpHeaderField(http_names::kReferer);
   }
-  SetHttpReferrerLocation HttpReferrerLocation() const {
-    return set_http_referrer_location_;
-  }
-  void SetHttpReferrer(const Referrer&, SetHttpReferrerLocation);
+  void SetHttpReferrer(const Referrer&);
   bool DidSetHttpReferrer() const { return did_set_http_referrer_; }
   void ClearHTTPReferrer();
 
-  void SetReferrerPolicy(
-      network::mojom::ReferrerPolicy referrer_policy,
-      SetReferrerPolicyLocation set_referrer_policy_location) {
+  void SetReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy) {
     referrer_policy_ = referrer_policy;
-    set_referrer_policy_location_ = set_referrer_policy_location;
   }
   network::mojom::ReferrerPolicy GetReferrerPolicy() const {
     return referrer_policy_;
   }
-  SetReferrerPolicyLocation ReferrerPolicyLocation() const {
-    return set_referrer_policy_location_;
-  }
 
-  void SetReferrerString(
-      const String& referrer_string,
-      SetReferrerStringLocation set_referrer_string_location) {
+  void SetReferrerString(const String& referrer_string) {
     referrer_string_ = referrer_string;
-    set_referrer_string_location_ = set_referrer_string_location;
   }
   const String& ReferrerString() const { return referrer_string_; }
-  SetReferrerStringLocation ReferrerStringLocation() const {
-    return set_referrer_string_location_;
-  }
 
   const AtomicString& HttpOrigin() const {
     return HttpHeaderField(http_names::kOrigin);
@@ -278,23 +213,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   // Allows the request to be matched up with its requestor.
   int RequestorID() const { return requestor_id_; }
   void SetRequestorID(int requestor_id) { requestor_id_ = requestor_id; }
-
-  // The unique child id (not PID) of the process from which this request
-  // originated. In the case of out-of-process plugins, this allows to link back
-  // the request to the plugin process (as it is processed through a render view
-  // process).
-  int GetPluginChildID() const { return plugin_child_id_; }
-  void SetPluginChildID(int plugin_child_id) {
-    plugin_child_id_ = plugin_child_id;
-  }
-
-  // Allows the request to be matched up with its app cache host.
-  const base::UnguessableToken& AppCacheHostID() const {
-    return app_cache_host_id_;
-  }
-  void SetAppCacheHostID(const base::UnguessableToken& id) {
-    app_cache_host_id_ = id;
-  }
 
   // True if request was user initiated.
   bool HasUserGesture() const { return has_user_gesture_; }
@@ -405,7 +323,8 @@ class PLATFORM_EXPORT ResourceRequest final {
 
   // https://wicg.github.io/cors-rfc1918/#external-request
   bool IsExternalRequest() const { return is_external_request_; }
-  void SetExternalRequestStateFromRequestorAddressSpace(mojom::IPAddressSpace);
+  void SetExternalRequestStateFromRequestorAddressSpace(
+      network::mojom::IPAddressSpace);
 
   network::mojom::CorsPreflightPolicy CorsPreflightPolicy() const {
     return cors_preflight_policy_;
@@ -511,6 +430,15 @@ class PLATFORM_EXPORT ResourceRequest final {
     is_signed_exchange_prefetch_cache_enabled_ = enabled;
   }
 
+  bool PrefetchMaybeForTopLeveNavigation() const {
+    return prefetch_maybe_for_top_level_navigation_;
+  }
+  void SetPrefetchMaybeForTopLevelNavigation(
+      bool prefetch_maybe_for_top_level_navigation) {
+    prefetch_maybe_for_top_level_navigation_ =
+        prefetch_maybe_for_top_level_navigation;
+  }
+
  private:
   using SharableExtraData =
       base::RefCountedData<std::unique_ptr<WebURLRequest::ExtraData>>;
@@ -549,8 +477,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   ResourceLoadPriority priority_;
   int intra_priority_value_;
   int requestor_id_;
-  int plugin_child_id_;
-  base::UnguessableToken app_cache_host_id_;
   WebURLRequest::PreviewsState previews_state_;
   scoped_refptr<SharableExtraData> sharable_extra_data_;
   mojom::RequestContextType request_context_;
@@ -568,10 +494,6 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_external_request_;
   network::mojom::CorsPreflightPolicy cors_preflight_policy_;
   RedirectStatus redirect_status_;
-  // TODO(domfarolino): Remove these after crash debugging is complete.
-  SetHttpReferrerLocation set_http_referrer_location_;
-  SetReferrerStringLocation set_referrer_string_location_;
-  SetReferrerPolicyLocation set_referrer_policy_location_;
 
   base::Optional<String> suggested_filename_;
 
@@ -602,6 +524,12 @@ class PLATFORM_EXPORT ResourceRequest final {
   bool is_from_origin_dirty_style_sheet_ = false;
 
   bool is_signed_exchange_prefetch_cache_enabled_ = false;
+
+  // Currently this is only used when a prefetch request has `as=document`
+  // specified. If true, and the request is cross-origin, the browser will cache
+  // the request under the cross-origin's partition. Furthermore, its reuse from
+  // the prefetch cache will be restricted to top-level-navigations.
+  bool prefetch_maybe_for_top_level_navigation_ = false;
 };
 
 }  // namespace blink

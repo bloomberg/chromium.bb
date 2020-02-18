@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/download/chrome_download_manager_delegate.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -22,7 +24,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/download/download_target_info.h"
@@ -34,10 +35,13 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
@@ -49,7 +53,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #endif
 
@@ -178,9 +182,8 @@ class TestChromeDownloadManagerDelegate : public ChromeDownloadManagerDelegate {
   }
 
 #if defined(OS_ANDROID)
-  void OnDownloadCanceled(
-      download::DownloadItem* download,
-      DownloadController::DownloadCancelReason reason) override {}
+  void OnDownloadCanceled(download::DownloadItem* download,
+                          bool has_no_external_storage) override {}
 #endif
 
   MOCK_METHOD5(
@@ -295,11 +298,12 @@ class ChromeDownloadManagerDelegateTest
   std::unique_ptr<TestChromeDownloadManagerDelegate> delegate_;
   MockWebContentsDelegate web_contents_delegate_;
   std::vector<uint32_t> download_ids_;
+  TestingProfileManager testing_profile_manager_;
 };
 
 ChromeDownloadManagerDelegateTest::ChromeDownloadManagerDelegateTest()
-    : download_manager_(new ::testing::NiceMock<content::MockDownloadManager>) {
-}
+    : download_manager_(new ::testing::NiceMock<content::MockDownloadManager>),
+      testing_profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
 void ChromeDownloadManagerDelegateTest::SetUp() {
   ChromeRenderViewHostTestHarness::SetUp();
@@ -1059,7 +1063,7 @@ TEST_F(ChromeDownloadManagerDelegateTest,
 }
 #endif  // OS_ANDROID
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 namespace {
 
 struct SafeBrowsingTestParameters {
@@ -1079,8 +1083,8 @@ class TestDownloadProtectionService
 
   void CheckClientDownload(
       DownloadItem* download_item,
-      const safe_browsing::CheckDownloadCallback& callback) override {
-    callback.Run(MockCheckClientDownload());
+      safe_browsing::CheckDownloadCallback callback) override {
+    std::move(callback).Run(MockCheckClientDownload());
   }
   MOCK_METHOD0(MockCheckClientDownload, safe_browsing::DownloadCheckResult());
 };

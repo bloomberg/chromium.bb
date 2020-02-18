@@ -17,7 +17,7 @@
 #include "components/arc/arc_service_manager.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/timer/arc_timer_bridge.h"
-#include "components/arc/timer/arc_timer_struct_traits.h"
+#include "components/arc/timer/arc_timer_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
@@ -100,9 +100,7 @@ ArcTimerBridge* ArcTimerBridge::GetForBrowserContextForTesting(
 
 ArcTimerBridge::ArcTimerBridge(content::BrowserContext* context,
                                ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      binding_(this),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->timer()->SetHost(this);
   arc_bridge_service_->timer()->AddObserver(this);
 }

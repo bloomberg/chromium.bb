@@ -21,13 +21,13 @@
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_pingback_client.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
 #include "components/data_reduction_proxy/proto/pageload_metrics.pb.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "components/previews/content/previews_user_data.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
@@ -204,26 +204,24 @@ DataReductionProxyMetricsObserverBase::OnStart(
 
 page_load_metrics::PageLoadMetricsObserver::ObservePolicy
 DataReductionProxyMetricsObserverBase::FlushMetricsOnAppEnterBackground(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // FlushMetricsOnAppEnterBackground is invoked on Android in cases where the
   // app is about to be backgrounded, as part of the Activity.onPause()
   // flow. After this method is invoked, Chrome may be killed without further
   // notification, so we send a pingback with data collected up to this point.
-  if (info.did_commit) {
-    SendPingback(timing, info, true /* app_background_occurred */);
-    RecordUKM(info);
+  if (GetDelegate().DidCommit()) {
+    SendPingback(timing, true /* app_background_occurred */);
+    RecordUKM();
   }
   return STOP_OBSERVING;
 }
 
 void DataReductionProxyMetricsObserverBase::OnComplete(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  SendPingback(timing, info, false /* app_background_occurred */);
-  RecordUKM(info);
+  SendPingback(timing, false /* app_background_occurred */);
+  RecordUKM();
 }
 
 // static
@@ -236,8 +234,7 @@ int64_t DataReductionProxyMetricsObserverBase::ExponentiallyBucketBytes(
   return ukm::GetExponentialBucketMin(bytes, 1.16);
 }
 
-void DataReductionProxyMetricsObserverBase::RecordUKM(
-    const page_load_metrics::PageLoadExtraInfo& info) const {
+void DataReductionProxyMetricsObserverBase::RecordUKM() const {
   if (!data())
     return;
 
@@ -248,7 +245,7 @@ void DataReductionProxyMetricsObserverBase::RecordUKM(
       insecure_original_network_bytes() + secure_original_network_bytes();
   uint64_t uuid = ComputeDataReductionProxyUUID(data());
 
-  ukm::builders::DataReductionProxy builder(info.source_id);
+  ukm::builders::DataReductionProxy builder(GetDelegate().GetSourceId());
 
   builder.SetEstimatedOriginalNetworkBytes(
       ExponentiallyBucketBytes(original_network_bytes));
@@ -259,7 +256,6 @@ void DataReductionProxyMetricsObserverBase::RecordUKM(
 
 void DataReductionProxyMetricsObserverBase::SendPingback(
     const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info,
     bool app_background_occurred) {
   // TODO(ryansturm): Move to OnFirstBackgroundEvent to handle some fast
   // shutdown cases. crbug.com/618072
@@ -277,56 +273,60 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
   base::Optional<base::TimeDelta> parse_stop;
   base::Optional<base::TimeDelta> page_end_time;
   base::Optional<base::TimeDelta> main_frame_fetch_start;
-  if (WasStartedInForegroundOptionalEventInForeground(timing.response_start,
-                                                      info)) {
+
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.response_start, GetDelegate())) {
     response_start = timing.response_start;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.document_timing->load_event_start, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.document_timing->load_event_start, GetDelegate())) {
     load_event_start = timing.document_timing->load_event_start;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_image_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_image_paint, GetDelegate())) {
     first_image_paint = timing.paint_timing->first_image_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_contentful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_contentful_paint, GetDelegate())) {
     first_contentful_paint = timing.paint_timing->first_contentful_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.paint_timing->first_meaningful_paint, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.paint_timing->first_meaningful_paint, GetDelegate())) {
     experimental_first_meaningful_paint =
         timing.paint_timing->first_meaningful_paint;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.interactive_timing->first_input_delay, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.interactive_timing->first_input_delay, GetDelegate())) {
     first_input_delay = timing.interactive_timing->first_input_delay;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_blocked_on_script_load_duration, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_blocked_on_script_load_duration,
+          GetDelegate())) {
     parse_blocked_on_script_load_duration =
         timing.parse_timing->parse_blocked_on_script_load_duration;
   }
-  if (WasStartedInForegroundOptionalEventInForeground(
-          timing.parse_timing->parse_stop, info)) {
+  if (page_load_metrics::WasStartedInForegroundOptionalEventInForeground(
+          timing.parse_timing->parse_stop, GetDelegate())) {
     parse_stop = timing.parse_timing->parse_stop;
   }
-  if (GetDelegate()->DidCommit() && main_frame_fetch_start_) {
+  if (GetDelegate().DidCommit() && main_frame_fetch_start_) {
     main_frame_fetch_start =
-        main_frame_fetch_start_.value() - GetDelegate()->GetNavigationStart();
+        main_frame_fetch_start_.value() - GetDelegate().GetNavigationStart();
   }
-  if (info.started_in_foreground && info.page_end_time.has_value()) {
+  if (GetDelegate().StartedInForeground() &&
+      GetDelegate().GetPageEndTime().has_value()) {
     // This should be reported even when the app goes into the background which
-    // is excluded in |WasStartedInForegroundOptionalEventInForeground|.
-    page_end_time = info.page_end_time;
-  } else if (info.started_in_foreground) {
-    page_end_time = base::TimeTicks::Now() - info.navigation_start;
+    // is excluded in
+    // |page_load_metrics::WasStartedInForegroundOptionalEventInForeground|.
+    page_end_time = GetDelegate().GetPageEndTime();
+  } else if (GetDelegate().StartedInForeground()) {
+    page_end_time = base::TimeTicks::Now() - GetDelegate().GetNavigationStart();
   }
 
   // If a crash happens, report the host |render_process_host_id_| to the
   // pingback client. Otherwise report kInvalidUniqueID.
   int host_id = content::ChildProcessHost::kInvalidUniqueID;
-  if (info.page_end_reason ==
+  if (GetDelegate().GetPageEndReason() ==
       page_load_metrics::PageEndReason::END_RENDER_PROCESS_GONE) {
     host_id = render_process_host_id_;
   }
@@ -367,14 +367,13 @@ void DataReductionProxyMetricsObserverBase::SendPingback(
       main_frame_fetch_start, network_bytes, original_network_bytes,
       total_page_size_bytes, cached_fraction, app_background_occurred,
       opted_out_, renderer_memory_usage_kb_, host_id,
-      ConvertPLMPageEndReasonToProto(info.page_end_reason), touch_count_,
-      scroll_count_, redirect_count_);
+      ConvertPLMPageEndReasonToProto(GetDelegate().GetPageEndReason()),
+      touch_count_, scroll_count_, redirect_count_);
   GetPingbackClient()->SendPingback(*data_, data_reduction_proxy_timing);
 }
 
 void DataReductionProxyMetricsObserverBase::OnLoadEventStart(
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (process_id_ != base::kNullProcessId) {
     auto callback = base::BindRepeating(
@@ -455,8 +454,7 @@ void DataReductionProxyMetricsObserverBase::OnEventOccurred(
 
 void DataReductionProxyMetricsObserverBase::OnUserInput(
     const blink::WebInputEvent& event,
-    const page_load_metrics::mojom::PageLoadTiming& timing,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const page_load_metrics::mojom::PageLoadTiming& timing) {
   if (event.GetType() == blink::WebInputEvent::kMouseDown ||
       event.GetType() == blink::WebInputEvent::kGestureTap) {
     touch_count_++;

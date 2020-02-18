@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013-2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1041,6 +1041,32 @@ void LoadRGB10A2ToRGBA8(size_t width,
     }
 }
 
+void LoadRGB10A2ToRGB10X2(size_t width,
+                          size_t height,
+                          size_t depth,
+                          const uint8_t *input,
+                          size_t inputRowPitch,
+                          size_t inputDepthPitch,
+                          uint8_t *output,
+                          size_t outputRowPitch,
+                          size_t outputDepthPitch)
+{
+    for (size_t z = 0; z < depth; z++)
+    {
+        for (size_t y = 0; y < height; y++)
+        {
+            const uint32_t *source =
+                priv::OffsetDataPointer<uint32_t>(input, y, z, inputRowPitch, inputDepthPitch);
+            uint32_t *dest =
+                priv::OffsetDataPointer<uint32_t>(output, y, z, outputRowPitch, outputDepthPitch);
+            for (size_t x = 0; x < width; x++)
+            {
+                dest[x] = source[x] | 0xC0000000;
+            }
+        }
+    }
+}
+
 void LoadRGB16FToRGB9E5(size_t width,
                         size_t height,
                         size_t depth,
@@ -1287,6 +1313,58 @@ void LoadX24S8ToS8(size_t width,
             for (size_t x = 0; x < width; x++)
             {
                 destStencil[x] = (source[x] & 0xFF);
+            }
+        }
+    }
+}
+
+void LoadX32S8ToS8(size_t width,
+                   size_t height,
+                   size_t depth,
+                   const uint8_t *input,
+                   size_t inputRowPitch,
+                   size_t inputDepthPitch,
+                   uint8_t *output,
+                   size_t outputRowPitch,
+                   size_t outputDepthPitch)
+{
+    for (size_t z = 0; z < depth; z++)
+    {
+        for (size_t y = 0; y < height; y++)
+        {
+            const uint32_t *source = reinterpret_cast<const uint32_t *>(
+                input + (y * inputRowPitch) + (z * inputDepthPitch));
+            uint8_t *destStencil =
+                reinterpret_cast<uint8_t *>(output + (y * outputRowPitch) + (z * outputDepthPitch));
+            for (size_t x = 0; x < width; x++)
+            {
+                destStencil[x] = (source[(x * 2) + 1] & 0xFF);
+            }
+        }
+    }
+}
+
+void LoadD32FS8X24ToD32F(size_t width,
+                         size_t height,
+                         size_t depth,
+                         const uint8_t *input,
+                         size_t inputRowPitch,
+                         size_t inputDepthPitch,
+                         uint8_t *output,
+                         size_t outputRowPitch,
+                         size_t outputDepthPitch)
+{
+    for (size_t z = 0; z < depth; z++)
+    {
+        for (size_t y = 0; y < height; y++)
+        {
+            const float *sourceDepth =
+                priv::OffsetDataPointer<float>(input, y, z, inputRowPitch, inputDepthPitch);
+            float *destDepth =
+                priv::OffsetDataPointer<float>(output, y, z, outputRowPitch, outputDepthPitch);
+            for (size_t x = 0; x < width; x++)
+            {
+                destDepth[x] = gl::clamp01(sourceDepth[x * 2]);
             }
         }
     }

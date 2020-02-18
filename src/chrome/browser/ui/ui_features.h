@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "build/build_config.h"
+#include "chrome/common/buildflags.h"
 
 namespace features {
 
@@ -24,6 +25,10 @@ extern const base::Feature kEvDetailsInPageInfo;
 
 extern const base::Feature kExtensionsToolbarMenu;
 
+extern const base::Feature kNewTabstripAnimation;
+
+extern const base::Feature kProfileMenuRevamp;
+
 extern const base::Feature kScrollableTabStrip;
 
 extern const base::Feature kShowSyncPausedReasonCookiesClearedOnExit;
@@ -34,6 +39,12 @@ extern const base::Feature kTabHoverCards;
 extern const char kTabHoverCardsFeatureParameterName[];
 
 extern const base::Feature kTabHoverCardImages;
+
+extern const base::Feature kTabOutlinesInLowContrastThemes;
+
+extern const base::Feature kWebFooterExperiment;
+
+extern const base::Feature kWebUITabStrip;
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 extern const base::Feature kEnableDbusAndX11StatusIcons;

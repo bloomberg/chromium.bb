@@ -17,6 +17,7 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/process/kill.h"
 #include "base/process/launch.h"
@@ -38,7 +39,7 @@ namespace {
 const char kComponentDownloadUrl[] =
     "https://clients2.google.com/service/update2/crx?response=redirect&os=win"
     "&arch=x86&installsource=swreporter&x=id%3Dnpdjjkjlcidkjlamlmmdelcjbcpdjocm"
-    "%26v%3D0.0.0.0%26uc";
+    "%26v%3D0.0.0.0%26uc&acceptformat=crx3";
 
 // CRX hash. The extension id is: npdjjkjlcidkjlamlmmdelcjbcpdjocm.
 const uint8_t kSha2Hash[] = {0xdf, 0x39, 0x9a, 0x9b, 0x28, 0x3a, 0x9b, 0x0c,
@@ -154,7 +155,7 @@ void RecoveryComponent::SetHttpAgentFactoryForTesting(
 
 void RecoveryComponent::PreScan() {
   bool success = recovery_io_thread_.StartWithOptions(
-      base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+      base::Thread::Options(base::MessagePumpType::IO, 0));
   DCHECK(success) << "Can't start File Thread!";
 
   recovery_io_thread_.task_runner()->PostTask(

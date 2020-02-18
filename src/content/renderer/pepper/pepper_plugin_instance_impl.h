@@ -415,6 +415,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool CanRedo() override;
   void Undo() override;
   void Redo() override;
+  void HandleAccessibilityAction(
+      const PP_PdfAccessibilityActionData& action_data) override;
 
   // PPB_Instance_API implementation.
   PP_Bool BindGraphics(PP_Instance instance, PP_Resource device) override;
@@ -650,7 +652,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool SetFullscreenCommon(bool fullscreen) const;
 
   bool IsMouseLocked();
-  bool LockMouse();
+  bool LockMouse(bool request_unadjusted_movement);
   MouseLockDispatcher* GetMouseLockDispatcher();
   MouseLockDispatcher::LockTarget* GetOrCreateLockTargetAdapter();
   void UnSetAndDeleteLockTargetAdapter();
@@ -911,6 +913,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   std::vector<MailboxRefCount> texture_ref_counts_;
 
   bool initialized_;
+  bool created_in_process_instance_;
 
   // The controller for all active audios of this pepper instance.
   std::unique_ptr<PepperAudioController> audio_controller_;

@@ -16,7 +16,7 @@
 #include "base/task/post_task.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_verifier/test_utils.h"
 #include "extensions/browser/extension_file_task_runner.h"
@@ -51,12 +51,10 @@ class ContentHashWaiter {
       : reply_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
   std::unique_ptr<ContentHashFetcherResult> CreateAndWaitForCallback(
-      const ContentHash::ExtensionKey& key,
-      ContentHash::FetchParams fetch_params) {
+      ContentHash::FetchKey key) {
     GetExtensionFileTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(&ContentHashWaiter::CreateContentHash,
-                       base::Unretained(this), key, std::move(fetch_params)));
+        FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                                  base::Unretained(this), std::move(key)));
     run_loop_.Run();
     DCHECK(result_);
     return std::move(result_);
@@ -74,7 +72,7 @@ class ContentHashWaiter {
     }
 
     result_ = std::make_unique<ContentHashFetcherResult>();
-    result_->extension_id = content_hash->extension_key().extension_id;
+    result_->extension_id = content_hash->extension_id();
     result_->success = content_hash->succeeded();
     result_->was_cancelled = was_cancelled;
     result_->mismatch_paths = content_hash->hash_mismatch_unix_paths();
@@ -82,10 +80,8 @@ class ContentHashWaiter {
     run_loop_.QuitWhenIdle();
   }
 
-  void CreateContentHash(const ContentHash::ExtensionKey& key,
-                         ContentHash::FetchParams fetch_params) {
-    ContentHash::Create(key, std::move(fetch_params),
-                        ContentHash::IsCancelledCallback(),
+  void CreateContentHash(ContentHash::FetchKey key) {
+    ContentHash::Create(std::move(key), ContentHash::IsCancelledCallback(),
                         base::BindOnce(&ContentHashWaiter::CreatedCallback,
                                        base::Unretained(this)));
   }
@@ -103,7 +99,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   ContentHashFetcherTest()
       // We need a real IO thread to be able to entercept the network request
       // for the missing verified_contents.json file.
-      : ExtensionsTest(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : ExtensionsTest(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         test_shared_loader_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)) {}
@@ -143,12 +139,10 @@ class ContentHashFetcherTest : public ExtensionsTest {
         url_loader_factory_ptr.PassInterface();
 
     std::unique_ptr<ContentHashFetcherResult> result =
-        ContentHashWaiter().CreateAndWaitForCallback(
-            ContentHash::ExtensionKey(extension_->id(), extension_->path(),
-                                      extension_->version(),
-                                      delegate_->GetPublicKey()),
-            ContentHash::FetchParams(std::move(url_loader_factory_ptr_info),
-                                     fetch_url_));
+        ContentHashWaiter().CreateAndWaitForCallback(ContentHash::FetchKey(
+            extension_->id(), extension_->path(), extension_->version(),
+            std::move(url_loader_factory_ptr_info), fetch_url_,
+            delegate_->GetPublicKey()));
 
     delegate_.reset();
 

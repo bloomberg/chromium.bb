@@ -7,7 +7,6 @@
 #include "cc/trees/effect_node.h"
 #include "cc/trees/transform_node.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -29,12 +28,6 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
  public:
   static void ConfigureCompositingWebView(WebSettings* settings) {
     settings->SetPreferCompositingToLCDTextEnabled(true);
-  }
-
-  ~WebLayerListTest() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
   }
 
   void SetUp() override {
@@ -107,7 +100,7 @@ class WebLayerListTest : public PaintTestConfigurations, public testing::Test {
 
  private:
   PaintArtifactCompositor* paint_artifact_compositor() {
-    return GetLocalFrameView()->GetPaintArtifactCompositorForTesting();
+    return GetLocalFrameView()->GetPaintArtifactCompositor();
   }
 
   frame_test_helpers::TestWebWidgetClient web_widget_client_;
@@ -282,7 +275,7 @@ class WebLayerListSimTest : public PaintTestConfigurations, public SimTest {
   }
 
   PaintArtifactCompositor* paint_artifact_compositor() {
-    return MainFrame().GetFrameView()->GetPaintArtifactCompositorForTesting();
+    return MainFrame().GetFrameView()->GetPaintArtifactCompositor();
   }
 };
 
@@ -699,7 +692,6 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
         GetPropertyTrees()->transform_tree.Node(transform_tree_index);
 
     DCHECK(transform_node);
-    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
     EXPECT_TRUE(transform_node->moved_by_outer_viewport_bounds_delta_y);
   }
 
@@ -715,7 +707,6 @@ TEST_P(WebLayerListSimTest, AffectedByOuterViewportBoundsDelta) {
         GetPropertyTrees()->transform_tree.Node(transform_tree_index);
 
     DCHECK(transform_node);
-    EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_x);
     EXPECT_FALSE(transform_node->moved_by_outer_viewport_bounds_delta_y);
   }
 }

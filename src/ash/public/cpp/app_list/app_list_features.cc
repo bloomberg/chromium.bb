@@ -7,7 +7,7 @@
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 
 namespace app_list_features {
 
@@ -25,8 +25,8 @@ const base::Feature kEnableZeroStateSuggestions{
     "EnableZeroStateSuggestions", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableAppListSearchAutocomplete{
     "EnableAppListSearchAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kEnableQueryBasedAppsRanker{
-    "EnableQueryBasedAppsRanker", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableAppRanker{"EnableAppRanker",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableZeroStateAppsRanker{
     "EnableZeroStateAppsRanker", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kEnableQueryBasedMixedTypesRanker{
@@ -43,6 +43,10 @@ const base::Feature kEnableAppListLaunchRecording{
     "EnableAppListLaunchRecording", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableSearchBoxSelection{"EnableSearchBoxSelection",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kEnableAggregatedMlAppRanking{
+    "EnableAggregatedMlAppRanking", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kScalableAppList{"ScalableAppList",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -76,8 +80,8 @@ bool IsAppListSearchAutocompleteEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppListSearchAutocomplete);
 }
 
-bool IsQueryBasedAppsRankerEnabled() {
-  return base::FeatureList::IsEnabled(kEnableQueryBasedAppsRanker);
+bool IsAppRankerEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAppRanker);
 }
 
 bool IsZeroStateAppsRankerEnabled() {
@@ -97,8 +101,7 @@ bool IsAppReinstallZeroStateEnabled() {
 }
 
 bool IsEmbeddedAssistantUIEnabled() {
-  return chromeos::switches::IsAssistantEnabled() &&
-         base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
+  return base::FeatureList::IsEnabled(kEnableEmbeddedAssistantUI);
 }
 
 bool IsAppGridGhostEnabled() {
@@ -107,6 +110,14 @@ bool IsAppGridGhostEnabled() {
 
 bool IsSearchBoxSelectionEnabled() {
   return base::FeatureList::IsEnabled(kEnableSearchBoxSelection);
+}
+
+bool IsAggregatedMlAppRankingEnabled() {
+  return base::FeatureList::IsEnabled(kEnableAggregatedMlAppRanking);
+}
+
+bool IsScalableAppListEnabled() {
+  return base::FeatureList::IsEnabled(kScalableAppList);
 }
 
 std::string AnswerServerUrl() {

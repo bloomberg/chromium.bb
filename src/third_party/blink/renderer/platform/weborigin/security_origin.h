@@ -68,6 +68,7 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
     kDomainMatchNecessary,
     kDomainMatchUnnecessary,
     kDomainMismatch,
+    kDomainNotRelevantAgentClusterMismatch,
   };
 
   // SecurityOrigin::Create() resolves |url| to its SecurityOrigin. When |url|
@@ -210,6 +211,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   void GrantUniversalAccess();
   bool IsGrantedUniversalAccess() const { return universal_access_; }
 
+  // Whether this origin has ability to access another SecurityOrigin
+  // if everything but the agent clusters do not match.
+  void GrantCrossAgentClusterAccess();
+  bool IsGrantedCrossAgentClusterAccess() const {
+    return cross_agent_cluster_access_;
+  }
+
   bool CanAccessDatabase() const { return !IsOpaque(); }
   bool CanAccessLocalStorage() const { return !IsOpaque(); }
   bool CanAccessSharedWorkers() const { return !IsOpaque(); }
@@ -316,6 +324,16 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // if we need it for something more general.
   static String CanonicalizeHost(const String& host, bool* success);
 
+  // Return a security origin that is assigned to the agent cluster. This will
+  // be a copy of this security origin if the current agent doesn't match the
+  // provided agent, otherwise it will be a reference to this.
+  scoped_refptr<SecurityOrigin> GetOriginForAgentCluster(
+      const base::UnguessableToken& cluster_id);
+
+  const base::UnguessableToken& AgentClusterId() const {
+    return agent_cluster_id_;
+  }
+
  private:
   constexpr static const uint16_t kInvalidPort = 0;
 
@@ -335,8 +353,13 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   // Create a tuple SecurityOrigin, with parameters via KURL
   explicit SecurityOrigin(const KURL& url);
 
+  enum class ConstructIsolatedCopy { kConstructIsolatedCopyBit };
   // Clone a SecurityOrigin which is safe to use on other threads.
-  explicit SecurityOrigin(const SecurityOrigin* other);
+  SecurityOrigin(const SecurityOrigin* other, ConstructIsolatedCopy);
+
+  enum class ConstructSameThreadCopy { kConstructSameThreadCopyBit };
+  // Clone a SecurityOrigin which is *NOT* safe to use on other threads.
+  SecurityOrigin(const SecurityOrigin* other, ConstructSameThreadCopy);
 
   // FIXME: Rename this function to something more semantic.
   bool PassesFileCheck(const SecurityOrigin*) const;
@@ -359,6 +382,11 @@ class PLATFORM_EXPORT SecurityOrigin : public RefCounted<SecurityOrigin> {
   bool can_load_local_resources_ = false;
   bool block_local_access_from_local_origin_ = false;
   bool is_opaque_origin_potentially_trustworthy_ = false;
+  bool cross_agent_cluster_access_ = false;
+
+  // A security origin can have an empty |agent_cluster_id_|. It occurs in the
+  // cases where a security origin hasn't been assigned to a document yet.
+  base::UnguessableToken agent_cluster_id_;
 
   // For opaque origins, tracks the non-opaque origin from which the opaque
   // origin is derived.

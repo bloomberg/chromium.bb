@@ -99,6 +99,8 @@ Timeline.TimelineUIUtils = class {
     eventStyles[type.MarkFirstPaint] = new Timeline.TimelineRecordStyle(ls`First Paint`, painting, true);
     eventStyles[type.MarkFCP] = new Timeline.TimelineRecordStyle(ls`First Contentful Paint`, rendering, true);
     eventStyles[type.MarkFMP] = new Timeline.TimelineRecordStyle(ls`First Meaningful Paint`, rendering, true);
+    eventStyles[type.MarkLCPCandidate] =
+        new Timeline.TimelineRecordStyle(ls`Largest Contentful Paint`, rendering, true);
     eventStyles[type.TimeStamp] = new Timeline.TimelineRecordStyle(ls`Timestamp`, scripting);
     eventStyles[type.ConsoleTime] = new Timeline.TimelineRecordStyle(ls`Console Time`, scripting);
     eventStyles[type.UserTiming] = new Timeline.TimelineRecordStyle(ls`User Timing`, scripting);
@@ -698,6 +700,36 @@ Timeline.TimelineUIUtils = class {
 
   /**
    * @param {!SDK.TracingModel.Event} event
+   * @return {!Element}
+   */
+  static buildDetailsNodeForPerformanceEvent(event) {
+    /** @type {string} */
+    let link =
+        'https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#user-centric_performance_metrics';
+    let name = 'page performance metrics';
+    const recordType = TimelineModel.TimelineModel.RecordType;
+    switch (event.name) {
+      case recordType.MarkLCPCandidate:
+        link = 'https://web.dev/largest-contentful-paint';
+        name = 'largest contentful paint';
+        break;
+      case recordType.MarkFCP:
+        link = 'https://web.dev/first-contentful-paint';
+        name = 'first contentful paint';
+        break;
+      case recordType.MarkFMP:
+        link = 'https://web.dev/first-meaningful-paint/';
+        name = 'first meaningful paint';
+        break;
+      default:
+        break;
+    }
+
+    return UI.html`<div>${UI.XLink.create(link, ls`Learn more`)} about ${name}.</div>`;
+  }
+
+  /**
+   * @param {!SDK.TracingModel.Event} event
    * @param {!TimelineModel.TimelineModel} model
    * @param {!Components.Linkifier} linkifier
    * @param {!ProductRegistry.BadgePool} badgePool
@@ -941,6 +973,10 @@ Timeline.TimelineUIUtils = class {
         contentHelper.appendTextRow(ls`Type`, eventData['type']);
         break;
 
+      case recordTypes.MarkLCPCandidate:
+        contentHelper.appendTextRow(ls`Type`, String(eventData['type']));
+        contentHelper.appendTextRow(ls`Size`, String(eventData['size']));
+        // Fall-through intended.
       case recordTypes.MarkFirstPaint:
       case recordTypes.MarkFCP:
       case recordTypes.MarkFMP:
@@ -948,11 +984,8 @@ Timeline.TimelineUIUtils = class {
       case recordTypes.MarkDOMContent:
         contentHelper.appendTextRow(
             ls`Timestamp`, Number.preciseMillisToString(event.startTime - model.minimumRecordTime(), 1));
-        const learnMoreLink = UI.XLink.create(
-            'https://developers.google.com/web/fundamentals/performance/user-centric-performance-metrics#user-centric_performance_metrics',
-            ls`Learn more`);
-        const linkDiv = UI.html`<div>${learnMoreLink} about page performance metrics.</div>`;
-        contentHelper.appendElementRow(ls`Details`, linkDiv);
+        contentHelper.appendElementRow(
+            ls`Details`, Timeline.TimelineUIUtils.buildDetailsNodeForPerformanceEvent(event));
         break;
 
       default: {
@@ -1158,7 +1191,7 @@ Timeline.TimelineUIUtils = class {
     const color = Timeline.TimelineUIUtils.networkCategoryColor(category);
     contentHelper.addSection(ls`Network request`, color);
 
-    const duration = request.endTime - (request.startTime || -Infinity);
+    const duration = request.endTime - (request.getStartTime() || -Infinity);
     if (request.url)
       contentHelper.appendElementRow(ls`URL`, Components.Linkifier.linkifyURL(request.url));
     Timeline.TimelineUIUtils._maybeAppendProductToDetails(contentHelper, badgePool, request.url);
@@ -1174,8 +1207,12 @@ Timeline.TimelineUIUtils = class {
     if (request.mimeType)
       contentHelper.appendTextRow(ls`Mime Type`, request.mimeType);
     let lengthText = '';
-    if (request.fromCache)
+    if (request.memoryCached())
+      lengthText += ls` (from memory cache)`;
+    else if (request.cached())
       lengthText += ls` (from cache)`;
+    else if (request.timing && request.timing.pushStart)
+      lengthText += ls` (from push)`;
     if (request.fromServiceWorker)
       lengthText += ls` (from service worker)`;
     if (request.encodedDataLength || !lengthText)
@@ -1699,6 +1736,8 @@ Timeline.TimelineUIUtils = class {
         return ls`FCP`;
       case recordTypes.MarkFMP:
         return ls`FMP`;
+      case recordTypes.MarkLCPCandidate:
+        return ls`LCP`;
     }
     return null;
   }
@@ -1748,6 +1787,10 @@ Timeline.TimelineUIUtils = class {
         break;
       case recordTypes.MarkFMP:
         color = '#134A26';
+        tall = true;
+        break;
+      case recordTypes.MarkLCPCandidate:
+        color = '#1A3422';
         tall = true;
         break;
       case recordTypes.TimeStamp:

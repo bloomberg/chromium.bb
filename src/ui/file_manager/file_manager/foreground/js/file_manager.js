@@ -438,13 +438,6 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
-   * @return {BackgroundWindow}
-   */
-  get backgroundPage() {
-    return this.backgroundPage_;
-  }
-
-  /**
    * @return {FilteredVolumeManager}
    */
   get volumeManager() {
@@ -484,6 +477,14 @@ class FileManager extends cr.EventTarget {
    */
   get ui() {
     return this.ui_;
+  }
+
+  /**
+   * Launch a new File Manager app.
+   * @param {Object=} appState App state.
+   */
+  launchFileManager(appState) {
+    this.backgroundPage_.launcher.launchFileManager(appState);
   }
 
   /**
@@ -537,10 +538,6 @@ class FileManager extends cr.EventTarget {
         /** @param {!Event} event */
         event => {
           this.navigationUma_.onDirectoryChanged(event.newDirEntry);
-          if (event.volumeChanged) {
-            this.showArcStorageToast_(
-                this.volumeManager_.getVolumeInfo(event.newDirEntry));
-          }
         });
 
     this.initCommands_();
@@ -1121,20 +1118,19 @@ class FileManager extends cr.EventTarget {
         assert(this.directoryModel_), assert(this.androidAppListModel_));
 
     this.ui_.initDirectoryTree(directoryTree);
-    this.crostini_.setEnabled(
-        constants.DEFAULT_CROSTINI_VM,
-        loadTimeData.getBoolean('CROSTINI_ENABLED'));
-    this.crostini_.setEnabled(
-        constants.PLUGIN_VM, loadTimeData.getBoolean('PLUGIN_VM_ENABLED'));
-    const crostiniPromise = this.setupCrostini_();
-    chrome.fileManagerPrivate.onCrostiniChanged.addListener(
-        this.onCrostiniChanged_.bind(this));
-
     chrome.fileManagerPrivate.onPreferencesChanged.addListener(() => {
       this.onPreferencesChanged_();
     });
     this.onPreferencesChanged_();
-    return crostiniPromise;
+
+    // The fmp.onCrostiniChanged receives enabled/disabled events via a pref
+    // watcher and share/unshare events.  The enabled/disabled prefs are
+    // handled in fmp.onCrostiniChanged rather than fmp.onPreferencesChanged
+    // to keep crostini logic colocated, and to have an API that best supports
+    // multiple VMs.
+    chrome.fileManagerPrivate.onCrostiniChanged.addListener(
+        this.onCrostiniChanged_.bind(this));
+    return this.setupCrostini_();
   }
 
   /**
@@ -1212,11 +1208,19 @@ class FileManager extends cr.EventTarget {
   }
 
   /**
+   * Listens for the enable/disable events in order to show/hide
+   * the 'Linux files' root.
+   *
    * @param {chrome.fileManagerPrivate.CrostiniEvent} event
    * @return {!Promise<void>}
    * @private
    */
   async onCrostiniChanged_(event) {
+    // The background |this.crostini_| object also listens to all crostini
+    // events including enable/disable, allow/disallow and share/unshare.
+    // But to ensure we don't have any race conditions between bg and fg, we
+    // set enabled status on it before calling |setupCrostini_| which reads
+    // enabled status from it to determine whether 'Linux files' is shown.
     switch (event.eventType) {
       case chrome.fileManagerPrivate.CrostiniEventType.ENABLE:
         this.crostini_.setEnabled(event.vmName, true);
@@ -1569,40 +1573,5 @@ class FileManager extends cr.EventTarget {
           }
           this.directoryTree.redraw(false);
         });
-  }
-
-  /**
-   * Shows a toast for ARC storage when needed.
-   * @param {VolumeInfo} volumeInfo Volume information currently selected.
-   */
-  showArcStorageToast_(volumeInfo) {
-    if (!util.isArcUsbStorageUIEnabled()) {
-      return;
-    }
-    if (!volumeInfo ||
-        volumeInfo.volumeType !== VolumeManagerCommon.VolumeType.REMOVABLE) {
-      // The toast is for removable volumes.
-      return;
-    }
-    chrome.fileManagerPrivate.getPreferences(pref => {
-      if (!pref.arcEnabled || pref.arcRemovableMediaAccessEnabled) {
-        // We don't show the toast when ARC is disabled or the setting has
-        // already been enabled.
-        return;
-      }
-      chrome.fileManagerPrivate.setArcStorageToastShownFlag(originalFlag => {
-        if (originalFlag) {
-          // We show the toast only once.
-          return;
-        }
-        this.ui.toast.show(str('FILE_BROWSER_PLAY_STORE_ACCESS_LABEL'), {
-          text: str('FILE_BROWSER_OPEN_PLAY_STORE_SETTINGS_LABEL'),
-          callback: () => {
-            chrome.fileManagerPrivate.openSettingsSubpage(
-                'storage/externalStoragePreferences');
-          }
-        });
-      });
-    });
   }
 }

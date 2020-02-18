@@ -13,7 +13,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -75,30 +75,32 @@ class BrowserWithTestWindowTest : public testing::Test {
   struct HostedApp {};
 
   struct ValidTraits {
-    explicit ValidTraits(content::TestBrowserThreadBundle::ValidTraits);
+    explicit ValidTraits(content::BrowserTaskEnvironment::ValidTraits);
     explicit ValidTraits(HostedApp);
     explicit ValidTraits(Browser::Type);
 
-    // TODO(alexclarke): Make content::TestBrowserThreadBundle::ValidTraits
+    // TODO(alexclarke): Make content::BrowserTaskEnvironment::ValidTraits
     // imply this.
-    explicit ValidTraits(base::test::ScopedTaskEnvironment::ValidTrait);
+    explicit ValidTraits(base::test::TaskEnvironment::ValidTrait);
   };
 
   // Creates a BrowserWithTestWindowTest with zero or more traits. By default
   // the initial window will be a tabbed browser created on the native desktop,
   // which is not a hosted app.
   template <
-      class... ArgTypes,
+      typename... TaskEnvironmentTraits,
       class CheckArgumentsAreValid = std::enable_if_t<
-          base::trait_helpers::AreValidTraits<ValidTraits, ArgTypes...>::value>>
-  NOINLINE BrowserWithTestWindowTest(const ArgTypes... args)
+          base::trait_helpers::AreValidTraits<ValidTraits,
+                                              TaskEnvironmentTraits...>::value>>
+  NOINLINE explicit BrowserWithTestWindowTest(TaskEnvironmentTraits... traits)
       : BrowserWithTestWindowTest(
-            std::make_unique<content::TestBrowserThreadBundle>(
+            std::make_unique<content::BrowserTaskEnvironment>(
                 base::trait_helpers::Exclude<HostedApp, Browser::Type>::Filter(
-                    args)...),
-            base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_TABBED>(
-                args...),
-            base::trait_helpers::HasTrait<HostedApp>(args...)) {}
+                    traits)...),
+            base::trait_helpers::GetEnum<Browser::Type, Browser::TYPE_NORMAL>(
+                traits...),
+            base::trait_helpers::HasTrait<HostedApp,
+                                          TaskEnvironmentTraits...>()) {}
 
   ~BrowserWithTestWindowTest() override;
 
@@ -118,8 +120,8 @@ class BrowserWithTestWindowTest : public testing::Test {
 
   TestingProfileManager* profile_manager() { return profile_manager_.get(); }
 
-  content::TestBrowserThreadBundle* thread_bundle() {
-    return thread_bundle_.get();
+  content::BrowserTaskEnvironment* task_environment() {
+    return task_environment_.get();
   }
 
   network::TestURLLoaderFactory* test_url_loader_factory() {
@@ -194,12 +196,12 @@ class BrowserWithTestWindowTest : public testing::Test {
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   BrowserWithTestWindowTest(
-      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle,
+      std::unique_ptr<content::BrowserTaskEnvironment> task_environment,
       Browser::Type browser_type,
       bool hosted_app);
 
   // We need to create a MessageLoop, otherwise a bunch of things fails.
-  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<content::BrowserTaskEnvironment> task_environment_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

@@ -3,11 +3,12 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/permissions/chooser_context_base.h"
+
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/chooser_context_base_mock_permission_observer.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::_;
@@ -54,7 +55,7 @@ class ChooserContextBaseTest : public testing::Test {
   Profile* profile() { return &profile_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
  protected:

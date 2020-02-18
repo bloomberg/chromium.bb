@@ -27,7 +27,7 @@ class DrawIndexedTest : public DawnTest {
             renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
             dawn::ShaderModule vsModule =
-                utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
@@ -35,7 +35,7 @@ class DrawIndexedTest : public DawnTest {
                 })");
 
             dawn::ShaderModule fsModule =
-                utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -43,7 +43,7 @@ class DrawIndexedTest : public DawnTest {
                 })");
 
             utils::ComboRenderPipelineDescriptor descriptor(device);
-            descriptor.cVertexStage.module = vsModule;
+            descriptor.vertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
             descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
             descriptor.cVertexInput.bufferCount = 1;
@@ -54,21 +54,17 @@ class DrawIndexedTest : public DawnTest {
 
             pipeline = device.CreateRenderPipeline(&descriptor);
 
-            vertexBuffer = utils::CreateBufferFromData<float>(device, dawn::BufferUsageBit::Vertex, {
-                // First quad: the first 3 vertices represent the bottom left triangle
-                -1.0f, -1.0f, 0.0f, 1.0f,
-                 1.0f,  1.0f, 0.0f, 1.0f,
-                -1.0f,  1.0f, 0.0f, 1.0f,
-                 1.0f, -1.0f, 0.0f, 1.0f,
+            vertexBuffer = utils::CreateBufferFromData<float>(
+                device, dawn::BufferUsage::Vertex,
+                {// First quad: the first 3 vertices represent the bottom left triangle
+                 -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                 -1.0f, 0.0f, 1.0f,
 
                  // Second quad: the first 3 vertices represent the top right triangle
-                -1.0f, -1.0f, 0.0f, 1.0f,
-                 1.0f,  1.0f, 0.0f, 1.0f,
-                 1.0f, -1.0f, 0.0f, 1.0f,
-                -1.0f,  1.0f, 0.0f, 1.0f
-            });
+                 -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1.0f, -1.0f, 0.0f, 1.0f, -1.0f,
+                 1.0f, 0.0f, 1.0f});
             indexBuffer = utils::CreateBufferFromData<uint32_t>(
-                device, dawn::BufferUsageBit::Index,
+                device, dawn::BufferUsage::Index,
                 {0, 1, 2, 0, 3, 1,
                  // The indices below are added to test negatve baseVertex
                  0 + 4, 1 + 4, 2 + 4, 0 + 4, 3 + 4, 1 + 4});

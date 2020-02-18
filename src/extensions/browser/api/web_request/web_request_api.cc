@@ -30,7 +30,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/child_process_host.h"
@@ -69,6 +68,7 @@
 #include "extensions/browser/warning_service.h"
 #include "extensions/browser/warning_set.h"
 #include "extensions/common/api/web_request.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/error_utils.h"
 #include "extensions/common/event_filtering_info.h"
 #include "extensions/common/extension.h"
@@ -89,12 +89,13 @@
 #endif  // defined(OS_CHROMEOS)
 
 using content::BrowserThread;
-using content::ResourceRequestInfo;
 using extension_web_request_api_helpers::ExtraInfoSpec;
 
 namespace activity_log = activity_log_web_request_constants;
 namespace helpers = extension_web_request_api_helpers;
 namespace keys = extension_web_request_api_constants;
+using URLLoaderFactoryType =
+    content::ContentBrowserClient::URLLoaderFactoryType;
 
 namespace extensions {
 
@@ -273,7 +274,6 @@ void SendOnMessageEventOnUI(
     return;
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_details->DetermineFrameDataOnUI();
   event_args->Append(event_details->GetAndClearDict());
 
   EventRouter* event_router = EventRouter::Get(browser_context);
@@ -479,6 +479,19 @@ scoped_refptr<const net::HttpResponseHeaders> FilterResponseHeaders(
   return *headers_filtered ? result : response_headers;
 }
 
+// Helper to record a matched DNR action in RulesetManager's ActionTracker.
+void OnDNRActionMatched(content::BrowserContext* browser_context,
+                        const WebRequestInfo& request) {
+  DCHECK(request.dnr_action.has_value());
+
+  declarative_net_request::ActionTracker& action_tracker =
+      declarative_net_request::RulesMonitorService::Get(browser_context)
+          ->ruleset_manager()
+          ->action_tracker();
+  action_tracker.OnRuleMatched(request.dnr_action->extension_ids,
+                               request.frame_data.tab_id);
+}
+
 }  // namespace
 
 void WebRequestAPI::Proxy::HandleAuthRequest(
@@ -640,10 +653,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     content::BrowserContext* browser_context,
     content::RenderFrameHost* frame,
     int render_process_id,
-    bool is_navigation,
-    bool is_download,
+    URLLoaderFactoryType type,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
-    network::mojom::TrustedURLLoaderHeaderClientPtrInfo* header_client) {
+    mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
+        header_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!MayHaveProxies()) {
     bool skip_proxy = true;
@@ -674,6 +687,7 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
   *factory_receiver = mojo::MakeRequest(&target_factory_info);
 
   std::unique_ptr<ExtensionNavigationUIData> navigation_ui_data;
+  const bool is_navigation = (type == URLLoaderFactoryType::kNavigation);
   if (is_navigation) {
     DCHECK(frame);
     int tab_id;
@@ -684,9 +698,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
         std::make_unique<ExtensionNavigationUIData>(frame, tab_id, window_id);
   }
 
-  network::mojom::TrustedURLLoaderHeaderClientRequest header_client_request;
+  mojo::PendingReceiver<network::mojom::TrustedURLLoaderHeaderClient>
+      header_client_receiver;
   if (header_client)
-    header_client_request = mojo::MakeRequest(header_client);
+    header_client_receiver = header_client->InitWithNewPipeAndPassReceiver();
 
   // NOTE: This request may be proxied on behalf of an incognito frame, but
   // |this| will always be bound to a regular profile (see
@@ -696,13 +711,10 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           ExtensionsBrowserClient::Get()->GetOriginalContext(browser_context) ==
               browser_context_));
   WebRequestProxyingURLLoaderFactory::StartProxying(
-      browser_context,
-      // Match the behavior of the WebRequestInfo constructor
-      // which takes a net::URLRequest*.
-      is_navigation ? -1 : render_process_id, is_download,
+      browser_context, is_navigation ? -1 : render_process_id,
       request_id_generator_, std::move(navigation_ui_data),
       std::move(proxied_receiver), std::move(target_factory_info),
-      std::move(header_client_request), proxies_.get());
+      std::move(header_client_receiver), proxies_.get(), type);
   return true;
 }
 
@@ -738,7 +750,8 @@ void WebRequestAPI::ProxyWebSocket(
     const GURL& url,
     const GURL& site_for_cookies,
     const base::Optional<std::string>& user_agent,
-    network::mojom::WebSocketHandshakeClientPtr handshake_client) {
+    mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+        handshake_client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(MayHaveProxies());
 
@@ -748,7 +761,7 @@ void WebRequestAPI::ProxyWebSocket(
 
   WebRequestProxyingWebSocket::StartProxying(
       std::move(factory), url, site_for_cookies, user_agent,
-      handshake_client.PassInterface(), has_extra_headers,
+      std::move(handshake_client), has_extra_headers,
       frame->GetProcess()->GetID(), frame->GetRoutingID(),
       request_id_generator_, frame->GetLastCommittedOrigin(),
       frame->GetProcess()->GetBrowserContext(), proxies_.get());
@@ -1016,12 +1029,15 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
     case Action::Type::NONE:
       break;
     case Action::Type::BLOCK:
+      OnDNRActionMatched(browser_context, *request);
       return net::ERR_BLOCKED_BY_CLIENT;
     case Action::Type::COLLAPSE:
+      OnDNRActionMatched(browser_context, *request);
       *should_collapse_initiator = true;
       return net::ERR_BLOCKED_BY_CLIENT;
     case Action::Type::REDIRECT:
       DCHECK(action.redirect_url);
+      OnDNRActionMatched(browser_context, *request);
       *new_url = action.redirect_url.value();
       return net::OK;
     case Action::Type::REMOVE_HEADERS:
@@ -1093,6 +1109,11 @@ int ExtensionWebRequestEventRouter::OnBeforeSendHeaders(
       headers->RemoveHeader(header);
     } while (headers->HasHeader(header));
   }
+
+  // TODO(crbug.com/991420): This does not properly associate which headers are
+  // removed by which extensions.
+  if (!removed_headers.empty())
+    OnDNRActionMatched(browser_context, *request);
 
   bool initialize_blocked_requests = false;
 
@@ -1187,6 +1208,10 @@ int ExtensionWebRequestEventRouter::OnHeadersReceived(
     // |override_response_headers| don't point to the same object.
     *override_response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         filtered_response_headers->raw_headers());
+
+    // TODO(crbug.com/991420): This does not properly associate which headers
+    // are removed by which extensions.
+    OnDNRActionMatched(browser_context, *request);
   }
 
   bool initialize_blocked_requests = false;
@@ -1460,12 +1485,6 @@ bool ExtensionWebRequestEventRouter::DispatchEvent(
     }
   }
 
-  // TODO(http://crbug.com/980774): Investigate if this is necessary.
-  if (!request->frame_data) {
-    request->frame_data = ExtensionApiFrameIdMap::Get()->GetFrameData(
-        request->render_process_id, request->frame_id);
-  }
-  event_details->SetFrameData(request->frame_data.value());
   DispatchEventToListeners(browser_context, std::move(listeners_to_dispatch),
                            std::move(event_details));
 
@@ -1882,10 +1901,10 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
 
     // Check if the tab id and window id match, if they were set in the
     // listener params.
-    if ((listener->filter.tab_id != -1 && request->frame_data &&
-         request->frame_data->tab_id != listener->filter.tab_id) ||
-        (listener->filter.window_id != -1 && request->frame_data &&
-         request->frame_data->window_id != listener->filter.window_id)) {
+    if ((listener->filter.tab_id != -1 &&
+         request->frame_data.tab_id != listener->filter.tab_id) ||
+        (listener->filter.window_id != -1 &&
+         request->frame_data.window_id != listener->filter.window_id)) {
       continue;
     }
 
@@ -1898,9 +1917,7 @@ void ExtensionWebRequestEventRouter::GetMatchingListenersImpl(
       PermissionsData::PageAccess access =
           WebRequestPermissions::CanExtensionAccessURL(
               PermissionHelper::Get(browser_context), listener->id.extension_id,
-              request->url,
-              request->frame_data ? request->frame_data->tab_id : -1,
-              crosses_incognito,
+              request->url, request->frame_data.tab_id, crosses_incognito,
               WebRequestPermissions::
                   REQUIRE_HOST_PERMISSION_FOR_URL_AND_INITIATOR,
               request->initiator, request->type);

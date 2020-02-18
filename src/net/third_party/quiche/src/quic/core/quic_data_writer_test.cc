@@ -262,8 +262,8 @@ TEST_P(QuicDataWriterTest, WriteConnectionId) {
       0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77,
   };
   EXPECT_EQ(connection_id.length(), QUIC_ARRAYSIZE(big_endian));
-  ASSERT_LE(connection_id.length(), kQuicMaxConnectionIdLength);
-  char buffer[kQuicMaxConnectionIdLength];
+  ASSERT_LE(connection_id.length(), 255);
+  char buffer[255];
   QuicDataWriter writer(connection_id.length(), buffer, GetParam().endianness);
   EXPECT_TRUE(writer.WriteConnectionId(connection_id));
   test::CompareCharArraysWithHexError("connection_id", buffer,
@@ -285,7 +285,7 @@ TEST_P(QuicDataWriterTest, LengthPrefixedConnectionId) {
   };
   EXPECT_EQ(QUIC_ARRAYSIZE(length_prefixed_connection_id),
             kConnectionIdLengthSize + connection_id.length());
-  char buffer[kConnectionIdLengthSize + kQuicMaxConnectionIdLength] = {};
+  char buffer[kConnectionIdLengthSize + 255] = {};
   QuicDataWriter writer(QUIC_ARRAYSIZE(buffer), buffer);
   EXPECT_TRUE(writer.WriteLengthPrefixedConnectionId(connection_id));
   test::CompareCharArraysWithHexError(
@@ -1149,11 +1149,12 @@ TEST_P(QuicDataWriterTest, PeekVarInt62Length) {
 }
 
 TEST_P(QuicDataWriterTest, InvalidConnectionIdLengthRead) {
-  static const uint8_t bad_connection_id_length = 19;
-  static_assert(bad_connection_id_length > kQuicMaxConnectionIdLength,
-                "bad lengths");
-  char buffer[20] = {};
-  QuicDataReader reader(buffer, 20);
+  static const uint8_t bad_connection_id_length = 200;
+  static_assert(
+      bad_connection_id_length > kQuicMaxConnectionIdAllVersionsLength,
+      "bad lengths");
+  char buffer[255] = {};
+  QuicDataReader reader(buffer, sizeof(buffer));
   QuicConnectionId connection_id;
   bool ok;
   EXPECT_QUIC_BUG(
@@ -1229,6 +1230,37 @@ TEST_P(QuicDataWriterTest, SeekTooFarFails) {
     EXPECT_TRUE(writer.Seek(10));
     EXPECT_FALSE(writer.Seek(std::numeric_limits<size_t>::max()));
   }
+}
+
+TEST_P(QuicDataWriterTest, PayloadReads) {
+  char buffer[16] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  char expected_first_read[4] = {1, 2, 3, 4};
+  char expected_remaining[12] = {5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
+  QuicDataReader reader(buffer, sizeof(buffer));
+  char first_read_buffer[4] = {};
+  EXPECT_TRUE(reader.ReadBytes(first_read_buffer, sizeof(first_read_buffer)));
+  test::CompareCharArraysWithHexError(
+      "first read", first_read_buffer, sizeof(first_read_buffer),
+      expected_first_read, sizeof(expected_first_read));
+  QuicStringPiece peeked_remaining_payload = reader.PeekRemainingPayload();
+  test::CompareCharArraysWithHexError(
+      "peeked_remaining_payload", peeked_remaining_payload.data(),
+      peeked_remaining_payload.length(), expected_remaining,
+      sizeof(expected_remaining));
+  QuicStringPiece full_payload = reader.FullPayload();
+  test::CompareCharArraysWithHexError("full_payload", full_payload.data(),
+                                      full_payload.length(), buffer,
+                                      sizeof(buffer));
+  QuicStringPiece read_remaining_payload = reader.ReadRemainingPayload();
+  test::CompareCharArraysWithHexError(
+      "read_remaining_payload", read_remaining_payload.data(),
+      read_remaining_payload.length(), expected_remaining,
+      sizeof(expected_remaining));
+  EXPECT_TRUE(reader.IsDoneReading());
+  QuicStringPiece full_payload2 = reader.FullPayload();
+  test::CompareCharArraysWithHexError("full_payload2", full_payload2.data(),
+                                      full_payload2.length(), buffer,
+                                      sizeof(buffer));
 }
 
 }  // namespace

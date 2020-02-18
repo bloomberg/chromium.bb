@@ -19,7 +19,13 @@ extern const base::Feature kGridLayoutForNtpShortcuts;
 extern const base::Feature kNtpCustomizationMenuV2;
 
 extern const base::Feature kFirstRunDefaultSearchShortcut;
-extern const base::Feature kHideShortcutsOnNtp;
+
+// Note: only exposed for about:flags. Use IsNtpRealboxEnabled() instead.
+extern const base::Feature kNtpRealbox;
+
+// Returns true if either kNtpRealbox or omnibox::kZeroSuggestionsOnNTP are
+// enabled.
+bool IsNtpRealboxEnabled();
 
 }  // namespace features
 

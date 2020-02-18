@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
-#include "content/renderer/media/webrtc/rtc_rtp_source.h"
-#include "content/renderer/media/webrtc/rtc_stats.h"
-#include "content/renderer/media/webrtc/webrtc_util.h"
+#include "third_party/blink/public/platform/modules/peerconnection/webrtc_util.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_source.h"
+#include "third_party/blink/public/platform/web_rtc_stats.h"
 #include "third_party/webrtc/api/scoped_refptr.h"
 
 namespace content {
@@ -163,7 +163,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
     blink::WebVector<std::unique_ptr<blink::WebRTCRtpSource>> sources(
         webrtc_sources.size());
     for (size_t i = 0; i < webrtc_sources.size(); ++i) {
-      sources[i] = std::make_unique<RTCRtpSource>(webrtc_sources[i]);
+      sources[i] = blink::CreateRTCRtpSource(webrtc_sources[i]);
     }
     return sources;
   }
@@ -184,7 +184,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
 
   void SetJitterBufferMinimumDelay(base::Optional<double> delay_seconds) {
     webrtc_receiver_->SetJitterBufferMinimumDelay(
-        ToAbslOptional(delay_seconds));
+        blink::ToAbslOptional(delay_seconds));
   }
 
  private:
@@ -199,7 +199,7 @@ class RTCRtpReceiver::RTCRtpReceiverInternal
       const blink::WebVector<webrtc::NonStandardGroupId>& exposed_group_ids) {
     native_peer_connection_->GetStats(
         webrtc_receiver_.get(),
-        RTCStatsCollectorCallbackImpl::Create(
+        blink::CreateRTCStatsCollectorCallback(
             main_task_runner_, std::move(callback), exposed_group_ids));
   }
 

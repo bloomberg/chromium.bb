@@ -1448,7 +1448,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_localizedExtendedRole(
   COM_OBJECT_VALIDATE_1_ARG(localized_extended_role);
   AXPlatformNode::NotifyAddAXModeFlags(kScreenReaderAndHTMLAccessibilityModes);
 
-  base::string16 role_description = GetRoleDescription();
+  base::string16 role_description =
+      GetRoleDescriptionFromImageAnnotationStatusOrFromAttribute();
   if (base::ContainsOnlyChars(role_description, base::kWhitespaceUTF16))
     return S_FALSE;
 
@@ -1934,8 +1935,10 @@ IFACEMETHODIMP AXPlatformNodeWin::SetScrollPercent(double horizontal_percent,
   const double x_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollXMax);
   const double y_min = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMin);
   const double y_max = GetIntAttribute(ax::mojom::IntAttribute::kScrollYMax);
-  const int x = gfx::ToRoundedInt(horizontal_percent * (x_max - x_min) + x_min);
-  const int y = gfx::ToRoundedInt(vertical_percent * (y_max - y_min) + y_min);
+  const int x =
+      gfx::ToRoundedInt(horizontal_percent / 100.0 * (x_max - x_min) + x_min);
+  const int y =
+      gfx::ToRoundedInt(vertical_percent / 100.0 * (y_max - y_min) + y_min);
   const gfx::Point scroll_to(x, y);
 
   AXActionData action_data;
@@ -3403,10 +3406,10 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textAtOffset(
 
   const base::string16& text_str = TextForIAccessibleText();
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, BACKWARDS_DIRECTION);
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, FORWARDS_DIRECTION);
+  *start_offset = FindBoundary(text_str, boundary_type, offset,
+                               AXTextBoundaryDirection::kBackwards);
+  *end_offset = FindBoundary(text_str, boundary_type, offset,
+                             AXTextBoundaryDirection::kForwards);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -3430,8 +3433,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textBeforeOffset(
 
   const base::string16& text_str = TextForIAccessibleText();
 
-  *start_offset =
-      FindBoundary(text_str, boundary_type, offset, BACKWARDS_DIRECTION);
+  *start_offset = FindBoundary(text_str, boundary_type, offset,
+                               AXTextBoundaryDirection::kBackwards);
   *end_offset = offset;
   return get_text(*start_offset, *end_offset, text);
 }
@@ -3457,8 +3460,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_textAfterOffset(
   const base::string16& text_str = TextForIAccessibleText();
 
   *start_offset = offset;
-  *end_offset =
-      FindBoundary(text_str, boundary_type, offset, FORWARDS_DIRECTION);
+  *end_offset = FindBoundary(text_str, boundary_type, offset,
+                             AXTextBoundaryDirection::kForwards);
   return get_text(*start_offset, *end_offset, text);
 }
 
@@ -3859,6 +3862,11 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
+    case UIA_IsDialogPropertyId:
+      result->vt = VT_BOOL;
+      result->boolVal = IsDialog(data.role) ? VARIANT_TRUE : VARIANT_FALSE;
+      break;
+
     case UIA_IsKeyboardFocusablePropertyId:
       result->vt = VT_BOOL;
       result->boolVal =
@@ -3922,18 +3930,17 @@ IFACEMETHODIMP AXPlatformNodeWin::GetPropertyValue(PROPERTYID property_id,
       }
       break;
 
-    case UIA_LocalizedControlTypePropertyId:
-      if (data.HasStringAttribute(
-              ax::mojom::StringAttribute::kRoleDescription)) {
-        V_VT(result) = VT_BSTR;
-        GetStringAttributeAsBstr(ax::mojom::StringAttribute::kRoleDescription,
-                                 &V_BSTR(result));
+    case UIA_LocalizedControlTypePropertyId: {
+      base::string16 localized_control_type = GetRoleDescription();
+      if (!localized_control_type.empty()) {
+        result->vt = VT_BSTR;
+        result->bstrVal = SysAllocString(localized_control_type.c_str());
       }
       // If a role description has not been provided, leave as VT_EMPTY.
       // UIA core handles Localized Control type for some built-in types and
       // also has a mapping for ARIA roles. To get these defaults, we need to
       // have returned VT_EMPTY.
-      break;
+    } break;
 
     case UIA_NamePropertyId:
       result->vt = VT_BSTR;
@@ -4110,7 +4117,8 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ProviderOptions(ProviderOptions* ret) {
   WIN_ACCESSIBILITY_API_HISTOGRAM(UMA_API_GET_PROVIDER_OPTIONS);
   UIA_VALIDATE_CALL_1_ARG(ret);
 
-  *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading;
+  *ret = ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading |
+         ProviderOptions_RefuseNonClientSupport;
   return S_OK;
 }
 
@@ -5016,11 +5024,8 @@ int32_t AXPlatformNodeWin::ComputeIA2State() {
       ia2_state |= IA2_STATE_SELECTABLE_TEXT;
   }
 
-  // TODO(crbug.com/865101) Use
-  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
-  // IsFocusedInputWithSuggestions()
   if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete).empty() ||
-      IsFocusedInputWithSuggestions()) {
+      data.HasState(ax::mojom::State::kAutofillAvailable)) {
     ia2_state |= IA2_STATE_SUPPORTS_AUTOCOMPLETION;
   }
 
@@ -5321,7 +5326,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-      return L"list";
+      return L"textbox";
 
     case ax::mojom::Role::kDefinition:
       return L"definition";
@@ -5415,7 +5420,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"group";
 
     case ax::mojom::Role::kFigcaption:
-      return L"group";
+      return L"description";
 
     case ax::mojom::Role::kFigure:
       return L"group";
@@ -5658,8 +5663,10 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
       return L"button";
 
     case ax::mojom::Role::kTextField:
-    case ax::mojom::Role::kSearchBox:
       return L"textbox";
+
+    case ax::mojom::Role::kSearchBox:
+      return L"searchbox";
 
     case ax::mojom::Role::kTextFieldWithComboBox:
       return L"combobox";
@@ -5787,9 +5794,6 @@ base::string16 AXPlatformNodeWin::ComputeUIAProperties() {
   BoolAttributeToUIAAriaProperty(properties, ax::mojom::BoolAttribute::kGrabbed,
                                  "grabbed");
 
-  // TODO(crbug.com/865101) Use
-  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
-  // IsFocusedInputWithSuggestions()
   switch (static_cast<ax::mojom::HasPopup>(
       data.GetIntAttribute(ax::mojom::IntAttribute::kHasPopup))) {
     case ax::mojom::HasPopup::kFalse:
@@ -5905,7 +5909,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kArticle:
-      return UIA_DocumentControlTypeId;
+      return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kAudio:
       return UIA_GroupControlTypeId;
@@ -5938,7 +5942,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_PaneControlTypeId;
 
     case ax::mojom::Role::kColorWell:
-      return UIA_DocumentControlTypeId;
+      return UIA_ButtonControlTypeId;
 
     case ax::mojom::Role::kColumn:
       return UIA_PaneControlTypeId;
@@ -5963,7 +5967,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kDate:
     case ax::mojom::Role::kDateTime:
-      return UIA_ListControlTypeId;
+      return UIA_EditControlTypeId;
 
     case ax::mojom::Role::kDefinition:
       return UIA_GroupControlTypeId;
@@ -6057,7 +6061,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
       return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kFigcaption:
-      return UIA_GroupControlTypeId;
+      return UIA_TextControlTypeId;
 
     case ax::mojom::Role::kFigure:
       return UIA_GroupControlTypeId;
@@ -6497,13 +6501,8 @@ int AXPlatformNodeWin::MSAAState() const {
   if (ShouldNodeHaveFocusableState(data))
     msaa_state |= STATE_SYSTEM_FOCUSABLE;
 
-  // TODO(crbug.com/865101) Use
-  // data.HasState(ax::mojom::State::kAutofillAvailable) instead of
-  // IsFocusedInputWithSuggestions() and rmove the below comment: Note:
-  // suggestions are special-cased here because there is no way for the
-  // browser to know when a suggestion popup is available.
   if (data.HasIntAttribute(ax::mojom::IntAttribute::kHasPopup) ||
-      IsFocusedInputWithSuggestions())
+      data.HasState(ax::mojom::State::kAutofillAvailable))
     msaa_state |= STATE_SYSTEM_HASPOPUP;
 
   // TODO(dougt) unhandled ux::ax::mojom::State::kHorizontal
@@ -6676,6 +6675,10 @@ base::Optional<DWORD> AXPlatformNodeWin::MojoEventToMSAAEvent(
       return EVENT_OBJECT_NAMECHANGE;
     case ax::mojom::Event::kTextSelectionChanged:
       return IA2_EVENT_TEXT_CARET_MOVED;
+    case ax::mojom::Event::kTooltipClosed:
+      return EVENT_OBJECT_HIDE;
+    case ax::mojom::Event::kTooltipOpened:
+      return EVENT_OBJECT_SHOW;
     case ax::mojom::Event::kValueChanged:
       return EVENT_OBJECT_VALUECHANGE;
     default:
@@ -6703,6 +6706,10 @@ base::Optional<EVENTID> AXPlatformNodeWin::MojoEventToUIAEvent(
       return UIA_SelectionItem_ElementAddedToSelectionEventId;
     case ax::mojom::Event::kSelectionRemove:
       return UIA_SelectionItem_ElementRemovedFromSelectionEventId;
+    case ax::mojom::Event::kTooltipClosed:
+      return UIA_ToolTipClosedEventId;
+    case ax::mojom::Event::kTooltipOpened:
+      return UIA_ToolTipOpenedEventId;
     default:
       return base::nullopt;
   }
@@ -6849,7 +6856,7 @@ void AXPlatformNodeWin::HandleSpecialTextOffset(LONG* offset) {
 LONG AXPlatformNodeWin::FindBoundary(const base::string16& text,
                                      IA2TextBoundaryType ia2_boundary,
                                      LONG start_offset,
-                                     TextBoundaryDirection direction) {
+                                     AXTextBoundaryDirection direction) {
   HandleSpecialTextOffset(&start_offset);
   AXTextBoundary boundary = FromIA2TextBoundary(ia2_boundary);
   std::vector<int32_t> line_breaks;

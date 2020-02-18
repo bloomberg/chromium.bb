@@ -10,12 +10,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
 import("//tools/grit/repack.gni")
 
-declare_args() {
-  # Enables Vulkan in WebEngine (has effect only for context instances that have
-  # Vulkan loader service in the service directory).
-  web_engine_enable_vulkan = false
-}
-
 config("web_engine_implementation") {
   defines = [ "WEB_ENGINE_IMPLEMENTATION" ]
 }
@@ -54,6 +48,7 @@ repack("web_engine_pak") {
     "//content/app/resources",
     "//content/app/strings",
     "//content/browser/tracing:resources",
+    "//gpu/command_buffer/service",
     "//mojo/public/js:resources",
     "//net:net_resources",
     "//third_party/blink/public:resources",
@@ -71,6 +66,7 @@ component("web_engine_core") {
     ":mojom",
     ":web_engine_pak",
     "//base",
+    "//base:base_static",
     "//components/version_info",
     "//content/public/app:both",
     "//content/public/browser",
@@ -80,13 +76,23 @@ component("web_engine_core") {
     "//fuchsia/base",
     "//fuchsia/base:message_port",
     "//fuchsia/base:modular",
+    "//gpu/command_buffer/service",
+    "//media/fuchsia/cdm/service",
+    "//media/fuchsia/mojom",
     "//mojo/public/cpp/bindings",
     "//services/network/public/cpp",
+    "//services/network/public/mojom",
     "//services/service_manager/sandbox",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//third_party/blink/public/common",
+    "//third_party/fuchsia-sdk/sdk:accessibility_semantics",
+    "//third_party/fuchsia-sdk/sdk:math",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
     "//third_party/fuchsia-sdk/sdk:web",
+    "//third_party/widevine/cdm:headers",
     "//ui/aura",
+    "//ui/base",
     "//ui/base/ime",
     "//ui/display",
     "//ui/ozone",
@@ -105,8 +111,14 @@ component("web_engine_core") {
   ]
   configs += [ ":web_engine_implementation" ]
   sources = [
+    "browser/accessibility_bridge.cc",
+    "browser/accessibility_bridge.h",
+    "browser/content_directory_loader_factory.cc",
+    "browser/content_directory_loader_factory.h",
     "browser/context_impl.cc",
     "browser/context_impl.h",
+    "browser/cookie_manager_impl.cc",
+    "browser/cookie_manager_impl.h",
     "browser/discarding_event_filter.cc",
     "browser/discarding_event_filter.h",
     "browser/frame_impl.cc",
@@ -119,6 +131,8 @@ component("web_engine_core") {
     "browser/web_engine_browser_main.h",
     "browser/web_engine_browser_main_parts.cc",
     "browser/web_engine_browser_main_parts.h",
+    "browser/web_engine_cdm_service.cc",
+    "browser/web_engine_cdm_service.h",
     "browser/web_engine_content_browser_client.cc",
     "browser/web_engine_content_browser_client.h",
     "browser/web_engine_devtools_manager_delegate.cc",
@@ -131,8 +145,6 @@ component("web_engine_core") {
     "browser/web_engine_remote_debugging.h",
     "browser/web_engine_screen.cc",
     "browser/web_engine_screen.h",
-    "browser/web_engine_url_request_context_getter.cc",
-    "browser/web_engine_url_request_context_getter.h",
     "common.cc",
     "common.h",
     "context_provider_impl.cc",
@@ -153,9 +165,6 @@ component("web_engine_core") {
     ":*",
     "//fuchsia/runners:cast_runner_browsertests__exec",
   ]
-  if (web_engine_enable_vulkan) {
-    defines = [ "WEB_ENGINE_ENABLE_VULKAN" ]
-  }
 }
 
 executable("web_engine_exe") {
@@ -210,6 +219,7 @@ source_set("browsertest_core") {
 
 test("web_engine_browsertests") {
   sources = [
+    "browser/content_directory_browsertest.cc",
     "browser/context_impl_browsertest.cc",
     "browser/frame_impl_browsertest.cc",
   ]
@@ -234,17 +244,24 @@ test("web_engine_browsertests") {
 
 test("web_engine_unittests") {
   sources = [
+    "browser/accessibility_bridge_unittest.cc",
+    "browser/cookie_manager_impl_unittest.cc",
     "browser/frame_impl_unittest.cc",
     "context_provider_impl_unittest.cc",
     "fake_context.cc",
     "fake_context.h",
+    "test/run_all_unittests.cc",
   ]
   deps = [
     ":web_engine_core",
-    "//base/test:run_all_unittests",
     "//base/test:test_support",
+    "//fuchsia/base:test_support",
+    "//mojo/core/embedder",
+    "//services/network:network_service",
+    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/fuchsia-sdk/sdk:scenic_cpp",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
 }
@@ -254,8 +271,6 @@ test("web_engine_integration_tests") {
   sources = [
     "test_debug_listener.cc",
     "test_debug_listener.h",
-    "test_devtools_list_fetcher.cc",
-    "test_devtools_list_fetcher.h",
     "web_engine_debug_integration_test.cc",
     "web_engine_integration_test.cc",
   ]
@@ -267,8 +282,6 @@ test("web_engine_integration_tests") {
     "//base/test:run_all_unittests",
     "//fuchsia/base",
     "//fuchsia/base:test_support",
-    "//net",
-    "//net:test_support",
     "//third_party/fuchsia-sdk/sdk:web",
   ]
   package_deps = [ [

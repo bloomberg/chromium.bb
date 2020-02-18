@@ -13,12 +13,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/chromeos/delegate_to_browser_gpu_service_accelerator_factory.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/system_connector.h"
+#include "content/public/browser/video_capture_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/video_capture/public/mojom/constants.mojom.h"
 #include "services/video_capture/public/mojom/device_factory.mojom.h"
-#include "services/video_capture/public/mojom/device_factory_provider.mojom.h"
 
 namespace extensions {
 
@@ -42,12 +39,40 @@ std::string GetComponentNameForComponentType(
   return "";
 }
 
+api::media_perception_private::ComponentInstallationError
+GetComponentInstallationErrorForCrOSComponentManagerError(
+    const component_updater::CrOSComponentManager::Error error) {
+  switch (error) {
+    case component_updater::CrOSComponentManager::Error::ERROR_MAX:
+    case component_updater::CrOSComponentManager::Error::NONE:
+      return api::media_perception_private::COMPONENT_INSTALLATION_ERROR_NONE;
+    case component_updater::CrOSComponentManager::Error::UNKNOWN_COMPONENT:
+      return api::media_perception_private::
+          COMPONENT_INSTALLATION_ERROR_UNKNOWN_COMPONENT;
+    case component_updater::CrOSComponentManager::Error::INSTALL_FAILURE:
+      return api::media_perception_private::
+          COMPONENT_INSTALLATION_ERROR_INSTALL_FAILURE;
+    case component_updater::CrOSComponentManager::Error::MOUNT_FAILURE:
+      return api::media_perception_private::
+          COMPONENT_INSTALLATION_ERROR_MOUNT_FAILURE;
+    case component_updater::CrOSComponentManager::Error::
+        COMPATIBILITY_CHECK_FAILED:
+      return api::media_perception_private::
+          COMPONENT_INSTALLATION_ERROR_COMPATIBILITY_CHECK_FAILED;
+    case component_updater::CrOSComponentManager::Error::NOT_FOUND:
+      return api::media_perception_private::
+          COMPONENT_INSTALLATION_ERROR_NOT_FOUND;
+  }
+  NOTREACHED() << "Reached component error type not in switch.";
+  return api::media_perception_private::COMPONENT_INSTALLATION_ERROR_NONE;
+}
+
 void OnLoadComponent(
     MediaPerceptionAPIDelegate::LoadCrOSComponentCallback load_callback,
     component_updater::CrOSComponentManager::Error error,
     const base::FilePath& mount_point) {
   std::move(load_callback)
-      .Run(error == component_updater::CrOSComponentManager::Error::NONE,
+      .Run(GetComponentInstallationErrorForCrOSComponentManagerError(error),
            mount_point);
 }
 
@@ -68,22 +93,18 @@ void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
       base::BindOnce(OnLoadComponent, std::move(load_callback)));
 }
 
-void MediaPerceptionAPIDelegateChromeOS::
-    BindDeviceFactoryProviderToVideoCaptureService(
-        video_capture::mojom::DeviceFactoryProviderPtr* provider) {
+void MediaPerceptionAPIDelegateChromeOS::BindVideoSourceProvider(
+    mojo::PendingReceiver<video_capture::mojom::VideoSourceProvider> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  // In unit test environments, there may not be any connector.
-  service_manager::Connector* connector = content::GetSystemConnector();
-  if (!connector)
-    return;
-  connector->BindInterface(video_capture::mojom::kServiceName, provider);
-
   video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
   mojo::MakeStrongBinding(
       std::make_unique<
           content::DelegateToBrowserGpuServiceAcceleratorFactory>(),
       mojo::MakeRequest(&accelerator_factory));
-  (*provider)->InjectGpuDependencies(std::move(accelerator_factory));
+
+  auto& service = content::GetVideoCaptureService();
+  service.InjectGpuDependencies(std::move(accelerator_factory));
+  service.ConnectToVideoSourceProvider(std::move(receiver));
 }
 
 void MediaPerceptionAPIDelegateChromeOS::SetMediaPerceptionRequestHandler(

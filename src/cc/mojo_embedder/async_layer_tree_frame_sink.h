@@ -20,7 +20,7 @@
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/common/surfaces/surface_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 
 namespace base {
 class HistogramBase;
@@ -28,7 +28,6 @@ class HistogramBase;
 
 namespace viz {
 class HitTestDataProvider;
-class LocalSurfaceIdProvider;
 }  // namespace viz
 
 namespace cc {
@@ -92,9 +91,7 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     std::unique_ptr<viz::SyntheticBeginFrameSource>
         synthetic_begin_frame_source;
     std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider;
-    std::unique_ptr<viz::LocalSurfaceIdProvider> local_surface_id_provider;
     UnboundMessagePipes pipes;
-    bool enable_surface_synchronization = false;
     bool wants_animate_only_begin_frames = false;
     const char* client_name = nullptr;
   };
@@ -127,7 +124,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void DidAllocateSharedBitmap(base::ReadOnlySharedMemoryRegion region,
                                const viz::SharedBitmapId& id) override;
   void DidDeleteSharedBitmap(const viz::SharedBitmapId& id) override;
-  void ForceAllocateNewId() override;
 
   const viz::HitTestRegionList& get_last_hit_test_data_for_testing() const {
     return last_hit_test_data_;
@@ -153,7 +149,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   bool needs_begin_frames_ = false;
   viz::LocalSurfaceId local_surface_id_;
   std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider_;
-  std::unique_ptr<viz::LocalSurfaceIdProvider> local_surface_id_provider_;
   std::unique_ptr<viz::ExternalBeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::SyntheticBeginFrameSource> synthetic_begin_frame_source_;
 
@@ -170,7 +165,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   mojo::Binding<viz::mojom::CompositorFrameSinkClient> client_binding_;
 
   THREAD_CHECKER(thread_checker_);
-  const bool enable_surface_synchronization_;
   const bool wants_animate_only_begin_frames_;
 
   viz::HitTestRegionList last_hit_test_data_;

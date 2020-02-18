@@ -480,7 +480,7 @@ class Sysroot(object):
     prefix = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party')
     board_overlays = [o for o in portdir_overlays if not o.startswith(prefix)]
 
-    header = "# Created by cros_sysroot_utils from --board=%s." % board
+    header = '# Created by cros_sysroot_utils from --board=%s.' % board
     return self._GenerateConfig(toolchains, board_overlays, portdir_overlays,
                                 header, BOARD_USE=board)
 
@@ -735,17 +735,16 @@ PORTAGE_BINHOST="$PORTAGE_BINHOST $LATEST_RELEASE_CHROME_BINHOST"
 
       # Use a tempdir to handle the status file cleanup.
       with osutils.TempDir() as tempdir:
-        status_file = os.path.join(tempdir, 'status_file')
-        extra_env = {constants.PARALLEL_EMERGE_STATUS_FILE_ENVVAR: status_file}
+        extra_env = {constants.CROS_METRICS_DIR_ENVVAR: tempdir}
 
         try:
           cros_build_lib.SudoRunCommand(emerge, preserve_env=True,
                                         extra_env=extra_env)
         except cros_build_lib.RunCommandError as e:
           # Include failed packages from the status file in the error.
-          cpvs = portage_util.ParseParallelEmergeStatusFile(status_file)
+          failed_pkgs = portage_util.ParseDieHookStatusFile(tempdir)
           raise ToolchainInstallError(e.message, e.result, exception=e,
-                                      tc_info=cpvs)
+                                      tc_info=failed_pkgs)
 
       # Record we've installed them so we don't call emerge each time.
       self.SetCachedField(_IMPLICIT_SYSROOT_DEPS_KEY, 'yes')

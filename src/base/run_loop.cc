@@ -109,7 +109,7 @@ void RunLoop::RegisterDelegateForCurrentThread(Delegate* delegate) {
   DCHECK(!GetTlsDelegate().Get())
       << "Error: Multiple RunLoop::Delegates registered on the same thread.\n\n"
          "Hint: You perhaps instantiated a second "
-         "MessageLoop/ScopedTaskEnvironment on a thread that already had one?";
+         "MessageLoop/TaskEnvironment on a thread that already had one?";
   GetTlsDelegate().Set(delegate);
   delegate->bound_ = true;
 }
@@ -124,15 +124,14 @@ RunLoop::RunLoop(Type type)
 }
 
 RunLoop::~RunLoop() {
-  // TODO(gab): Fix bad usage and enable this check, http://crbug.com/715235.
-  // DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // ~RunLoop() must happen-after the RunLoop is done running but it doesn't
+  // have to be on |sequence_checker_| (it usually is but sometimes it can be a
+  // member of a RefCountedThreadSafe object and be destroyed on another thread
+  // after being quit).
+  DCHECK(!running_);
 }
 
 void RunLoop::Run() {
-  RunWithTimeout(TimeDelta::Max());
-}
-
-void RunLoop::RunWithTimeout(TimeDelta timeout) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!BeforeRun())
@@ -154,7 +153,7 @@ void RunLoop::RunWithTimeout(TimeDelta timeout) {
   const bool application_tasks_allowed =
       delegate_->active_run_loops_.size() == 1U ||
       type_ == Type::kNestableTasksAllowed;
-  delegate_->Run(application_tasks_allowed, timeout);
+  delegate_->Run(application_tasks_allowed, TimeDelta::Max());
 
   AfterRun();
 }

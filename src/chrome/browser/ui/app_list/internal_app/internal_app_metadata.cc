@@ -14,10 +14,12 @@
 #include "base/logging.h"
 #include "base/metrics/user_metrics.h"
 #include "base/no_destructor.h"
+#include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_manager.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -27,7 +29,8 @@
 #include "chrome/browser/ui/app_list/extension_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/chromeos/camera/camera_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/discover/discover_window_manager.h"
@@ -73,6 +76,13 @@ const std::vector<InternalApp>& GetInternalAppListImpl(bool get_all,
             /*recommendable=*/true,
             /*searchable=*/false,
             /*show_in_launcher=*/false, InternalAppName::kContinueReading,
+            /*searchable_string_resource_id=*/0},
+
+           {kReleaseNotesAppId, IDS_RELEASE_NOTES_NOTIFICATION_TITLE,
+            IDR_RELEASE_NOTES_APP_192,
+            /*recommendable=*/true,
+            /*searchable=*/false,
+            /*show_in_launcher=*/false, InternalAppName::kReleaseNotes,
             /*searchable_string_resource_id=*/0}});
 
   static base::NoDestructor<std::vector<InternalApp>> internal_app_list;
@@ -135,6 +145,18 @@ const std::vector<InternalApp>& GetInternalAppList(const Profile* profile) {
   return GetInternalAppListImpl(false, profile);
 }
 
+bool IsSuggestionChip(const std::string& app_id) {
+  // App IDs for internal apps which should only be shown as suggestion chips.
+  static const char* kSuggestionChipIds[] = {kInternalAppIdContinueReading,
+                                             kReleaseNotesAppId};
+
+  for (size_t i = 0; i < base::size(kSuggestionChipIds); ++i) {
+    if (base::LowerCaseEqualsASCII(app_id, kSuggestionChipIds[i]))
+      return true;
+  }
+  return false;
+}
+
 const InternalApp* FindInternalApp(const std::string& app_id) {
   for (const auto& app : GetInternalAppListImpl(true, nullptr)) {
     if (app_id == app.app_id)
@@ -167,10 +189,10 @@ void OpenChromeCameraApp(Profile* profile, int event_flags) {
     AppListClientImpl* controller = AppListClientImpl::GetInstance();
     AppLaunchParams params = CreateAppLaunchParamsWithEventFlags(
         profile, extension, event_flags,
-        extensions::AppLaunchSource::kSourceAppLauncher,
+        apps::mojom::AppLaunchSource::kSourceAppLauncher,
         controller->GetAppListDisplayId());
     params.launch_id = ash::ShelfID(extension->id()).launch_id;
-    OpenApplication(params);
+    apps::LaunchService::Get(profile)->OpenApplication(params);
     VLOG(1) << "Launched CCA.";
   } else {
     LOG(ERROR) << "CCA not found on device";
@@ -209,6 +231,10 @@ void OpenInternalApp(const std::string& app_id,
     } else {
       plugin_vm::ShowPluginVmLauncherView(profile);
     }
+  } else if (app_id == kReleaseNotesAppId) {
+    base::RecordAction(
+        base::UserMetricsAction("ReleaseNotes.SuggestionChipLaunched"));
+    chrome::LaunchReleaseNotes(profile);
   }
 }
 

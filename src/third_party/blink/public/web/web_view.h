@@ -60,7 +60,6 @@ class WebSettings;
 class WebString;
 class WebViewClient;
 class WebWidget;
-class WebWidgetClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
 struct WebFloatSize;
@@ -100,26 +99,16 @@ class WebView {
                                       bool compositing_enabled,
                                       WebView* opener);
 
+  // Destroys the WebView.
+  virtual void Close() = 0;
+
+  // Sets whether the WebView is focused.
+  virtual void SetFocus(bool enable) = 0;
+
   // Called to inform WebViewImpl that a local main frame has been attached.
   // After this call MainFrameImpl() will return a valid frame until it is
-  // detached. It receives the WebWidgetClient* that provides input/compositing
-  // services for the attached main frame.
-  // This must be called for composited WebViews. Non-composited WebViews do not
-  // require a WebWidgetClient, but must call this in order to establish one.
-  virtual void DidAttachLocalMainFrame(WebWidgetClient*) = 0;
-
-  // Called to inform WebViewImpl that it has an initial remote main frame. This
-  // is a hack to just get a WebWidgetClient to WebViewImpl since it expects to
-  // always have one at this time.
-  // This does *NOT* need to be called every time a remote main frame exists,
-  // but is meant to be called when WebViewImpl is initialized with a remote
-  // main frame, since it will not receive a WebWidgetClient otherwise.
-  // TODO(danakj): Remove this method when WebViewImpl does not need a
-  // WebWidgetClient without a local main frame. At that point it should
-  // also drop the WebWidgetClient when a local main frame is detached.
-  // This must only be called for composited WebViews. Non-composited WebViews
-  // do not require a WebWidgetClient.
-  virtual void DidAttachRemoteMainFrame(WebWidgetClient*) = 0;
+  // detached.
+  virtual void DidAttachLocalMainFrame() = 0;
 
   // Initializes the various client interfaces.
   virtual void SetPrerendererClient(WebPrerendererClient*) = 0;
@@ -182,8 +171,10 @@ class WebView {
   // send it.
   virtual void ClearFocusedElement() = 0;
 
-  // Smooth scroll the root layer to |targetX|, |targetY| in |durationMs|.
-  virtual void SmoothScroll(int target_x, int target_y, uint64_t duration_ms) {}
+  // Smooth scroll the root layer to |targetX|, |targetY| in |duration|.
+  virtual void SmoothScroll(int target_x,
+                            int target_y,
+                            base::TimeDelta duration) {}
 
   // Advance the focus of the WebView forward to the next element or to the
   // previous element in the tab sequence (if reverse is true).
@@ -319,6 +310,10 @@ class WebView {
       float bottom_controls_height,
       bool browser_controls_shrink_layout) = 0;
 
+  // Same as ResizeWithBrowserControls, but keeps the same BrowserControl
+  // settings.
+  virtual void Resize(const WebSize&) = 0;
+
   // Auto-Resize -----------------------------------------------------------
 
   // In auto-resize mode, the view is automatically adjusted to fit the html
@@ -438,6 +433,12 @@ class WebView {
 
   // Freezes or unfreezes the page and all the local frames.
   virtual void SetPageFrozen(bool frozen) = 0;
+
+  // Dispatches a pagehide event, freezes a page and hooks page eviction.
+  virtual void PutPageIntoBackForwardCache() = 0;
+
+  // Unhooks eviction, resumes a page and dispatches a pageshow event.
+  virtual void RestorePageFromBackForwardCache() = 0;
 
   // Testing functionality for TestRunner ---------------------------------
 

@@ -523,6 +523,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "headless_browsertests"
       },
       {
@@ -1223,6 +1233,17 @@
     ]
   },
   "Win Builder": {
+    "additional_compile_targets": [
+      "pdf_fuzzers"
+    ],
+    "scripts": [
+      {
+        "name": "check_network_annotations",
+        "script": "check_network_annotations.py"
+      }
+    ]
+  },
+  "Win x64 Builder": {
     "additional_compile_targets": [
       "pdf_fuzzers"
     ],
@@ -2039,6 +2060,22 @@
             }
           ]
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
         "test": "headless_browsertests"
       },
       {
@@ -2643,7 +2680,6 @@
         "test": "storage_unittests"
       },
       {
-        "experiment_percentage": 100,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3062,6 +3098,13 @@
           ],
           "shards": 12
         }
+      }
+    ],
+    "scripts": [
+      {
+        "name": "webkit_lint",
+        "script": "blink_lint_expectations.py",
+        "swarming": {}
       }
     ]
   },
@@ -3817,6 +3860,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86-64",
+              "os": "Windows-10-15063"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -5446,6 +5505,16 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "headless_browsertests"
       },
       {
@@ -6666,6 +6735,16 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {

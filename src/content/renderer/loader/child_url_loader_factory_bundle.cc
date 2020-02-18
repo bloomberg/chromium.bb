@@ -44,8 +44,6 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
                                  base::nullopt /* new_url */);
   }
 
-  void ProceedWithResponse() override { loader_sink_->ProceedWithResponse(); }
-
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {
     loader_sink_->SetPriority(priority, intra_priority_value);
@@ -60,13 +58,13 @@ class URLLoaderRelay : public network::mojom::URLLoaderClient,
   }
 
   // network::mojom::URLLoaderClient implementation:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override {
-    client_sink_->OnReceiveResponse(head);
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override {
+    client_sink_->OnReceiveResponse(std::move(head));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override {
-    client_sink_->OnReceiveRedirect(redirect_info, head);
+                         network::mojom::URLResponseHeadPtr head) override {
+    client_sink_->OnReceiveRedirect(redirect_info, std::move(head));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -135,7 +133,7 @@ ChildURLLoaderFactoryBundleInfo::ChildURLLoaderFactoryBundleInfo(
         pending_appcache_factory,
     SchemeMap pending_scheme_specific_factories,
     OriginMap pending_initiator_specific_factories,
-    PossiblyAssociatedURLLoaderFactoryPtrInfo direct_network_factory_info,
+    network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info,
     mojo::PendingRemote<network::mojom::URLLoaderFactory>
         pending_prefetch_loader_factory,
     bool bypass_redirect_checks)
@@ -179,7 +177,7 @@ ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
 }
 
 ChildURLLoaderFactoryBundle::ChildURLLoaderFactoryBundle(
-    PossiblyAssociatedFactoryGetterCallback direct_network_factory_getter)
+    FactoryGetterCallback direct_network_factory_getter)
     : direct_network_factory_getter_(std::move(direct_network_factory_getter)) {
 }
 
@@ -211,7 +209,7 @@ void ChildURLLoaderFactoryBundle::CreateLoaderAndStart(
         std::move(override_iter->second);
     subresource_overrides_.erase(override_iter);
 
-    client->OnReceiveResponse(transferrable_loader->head);
+    client->OnReceiveResponse(std::move(transferrable_loader->head));
     mojo::MakeStrongBinding(
         std::make_unique<URLLoaderRelay>(
             network::mojom::URLLoaderPtr(
@@ -347,8 +345,7 @@ ChildURLLoaderFactoryBundle::PassInterface() {
   if (appcache_factory_)
     pending_appcache_factory = appcache_factory_.PassInterface();
 
-  PossiblyAssociatedInterfacePtrInfo<network::mojom::URLLoaderFactory>
-      direct_network_factory_info;
+  network::mojom::URLLoaderFactoryPtrInfo direct_network_factory_info;
   if (direct_network_factory_) {
     direct_network_factory_info = direct_network_factory_.PassInterface();
   }

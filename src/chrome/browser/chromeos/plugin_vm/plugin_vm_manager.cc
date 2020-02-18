@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chromeos/guest_os/guest_os_share_path.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_files.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/chromeos/plugin_vm/plugin_vm_util.h"
@@ -101,8 +102,7 @@ PluginVmManager* PluginVmManager::GetForProfile(Profile* profile) {
 
 PluginVmManager::PluginVmManager(Profile* profile)
     : profile_(profile),
-      owner_id_(chromeos::ProfileHelper::GetUserIdHashFromProfile(profile)),
-      weak_ptr_factory_(this) {
+      owner_id_(chromeos::ProfileHelper::GetUserIdHashFromProfile(profile)) {
   chromeos::DBusThreadManager::Get()
       ->GetVmPluginDispatcherClient()
       ->AddObserver(this);
@@ -183,6 +183,14 @@ void PluginVmManager::OnVmStateChanged(
     seneschal_server_handle_ = 0;
 
     ChromeLauncherController::instance()->Close(ash::ShelfID(kPluginVmAppId));
+  }
+
+  auto* engagement_metrics_service =
+      PluginVmEngagementMetricsService::Factory::GetForProfile(profile_);
+  // This is null in unit tests.
+  if (engagement_metrics_service) {
+    engagement_metrics_service->SetBackgroundActive(
+        vm_state_ == vm_tools::plugin_dispatcher::VmState::VM_STATE_RUNNING);
   }
 }
 
@@ -330,7 +338,7 @@ void PluginVmManager::OnDefaultSharedDirExists(const base::FilePath& dir,
     guest_os::GuestOsSharePath::GetForProfile(profile_)->SharePath(
         kPluginVmName, dir, false,
         base::BindOnce([](const base::FilePath& dir, bool success,
-                          std::string failure_reason) {
+                          const std::string& failure_reason) {
           if (!success) {
             LOG(ERROR) << "Error sharing PluginVm default dir " << dir.value()
                        << ": " << failure_reason;

@@ -308,9 +308,9 @@ void OmahaService::Start(std::unique_ptr<network::SharedURLLoaderFactoryInfo>
   DCHECK(!result->url_loader_factory_info_ || !result->url_loader_factory_);
   result->url_loader_factory_info_ = std::move(url_loader_factory_info);
   result->locale_lang_ = GetApplicationContext()->GetApplicationLocale();
-  base::PostTaskWithTraits(FROM_HERE, {web::WebThread::IO},
-                           base::BindOnce(&OmahaService::SendOrScheduleNextPing,
-                                          base::Unretained(result)));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&OmahaService::SendOrScheduleNextPing,
+                                base::Unretained(result)));
 }
 
 OmahaService::OmahaService()
@@ -390,10 +390,9 @@ void OmahaService::Initialize() {
 // static
 void OmahaService::GetDebugInformation(
     const base::Callback<void(base::DictionaryValue*)> callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::IO},
-      base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
-                     base::Unretained(GetInstance()), callback));
+  base::PostTask(FROM_HERE, {web::WebThread::IO},
+                 base::BindOnce(&OmahaService::GetDebugInformationOnIOThread,
+                                base::Unretained(GetInstance()), callback));
 }
 
 // static
@@ -550,8 +549,7 @@ void OmahaService::SendPing() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
   resource_request->method = "POST";
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // If this is not the first try, notify the omaha server.
   if (number_of_tries_ && IsNextPingInstallRetry()) {
@@ -651,9 +649,8 @@ void OmahaService::OnURLLoadComplete(
   // Send notification for updates if needed.
   UpgradeRecommendedDetails* details = [delegate upgradeRecommendedDetails];
   if (details) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {web::WebThread::UI},
-        base::BindOnce(upgrade_recommended_callback_, *details));
+    base::PostTask(FROM_HERE, {web::WebThread::UI},
+                   base::BindOnce(upgrade_recommended_callback_, *details));
   }
 }
 
@@ -682,9 +679,8 @@ void OmahaService::GetDebugInformationOnIOThread(
                         (timer_.desired_run_time() - base::TimeTicks::Now())));
 
   // Sending the value to the callback.
-  base::PostTaskWithTraits(
-      FROM_HERE, {web::WebThread::UI},
-      base::BindOnce(callback, base::Owned(result.release())));
+  base::PostTask(FROM_HERE, {web::WebThread::UI},
+                 base::BindOnce(callback, base::Owned(result.release())));
 }
 
 bool OmahaService::IsNextPingInstallRetry() {

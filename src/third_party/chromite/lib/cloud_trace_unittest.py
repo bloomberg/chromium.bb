@@ -93,7 +93,7 @@ class CloudTraceContextTest(cros_test_lib.MockTestCase):
 
   def testHeaderValue(self):
     """Tests that the header value makes sense."""
-    trace_id = 'deadbeef12345678deadbeef12345678',
+    trace_id = 'deadbeef12345678deadbeef12345678'
     stack = cloud_trace.SpanStack(
         traceId=trace_id,
         parentSpanId='0',
@@ -146,7 +146,7 @@ class CloudTraceContextTest(cros_test_lib.MockTestCase):
 
     self.assertEqual(old_env, after_env)
     # Note the lack of a /0; the /0 is optional.
-    self.assertEqual(new_env, "deadbeef12345678deadbeef12345678;o=1")
+    self.assertEqual(new_env, 'deadbeef12345678deadbeef12345678;o=1')
 
   def testSpanContextEnabled(self):
     """Tests that the span context manager updates the environment."""
@@ -160,7 +160,7 @@ class CloudTraceContextTest(cros_test_lib.MockTestCase):
     old_env = self.env.get(cloud_trace.SpanStack.CLOUD_TRACE_CONTEXT_ENV)
     with stack.Span('foo') as span:
       new_env = self.env.get(cloud_trace.SpanStack.CLOUD_TRACE_CONTEXT_ENV)
-      self.assertTrue(new_env.startswith("deadbeef12345678deadbeef12345678/"))
+      self.assertTrue(new_env.startswith('deadbeef12345678deadbeef12345678/'))
       self.assertEqual(span.parentSpanId, '0')
       self.assertEqual(span.traceId, trace_id)
     after_env = self.env.get(cloud_trace.SpanStack.CLOUD_TRACE_CONTEXT_ENV)

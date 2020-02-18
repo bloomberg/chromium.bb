@@ -5,6 +5,7 @@
 package org.chromium.webapk.shell_apk.h2o;
 
 import android.app.Activity;
+import android.app.ActivityManager;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -21,10 +22,13 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
+import org.robolectric.android.controller.ActivityController;
 import org.robolectric.annotation.Config;
+import org.robolectric.shadows.ShadowActivityManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowPackageManager;
 
@@ -33,6 +37,7 @@ import org.chromium.webapk.lib.common.WebApkConstants;
 import org.chromium.webapk.lib.common.WebApkMetaDataKeys;
 import org.chromium.webapk.shell_apk.CustomAndroidOsShadowAsyncTask;
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.WebApkSharedPreferences;
 import org.chromium.webapk.shell_apk.WebApkUtils;
 import org.chromium.webapk.test.WebApkTestHelper;
@@ -258,8 +263,8 @@ public final class LaunchTest {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
-        installBrowser(
-                BROWSER_PACKAGE_NAME, H2OLauncher.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH);
+        installBrowser(BROWSER_PACKAGE_NAME,
+                HostBrowserUtils.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH);
 
         Intent launchIntent = new Intent(Intent.ACTION_MAIN);
         launchIntent.setPackage(sWebApkPackageName);
@@ -292,6 +297,33 @@ public final class LaunchTest {
         }
     }
 
+    /**
+     * Test that H2OMainActivity is always used as the entry point when the host browser is
+     * org.chromium.arc.intent_helper.
+     */
+    @Test
+    public void testLaunchWithArcIntentHelperHostBrowser() {
+        Intent launchIntent = new Intent(Intent.ACTION_MAIN);
+        launchIntent.setPackage(sWebApkPackageName);
+
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OOpaqueMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
+        changeWebApkActivityEnabledSetting(mPackageManager, H2OMainActivity.class,
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        installBrowser(HostBrowserUtils.ARC_INTENT_HELPER_BROWSER,
+                HostBrowserUtils.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH);
+        ArrayList<Intent> launchedIntents = runActivityChain(launchIntent,
+                H2OOpaqueMainActivity.class, HostBrowserUtils.ARC_INTENT_HELPER_BROWSER);
+
+        // The entry point should have been switched to H2OMainActivity.
+        Assert.assertFalse(isWebApkActivityEnabled(mPackageManager, H2OOpaqueMainActivity.class));
+        Assert.assertTrue(isWebApkActivityEnabled(mPackageManager, H2OMainActivity.class));
+
+        Assert.assertTrue(!launchedIntents.isEmpty());
+        assertIntentIsForCustomBrowserLaunch(launchedIntents.get(launchedIntents.size() - 1),
+                HostBrowserUtils.ARC_INTENT_HELPER_BROWSER, DEFAULT_START_URL);
+    }
+
     /** Checks the name of the intent's component class name. */
     private static void assertIntentComponentClassNameEquals(Class expectedClass, Intent intent) {
         Assert.assertEquals(expectedClass.getName(), intent.getComponent().getClassName());
@@ -299,7 +331,13 @@ public final class LaunchTest {
 
     /** Checks that the passed in intent launches the host browser with the given URL. */
     private static void assertIntentIsForBrowserLaunch(Intent intent, String expectedStartUrl) {
-        Assert.assertEquals(BROWSER_PACKAGE_NAME, intent.getPackage());
+        assertIntentIsForCustomBrowserLaunch(intent, BROWSER_PACKAGE_NAME, expectedStartUrl);
+    }
+
+    /** Checks that the passed in intent launches the given host browser with the given URL. */
+    private static void assertIntentIsForCustomBrowserLaunch(
+            Intent intent, String browserPackage, String expectedStartUrl) {
+        Assert.assertEquals(browserPackage, intent.getPackage());
         Assert.assertEquals(HostBrowserLauncher.ACTION_START_WEBAPK, intent.getAction());
         Assert.assertEquals(expectedStartUrl, intent.getStringExtra(WebApkConstants.EXTRA_URL));
     }
@@ -328,7 +366,7 @@ public final class LaunchTest {
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
         installBrowser(BROWSER_PACKAGE_NAME,
                 browserCompatibleWithSplashActivity
-                        ? H2OLauncher.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
+                        ? HostBrowserUtils.MINIMUM_REQUIRED_CHROMIUM_VERSION_NEW_SPLASH
                         : BROWSER_H2O_INCOMPATIBLE_VERSION);
 
         // Android modifies the intent when the intent is used to launch an activity. Clone the
@@ -408,7 +446,10 @@ public final class LaunchTest {
     }
 
     private static void buildActivityFully(Class<? extends Activity> activityClass, Intent intent) {
-        Robolectric.buildActivity(activityClass, intent).create().start().resume().visible();
+        ActivityController<? extends Activity> controller =
+                Robolectric.buildActivity(activityClass, intent);
+        setAppTaskTopActivity(controller.get().getTaskId(), controller.get());
+        controller.create().start().resume().visible();
     }
 
     /** Installs browser with the given package name and version. */
@@ -416,6 +457,23 @@ public final class LaunchTest {
         Intent intent = WebApkUtils.getQueryInstalledBrowsersIntent();
         mShadowPackageManager.addResolveInfoForIntent(intent, newResolveInfo(browserPackageName));
         mShadowPackageManager.addPackage(newPackageInfo(browserPackageName, version));
+    }
+
+    private static void setAppTaskTopActivity(int taskId, Activity topActivity) {
+        ActivityManager.RecentTaskInfo recentTaskInfo = new ActivityManager.RecentTaskInfo();
+        recentTaskInfo.id = taskId;
+        recentTaskInfo.topActivity = topActivity.getComponentName();
+        ActivityManager.AppTask appTask = Mockito.mock(ActivityManager.AppTask.class);
+        Mockito.when(appTask.getTaskInfo()).thenReturn(recentTaskInfo);
+
+        ArrayList<ActivityManager.AppTask> appTasks = new ArrayList<ActivityManager.AppTask>();
+        appTasks.add(appTask);
+
+        ActivityManager activityManager =
+                (ActivityManager) RuntimeEnvironment.application.getSystemService(
+                        Context.ACTIVITY_SERVICE);
+        ShadowActivityManager shadowActivityManager = Shadows.shadowOf(activityManager);
+        shadowActivityManager.setAppTasks(appTasks);
     }
 
     private static ResolveInfo newResolveInfo(String packageName) {

@@ -135,7 +135,11 @@ void TraceBuffer::CopyChunkUntrusted(ProducerID producer_id_trusted,
   if (PERFETTO_UNLIKELY(!chunk_complete)) {
     if (num_fragments > 0) {
       num_fragments--;
+      // These flags should only affect the last packet in the chunk. We clear
+      // them, so that TraceBuffer is able to look at the remaining packets in
+      // this chunk.
       chunk_flags &= ~kLastPacketContinuesOnNextChunk;
+      chunk_flags &= ~kChunkNeedsPatching;
     }
   }
 
@@ -362,11 +366,11 @@ ssize_t TraceBuffer::DeleteNextChunksFor(size_t bytes_to_clear) {
         index_delete.push_back(it);
         will_remove = true;
       }
-      TRACE_BUFFER_DLOG("  del index {%" PRIu32 ",%" PRIu32
-                        ",%u} @ [%lu - %lu] %d",
-                        key.producer_id, key.writer_id, key.chunk_id,
-                        next_chunk_ptr - begin(),
-                        next_chunk_ptr - begin() + next_chunk.size, removed);
+      TRACE_BUFFER_DLOG(
+          "  del index {%" PRIu32 ",%" PRIu32 ",%u} @ [%lu - %lu] %d",
+          key.producer_id, key.writer_id, key.chunk_id,
+          next_chunk_ptr - begin(), next_chunk_ptr - begin() + next_chunk.size,
+          will_remove);
       PERFETTO_DCHECK(will_remove);
     } else {
       padding_bytes_cleared += next_chunk.size;
@@ -844,13 +848,16 @@ TraceBuffer::ReadPacketResult TraceBuffer::ReadNextPacketInChunk(
   const uint8_t* next_packet = packet_data + packet_size;
   if (PERFETTO_UNLIKELY(next_packet <= packet_begin ||
                         next_packet > record_end)) {
-    // In SharedMemoryArbiter::BufferExhaustedPolicy::kDrop mode, TraceWriter
-    // may abort a fragmented packet by writing an invalid size in the last
-    // fragment's header. We should handle this case without recording an ABI
-    // violation (since Android R).
+    // In BufferExhaustedPolicy::kDrop mode, TraceWriter may abort a fragmented
+    // packet by writing an invalid size in the last fragment's header. We
+    // should handle this case without recording an ABI violation (since Android
+    // R).
     if (packet_size != SharedMemoryABI::kPacketSizeDropPacket) {
       stats_.set_abi_violations(stats_.abi_violations() + 1);
       PERFETTO_DCHECK(suppress_sanity_dchecks_for_testing_);
+    } else {
+      stats_.set_trace_writer_packet_loss(stats_.trace_writer_packet_loss() +
+                                          1);
     }
     chunk_meta->cur_fragment_offset = 0;
     chunk_meta->num_fragments_read = chunk_meta->num_fragments;

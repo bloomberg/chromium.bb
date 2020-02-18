@@ -258,8 +258,14 @@ void NotificationPlatformBridgeAndroid::Display(
   JNIEnv* env = AttachCurrentThread();
 
   GURL origin_url(notification.origin_url().GetOrigin());
-  GURL scope_url(PersistentNotificationMetadata::From(metadata.get())
-                     ->service_worker_scope);
+
+  // TODO(knollr): Reconsider the meta-data system to try to remove this branch.
+  const PersistentNotificationMetadata* persistent_notification_metadata =
+      PersistentNotificationMetadata::From(metadata.get());
+
+  GURL scope_url = persistent_notification_metadata
+                       ? persistent_notification_metadata->service_worker_scope
+                       : origin_url;
   if (!scope_url.is_valid())
     scope_url = origin_url;
 
@@ -352,7 +358,7 @@ void NotificationPlatformBridgeAndroid::GetDisplayed(
     Profile* profile,
     GetDisplayedNotificationsCallback callback) const {
   std::set<std::string> displayed_notifications;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      false /* supports_synchronization */));

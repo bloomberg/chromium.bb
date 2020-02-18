@@ -20,6 +20,7 @@
 #include "base/logging.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -73,8 +74,8 @@ const char kShippingMode[] = "shipping";
 const int kCommonNamePrefixRemovalFieldThreshold = 3;
 const int kMinCommonNamePrefixLength = 16;
 
-// Returns true if the scheme given by |url| is one for which autfill is allowed
-// to activate. By default this only returns true for HTTP and HTTPS.
+// Returns true if the scheme given by |url| is one for which autofill is
+// allowed to activate. By default this only returns true for HTTP and HTTPS.
 bool HasAllowedScheme(const GURL& url) {
   return url.SchemeIsHTTPOrHTTPS() ||
          base::FeatureList::IsEnabled(
@@ -585,7 +586,8 @@ FormStructure::FormStructure(const FormData& form)
       form_parsed_timestamp_(base::TimeTicks::Now()),
       passwords_were_revealed_(false),
       password_symbol_vote_(0),
-      developer_engagement_metrics_(0) {
+      developer_engagement_metrics_(0),
+      unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   std::map<base::string16, size_t> unique_names;
   for (const FormFieldData& field : form.fields) {
@@ -613,7 +615,7 @@ FormStructure::FormStructure(const FormData& form)
 
 FormStructure::~FormStructure() {}
 
-void FormStructure::DetermineHeuristicTypes() {
+void FormStructure::DetermineHeuristicTypes(LogManager* log_manager) {
   const auto determine_heuristic_types_start_time = base::TimeTicks::Now();
 
   // First, try to detect field types based on each field's |autocomplete|
@@ -626,7 +628,7 @@ void FormStructure::DetermineHeuristicTypes() {
   // prediction routines.
   if (ShouldRunHeuristics()) {
     const FieldCandidatesMap field_type_map =
-        FormField::ParseFormFields(fields_, is_form_tag_);
+        FormField::ParseFormFields(fields_, is_form_tag_, log_manager);
     for (const auto& field : fields_) {
       const auto iter = field_type_map.find(field->unique_name());
       if (iter != field_type_map.end()) {
@@ -1360,6 +1362,7 @@ FormData FormStructure::ToFormData() const {
   data.url = source_url_;
   data.action = target_url_;
   data.main_frame_origin = main_frame_origin_;
+  data.unique_renderer_id = unique_renderer_id_;
 
   for (size_t i = 0; i < fields_.size(); ++i) {
     data.fields.push_back(FormFieldData(*fields_[i]));
@@ -1560,13 +1563,13 @@ void FormStructure::ApplyRationalizationsToFieldAndLog(
 }
 
 void FormStructure::RationalizeAddressLineFields(
-    SectionedFieldsIndexes& sections_of_address_indexes,
+    SectionedFieldsIndexes* sections_of_address_indexes,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // The rationalization happens within sections.
-  for (sections_of_address_indexes.Reset();
-       !sections_of_address_indexes.IsFinished();
-       sections_of_address_indexes.WalkForwardToTheNextSection()) {
-    auto current_section = sections_of_address_indexes.CurrentSection();
+  for (sections_of_address_indexes->Reset();
+       !sections_of_address_indexes->IsFinished();
+       sections_of_address_indexes->WalkForwardToTheNextSection()) {
+    auto current_section = sections_of_address_indexes->CurrentSection();
 
     // The rationalization only applies to sections that have 2 or 3 visible
     // street address predictions.
@@ -1689,8 +1692,8 @@ bool FormStructure::FieldShouldBeRationalizedToCountry(size_t upper_index) {
 }
 
 void FormStructure::RationalizeAddressStateCountry(
-    SectionedFieldsIndexes& sections_of_state_indexes,
-    SectionedFieldsIndexes& sections_of_country_indexes,
+    SectionedFieldsIndexes* sections_of_state_indexes,
+    SectionedFieldsIndexes* sections_of_country_indexes,
     AutofillMetrics::FormInteractionsUkmLogger* form_interactions_ukm_logger) {
   // Walk on the sections of state and country indexes simultaneously. If they
   // both point to the same section, it means that that section includes both
@@ -1701,24 +1704,24 @@ void FormStructure::RationalizeAddressStateCountry(
   // the pointer that points to the earlier section forward. Stop when both
   // sections of indexes are processed. (This resembles the merge in the merge
   // sort.)
-  sections_of_state_indexes.Reset();
-  sections_of_country_indexes.Reset();
+  sections_of_state_indexes->Reset();
+  sections_of_country_indexes->Reset();
 
-  while (!sections_of_state_indexes.IsFinished() ||
-         !sections_of_country_indexes.IsFinished()) {
+  while (!sections_of_state_indexes->IsFinished() ||
+         !sections_of_country_indexes->IsFinished()) {
     auto current_section_of_state_indexes =
-        sections_of_state_indexes.CurrentSection();
+        sections_of_state_indexes->CurrentSection();
     auto current_section_of_country_indexes =
-        sections_of_country_indexes.CurrentSection();
+        sections_of_country_indexes->CurrentSection();
     // If there are still sections left with both country and state type, and
     // state and country current sections are equal, then that section has both
     // state and country. No rationalization needed.
-    if (!sections_of_state_indexes.IsFinished() &&
-        !sections_of_country_indexes.IsFinished() &&
-        fields_[sections_of_state_indexes.CurrentIndex()]->section ==
-            fields_[sections_of_country_indexes.CurrentIndex()]->section) {
-      sections_of_state_indexes.WalkForwardToTheNextSection();
-      sections_of_country_indexes.WalkForwardToTheNextSection();
+    if (!sections_of_state_indexes->IsFinished() &&
+        !sections_of_country_indexes->IsFinished() &&
+        fields_[sections_of_state_indexes->CurrentIndex()]->section ==
+            fields_[sections_of_country_indexes->CurrentIndex()]->section) {
+      sections_of_state_indexes->WalkForwardToTheNextSection();
+      sections_of_country_indexes->WalkForwardToTheNextSection();
       continue;
     }
 
@@ -1732,14 +1735,14 @@ void FormStructure::RationalizeAddressStateCountry(
         upper_index = current_section_of_state_indexes[0];
         lower_index = current_section_of_state_indexes[1];
       }
-      sections_of_state_indexes.WalkForwardToTheNextSection();
+      sections_of_state_indexes->WalkForwardToTheNextSection();
     } else {
       // We only rationalize when we have exactly two visible fields of a kind.
       if (current_section_of_country_indexes.size() == 2) {
         upper_index = current_section_of_country_indexes[0];
         lower_index = current_section_of_country_indexes[1];
       }
-      sections_of_country_indexes.WalkForwardToTheNextSection();
+      sections_of_country_indexes->WalkForwardToTheNextSection();
     }
 
     // This is when upper and lower indexes are not changed, meaning that there
@@ -1799,13 +1802,13 @@ void FormStructure::RationalizeRepeatedFields(
   }
 
   RationalizeAddressLineFields(
-      sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS],
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_STREET_ADDRESS]),
       form_interactions_ukm_logger);
   // Since the billing types are mapped to the non-billing ones, no need to
   // take care of ADDRESS_BILLING_STATE and .. .
   RationalizeAddressStateCountry(
-      sectioned_field_indexes_by_type[ADDRESS_HOME_STATE],
-      sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY],
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_STATE]),
+      &(sectioned_field_indexes_by_type[ADDRESS_HOME_COUNTRY]),
       form_interactions_ukm_logger);
 }
 
@@ -2186,31 +2189,38 @@ void FormStructure::RationalizeTypeRelationships() {
 LogBuffer& operator<<(LogBuffer& buffer, const FormStructure& form) {
   buffer << Tag{"div"} << Attrib{"class", "form"};
   buffer << Tag{"table"};
-  buffer << MakeTr2Cells("Form signature:", form.form_signature());
-  buffer << MakeTr2Cells("Form name:", form.form_name());
-  buffer << MakeTr2Cells("Target URL:", form.target_url());
+  buffer << Tr{} << "Form signature:"
+         << base::StrCat({base::NumberToString(form.form_signature()), " - ",
+                          base::NumberToString(
+                              HashFormSignature(form.form_signature()))});
+  buffer << Tr{} << "Form name:" << form.form_name();
+  buffer << Tr{} << "Target URL:" << form.target_url();
   for (size_t i = 0; i < form.field_count(); ++i) {
     buffer << Tag{"tr"};
     buffer << Tag{"td"} << "Field " << i << ": " << CTag{};
     const AutofillField* field = form.field(i);
     buffer << Tag{"td"};
     buffer << Tag{"table"};
-    buffer << MakeTr2Cells("Signature:", field->GetFieldSignature());
-    buffer << MakeTr2Cells("Name:", field->parseable_name());
+    buffer << Tr{} << "Signature:"
+           << base::StrCat(
+                  {base::NumberToString(field->GetFieldSignature()), " - ",
+                   base::NumberToString(
+                       HashFieldSignature(field->GetFieldSignature()))});
+    buffer << Tr{} << "Name:" << field->parseable_name();
 
     auto type = field->Type().ToString();
     auto heuristic_type = AutofillType(field->heuristic_type()).ToString();
     auto server_type = AutofillType(field->server_type()).ToString();
 
-    buffer << MakeTr2Cells("Type:",
-                           base::StrCat({type, " (heuristic: ", heuristic_type,
-                                         ", server: ", server_type, ")"}));
-    buffer << MakeTr2Cells("Section:", field->section);
+    buffer << Tr{} << "Type:"
+           << base::StrCat({type, " (heuristic: ", heuristic_type,
+                            ", server: ", server_type, ")"});
+    buffer << Tr{} << "Section:" << field->section;
 
     constexpr size_t kMaxLabelSize = 100;
     const base::string16 truncated_label =
         field->label.substr(0, std::min(field->label.length(), kMaxLabelSize));
-    buffer << MakeTr2Cells("Label:", truncated_label);
+    buffer << Tr{} << "Label:" << truncated_label;
     buffer << CTag{"table"};
     buffer << CTag{"td"};
     buffer << CTag{"tr"};

@@ -1,9 +1,12 @@
 from __future__ import print_function
 
-import copy
-import os, sys, json
-import spec_validator
 import argparse
+import copy
+import json
+import os
+import sys
+
+import spec_validator
 import util
 
 
@@ -54,10 +57,106 @@ def dump_test_parameters(selection):
     del selection['name']
 
     return json.dumps(
-        selection, indent=2, separators=(',', ': '), sort_keys=True)
+        selection,
+        indent=2,
+        separators=(',', ': '),
+        sort_keys=True,
+        cls=util.CustomEncoder)
 
 
-def generate_selection(config, selection, spec, test_html_template_basename):
+def get_test_filename(config, selection):
+    '''Returns the filname for the main test HTML file'''
+
+    selection_for_filename = copy.deepcopy(selection)
+    # Use 'unset' rather than 'None' in test filenames.
+    if selection_for_filename['delivery_value'] is None:
+        selection_for_filename['delivery_value'] = 'unset'
+
+    return os.path.join(config.spec_directory,
+                        config.test_file_path_pattern % selection_for_filename)
+
+
+def handle_deliveries(policy_deliveries):
+    '''
+    Generate <meta> elements and HTTP headers for the given list of
+    PolicyDelivery.
+    TODO(hiroshige): Merge duplicated code here, scope/document.py, etc.
+    '''
+
+    meta = ''
+    headers = {}
+
+    for delivery in policy_deliveries:
+        if delivery.value is None:
+            continue
+        if delivery.key == 'referrerPolicy':
+            if delivery.delivery_type == 'meta':
+                meta += \
+                    '<meta name="referrer" content="%s">' % delivery.value
+            elif delivery.delivery_type == 'http-rp':
+                headers['Referrer-Policy'] = delivery.value
+                # TODO(kristijanburnik): Limit to WPT origins.
+                headers['Access-Control-Allow-Origin'] = '*'
+            else:
+                raise Exception(
+                    'Invalid delivery_type: %s' % delivery.delivery_type)
+        elif delivery.key == 'mixedContent':
+            assert (delivery.value == 'opt-in')
+            if delivery.delivery_type == 'meta':
+                meta += '<meta http-equiv="Content-Security-Policy" ' + \
+                       'content="block-all-mixed-content">'
+            elif delivery.delivery_type == 'http-rp':
+                headers['Content-Security-Policy'] = 'block-all-mixed-content'
+            else:
+                raise Exception(
+                    'Invalid delivery_type: %s' % delivery.delivery_type)
+        else:
+            raise Exception('Invalid delivery_key: %s' % delivery.key)
+    return {"meta": meta, "headers": headers}
+
+
+def generate_selection(spec_json, config, selection, spec,
+                       test_html_template_basename):
+    test_filename = get_test_filename(config, selection)
+
+    target_policy_delivery = util.PolicyDelivery(selection['delivery_type'],
+                                                 selection['delivery_key'],
+                                                 selection['delivery_value'])
+    del selection['delivery_type']
+    del selection['delivery_key']
+    del selection['delivery_value']
+
+    # Parse source context list and policy deliveries of source contexts.
+    # `util.ShouldSkip()` exceptions are raised if e.g. unsuppported
+    # combinations of source contexts and policy deliveries are used.
+    source_context_list_scheme = spec_json['source_context_list_schema'][
+        selection['source_context_list']]
+    selection['source_context_list'] = [
+        util.SourceContext.from_json(source_context, target_policy_delivery,
+                                     spec_json['source_context_schema'])
+        for source_context in source_context_list_scheme['sourceContextList']
+    ]
+
+    # Check if the subresource is supported by the innermost source context.
+    innermost_source_context = selection['source_context_list'][-1]
+    supported_subresource = spec_json['source_context_schema'][
+        'supported_subresource'][innermost_source_context.source_context_type]
+    if supported_subresource != '*':
+        if selection['subresource'] not in supported_subresource:
+            raise util.ShouldSkip()
+
+    # Parse subresource policy deliveries.
+    selection[
+        'subresource_policy_deliveries'] = util.PolicyDelivery.list_from_json(
+            source_context_list_scheme['subresourcePolicyDeliveries'],
+            target_policy_delivery, spec_json['subresource_schema']
+            ['supported_delivery_type'][selection['subresource']])
+
+    # We process the top source context below, and do not include it in
+    # `test_parameters` in JavaScript.
+    top_source_context = selection['source_context_list'].pop(0)
+    assert (top_source_context.source_context_type == 'top')
+
     test_parameters = dump_test_parameters(selection)
     # Adjust the template for the test invoking JS. Indent it to look nice.
     indent = "\n" + " " * 8
@@ -80,8 +179,6 @@ def generate_selection(config, selection, spec, test_html_template_basename):
     selection['sanity_checker_js'] = config.sanity_checker_js
     selection['spec_json_js'] = config.spec_json_js
 
-    test_filename = os.path.join(config.spec_directory,
-                                 config.test_file_path_pattern % selection)
     test_headers_filename = test_filename + ".headers"
     test_directory = os.path.dirname(test_filename)
 
@@ -109,13 +206,12 @@ def generate_selection(config, selection, spec, test_html_template_basename):
     except:
         pass
 
-    delivery = config.handleDelivery(selection, spec)
+    delivery = handle_deliveries(top_source_context.policy_deliveries)
 
     if len(delivery['headers']) > 0:
         with open(test_headers_filename, "w") as f:
             for header in delivery['headers']:
-                f.write(header)
-                f.write('\n')
+                f.write('%s: %s\n' % (header, delivery['headers'][header]))
 
     selection['meta_delivery_method'] = delivery['meta']
     # Obey the lint and pretty format.
@@ -179,7 +275,11 @@ def generate_test_source_files(config, spec_json, target):
 
         for selection_path in output_dict:
             selection = output_dict[selection_path]
-            generate_selection(config, selection, spec, html_template)
+            try:
+                generate_selection(spec_json, config, selection, spec,
+                                   html_template)
+            except util.ShouldSkip:
+                continue
 
 
 def main(config):

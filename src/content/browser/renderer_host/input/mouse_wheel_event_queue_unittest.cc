@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
@@ -145,8 +145,8 @@ class MouseWheelEventQueueTest : public testing::Test,
                                  public MouseWheelEventQueueClient {
  public:
   MouseWheelEventQueueTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         acked_event_count_(0),
         last_acked_event_state_(INPUT_EVENT_ACK_STATE_UNKNOWN) {
     queue_.reset(new MouseWheelEventQueue(this));
@@ -222,8 +222,10 @@ class MouseWheelEventQueueTest : public testing::Test,
   }
 
   void SendMouseWheelEventAck(InputEventAckState ack_result) {
+    const MouseWheelEventWithLatencyInfo mouse_event_with_latency_info(
+        queue_->get_wheel_event_awaiting_ack_for_testing(), ui::LatencyInfo());
     queue_->ProcessMouseWheelAck(InputEventAckSource::COMPOSITOR_THREAD,
-                                 ack_result, ui::LatencyInfo());
+                                 ack_result, mouse_event_with_latency_info);
   }
   void SendMouseWheel(float x,
                       float y,
@@ -374,7 +376,7 @@ class MouseWheelEventQueueTest : public testing::Test,
     EXPECT_EQ(1U, GetAndResetSentEventCount());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<MouseWheelEventQueue> queue_;
   std::vector<std::unique_ptr<WebInputEvent>> sent_events_;
   size_t acked_event_count_;

@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,9 +113,9 @@ class WebRtcMediaStreamTrackAdapterTest : public ::testing::Test {
   }
 
  protected:
-  // The ScopedTaskEnvironment prevents the ChildProcess from leaking a
+  // The TaskEnvironment prevents the ChildProcess from leaking a
   // ThreadPool.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ChildProcess child_process_;
 
   std::unique_ptr<MockPeerConnectionDependencyFactory> dependency_factory_;
@@ -141,7 +141,8 @@ TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalAudioTrack) {
       track_adapter_->webrtc_track());
 }
 
-TEST_F(WebRtcMediaStreamTrackAdapterTest, LocalVideoTrack) {
+// Flaky, see https://crbug.com/982200.
+TEST_F(WebRtcMediaStreamTrackAdapterTest, DISABLED_LocalVideoTrack) {
   track_adapter_ = WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
       dependency_factory_.get(), main_thread_, CreateLocalVideoTrack());
   EXPECT_TRUE(track_adapter_->is_initialized());

@@ -8,6 +8,7 @@
 #include "base/json/json_reader.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/device_state.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/onc_utils.h"
@@ -29,8 +30,7 @@ const char kProfilePathUser[] = "user_profile_path";
 }  // namespace
 
 NetworkStateTestHelper::NetworkStateTestHelper(
-    bool use_default_devices_and_services)
-    : weak_ptr_factory_(this) {
+    bool use_default_devices_and_services) {
   if (!ShillManagerClient::Get()) {
     shill_clients::InitializeFakes();
     shill_clients_initialized_ = true;
@@ -94,6 +94,14 @@ void NetworkStateTestHelper::ClearDevices() {
 void NetworkStateTestHelper::ClearServices() {
   service_test_->ClearServices();
   base::RunLoop().RunUntilIdle();
+}
+
+void NetworkStateTestHelper::AddDevice(const std::string& device_path,
+                                       const std::string& type,
+                                       const std::string& name) {
+  device_test()->AddDevice(device_path, type, name);
+  base::RunLoop().RunUntilIdle();
+  network_state_handler()->SetDeviceStateUpdatedForTest(device_path);
 }
 
 std::string NetworkStateTestHelper::ConfigureService(
@@ -182,12 +190,6 @@ NetworkStateTestHelper::CreateStandaloneNetworkProperties(
       auto wifi = network_config::mojom::WiFiStateProperties::New();
       wifi->signal_strength = signal_strength;
       network->wifi = std::move(wifi);
-      break;
-    }
-    case network_config::mojom::NetworkType::kWiMAX: {
-      auto wimax = network_config::mojom::WiMAXStateProperties::New();
-      wimax->signal_strength = signal_strength;
-      network->wimax = std::move(wimax);
       break;
     }
   }

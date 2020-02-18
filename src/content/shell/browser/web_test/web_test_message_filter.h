@@ -14,6 +14,7 @@
 #include "base/strings/string16.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom.h"
 
@@ -61,6 +62,9 @@ class WebTestMessageFilter : public BrowserMessageFilter {
   void OnRegisterIsolatedFileSystem(
       const std::vector<base::FilePath>& absolute_filenames,
       std::string* filesystem_id);
+  void OnExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      const std::string& scheme,
+      IPC::Message* reply_msg);
   void OnClearAllDatabases();
   void OnSetDatabaseQuota(int quota);
   void OnSimulateWebNotificationClick(
@@ -86,7 +90,7 @@ class WebTestMessageFilter : public BrowserMessageFilter {
 
   scoped_refptr<storage::DatabaseTracker> database_tracker_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
-  network::mojom::CookieManagerPtr cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(WebTestMessageFilter);
 };

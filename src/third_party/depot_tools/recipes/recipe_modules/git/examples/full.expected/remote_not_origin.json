@@ -16,7 +16,6 @@
   {
     "cmd": [
       "git",
-      "retry",
       "fetch",
       "not_origin",
       "master",

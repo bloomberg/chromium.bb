@@ -10,7 +10,7 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/search/search_result.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/shell/example_factory.h"
@@ -127,7 +127,7 @@ class WindowTypeShelfItem : public app_list::AppListItem {
 WindowTypeShelfItem::WindowTypeShelfItem(const std::string& id, Type type)
     : app_list::AppListItem(id), type_(type) {
   std::string title(GetTitle(type));
-  SetIcon(GetIcon(type));
+  SetIcon(ash::AppListConfigType::kShared, GetIcon(type));
   SetName(title);
 }
 

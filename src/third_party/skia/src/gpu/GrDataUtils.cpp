@@ -6,7 +6,9 @@
  */
 
 #include "src/gpu/GrDataUtils.h"
+
 #include "src/core/SkColorSpaceXformSteps.h"
+#include "src/core/SkConvertPixels.h"
 #include "src/core/SkTLazy.h"
 #include "src/core/SkTraceEvent.h"
 #include "src/core/SkUtils.h"
@@ -120,7 +122,6 @@ size_t GrCompressedDataSize(SkImage::CompressionType type, int width, int height
             return numBlocks * sizeof(ETC1Block);
     }
     SK_ABORT("Unexpected compression type");
-    return 0;
 }
 
 // Fill in 'dest' with ETC1 blocks derived from 'colorf'
@@ -390,6 +391,15 @@ static GrSwizzle get_load_and_get_swizzle(GrColorType ct, SkRasterPipeline::Stoc
         case GrColorType::kRGBA_F32:         *load = SkRasterPipeline::load_f32;
                                              *isNormalized = false;
                                              break;
+        case GrColorType::kAlpha_8xxx:       *load = SkRasterPipeline::load_8888;
+                                             swizzle = GrSwizzle("000r");
+                                             break;
+        case GrColorType::kAlpha_F32xxx:     *load = SkRasterPipeline::load_f32;
+                                             swizzle = GrSwizzle("000r");
+                                             break;
+        case GrColorType::kGray_8xxx:       *load = SkRasterPipeline::load_8888;
+                                             swizzle = GrSwizzle("rrr1");
+                                             break;
         case GrColorType::kR_16:             *load = SkRasterPipeline::load_a16;
                                              swizzle = GrSwizzle("a001");
                                              break;
@@ -440,6 +450,12 @@ static GrSwizzle get_dst_swizzle_and_store(GrColorType ct, SkRasterPipeline::Sto
         case GrColorType::kRGBA_F32:         *store = SkRasterPipeline::store_f32;
                                              *isNormalized = false;
                                              break;
+        case GrColorType::kAlpha_8xxx:       *store = SkRasterPipeline::store_8888;
+                                             swizzle = GrSwizzle("a000");
+                                             break;
+        case GrColorType::kAlpha_F32xxx:     *store = SkRasterPipeline::store_f32;
+                                             swizzle = GrSwizzle("a000");
+                                             break;
         case GrColorType::kR_16:             swizzle = GrSwizzle("000r");
                                              *store = SkRasterPipeline::store_a16;
                                              break;
@@ -451,6 +467,7 @@ static GrSwizzle get_dst_swizzle_and_store(GrColorType ct, SkRasterPipeline::Sto
                                              break;
 
         case GrColorType::kGray_8:  // not currently supported as output
+        case GrColorType::kGray_8xxx:  // not currently supported as output
         case GrColorType::kUnknown:
             SK_ABORT("unexpected CT");
     }
@@ -466,7 +483,7 @@ static inline void append_clamp_gamut(SkRasterPipeline* pipeline) {
 
 bool GrConvertPixels(const GrPixelInfo& dstInfo,       void* dst, size_t dstRB,
                      const GrPixelInfo& srcInfo, const void* src, size_t srcRB,
-                     bool flipY, GrSwizzle swizzle) {
+                     bool flipY) {
     TRACE_EVENT0("skia.gpu", TRACE_FUNC);
     if (!srcInfo.isValid() || !dstInfo.isValid()) {
         return false;
@@ -492,25 +509,39 @@ bool GrConvertPixels(const GrPixelInfo& dstInfo,       void* dst, size_t dstRB,
     SkASSERT(dstRB % dstBpp == 0);
     SkASSERT(srcRB % srcBpp == 0);
 
-    SkRasterPipeline::StockStage load;
-    bool srcIsNormalized;
-    bool srcIsSRGB;
-    auto loadSwizzle = get_load_and_get_swizzle(srcInfo.colorType(), &load, &srcIsNormalized,
-                                                &srcIsSRGB);
-    loadSwizzle = GrSwizzle::Concat(loadSwizzle, swizzle);
-
-    SkRasterPipeline::StockStage store;
-    bool dstIsNormalized;
-    bool dstIsSRGB;
-    auto storeSwizzle = get_dst_swizzle_and_store(dstInfo.colorType(), &store, &dstIsNormalized,
-                                                  &dstIsSRGB);
-
     bool premul   = srcInfo.alphaType() == kUnpremul_SkAlphaType &&
                     dstInfo.alphaType() == kPremul_SkAlphaType;
     bool unpremul = srcInfo.alphaType() == kPremul_SkAlphaType &&
                     dstInfo.alphaType() == kUnpremul_SkAlphaType;
     bool alphaOrCSConversion =
             premul || unpremul || !SkColorSpace::Equals(srcInfo.colorSpace(), dstInfo.colorSpace());
+
+    if (srcInfo.colorType() == dstInfo.colorType() && !alphaOrCSConversion) {
+        size_t tightRB = dstBpp * dstInfo.width();
+        if (flipY) {
+            dst = static_cast<char*>(dst) + dstRB * (dstInfo.height() - 1);
+            for (int y = 0; y < dstInfo.height(); ++y) {
+                memcpy(dst, src, tightRB);
+                src = static_cast<const char*>(src) + srcRB;
+                dst = static_cast<      char*>(dst) - dstRB;
+            }
+        } else {
+            SkRectMemcpy(dst, dstRB, src, srcRB, tightRB, srcInfo.height());
+        }
+        return true;
+    }
+
+    SkRasterPipeline::StockStage load;
+    bool srcIsNormalized;
+    bool srcIsSRGB;
+    auto loadSwizzle = get_load_and_get_swizzle(srcInfo.colorType(), &load, &srcIsNormalized,
+                                                &srcIsSRGB);
+
+    SkRasterPipeline::StockStage store;
+    bool dstIsNormalized;
+    bool dstIsSRGB;
+    auto storeSwizzle = get_dst_swizzle_and_store(dstInfo.colorType(), &store, &dstIsNormalized,
+                                                  &dstIsSRGB);
 
     bool clampGamut;
     SkTLazy<SkColorSpaceXformSteps> steps;
@@ -582,7 +613,6 @@ bool GrConvertPixels(const GrPixelInfo& dstInfo,       void* dst, size_t dstRB,
     }
     return true;
 }
-
 
 GrColorType SkColorTypeAndFormatToGrColorType(const GrCaps* caps,
                                               SkColorType skCT,

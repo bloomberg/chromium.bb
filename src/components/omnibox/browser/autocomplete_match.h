@@ -121,6 +121,7 @@ struct AutocompleteMatch {
   // a power of 2 so that the counter wraps.
   enum {
     PEDAL_FAMILY_ID = 1,
+    TAB_SWITCH_FAMILY_ID = 2,
     FAMILY_SIZE = 1 << 2,
   };
   static constexpr size_t FAMILY_SIZE_MASK = ~(FAMILY_SIZE - 1);
@@ -170,8 +171,16 @@ struct AutocompleteMatch {
 
   // Comparison function for determining whether the first match is better than
   // the second.
-  static bool MoreRelevant(const AutocompleteMatch& elem1,
-                           const AutocompleteMatch& elem2);
+  static bool MoreRelevant(const AutocompleteMatch& match1,
+                           const AutocompleteMatch& match2);
+
+  // Comparison functions for determining whether the first match is preferred
+  // over the second when choosing between candidate duplicates.
+  static bool BetterDuplicate(const AutocompleteMatch& match1,
+                              const AutocompleteMatch& match2);
+  static bool BetterDuplicateByIterator(
+      const std::vector<AutocompleteMatch>::const_iterator it1,
+      const std::vector<AutocompleteMatch>::const_iterator it2);
 
   // Helper functions for classes creating matches:
   // Fills in the classifications for |text|, using |style| as the base style
@@ -228,6 +237,10 @@ struct AutocompleteMatch {
   // Convenience function to check if |type| is a special search suggest type -
   // like entity, personalized, profile or postfix.
   static bool IsSpecializedSearchType(Type type);
+
+  // If this match is a submatch, returns the parent's type, otherwise this
+  // match's type.
+  Type GetDemotionType() const;
 
   // A static version GetTemplateURL() that takes the match's keyword and
   // match's hostname as parameters.  In short, returns the TemplateURL
@@ -286,6 +299,20 @@ struct AutocompleteMatch {
   static url_formatter::FormatUrlTypes GetFormatTypes(bool preserve_scheme,
                                                       bool preserve_subdomain);
 
+  // Determines whether a particular match is allowed to be the default match
+  // by comparing |input.text| and |match.inline_autocompletion|. Therefore,
+  // |match.inline_autocompletion| should be set prior to invoking this method.
+  // Also considers trailing whitespace in the input, so the input should not be
+  // fixed up.
+  //
+  // Input "x" will allow default matches "x", "xy", and "x y".
+  // Input "x " will allow default matches "x" and "x y".
+  // Input "x  " will allow default match "x".
+  // Input "x y" will allow default match "x y".
+  // Input "x" with prevent_inline_autocomplete will allow default match "x".
+  static bool AllowedToBeDefault(const AutocompleteInput& input,
+                                 AutocompleteMatch& match);
+
   // Logs the search engine used to navigate to a search page or auto complete
   // suggestion. For direct URL navigations, nothing is logged.
   static void LogSearchEngineUsed(const AutocompleteMatch& match,
@@ -298,6 +325,8 @@ struct AutocompleteMatch {
   // family, which will cause them to be sorted together.
   static size_t GetNextFamilyID();
   static bool IsSameFamily(size_t lhs, size_t rhs);
+  // Preferred method to set both fields simultaneously.
+  void SetSubMatch(size_t subrelevance, AutocompleteMatch::Type parent_type);
   bool IsSubMatch() const;
 
   // Computes the stripped destination URL (via GURLToStrippedGURL()) and
@@ -373,6 +402,19 @@ struct AutocompleteMatch {
   // shown.
   bool IsVerbatimType() const;
 
+  // Returns whether this match is a search suggestion provided by search
+  // provider.
+  bool IsSearchProviderSearchSuggestion() const;
+
+  // Returns whether this match is a search suggestion provided by on device
+  // providers.
+  bool IsOnDeviceSearchSuggestion() const;
+
+  // Returns whether the autocompletion is trivial enough that we consider it
+  // an autocompletion for which the omnibox autocompletion code did not add
+  // any value.
+  bool IsTrivialAutocompletion() const;
+
   // Returns whether this match or any duplicate of this match can be deleted.
   // This is used to decide whether we should call DeleteMatch().
   bool SupportsDeletion() const;
@@ -401,10 +443,18 @@ struct AutocompleteMatch {
   // has a matching tab and will use a switch-to-tab button. It returns false,
   // for example, when the switch button is not shown because a keyword match
   // is taking precedence.
-  bool ShouldShowTabMatch() const;
+  bool ShouldShowTabMatchButton() const;
 
   // Returns true if the suggestion should show a tab match button or pedal.
   bool ShouldShowButton() const;
+
+  // Returns whether the suggestion is by itself a tab switch suggestion.
+  bool IsTabSwitchSuggestion() const;
+
+  // Upgrades this match by absorbing the best properties from
+  // |duplicate_match|. For instance: if |duplicate_match| has a higher
+  // relevance score, this match's own relevance score will be upgraded.
+  void UpgradeMatchWithPropertiesFrom(const AutocompleteMatch& duplicate_match);
 
   // The provider of this match, used to remember which provider the user had
   // selected when the input changes. This may be NULL, in which case there is
@@ -498,6 +548,9 @@ struct AutocompleteMatch {
   // Type of this match.
   Type type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
 
+  // If a submatch, the type of the parent.
+  Type parent_type;
+
   // True if we saw a tab that matched this suggestion.
   bool has_tab_match = false;
 
@@ -557,8 +610,11 @@ struct AutocompleteMatch {
   // property and associated value and which is presented in chrome://omnibox.
   AdditionalInfo additional_info;
 
-  // A list of matches culled during de-duplication process, retained to
-  // ensure if a match is deleted, the duplicates are deleted as well.
+  // A vector of matches culled during de-duplication process, sorted from
+  // second-best to worst according to the de-duplication preference criteria.
+  // This vector is retained so that if the user deletes a match, all the
+  // duplicates are deleted as well. This is also used for re-duping Search
+  // Entity vs. plain Search suggestions.
   std::vector<AutocompleteMatch> duplicate_matches;
 
   // So users of AutocompleteMatch can use the same ellipsis that it uses.

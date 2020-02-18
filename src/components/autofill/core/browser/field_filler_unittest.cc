@@ -16,7 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/address_normalizer.h"
 #include "components/autofill/core/browser/address_normalizer_impl.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -758,14 +758,14 @@ class AutofillSelectWithStatesTest
         std::unique_ptr<Storage>(new NullStorage), "en-US");
     // Make sure the normalizer is done initializing its member(s) in
     // background task(s).
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
   AddressNormalizer* normalizer() { return normalizer_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<AddressNormalizerImpl> normalizer_;
 
   DISALLOW_COPY_AND_ASSIGN(AutofillSelectWithStatesTest);

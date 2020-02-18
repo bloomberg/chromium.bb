@@ -17,11 +17,12 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/extension_uninstaller.h"
 #include "chrome/browser/ui/apps/app_info_dialog.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
+#include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -52,8 +53,7 @@ const extensions::Extension* GetExtension(Profile* profile,
 
 }  // namespace
 
-AppListControllerDelegate::AppListControllerDelegate()
-    : weak_ptr_factory_(this) {}
+AppListControllerDelegate::AppListControllerDelegate() {}
 
 AppListControllerDelegate::~AppListControllerDelegate() {}
 
@@ -74,13 +74,13 @@ std::string AppListControllerDelegate::AppListSourceToString(
   }
 }
 
-bool AppListControllerDelegate::UserMayModifySettings(
-    Profile* profile,
-    const std::string& app_id) {
+bool AppListControllerDelegate::UninstallAllowed(Profile* profile,
+                                                 const std::string& app_id) {
   const extensions::Extension* extension = GetExtension(profile, app_id);
   const extensions::ManagementPolicy* policy =
       extensions::ExtensionSystem::Get(profile)->management_policy();
-  return extension && policy->UserMayModifySettings(extension, NULL);
+  return extension && policy->UserMayModifySettings(extension, nullptr) &&
+         !policy->MustRemainInstalled(extension, nullptr);
 }
 
 bool AppListControllerDelegate::CanDoShowAppInfoFlow() {
@@ -95,7 +95,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
   const extensions::Extension* extension = GetExtension(profile, extension_id);
   DCHECK(extension);
 
-  if (base::FeatureList::IsEnabled(features::kAppManagement)) {
+  if (base::FeatureList::IsEnabled(chromeos::features::kSplitSettings) &&
+      base::FeatureList::IsEnabled(features::kAppManagement)) {
     chrome::ShowAppManagementPage(profile, extension_id);
     return;
   }
@@ -118,7 +119,8 @@ void AppListControllerDelegate::DoShowAppInfoFlow(
         const extensions::Extension* extension =
             GetExtension(profile, extension_id);
         DCHECK(extension);
-        ShowAppInfoInAppList(bounds, profile, extension);
+        ShowAppInfoInAppList(self->GetAppListWindow(), bounds, profile,
+                             extension);
       },
       weak_ptr_factory_.GetWeakPtr(), profile, extension_id));
 }

@@ -13,7 +13,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "extensions/common/message_bundle.h"
 #include "ipc/ipc_sender.h"
 #include "ipc/ipc_sync_message.h"
@@ -177,7 +177,7 @@ class ExtensionLocalizationPeerTest : public testing::Test {
     return consumer;
   }
 
-  base::test::ScopedTaskEnvironment scoped_environment_;
+  base::test::TaskEnvironment scoped_environment_;
   std::unique_ptr<MockIpcMessageSender> sender_;
   MockRequestPeer* original_peer_;
   std::unique_ptr<ExtensionLocalizationPeer> filter_peer_;

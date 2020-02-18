@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window_state.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -26,6 +25,7 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame_factory.h"
 #include "chrome/browser/ui/views/frame/system_menu_model_builder.h"
 #include "chrome/browser/ui/views/frame/top_container_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_switches.h"
 #include "ui/base/hit_test.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -37,10 +37,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "components/user_manager/user_manager.h"
-#endif
-
-#if defined(OS_LINUX)
-#include "chrome/browser/ui/views/frame/browser_command_handler_linux.h"
 #endif
 
 #if defined(USE_X11)
@@ -82,8 +78,8 @@ void BrowserFrame::InitBrowserFrame() {
   views::Widget::InitParams params = native_browser_frame_->GetWidgetParams();
   params.name = "BrowserFrame";
   params.delegate = browser_view_;
-  if (browser_view_->browser()->is_type_tabbed() ||
-      browser_view_->browser()->is_devtools()) {
+  if (browser_view_->browser()->is_type_normal() ||
+      browser_view_->browser()->is_type_devtools()) {
     // Typed panel/popup can only return a size once the widget has been
     // created.
     // DevTools counts as a popup, but DevToolsWindow::CreateDevToolsBrowser
@@ -104,16 +100,12 @@ void BrowserFrame::InitBrowserFrame() {
     }
   }
 
-  Init(params);
+  Init(std::move(params));
 
   if (!native_browser_frame_->UsesNativeSystemMenu()) {
     DCHECK(non_client_view());
     non_client_view()->set_context_menu_controller(this);
   }
-
-#if defined(OS_LINUX)
-  browser_command_handler_.reset(new BrowserCommandHandlerLinux(browser_view_));
-#endif
 }
 
 int BrowserFrame::GetMinimizeButtonOffset() const {
@@ -255,11 +247,11 @@ void BrowserFrame::ShowContextMenuForViewImpl(views::View* source,
   views::View::ConvertPointFromScreen(non_client_view(), &point_in_view_coords);
   int hit_test = non_client_view()->NonClientHitTest(point_in_view_coords);
   if (hit_test == HTCAPTION || hit_test == HTNOWHERE) {
-    menu_runner_.reset(new views::MenuRunner(
+    menu_runner_ = std::make_unique<views::MenuRunner>(
         GetSystemMenuModel(),
         views::MenuRunner::HAS_MNEMONICS | views::MenuRunner::CONTEXT_MENU,
         base::BindRepeating(&BrowserFrame::OnMenuClosed,
-                            base::Unretained(this))));
+                            base::Unretained(this)));
     menu_runner_->RunMenuAt(source->GetWidget(), nullptr,
                             gfx::Rect(p, gfx::Size(0, 0)),
                             views::MenuAnchorPosition::kTopLeft, source_type);

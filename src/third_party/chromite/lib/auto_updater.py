@@ -392,7 +392,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     values = []
     for key in keys:
       if key not in status:
-        raise ValueError('Missing %s in the update engine status')
+        raise ValueError('Missing "%s" in the update engine status' % key)
 
       values.append(status.get(key))
 
@@ -747,8 +747,18 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           break
 
         if op == UPDATE_STATUS_IDLE:
-          raise RootfsUpdateError(
-              'Update failed with unexpected update status: %s' % op)
+          # Something went wrong. Try to get last error code.
+          cmd = 'cat %s' % self.REMOTE_UPDATE_ENGINE_LOGFILE_PATH
+          log = self.device.RunCommand(cmd).output.strip().splitlines()
+          err_str = 'Updating payload state for error code: '
+          targets = [line for line in log if err_str in line]
+          logging.debug('Error lines found: %s', targets)
+          if not targets:
+            raise RootfsUpdateError(
+                'Update failed with unexpected update status: %s' % op)
+          else:
+            # e.g 20 (ErrorCode::kDownloadStateInitializationError)
+            raise RootfsUpdateError(targets[-1].rpartition(err_str)[2])
 
         if oper is not None:
           if op == UPDATE_STATUS_DOWNLOADING:
@@ -767,8 +777,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       logging.error('Rootfs update failed.')
       self.RevertBootPartition()
       logging.warning(ds.TailLog() or 'No devserver log is available.')
-      error_msg = 'Failed to perform rootfs update: %r'
-      raise RootfsUpdateError(error_msg % e)
+      raise RootfsUpdateError(str(e))
     finally:
       if ds.is_alive():
         self._CollectDevServerHostLog(ds)
@@ -816,11 +825,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     logging.info('%s...', msg)
     try:
       self.device.RunCommand(cmd, **self._cmd_kwargs)
-    except cros_build_lib.RunCommandError as e:
-      logging.error('Stateful update failed.')
+    except cros_build_lib.RunCommandError:
+      logging.exception('Stateful update failed.')
       self.ResetStatefulPartition()
-      error_msg = 'Failed to perform stateful partition update: %s'
-      raise StatefulUpdateError(error_msg % e)
+      raise StatefulUpdateError('Stateful partition update failed.')
 
   def RunUpdateRootfs(self):
     """Run all processes needed by updating rootfs.
@@ -998,11 +1006,10 @@ class ChromiumOSFlashUpdater(BaseUpdater):
         timeout = self.REBOOT_TIMEOUT
       self.device.Reboot(timeout_sec=timeout)
     except cros_build_lib.DieSystemExit:
-      raise ChromiumOSUpdateError('%s cannot recover from reboot at %s' % (
-          self.device.hostname, error_stage))
+      raise ChromiumOSUpdateError('Could not recover from reboot at %s' %
+                                  error_stage)
     except remote_access.SSHConnectionError:
-      raise ChromiumOSUpdateError('Failed to connect to %s at %s' % (
-          self.device.hostname, error_stage))
+      raise ChromiumOSUpdateError('Failed to connect at %s' % error_stage)
 
 
 class ChromiumOSUpdater(ChromiumOSFlashUpdater):

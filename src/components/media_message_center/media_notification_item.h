@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/media_session/public/mojom/media_controller.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -45,11 +45,12 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
     kMaxValue = kArc,
   };
 
-  MediaNotificationItem(MediaNotificationController* notification_controller,
-                        const std::string& request_id,
-                        const std::string& source_name,
-                        media_session::mojom::MediaControllerPtr controller,
-                        media_session::mojom::MediaSessionInfoPtr session_info);
+  MediaNotificationItem(
+      MediaNotificationController* notification_controller,
+      const std::string& request_id,
+      const std::string& source_name,
+      mojo::Remote<media_session::mojom::MediaController> controller,
+      media_session::mojom::MediaSessionInfoPtr session_info);
   ~MediaNotificationItem() override;
 
   // media_session::mojom::MediaControllerObserver:
@@ -83,16 +84,34 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   void FlushForTesting();
 
   void SetMediaControllerForTesting(
-      media_session::mojom::MediaControllerPtr controller) {
-    media_controller_ptr_ = std::move(controller);
+      mojo::Remote<media_session::mojom::MediaController> controller) {
+    media_controller_remote_ = std::move(controller);
   }
 
+  void SetController(
+      mojo::Remote<media_session::mojom::MediaController> controller,
+      media_session::mojom::MediaSessionInfoPtr session_info);
+
+  // This will freeze the item and start a timer to destroy the item after
+  // some time has passed.
+  void Freeze();
+
+  bool frozen() const { return frozen_; }
+
  private:
+  bool ShouldShowNotification() const;
+
+  void MaybeUnfreeze();
+
+  void OnFreezeTimerFired();
+
   void MaybeHideOrShowNotification();
 
   void HideNotification();
 
   MediaNotificationController* controller_;
+
+  bool is_bound_ = true;
 
   // Weak reference to the view of the currently shown media notification.
   MediaNotificationView* view_ = nullptr;
@@ -104,7 +123,7 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // The source of the media session (e.g. arc, web).
   const Source source_;
 
-  media_session::mojom::MediaControllerPtr media_controller_ptr_;
+  mojo::Remote<media_session::mojom::MediaController> media_controller_remote_;
 
   media_session::mojom::MediaSessionInfoPtr session_info_;
 
@@ -117,6 +136,14 @@ class COMPONENT_EXPORT(MEDIA_MESSAGE_CENTER) MediaNotificationItem
   // True if the metadata needs to be updated on |view_|. Used to prevent
   // updating |view_|'s metadata twice on a single change.
   bool view_needs_metadata_update_ = false;
+
+  // When the item is frozen the |view_| will not receive any updates to the
+  // data and no actions will be executed.
+  bool frozen_ = false;
+
+  // The timer that will notify the controller to destroy this item after it
+  // has been frozen for a certain period of time.
+  base::OneShotTimer freeze_timer_;
 
   mojo::Receiver<media_session::mojom::MediaControllerObserver>
       observer_receiver_{this};

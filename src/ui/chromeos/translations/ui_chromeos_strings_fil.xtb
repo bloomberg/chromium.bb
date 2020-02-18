@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Resolution ng larawan</translation>
 <translation id="1943097386230153518">Mag-install ng bagong serbisyo</translation>
 <translation id="1947424002851288782">German na keyboard</translation>
+<translation id="1972984168337863910">I-expand ang mga panel ng feedback ng mga file</translation>
 <translation id="197560921582345123">Makakapag-edit</translation>
 <translation id="1984603991036629094">Armenian na Phonetic keyboard</translation>
 <translation id="2001796770603320721">Pamahalaan sa Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Kailangan kang mag-online upang ma-access ang file na ito.</translation>
 <translation id="4212740939091998969">Mayroon nang folder na may pangalang "<ph name="FOLDER_NAME" />." Pumili ng ibang pangalan.</translation>
 <translation id="4215448920900139318">Bina-back up ang <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Buksan ang mga setting</translation>
 <translation id="426015154560005552">Arabic keyboard</translation>
 <translation id="4261901459838235729">Presentation ng Google</translation>
 <translation id="4290535918735525311">1 folder ang naibahagi sa Linux</translation>
-<translation id="42981349822642051">Palawakin</translation>
 <translation id="4298972503445160211">Danish na keyboard</translation>
 <translation id="4299729908419173967">Brazilian</translation>
 <translation id="4309915981827077375">Pangkalahatang impormasyon</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Auto-fix</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4886021172213954916">Tamil keyboard (Typewriter)</translation>
-<translation id="4892969127351273348">Hindi mabuksan gamit ang <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Handa nang i-back up ang <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Naayos</translation>
 <translation id="4935975195727477204">Bulaklak</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Swiss French</translation>
 <translation id="5234764350956374838">Balewalain</translation>
 <translation id="5241298539944515331">Vietnamese keyboard (VIQR)</translation>
-<translation id="52446585071384036">Para magbukas ng mga file gamit ang <ph name="APP_NAME" />, kopyahin muna ang mga ito sa folder ng mga file ng Linux.</translation>
 <translation id="5253070652067921974">Ginawa ni</translation>
 <translation id="5257456363153333584">Tutubi</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Mag-access ng mga file kahit saan, kahit offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Korean</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Panghuli)</translation>
 <translation id="5833610766403489739">Nawala ang file na ito. Pakitingnan ang iyong setting ng lokasyon ng pag-download at subukan ulit.</translation>
-<translation id="5838051104334203064">Hindi ma-access ng mga application sa Play Store ang device na ito</translation>
 <translation id="5838451609423551646">Inalis ang lahat ng entry sa pagpipilian.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5850516540536751549">Hindi sinusuportahan ang uri ng file na ito. Pakibisita ang <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> upang maghanap ng app na makakapagbukas sa ganitong uri ng file.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Upang i-save ang mga file na ito para sa offline na paggamit, mag-online muli, i-right click ang mga file at piliin ang opsyong <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">I-abort</translation>
 <translation id="8261506727792406068">I-delete</translation>
+<translation id="8269755669432358899">I-collapse ang mga panel ng feedback ng mga file</translation>
 <translation id="8279388322240498158">Keyboard na batay sa Sorani Kurdish English</translation>
 <translation id="8280151743281770066">Armenian Phonetic</translation>
 <translation id="8294431847097064396">Pinagmulan</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Piliin ang isang file para buksan</translation>
 <translation id="8579285237314169903">Nagsi-sync ng <ph name="NUMBER_OF_FILES" /> (na) item...</translation>
 <translation id="8600173386174225982">Naging thumbnail view ang listahan ng file.</translation>
+<translation id="8601932370724196034">Crostini image file</translation>
 <translation id="8669949407341943408">Inililipat...</translation>
 <translation id="8671210955687109937">Makakapagkomento</translation>
 <translation id="8686213429977032554">Hindi pa ibinabahagi ang file sa Drive na ito</translation>

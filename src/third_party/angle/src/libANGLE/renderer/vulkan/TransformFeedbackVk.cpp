@@ -37,7 +37,7 @@ angle::Result TransformFeedbackVk::begin(const gl::Context *context,
     contextVk->invalidateCurrentTransformFeedbackBuffers();
 
     vk::GetImpl(context)->onTransformFeedbackPauseResume();
-    onBeginEnd(context);
+    onBeginOrEnd(context);
 
     return angle::Result::Continue;
 }
@@ -54,7 +54,7 @@ angle::Result TransformFeedbackVk::end(const gl::Context *context)
     }
 
     vk::GetImpl(context)->onTransformFeedbackPauseResume();
-    onBeginEnd(context);
+    onBeginOrEnd(context);
 
     return angle::Result::Continue;
 }
@@ -99,7 +99,7 @@ void TransformFeedbackVk::updateDescriptorSetLayout(
 {
     size_t xfbBufferCount = programState.getTransformFeedbackBufferCount();
 
-    for (size_t bufferIndex = 0; bufferIndex < xfbBufferCount; ++bufferIndex)
+    for (uint32_t bufferIndex = 0; bufferIndex < xfbBufferCount; ++bufferIndex)
     {
         descSetLayoutOut->update(kXfbBindingIndexStart + bufferIndex,
                                  VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, 1, VK_SHADER_STAGE_VERTEX_BIT);
@@ -131,6 +131,25 @@ void TransformFeedbackVk::addFramebufferDependency(ContextVk *contextVk,
         vk::BufferHelper &bufferHelper = vk::GetImpl(buffer)->getBuffer();
         bufferHelper.onWrite(contextVk, framebuffer, 0, VK_ACCESS_SHADER_WRITE_BIT);
     }
+}
+
+void TransformFeedbackVk::initDescriptorSet(ContextVk *contextVk,
+                                            size_t xfbBufferCount,
+                                            vk::BufferHelper *emptyBuffer,
+                                            VkDescriptorSet descSet) const
+{
+    std::array<VkDescriptorBufferInfo, gl::IMPLEMENTATION_MAX_TRANSFORM_FEEDBACK_BUFFERS>
+        descriptorBufferInfo;
+
+    for (size_t bufferIndex = 0; bufferIndex < xfbBufferCount; ++bufferIndex)
+    {
+        VkDescriptorBufferInfo &bufferInfo = descriptorBufferInfo[bufferIndex];
+        bufferInfo.buffer                  = emptyBuffer->getBuffer().getHandle();
+        bufferInfo.offset                  = 0;
+        bufferInfo.range                   = VK_WHOLE_SIZE;
+    }
+
+    writeDescriptorSet(contextVk, xfbBufferCount, descriptorBufferInfo.data(), descSet);
 }
 
 void TransformFeedbackVk::updateDescriptorSet(ContextVk *contextVk,
@@ -165,20 +184,7 @@ void TransformFeedbackVk::updateDescriptorSet(ContextVk *contextVk,
         bufferInfo.range  = bufferRange.size + (bufferRange.offset - bufferRange.alignedOffset);
     }
 
-    VkDevice device = contextVk->getDevice();
-
-    VkWriteDescriptorSet writeDescriptorInfo = {};
-    writeDescriptorInfo.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeDescriptorInfo.dstSet               = descSet;
-    writeDescriptorInfo.dstBinding           = kXfbBindingIndexStart;
-    writeDescriptorInfo.dstArrayElement      = 0;
-    writeDescriptorInfo.descriptorCount      = xfbBufferCount;
-    writeDescriptorInfo.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
-    writeDescriptorInfo.pImageInfo           = nullptr;
-    writeDescriptorInfo.pBufferInfo          = descriptorBufferInfo.data();
-    writeDescriptorInfo.pTexelBufferView     = nullptr;
-
-    vkUpdateDescriptorSets(device, 1, &writeDescriptorInfo, 0, nullptr);
+    writeDescriptorSet(contextVk, xfbBufferCount, descriptorBufferInfo.data(), descSet);
 }
 
 void TransformFeedbackVk::getBufferOffsets(ContextVk *contextVk,
@@ -217,7 +223,7 @@ void TransformFeedbackVk::getBufferOffsets(ContextVk *contextVk,
     }
 }
 
-void TransformFeedbackVk::onBeginEnd(const gl::Context *context)
+void TransformFeedbackVk::onBeginOrEnd(const gl::Context *context)
 {
     // Currently, we don't handle resources switching from read-only to writable and back correctly.
     // In the case of transform feedback, the attached buffers can switch between being written by
@@ -231,10 +237,32 @@ void TransformFeedbackVk::onBeginEnd(const gl::Context *context)
     FramebufferVk *framebufferVk       = vk::GetImpl(context->getState().getDrawFramebuffer());
     vk::FramebufferHelper *framebuffer = framebufferVk->getFramebuffer();
 
+    framebuffer->updateQueueSerial(contextVk->getCurrentQueueSerial());
     if (framebuffer->hasStartedRenderPass())
     {
         framebuffer->finishCurrentCommands(contextVk);
     }
+}
+
+void TransformFeedbackVk::writeDescriptorSet(ContextVk *contextVk,
+                                             size_t xfbBufferCount,
+                                             VkDescriptorBufferInfo *pBufferInfo,
+                                             VkDescriptorSet descSet) const
+{
+    VkDevice device = contextVk->getDevice();
+
+    VkWriteDescriptorSet writeDescriptorInfo = {};
+    writeDescriptorInfo.sType                = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeDescriptorInfo.dstSet               = descSet;
+    writeDescriptorInfo.dstBinding           = kXfbBindingIndexStart;
+    writeDescriptorInfo.dstArrayElement      = 0;
+    writeDescriptorInfo.descriptorCount      = static_cast<uint32_t>(xfbBufferCount);
+    writeDescriptorInfo.descriptorType       = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+    writeDescriptorInfo.pImageInfo           = nullptr;
+    writeDescriptorInfo.pBufferInfo          = pBufferInfo;
+    writeDescriptorInfo.pTexelBufferView     = nullptr;
+
+    vkUpdateDescriptorSets(device, 1, &writeDescriptorInfo, 0, nullptr);
 }
 
 }  // namespace rx

@@ -46,7 +46,7 @@
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -101,8 +101,9 @@ class ConnectTestingEventInterface : public WebSocketEventInterface {
 
   void OnDataFrame(bool fin,
                    WebSocketMessageType type,
-                   scoped_refptr<IOBuffer> data,
-                   size_t data_size) override;
+                   base::span<const char> payload) override;
+
+  bool HasPendingDataFrames() override { return false; }
 
   void OnSendFlowControlQuotaAdded(int64_t quota) override;
 
@@ -175,8 +176,8 @@ void ConnectTestingEventInterface::OnAddChannelResponse(
 
 void ConnectTestingEventInterface::OnDataFrame(bool fin,
                                                WebSocketMessageType type,
-                                               scoped_refptr<IOBuffer> data,
-                                               size_t data_size) {}
+                                               base::span<const char> payload) {
+}
 
 void ConnectTestingEventInterface::OnSendFlowControlQuotaAdded(int64_t quota) {}
 
@@ -265,7 +266,7 @@ class TestProxyDelegateWithProxyInfo : public ProxyDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestProxyDelegateWithProxyInfo);
 };
 
-class WebSocketEndToEndTest : public TestWithScopedTaskEnvironment {
+class WebSocketEndToEndTest : public TestWithTaskEnvironment {
  protected:
   WebSocketEndToEndTest()
       : event_interface_(),

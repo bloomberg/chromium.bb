@@ -4,7 +4,8 @@
 
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "chrome/browser/page_load_metrics/page_load_metrics_observer_delegate.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "content/public/browser/render_frame_host.h"
 
 namespace page_load_metrics {
@@ -145,17 +146,13 @@ void LargestContentfulPaintHandler::RecordTiming(
     return;
   }
   // For subframes
-  base::TimeDelta navigation_start_offset;
-  if (!g_disable_subframe_navigation_start_offset) {
-    const auto it = subframe_navigation_start_offset_.find(
-        subframe_rfh->GetFrameTreeNodeId());
-    if (it == subframe_navigation_start_offset_.end()) {
-      // We received timing information for an untracked load. Ignore it.
-      return;
-    }
-    navigation_start_offset = it->second;
+  const auto it = subframe_navigation_start_offset_.find(
+      subframe_rfh->GetFrameTreeNodeId());
+  if (it == subframe_navigation_start_offset_.end()) {
+    // We received timing information for an untracked load. Ignore it.
+    return;
   }
-  RecordSubframeTiming(timing, navigation_start_offset);
+  RecordSubframeTiming(timing, it->second);
 }
 
 const ContentfulPaintTimingInfo&
@@ -196,7 +193,7 @@ void LargestContentfulPaintHandler::RecordMainFrameTiming(
 
 void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
     content::NavigationHandle* navigation_handle,
-    const page_load_metrics::PageLoadExtraInfo& extra_info) {
+    const PageLoadMetricsObserverDelegate& delegate) {
   if (!navigation_handle->HasCommitted())
     return;
 
@@ -205,10 +202,18 @@ void LargestContentfulPaintHandler::OnDidFinishSubFrameNavigation(
   subframe_navigation_start_offset_.erase(
       navigation_handle->GetFrameTreeNodeId());
 
-  if (extra_info.navigation_start > navigation_handle->NavigationStart())
+  if (delegate.GetNavigationStart() > navigation_handle->NavigationStart())
     return;
-  base::TimeDelta navigation_delta =
-      navigation_handle->NavigationStart() - extra_info.navigation_start;
+  base::TimeDelta navigation_delta;
+  // If navigation start offset tracking has been disabled for tests, then
+  // record a zero-value navigation delta. Otherwise, compute the actual delta
+  // between the main frame navigation start and the subframe navigation start.
+  // See crbug/616901 for more details on why navigation start offset tracking
+  // is disabled in tests.
+  if (!g_disable_subframe_navigation_start_offset) {
+    navigation_delta =
+        navigation_handle->NavigationStart() - delegate.GetNavigationStart();
+  }
   subframe_navigation_start_offset_.insert(std::make_pair(
       navigation_handle->GetFrameTreeNodeId(), navigation_delta));
 }

@@ -79,8 +79,7 @@ NotificationImageRetainer::NotificationImageRetainer(
     : deletion_task_runner_(std::move(deletion_task_runner)),
       image_dir_(DetermineImageDirectory()),
       tick_clock_(tick_clock),
-      deletion_timer_(tick_clock),
-      weak_ptr_factory_(this) {
+      deletion_timer_(tick_clock) {
   DCHECK(deletion_task_runner_);
   DCHECK(tick_clock);
 
@@ -89,8 +88,9 @@ NotificationImageRetainer::NotificationImageRetainer(
 
 NotificationImageRetainer::NotificationImageRetainer()
     : NotificationImageRetainer(
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::MayBlock(),
+               base::TaskPriority::BEST_EFFORT,
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
           base::DefaultTickClock::GetInstance()) {}
 

@@ -11,24 +11,16 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_metrics.h"
 #include "components/renderer_context_menu/render_view_context_menu_observer.h"
 #include "ui/base/models/simple_menu_model.h"
-#include "url/gurl.h"
-
-namespace gfx {
-class ImageSkia;
-}
 
 class RenderViewContextMenuProxy;
 
-class SharingService;
+class ClickToCallUiController;
 
-class ClickToCallContextMenuObserver
-    : public RenderViewContextMenuObserver,
-      public base::SupportsWeakPtr<ClickToCallContextMenuObserver> {
+class ClickToCallContextMenuObserver : public RenderViewContextMenuObserver {
  public:
   class SubMenuDelegate : public ui::SimpleMenuModel::Delegate {
    public:
@@ -48,10 +40,12 @@ class ClickToCallContextMenuObserver
   ~ClickToCallContextMenuObserver() override;
 
   // RenderViewContextMenuObserver implementation.
-  void InitMenu(const content::ContextMenuParams& params) override;
   bool IsCommandIdSupported(int command_id) override;
   bool IsCommandIdEnabled(int command_id) override;
   void ExecuteCommand(int command_id) override;
+
+  void BuildMenu(const std::string& phone_number,
+                 SharingClickToCallEntryPoint entry_point);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ClickToCallContextMenuObserverTest,
@@ -65,17 +59,14 @@ class ClickToCallContextMenuObserver
 
   void SendClickToCallMessage(int chosen_device_index);
 
-  gfx::ImageSkia GetContextMenuIcon() const;
-
   RenderViewContextMenuProxy* proxy_ = nullptr;
 
-  SharingService* sharing_service_ = nullptr;
+  ClickToCallUiController* controller_ = nullptr;
 
   SubMenuDelegate sub_menu_delegate_{this};
 
-  GURL url_;
-
-  std::vector<SharingDeviceInfo> devices_;
+  std::string phone_number_;
+  base::Optional<SharingClickToCallEntryPoint> entry_point_;
 
   std::unique_ptr<ui::SimpleMenuModel> sub_menu_model_;
 

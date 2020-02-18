@@ -553,7 +553,12 @@ CommandHandler.COMMANDS_ = {};
  * Unmounts external drive.
  */
 CommandHandler.COMMANDS_['unmount'] = new class extends Command {
-  execute(event, fileManager) {
+  /**
+   * @param {!Event} event Command event.
+   * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps.
+   * @private
+   */
+  async executeImpl_(event, fileManager) {
     /** @param {VolumeManagerCommon.VolumeType=} opt_volumeType */
     const errorCallback = opt_volumeType => {
       if (opt_volumeType === VolumeManagerCommon.VolumeType.REMOVABLE) {
@@ -563,11 +568,6 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
         fileManager.ui.alertDialog.showHtml(
             '', str('UNMOUNT_PROVIDED_FAILED'), null, null, null);
       }
-    };
-
-    const successCallback = () => {
-      const msg = strf('A11Y_VOLUME_EJECT', label);
-      fileManager.ui.speakA11yMessage(msg);
     };
 
     // Find volumes to unmount.
@@ -596,11 +596,22 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     }
 
     // Eject volumes of which there may be multiple.
-    for (let i = 0; i < volumes.length; i++) {
-      fileManager.volumeManager.unmount(
-          volumes[i], (i == volumes.length - 1) ? successCallback : () => {},
-          errorCallback.bind(null, volumes[i].volumeType));
-    }
+    const promises = volumes.map(async (volume) => {
+      try {
+        await fileManager.volumeManager.unmount(volume);
+      } catch (error) {
+        console.error(
+            `Cannot unmount '${volume.volumeId}': ${error.stack || error}`);
+        errorCallback(volume.volumeType);
+      }
+    });
+
+    await Promise.all(promises);
+    fileManager.ui.speakA11yMessage(strf('A11Y_VOLUME_EJECT', label));
+  }
+
+  execute(event, fileManager) {
+    this.executeImpl_(event, fileManager);
   }
 
   /** @override */
@@ -608,14 +619,18 @@ CommandHandler.COMMANDS_['unmount'] = new class extends Command {
     const volumeInfo =
         CommandUtil.getElementVolumeInfo(event.target, fileManager);
     const entry = CommandUtil.getCommandEntry(fileManager, event.target);
-    if (!volumeInfo && !entry) {
+
+    let volumeType;
+    if (entry && entry instanceof EntryList) {
+      volumeType = entry.rootType;
+    } else if (volumeInfo) {
+      volumeType = volumeInfo.volumeType;
+    } else {
       event.canExecute = false;
       event.command.setHidden(true);
       return;
     }
 
-    const volumeType =
-        (entry instanceof EntryList) ? entry.rootType : volumeInfo.volumeType;
     event.canExecute =
         (volumeType === VolumeManagerCommon.VolumeType.ARCHIVE ||
          volumeType === VolumeManagerCommon.VolumeType.REMOVABLE ||
@@ -847,7 +862,7 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends Command {
  */
 CommandHandler.COMMANDS_['new-window'] = new class extends Command {
   execute(event, fileManager) {
-    fileManager.backgroundPage.launcher.launchFileManager({
+    fileManager.launchFileManager({
       currentDirectoryURL: fileManager.getCurrentDirectoryEntry() &&
           fileManager.getCurrentDirectoryEntry().toURL()
     });

@@ -116,8 +116,7 @@ MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
       attestation_flow_(nullptr),
       num_retries_(0),
       retry_limit_(kRetryLimit),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -129,8 +128,7 @@ MachineCertificateUploaderImpl::MachineCertificateUploaderImpl(
       cryptohome_client_(cryptohome_client),
       attestation_flow_(attestation_flow),
       num_retries_(0),
-      retry_delay_(kRetryDelay),
-      weak_factory_(this) {
+      retry_delay_(kRetryDelay) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -204,6 +202,7 @@ void MachineCertificateUploaderImpl::GetNewCertificate() {
       EmptyAccountId(),  // Not used.
       std::string(),     // Not used.
       true,              // Force a new key to be generated.
+      std::string(),     // Leave key name empty to generate a default name.
       base::BindRepeating(
           [](const base::RepeatingCallback<void(const std::string&)> on_success,
              const base::RepeatingCallback<void(AttestationStatus)> on_failure,
@@ -346,7 +345,7 @@ void MachineCertificateUploaderImpl::HandleGetCertificateFailure(
 
 void MachineCertificateUploaderImpl::Reschedule() {
   if (++num_retries_ < retry_limit_) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindRepeating(&MachineCertificateUploaderImpl::Start,
                             weak_factory_.GetWeakPtr()),

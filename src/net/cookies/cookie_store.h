@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "net/base/net_export.h"
 #include "net/cookies/canonical_cookie.h"
@@ -42,28 +43,17 @@ class CookieChangeDispatcher;
 class NET_EXPORT CookieStore {
  public:
   // Callback definitions.
-  typedef base::OnceCallback<void(const CookieList& cookies,
-                                  const CookieStatusList& excluded_list)>
-      GetCookieListCallback;
-  typedef base::OnceCallback<void(
-      CanonicalCookie::CookieInclusionStatus status)>
-      SetCookiesCallback;
-  typedef base::OnceCallback<void(uint32_t num_deleted)> DeleteCallback;
-  typedef base::OnceCallback<void(bool success)> SetCookieableSchemesCallback;
+  using GetCookieListCallback =
+      base::OnceCallback<void(const CookieStatusList& included_cookies,
+                              const CookieStatusList& excluded_list)>;
+  using GetAllCookiesCallback =
+      base::OnceCallback<void(const CookieList& cookies)>;
+  using SetCookiesCallback =
+      base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus status)>;
+  using DeleteCallback = base::OnceCallback<void(uint32_t num_deleted)>;
+  using SetCookieableSchemesCallback = base::OnceCallback<void(bool success)>;
 
   virtual ~CookieStore();
-
-  // Sets the cookies specified by |cookie_list| returned from |url|
-  // with options |options| in effect.  Expects a cookie line, like
-  // "a=1; domain=b.com".
-  //
-  // Fails either if the cookie is invalid or if this is a non-HTTPONLY cookie
-  // and it would overwrite an existing HTTPONLY cookie.
-  // Returns true if the cookie is successfully set.
-  virtual void SetCookieWithOptionsAsync(const GURL& url,
-                                         const std::string& cookie_line,
-                                         const CookieOptions& options,
-                                         SetCookiesCallback callback) = 0;
 
   // Set the cookie on the cookie store.  |cookie.IsCanonical()| must
   // be true.  |source_scheme| denotes the scheme of the resource setting this.
@@ -80,25 +70,17 @@ class NET_EXPORT CookieStore {
   // Obtains a CookieList for the given |url| and |options|. The returned
   // cookies are passed into |callback|, ordered by longest path, then earliest
   // creation date.
+  // To get all the cookies for a URL, use this method with an all-inclusive
+  // |options|.
   virtual void GetCookieListWithOptionsAsync(
       const GURL& url,
       const CookieOptions& options,
       GetCookieListCallback callback) = 0;
 
-  // Returns all cookies associated with |url|, including http-only, and
-  // same-site cookies. The returned cookies are ordered by longest path, then
-  // by earliest creation date, and are not marked as having been accessed.
-  //
-  // TODO(mkwst): This method is deprecated, and should be removed, either by
-  // updating callsites to use 'GetCookieListWithOptionsAsync' with an explicit
-  // CookieOptions, or by changing CookieOptions' defaults.
-  void GetAllCookiesForURLAsync(const GURL& url,
-                                GetCookieListCallback callback);
-
   // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed. The returned cookies are ordered by
   // longest path, then by earliest creation date.
-  virtual void GetAllCookiesAsync(GetCookieListCallback callback) = 0;
+  virtual void GetAllCookiesAsync(GetAllCookiesCallback callback) = 0;
 
   // Deletes one specific cookie. |cookie| must have been returned by a previous
   // query on this CookieStore. Invokes |callback| with 1 if a cookie was

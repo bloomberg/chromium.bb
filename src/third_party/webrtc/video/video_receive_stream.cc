@@ -193,8 +193,7 @@ VideoReceiveStream::VideoReceiveStream(
       call_stats_(call_stats),
       source_tracker_(clock_),
       stats_proxy_(&config_, clock_),
-      rtp_receive_statistics_(
-          ReceiveStatistics::Create(clock_, &stats_proxy_, &stats_proxy_)),
+      rtp_receive_statistics_(ReceiveStatistics::Create(clock_)),
       timing_(timing),
       video_receiver_(clock_, timing_.get()),
       rtp_video_stream_receiver_(clock_,
@@ -363,7 +362,7 @@ void VideoReceiveStream::Start() {
       ssb << decoded_output_file << "/webrtc_receive_stream_"
           << this->config_.rtp.remote_ssrc << "-" << rtc::TimeMicros()
           << ".ivf";
-      video_decoder = absl::make_unique<FrameDumpingDecoder>(
+      video_decoder = CreateFrameDumpingDecoderWrapper(
           std::move(video_decoder), FileWrapper::OpenWriteOnly(ssb.str()));
     }
 
@@ -449,6 +448,8 @@ void VideoReceiveStream::Stop() {
     // running.
     for (const Decoder& decoder : config_.decoders)
       video_receiver_.RegisterExternalDecoder(nullptr, decoder.payload_type);
+
+    UpdateHistograms();
   }
 
   video_stream_decoder_.reset();
@@ -457,7 +458,43 @@ void VideoReceiveStream::Stop() {
 }
 
 VideoReceiveStream::Stats VideoReceiveStream::GetStats() const {
-  return stats_proxy_.GetStats();
+  VideoReceiveStream::Stats stats = stats_proxy_.GetStats();
+  stats.total_bitrate_bps = 0;
+  StreamStatistician* statistician =
+      rtp_receive_statistics_->GetStatistician(stats.ssrc);
+  if (statistician) {
+    stats.rtp_stats = statistician->GetStats();
+    stats.total_bitrate_bps = statistician->BitrateReceived();
+  }
+  if (config_.rtp.rtx_ssrc) {
+    StreamStatistician* rtx_statistician =
+        rtp_receive_statistics_->GetStatistician(config_.rtp.rtx_ssrc);
+    if (rtx_statistician)
+      stats.total_bitrate_bps += rtx_statistician->BitrateReceived();
+  }
+  return stats;
+}
+
+void VideoReceiveStream::UpdateHistograms() {
+  absl::optional<int> fraction_lost;
+  StreamDataCounters rtp_stats;
+  StreamStatistician* statistician =
+      rtp_receive_statistics_->GetStatistician(config_.rtp.remote_ssrc);
+  if (statistician) {
+    fraction_lost = statistician->GetFractionLostInPercent();
+    rtp_stats = statistician->GetReceiveStreamDataCounters();
+  }
+  if (config_.rtp.rtx_ssrc) {
+    StreamStatistician* rtx_statistician =
+        rtp_receive_statistics_->GetStatistician(config_.rtp.rtx_ssrc);
+    if (rtx_statistician) {
+      StreamDataCounters rtx_stats =
+          rtx_statistician->GetReceiveStreamDataCounters();
+      stats_proxy_.UpdateHistograms(fraction_lost, rtp_stats, &rtx_stats);
+      return;
+    }
+  }
+  stats_proxy_.UpdateHistograms(fraction_lost, rtp_stats, nullptr);
 }
 
 void VideoReceiveStream::AddSecondarySink(RtpPacketSinkInterface* sink) {
@@ -502,9 +539,10 @@ void VideoReceiveStream::OnFrame(const VideoFrame& video_frame) {
     // TODO(tommi): OnSyncOffsetUpdated grabs a lock.
     stats_proxy_.OnSyncOffsetUpdated(sync_offset_ms, estimated_freq_khz);
   }
+  source_tracker_.OnFrameDelivered(video_frame.packet_infos());
+
   config_.renderer->OnFrame(video_frame);
 
-  source_tracker_.OnFrameDelivered(video_frame.packet_infos());
   // TODO(tommi): OnRenderFrame grabs a lock too.
   stats_proxy_.OnRenderedFrame(video_frame);
 }

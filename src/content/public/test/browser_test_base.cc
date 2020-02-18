@@ -27,6 +27,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
@@ -62,13 +63,18 @@
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "ui/base/platform_window_defaults.h"
+#include "services/tracing/public/cpp/trace_startup.h"
 #include "ui/compositor/compositor_switches.h"
 #include "ui/display/display_switches.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 
+#if defined(OS_LINUX)
+#include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
+#endif
+
 #if defined(OS_ANDROID)
+#include "base/android/task_scheduler/post_task_android.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"  // nogncheck
 #include "content/app/mojo/mojo_init.h"
 #include "content/app/service_manager_environment.h"
@@ -84,6 +90,8 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "content/browser/sandbox_parameters_mac.h"
+#include "net/test/test_data_directory.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/test/event_generator_delegate_mac.h"
 #endif
@@ -99,6 +107,9 @@
 
 namespace content {
 namespace {
+
+// See kRunManualTestsFlag in "content_switches.cc".
+const char kManualTestPrefix[] = "MANUAL_";
 
 #if defined(OS_POSIX)
 // On SIGSEGV or SIGTERM (sent by the runner on timeouts), dump a stack trace
@@ -131,8 +142,7 @@ void DumpStackTraceSignalHandler(int signal) {
 void RunTaskOnRendererThread(base::OnceClosure task,
                              base::OnceClosure quit_task) {
   std::move(task).Run();
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                           std::move(quit_task));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(quit_task));
 }
 
 void TraceStopTracingComplete(const base::Closure& quit,
@@ -161,14 +171,14 @@ class InitialNavigationObserver : public WebContentsObserver {
 
 }  // namespace
 
-extern int BrowserMain(const MainFunctionParams&);
-
 BrowserTestBase::BrowserTestBase()
     : expected_exit_code_(0),
       enable_pixel_output_(false),
       use_software_compositing_(false),
       set_up_called_(false) {
+#if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
+#endif
 
 #if defined(OS_POSIX)
   handle_sigterm_ = true;
@@ -200,6 +210,9 @@ BrowserTestBase::~BrowserTestBase() {
 
 void BrowserTestBase::SetUp() {
   set_up_called_ = true;
+
+  if (BrowserTestBase::ShouldSkipManualTests())
+    GTEST_SKIP();
 
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
@@ -279,6 +292,10 @@ void BrowserTestBase::SetUp() {
 #if defined(OS_MACOSX)
   // On Mac we always use hardware GL.
   use_software_gl = false;
+
+  // Expand the network service sandbox to allow reading the test TLS
+  // certificates.
+  SetNetworkTestCertsDirectoryForTesting(net::GetTestCertsDirectory());
 #endif
 
 #if defined(OS_ANDROID)
@@ -330,7 +347,7 @@ void BrowserTestBase::SetUp() {
   }
 
   // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 15
+  // collection to avoid interference. This GPU process is launched 120
   // seconds after chrome starts.
   command_line->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);
@@ -406,7 +423,7 @@ void BrowserTestBase::SetUp() {
 
     StartBrowserThreadPool();
     BrowserTaskExecutor::PostFeatureListSetup();
-    delegate->PostTaskSchedulerStart();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
   }
 
   auto discardable_shared_memory_manager =
@@ -461,20 +478,22 @@ void BrowserTestBase::SetUp() {
     discardable_shared_memory_manager.reset();
     spawned_test_server_.reset();
   }
-  BrowserTaskExecutor::ResetForTesting();
+
+  base::PostTaskAndroid::SignalNativeSchedulerShutdown();
+  BrowserTaskExecutor::Shutdown();
 
   // Normally the BrowserMainLoop does this during shutdown but on Android we
   // don't go through shutdown, so this doesn't happen there. We do need it
   // for the test harness to be able to delete temp dirs.
   base::ThreadRestrictions::SetIOAllowed(true);
-#else
+#else   // defined(OS_ANDROID)
   auto ui_task = std::make_unique<base::Closure>(base::Bind(
       &BrowserTestBase::ProxyRunTestOnMainThreadLoop, base::Unretained(this)));
   GetContentMainParams()->ui_task = ui_task.release();
   GetContentMainParams()->created_main_parts_closure =
       created_main_parts_closure.release();
   EXPECT_EQ(expected_exit_code_, ContentMain(*GetContentMainParams()));
-#endif
+#endif  // defined(OS_ANDROID)
   TearDownInProcessBrowserTestFixture();
 }
 
@@ -490,7 +509,6 @@ bool BrowserTestBase::AllowFileAccessFromFiles() {
 }
 
 void BrowserTestBase::SimulateNetworkServiceCrash() {
-  CHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
   CHECK(!IsInProcessNetworkService())
       << "Can't crash the network service if it's running in-process!";
   network::mojom::NetworkServiceTestPtr network_service_test;
@@ -509,6 +527,14 @@ void BrowserTestBase::SimulateNetworkServiceCrash() {
   // Need to re-initialize the network process.
   initialized_network_process_ = false;
   InitializeNetworkProcess();
+}
+
+bool BrowserTestBase::ShouldSkipManualTests() {
+  return (base::StartsWith(
+              ::testing::UnitTest::GetInstance()->current_test_info()->name(),
+              kManualTestPrefix, base::CompareCase::SENSITIVE) &&
+          !base::CommandLine::ForCurrentProcess()->HasSwitch(
+              switches::kRunManualTestsFlag));
 }
 
 #if defined(OS_ANDROID)
@@ -602,8 +628,7 @@ void BrowserTestBase::ProxyRunTestOnMainThreadLoop() {
 
     PreRunTestOnMainThread();
     std::unique_ptr<InitialNavigationObserver> initial_navigation_observer;
-    if (initial_web_contents_ &&
-        base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    if (initial_web_contents_) {
       // Some tests may add host_resolver() rules in their SetUpOnMainThread
       // method and navigate inside of it. This is a best effort to catch that
       // and sync the host_resolver() rules to the network process in that case,

@@ -77,7 +77,6 @@ class PathHandler(object):
 
   INSIDE = common_pb2.Path.INSIDE
   OUTSIDE = common_pb2.Path.OUTSIDE
-  ALL = -1
 
   def __init__(self, field, destination, delete, prefix=None, reset=True):
     """Path handler initialization.
@@ -107,13 +106,7 @@ class PathHandler(object):
     self._original_message = common_pb2.Path()
     self._original_message.CopyFrom(self.field)
 
-  def __enter__(self):
-    self.transfer()
-
-  def __exit__(self, exc_type, exc_val, exc_tb):
-    self.cleanup()
-
-  def transfer(self, direction=None):
+  def transfer(self, direction):
     """Copy the file or directory to its destination.
 
     Args:
@@ -124,14 +117,13 @@ class PathHandler(object):
     if self._transferred:
       return
 
-    if direction is None:
-      direction = self.ALL
-    assert direction in [self.INSIDE, self.OUTSIDE, self.ALL]
+    assert direction in [self.INSIDE, self.OUTSIDE]
 
     if self.field.location == direction:
       # Already in the correct location, nothing to do.
       return
 
+    # Create a tempdir for the copied file if we're cleaning it up afterwords.
     if self.delete:
       self.tempdir = osutils.TempDir(base_dir=self.destination)
       destination = self.tempdir.tempdir
@@ -140,10 +132,12 @@ class PathHandler(object):
 
     source = self.field.path
     if direction == self.OUTSIDE and self.prefix:
+      # When we're extracting files, we need /tmp/result to be
+      # /path/to/chroot/tmp/result.
       source = os.path.join(self.prefix, source.lstrip(os.sep))
 
     if os.path.isfile(source):
-      # File - use the old file name, just copy it into dest.
+      # File - use the old file name, just copy it into the destination.
       dest_path = os.path.join(destination, os.path.basename(source))
       copy_fn = shutil.copy
     else:
@@ -173,17 +167,13 @@ class PathHandler(object):
 
 
 @contextlib.contextmanager
-def handle_paths(message, destination, delete=True, direction=None,
-                 prefix=None):
+def copy_paths_in(message, destination, delete=True, prefix=None):
   """Context manager function to transfer and cleanup all Path messages.
 
   Args:
     message (Message): A message whose Path messages should be transferred.
     destination (str): A base destination path.
     delete (bool): Whether the file(s) should be deleted.
-    direction (int): One of the PathHandler constants (INSIDE, OUTSIDE, ALL).
-      This allows avoiding unnecessarily copying files already in the right
-      place (e.g. copying a file into the chroot that's already in the chroot).
     prefix (str|None): A prefix path to remove from the final destination path
       in the Path message (i.e. remove the chroot path).
 
@@ -191,12 +181,11 @@ def handle_paths(message, destination, delete=True, direction=None,
     list[PathHandler]: The path handlers.
   """
   assert destination
-  direction = direction or PathHandler.ALL
 
   handlers = _extract_handlers(message, destination, delete, prefix, reset=True)
 
   for handler in handlers:
-    handler.transfer(direction)
+    handler.transfer(PathHandler.INSIDE)
 
   try:
     yield handlers
@@ -205,7 +194,7 @@ def handle_paths(message, destination, delete=True, direction=None,
       handler.cleanup()
 
 
-def handle_result_paths(request_message, response_message, chroot):
+def extract_results(request_message, response_message, chroot):
   """Transfer all response Path messages to the request's ResultPath.
 
   Args:

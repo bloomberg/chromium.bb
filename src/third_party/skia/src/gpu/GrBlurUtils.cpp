@@ -80,7 +80,8 @@ static bool sw_draw_with_mask_filter(GrRecordingContext* context,
 
     if (key.isValid()) {
         // TODO: this cache look up is duplicated in draw_shape_with_mask_filter for gpu
-        filteredMask = proxyProvider->findOrCreateProxyByUniqueKey(key, kTopLeft_GrSurfaceOrigin);
+        filteredMask = proxyProvider->findOrCreateProxyByUniqueKey(key, GrColorType::kAlpha_8,
+                                                                   kTopLeft_GrSurfaceOrigin);
     }
 
     SkIRect drawRect;
@@ -148,8 +149,8 @@ static bool sw_draw_with_mask_filter(GrRecordingContext* context,
             return false;
         }
 
-        filteredMask = proxyProvider->createTextureProxy(std::move(image), GrRenderable::kNo, 1,
-                                                         SkBudgeted::kYes, SkBackingFit::kApprox);
+        filteredMask = proxyProvider->createTextureProxy(std::move(image), 1, SkBudgeted::kYes,
+                                                         SkBackingFit::kApprox);
         if (!filteredMask) {
             return false;
         }
@@ -173,16 +174,14 @@ static sk_sp<GrTextureProxy> create_mask_GPU(GrRecordingContext* context,
                                              const SkMatrix& origViewMatrix,
                                              const GrShape& shape,
                                              int sampleCnt) {
-    sk_sp<GrRenderTargetContext> rtContext(
-            context->priv().makeDeferredRenderTargetContextWithFallback(
-                    SkBackingFit::kApprox, maskRect.width(), maskRect.height(),
-                    GrColorType::kAlpha_8, nullptr, sampleCnt, GrMipMapped::kNo,
-                    kTopLeft_GrSurfaceOrigin));
+    auto rtContext = context->priv().makeDeferredRenderTargetContextWithFallback(
+            SkBackingFit::kApprox, maskRect.width(), maskRect.height(), GrColorType::kAlpha_8,
+            nullptr, sampleCnt, GrMipMapped::kNo, kTopLeft_GrSurfaceOrigin);
     if (!rtContext) {
         return nullptr;
     }
 
-    rtContext->priv().absClear(nullptr, SK_PMColor4fTRANSPARENT);
+    rtContext->priv().absClear(nullptr);
 
     GrPaint maskPaint;
     maskPaint.setCoverageSetOpXPFactory(SkRegion::kReplace_Op);
@@ -389,7 +388,7 @@ static void draw_shape_with_mask_filter(GrRecordingContext* context,
         if (maskKey.isValid()) {
             // TODO: this cache look up is duplicated in sw_draw_with_mask_filter for raster
             filteredMask = proxyProvider->findOrCreateProxyByUniqueKey(
-                                                maskKey, kTopLeft_GrSurfaceOrigin);
+                    maskKey, GrColorType::kAlpha_8, kTopLeft_GrSurfaceOrigin);
         }
 
         if (!filteredMask) {

@@ -11,6 +11,7 @@
 #include "net/third_party/quiche/src/quic/core/quic_connection_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/core/quic_versions.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_aligned.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
@@ -400,11 +401,7 @@ bool QuicUtils::IsCryptoStreamId(QuicTransportVersion version,
 
 // static
 QuicStreamId QuicUtils::GetHeadersStreamId(QuicTransportVersion version) {
-  if (version == QUIC_VERSION_99) {
-    // TODO(b/130659182) Turn this into a QUIC_BUG once we've fully removed
-    // the headers stream in those versions.
-    return GetQuicFlag(FLAGS_quic_headers_stream_id_in_v99);
-  }
+  DCHECK(!VersionUsesQpack(version));
   return GetFirstBidirectionalStreamId(version, Perspective::IS_CLIENT);
 }
 
@@ -488,6 +485,15 @@ QuicStreamId QuicUtils::GetFirstUnidirectionalStreamId(
 }
 
 // static
+QuicConnectionId QuicUtils::CreateReplacementConnectionId(
+    QuicConnectionId connection_id) {
+  const uint64_t connection_id_hash = FNV1a_64_Hash(
+      QuicStringPiece(connection_id.data(), connection_id.length()));
+  return QuicConnectionId(reinterpret_cast<const char*>(&connection_id_hash),
+                          sizeof(connection_id_hash));
+}
+
+// static
 QuicConnectionId QuicUtils::CreateRandomConnectionId() {
   return CreateRandomConnectionId(kQuicDefaultConnectionIdLength,
                                   QuicRandom::GetInstance());
@@ -508,18 +514,12 @@ QuicConnectionId QuicUtils::CreateRandomConnectionId(
 QuicConnectionId QuicUtils::CreateRandomConnectionId(
     uint8_t connection_id_length,
     QuicRandom* random) {
-  if (connection_id_length == 0) {
-    return EmptyQuicConnectionId();
+  QuicConnectionId connection_id;
+  connection_id.set_length(connection_id_length);
+  if (connection_id.length() > 0) {
+    random->RandBytes(connection_id.mutable_data(), connection_id.length());
   }
-  if (connection_id_length > kQuicMaxConnectionIdLength) {
-    QUIC_BUG << "Tried to CreateRandomConnectionId of invalid length "
-             << static_cast<int>(connection_id_length);
-    connection_id_length = kQuicMaxConnectionIdLength;
-  }
-  char connection_id_bytes[kQuicMaxConnectionIdLength];
-  random->RandBytes(connection_id_bytes, connection_id_length);
-  return QuicConnectionId(static_cast<char*>(connection_id_bytes),
-                          connection_id_length);
+  return connection_id;
 }
 
 // static
@@ -543,27 +543,57 @@ QuicConnectionId QuicUtils::CreateZeroConnectionId(
 }
 
 // static
-bool QuicUtils::IsConnectionIdValidForVersion(QuicConnectionId connection_id,
-                                              QuicTransportVersion version) {
-  if (VariableLengthConnectionIdAllowedForVersion(version)) {
-    return true;
+bool QuicUtils::IsConnectionIdLengthValidForVersion(
+    size_t connection_id_length,
+    QuicTransportVersion transport_version) {
+  // No version of QUIC can support lengths that do not fit in an uint8_t.
+  if (connection_id_length >
+      static_cast<size_t>(std::numeric_limits<uint8_t>::max())) {
+    return false;
   }
-  return connection_id.length() == kQuicDefaultConnectionIdLength;
+  const uint8_t connection_id_length8 =
+      static_cast<uint8_t>(connection_id_length);
+  // Versions that do not support variable lengths only support length 8.
+  if (!VariableLengthConnectionIdAllowedForVersion(transport_version)) {
+    return connection_id_length8 == kQuicDefaultConnectionIdLength;
+  }
+  // Versions that do support variable length but do not have length-prefixed
+  // connection IDs use the 4-bit connection ID length encoding which can
+  // only encode values 0 and 4-18.
+  if (!VersionHasLengthPrefixedConnectionIds(transport_version)) {
+    return connection_id_length8 == 0 ||
+           (connection_id_length8 >= 4 &&
+            connection_id_length8 <= kQuicMaxConnectionId4BitLength);
+  }
+  return connection_id_length8 <= kQuicMaxConnectionIdWithLengthPrefixLength;
+}
+
+// static
+bool QuicUtils::IsConnectionIdValidForVersion(
+    QuicConnectionId connection_id,
+    QuicTransportVersion transport_version) {
+  return IsConnectionIdLengthValidForVersion(connection_id.length(),
+                                             transport_version);
 }
 
 QuicUint128 QuicUtils::GenerateStatelessResetToken(
     QuicConnectionId connection_id) {
-  uint64_t data_bytes[3] = {0, 0, 0};
-  static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdLength,
-                "kQuicMaxConnectionIdLength changed");
-  memcpy(data_bytes, connection_id.data(), connection_id.length());
-  // This is designed so that the common case of 64bit connection IDs
-  // produces a stateless reset token that is equal to the connection ID
-  // interpreted as a 64bit unsigned integer, to facilitate debugging.
-  return MakeQuicUint128(
-      QuicEndian::NetToHost64(sizeof(uint64_t) ^ connection_id.length() ^
-                              data_bytes[1] ^ data_bytes[2]),
-      QuicEndian::NetToHost64(data_bytes[0]));
+  if (!GetQuicRestartFlag(quic_use_hashed_stateless_reset_tokens)) {
+    uint64_t data_bytes[3] = {0, 0, 0};
+    static_assert(sizeof(data_bytes) >= kQuicMaxConnectionIdAllVersionsLength,
+                  "kQuicMaxConnectionIdAllVersionsLength changed");
+    memcpy(data_bytes, connection_id.data(), connection_id.length());
+    // This is designed so that the common case of 64bit connection IDs
+    // produces a stateless reset token that is equal to the connection ID
+    // interpreted as a 64bit unsigned integer, to facilitate debugging.
+    return MakeQuicUint128(
+        QuicEndian::NetToHost64(sizeof(uint64_t) ^ connection_id.length() ^
+                                data_bytes[1] ^ data_bytes[2]),
+        QuicEndian::NetToHost64(data_bytes[0]));
+  }
+  QUIC_RESTART_FLAG_COUNT(quic_use_hashed_stateless_reset_tokens);
+  return FNV1a_128_Hash(
+      QuicStringPiece(connection_id.data(), connection_id.length()));
 }
 
 // Returns the maximum value that a stream count may have, taking into account

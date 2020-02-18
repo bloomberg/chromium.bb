@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -19,27 +19,27 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   MockClipboardHost();
   ~MockClipboardHost() override;
 
-  void Bind(blink::mojom::ClipboardHostRequest request);
+  void Bind(mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
   void Reset();
 
  private:
   // blink::mojom::ClipboardHost
-  void GetSequenceNumber(ui::ClipboardType clipboard_type,
+  void GetSequenceNumber(ui::ClipboardBuffer clipboard_buffer,
                          GetSequenceNumberCallback callback) override;
   void IsFormatAvailable(blink::mojom::ClipboardFormat format,
-                         ui::ClipboardType clipboard_type,
+                         ui::ClipboardBuffer clipboard_buffer,
                          IsFormatAvailableCallback callback) override;
-  void ReadAvailableTypes(ui::ClipboardType clipboard_type,
+  void ReadAvailableTypes(ui::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
-  void ReadText(ui::ClipboardType clipboard_type,
+  void ReadText(ui::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
-  void ReadHtml(ui::ClipboardType clipboard_type,
+  void ReadHtml(ui::ClipboardBuffer clipboard_buffer,
                 ReadHtmlCallback callback) override;
-  void ReadRtf(ui::ClipboardType clipboard_type,
+  void ReadRtf(ui::ClipboardBuffer clipboard_buffer,
                ReadRtfCallback callback) override;
-  void ReadImage(ui::ClipboardType clipboard_type,
+  void ReadImage(ui::ClipboardBuffer clipboard_buffer,
                  ReadImageCallback callback) override;
-  void ReadCustomData(ui::ClipboardType clipboard_type,
+  void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const base::string16& type,
                       ReadCustomDataCallback callback) override;
   void WriteText(const base::string16& text) override;
@@ -55,7 +55,7 @@ class MockClipboardHost : public blink::mojom::ClipboardHost {
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
-  mojo::BindingSet<blink::mojom::ClipboardHost> bindings_;
+  mojo::ReceiverSet<blink::mojom::ClipboardHost> receivers_;
   uint64_t sequence_number_ = 0;
   base::string16 plain_text_;
   base::string16 html_text_;

@@ -3,12 +3,14 @@
 // found in the LICENSE file.
 
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/test/shell_test_api.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
@@ -31,13 +33,13 @@
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/assistant_optin_flow_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/gaia_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
 #include "chromeos/system/fake_statistics_provider.h"
@@ -50,6 +52,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
+#include "ui/display/display_switches.h"
 
 using net::test_server::BasicHttpResponse;
 using net::test_server::HttpRequest;
@@ -74,7 +77,7 @@ std::string ArcStateToString(ArcState arc_state) {
 }
 
 void RunWelcomeScreenChecks() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   constexpr int kNumberOfVideosPlaying = 1;
 #else
   constexpr int kNumberOfVideosPlaying = 0;
@@ -97,8 +100,7 @@ void RunNetworkSelectionScreenChecks() {
       ").disabled");
 }
 
-
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void RunEulaScreenChecks() {
   // Wait for actual EULA to appear.
   test::OobeJS()
@@ -374,14 +376,16 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
   void SetUp() override {
     LOG(INFO) << "OOBE end-to-end test  started with params "
               << params_.ToString();
-
-    if (params_.arc_state != ArcState::kNotAvailable)
-      feature_list_.InitAndEnableFeature(switches::kAssistantFeature);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (params_.is_tablet)
+    if (params_.is_tablet) {
+      // Makes the device capable to entering tablet mode.
       command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
+      // Having an active internal display so that tablet mode does not end
+      // on display config change.
+      command_line->AppendSwitch(::switches::kUseFirstDisplayAsInternal);
+    }
 
     if (params_.arc_state != ArcState::kNotAvailable) {
       arc::SetArcAvailableCommandLineForTesting(command_line);
@@ -409,7 +413,7 @@ class OobeEndToEndTestSetupMixin : public InProcessBrowserTestMixin {
 
   void SetUpOnMainThread() override {
     if (params_.is_tablet)
-      TabletModeClient::Get()->OnTabletModeToggled(true);
+      ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
     if (params_.arc_state != ArcState::kNotAvailable) {
       // Init ArcSessionManager for testing.
@@ -522,7 +526,7 @@ void OobeInteractiveUITest::PerformStepsBeforeEnrollmentCheck() {
   RunNetworkSelectionScreenChecks();
   test::TapNetworkSelectionNext();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   test::WaitForEulaScreen();
   RunEulaScreenChecks();
   test::TapEulaAccept();
@@ -538,7 +542,7 @@ void OobeInteractiveUITest::PerformSessionSignInSteps(
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   test::WaitForSyncConsentScreen();
   test::ExitScreenSyncConsent();
 #endif
@@ -639,7 +643,14 @@ void OobeZeroTouchInteractiveUITest::ZeroTouchEndToEnd() {
   WaitForLoginDisplayHostShutdown();
 }
 
-IN_PROC_BROWSER_TEST_P(OobeZeroTouchInteractiveUITest, EndToEnd) {
+// crbug.com/997987
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_EndToEnd DISABLED_EndToEnd
+#else
+#define MAYBE_EndToEnd EndToEnd
+#endif
+
+IN_PROC_BROWSER_TEST_P(OobeZeroTouchInteractiveUITest, MAYBE_EndToEnd) {
   ZeroTouchEndToEnd();
 }
 
@@ -815,7 +826,7 @@ IN_PROC_BROWSER_TEST_P(EphemeralUserOobeTest, RegularEphemeralUser) {
   WaitForGaiaSignInScreen(test_setup()->arc_state() != ArcState::kNotAvailable);
   LogInAsRegularUser();
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   test::WaitForSyncConsentScreen();
   test::ExitScreenSyncConsent();
 #endif

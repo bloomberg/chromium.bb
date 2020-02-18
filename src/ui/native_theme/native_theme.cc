@@ -33,14 +33,14 @@ void NativeTheme::NotifyObservers() {
 }
 
 NativeTheme::NativeTheme()
-    : is_dark_mode_(IsForcedDarkMode()),
+    : should_use_dark_colors_(IsForcedDarkMode()),
       is_high_contrast_(IsForcedHighContrast()),
       preferred_color_scheme_(CalculatePreferredColorScheme()) {}
 
 NativeTheme::~NativeTheme() = default;
 
-bool NativeTheme::SystemDarkModeEnabled() const {
-  return is_dark_mode_;
+bool NativeTheme::ShouldUseDarkColors() const {
+  return should_use_dark_colors_;
 }
 
 bool NativeTheme::SystemDarkModeSupported() const {
@@ -71,12 +71,40 @@ bool NativeTheme::IsForcedHighContrast() const {
 
 NativeTheme::PreferredColorScheme NativeTheme::CalculatePreferredColorScheme()
     const {
-  return SystemDarkModeEnabled() ? NativeTheme::PreferredColorScheme::kDark
-                                 : NativeTheme::PreferredColorScheme::kLight;
+  return ShouldUseDarkColors() ? NativeTheme::PreferredColorScheme::kDark
+                               : NativeTheme::PreferredColorScheme::kLight;
 }
 
 base::Optional<CaptionStyle> NativeTheme::GetSystemCaptionStyle() const {
   return CaptionStyle::FromSystemSettings();
+}
+
+const std::map<NativeTheme::SystemThemeColor, SkColor>&
+NativeTheme::GetSystemColors() const {
+  return system_colors_;
+}
+
+bool NativeTheme::HasDifferentSystemColors(
+    const std::map<NativeTheme::SystemThemeColor, SkColor>& colors) const {
+  return system_colors_ != colors;
+}
+
+void NativeTheme::set_system_colors(
+    const std::map<NativeTheme::SystemThemeColor, SkColor>& colors) {
+  system_colors_ = colors;
+}
+
+void NativeTheme::UpdateSystemColorInfo(
+    bool is_dark_mode,
+    bool is_high_contrast,
+    PreferredColorScheme preferred_color_scheme,
+    const base::flat_map<SystemThemeColor, uint32_t>& colors) {
+  set_use_dark_colors(is_dark_mode);
+  set_high_contrast(is_high_contrast);
+  set_preferred_color_scheme(preferred_color_scheme);
+  for (const auto& color : colors) {
+    system_colors_[color.first] = color.second;
+  }
 }
 
 NativeTheme::ColorSchemeNativeThemeObserver::ColorSchemeNativeThemeObserver(
@@ -88,14 +116,14 @@ NativeTheme::ColorSchemeNativeThemeObserver::~ColorSchemeNativeThemeObserver() =
 
 void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     ui::NativeTheme* observed_theme) {
-  bool is_dark_mode = observed_theme->SystemDarkModeEnabled();
+  bool should_use_dark_colors = observed_theme->ShouldUseDarkColors();
   bool is_high_contrast = observed_theme->UsesHighContrastColors();
   PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   bool notify_observers = false;
 
-  if (theme_to_update_->SystemDarkModeEnabled() != is_dark_mode) {
-    theme_to_update_->set_dark_mode(is_dark_mode);
+  if (theme_to_update_->ShouldUseDarkColors() != should_use_dark_colors) {
+    theme_to_update_->set_use_dark_colors(should_use_dark_colors);
     notify_observers = true;
   }
   if (theme_to_update_->UsesHighContrastColors() != is_high_contrast) {
@@ -107,8 +135,18 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
     notify_observers = true;
   }
 
+  const auto& system_colors = observed_theme->GetSystemColors();
+  if (theme_to_update_->HasDifferentSystemColors(system_colors)) {
+    theme_to_update_->set_system_colors(system_colors);
+    notify_observers = true;
+  }
+
   if (notify_observers)
     theme_to_update_->NotifyObservers();
+}
+
+NativeTheme::ColorScheme NativeTheme::GetSystemColorScheme() const {
+  return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
 }
 
 }  // namespace ui

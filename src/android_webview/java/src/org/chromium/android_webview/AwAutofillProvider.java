@@ -18,6 +18,8 @@ import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.base.annotations.DoNotInline;
+import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.components.autofill.AutofillProvider;
 import org.chromium.components.autofill.FormData;
 import org.chromium.components.autofill.FormFieldData;
@@ -33,7 +35,10 @@ import org.chromium.ui.display.DisplayAndroid;
  * same as how AwContents.java mapping to native AwContents, AwAutofillProvider
  * is owned by AwContents.java and AutofillProviderAndroid is owned by native
  * AwContents.
+ *
+ * DoNotInline since it causes class verification errors, see crbug.com/991851.
  */
+@DoNotInline
 @TargetApi(Build.VERSION_CODES.O)
 public class AwAutofillProvider extends AutofillProvider {
     private static class FocusField {
@@ -301,6 +306,7 @@ public class AwAutofillProvider extends AutofillProvider {
         }
         mAutofillManager.notifyNewSessionStarted();
         Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
+        if (mRequest != null) notifyViewExitBeforeDestoryRequest();
         mRequest = new AutofillRequest(formData, new FocusField((short) focus, absBound));
         int virtualId = mRequest.getVirtualId((short) focus);
         mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
@@ -376,6 +382,15 @@ public class AwAutofillProvider extends AutofillProvider {
             boolean focusOnForm, int focusField, float x, float y, float width, float height) {
         onFocusChangedImpl(
                 focusOnForm, focusField, x, y, width, height, false /*causedByValueChange*/);
+    }
+
+    private void notifyViewExitBeforeDestoryRequest() {
+        if (mRequest == null) return;
+        FocusField focusField = mRequest.getFocusField();
+        if (focusField == null) return;
+        mAutofillManager.notifyVirtualViewExited(
+                mContainerView, mRequest.getVirtualId(focusField.fieldIndex));
+        mRequest.setFocusField(null);
     }
 
     private void onFocusChangedImpl(boolean focusOnForm, int focusField, float x, float y,

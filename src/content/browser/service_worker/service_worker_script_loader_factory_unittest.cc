@@ -11,7 +11,7 @@
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/test/fake_network_url_loader_factory.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -24,14 +24,13 @@ namespace content {
 class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
  public:
   ServiceWorkerScriptLoaderFactoryTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~ServiceWorkerScriptLoaderFactoryTest() override = default;
 
   void SetUp() override {
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
     ServiceWorkerContextCore* context = helper_->context();
-    context->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    context->storage()->LazyInitializeForTest();
 
     scope_ = GURL("https://host/scope");
     script_url_ = GURL("https://host/script.js");
@@ -72,7 +71,7 @@ class ServiceWorkerScriptLoaderFactoryTest : public testing::Test {
     return loader;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   GURL scope_;
   GURL script_url_;
@@ -195,9 +194,8 @@ TEST_F(ServiceWorkerScriptLoaderFactoryCopyResumeTest,
                                                  &network_consumer));
   ServiceWorkerUpdateCheckTestUtils::CreateAndSetComparedScriptInfoForVersion(
       script_url_, 0, kNewHeaders, kNewData, kOldResourceId, kNewResourceId,
-      helper_.get(),
-      ServiceWorkerNewScriptLoader::NetworkLoaderState::kCompleted,
-      ServiceWorkerNewScriptLoader::WriterState::kCompleted,
+      helper_.get(), ServiceWorkerUpdatedScriptLoader::LoaderState::kCompleted,
+      ServiceWorkerUpdatedScriptLoader::WriterState::kCompleted,
       std::move(network_consumer),
       ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
       version_.get());

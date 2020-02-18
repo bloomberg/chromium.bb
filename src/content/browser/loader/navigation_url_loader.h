@@ -27,20 +27,22 @@ class NavigationUIData;
 class NavigationURLLoaderDelegate;
 class NavigationURLLoaderFactory;
 class PrefetchedSignedExchangeCache;
-class ResourceContext;
 class ServiceWorkerNavigationHandle;
 class StoragePartition;
 struct NavigationRequestInfo;
 
-// PlzNavigate: The navigation logic's UI thread entry point into the resource
-// loading stack. It exposes an interface to control the request prior to
-// receiving the response. If the NavigationURLLoader is destroyed before
-// OnResponseStarted is called, the request is aborted.
+// The navigation logic's UI thread entry point into the resource loading stack.
+// It exposes an interface to control the request prior to receiving the
+// response. If the NavigationURLLoader is destroyed before OnResponseStarted is
+// called, the request is aborted.
 class CONTENT_EXPORT NavigationURLLoader {
  public:
   // Creates a NavigationURLLoader. The caller is responsible for ensuring that
   // |delegate| outlives the loader. |request_body| must not be accessed on the
   // UI thread after this point.
+  //
+  // If |is_served_from_back_forward_cache| is true, a dummy
+  // CachedNavigationURLLoader will be returned.
   //
   // TODO(davidben): When navigation is disentangled from the loader, the
   // request parameters should not come in as a navigation-specific
@@ -48,7 +50,6 @@ class CONTENT_EXPORT NavigationURLLoader {
   // should_replace_current_entry shouldn't be needed at this layer.
   static std::unique_ptr<NavigationURLLoader> Create(
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
       StoragePartition* storage_partition,
       std::unique_ptr<NavigationRequestInfo> request_info,
       std::unique_ptr<NavigationUIData> navigation_ui_data,
@@ -57,6 +58,7 @@ class CONTENT_EXPORT NavigationURLLoader {
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache,
       NavigationURLLoaderDelegate* delegate,
+      bool is_served_from_back_forward_cache,
       std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
           initial_interceptors = {});
 
@@ -72,9 +74,6 @@ class CONTENT_EXPORT NavigationURLLoader {
   virtual void FollowRedirect(const std::vector<std::string>& removed_headers,
                               const net::HttpRequestHeaders& modified_headers,
                               PreviewsState new_previews_state) = 0;
-
-  // Called in response to OnResponseStarted to process the response.
-  virtual void ProceedWithResponse() = 0;
 
  protected:
   NavigationURLLoader() {}

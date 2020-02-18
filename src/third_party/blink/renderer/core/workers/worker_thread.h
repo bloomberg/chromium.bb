@@ -56,7 +56,6 @@
 namespace blink {
 
 class ConsoleMessageStorage;
-class FetchClientSettingsObjectSnapshot;
 class InspectorTaskRunner;
 class InstalledScriptsManager;
 class WorkerBackingThread;
@@ -105,8 +104,7 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // (https://crbug.com/710364)
   void Start(std::unique_ptr<GlobalScopeCreationParams>,
              const base::Optional<WorkerBackingThreadStartupData>&,
-             std::unique_ptr<WorkerDevToolsParams>,
-             ParentExecutionContextTaskRunners*);
+             std::unique_ptr<WorkerDevToolsParams>);
 
   // Posts a task to evaluate a top-level classic script on the worker thread.
   // Called on the main thread after Start().
@@ -119,16 +117,18 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   // thread. Called on the main thread after Start().
   void FetchAndRunClassicScript(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id);
 
   // Posts a task to fetch and run a top-level module script on the worker
   // thread. Called on the main thread after Start().
   void FetchAndRunModuleScript(
       const KURL& script_url,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
+      WorkerResourceTimingNotifier* outside_resource_timing_notifier,
       network::mojom::CredentialsMode);
 
   // Posts a task to the worker thread to close the global scope and terminate
@@ -208,10 +208,8 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   void WaitForShutdownForTesting();
   ExitCode GetExitCodeForTesting() LOCKS_EXCLUDED(mutex_);
-
-  ParentExecutionContextTaskRunners* GetParentExecutionContextTaskRunners()
-      const {
-    return parent_execution_context_task_runners_.Get();
+  scoped_refptr<base::SingleThreadTaskRunner> GetParentTaskRunnerForTesting() {
+    return parent_thread_default_task_runner_;
   }
 
   // For ServiceWorkerScriptStreaming. Returns nullptr otherwise.
@@ -253,6 +251,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
  protected:
   explicit WorkerThread(WorkerReportingProxy&);
+  // For service workers. When service workers are started on the IO thread
+  // Thread::Current() wouldn't be available so we need to pass the parent
+  // thread default task runner explicitly.
+  WorkerThread(WorkerReportingProxy&,
+               scoped_refptr<base::SingleThreadTaskRunner>
+                   parent_thread_default_task_runner);
 
   virtual WebThreadType GetThreadType() const = 0;
 
@@ -374,8 +378,12 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
 
   WorkerReportingProxy& worker_reporting_proxy_;
 
-  CrossThreadPersistent<ParentExecutionContextTaskRunners>
-      parent_execution_context_task_runners_;
+  // Task runner bound with the parent thread's default task queue. Be careful
+  // that a task runner may run even after the parent execution context and
+  // |this| are destroyed.
+  // This is used only for scheduling a worker termination and for testing.
+  scoped_refptr<base::SingleThreadTaskRunner>
+      parent_thread_default_task_runner_;
 
   // Tasks managed by this scheduler are canceled when the global scope is
   // closed.

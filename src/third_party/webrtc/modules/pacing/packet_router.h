@@ -39,8 +39,7 @@ class TransportFeedback;
 // module if possible (sender report), otherwise on receive module
 // (receiver report). For the latter case, we also keep track of the
 // receive modules.
-class PacketRouter : public TransportSequenceNumberAllocator,
-                     public RemoteBitrateObserver,
+class PacketRouter : public RemoteBitrateObserver,
                      public TransportFeedbackSenderInterface {
  public:
   PacketRouter();
@@ -53,24 +52,14 @@ class PacketRouter : public TransportSequenceNumberAllocator,
                            bool remb_candidate);
   void RemoveReceiveRtpModule(RtcpFeedbackSenderInterface* rtcp_sender);
 
-  virtual RtpPacketSendResult TimeToSendPacket(
-      uint32_t ssrc,
-      uint16_t sequence_number,
-      int64_t capture_timestamp,
-      bool retransmission,
-      const PacedPacketInfo& packet_info);
-
   virtual void SendPacket(std::unique_ptr<RtpPacketToSend> packet,
                           const PacedPacketInfo& cluster_info);
-
-  virtual size_t TimeToSendPadding(size_t bytes,
-                                   const PacedPacketInfo& packet_info);
 
   virtual std::vector<std::unique_ptr<RtpPacketToSend>> GeneratePadding(
       size_t target_size_bytes);
 
   void SetTransportWideSequenceNumber(uint16_t sequence_number);
-  uint16_t AllocateSequenceNumber() override;
+  uint16_t AllocateSequenceNumber();
 
   // Called every time there is a new bitrate estimate for a receive channel
   // group. This call will trigger a new RTCP REMB packet if the bitrate

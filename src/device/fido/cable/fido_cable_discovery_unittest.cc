@@ -36,40 +36,40 @@ constexpr uint8_t kTestCableVersionNumber = 0x01;
 
 // Constants required for discovering and constructing a Cable device that
 // are given by the relying party via an extension.
-constexpr EidArray kClientEid = {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
-                                  0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13,
-                                  0x14, 0x15}};
+constexpr CableEidArray kClientEid = {{0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+                                       0x07, 0x08, 0x09, 0x10, 0x11, 0x12, 0x13,
+                                       0x14, 0x15}};
 
 constexpr char kUuidFormattedClientEid[] =
     "00010203-0405-0607-0809-101112131415";
 
-constexpr EidArray kAuthenticatorEid = {{0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                                         0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-                                         0x01, 0x01, 0x01, 0x01}};
+constexpr CableEidArray kAuthenticatorEid = {
+    {0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
+     0x01, 0x01, 0x01, 0x01}};
 
-constexpr EidArray kInvalidAuthenticatorEid = {
+constexpr CableEidArray kInvalidAuthenticatorEid = {
     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
      0x00, 0x00, 0x00, 0x00}};
 
-constexpr SessionPreKeyArray kTestSessionPreKey = {
+constexpr CableSessionPreKeyArray kTestSessionPreKey = {
     {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
      0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff}};
 
 // TODO(https://crbug.com/837088): Add support for multiple EIDs on Windows.
 #if !defined(OS_WIN)
-constexpr EidArray kSecondaryClientEid = {{0x15, 0x14, 0x13, 0x12, 0x11, 0x10,
-                                           0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
-                                           0x03, 0x02, 0x01, 0x00}};
+constexpr CableEidArray kSecondaryClientEid = {
+    {0x15, 0x14, 0x13, 0x12, 0x11, 0x10, 0x09, 0x08, 0x07, 0x06, 0x05, 0x04,
+     0x03, 0x02, 0x01, 0x00}};
 
 constexpr char kUuidFormattedSecondaryClientEid[] =
     "15141312-1110-0908-0706-050403020100";
 
-constexpr EidArray kSecondaryAuthenticatorEid = {
+constexpr CableEidArray kSecondaryAuthenticatorEid = {
     {0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee, 0xee,
      0xee, 0xee, 0xee, 0xee}};
 
-constexpr SessionPreKeyArray kSecondarySessionPreKey = {
+constexpr CableSessionPreKeyArray kSecondarySessionPreKey = {
     {0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
      0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd}};
@@ -165,7 +165,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
                     const AdvertisementErrorCallback&));
 
   void AddNewTestBluetoothDevice(
-      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
+      base::span<const uint8_t, kCableEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
 
     std::vector<uint8_t> service_data(18);
@@ -189,7 +189,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void AddNewTestAppleBluetoothDevice(
-      base::span<const uint8_t, kEphemeralIdSize> authenticator_eid) {
+      base::span<const uint8_t, kCableEphemeralIdSize> authenticator_eid) {
     auto mock_device = CreateTestBluetoothDevice();
     // Apple doesn't allow advertising service data, so we advertise a 16 bit
     // UUID plus the EID converted into 128 bit UUID.
@@ -247,7 +247,7 @@ class CableMockAdapter : public MockBluetoothAdapter {
   }
 
   void ExpectDiscoveryWithScanCallback(
-      base::span<const uint8_t, kEphemeralIdSize> eid,
+      base::span<const uint8_t, kCableEphemeralIdSize> eid,
       bool is_apple_device = false) {
     EXPECT_CALL(*this, StartScanWithFilter_(_, _))
         .WillOnce(
@@ -266,12 +266,12 @@ class CableMockAdapter : public MockBluetoothAdapter {
   ~CableMockAdapter() override = default;
 };
 
-class FakeHandshakeHandler : public FidoCableHandshakeHandler {
+class FakeHandshakeHandler : public FidoCableV1HandshakeHandler {
  public:
   FakeHandshakeHandler(FidoCableDevice* device,
                        base::span<const uint8_t, 8> nonce,
                        base::span<const uint8_t, 32> session_pre_key)
-      : FidoCableHandshakeHandler(device, nonce, session_pre_key) {}
+      : FidoCableV1HandshakeHandler(device, nonce, session_pre_key) {}
   ~FakeHandshakeHandler() override = default;
 
   void InitiateCableHandshake(FidoDevice::DeviceCallback callback) override {
@@ -291,16 +291,26 @@ class FakeFidoCableDiscovery : public FidoCableDiscovery {
  public:
   explicit FakeFidoCableDiscovery(
       std::vector<CableDiscoveryData> discovery_data)
-      : FidoCableDiscovery(std::move(discovery_data)) {}
+      : FidoCableDiscovery(std::move(discovery_data), BogusQRGeneratorKey()) {}
   ~FakeFidoCableDiscovery() override = default;
 
  private:
-  std::unique_ptr<FidoCableHandshakeHandler> CreateHandshakeHandler(
-      FidoCableDevice* device,
-      base::span<const uint8_t, kSessionPreKeySize> session_pre_key,
-      base::span<const uint8_t, 8> nonce) override {
-    return std::make_unique<FakeHandshakeHandler>(device, nonce,
-                                                  session_pre_key);
+  base::Optional<std::unique_ptr<FidoCableHandshakeHandler>>
+  CreateHandshakeHandler(FidoCableDevice* device,
+                         const CableDiscoveryData* discovery_data) override {
+    // Nonce is embedded as first 8 bytes of client EID.
+    std::array<uint8_t, 8> nonce;
+    const bool ok =
+        fido_parsing_utils::ExtractArray(discovery_data->client_eid, 0, &nonce);
+    DCHECK(ok);
+    return std::make_unique<FakeHandshakeHandler>(
+        device, nonce, discovery_data->session_pre_key);
+  }
+
+  static std::array<uint8_t, 32> BogusQRGeneratorKey() {
+    std::array<uint8_t, 32> ret;
+    memset(ret.data(), 0, ret.size());
+    return ret;
   }
 };
 
@@ -315,7 +325,7 @@ class FidoCableDiscoveryTest : public ::testing::Test {
     return std::make_unique<FakeFidoCableDiscovery>(std::move(discovery_data));
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // Tests regular successful discovery flow for Cable device.
@@ -334,7 +344,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests successful discovery flow for Apple Cable device.
@@ -353,7 +363,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsNewAppleDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests a scenario where upon broadcasting advertisement and scanning, client
@@ -374,7 +384,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryFindsIncorrectDevice) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Windows currently does not support multiple EIDs, so the following tests are
@@ -413,7 +423,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithMultipleEids) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Tests a scenario where only one of the two client EID's are advertised
@@ -446,7 +456,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithPartialAdvertisementSuccess) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Test the scenario when all advertisement for client EID's fails.
@@ -478,7 +488,7 @@ TEST_F(FidoCableDiscoveryTest, TestDiscoveryWithAdvertisementFailures) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_TRUE(cable_discovery->advertisements_.empty());
 }
 #endif  // !defined(OS_WIN)
@@ -499,7 +509,7 @@ TEST_F(FidoCableDiscoveryTest, TestUnregisterAdvertisementUponDestruction) {
 
   BluetoothAdapterFactory::SetAdapterForTesting(mock_adapter);
   cable_discovery->Start();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_EQ(1u, cable_discovery->advertisements_.size());
   cable_discovery.reset();

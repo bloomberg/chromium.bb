@@ -16,18 +16,38 @@ class Panel {
 
     /**
      * Reference to switch access.
-     * @private {SwitchAccess}
+     * @private {SwitchAccessInterface}
      */
     this.switchAccess_;
+
+    /**
+     * Reference to the menu panel element.
+     * @private {Element}
+     */
+    this.panel_;
+
+    /**
+     * ID of the current menu being shown in the menu panel.
+     * @private {?SAConstants.MenuId}
+     */
+    this.currentMenuId_;
   }
 
   /**
    * Initialize the panel and buttons.
    */
   init() {
-    const div = document.getElementById(SAConstants.MENU_ID);
-    for (const button of div.children)
-      this.setupButton_(button);
+    this.panel_ = document.getElementById(SAConstants.MENU_PANEL_ID);
+
+    let menuList = Object.values(SAConstants.MenuId);
+    for (const menuId of menuList) {
+      this.updateButtonOrder_(menuId);
+
+      const menu = document.getElementById(menuId);
+      for (const button of menu.children) {
+        this.setupButton_(button);
+      }
+    }
 
     const background = chrome.extension.getBackgroundPage();
     if (background.document.readyState === 'complete')
@@ -48,7 +68,8 @@ class Panel {
   }
 
   /**
-   * Adds an event listener to the given button to send a message when clicked.
+   * Adds an event listener to the given button to perform
+   * the corresponding menu action when clicked.
    * @param {!Element} button
    * @private
    */
@@ -57,6 +78,14 @@ class Panel {
     button.addEventListener('click', function(action) {
       this.menuManager_.performAction(action);
     }.bind(this, action));
+  }
+
+  /**
+   * Get the HTML element for the back button.
+   * @return {Element}
+   */
+  backButtonElement() {
+    return document.getElementById(SAConstants.BACK_ID);
   }
 
   /**
@@ -73,15 +102,103 @@ class Panel {
   }
 
   /**
-   * Sets which buttons are enabled/disabled, based on |actions|.
+   * Sets the actions in the menu panel to the actions in |actions| from
+   * the menu with the given |menuId|.
    * @param {!Array<string>} actions
+   * @param {!SAConstants.MenuId} menuId
+   * @public
    */
-  setActions(actions) {
-    const div = document.getElementById(SAConstants.MENU_ID);
-    for (const button of div.children)
+  setActions(actions, menuId) {
+    const menu = document.getElementById(menuId);
+    const menuButtons = Array.from(menu.children);
+
+    // Add the menu to the panel if it is not already being shown.
+    if (menuId !== this.currentMenuId_) {
+      this.clear();
+      this.panel_.appendChild(menu);
+    }
+
+    // Hide menu actions not applicable to the current node.
+    for (const button of menuButtons) {
       button.hidden = !actions.includes(button.id);
+    }
+
+    this.currentMenuId_ = menuId;
 
     this.setHeight_(actions.length);
+  }
+
+  /**
+   * Clears the current menu from the panel.
+   * @public
+   */
+  clear() {
+    if (this.currentMenuId_) {
+      const menu = document.getElementById(this.currentMenuId_);
+      document.body.appendChild(menu);
+
+      this.currentMenuId_ = null;
+    }
+  }
+
+  /**
+   * Get the id of the current menu being shown in the panel. A null
+   * id indicates that no menu is currently being shown in the panel.
+   * @return {?SAConstants.MenuId}
+   * @public
+   */
+  currentMenuId() {
+    return this.currentMenuId_;
+  }
+
+  /**
+   * Update the position attributes of the buttons based on the order of IDs
+   * in the button order array parameter.
+   * TODO(b/994256) : Use this to set custom menu orders for users.
+   * @param {!Array<string>} buttonOrder
+   * @private
+   */
+  updatePositionAttributes_(buttonOrder, menuId) {
+    this.menuManager_.exit();
+    for (let pos = 0; pos < buttonOrder.length; pos++) {
+      let buttonPosition = pos;
+      let button = document.getElementById(buttonOrder[pos]);
+      button.setAttribute('data-position', String(buttonPosition));
+    }
+    this.updateButtonOrder_(menuId);
+  }
+
+  /**
+   * Update the order of the buttons based on their position attributes.
+   * Lower numbers will be put into the menu first.
+   * @param {string} menuId
+   * @private
+   */
+  updateButtonOrder_(menuId) {
+    let buttonList = document.getElementById(menuId);
+    let menuButtons = buttonList.children;
+    // Call slice() on menuButtons indirectly, as .children returns an
+    // HTMLCollection rather than an array.
+    let buttonArray = [].slice.call(menuButtons);
+    buttonArray.sort(this.buttonComesBefore_);
+    for (const button of buttonArray) {
+      if (button.id) {
+        buttonList.appendChild(button);
+      }
+    }
+  }
+
+  /**
+   * Compare buttonA's and buttonB's position attributes and return the
+   * difference.
+   * Used to sort the array of buttons in terms of position attribute.
+   * @param {!Element} buttonA
+   * @param {!Element} buttonB
+   */
+  buttonComesBefore_(buttonA, buttonB) {
+    const buttonAPos = parseInt(buttonA.getAttribute('data-position'), 10);
+    const buttonBPos = parseInt(buttonB.getAttribute('data-position'), 10);
+    return buttonAPos - buttonBPos;
   }
 
   /**
@@ -114,18 +231,18 @@ class Panel {
 
     let rowHeight;
 
-    if (this.switchAccess_.textEditingEnabled()) {
+    if (this.switchAccess_.improvedTextInputEnabled()) {
       rowHeight = 85;
       const actions = document.getElementsByClassName('action');
       for (let action of actions) {
-        action.classList.add('textEditingEnabled');
+        action.classList.add('improvedTextInputEnabled');
       }
     } else {
       rowHeight = 60;
     }
 
     const height = rowHeight * numRows;
-    document.getElementById(SAConstants.MENU_ID).style.height = height + 'px';
+    this.panel_.style.height = height + 'px';
   }
 
   /**

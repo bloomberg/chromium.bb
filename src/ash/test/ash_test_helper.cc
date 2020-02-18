@@ -36,6 +36,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
+#include "base/system/sys_info.h"
 #include "base/token.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/audio/cras_audio_client.h"
@@ -54,7 +55,6 @@
 #include "ui/aura/window.h"
 #include "ui/base/ime/init/input_method_initializer.h"
 #include "ui/base/material_design/material_design_controller.h"
-#include "ui/base/platform_window_defaults.h"
 #include "ui/base/ui_base_switches_util.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/test/test_context_factories.h"
@@ -63,6 +63,7 @@
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"
+#include "ui/platform_window/common/platform_window_defaults.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/cursor_manager.h"
 #include "ui/wm/core/wm_state.h"
@@ -84,7 +85,8 @@ void AshTestHelper::SetUp(const InitParams& init_params,
   // TODO(jamescook): Can we do this without changing command line?
   // Use the origin (1,1) so that it doesn't over
   // lap with the native mouse cursor.
-  if (!command_line_->GetProcessCommandLine()->HasSwitch(
+  if (!base::SysInfo::IsRunningOnChromeOS() &&
+      !command_line_->GetProcessCommandLine()->HasSwitch(
           ::switches::kHostWindowBounds)) {
     // TODO(oshima): Disable native events instead of adding offset.
     command_line_->GetProcessCommandLine()->AppendSwitchASCII(
@@ -174,7 +176,7 @@ void AshTestHelper::SetUp(const InitParams& init_params,
 
   assistant_service_ = std::make_unique<TestAssistantService>();
   shell->assistant_controller()->SetAssistant(
-      assistant_service_->CreateInterfacePtrAndBind());
+      assistant_service_->CreateInterfacePtrAndBind().PassInterface());
 
   system_tray_client_ = std::make_unique<TestSystemTrayClient>();
   shell->system_tray_model()->SetClient(system_tray_client_.get());
@@ -297,7 +299,7 @@ aura::Window* AshTestHelper::CurrentContext() {
   return root_window;
 }
 
-display::Display AshTestHelper::GetSecondaryDisplay() {
+display::Display AshTestHelper::GetSecondaryDisplay() const {
   return Shell::Get()->display_manager()->GetSecondaryDisplay();
 }
 

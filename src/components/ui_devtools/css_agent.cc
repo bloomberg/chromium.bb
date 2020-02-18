@@ -6,6 +6,7 @@
 
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "components/ui_devtools/agent_util.h"
 #include "components/ui_devtools/ui_element.h"
 
 namespace ui_devtools {
@@ -19,13 +20,24 @@ const char kX[] = "x";
 const char kY[] = "y";
 const char kVisibility[] = "visibility";
 
-std::unique_ptr<CSS::SourceRange> BuildDefaultSourceRange() {
+std::unique_ptr<CSS::SourceRange> BuildDefaultPropertySourceRange() {
   // These tell the frontend where in the stylesheet a certain style
   // is located. Since we don't have stylesheets, this is all 0.
   // We need this because CSS fields are not editable unless
   // the range is provided.
   return CSS::SourceRange::create()
       .setStartLine(0)
+      .setEndLine(0)
+      .setStartColumn(0)
+      .setEndColumn(0)
+      .build();
+}
+
+std::unique_ptr<CSS::SourceRange> BuildDefaultSelectorSourceRange() {
+  // This is a different source range from BuildDefaultPropertySourceRange()
+  // used for the Selectors, so the frontend correctly handles property edits.
+  return CSS::SourceRange::create()
+      .setStartLine(1)
       .setEndLine(0)
       .setStartColumn(0)
       .setEndColumn(0)
@@ -44,7 +56,7 @@ std::unique_ptr<protocol::Array<int>> BuildDefaultMatchingSelectors() {
 std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
                                                    const std::string& value) {
   return CSS::CSSProperty::create()
-      .setRange(BuildDefaultSourceRange())
+      .setRange(BuildDefaultPropertySourceRange())
       .setName(name)
       .setValue(value)
       .build();
@@ -64,7 +76,7 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
     std::string stylesheet_uid,
     const std::vector<UIElement::UIProperty>& properties) {
   return protocol::CSS::CSSStyle::create()
-      .setRange(BuildDefaultSourceRange())
+      .setRange(BuildDefaultPropertySourceRange())
       .setCssProperties(BuildCSSProperties(properties))
       .setShorthandEntries(
           std::make_unique<Array<protocol::CSS::ShorthandEntry>>())
@@ -75,7 +87,10 @@ std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
 std::unique_ptr<protocol::Array<protocol::CSS::Value>> BuildSelectors(
     const std::string& name) {
   auto selectors = std::make_unique<protocol::Array<protocol::CSS::Value>>();
-  selectors->emplace_back(protocol::CSS::Value::create().setText(name).build());
+  selectors->emplace_back(protocol::CSS::Value::create()
+                              .setText(name)
+                              .setRange(BuildDefaultSelectorSourceRange())
+                              .build());
   return selectors;
 }
 
@@ -90,6 +105,7 @@ std::unique_ptr<protocol::CSS::CSSRule> BuildCSSRule(
     std::string stylesheet_uid,
     const UIElement::ClassProperties& class_properties) {
   return protocol::CSS::CSSRule::create()
+      .setStyleSheetId(stylesheet_uid)
       .setSelectorList(BuildSelectorList(class_properties.class_name_))
       .setStyle(BuildCSSStyle(stylesheet_uid, class_properties.properties_))
       .build();
@@ -141,6 +157,10 @@ Response ParseProperties(const std::string& style_text,
                          bool* visible) {
   std::vector<std::string> tokens = base::SplitString(
       style_text, ":;", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
+  if (tokens.size() < 2 || tokens.size() % 2 != 0)
+    return Response::Error("Need both a property name and value.");
+
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
     const std::string& property = tokens.at(i);
     int value;
@@ -161,6 +181,21 @@ Response ParseProperties(const std::string& style_text,
       return Response::Error("Unsupported property=" + property);
   }
   return Response::OK();
+}
+
+std::unique_ptr<protocol::CSS::CSSStyleSheetHeader>
+BuildObjectForStyleSheetInfo(std::string stylesheet_uid,
+                             std::string url_path,
+                             int line) {
+  std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
+      protocol::CSS::CSSStyleSheetHeader::create()
+          .setStyleSheetId(stylesheet_uid)
+          .setSourceURL(kChromiumCodeSearchSrcURL + url_path +
+                        "?l=" + base::NumberToString(line))
+          .setStartLine(line)
+          .setStartColumn(0)
+          .build();
+  return result;
 }
 
 }  // namespace
@@ -192,6 +227,29 @@ Response CSSAgent::getMatchedStylesForNode(
     return NodeNotFoundError(node_id);
   *matched_css_rules = BuildMatchedStyles(ui_element);
   return Response::OK();
+}
+
+Response CSSAgent::getStyleSheetText(const protocol::String& style_sheet_id,
+                                     protocol::String* result) {
+  int node_id;
+  int stylesheet_id;
+  std::vector<std::string> ids = base::SplitString(
+      style_sheet_id, "_", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+  if (ids.size() < 2 || !base::StringToInt(ids[0], &node_id) ||
+      !base::StringToInt(ids[1], &stylesheet_id))
+    return Response::Error("Invalid stylesheet id");
+
+  UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
+  if (!ui_element)
+    return Response::Error("Node id not found");
+
+  auto sources = ui_element->GetSources();
+  if (static_cast<int>(sources.size()) <= stylesheet_id)
+    return Response::Error("Stylesheet id not found");
+
+  if (GetSourceCode(sources[stylesheet_id].path_, result))
+    return protocol::Response::OK();
+  return protocol::Response::Error("Could not read source file");
 }
 
 Response CSSAgent::setStyleTexts(
@@ -287,8 +345,20 @@ CSSAgent::BuildMatchedStyles(UIElement* ui_element) {
             .setMatchingSelectors(BuildDefaultMatchingSelectors())
             .build());
   }
-
+  if (!ui_element->header_sent()) {
+    InitStylesheetHeaders(ui_element);
+  }
   return result;
+}
+
+void CSSAgent::InitStylesheetHeaders(UIElement* ui_element) {
+  std::vector<UIElement::Source> sources = ui_element->GetSources();
+  for (size_t i = 0; i < sources.size(); i++) {
+    frontend()->styleSheetAdded(BuildObjectForStyleSheetInfo(
+        BuildStylesheetUId(ui_element->node_id(), i), sources[i].path_,
+        sources[i].line_));
+  }
+  ui_element->set_header_sent();
 }
 
 }  // namespace ui_devtools

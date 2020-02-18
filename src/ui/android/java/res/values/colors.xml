@@ -67,12 +67,18 @@
     <color name="dropdown_divider_color">#E5E5E5</color>
     <color name="dropdown_dark_divider_color">#C0C0C0</color>
 
+    <!-- Snackbar colors -->
+    <color name="snackbar_background_color" tools:ignore="UnusedResources">@color/modern_primary_color</color>
+
+    <!-- Bottom sheet colors -->
+    <color name="sheet_bg_color" tools:ignore="UnusedResources">@color/modern_primary_color</color>
+
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_600</color>
 
     <!-- Chip colors -->
     <color name="chip_text_color_default">@color/default_text_color</color>
-    <color name="chip_text_color_selected">@color/default_text_color_link</color>
+    <color name="chip_text_color_selected">@color/modern_blue_700</color>
     <color name="chip_text_color_secondary_default">@color/default_text_color_secondary</color>
     <color name="chip_background_color_disabled">@color/modern_grey_100_alpha_38</color>
     <color name="chip_ripple_color_default">@color/modern_grey_800</color>

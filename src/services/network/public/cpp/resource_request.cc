@@ -8,6 +8,16 @@
 
 namespace network {
 
+ResourceRequest::TrustedParams::TrustedParams() = default;
+ResourceRequest::TrustedParams::~TrustedParams() = default;
+
+bool ResourceRequest::TrustedParams::operator==(
+    const TrustedParams& other) const {
+  return network_isolation_key == other.network_isolation_key &&
+         update_network_isolation_key_on_redirect ==
+             other.update_network_isolation_key_on_redirect;
+}
+
 ResourceRequest::ResourceRequest() {}
 ResourceRequest::ResourceRequest(const ResourceRequest& request) = default;
 ResourceRequest::~ResourceRequest() {}
@@ -16,26 +26,18 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
   return method == request.method && url == request.url &&
          site_for_cookies == request.site_for_cookies &&
          top_frame_origin == request.top_frame_origin &&
-         trusted_network_isolation_key ==
-             request.trusted_network_isolation_key &&
-         update_network_isolation_key_on_redirect ==
-             request.update_network_isolation_key_on_redirect &&
          attach_same_site_cookies == request.attach_same_site_cookies &&
          update_first_party_url_on_redirect ==
              request.update_first_party_url_on_redirect &&
          request_initiator == request.request_initiator &&
          referrer == request.referrer &&
          referrer_policy == request.referrer_policy &&
-         is_prerendering == request.is_prerendering &&
          headers.ToString() == request.headers.ToString() &&
          cors_exempt_headers.ToString() ==
              request.cors_exempt_headers.ToString() &&
          load_flags == request.load_flags &&
-         allow_credentials == request.allow_credentials &&
-         plugin_child_id == request.plugin_child_id &&
          resource_type == request.resource_type &&
          priority == request.priority &&
-         appcache_host_id == request.appcache_host_id &&
          should_reset_appcache == request.should_reset_appcache &&
          is_external_request == request.is_external_request &&
          cors_preflight_policy == request.cors_preflight_policy &&
@@ -57,10 +59,8 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          render_frame_id == request.render_frame_id &&
          is_main_frame == request.is_main_frame &&
          transition_type == request.transition_type &&
-         allow_download == request.allow_download &&
          report_raw_headers == request.report_raw_headers &&
          previews_state == request.previews_state &&
-         initiated_in_secure_context == request.initiated_in_secure_context &&
          upgrade_if_insecure == request.upgrade_if_insecure &&
          is_revalidating == request.is_revalidating &&
          should_also_use_factory_bound_origin_for_cors ==
@@ -75,15 +75,19 @@ bool ResourceRequest::EqualsForTesting(const ResourceRequest& request) const {
          fetch_window_id == request.fetch_window_id &&
          devtools_request_id == request.devtools_request_id &&
          is_signed_exchange_prefetch_cache_enabled ==
-             request.is_signed_exchange_prefetch_cache_enabled;
+             request.is_signed_exchange_prefetch_cache_enabled &&
+         obey_origin_policy == request.obey_origin_policy &&
+         trusted_params == trusted_params;
 }
 
 bool ResourceRequest::SendsCookies() const {
-  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
+  return credentials_mode == network::mojom::CredentialsMode::kInclude &&
+         !(load_flags & net::LOAD_DO_NOT_SEND_COOKIES);
 }
 
 bool ResourceRequest::SavesCookies() const {
-  return allow_credentials && !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
+  return credentials_mode == network::mojom::CredentialsMode::kInclude &&
+         !(load_flags & net::LOAD_DO_NOT_SAVE_COOKIES);
 }
 
 }  // namespace network

@@ -24,6 +24,8 @@
  */
 
 #include "third_party/blink/renderer/modules/webaudio/audio_node.h"
+
+#include "third_party/blink/renderer/modules/webaudio/audio_graph_tracer.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_input.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_options.h"
 #include "third_party/blink/renderer/modules/webaudio/audio_node_output.h"
@@ -377,8 +379,6 @@ void AudioHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
   deferred_task_handler_->AssertGraphOwner();
 
   DCHECK(inputs_.Contains(input));
-  if (!inputs_.Contains(input))
-    return;
 
   input->UpdateInternalBus();
 }
@@ -442,6 +442,14 @@ void AudioHandler::DisableOutputsIfNecessary() {
   // This function calls other functions that require graph ownership,
   // so assert that this needs graph ownership too.
   deferred_task_handler_->AssertGraphOwner();
+
+#if DEBUG_AUDIONODE_REFERENCES > 1
+  fprintf(stderr,
+          "[%16p]: %16p: %2d: DisableOutputsIfNecessary is_disabled %d count %d"
+          " tail %d\n",
+          Context(), this, GetNodeType(), is_disabled_, connection_ref_count_,
+          RequiresTailProcessing());
+#endif
 
   // Disable outputs if appropriate. We do this if the number of connections is
   // 0 or 1. The case of 0 is from deref() where there are no connections left.
@@ -577,7 +585,7 @@ unsigned AudioHandler::NumberOfOutputChannels() const {
 // ----------------------------------------------------------------
 
 AudioNode::AudioNode(BaseAudioContext& context)
-    : InspectorHelperMixin(context.Uuid()),
+    : InspectorHelperMixin(context.GraphTracer(), context.Uuid()),
       context_(context),
       deferred_task_handler_(&context.GetDeferredTaskHandler()),
       handler_(nullptr) {}
@@ -621,11 +629,22 @@ void AudioNode::Dispose() {
           std::move(handler_));
     }
   }
+
+  // Notify the inspector that this node is going away. The actual clean up
+  // will be done in the subclass implementation.
+  ReportWillBeDestroyed();
 }
 
 void AudioNode::SetHandler(scoped_refptr<AudioHandler> handler) {
   DCHECK(handler);
   handler_ = std::move(handler);
+
+  // Unless the node is an AudioDestinationNode, notify the inspector that the
+  // construction is completed. The actual report will be done in the subclass
+  // implementation. (A destination node is owned by the context and will be
+  // reported by it.)
+  if (handler_->GetNodeType() != AudioHandler::NodeType::kNodeTypeDestination)
+    ReportDidCreate();
 
 #if DEBUG_AUDIONODE_REFERENCES
   fprintf(stderr, "[%16p]: %16p: %2d: AudioNode::AudioNode %16p\n", context(),
@@ -645,6 +664,7 @@ void AudioNode::Trace(blink::Visitor* visitor) {
   visitor->Trace(context_);
   visitor->Trace(connected_nodes_);
   visitor->Trace(connected_params_);
+  InspectorHelperMixin::Trace(visitor);
   EventTargetWithInlineData::Trace(visitor);
 }
 
@@ -728,6 +748,8 @@ AudioNode* AudioNode::connect(AudioNode* destination,
 
   Handler().UpdatePullStatusIfNeeded();
 
+  GraphTracer().DidConnectNodes(this, destination, output_index, input_index);
+
   return destination;
 }
 
@@ -770,6 +792,8 @@ void AudioNode::connect(AudioParam* param,
   connected_params_[output_index]->insert(param);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidConnectNodeParam(this, param, output_index);
 }
 
 void AudioNode::DisconnectAllFromOutput(unsigned output_index) {
@@ -811,6 +835,8 @@ void AudioNode::disconnect() {
     DisconnectAllFromOutput(i);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this);
 }
 
 void AudioNode::disconnect(unsigned output_index,
@@ -832,6 +858,8 @@ void AudioNode::disconnect(unsigned output_index,
   DisconnectAllFromOutput(output_index);
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, nullptr, output_index);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -862,6 +890,8 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, destination);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -900,6 +930,8 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(this, destination, output_index);
 }
 
 void AudioNode::disconnect(AudioNode* destination,
@@ -941,6 +973,9 @@ void AudioNode::disconnect(AudioNode* destination,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodes(
+      this, destination, output_index, input_index);
 }
 
 void AudioNode::disconnect(AudioParam* destination_param,
@@ -967,6 +1002,8 @@ void AudioNode::disconnect(AudioParam* destination_param,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodeParam(this, destination_param);
 }
 
 void AudioNode::disconnect(AudioParam* destination_param,
@@ -996,6 +1033,8 @@ void AudioNode::disconnect(AudioParam* destination_param,
   }
 
   Handler().UpdatePullStatusIfNeeded();
+
+  GraphTracer().DidDisconnectNodeParam(this, destination_param, output_index);
 }
 
 unsigned AudioNode::numberOfInputs() const {

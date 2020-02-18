@@ -274,15 +274,6 @@ class NET_EXPORT URLRequestContextBuilder {
   // URLRequestContext.
   void SetHttpAuthHandlerFactory(
       std::unique_ptr<HttpAuthHandlerFactory> factory);
-  // Makes the created URLRequestContext use a shared HttpAuthHandlerFactory
-  // object. Not compatible with SetHttpAuthHandlerFactory(). The consumer must
-  // ensure the HttpAuthHandlerFactory outlives the URLRequestContext returned
-  // by the builder.
-  //
-  // TODO(mmenke): Evaluate if sharing is really needed. See:
-  // https://crbug.com/743251.
-  void set_shared_http_auth_handler_factory(
-      HttpAuthHandlerFactory* shared_http_auth_handler_factory);
 
   // By default HttpCache is enabled with a default constructed HttpCacheParams.
   void EnableHttpCache(const HttpCacheParams& params);
@@ -297,6 +288,11 @@ class NET_EXPORT URLRequestContextBuilder {
   void set_transport_security_persister_path(
       const base::FilePath& transport_security_persister_path) {
     transport_security_persister_path_ = transport_security_persister_path;
+  }
+
+  void set_hsts_policy_bypass_list(
+      const std::vector<std::string>& hsts_policy_bypass_list) {
+    hsts_policy_bypass_list_ = hsts_policy_bypass_list;
   }
 
   void SetSpdyAndQuicEnabled(bool spdy_enabled,
@@ -397,6 +393,7 @@ class NET_EXPORT URLRequestContextBuilder {
   HttpNetworkSession::Params http_network_session_params_;
   CreateHttpTransactionFactoryCallback create_http_network_transaction_factory_;
   base::FilePath transport_security_persister_path_;
+  std::vector<std::string> hsts_policy_bypass_list_;
   NetLog* net_log_ = nullptr;
   std::unique_ptr<HostResolver> host_resolver_;
   std::string host_mapping_rules_;
@@ -411,7 +408,6 @@ class NET_EXPORT URLRequestContextBuilder {
   std::unique_ptr<ProxyDelegate> proxy_delegate_;
   std::unique_ptr<CookieStore> cookie_store_;
   std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpAuthHandlerFactory* shared_http_auth_handler_factory_ = nullptr;
   std::unique_ptr<CertVerifier> cert_verifier_;
   CertVerifier* shared_cert_verifier_ = nullptr;
   std::unique_ptr<CTVerifier> ct_verifier_;

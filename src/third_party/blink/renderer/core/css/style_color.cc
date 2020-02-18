@@ -8,13 +8,14 @@
 
 namespace blink {
 
-Color StyleColor::ColorFromKeyword(CSSValueID keyword) {
+Color StyleColor::ColorFromKeyword(CSSValueID keyword,
+                                   WebColorScheme color_scheme) {
   if (const char* value_name = getValueName(keyword)) {
     if (const NamedColor* named_color =
             FindColor(value_name, static_cast<wtf_size_t>(strlen(value_name))))
       return Color(named_color->argb_value);
   }
-  return LayoutTheme::GetTheme().SystemColor(keyword);
+  return LayoutTheme::GetTheme().SystemColor(keyword, color_scheme);
 }
 
 bool StyleColor::IsColorKeyword(CSSValueID id) {
@@ -48,7 +49,8 @@ bool StyleColor::IsColorKeyword(CSSValueID id) {
 
 bool StyleColor::IsSystemColor(CSSValueID id) {
   return (id >= CSSValueID::kActiveborder && id <= CSSValueID::kWindowtext) ||
-         id == CSSValueID::kMenu;
+         id == CSSValueID::kMenu || id == CSSValueID::kLinktext ||
+         id == CSSValueID::kVisitedtext;
 }
 
 }  // namespace blink

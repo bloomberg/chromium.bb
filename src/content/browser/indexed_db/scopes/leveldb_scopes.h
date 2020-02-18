@@ -41,16 +41,27 @@ class ScopesLockManager;
 
 class CONTENT_EXPORT LevelDBScopes {
  public:
-  using FailureCallback = base::RepeatingCallback<void(leveldb::Status)>;
+  using TearDownCallback = base::RepeatingCallback<void(leveldb::Status)>;
+  using EmptyRange = std::pair<std::string, std::string>;
   static constexpr const size_t kDefaultMaxWriteBatchSizeBytes = 1024 * 1024;
 
+  enum class TaskRunnerMode {
+    // No new sequence runners are created. Both the cleanup and the revert
+    // tasks are run using the sequence runner that is calling this class.
+    kUseCurrentSequence,
+    // A new sequence runner is created for both the cleanup tasks and the
+    // revert tasks.
+    kNewCleanupAndRevertSequences,
+  };
+
   // |lock_manager| is expected to be alive during the lifetime of this class.
-  // |failure_callback| will not be called after the destruction of this class.
+  // |tear_down_callback| will not be called after the destruction of this
+  // class.
   LevelDBScopes(std::vector<uint8_t> metadata_key_prefix,
                 size_t max_write_batch_size_bytes_bytes,
                 scoped_refptr<LevelDBState> level_db,
                 ScopesLockManager* lock_manager,
-                FailureCallback failure_callback);
+                TearDownCallback tear_down_callback);
   ~LevelDBScopes();
 
   // This method needs to be called before any other method on this class. If
@@ -58,18 +69,28 @@ class CONTENT_EXPORT LevelDBScopes {
   // the revert tasks if necessary.
   leveldb::Status Initialize();
 
-  // This starts the task runners associated with aborting and cleaning up
-  // previous logs, and runs any pending cleanup or revert tasks.
-  void StartRecoveryAndCleanupTasks();
+  // This starts (or adopts) the task runners associated with aborting and
+  // cleaning up previous logs based on the given |mode|, and schedules any
+  // pending cleanup or revert tasks.
+  // Returns any errors that might occur during revert if |mode| is
+  // kUseCurrentSequence.
+  leveldb::Status StartRecoveryAndCleanupTasks(TaskRunnerMode mode);
 
   // In |empty_ranges|, |pair.first| is the inclusive range begin, and
   // |pair.end| is the exclusive range end. The ranges must be disjoint (they
   // cannot overlap).
   std::unique_ptr<LevelDBScope> CreateScope(
       std::vector<ScopeLock> locks,
-      std::vector<std::pair<std::string, std::string>> empty_ranges);
+      std::vector<EmptyRange> empty_ranges);
 
-  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope);
+  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope,
+                         bool sync_on_commit);
+
+  // |on_complete| will be called when the cleanup task for the scope has
+  // finished operating.
+  leveldb::Status Commit(std::unique_ptr<LevelDBScope> scope,
+                         bool sync_on_commit,
+                         base::OnceClosure on_complete);
 
   base::SequencedTaskRunner* RevertRunnerForTesting() const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -80,6 +101,12 @@ class CONTENT_EXPORT LevelDBScopes {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return cleanup_runner_.get();
   }
+
+  const std::vector<uint8_t>& metadata_key_prefix() const {
+    return metadata_key_prefix_;
+  }
+
+  const TearDownCallback& tear_down_callback() { return tear_down_callback_; }
 
  private:
   enum class StartupCleanupType { kExecuteCleanupTasks, kIgnoreCleanupTasks };
@@ -94,9 +121,12 @@ class CONTENT_EXPORT LevelDBScopes {
       const leveldb::ReadOptions& read_options,
       const leveldb::WriteOptions& write_options);
 
-  void Rollback(int64_t scope_id, std::vector<ScopeLock> locks);
+  // If the mode is TaskRunnerMode::kUseCurrentSequence, then the result of the
+  // revert task is returned.
+  leveldb::Status Rollback(int64_t scope_id, std::vector<ScopeLock> locks);
 
-  void OnCleanupTaskResult(leveldb::Status result);
+  void OnCleanupTaskResult(base::OnceClosure on_complete,
+                           leveldb::Status result);
 
   void StartRevertTask(int64_t scope_id, std::vector<ScopeLock> locks);
 
@@ -118,7 +148,7 @@ class CONTENT_EXPORT LevelDBScopes {
   scoped_refptr<LevelDBState> level_db_;
   // The |lock_manager_| is expected to outlive this class.
   ScopesLockManager* lock_manager_;
-  FailureCallback failure_callback_;
+  TearDownCallback tear_down_callback_;
 
 #if DCHECK_IS_ON()
   bool initialize_called_ = false;

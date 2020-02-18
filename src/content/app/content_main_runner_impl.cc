@@ -29,7 +29,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/metrics/field_trial.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_base.h"
 #include "base/path_service.h"
 #include "base/power_monitor/power_monitor.h"
@@ -40,7 +39,6 @@
 #include "base/process/process_handle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
@@ -57,6 +55,7 @@
 #include "content/common/content_constants_internal.h"
 #include "content/common/url_schemes.h"
 #include "content/public/app/content_main_delegate.h"
+#include "content/public/browser/system_connector.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_descriptor_keys.h"
 #include "content/public/common/content_features.h"
@@ -70,6 +69,9 @@
 #include "media/media_buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
+#include "services/resource_coordinator/public/cpp/memory_instrumentation/client_process_impl.h"
+#include "services/resource_coordinator/public/mojom/memory_instrumentation/memory_instrumentation.mojom.h"
+#include "services/resource_coordinator/public/mojom/service_constants.mojom.h"
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
 #include "services/service_manager/sandbox/switches.h"
@@ -89,7 +91,6 @@
 #include "ui/base/l10n/l10n_util_win.h"
 #include "ui/display/win/dpi.h"
 #elif defined(OS_MACOSX)
-#include "base/power_monitor/power_monitor_device_source.h"
 #include "sandbox/mac/seatbelt.h"
 #include "sandbox/mac/seatbelt_exec.h"
 #endif  // OS_WIN
@@ -165,7 +166,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "base/android/build_info.h"
 #include "content/browser/android/browser_startup_controller.h"
 #endif
 
@@ -182,12 +182,6 @@ extern int UtilityMain(const MainFunctionParams&);
 namespace content {
 
 namespace {
-
-#if defined(OS_ANDROID)
-// Finch parameter key value for devices to always run in process.
-const base::FeatureParam<std::string> kDevicesForceInProcessParam{
-    &network::features::kNetworkService, "devices_force_in_process", ""};
-#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA) && defined(OS_ANDROID)
 #if defined __LP64__
@@ -422,6 +416,15 @@ void PreSandboxInit() {
 #endif  // BUILDFLAG(USE_ZYGOTE_HANDLE)
 
 #endif  // OS_LINUX
+
+#if !defined(CHROME_MULTIPLE_DLL_CHILD)
+void InitializeBrowserClientProcessImpl() {
+  memory_instrumentation::ClientProcessImpl::Config config(
+      GetSystemConnector(), resource_coordinator::mojom::kServiceName,
+      memory_instrumentation::mojom::ProcessType::BROWSER);
+  memory_instrumentation::ClientProcessImpl::CreateInstance(config);
+}
+#endif  // !defined(CHROME_MULTIPLE_DLL_CHILD)
 
 }  // namespace
 
@@ -918,37 +921,12 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
       StartBrowserThreadPool();
     }
 
-    tracing::InitTracingPostThreadPoolStart();
-
     BrowserTaskExecutor::PostFeatureListSetup();
 
-    delegate_->PostTaskSchedulerStart();
+    tracing::InitTracingPostThreadPoolStartAndFeatureList();
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      bool force_in_process = false;
-      if (should_start_service_manager_only) {
-        force_in_process = true;
-      } else {
-#if defined(OS_ANDROID)
-        auto finch_value = kDevicesForceInProcessParam.Get();
-        auto devices = base::SplitString(
-            finch_value, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-        auto current_device =
-            std::string(base::android::BuildInfo::GetInstance()->model());
-        for (auto device : devices) {
-          if (device == current_device) {
-            force_in_process = true;
-            break;
-          }
-        }
-#endif
-      }
-
-      if (force_in_process) {
-        // This must be called before creating the ServiceManagerContext.
-        ForceInProcessNetworkService(true);
-      }
-    }
+    if (should_start_service_manager_only)
+      ForceInProcessNetworkService(true);
 
     discardable_shared_memory_manager_ =
         std::make_unique<discardable_memory::DiscardableSharedMemoryManager>();
@@ -962,6 +940,9 @@ int ContentMainRunnerImpl::RunServiceManager(MainFunctionParams& main_params,
         BrowserTaskExecutor::CreateIOThread());
     download::SetIOTaskRunner(
         service_manager_environment_->ipc_thread()->task_runner());
+
+    InitializeBrowserClientProcessImpl();
+
 #if defined(OS_ANDROID)
     if (start_service_manager_only) {
       base::ThreadTaskRunnerHandle::Get()->PostTask(

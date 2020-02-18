@@ -49,6 +49,11 @@ public class WebApkUpdateManagerTest {
     private static final String WEBAPK_MANIFEST_URL =
             "/chrome/test/data/banners/manifest_one_icon.json";
 
+    // manifest_one_icon_maskable.json is the same as manifest_one_icon.json except that it has an
+    // additional icon of purpose maskable and of same size.
+    private static final String WEBAPK_MANIFEST_WITH_MASKABLE_ICON_URL =
+            "/chrome/test/data/banners/manifest_maskable.json";
+
     // Data contained in {@link WEBAPK_MANIFEST_URL}.
     private static final String WEBAPK_START_URL =
             "/chrome/test/data/banners/manifest_test_page.html";
@@ -107,6 +112,7 @@ public class WebApkUpdateManagerTest {
         public int orientation;
         public long themeColor;
         public long backgroundColor;
+        public boolean isPrimaryIconMaskable;
     }
 
     public CreationData defaultCreationData() {
@@ -125,6 +131,7 @@ public class WebApkUpdateManagerTest {
         creationData.orientation = WEBAPK_ORIENTATION;
         creationData.themeColor = WEBAPK_THEME_COLOR;
         creationData.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+        creationData.isPrimaryIconMaskable = false;
         return creationData;
     }
 
@@ -152,14 +159,15 @@ public class WebApkUpdateManagerTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             WebApkInfo info = WebApkInfo.create(
-                    WEBAPK_ID, "", creationData.scope, null, null, null, creationData.name,
+                    "", creationData.scope, null, null, null, creationData.name,
                     creationData.shortName, creationData.displayMode, creationData.orientation, 0,
-                    creationData.themeColor, creationData.backgroundColor, 0, false, "",
+                    creationData.themeColor, creationData.backgroundColor, 0,
+                    creationData.isPrimaryIconMaskable, false /* isSplashIconMaskable */, "",
                     WebApkVersion.REQUEST_UPDATE_FOR_SHELL_APK_VERSION, creationData.manifestUrl,
-                    creationData.startUrl, WebApkInfo.WebApkDistributor.BROWSER,
+                    creationData.startUrl, WebApkDistributor.BROWSER,
                     creationData.iconUrlToMurmur2HashMap, null, null /*shareTargetActivityName*/,
                     false /* forceNavigation */, false /* isSplashProvidedByWebApk */,
-                    null /* shareData */
+                    null /* shareData */, 1 /* webApkVersionCode */
 
             );
             updateManager.updateIfNeeded(mTab, info);
@@ -216,6 +224,23 @@ public class WebApkUpdateManagerTest {
 
         WebappTestPage.navigateToServiceWorkerPageWithManifest(
                 mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+        Assert.assertFalse(checkUpdateNeeded(creationData));
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"WebApk"})
+    public void testNewMaskableIconShouldUpdate() throws Exception {
+        CreationData creationData = defaultCreationData();
+        creationData.startUrl = mTestServerRule.getServer().getURL(
+                "/chrome/test/data/banners/manifest_test_page.html");
+        creationData.isPrimaryIconMaskable = true;
+
+        WebappTestPage.navigateToServiceWorkerPageWithManifest(
+                mTestServerRule.getServer(), mTab, WEBAPK_MANIFEST_URL);
+
+        // TODO(crbug.com/977173): change to assertTrue once server support for adaptive icon is
+        // ready and we start to diff isPrimaryIconMaskable when checking for updates.
         Assert.assertFalse(checkUpdateNeeded(creationData));
     }
 }

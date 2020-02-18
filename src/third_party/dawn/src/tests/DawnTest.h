@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#ifndef TESTS_DAWNTEST_H_
+#define TESTS_DAWNTEST_H_
+
 #include "dawn/dawncpp.h"
 #include "dawn_native/DawnNative.h"
 
@@ -43,6 +46,16 @@
                           sizeof(RGBA8),                                                  \
                           new detail::ExpectEq<RGBA8>(expected, (width) * (height)))
 
+#define EXPECT_LAZY_CLEAR(N, statement)                                                   \
+    if (UsesWire()) {                                                                     \
+        statement;                                                                        \
+    } else {                                                                              \
+        size_t lazyClearsBefore = dawn_native::GetLazyClearCountForTesting(device.Get()); \
+        statement;                                                                        \
+        size_t lazyClearsAfter = dawn_native::GetLazyClearCountForTesting(device.Get());  \
+        EXPECT_EQ(N, lazyClearsAfter - lazyClearsBefore);                                 \
+    }
+
 // Should only be used to test validation of function that can't be tested by regular validation
 // tests;
 #define ASSERT_DEVICE_ERROR(statement) \
@@ -73,6 +86,8 @@ struct DawnTestParam {
     std::vector<const char*> forceDisabledWorkarounds;
 };
 
+std::ostream& operator<<(std::ostream& os, const DawnTestParam& param);
+
 // Shorthands for backend types used in the DAWN_INSTANTIATE_TEST
 extern const DawnTestParam D3D12Backend;
 extern const DawnTestParam MetalBackend;
@@ -83,10 +98,7 @@ DawnTestParam ForceWorkarounds(const DawnTestParam& originParam,
                                std::initializer_list<const char*> forceEnabledWorkarounds,
                                std::initializer_list<const char*> forceDisabledWorkarounds = {});
 
-struct GLFWwindow;
-
 namespace utils {
-    class BackendBinding;
     class TerribleCommandBuffer;
 }  // namespace utils
 
@@ -106,17 +118,18 @@ class DawnTestEnvironment : public testing::Environment {
     DawnTestEnvironment(int argc, char** argv);
     ~DawnTestEnvironment() = default;
 
+    static void SetEnvironment(DawnTestEnvironment* env);
+
     void SetUp() override;
 
     bool UsesWire() const;
     bool IsBackendValidationEnabled() const;
     dawn_native::Instance* GetInstance() const;
-    GLFWwindow* GetWindowForBackend(dawn_native::BackendType type) const;
     bool HasVendorIdFilter() const;
     uint32_t GetVendorIdFilter() const;
 
   private:
-    void CreateBackendWindow(dawn_native::BackendType type);
+    void DiscoverOpenGLAdapter();
 
     bool mUseWire = false;
     bool mEnableBackendValidation = false;
@@ -124,20 +137,17 @@ class DawnTestEnvironment : public testing::Environment {
     bool mHasVendorIdFilter = false;
     uint32_t mVendorIdFilter = 0;
     std::unique_ptr<dawn_native::Instance> mInstance;
-
-    // Windows don't usually like to be bound to one API than the other, for example switching
-    // from Vulkan to OpenGL causes crashes on some drivers. Because of this, we lazily created
-    // a window for each backing API.
-    std::unordered_map<dawn_native::BackendType, GLFWwindow*> mWindows;
 };
 
-class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
-  public:
-    DawnTest();
-    ~DawnTest();
+class DawnTestBase {
+    friend class DawnPerfTestBase;
 
-    void SetUp() override;
-    void TearDown() override;
+  public:
+    DawnTestBase(const DawnTestParam& param);
+    virtual ~DawnTestBase();
+
+    void SetUp();
+    void TearDown();
 
     bool IsD3D12() const;
     bool IsMetal() const;
@@ -167,7 +177,6 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
   protected:
     dawn::Device device;
     dawn::Queue queue;
-    dawn::SwapChain swapchain;
 
     DawnProcTable backendProcs = {};
     DawnDevice backendDevice = nullptr;
@@ -194,9 +203,17 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     void WaitABit();
     void FlushWire();
 
-    void SwapBuffersForCapture();
+    bool SupportsExtensions(const std::vector<const char*>& extensions);
+
+    // Called in SetUp() to get the extensions required to be enabled in the tests. The tests must
+    // check if the required extensions are supported by the adapter in this function and guarantee
+    // the returned extensions are all supported by the adapter. The tests may provide different
+    // code path to handle the situation when not all extensions are supported.
+    virtual std::vector<const char*> GetRequiredExtensions();
 
   private:
+    DawnTestParam mParam;
+
     // Things used to set up testing through the Wire.
     std::unique_ptr<dawn_wire::WireServer> mWireServer;
     std::unique_ptr<dawn_wire::WireClient> mWireClient;
@@ -204,7 +221,7 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     std::unique_ptr<utils::TerribleCommandBuffer> mS2cBuf;
 
     // Tracking for validation errors
-    static void OnDeviceError(const char* message, void* userdata);
+    static void OnDeviceError(DawnErrorType type, const char* message, void* userdata);
     bool mExpectError = false;
     bool mError = false;
 
@@ -250,10 +267,31 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
     // Assuming the data is mapped, checks all expectations
     void ResolveExpectations();
 
-    std::unique_ptr<utils::BackendBinding> mBinding;
-
     dawn_native::PCIInfo mPCIInfo;
+
+    dawn_native::Adapter mBackendAdapter;
 };
+
+template <typename Params = DawnTestParam>
+class DawnTestWithParams : public DawnTestBase, public ::testing::TestWithParam<Params> {
+  protected:
+    DawnTestWithParams();
+    ~DawnTestWithParams() override = default;
+
+    void SetUp() override {
+        DawnTestBase::SetUp();
+    }
+
+    void TearDown() override {
+        DawnTestBase::TearDown();
+    }
+};
+
+template <typename Params>
+DawnTestWithParams<Params>::DawnTestWithParams() : DawnTestBase(this->GetParam()) {
+}
+
+using DawnTest = DawnTestWithParams<>;
 
 // Instantiate the test once for each backend provided after the first argument. Use it like this:
 //     DAWN_INSTANTIATE_TEST(MyTestFixture, MetalBackend, OpenGLBackend)
@@ -263,7 +301,7 @@ class DawnTest : public ::testing::TestWithParam<DawnTestParam> {
         , testName,                                                              \
         testing::ValuesIn(::detail::FilterBackends(                              \
             testName##params, sizeof(testName##params) / sizeof(firstParam))),   \
-        ::detail::GetParamName)
+        testing::PrintToStringParamName())
 
 // Skip a test when the given condition is satisfied.
 #define DAWN_SKIP_TEST_IF(condition)                               \
@@ -276,7 +314,6 @@ namespace detail {
     // Helper functions used for DAWN_INSTANTIATE_TEST
     bool IsBackendAvailable(dawn_native::BackendType type);
     std::vector<DawnTestParam> FilterBackends(const DawnTestParam* params, size_t numParams);
-    std::string GetParamName(const testing::TestParamInfo<DawnTestParam>& info);
 
     // All classes used to implement the deferred expectations should inherit from this.
     class Expectation {
@@ -303,3 +340,5 @@ namespace detail {
     extern template class ExpectEq<uint32_t>;
     extern template class ExpectEq<RGBA8>;
 }  // namespace detail
+
+#endif  // TESTS_DAWNTEST_H_

@@ -269,7 +269,8 @@ void ChromeSessionManager::Initialize(
     std::string login_user_id = login_account_id.GetUserEmail();
     IdentityManagerFactory::GetForProfile(profile)
         ->GetPrimaryAccountMutator()
-        ->SetPrimaryAccountAndUpdateAccountInfo(login_user_id, login_user_id);
+        ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(login_user_id,
+                                                          login_user_id);
     StartUserSession(profile, login_user_id);
     return;
   }
@@ -286,12 +287,6 @@ void ChromeSessionManager::SessionStarted() {
   user_manager::UserManager* user_manager = user_manager::UserManager::Get();
   if (user_manager)
     user_manager->OnSessionStarted();
-
-  content::NotificationService::current()->Notify(
-      chrome::NOTIFICATION_SESSION_STARTED,
-      content::Source<session_manager::SessionManager>(this),
-      content::Details<const user_manager::User>(
-          user_manager->GetActiveUser()));
 }
 
 void ChromeSessionManager::NotifyUserLoggedIn(const AccountId& user_account_id,

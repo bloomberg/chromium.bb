@@ -8,14 +8,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/no_destructor.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/supervised_user/supervised_user_service.h"
-#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/confirm_signout_dialog.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/browser_resources.h"
@@ -34,19 +33,12 @@ namespace {
 
 constexpr int kDialogHeightPx = 608;
 constexpr int kDialogWidthPx = 768;
-// Id of System Dialog used to show the Add Supervision flow.
-std::string& GetDialogId() {
-  static base::NoDestructor<std::string> dialog_id;
-  return *dialog_id;
-}
 
 // Shows the dialog indicating that user has to sign out if supervision has been
 // enabled for their account.  Returns a boolean indicating whether the
 // ConfirmSignoutDialog is being shown.
 bool MaybeShowConfirmSignoutDialog() {
-  SupervisedUserService* service = SupervisedUserServiceFactory::GetForProfile(
-      ProfileManager::GetPrimaryUserProfile());
-  if (service->signout_required_after_supervision_enabled()) {
+  if (EnrollmentCompleted()) {
     ConfirmSignoutDialog::Show();
     return true;
   }
@@ -94,10 +86,18 @@ void AddSupervisionDialog::Show(gfx::NativeView parent) {
   // SystemWebDialogDelegate::OnDialogClosed() is called.
   current_instance = new AddSupervisionDialog();
 
-  GetDialogId() = current_instance->Id();
-
   current_instance->ShowSystemDialogForBrowserContext(
       ProfileManager::GetPrimaryUserProfile(), parent);
+
+  // Record UMA metric that user has initiated the Add Supervision process.
+  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
+      AddSupervisionMetricsRecorder::EnrollmentState::kInitiated);
+}
+
+// static
+SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
+  return SystemWebDialogDelegate::FindInstance(
+      chrome::kChromeUIAddSupervisionURL);
 }
 
 // static
@@ -105,7 +105,14 @@ void AddSupervisionDialog::Close() {
   SystemWebDialogDelegate* current_instance = GetInstance();
   if (current_instance) {
     current_instance->Close();
-    GetDialogId() = std::string();
+  }
+}
+
+void AddSupervisionDialog::CloseNowForTesting() {
+  SystemWebDialogDelegate* current_instance = GetInstance();
+  if (current_instance) {
+    DCHECK(dialog_window()) << "No dialog window instance currently set.";
+    views::Widget::GetWidgetForNativeWindow(dialog_window())->CloseNow();
   }
 }
 
@@ -117,20 +124,16 @@ void AddSupervisionDialog::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidthPx, kDialogHeightPx);
 }
 
-bool AddSupervisionDialog::OnDialogCloseRequested() {
+bool AddSupervisionDialog::CanCloseDialog() const {
   bool showing_confirm_dialog = MaybeShowConfirmSignoutDialog();
   return !showing_confirm_dialog;
 }
 
-void AddSupervisionDialog::OnCloseContents(content::WebContents* source,
-                                           bool* out_close_dialog) {
-  // This code gets called by a different path that OnDialogCloseRequested(),
-  // and actually masks the call to OnDialogCloseRequested() the first time the
-  // user clicks on the [x].  Because the first [x] click comes here, we need to
-  // show the confirmation dialog here and signal the caller to possibly close
-  // the dialog.  Subsequent clicks on [x] during the lifetime of the dialog
-  // will result in calls to OnDialogCloseRequested().
-  *out_close_dialog = OnDialogCloseRequested();
+bool AddSupervisionDialog::OnDialogCloseRequested() {
+  // Record UMA metric that user has closed the Add Supervision dialog.
+  AddSupervisionMetricsRecorder::GetInstance()->RecordAddSupervisionEnrollment(
+      AddSupervisionMetricsRecorder::EnrollmentState::kClosed);
+  return true;
 }
 
 AddSupervisionDialog::AddSupervisionDialog()
@@ -138,11 +141,6 @@ AddSupervisionDialog::AddSupervisionDialog()
                               base::string16()) {}
 
 AddSupervisionDialog::~AddSupervisionDialog() = default;
-
-// static
-SystemWebDialogDelegate* AddSupervisionDialog::GetInstance() {
-  return SystemWebDialogDelegate::FindInstance(GetDialogId());
-}
 
 // AddSupervisionUI implementations.
 
@@ -188,7 +186,7 @@ void AddSupervisionUI::SetupResources() {
       "add_supervision.mojom-lite.js",
       IDR_ADD_SUPERVISION_MOJOM_LITE_JS);
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->SetDefaultResource(IDR_ADD_SUPERVISION_HTML);
   source->AddString("webviewUrl", supervision_url_.spec());
   source->AddString("eventOriginFilter", supervision_url_.GetOrigin().spec());

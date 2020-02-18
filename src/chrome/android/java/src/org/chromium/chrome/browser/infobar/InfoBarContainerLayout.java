@@ -12,6 +12,7 @@ import android.animation.ValueAnimator;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Resources;
+import android.support.annotation.IntDef;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.MotionEvent;
@@ -20,7 +21,10 @@ import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarContainer.InfoBarAnimationListener;
+import org.chromium.ui.widget.OptimizedFrameLayout;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 /**
@@ -61,11 +65,22 @@ import java.util.ArrayList;
  *
  * TODO(newt): finalize animation timings and interpolators.
  */
-public class InfoBarContainerLayout extends FrameLayout {
+public class InfoBarContainerLayout extends OptimizedFrameLayout {
     /**
      * An interface for items that can be added to an InfoBarContainerLayout.
      */
     public interface Item {
+        // The infobar priority.
+        @IntDef({InfoBarPriority.CRITICAL, InfoBarPriority.USER_TRIGGERED,
+                InfoBarPriority.PAGE_TRIGGERED, InfoBarPriority.BACKGROUND})
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface InfoBarPriority {
+            int CRITICAL = 0;
+            int USER_TRIGGERED = 1;
+            int PAGE_TRIGGERED = 2;
+            int BACKGROUND = 3;
+        }
+
         /**
          * Returns the View that represents this infobar. This should have no background or borders;
          * a background and shadow will be added by a wrapper view.
@@ -91,16 +106,12 @@ public class InfoBarContainerLayout extends FrameLayout {
         CharSequence getAccessibilityText();
 
         /**
-         * Returns whether the infobar is a legal disclosure and thus should be shown in front of
-         * any other infobars already visible.
+         * Returns the priority of an infobar. High priority infobar is shown in front of low
+         * priority infobar. If infobars have the same priorities, the most recently added one
+         * is shown behind previous ones.
+         *
          */
-        boolean isLegalDisclosure();
-
-        /**
-         * Returns whether the infobar is a low prirority one and thus if there are other infobars,
-         * they would be shown in front of this one.
-         */
-        boolean isBottomMostInfoBar();
+        int getPriority();
 
         /**
          * Returns the type of infobar, as best as can be determined at this time.  See
@@ -115,7 +126,7 @@ public class InfoBarContainerLayout extends FrameLayout {
      */
     InfoBarContainerLayout(Context context, Runnable makeContainerVisibleRunnable,
             InfoBarAnimationListener animationListener) {
-        super(context);
+        super(context, null);
         Resources res = context.getResources();
         mBackInfobarHeight = res.getDimensionPixelSize(R.dimen.infobar_peeking_height);
         mFloatingBehavior = new FloatingBehavior(this);
@@ -133,20 +144,16 @@ public class InfoBarContainerLayout extends FrameLayout {
     }
 
     /**
-     * Finds the appropriate index in the infobar stack for inserting this item. Legal disclosures
-     * are at the top and bottommost infobar at the bottom, everything else goes in the middle.
+     * Finds the appropriate index in the infobar stack for inserting this item.
      * @param item The infobar to be inserted.
      */
     private int findInsertIndex(Item item) {
-        if (item.isLegalDisclosure()) return 0;
-        if (item.isBottomMostInfoBar()) return mItems.size();
-
-        // Insert at the end before any bottom most infobars.
-        for (int i = 0; i < mItems.size(); i++) {
-            if (mItems.get(i).isBottomMostInfoBar()) return i;
+        for (int i = 0; i < mItems.size(); ++i) {
+            if (item.getPriority() < mItems.get(i).getPriority()) {
+                return i;
+            }
         }
 
-        // Just be the last in the stack by default.
         return mItems.size();
     }
 

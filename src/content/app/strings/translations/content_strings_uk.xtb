@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Має бути <ph name="MINIMUM_DATE_OR_TIME" /> або пізніша дата.</translation>
 <translation id="2759744352195237655">кнопка спливаючої підказки</translation>
 <translation id="2761667185364618470">Поставте тут прапорець, якщо хочете продовжити.</translation>
+<translation id="2844350028562914727">деталі</translation>
 <translation id="2896972712917208084">група перемикачів</translation>
 <translation id="2908441821576996758">Введіть список електронних адрес, розділених комою.</translation>
 <translation id="2940813599313844715">об’єкт</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Значення має бути меншим або дорівнювати <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">визначення</translation>
 <translation id="3557673793733683882">заголовок <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">засіб вибору тижня</translation>
 <translation id="3685101356851116974">Зображення без мітки</translation>
 <translation id="3706100364254443312">перемикач</translation>
 <translation id="3732799496749320381">мм</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">смуга прокрутки</translation>
 <translation id="4103419683916926126">Мілісекунди</translation>
 <translation id="4151657705144244502">зображення</translation>
+<translation id="4160057747563657758">номер телефону</translation>
 <translation id="4193965531860883258">передмова</translation>
 <translation id="4201051445878709314">Показати попередній місяць</translation>
 <translation id="421884353938374759">вибір кольору</translation>
 <translation id="4248100235867064564">панель меню</translation>
-<translation id="4254339807215791271">інформація про вміст</translation>
 <translation id="4360991593054037559">Введіть дійсне значення. Два найближчі дійсні значення: <ph name="VALID_VALUE_LOW" /> і <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Запитання</translation>
 <translation id="4413860115965805769">кнопка меню</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Вимк.</translation>
 <translation id="588258955323874662">Повноекранний режим</translation>
 <translation id="5888666972993069672">Транслюється на пристрій <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">вікно пошуку</translation>
 <translation id="5939518447894949180">Скинути</translation>
 <translation id="5966707198760109579">Тиждень</translation>
 <translation id="5987525920412732405">лічильник</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">післямова</translation>
 <translation id="6209276755895393898">Схоже, на цьому зображенні <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">глосарій</translation>
+<translation id="6281763101136022427">URL-адреса</translation>
 <translation id="6310801910862476708">Вийти з режиму "Картинка в картинці"</translation>
 <translation id="6398862346408813489">Показати панель вибору місяців</translation>
 <translation id="6404546809543547843">повзунок часу відтворення аудіо</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Виберіть потрібний формат.</translation>
 <translation id="7118469954320184356">Немає опису.</translation>
 <translation id="7139483182332611405">передмова</translation>
+<translation id="7214187073215825913">інформація про контент</translation>
 <translation id="7263440858009898357">Виберіть елемент зі списку.</translation>
 <translation id="727747134524199931">заголовок стовпця</translation>
 <translation id="7320576522385648310">буферизація</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Завантажується опис…</translation>
 <translation id="8117451130807776954">Цей тиждень</translation>
 <translation id="8199524924445686405">рррр</translation>
+<translation id="8208673686607688524">засіб вибору місцевих дати й часу</translation>
 <translation id="8261464734335370856">Орфографічна помилка</translation>
 <translation id="8284326494547611709">Субтитри</translation>
 <translation id="835897206747267392">Недійсне значення</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">зміст</translation>
 <translation id="8613126697340063924">керувати віддаленим відтворенням</translation>
 <translation id="862370744433916922">підзаголовок</translation>
+<translation id="8711688047404765493">вихід</translation>
 <translation id="8750798805984357768">Виберіть один із запропонованих варіантів.</translation>
 <translation id="8808573423886751634">розділ</translation>
 <translation id="8845239796550121995">Транслюється на телевізор</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> КБ</translation>
 <translation id="8987927404178983737">Місяць</translation>
 <translation id="901493112792887934">поточний час у секундах</translation>
+<translation id="901834265349196618">електронна адреса</translation>
 <translation id="9048119486235211610">навігація</translation>
 <translation id="9062295712474918030">документ</translation>
 <translation id="9062307380734144336">Виберіть, щоб перемикати між опціями "відтворити" та "призупинити"</translation>

@@ -17,12 +17,12 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/ime_menu/ime_list_view.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_container.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -127,8 +127,11 @@ class ImeTitleView : public views::View, public views::ButtonListener {
  public:
   explicit ImeTitleView(bool show_settings_button) : settings_button_(nullptr) {
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(0, 0, kMenuSeparatorWidth, 0,
-                                      kMenuSeparatorColor),
+        views::CreateSolidSidedBorder(
+            0, 0, kMenuSeparatorWidth, 0,
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kSeparator,
+                AshColorProvider::AshColorMode::kLight)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth, 0)));
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal);
@@ -230,8 +233,11 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     box_layout->set_minimum_cross_axis_size(kTrayPopupItemMinHeight);
     SetLayoutManager(std::move(box_layout));
     SetBorder(views::CreatePaddedBorder(
-        views::CreateSolidSidedBorder(kMenuSeparatorWidth, 0, 0, 0,
-                                      kMenuSeparatorColor),
+        views::CreateSolidSidedBorder(
+            kMenuSeparatorWidth, 0, 0, 0,
+            AshColorProvider::Get()->GetContentLayerColor(
+                AshColorProvider::ContentLayerType::kSeparator,
+                AshColorProvider::AshColorMode::kLight)),
         gfx::Insets(kMenuSeparatorVerticalPadding - kMenuSeparatorWidth,
                     kMenuExtraMarginFromLeftEdge)));
 
@@ -292,10 +298,6 @@ class ImeMenuListView : public ImeListView {
     // DetailedViewDelegate:
     void TransitionToMainView(bool restore_focus) override {}
     void CloseBubble() override {}
-    SkColor GetBackgroundColor(ui::NativeTheme* native_theme) override {
-      return native_theme->GetSystemColor(
-          ui::NativeTheme::kColorId_BubbleBackground);
-    }
     bool IsOverflowIndicatorEnabled() const override { return true; }
 
    private:
@@ -331,8 +333,7 @@ ImeMenuTray::ImeMenuTray(Shelf* shelf)
       show_bubble_after_keyboard_hidden_(false),
       is_emoji_enabled_(false),
       is_handwriting_enabled_(false),
-      is_voice_enabled_(false),
-      weak_ptr_factory_(this) {
+      is_voice_enabled_(false) {
   DCHECK(ime_controller_);
   SetInkDropMode(InkDropMode::ON);
   CreateLabel();
@@ -532,8 +533,10 @@ void ImeMenuTray::UpdateTrayLabel() {
   // IME.
   if (chromeos::extension_ime_util::IsArcIME(current_ime.id)) {
     CreateImageView();
-    image_view_->SetImage(
-        gfx::CreateVectorIcon(kShelfGlobeIcon, kTrayIconColor));
+    image_view_->SetImage(gfx::CreateVectorIcon(
+        kShelfGlobeIcon, AshColorProvider::Get()->GetContentLayerColor(
+                             AshColorProvider::ContentLayerType::kIconPrimary,
+                             AshColorProvider::AshColorMode::kDark)));
     return;
   }
 

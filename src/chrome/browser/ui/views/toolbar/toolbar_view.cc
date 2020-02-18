@@ -27,7 +27,6 @@
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/global_error/global_error_service.h"
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
@@ -64,6 +63,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/system_connector.h"
 #include "content/public/browser/web_contents.h"
@@ -108,11 +108,13 @@ namespace {
 
 // Gets the display mode for a given browser.
 ToolbarView::DisplayMode GetDisplayMode(Browser* browser) {
-  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
-    return ToolbarView::DisplayMode::NORMAL;
-
+  // Checked in this order because even tabbed PWAs use the CUSTOM_TAB
+  // display mode.
   if (web_app::AppBrowserController::IsForWebAppBrowser(browser))
     return ToolbarView::DisplayMode::CUSTOM_TAB;
+
+  if (browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP))
+    return ToolbarView::DisplayMode::NORMAL;
 
   return ToolbarView::DisplayMode::LOCATION;
 }
@@ -228,22 +230,28 @@ void ToolbarView::Init() {
 
   std::unique_ptr<ExtensionsToolbarContainer> extensions_container;
   std::unique_ptr<BrowserActionsContainer> browser_actions;
-  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
-    extensions_container =
-        std::make_unique<ExtensionsToolbarContainer>(browser_);
-  } else {
-    browser_actions =
-        std::make_unique<BrowserActionsContainer>(browser_, nullptr, this);
-  }
 
+  // Do not create the extensions or browser actions container if it is a guest
+  // profile (only regular and incognito profiles host extensions).
+  if (!browser_->profile()->IsGuestSession()) {
+    if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+      extensions_container =
+          std::make_unique<ExtensionsToolbarContainer>(browser_);
+    } else {
+      browser_actions =
+          std::make_unique<BrowserActionsContainer>(browser_, nullptr, this);
+    }
+  }
   std::unique_ptr<media_router::CastToolbarButton> cast;
   if (media_router::MediaRouterEnabled(browser_->profile()))
     cast = media_router::CastToolbarButton::Create(browser_);
 
   std::unique_ptr<MediaToolbarButtonView> media_button;
   if (base::FeatureList::IsEnabled(media::kGlobalMediaControls)) {
-    media_button =
-        std::make_unique<MediaToolbarButtonView>(content::GetSystemConnector());
+    const base::UnguessableToken& source_id =
+        content::MediaSession::GetSourceId(browser_->profile());
+    media_button = std::make_unique<MediaToolbarButtonView>(
+        source_id, content::GetSystemConnector(), browser_);
   }
 
   std::unique_ptr<ToolbarPageActionIconContainerView>
@@ -369,7 +377,9 @@ void ToolbarView::SetToolbarVisibility(bool visible) {
   bar->SetVisible(visible);
 }
 
-void ToolbarView::UpdateToolbarVisibility(bool visible, bool animate) {
+void ToolbarView::UpdateCustomTabBarVisibility(bool visible, bool animate) {
+  DCHECK_EQ(display_mode_, DisplayMode::CUSTOM_TAB);
+
   if (!animate) {
     size_animation_.Reset(visible ? 1.0 : 0.0);
     SetToolbarVisibility(visible);
@@ -401,20 +411,23 @@ bool ToolbarView::IsAppMenuFocused() {
 
 void ToolbarView::ShowIntentPickerBubble(
     std::vector<IntentPickerBubbleView::AppInfo> app_info,
-    bool enable_stay_in_chrome,
-    bool show_persistence_options,
+    bool show_stay_in_chrome,
+    bool show_remember_selection,
+    PageActionIconType icon_type,
     IntentPickerResponse callback) {
   PageActionIconView* intent_picker_view =
       location_bar()
           ->omnibox_page_action_icon_container_view()
-          ->GetPageActionIconView(PageActionIconType::kIntentPicker);
-  if (intent_picker_view) {
-    if (!intent_picker_view->GetVisible())
-      IntentPickerTabHelper::SetShouldShowIcon(GetWebContents(), true);
-    IntentPickerBubbleView::ShowBubble(
-        intent_picker_view, GetWebContents(), std::move(app_info),
-        enable_stay_in_chrome, show_persistence_options, std::move(callback));
-  }
+          ->GetPageActionIconView(icon_type);
+  if (!intent_picker_view)
+    return;
+
+  IntentPickerBubbleView::ShowBubble(
+      location_bar(), intent_picker_view, icon_type, GetWebContents(),
+      std::move(app_info), show_stay_in_chrome, show_remember_selection,
+      std::move(callback));
+  // TODO(knollr): find a way that the icon updates implicitly.
+  intent_picker_view->Update();
 }
 
 void ToolbarView::ShowBookmarkBubble(
@@ -641,6 +654,8 @@ void ToolbarView::OnThemeChanged() {
 
   if (display_mode_ == DisplayMode::NORMAL)
     LoadImages();
+
+  SchedulePaint();
 }
 
 const char* ToolbarView::GetClassName() const {
@@ -782,7 +797,26 @@ ui::NativeTheme* ToolbarView::GetViewNativeTheme() {
 
 // ToolbarButtonProvider:
 BrowserActionsContainer* ToolbarView::GetBrowserActionsContainer() {
+  CHECK(!base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu));
   return browser_actions_;
+}
+
+ToolbarActionView* ToolbarView::GetToolbarActionViewForId(
+    const std::string& id) {
+  if (display_mode_ != DisplayMode::NORMAL)
+    return nullptr;
+  if (base::FeatureList::IsEnabled(features::kExtensionsToolbarMenu)) {
+    DCHECK(extensions_container_);
+    return extensions_container_->GetViewForId(id);
+  }
+  DCHECK(GetBrowserActionsContainer());
+  return GetBrowserActionsContainer()->GetViewForId(id);
+}
+
+views::View* ToolbarView::GetDefaultExtensionDialogAnchorView() {
+  if (extensions_container_)
+    return extensions_container_;
+  return GetAppMenuButton();
 }
 
 OmniboxPageActionIconContainerView*
@@ -906,6 +940,6 @@ void ToolbarView::OnShowHomeButtonChanged() {
 
 void ToolbarView::UpdateHomeButtonVisibility() {
   const bool show_home_button =
-      show_home_button_.GetValue() || browser_->is_app();
+      show_home_button_.GetValue() || browser_->deprecated_is_app();
   home_->SetVisible(show_home_button);
 }

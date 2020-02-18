@@ -5,11 +5,10 @@
 package org.chromium.chrome.browser.contextmenu;
 
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.net.Uri;
 import android.os.Build;
-import android.support.annotation.Nullable;
 import android.util.Pair;
 import android.view.ContextMenu;
 import android.view.ContextMenu.ContextMenuInfo;
@@ -17,9 +16,10 @@ import android.view.View;
 import android.view.View.OnCreateContextMenuListener;
 
 import org.chromium.base.Callback;
-import org.chromium.base.TimeUtils;
+import org.chromium.base.TimeUtilsJni;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -113,13 +113,15 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         };
         mOnMenuShown = () -> {
             mSelectedItemBeforeDismiss = false;
-            mMenuShownTimeMs = TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs());
+            mMenuShownTimeMs =
+                    TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs());
             RecordHistogram.recordBooleanHistogram("ContextMenu.Shown", mWebContents != null);
         };
         mOnMenuClosed = (notAbandoned) -> {
             recordTimeToTakeActionHistogram(mSelectedItemBeforeDismiss || notAbandoned);
             if (mNativeContextMenuHelper == 0) return;
-            nativeOnContextMenuClosed(mNativeContextMenuHelper);
+            ContextMenuHelperJni.get().onContextMenuClosed(
+                    mNativeContextMenuHelper, ContextMenuHelper.this);
         };
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.REVAMPED_CONTEXT_MENU)
@@ -178,8 +180,19 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      */
     public void startContextMenuDownload(boolean isLink, boolean isDataReductionProxyEnabled) {
         if (mNativeContextMenuHelper != 0) {
-            nativeOnStartDownload(mNativeContextMenuHelper, isLink, isDataReductionProxyEnabled);
+            ContextMenuHelperJni.get().onStartDownload(mNativeContextMenuHelper,
+                    ContextMenuHelper.this, isLink, isDataReductionProxyEnabled);
         }
+    }
+
+    /**
+     * Search for the image by intenting to the lens app with the image data attached.
+     * @param isIncognito Whether the image to search came from an incognito context.
+     */
+    public void searchWithGoogleLens(boolean isIncognito) {
+        retrieveImage((Uri imageUri) -> {
+            ShareHelper.shareImageWithGoogleLens(mActivity, imageUri, isIncognito);
+        });
     }
 
     /**
@@ -187,7 +200,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      */
     public void searchForImage() {
         if (mNativeContextMenuHelper == 0) return;
-        nativeSearchForImage(mNativeContextMenuHelper);
+        ContextMenuHelperJni.get().searchForImage(mNativeContextMenuHelper, ContextMenuHelper.this);
     }
 
     /**
@@ -196,32 +209,37 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
      * it will use the right activity set when the menu was displayed.
      */
     void shareImage() {
-        shareImageDirectly(null);
+        retrieveImage((Uri imageUri) -> { ShareHelper.shareImage(mActivity, null, imageUri); });
     }
 
     /**
      * Share the image that triggered the current context menu with the last app used to share.
      */
     private void shareImageWithLastShareComponent() {
-        shareImageDirectly(ShareHelper.getLastShareComponentName(null));
+        retrieveImage((Uri imageUri) -> {
+            ShareHelper.shareImage(
+                    mActivity, ShareHelper.getLastShareComponentName(null), imageUri);
+        });
     }
 
     /**
-     * Share image triggered with the current context menu directly with a specific app.
-     * @param name The {@link ComponentName} of the app to share the image directly with.
+     * Retrieves a URI for the selected image for sharing with external apps. If the function fails
+     * to retrieve the image bytes or generate a URI the callback will *not* be called.
+     * @param callback Called once the the image is generated and ready to be shared.
      */
-    private void shareImageDirectly(@Nullable final ComponentName name) {
+    private void retrieveImage(Callback<Uri> callback) {
         if (mNativeContextMenuHelper == 0) return;
-        Callback<byte[]> callback = new Callback<byte[]>() {
+        Callback<byte[]> imageRetrievalCallback = new Callback<byte[]>() {
             @Override
             public void onResult(byte[] result) {
                 if (mActivity == null) return;
 
-                ShareHelper.shareImage(mActivity, result, name);
+                ShareHelper.generateUriFromData(mActivity, result, callback);
             }
         };
-        nativeRetrieveImageForShare(
-                mNativeContextMenuHelper, callback, MAX_SHARE_DIMEN_PX, MAX_SHARE_DIMEN_PX);
+        ContextMenuHelperJni.get().retrieveImageForShare(mNativeContextMenuHelper,
+                ContextMenuHelper.this, imageRetrievalCallback, MAX_SHARE_DIMEN_PX,
+                MAX_SHARE_DIMEN_PX);
     }
 
     /**
@@ -237,8 +255,8 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         final int maxWidthPx =
                 res.getDimensionPixelSize(R.dimen.revamped_context_menu_header_image_max_size);
 
-        nativeRetrieveImageForContextMenu(
-                mNativeContextMenuHelper, callback, maxWidthPx, maxHeightPx);
+        ContextMenuHelperJni.get().retrieveImageForContextMenu(mNativeContextMenuHelper,
+                ContextMenuHelper.this, callback, maxWidthPx, maxHeightPx);
     }
 
     @Override
@@ -258,7 +276,7 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private void recordTimeToTakeActionHistogram(boolean selectedItem) {
         final String action = selectedItem ? "SelectedItem" : "Abandoned";
         RecordHistogram.recordTimesHistogram("ContextMenu.TimeToTakeAction." + action,
-                TimeUnit.MICROSECONDS.toMillis(TimeUtils.nativeGetTimeTicksNowUs())
+                TimeUnit.MICROSECONDS.toMillis(TimeUtilsJni.get().getTimeTicksNowUs())
                         - mMenuShownTimeMs);
     }
 
@@ -270,12 +288,15 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
         return mPopulator;
     }
 
-    private native void nativeOnStartDownload(
-            long nativeContextMenuHelper, boolean isLink, boolean isDataReductionProxyEnabled);
-    private native void nativeSearchForImage(long nativeContextMenuHelper);
-    private native void nativeRetrieveImageForShare(long nativeContextMenuHelper,
-            Callback<byte[]> callback, int maxWidthPx, int maxHeightPx);
-    private native void nativeRetrieveImageForContextMenu(long nativeContextMenuHelper,
-            Callback<Bitmap> callback, int maxWidthPx, int maxHeightPx);
-    private native void nativeOnContextMenuClosed(long nativeContextMenuHelper);
+    @NativeMethods
+    interface Natives {
+        void onStartDownload(long nativeContextMenuHelper, ContextMenuHelper caller, boolean isLink,
+                boolean isDataReductionProxyEnabled);
+        void searchForImage(long nativeContextMenuHelper, ContextMenuHelper caller);
+        void retrieveImageForShare(long nativeContextMenuHelper, ContextMenuHelper caller,
+                Callback<byte[]> callback, int maxWidthPx, int maxHeightPx);
+        void retrieveImageForContextMenu(long nativeContextMenuHelper, ContextMenuHelper caller,
+                Callback<Bitmap> callback, int maxWidthPx, int maxHeightPx);
+        void onContextMenuClosed(long nativeContextMenuHelper, ContextMenuHelper caller);
+    }
 }

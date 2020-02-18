@@ -150,6 +150,16 @@
     "note": "This policy has been removed. See https://bugs.chromium.org/p/chromium/issues/detail?id=624095"
   },
 
+  "DnsOverHttpsMode": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "DnsOverHttpsMode": "off" },
+    "pref_mappings": [
+      { "pref": "dns_over_https.mode",
+        "local_state": true
+      }
+    ]
+  },
+
   "NetworkPredictionOptions": {
     "os": ["win", "linux", "mac", "chromeos"],
     "can_be_recommended": true,
@@ -394,7 +404,7 @@
   },
 
   "ExternalPrintServers": {
-    "note": "This policy will be added in R-78"
+    "note": "This policy will be added in R-79"
   },
 
   "NativePrinters": {
@@ -538,6 +548,20 @@
 
   "PasswordManagerAllowShowPasswords": {
     "note": "This policy is retired, see http://crbug.com/598698."
+  },
+
+  "PasswordLeakDetectionEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "can_be_recommended": true,
+    "test_policy": { "PasswordLeakDetectionEnabled": false },
+    "pref_mappings": [
+      {
+        "pref": "profile.password_manager_leak_detection",
+        "indicator_tests": [
+          { "policy": { "PasswordLeakDetectionEnabled" : false} }
+        ]
+      }
+    ]
   },
 
   "ContextualSearchEnabled": {
@@ -689,7 +713,9 @@
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheDir": "${user_home}/test-cache" },
     "pref_mappings": [
-      { "pref": "browser.disk_cache_dir" }
+      { "pref": "browser.disk_cache_dir",
+        "local_state": true
+      }
     ]
   },
 
@@ -697,7 +723,9 @@
     "os": ["win", "mac", "linux"],
     "test_policy": { "DiskCacheSize": 100 },
     "pref_mappings": [
-      { "pref": "browser.disk_cache_size" }
+      { "pref": "browser.disk_cache_size",
+        "local_state": true
+      }
     ]
   },
 
@@ -1150,11 +1178,7 @@
   },
 
   "ExtensionAllowInsecureUpdates": {
-    "os": ["win", "linux", "mac", "chromeos"],
-    "test_policy": { "ExtensionAllowInsecureUpdates": true },
-    "pref_mappings": [
-      { "pref": "extension_updates.insecure_extension_updates_enabled" }
-    ]
+    "note": "Deprecated since Chrome 78."
   },
 
   "ExtensionInstallBlacklist": {
@@ -2249,6 +2273,10 @@
     "note": "This policy has no pref as it is only directly read by the policy system."
   },
 
+  "PolicyAtomicGroupsEnabled": {
+    "note": "This policy has no pref as it is only directly read by the policy system."
+  },
+
   "EnterpriseWebStoreURL": {
     "note": "This policy is retired, see http://crbug.com/178938."
   },
@@ -2760,6 +2788,12 @@
     ]
   },
 
+  "AllowSyncXHRInPageDismissal": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "AllowSyncXHRInPageDismissal": true },
+    "pref_mappings": [{ "pref": "allow_sync_xhr_in_page_dismissal" }]
+  },
+
   "----- Chrome OS policies ------------------------------------------------": {},
 
   "ChromeOsLockOnIdleSuspend": {
@@ -3134,6 +3168,78 @@
       { "pref": "settings.accessibility",
         "indicator_tests": [
           { "policy": { "SpokenFeedbackEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "DictationEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "DictationEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.dictation",
+        "indicator_tests": [
+          { "policy": { "DictationEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "KeyboardFocusHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "KeyboardFocusHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.focus_highlight",
+        "indicator_tests": [
+          { "policy": { "KeyboardFocusHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "CursorHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CursorHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.cursor_highlight",
+        "indicator_tests": [
+          { "policy": { "CursorHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "CaretHighlightEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "CaretHighlightEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.caret_highlight",
+        "indicator_tests": [
+          { "policy": { "CaretHighlightEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "MonoAudioEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "MonoAudioEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.mono_audio",
+        "indicator_tests": [
+          { "policy": { "MonoAudioEnabled": true } }
+        ]
+      }
+    ]
+  },
+
+  "AutoclickEnabled": {
+    "os": ["chromeos"],
+    "test_policy": { "AutoclickEnabled": true },
+    "pref_mappings": [
+      { "pref": "settings.a11y.autoclick",
+        "indicator_tests": [
+          { "policy": { "AutoclickEnabled": true } }
         ]
       }
     ]
@@ -3897,6 +4003,9 @@
   "DeviceLoginScreenDefaultLargeCursorEnabled" : {
   },
 
+  "DeviceLoginScreenLargeCursorEnabled" : {
+  },
+
   "DeviceLoginScreenDefaultSpokenFeedbackEnabled" : {
   },
 
@@ -4321,19 +4430,6 @@
      "test_policy": { "DeviceScheduledUpdateCheck": {"update_check_time" : {"hour": 23, "minute": 35}, "frequency": "WEEKLY", "day_of_week": "MONDAY" }}
    },
 
-   "DeviceWebUsbAllowDevicesForUrls": {
-      "os": ["chromeos"],
-      "test_policy": { "DeviceWebUsbAllowDevicesForUrls": [{
-        "devices": [{"vendor_id": 1234, "product_id": 5678}],
-        "urls": ["https://google.com", "https://requesting.com,https://embedded.com"]
-      }]},
-      "pref_mappings": [
-        { "pref": "device_webusb_allow_devices_for_urls",
-          "local_state": true
-        }
-      ]
-    },
-
   "ChromeCleanupEnabled": {
     "os": ["win"],
     "test_policy": { "ChromeCleanupEnabled": true },
@@ -4484,7 +4580,13 @@
   "ClientCertificateManagementAllowed": {
     "os": ["chromeos"],
     "test_policy": { "ClientCertificateManagementAllowed": 2 },
-    "pref_mappings": [{ "pref": "certificate_management_allowed" }]
+    "pref_mappings": [{ "pref": "client_certificate_management_allowed" }]
+  },
+
+  "CACertificateManagementAllowed": {
+    "os": ["chromeos"],
+    "test_policy": { "CACertificateManagementAllowed": 2 },
+    "pref_mappings": [{ "pref": "ca_certificate_management_allowed" }]
   },
 
   "VoiceInteractionContextEnabled": {
@@ -4962,6 +5064,88 @@
     },
     "pref_mappings": [
       { "pref": "safebrowsing.real_time_lookup_enabled" }
+    ]
+  },
+
+  "LockScreenMediaPlaybackEnabled": {
+    "os": ["chromeos"],
+    "test_policy": {
+      "LockScreenMediaPlaybackEnabled": true
+    },
+    "pref_mappings": [
+      { "pref": "ash.lock_screen_media_controls_enabled" }
+    ]
+  },
+
+  "SendFilesForMalwareCheck": {
+    "os": ["win", "linux", "mac", "chromeos"],
+    "test_policy": {
+      "SendFilesForMalwareCheck": 2
+    },
+    "pref_mappings": [
+      { "pref": "safebrowsing.send_files_for_malware_check" }
+    ]
+  },
+
+  "UnsafeEventsReportingEnabled": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "UnsafeEventsReportingEnabled": false },
+    "pref_mappings": [ { "pref": "safebrowsing.unsafe_events_reporting",
+                         "local_state": true } ]
+  },
+
+  "BlockLargeFileTransfer": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "BlockLargeFileTransfer": 0 },
+    "pref_mappings": [ { "pref": "safebrowsing.block_large_file_transfers",
+                         "local_state": true } ]
+  },
+
+  "DelayDeliveryUntilVerdict": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "DelayDeliveryUntilVerdict": 0 },
+    "pref_mappings": [ { "pref": "safebrowsing.delay_delivery_until_verdict",
+                         "local_state": true } ]
+  },
+
+  "AllowPasswordProtectedFiles": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "AllowPasswordProtectedFiles": 0 },
+    "pref_mappings": [ { "pref": "safebrowsing.allow_password_protected_files",
+                         "local_state": true } ]
+  },
+
+  "CheckContentCompliance": {
+    "os": ["win", "linux", "mac"],
+    "test_policy": { "CheckContentCompliance": 0 },
+    "pref_mappings": [ { "pref": "safebrowsing.check_content_compliance",
+                         "local_state": true } ]
+  },
+
+  "DomainsToCheckComplianceOfDownloadedContent": {
+  },
+
+  "DomainsToNotCheckComplianceOfUploadedContent": {
+  },
+
+  "DomainsToCheckForMalwareOfUploadedContent": {
+  },
+
+  "RendererCodeIntegrityEnabled": {
+    "os": ["win"],
+    "test_policy": { "RendererCodeIntegrityEnabled": true },
+    "pref_mappings": [
+      { "pref": "renderer_code_integrity_enabled",
+        "local_state": true
+      }
+    ]
+  },
+
+  "HSTSPolicyBypassList": {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "HSTSPolicyBypassList": ["example"] },
+    "pref_mappings": [
+      { "pref": "hsts.policy.upgrade_bypass_list", "local_state": true }
     ]
   }
 }

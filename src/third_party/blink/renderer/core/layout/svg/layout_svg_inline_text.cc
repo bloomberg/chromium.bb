@@ -56,8 +56,9 @@ LayoutSVGInlineText::LayoutSVGInlineText(Node* n,
     : LayoutText(n, NormalizeWhitespace(std::move(string))),
       scaling_factor_(1) {}
 
-void LayoutSVGInlineText::SetTextInternal(scoped_refptr<StringImpl> text) {
-  LayoutText::SetTextInternal(NormalizeWhitespace(std::move(text)));
+void LayoutSVGInlineText::TextDidChange() {
+  SetTextInternal(NormalizeWhitespace(GetText().Impl()));
+  LayoutText::TextDidChange();
   if (LayoutSVGText* text_layout_object =
           LayoutSVGText::LocateLayoutSVGTextAncestor(this))
     text_layout_object->SubtreeTextDidChange();
@@ -73,7 +74,7 @@ void LayoutSVGInlineText::StyleDidChange(StyleDifference diff,
   bool old_preserves =
       old_style ? old_style->WhiteSpace() == EWhiteSpace::kPre : false;
   if (old_preserves != new_preserves) {
-    SetText(OriginalText(), true);
+    ForceSetText(OriginalText());
     return;
   }
 

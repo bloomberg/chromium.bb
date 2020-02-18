@@ -8,6 +8,12 @@ declare_args() {
 
   # Enable address sanitizer.
   is_asan = false
+
+  # Enable thread sanitizer.
+  is_tsan = false
+
+  # Enable trace logging.
+  enable_trace_logging = false
 }
 
 config("compiler_defaults") {
@@ -110,6 +116,9 @@ config("openscreen_code") {
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON" ]
   }
+  if (enable_trace_logging) {
+    defines += [ "ENABLE_TRACE_LOGGING" ]
+  }
 }
 
 config("default_optimization") {
@@ -140,10 +149,17 @@ config("symbol_visibility_default") {
 }
 
 config("default_sanitizers") {
+  # NOTE: This is not an artificial restriction; clang doesn't allow these to be
+  # used together.
+  assert(!is_asan || !is_tsan)
+
   cflags = []
   ldflags = []
   if (is_asan) {
     cflags += [ "-fsanitize=address" ]
     ldflags += [ "-fsanitize=address" ]
+  } else if (is_tsan) {
+    cflags += [ "-fsanitize=thread" ]
+    ldflags += [ "-fsanitize=thread" ]
   }
 }

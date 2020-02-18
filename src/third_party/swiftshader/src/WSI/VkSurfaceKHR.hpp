@@ -16,7 +16,9 @@
 #define SWIFTSHADER_VKSURFACEKHR_HPP_
 
 #include "Vulkan/VkObject.hpp"
+#include "Vulkan/VkImage.hpp"
 #include <Vulkan/VulkanPlatform.h>
+
 #include <vector>
 
 namespace vk
@@ -24,7 +26,7 @@ namespace vk
 
 enum PresentImageStatus
 {
-	NONEXISTENT, //  Image wasn't made
+	NONEXISTENT,  // Image wasn't created
 	AVAILABLE,
 	DRAWING,
 	PRESENTING,
@@ -43,7 +45,7 @@ public:
 	VkImage asVkImage() const;
 
 	const Image* getImage() const { return image; }
-	const DeviceMemory* getImageMemory() const { return imageMemory; }
+	DeviceMemory* getImageMemory() const { return imageMemory; }
 	bool isAvailable() const { return (imageStatus == AVAILABLE); }
 	bool exists() const { return (imageStatus != NONEXISTENT); }
 	void setStatus(PresentImageStatus status) { imageStatus = status; }
@@ -83,6 +85,8 @@ public:
 
 	uint32_t getPresentModeCount() const;
 	VkResult getPresentModes(uint32_t* pPresentModeCount, VkPresentModeKHR* pPresentModes) const;
+
+	VkResult getPresentRectangles(uint32_t *pRectCount, VkRect2D *pRects) const;
 
 	virtual void attachImage(PresentImage* image) = 0;
 	virtual void detachImage(PresentImage* image) = 0;

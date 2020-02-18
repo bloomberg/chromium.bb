@@ -135,9 +135,7 @@ class CastContentBrowserClient
   std::vector<std::string> GetStartupServices() override;
   std::unique_ptr<content::BrowserMainParts> CreateBrowserMainParts(
       const content::MainFunctionParams& parameters) override;
-  void RenderProcessWillLaunch(
-      content::RenderProcessHost* host,
-      service_manager::mojom::ServiceRequest* service_request) override;
+  void RenderProcessWillLaunch(content::RenderProcessHost* host) override;
   bool IsHandledURL(const GURL& url) override;
   void SiteInstanceGotProcess(content::SiteInstance* site_instance) override;
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
@@ -160,7 +158,6 @@ class CastContentBrowserClient
       const GURL& request_url,
       bool is_main_frame_request,
       bool strict_enforcement,
-      bool expired_previous_decision,
       const base::Callback<void(content::CertificateRequestResultType)>&
           callback) override;
   base::OnceClosure SelectClientCertificate(
@@ -189,10 +186,6 @@ class CastContentBrowserClient
       service_manager::BinderRegistry* registry,
       content::RenderFrameHost* render_frame_host) override;
   void RunServiceInstance(
-      const service_manager::Identity& identity,
-      mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
-      override;
-  void RunServiceInstanceOnIOThread(
       const service_manager::Identity& identity,
       mojo::PendingReceiver<service_manager::mojom::Service>* receiver)
       override;
@@ -225,9 +218,8 @@ class CastContentBrowserClient
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
   std::string GetUserAgent() override;
-  bool DoesSiteRequireDedicatedProcess(
-      content::BrowserOrResourceContext browser_or_resource_context,
-      const GURL& effective_site_url) override;
+  bool DoesSiteRequireDedicatedProcess(content::BrowserContext* browser_context,
+                                       const GURL& effective_site_url) override;
   CastFeatureListCreator* GetCastFeatureListCreator() {
     return cast_feature_list_creator_;
   }

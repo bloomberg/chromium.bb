@@ -33,7 +33,6 @@
 #include "ui/ozone/platform/drm/gpu/drm_thread_proxy.h"
 #include "ui/ozone/platform/drm/gpu/gbm_surface_factory.h"
 #include "ui/ozone/platform/drm/gpu/proxy_helpers.h"
-#include "ui/ozone/platform/drm/gpu/screen_manager.h"
 #include "ui/ozone/platform/drm/host/drm_cursor.h"
 #include "ui/ozone/platform/drm/host/drm_device_connector.h"
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
@@ -190,8 +189,8 @@ class OzonePlatformGbm : public OzonePlatform {
     host_thread_ = base::PlatformThread::CurrentRef();
 
     device_manager_ = CreateDeviceManager();
-    window_manager_.reset(new DrmWindowHostManager());
-    cursor_.reset(new DrmCursor(window_manager_.get()));
+    window_manager_ = std::make_unique<DrmWindowHostManager>();
+    cursor_ = std::make_unique<DrmCursor>(window_manager_.get());
 
 #if BUILDFLAG(USE_XKBCOMMON)
     KeyboardLayoutEngineManager::SetKeyboardLayoutEngine(
@@ -201,9 +200,9 @@ class OzonePlatformGbm : public OzonePlatform {
         std::make_unique<StubKeyboardLayoutEngine>());
 #endif
 
-    event_factory_ozone_.reset(new EventFactoryEvdev(
+    event_factory_ozone_ = std::make_unique<EventFactoryEvdev>(
         cursor_.get(), device_manager_.get(),
-        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()));
+        KeyboardLayoutEngineManager::GetKeyboardLayoutEngine());
 
     GpuThreadAdapter* adapter;
 
@@ -213,8 +212,8 @@ class OzonePlatformGbm : public OzonePlatform {
           std::make_unique<DrmDeviceConnector>(host_drm_device_);
       adapter = host_drm_device_.get();
     } else {
-      gpu_platform_support_host_.reset(
-          new DrmGpuPlatformSupportHost(cursor_.get()));
+      gpu_platform_support_host_ =
+          std::make_unique<DrmGpuPlatformSupportHost>(cursor_.get());
       adapter = gpu_platform_support_host_.get();
     }
 
@@ -227,7 +226,7 @@ class OzonePlatformGbm : public OzonePlatform {
     display_manager_ = std::make_unique<DrmDisplayHostManager>(
         adapter, device_manager_.get(), &host_properties_,
         overlay_manager_host.get(), event_factory_ozone_->input_controller());
-    cursor_factory_ozone_.reset(new BitmapCursorFactoryOzone);
+    cursor_factory_ozone_ = std::make_unique<BitmapCursorFactoryOzone>();
 
     if (using_mojo_) {
       host_drm_device_->ProvideManagers(display_manager_.get(),
@@ -251,9 +250,10 @@ class OzonePlatformGbm : public OzonePlatform {
 
     // NOTE: Can't start the thread here since this is called before sandbox
     // initialization in multi-process Chrome.
-    drm_thread_proxy_.reset(new DrmThreadProxy());
+    drm_thread_proxy_ = std::make_unique<DrmThreadProxy>();
 
-    surface_factory_.reset(new GbmSurfaceFactory(drm_thread_proxy_.get()));
+    surface_factory_ =
+        std::make_unique<GbmSurfaceFactory>(drm_thread_proxy_.get());
     if (!using_mojo_) {
       drm_thread_proxy_->BindThreadIntoMessagingProxy(itmp);
     }
@@ -263,13 +263,6 @@ class OzonePlatformGbm : public OzonePlatform {
           std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
     }
 
-    // If InitializeGPU and InitializeUI are invoked on the same thread, startup
-    // sequencing is complicated because tasks are queued on the unbound mojo
-    // pipe connecting the UI (the host) to the DRM thread before the DRM thread
-    // is launched above. Special case this sequence via the
-    // BlockingStartDrmDevice API.
-    // TODO(rjkroege): In a future when we have completed splitting Viz, it will
-    // be possible to simplify this logic.
     if (using_mojo_ && single_process_ &&
         host_thread_ == base::PlatformThread::CurrentRef()) {
       CHECK(host_drm_device_) << "Mojo single-thread mode requires "
@@ -284,7 +277,6 @@ class OzonePlatformGbm : public OzonePlatform {
       drm_thread_proxy_->AddBindingDrmDevice(
           mojo::MakeRequest(&drm_device_ptr));
       drm_device_connector_->ConnectSingleThreaded(std::move(drm_device_ptr));
-      host_drm_device_->BlockingStartDrmDevice();
     }
   }
 

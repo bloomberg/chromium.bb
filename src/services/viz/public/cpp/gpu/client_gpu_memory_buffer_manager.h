@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace base {
 class WaitableEvent;
@@ -65,7 +65,7 @@ class ClientGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
   base::WeakPtr<ClientGpuMemoryBufferManager> weak_ptr_;
   std::set<base::WaitableEvent*> pending_allocation_waiters_;
   std::unique_ptr<gpu::GpuMemoryBufferSupport> gpu_memory_buffer_support_;
-  base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_;
+  base::WeakPtrFactory<ClientGpuMemoryBufferManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ClientGpuMemoryBufferManager);
 };

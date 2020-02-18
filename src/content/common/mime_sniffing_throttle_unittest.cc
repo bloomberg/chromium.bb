@@ -8,13 +8,13 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/common/mime_sniffing_url_loader.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -73,9 +73,9 @@ class MojoDataPipeSender {
   uint32_t sent_bytes_ = 0;
 };
 
-class MockDelegate : public URLLoaderThrottle::Delegate {
+class MockDelegate : public blink::URLLoaderThrottle::Delegate {
  public:
-  // Implements URLLoaderThrottle::Delegate.
+  // Implements blink::URLLoaderThrottle::Delegate.
   void CancelWithError(int error_code,
                        base::StringPiece custom_reason) override {
     NOTIMPLEMENTED();
@@ -187,12 +187,12 @@ class MockDelegate : public URLLoaderThrottle::Delegate {
 class MimeSniffingThrottleTest : public testing::Test {
  protected:
   // Be the first member so it is destroyed last.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -206,7 +206,7 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -221,7 +221,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -236,7 +236,7 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithNotSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -250,7 +250,7 @@ TEST_F(MimeSniffingThrottleTest, NoMimeTypeWithNotSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithNotSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -265,7 +265,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableMimeTypeWithNotSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithNotSniffableScheme) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -280,7 +280,7 @@ TEST_F(MimeSniffingThrottleTest, NotSniffableMimeTypeWithNotSniffableScheme) {
 
 TEST_F(MimeSniffingThrottleTest, SniffableButAlreadySniffed) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -296,7 +296,7 @@ TEST_F(MimeSniffingThrottleTest, SniffableButAlreadySniffed) {
 
 TEST_F(MimeSniffingThrottleTest, NoBody) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -320,7 +320,7 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
 
 TEST_F(MimeSniffingThrottleTest, EmptyBody) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -348,7 +348,7 @@ TEST_F(MimeSniffingThrottleTest, EmptyBody) {
 
 TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -372,7 +372,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
 
 TEST_F(MimeSniffingThrottleTest, Body_Docx) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -396,7 +396,7 @@ TEST_F(MimeSniffingThrottleTest, Body_Docx) {
 
 TEST_F(MimeSniffingThrottleTest, Body_PNG) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -420,7 +420,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PNG) {
 
 TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -445,11 +445,11 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   // body. After this, MimeSniffingURLLoader is waiting to push the body to the
   // destination data pipe since the pipe should be full until it's read.
   delegate->LoadResponseBody(long_body);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Send OnComplete() to the MimeSniffingURLLoader.
   delegate->CompleteResponse();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // MimeSniffingURLLoader should not send OnComplete() to the destination
   // client until it finished writing all the data.
   EXPECT_FALSE(
@@ -458,11 +458,11 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   // Read the half of the body. This unblocks MimeSniffingURLLoader to push the
   // rest of the body to the data pipe.
   uint32_t read_bytes = delegate->ReadResponseBody(long_body.size() / 2);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Read the rest of the body.
   read_bytes += delegate->ReadResponseBody(long_body.size() / 2);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   delegate->destination_loader_client()->RunUntilComplete();
 
   // Check if all data has been read.
@@ -476,7 +476,7 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
 
 TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {
   auto throttle = std::make_unique<MimeSniffingThrottle>(
-      scoped_task_environment_.GetMainThreadTaskRunner());
+      task_environment_.GetMainThreadTaskRunner());
   auto delegate = std::make_unique<MockDelegate>();
   throttle->set_delegate(delegate.get());
 
@@ -491,18 +491,18 @@ TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {
   std::string body = "This should be long enough to complete sniffing.";
   body.resize(1024, 'a');
   delegate->LoadResponseBody(body);
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Release a pipe for the body on the receiver side.
   delegate->destination_loader_client()->response_body_release();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Send the body after the pipe is closed. The the loader aborts.
   delegate->LoadResponseBody("This is a text.");
 
   // Calling OnComplete should not crash.
   delegate->CompleteResponse();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 }  // namespace content

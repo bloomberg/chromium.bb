@@ -30,6 +30,7 @@
 <translation id="4523886039239821078">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Disinstallali.</translation>
 <translation id="4615174829807303908">Stai per uscire da un account gestito da <ph name="SIGNOUT_MANAGED_DOMAIN" />. I dati di Chrome verranno eliminati da questo dispositivo, ma rimarranno memorizzati nel tuo Account Google.</translation>
 <translation id="5389212809648216794">Google Chrome non può utilizzare la videocamera perché è attualmente utilizzata da un'altra applicazione</translation>
+<translation id="5621912349729388018"><ph name="BEGIN_LINK" />Leggi i Termini di servizio di Chrome aggiornati<ph name="END_LINK" />.</translation>
 <translation id="5639704535586432836">Apri impostazioni &gt; Privacy &gt; Fotocamera &gt; Google Chrome e attiva la videocamera.</translation>
 <translation id="5642200033778930880">Google Chrome non può utilizzare la videocamera in modalità Visualizzazione divisa</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -45,11 +46,11 @@
 <translation id="7172660552945675509">Suggerimento. <ph name="BEGIN_LINK" />Sposta Chrome nel dock<ph name="END_LINK" /></translation>
 <translation id="7173660919484573146">Chrome utilizza Face ID per garantire accesso autorizzato alle tue password.</translation>
 <translation id="7265369419224458312">Accedi alle schede che hai aperto sul computer direttamente qui. Apri Chrome sul computer, apri il menu e seleziona "Accedi a Chrome…".</translation>
-<translation id="728488472449859922">Attiva lo scanner QR di Google Chrome</translation>
 <translation id="7400722733683201933">Informazioni su Google Chrome</translation>
 <translation id="7437998757836447326">Esci da Chrome</translation>
 <translation id="756809126120519699">Dati di Chrome cancellati</translation>
 <translation id="7626032353295482388">Benvenuto in Chrome</translation>
+<translation id="7698568245838009292">Chrome vorrebbe accedere alla fotocamera</translation>
 <translation id="8370517070665726704">Copyright <ph name="YEAR" /> Google LLC Tutti i diritti riservati.</translation>
 <translation id="840168496893712993">Alcuni componenti aggiuntivi provocano l'arresto anomalo di Chrome. Prova a disinstallarli.</translation>
 <translation id="8459495907675268833">I dati selezionati sono stati rimossi da Chrome e dai dispositivi sincronizzati. Il tuo Account Google potrebbe avere altre forme di cronologia di navigazione, ad esempio ricerche e attività, di altri servizi Google alla pagina history.google.com.</translation>

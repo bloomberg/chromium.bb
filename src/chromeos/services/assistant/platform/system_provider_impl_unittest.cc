@@ -8,11 +8,11 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "chromeos/services/assistant/fake_client.h"
 #include "chromeos/services/assistant/platform/power_manager_provider_impl.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -61,16 +61,14 @@ class FakeBatteryMonitor : device::mojom::BatteryMonitor {
 class SystemProviderImplTest : public testing::Test {
  public:
   SystemProviderImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     battery_monitor_.SetStatus(device::mojom::BatteryStatus::New(
         false /* charging */, 0 /* charging_time */, 0 /* discharging_time */,
         0 /* level */));
 
     system_provider_impl_ = std::make_unique<SystemProviderImpl>(
         std::make_unique<PowerManagerProviderImpl>(
-            connector_factory_.GetDefaultConnector(),
-            scoped_task_environment_.GetMainThreadTaskRunner()),
+            &fake_client_, task_environment_.GetMainThreadTaskRunner()),
         battery_monitor_.CreateInterfacePtrAndBind());
     FlushForTesting();
   }
@@ -82,9 +80,9 @@ class SystemProviderImplTest : public testing::Test {
   void FlushForTesting() { system_provider_impl_->FlushForTesting(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  service_manager::TestConnectorFactory connector_factory_;
+  base::test::TaskEnvironment task_environment_;
   FakeBatteryMonitor battery_monitor_;
+  FakeClient fake_client_;
   std::unique_ptr<SystemProviderImpl> system_provider_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemProviderImplTest);

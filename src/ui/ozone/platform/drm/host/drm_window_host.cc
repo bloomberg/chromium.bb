@@ -17,7 +17,6 @@
 #include "ui/ozone/platform/drm/host/drm_display_host_manager.h"
 #include "ui/ozone/platform/drm/host/drm_window_host_manager.h"
 #include "ui/ozone/platform/drm/host/gpu_thread_adapter.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 namespace ui {
 
@@ -126,6 +125,8 @@ void DrmWindowHost::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
 
+void DrmWindowHost::SetUseNativeFrame(bool use_native_frame) {}
+
 void DrmWindowHost::SetCursor(PlatformCursor cursor) {
   cursor_->SetCursor(widget_, cursor);
 }
@@ -211,8 +212,7 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& event) {
 void DrmWindowHost::OnGpuProcessLaunched() {}
 
 void DrmWindowHost::OnGpuThreadReady() {
-  sender_->GpuCreateWindow(widget_);
-  SendBoundsChange();
+  sender_->GpuCreateWindow(widget_, bounds_);
 }
 
 void DrmWindowHost::OnGpuThreadRetired() {}

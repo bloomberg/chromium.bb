@@ -32,7 +32,7 @@ class MEDIA_EXPORT AudioOutputIPCDelegate {
                                   const std::string& matched_device_id) = 0;
 
   // Called when an audio stream has been created.
-  // See media/mojo/interfaces/audio_data_pipe.mojom for documentation of
+  // See media/mojo/mojom/audio_data_pipe.mojom for documentation of
   // |handle| and |socket_handle|. |playing_automatically| indicates if the
   // AudioOutputIPCDelegate is playing right away due to an earlier call to
   // Play();
@@ -71,9 +71,10 @@ class MEDIA_EXPORT AudioOutputIPC {
   // the default device.
   // Once the authorization process is complete, the implementation will
   // notify |delegate| by calling OnDeviceAuthorized().
-  virtual void RequestDeviceAuthorization(AudioOutputIPCDelegate* delegate,
-                                          int session_id,
-                                          const std::string& device_id) = 0;
+  virtual void RequestDeviceAuthorization(
+      AudioOutputIPCDelegate* delegate,
+      const base::UnguessableToken& session_id,
+      const std::string& device_id) = 0;
 
   // Sends a request to create an AudioOutputController object in the peer
   // process and configures it to use the specified audio |params| including

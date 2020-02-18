@@ -31,11 +31,17 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_MEDIA_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_USER_MEDIA_CLIENT_H_
 
+#include <memory>
+
+#include "base/memory/scoped_refptr.h"
+#include "third_party/blink/public/platform/web_common.h"
+
 namespace blink {
 
 class WebApplyConstraintsRequest;
 class WebMediaStreamTrack;
 class WebUserMediaRequest;
+class WebUserMediaClient;
 
 class WebUserMediaClient {
  public:
@@ -45,7 +51,7 @@ class WebUserMediaClient {
   virtual void CancelUserMediaRequest(const WebUserMediaRequest&) = 0;
   virtual void ApplyConstraints(const WebApplyConstraintsRequest&) = 0;
   virtual void StopTrack(const WebMediaStreamTrack&) = 0;
-  virtual bool IsCapturing() = 0;
+  virtual void ContextDestroyed() = 0;
 };
 
 }  // namespace blink

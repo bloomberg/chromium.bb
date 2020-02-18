@@ -38,9 +38,9 @@
 #import "ios/web/public/deprecated/crw_context_menu_delegate.h"
 #import "ios/web/public/deprecated/crw_native_content_provider.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
+#import "ios/web/public/ui/page_display_state.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/page_display_state.h"
-#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
 #import "ios/web/security/crw_cert_verification_controller.h"
 #import "ios/web/security/crw_ssl_status_updater.h"
 #import "ios/web/web_state/page_viewport_state.h"
@@ -366,10 +366,17 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
         setNativeControllerWebUsageEnabled:_webUsageEnabled];
     if (enabled) {
       // Don't create the web view; let it be lazy created as needed.
+
+      // The gesture is removed when the web usage is disabled. Add it back when
+      // it is enabled again.
+      [_containerView addGestureRecognizer:[self touchTrackingRecognizer]];
     } else {
       self.webStateImpl->ClearTransientContent();
-      _touchTrackingRecognizer.touchTrackingDelegate = nil;
-      _touchTrackingRecognizer = nil;
+      if (_touchTrackingRecognizer) {
+        [_containerView removeGestureRecognizer:_touchTrackingRecognizer];
+        _touchTrackingRecognizer.touchTrackingDelegate = nil;
+        _touchTrackingRecognizer = nil;
+      }
       _currentURLLoadWasTrigerred = NO;
     }
   }
@@ -528,7 +535,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 - (CRWTouchTrackingRecognizer*)touchTrackingRecognizer {
   if (!_touchTrackingRecognizer) {
     _touchTrackingRecognizer =
-        [[CRWTouchTrackingRecognizer alloc] initWithDelegate:self];
+        [[CRWTouchTrackingRecognizer alloc] initWithTouchTrackingDelegate:self];
   }
   return _touchTrackingRecognizer;
 }
@@ -566,7 +573,7 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   return context->GetItem();
 }
 
-- (void)showTransientContentView:(CRWContentView*)contentView {
+- (void)showTransientContentView:(UIView<CRWScrollableContent>*)contentView {
   DCHECK(contentView);
   DCHECK(contentView.scrollView);
   // TODO(crbug.com/556848) Reenable DCHECK when |CRWWebControllerContainerView|
@@ -656,7 +663,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   web::NavigationItem* item =
       self.navigationManagerImpl
           ->GetLastCommittedItemInCurrentOrRestoredSession();
-  return item ? item->GetVirtualURL() : GURL::EmptyGURL();
+  if (item) {
+    // This special case is added for any app specific URLs that have been
+    // rewritten to about:// URLs.
+    if (item->GetURL().SchemeIs(url::kAboutScheme) &&
+        web::GetWebClient()->IsAppSpecificURL(item->GetVirtualURL())) {
+      return item->GetURL();
+    }
+    return item->GetVirtualURL();
+  }
+  return GURL::EmptyGURL();
 }
 
 - (void)reloadWithRendererInitiatedNavigation:(BOOL)rendererInitiated {

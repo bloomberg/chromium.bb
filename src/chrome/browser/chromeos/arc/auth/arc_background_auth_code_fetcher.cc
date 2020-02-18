@@ -59,8 +59,7 @@ ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
       profile_(profile),
       context_(profile_, account_id),
       initial_signin_(initial_signin),
-      is_primary_account_(is_primary_account),
-      weak_ptr_factory_(this) {}
+      is_primary_account_(is_primary_account) {}
 
 ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
 
@@ -132,8 +131,8 @@ void ArcBackgroundAuthCodeFetcher::OnAccessTokenFetchComplete(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GURL(kAuthTokenExchangeEndPoint);
   resource_request->load_flags =
-      net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+      net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   resource_request->headers.SetHeader(kGetAuthCodeKey, kGetAuthCodeValue);
   simple_url_loader_ = network::SimpleURLLoader::Create(

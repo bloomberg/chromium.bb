@@ -9,12 +9,10 @@
 #include "base/callback.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
@@ -22,16 +20,18 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
 namespace {
 
-class DeferringURLLoaderThrottle final : public URLLoaderThrottle {
+class DeferringURLLoaderThrottle final : public blink::URLLoaderThrottle {
  public:
   DeferringURLLoaderThrottle() = default;
   ~DeferringURLLoaderThrottle() override = default;
@@ -87,7 +87,6 @@ class MockURLLoader final : public network::mojom::URLLoader {
                void(const std::vector<std::string>&,
                     const net::HttpRequestHeaders&,
                     const base::Optional<GURL>&));
-  MOCK_METHOD0(ProceedWithResponse, void());
   MOCK_METHOD2(SetPriority,
                void(net::RequestPriority priority,
                     int32_t intra_priority_value));
@@ -153,10 +152,7 @@ void ForwardCertificateCallback(
 class SignedExchangeCertFetcherTest : public testing::Test {
  public:
   SignedExchangeCertFetcherTest()
-      : url_(GURL("https://www.example.com/cert")),
-        resource_dispatcher_host_(CreateDownloadHandlerIntercept(),
-                                  base::ThreadTaskRunnerHandle::Get(),
-                                  true /* enable_resource_scheduler */) {}
+      : url_(GURL("https://www.example.com/cert")) {}
   ~SignedExchangeCertFetcherTest() override {}
 
  protected:
@@ -206,7 +202,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
     return ImportTestCert()->CalculateChainFingerprint256();
   }
 
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   std::unique_ptr<SignedExchangeCertFetcher> CreateFetcherAndStart(
       const GURL& url,
@@ -248,10 +244,9 @@ class SignedExchangeCertFetcherTest : public testing::Test {
   SignedExchangeLoadResult result_;
   std::unique_ptr<SignedExchangeCertificateChain> cert_result_;
   URLLoaderFactoryForMockLoader mock_loader_factory_;
-  std::vector<std::unique_ptr<URLLoaderThrottle>> throttles_;
+  std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  ResourceDispatcherHostImpl resource_dispatcher_host_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SignedExchangeCertFetcherTest);
@@ -268,7 +263,8 @@ TEST_F(SignedExchangeCertFetcherTest, Simple) {
   EXPECT_EQ(url_, mock_loader_factory_.url_request()->url);
   EXPECT_EQ(static_cast<int>(ResourceType::kSubResource),
             mock_loader_factory_.url_request()->resource_type);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
   EXPECT_TRUE(mock_loader_factory_.url_request()->request_initiator->opaque());
   std::string accept;
   EXPECT_TRUE(
@@ -326,7 +322,8 @@ TEST_F(SignedExchangeCertFetcherTest, ForceFetchAndFail) {
             mock_loader_factory_.url_request()->resource_type);
   EXPECT_EQ(net::LOAD_DISABLE_CACHE | net::LOAD_BYPASS_CACHE,
             mock_loader_factory_.url_request()->load_flags);
-  EXPECT_FALSE(mock_loader_factory_.url_request()->allow_credentials);
+  EXPECT_EQ(mock_loader_factory_.url_request()->credentials_mode,
+            network::mojom::CredentialsMode::kOmit);
 
   mock_loader_factory_.client_ptr()->OnComplete(
       network::URLLoaderCompletionStatus(net::ERR_INVALID_SIGNED_EXCHANGE));
@@ -782,30 +779,12 @@ TEST_F(SignedExchangeCertFetcherTest, CloseClientPipe_AfterReceivingBody) {
 
 TEST_F(SignedExchangeCertFetcherTest, DataURL) {
   std::string data_url_string = "data:application/cert-chain+cbor";
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    std::string output;
-    base::Base64Encode(CreateTestData(), &output);
-    data_url_string += ";base64," + output;
-  } else {
-    data_url_string += ",foobar";
-  }
+  std::string output;
+  base::Base64Encode(CreateTestData(), &output);
+  data_url_string += ";base64," + output;
   const GURL data_url = GURL(data_url_string);
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-
-  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
-  // scheme.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
-    network::ResourceResponseHead resource_response;
-    resource_response.mime_type = "application/cert-chain+cbor";
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
-
-    mock_loader_factory_.client_ptr()->OnStartLoadingResponseBody(
-        CreateTestDataFilledDataPipe());
-    mock_loader_factory_.client_ptr()->OnComplete(
-        network::URLLoaderCompletionStatus(net::OK));
-  }
 
   RunUntilIdle();
   EXPECT_TRUE(callback_called_);
@@ -819,15 +798,6 @@ TEST_F(SignedExchangeCertFetcherTest, DataURLWithWrongMimeType) {
   const GURL data_url = GURL("data:application/octet-stream,foobar");
   std::unique_ptr<SignedExchangeCertFetcher> fetcher =
       CreateFetcherAndStart(data_url, false /* force_fetch */);
-
-  // SignedExchangeCertFetcher directly creates DataURLLoaderFactory for data
-  // scheme.
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    EXPECT_EQ(data_url, mock_loader_factory_.url_request()->url);
-    network::ResourceResponseHead resource_response;
-    resource_response.mime_type = "application/octet-stream";
-    mock_loader_factory_.client_ptr()->OnReceiveResponse(resource_response);
-  }
 
   RunUntilIdle();
 

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_cleaner/engines/target/sandboxed_test_helpers.h"
 #include "chrome/chrome_cleaner/os/pre_fetched_paths.h"
 #include "chrome/chrome_cleaner/test/test_file_util.h"
@@ -372,7 +372,7 @@ class EngineFileRequestsProxyTest
 };
 
 TEST_P(EngineFileRequestsProxyTest, TestRequest) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Create resources that tests running in the sandbox will not have access to
   // create for themselves, even before calling LowerToken.

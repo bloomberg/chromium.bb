@@ -93,8 +93,6 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
   configuration.rtt_stats = rtt_stats;
   configuration.rtcp_packet_type_counter_observer = rtcp_type_observer;
   configuration.paced_sender = transport->packet_sender();
-  configuration.transport_sequence_number_allocator =
-      transport->packet_router();
   configuration.send_bitrate_observer = bitrate_observer;
   configuration.send_side_delay_observer = send_delay_observer;
   configuration.send_packet_observer = send_packet_observer;
@@ -110,15 +108,23 @@ std::vector<RtpStreamSender> CreateRtpStreamSenders(
   std::vector<RtpStreamSender> rtp_streams;
   const std::vector<uint32_t>& flexfec_protected_ssrcs =
       rtp_config.flexfec.protected_media_ssrcs;
-  for (uint32_t ssrc : rtp_config.ssrcs) {
+  RTC_DCHECK(rtp_config.rtx.ssrcs.empty() ||
+             rtp_config.rtx.ssrcs.size() == rtp_config.rtx.ssrcs.size());
+  for (size_t i = 0; i < rtp_config.ssrcs.size(); ++i) {
+    configuration.local_media_ssrc = rtp_config.ssrcs[i];
     bool enable_flexfec = flexfec_sender != nullptr &&
                           std::find(flexfec_protected_ssrcs.begin(),
                                     flexfec_protected_ssrcs.end(),
-                                    ssrc) != flexfec_protected_ssrcs.end();
+                                    *configuration.local_media_ssrc) !=
+                              flexfec_protected_ssrcs.end();
     configuration.flexfec_sender = enable_flexfec ? flexfec_sender : nullptr;
     auto playout_delay_oracle = absl::make_unique<PlayoutDelayOracle>();
 
     configuration.ack_observer = playout_delay_oracle.get();
+    if (rtp_config.rtx.ssrcs.size() > i) {
+      configuration.rtx_send_ssrc = rtp_config.rtx.ssrcs[i];
+    }
+
     auto rtp_rtcp = RtpRtcp::Create(configuration);
     rtp_rtcp->SetSendingStatus(false);
     rtp_rtcp->SetSendingMediaStatus(false);
@@ -571,7 +577,6 @@ void RtpVideoSender::ConfigureSsrcs() {
   for (size_t i = 0; i < rtp_config_.ssrcs.size(); ++i) {
     uint32_t ssrc = rtp_config_.ssrcs[i];
     RtpRtcp* const rtp_rtcp = rtp_streams_[i].rtp_rtcp.get();
-    rtp_rtcp->SetSSRC(ssrc);
 
     // Restore RTP state if previous existed.
     auto it = suspended_ssrcs_.find(ssrc);
@@ -587,12 +592,10 @@ void RtpVideoSender::ConfigureSsrcs() {
   if (rtp_config_.rtx.ssrcs.empty())
     return;
 
-  // Configure RTX SSRCs.
   RTC_DCHECK_EQ(rtp_config_.rtx.ssrcs.size(), rtp_config_.ssrcs.size());
   for (size_t i = 0; i < rtp_config_.rtx.ssrcs.size(); ++i) {
     uint32_t ssrc = rtp_config_.rtx.ssrcs[i];
     RtpRtcp* const rtp_rtcp = rtp_streams_[i].rtp_rtcp.get();
-    rtp_rtcp->SetRtxSsrc(ssrc);
     auto it = suspended_ssrcs_.find(ssrc);
     if (it != suspended_ssrcs_.end())
       rtp_rtcp->SetRtxState(it->second);

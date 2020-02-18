@@ -32,8 +32,8 @@
 #include "components/security_state/core/security_state.h"
 #include "content/public/browser/mhtml_extra_parts.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "net/base/net_errors.h"
@@ -282,7 +282,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
   void OnProgress(const SavePageRequest& request, int64_t bytes);
   void OnCancel(const SavePageRequest& request);
   void OnCanDownload(bool allowed);
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvhte_;
   TestingProfile profile_;
   std::unique_ptr<OfflinerPolicy> policy_;
@@ -301,7 +301,7 @@ class BackgroundLoaderOfflinerTest : public testing::Test {
 };
 
 BackgroundLoaderOfflinerTest::BackgroundLoaderOfflinerTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       load_termination_listener_(nullptr),
       model_(nullptr),
       completion_callback_called_(false),
@@ -679,14 +679,15 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnCertificateError) {
             request_status());
 }
 
-TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnMinorCertificateError) {
+TEST_F(BackgroundLoaderOfflinerTest, FailsOnRevocationCheckingFailure) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request(kRequestId, kHttpUrl, kClientId, creation_time,
                           kUserRequested);
   EXPECT_TRUE(offliner()->LoadAndSave(request, completion_callback(),
                                       progress_callback()));
 
-  // Sets a minor certificate error that should be acceptable.
+  // Sets a revocation checking failure certificate error that should not be
+  // allowed.
   std::unique_ptr<VisibleSecurityState> visible_security_state =
       BaseVisibleSecurityState();
   visible_security_state->cert_status |=
@@ -703,8 +704,10 @@ TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnMinorCertificateError) {
   CompleteLoading();
   PumpLoop();
 
-  EXPECT_TRUE(SaveInProgress());
-  EXPECT_FALSE(completion_callback_called());
+  EXPECT_FALSE(SaveInProgress());
+  EXPECT_TRUE(completion_callback_called());
+  EXPECT_EQ(Offliner::RequestStatus::LOADED_PAGE_HAS_CERTIFICATE_ERROR,
+            request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, SucceedsOnHttp) {

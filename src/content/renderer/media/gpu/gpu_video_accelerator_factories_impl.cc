@@ -30,7 +30,7 @@
 #include "media/mojo/clients/mojo_video_decoder.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
-#include "services/service_manager/public/cpp/connector.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/skia/include/core/SkPostConfig.h"
 
@@ -195,6 +195,12 @@ int32_t GpuVideoAcceleratorFactoriesImpl::GetCommandBufferRouteId() {
 bool GpuVideoAcceleratorFactoriesImpl::IsDecoderConfigSupported(
     media::VideoDecoderImplementation implementation,
     const media::VideoDecoderConfig& config) {
+  // There is no support for alpha channel hardware decoding yet.
+  if (config.alpha_mode() == media::VideoDecoderConfig::AlphaMode::kHasAlpha) {
+    DVLOG(1) << "Alpha transparency formats are not supported.";
+    return false;
+  }
+
   base::AutoLock lock(supported_decoder_configs_lock_);
 
   // If GetSupportedConfigs() has not completed (or was never started), report
@@ -339,8 +345,6 @@ GpuVideoAcceleratorFactoriesImpl::VideoFrameOutputFormat(
       !capabilities.image_ycbcr_420v_disabled_for_video_frames) {
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_SINGLE_GMB;
   }
-  if (capabilities.image_ycbcr_422)
-    return media::GpuVideoAcceleratorFactories::OutputFormat::UYVY;
   if (capabilities.texture_rg)
     return media::GpuVideoAcceleratorFactories::OutputFormat::NV12_DUAL_GMB;
   return media::GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED;
@@ -366,6 +370,13 @@ GpuVideoAcceleratorFactoriesImpl::CreateSharedMemory(size_t size) {
   return mem;
 }
 
+base::UnsafeSharedMemoryRegion
+GpuVideoAcceleratorFactoriesImpl::CreateSharedMemoryRegion(size_t size) {
+  // If necessary, this call will make a synchronous request to a privileged
+  // process to create the shared region.
+  return mojo::CreateUnsafeSharedMemoryRegion(size);
+}
+
 scoped_refptr<base::SingleThreadTaskRunner>
 GpuVideoAcceleratorFactoriesImpl::GetTaskRunner() {
   return task_runner_;
@@ -378,7 +389,7 @@ GpuVideoAcceleratorFactoriesImpl::GetVideoEncodeAcceleratorSupportedProfiles() {
           .video_encode_accelerator_supported_profiles);
 }
 
-scoped_refptr<viz::ContextProviderCommandBuffer>
+scoped_refptr<viz::ContextProvider>
 GpuVideoAcceleratorFactoriesImpl::GetMediaContextProvider() {
   return CheckContextLost() ? nullptr : context_provider_;
 }

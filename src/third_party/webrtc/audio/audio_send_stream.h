@@ -79,7 +79,6 @@ class AudioSendStream final : public webrtc::AudioSendStream,
   webrtc::AudioSendStream::Stats GetStats(
       bool has_remote_tracks) const override;
 
-  void SignalNetworkState(NetworkState state);
   void DeliverRtcp(const uint8_t* packet, size_t length);
 
   // Implements BitrateAllocatorObserver.
@@ -153,6 +152,7 @@ class AudioSendStream final : public webrtc::AudioSendStream,
   rtc::RaceChecker audio_capture_race_checker_;
   rtc::TaskQueue* worker_queue_;
   const AudioAllocationSettings allocation_settings_;
+  rtc::CriticalSection config_cs_;
   webrtc::AudioSendStream::Config config_;
   rtc::scoped_refptr<webrtc::AudioState> audio_state_;
   const std::unique_ptr<voe::ChannelSendInterface> channel_send_;
@@ -182,6 +182,7 @@ class AudioSendStream final : public webrtc::AudioSendStream,
   // So it should be safe to use 0 here to indicate "not configured".
   struct ExtensionIds {
     int audio_level = 0;
+    int abs_send_time = 0;
     int transport_sequence_number = 0;
     int mid = 0;
     int rid = 0;

@@ -7,17 +7,16 @@
 
 #include <memory>
 
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/synchronization/lock.h"
 #include "media/capture/mojom/video_capture_types.mojom.h"
 #include "media/capture/video/video_capture_buffer_handle.h"
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/system/buffer.h"
 
-#if defined(OS_CHROMEOS)
 namespace gfx {
 struct GpuMemoryBufferHandle;
 }
-#endif
 
 namespace media {
 
@@ -47,13 +46,10 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
   virtual uint32_t GetMemorySizeInBytes() = 0;
 
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetMemoryMappedAccess() = 0;
-  virtual mojo::ScopedSharedBufferHandle GetHandleForTransit(
-      bool read_only) = 0;
-  virtual base::SharedMemoryHandle
-  GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
-#if defined(OS_CHROMEOS)
+
+  virtual base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion() = 0;
+  virtual mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer() = 0;
   virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle() = 0;
-#endif
 
  private:
   // Indicates whether this VideoCaptureBufferTracker is currently referenced by

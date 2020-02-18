@@ -234,13 +234,27 @@ cr.define('history', function() {
         return;
       }
 
+      const ageInDays = Math.ceil(
+          (new Date() - new Date(this.item.time)) / 1000 /* s/ms */ /
+          60 /* m/s */ / 60 /* h/m */ / 24 /* d/h */);
+
       browserService.recordHistogram(
           'HistoryPage.ClickPosition',
           Math.min(this.index, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
 
+      browserService.recordHistogram(
+          'HistoryPage.ClickAgeInDays',
+          Math.min(ageInDays, UMA_MAX_BUCKET_VALUE), UMA_MAX_BUCKET_VALUE);
+
       if (this.index <= UMA_MAX_SUBSET_BUCKET_VALUE) {
         browserService.recordHistogram(
             'HistoryPage.ClickPositionSubset', this.index,
+            UMA_MAX_SUBSET_BUCKET_VALUE);
+      }
+
+      if (ageInDays <= UMA_MAX_SUBSET_BUCKET_VALUE) {
+        browserService.recordHistogram(
+            'HistoryPage.ClickAgeInDaysSubset', ageInDays,
             UMA_MAX_SUBSET_BUCKET_VALUE);
       }
     },
@@ -254,8 +268,9 @@ cr.define('history', function() {
      * @private
      */
     itemChanged_: function() {
-      this.$.icon.style.backgroundImage =
-          cr.icon.getFavicon(this.item.url, this.item.isUrlInRemoteUserData);
+      this.$.icon.style.backgroundImage = cr.icon.getFaviconForPageURL(
+          this.item.url, this.item.isUrlInRemoteUserData,
+          this.item.remoteIconUrlForUma);
       this.listen(this.$['time-accessed'], 'mouseover', 'addTimeTitle_');
     },
 

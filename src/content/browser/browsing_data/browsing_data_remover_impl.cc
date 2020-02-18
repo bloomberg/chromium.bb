@@ -20,7 +20,7 @@
 #include "base/task/post_task.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
-#include "content/browser/browsing_data/storage_partition_http_cache_data_remover.h"
+#include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -240,9 +240,9 @@ void BrowsingDataRemoverImpl::RunNextTask() {
   // after a delay.
   slow_pending_tasks_closure_.Reset(base::BindRepeating(
       &BrowsingDataRemoverImpl::RecordUnfinishedSubTasks, GetWeakPtr()));
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  slow_pending_tasks_closure_.callback(),
-                                  kSlowTaskTimeout);
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        slow_pending_tasks_closure_.callback(),
+                        kSlowTaskTimeout);
 
   RemoveImpl(removal_task.delete_begin, removal_task.delete_end,
              removal_task.remove_mask, removal_task.filter_builder.get(),
@@ -427,19 +427,14 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     // TODO(msramek): Clear the cache of all renderers.
 
     // TODO(crbug.com/813882): implement retry on network service.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // The clearing of the HTTP cache happens in the network service process
-      // when enabled. Note that we've deprecated the concept of a media cache,
-      // and are now using a single cache for both purposes.
-      network_context->ClearHttpCache(
-          delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
-          CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
-    } else {
-      storage_partition->ClearHttpAndMediaCaches(
-          delete_begin, delete_end, nullable_filter,
-          CreateTaskCompletionClosureForMojo(
-              TracingDataType::kHttpAndMediaCaches));
-    }
+
+    // The clearing of the HTTP cache happens in the network service process
+    // when enabled. Note that we've deprecated the concept of a media cache,
+    // and are now using a single cache for both purposes.
+    network_context->ClearHttpCache(
+        delete_begin, delete_end, filter_builder->BuildNetworkServiceFilter(),
+        CreateTaskCompletionClosureForMojo(TracingDataType::kHttpCache));
+
     storage_partition->ClearCodeCaches(
         delete_begin, delete_end, nullable_filter,
         CreateTaskCompletionClosureForMojo(TracingDataType::kCodeCaches));
@@ -449,6 +444,9 @@ void BrowsingDataRemoverImpl::RemoveImpl(
     network_context->ClearNetworkingHistorySince(
         delete_begin,
         CreateTaskCompletionClosureForMojo(TracingDataType::kNetworkHistory));
+
+    // Clears the PrefetchedSignedExchangeCache of all RenderFrameHostImpls.
+    RenderFrameHostImpl::ClearAllPrefetchedSignedExchangeCache();
 
     // Tell the shader disk cache to clear.
     base::RecordAction(UserMetricsAction("ClearBrowsingData_ShaderCache"));
@@ -591,7 +589,7 @@ void BrowsingDataRemoverImpl::Notify() {
   // Yield to the UI thread before executing the next removal task.
   // TODO(msramek): Consider also adding a backoff if too many tasks
   // are scheduled.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BrowsingDataRemoverImpl::RunNextTask, GetWeakPtr()));
 }

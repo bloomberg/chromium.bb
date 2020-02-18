@@ -129,7 +129,7 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
   EXPECT_FALSE(params_.quic_params.go_away_on_path_degrading);
   EXPECT_TRUE(params_.quic_params.initial_rtt_for_handshake.is_zero());
   EXPECT_FALSE(params_.quic_params.allow_server_migration);
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_TRUE(params_.quic_host_allowlist.empty());
   EXPECT_TRUE(params_.quic_params.retransmittable_on_wire_timeout.is_zero());
 
   net::HttpNetworkSession::Params default_params;
@@ -508,6 +508,19 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParams) {
   EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
 }
 
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionFromFieldTrialParamsAlpn) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["quic_version"] = "h3-T048";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  quic::ParsedQuicVersionVector supported_versions = {
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
+  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
+}
+
 TEST_F(NetworkSessionConfiguratorTest,
        MultipleQuicVersionFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
@@ -580,7 +593,7 @@ TEST_F(NetworkSessionConfiguratorTest,
   EXPECT_EQ(options, params_.quic_params.client_connection_options);
 }
 
-TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelist) {
+TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlist) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["host_whitelist"] = "www.example.org, www.example.com";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -588,12 +601,12 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelist) {
 
   ParseFieldTrials();
 
-  EXPECT_EQ(2u, params_.quic_host_whitelist.size());
-  EXPECT_TRUE(base::Contains(params_.quic_host_whitelist, "www.example.com"));
-  EXPECT_TRUE(base::Contains(params_.quic_host_whitelist, "www.example.org"));
+  EXPECT_EQ(2u, params_.quic_host_allowlist.size());
+  EXPECT_TRUE(base::Contains(params_.quic_host_allowlist, "www.example.com"));
+  EXPECT_TRUE(base::Contains(params_.quic_host_allowlist, "www.example.org"));
 }
 
-TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelistEmpty) {
+TEST_F(NetworkSessionConfiguratorTest, QuicHostAllowlistEmpty) {
   std::map<std::string, std::string> field_trial_params;
   field_trial_params["host_whitelist"] = "";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
@@ -601,7 +614,23 @@ TEST_F(NetworkSessionConfiguratorTest, QuicHostWhitelistEmpty) {
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_host_whitelist.empty());
+  EXPECT_TRUE(params_.quic_host_allowlist.empty());
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicFlags) {
+  FLAGS_quic_supports_tls_handshake = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_99 = false;
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["set_quic_flags"] =
+      "FLAGS_quic_supports_tls_handshake=true,"
+      "FLAGS_quic_reloadable_flag_quic_enable_version_99=true";
+  variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(FLAGS_quic_supports_tls_handshake);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_99);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, Http2SettingsFromFieldTrialParams) {
@@ -685,6 +714,18 @@ TEST_F(NetworkSessionConfiguratorTest, QuicVersion) {
     EXPECT_EQ(version,
               params_.quic_params.supported_versions[0].transport_version);
   }
+}
+
+TEST_F(NetworkSessionConfiguratorTest, QuicVersionAlpn) {
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitch(switches::kEnableQuic);
+  command_line.AppendSwitchASCII(switches::kQuicVersion, "h3-T048");
+
+  ParseCommandLineAndFieldTrials(command_line);
+
+  quic::ParsedQuicVersionVector supported_versions = {
+      {quic::PROTOCOL_TLS1_3, quic::QUIC_VERSION_48}};
+  EXPECT_EQ(supported_versions, params_.quic_params.supported_versions);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, OriginToForceQuicOn) {

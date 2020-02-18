@@ -15,7 +15,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_test_utils.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_test_utils.h"
@@ -173,14 +173,14 @@ class DataReductionProxyRequestOptionsTest : public testing::Test {
     EXPECT_EQ(expected_header, header_value);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment_{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<TestDataReductionProxyRequestOptions> request_options_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
   net::HttpRequestHeaders callback_headers_;
 };
 
-TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
+TEST_F(DataReductionProxyRequestOptionsTest, Authorization) {
   std::string expected_header;
   SetHeaderExpectations(std::string(), kClientStr, kExpectedBuild,
                         kExpectedPatch, kPageId, std::string(),
@@ -195,7 +195,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationOnIOThread) {
   test_context_->RunUntilIdle();
 
   // Now set a key.
-  request_options()->SetKeyOnIO(kTestKey2);
+  request_options()->SetKeyForTesting(kTestKey2);
 
   // Write headers.
   VerifyExpectedHeader(expected_header, kPageIdValue);
@@ -211,7 +211,7 @@ TEST_F(DataReductionProxyRequestOptionsTest, AuthorizationIgnoresEmptyKey) {
 
   // Now set an empty key. The auth handler should ignore that, and the key
   // remains |kTestKey|.
-  request_options()->SetKeyOnIO(std::string());
+  request_options()->SetKeyForTesting(std::string());
   VerifyExpectedHeader(expected_header, kPageIdValue);
 }
 

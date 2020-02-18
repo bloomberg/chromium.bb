@@ -11,8 +11,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/triggers/mock_trigger_manager.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,6 +68,7 @@ class SuspiciousSiteTriggerTest : public content::RenderViewHostTestHarness {
     GURL gurl(url);
     auto navigation_simulator =
         NavigationSimulator::CreateRendererInitiated(gurl, frame);
+    navigation_simulator->SetKeepLoading(true);
     navigation_simulator->Commit();
     RenderFrameHost* final_frame_host =
         navigation_simulator->GetFinalRenderFrameHost();

@@ -43,17 +43,6 @@ class SharingSyncPreferenceTest : public testing::Test {
                                       kDeviceAuthToken, kCapabilities));
   }
 
-  base::Optional<SharingSyncPreference::Device> GetDevice(
-      const std::string& guid) {
-    std::map<std::string, SharingSyncPreference::Device> synced_devices =
-        sharing_sync_preference_.GetSyncedDevices();
-    auto it = synced_devices.find(guid);
-    if (it == synced_devices.end())
-      return base::nullopt;
-    else
-      return std::move(it->second);
-  }
-
   static base::Value CreateRandomDevice(base::Time timestamp) {
     return SharingSyncPreference::DeviceToValue(
         {base::GenerateGUID(), kDeviceP256dh, kDeviceAuthToken, kCapabilities},
@@ -72,164 +61,33 @@ TEST_F(SharingSyncPreferenceTest, UpdateVapidKeys) {
 
 TEST_F(SharingSyncPreferenceTest, RemoveDevice) {
   SyncDefaultDevice();
-  EXPECT_NE(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_NE(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
   sharing_sync_preference_.RemoveDevice(kDeviceGuid);
-  EXPECT_EQ(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_EQ(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
 }
 
 TEST_F(SharingSyncPreferenceTest, SyncDevice) {
-  EXPECT_EQ(base::nullopt, GetDevice(kDeviceGuid));
+  EXPECT_EQ(base::nullopt,
+            sharing_sync_preference_.GetSyncedDevice(kDeviceGuid));
   SyncDefaultDevice();
-  base::Optional<SharingSyncPreference::Device> device = GetDevice(kDeviceGuid);
+  base::Optional<SharingSyncPreference::Device> device =
+      sharing_sync_preference_.GetSyncedDevice(kDeviceGuid);
 
   EXPECT_NE(base::nullopt, device);
   EXPECT_EQ(kDeviceFcmToken, device->fcm_token);
   EXPECT_EQ(kDeviceP256dh, device->p256dh);
   EXPECT_EQ(kDeviceAuthToken, device->auth_secret);
   EXPECT_EQ(kCapabilities, device->capabilities);
-}
 
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_BothEmpty) {
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_ServerEmpty) {
-  base::Time time = base::Time::Now();
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("vapid_creation_timestamp", base::CreateTimeValue(time));
-
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  ASSERT_TRUE(merged);
-  EXPECT_EQ(local, *merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_LocalEmpty) {
-  base::Time time = base::Time::Now();
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  server.SetKey("vapid_creation_timestamp", base::CreateTimeValue(time));
-
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_LocalNewer) {
-  base::Time old_time = base::Time::Now();
-  base::Time new_time = old_time + base::TimeDelta::FromSeconds(1);
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("vapid_creation_timestamp", base::CreateTimeValue(new_time));
-  server.SetKey("vapid_creation_timestamp", base::CreateTimeValue(old_time));
-
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_ServerNewer) {
-  base::Time old_time = base::Time::Now();
-  base::Time new_time = old_time + base::TimeDelta::FromSeconds(1);
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("vapid_creation_timestamp", base::CreateTimeValue(old_time));
-  server.SetKey("vapid_creation_timestamp", base::CreateTimeValue(new_time));
-
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  ASSERT_TRUE(merged);
-  EXPECT_EQ(local, *merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeVapidKeys_BothEqual) {
-  base::Time time = base::Time::Now();
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("vapid_creation_timestamp", base::CreateTimeValue(time));
-  server.SetKey("vapid_creation_timestamp", base::CreateTimeValue(time));
-
-  auto merged = SharingSyncPreference::MaybeMergeVapidKey(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeDevices_BothEmpty) {
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-  auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeDevices_ServerEmpty) {
-  base::Time time = base::Time::Now();
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("device-1", CreateRandomDevice(time));
-
-  auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
-  ASSERT_TRUE(merged);
-  EXPECT_EQ(local, *merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeDevices_LocalEmpty) {
-  base::Time time = base::Time::Now();
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  server.SetKey("device-1", CreateRandomDevice(time));
-
-  auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
-  EXPECT_EQ(nullptr, merged);
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeDevices_BothValues) {
-  base::Time old_time = base::Time::Now();
-  base::Time new_time = old_time + base::TimeDelta::FromSeconds(1);
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("local_only", CreateRandomDevice(old_time));
-  local.SetKey("server_newer", CreateRandomDevice(old_time));
-  server.SetKey("server_newer", CreateRandomDevice(new_time));
-  local.SetKey("local_newer", CreateRandomDevice(new_time));
-  server.SetKey("local_newer", CreateRandomDevice(old_time));
-  local.SetKey("both_same", CreateRandomDevice(old_time));
-  server.SetKey("both_same", CreateRandomDevice(old_time));
-  server.SetKey("server_only", CreateRandomDevice(old_time));
-
-  auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
-  ASSERT_TRUE(merged);
-
-  ASSERT_TRUE(merged->FindKey("local_only"));
-  EXPECT_EQ(*local.FindKey("local_only"), *merged->FindKey("local_only"));
-  ASSERT_TRUE(merged->FindKey("server_newer"));
-  EXPECT_EQ(*server.FindKey("server_newer"), *merged->FindKey("server_newer"));
-  ASSERT_TRUE(merged->FindKey("local_newer"));
-  EXPECT_EQ(*local.FindKey("local_newer"), *merged->FindKey("local_newer"));
-  ASSERT_TRUE(merged->FindKey("both_same"));
-  EXPECT_EQ(*server.FindKey("both_same"), *merged->FindKey("both_same"));
-  ASSERT_TRUE(merged->FindKey("server_only"));
-  EXPECT_EQ(*server.FindKey("server_only"), *merged->FindKey("server_only"));
-}
-
-TEST_F(SharingSyncPreferenceTest, MergeDevices_ServerOnlyOrNewer) {
-  base::Time old_time = base::Time::Now();
-  base::Time new_time = old_time + base::TimeDelta::FromSeconds(1);
-  base::Value local(base::Value::Type::DICTIONARY);
-  base::Value server(base::Value::Type::DICTIONARY);
-
-  local.SetKey("server_newer", CreateRandomDevice(old_time));
-  server.SetKey("server_newer", CreateRandomDevice(new_time));
-  server.SetKey("server_only", CreateRandomDevice(old_time));
-
-  auto merged = SharingSyncPreference::MaybeMergeSyncedDevices(local, server);
-  EXPECT_EQ(nullptr, merged);
+  auto synced_devices = sharing_sync_preference_.GetSyncedDevices();
+  auto it = synced_devices.find(kDeviceGuid);
+  EXPECT_NE(synced_devices.end(), it);
+  EXPECT_EQ(device->fcm_token, it->second.fcm_token);
+  EXPECT_EQ(device->p256dh, it->second.p256dh);
+  EXPECT_EQ(device->auth_secret, it->second.auth_secret);
+  EXPECT_EQ(device->capabilities, it->second.capabilities);
 }
 
 TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
@@ -237,12 +95,16 @@ TEST_F(SharingSyncPreferenceTest, FCMRegistrationGetSet) {
 
   base::Time time_now = base::Time::Now();
   sharing_sync_preference_.SetFCMRegistration(
-      {kAuthorizedEntity, kDeviceFcmToken, time_now});
+      SharingSyncPreference::FCMRegistration(kAuthorizedEntity, kDeviceFcmToken,
+                                             kDeviceP256dh, kDeviceAuthToken,
+                                             time_now));
 
   auto fcm_registration = sharing_sync_preference_.GetFCMRegistration();
   EXPECT_TRUE(fcm_registration);
   EXPECT_EQ(kAuthorizedEntity, fcm_registration->authorized_entity);
   EXPECT_EQ(kDeviceFcmToken, fcm_registration->fcm_token);
+  EXPECT_EQ(kDeviceP256dh, fcm_registration->p256dh);
+  EXPECT_EQ(kDeviceAuthToken, fcm_registration->auth_secret);
   EXPECT_EQ(time_now, fcm_registration->timestamp);
 
   sharing_sync_preference_.ClearFCMRegistration();

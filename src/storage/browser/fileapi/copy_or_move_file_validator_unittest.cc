@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
@@ -181,7 +181,7 @@ class CopyOrMoveFileValidatorTestHelper {
   std::string src_fsid_;
   std::string dest_fsid_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
 
   FileSystemURL copy_src_;

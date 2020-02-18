@@ -102,6 +102,10 @@ used when committed.
     update the clang-format binaries that come with a checkout of Chromium
 
 ### General Development
+*   [Contributing to Chromium](contributing.md) - Reference workflow process for
+    contributing to the Chromium code base.
+*   [Commit Checklist](commit_checklist.md) - Streamlined checklist to go
+    through before uploading CLs on Gerrit.
 *   [Code Reviews](code_reviews.md) - Code review requirements and guidelines
 *   [Respectful Code Reviews](cr_respect.md) - A guide for code reviewers
 *   [Respectful Changes](cl_respect.md) - A guide for code authors
@@ -370,12 +374,14 @@ used when committed.
 *   [Mojo “Style” Guide](security/mojo.md) - Recommendations for best practices
     from Mojo and IPC reviewers
 
+### WebXR
+*   [Running OpenVR Without Headset](xr/run_openvr_without_headset.md) -
+    Instructions for running OpenVR on Windows without a headset
+
 ### Probably Obsolete
 *   [TPM Quick Reference](tpm_quick_ref.md) - Trusted Platform Module notes.
 *   [System Hardening Features](system_hardening_features.md) - A list of
     current and planned Chrome OS security features.
-*   [Browser View Resizer](browser_view_resizer.md) - Design doc for making
-    browser window resizing easier on Windows.
 *   [WebView Policies](webview_policies.md)
 *   [Linux Profiling](linux_profiling.md) - How to profile Chromium on Linux
 *   [Linux Graphics Pipeline](linux_graphics_pipeline.md)

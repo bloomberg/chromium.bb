@@ -72,6 +72,7 @@ def RunSteps(api):
 
   api.gsutil.cat('gs://%s/foo' % bucket)
 
+  api.gsutil.stat('gs://%s/foo' % bucket)
 
 def GenTests(api):
   yield api.test('basic')

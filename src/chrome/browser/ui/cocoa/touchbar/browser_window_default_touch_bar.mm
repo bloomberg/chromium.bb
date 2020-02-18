@@ -11,6 +11,7 @@
 #import "base/mac/scoped_nsobject.h"
 #import "base/mac/sdk_forward_declarations.h"
 #include "base/strings/sys_string_conversions.h"
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -118,7 +119,7 @@ ui::TouchBarAction TouchBarActionFromCommand(int command) {
       return ui::TouchBarAction::HOME;
     case IDC_FOCUS_LOCATION:
       return ui::TouchBarAction::SEARCH;
-    case IDC_BOOKMARK_PAGE:
+    case IDC_BOOKMARK_THIS_TAB:
       return ui::TouchBarAction::STAR;
     case IDC_NEW_TAB:
       return ui::TouchBarAction::NEW_TAB;
@@ -149,7 +150,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
     command_controller->AddCommandObserver(IDC_BACK, this);
     owner.canGoBack = command_controller->IsCommandEnabled(IDC_BACK);
     command_controller->AddCommandObserver(IDC_FORWARD, this);
-    owner.canGoBack = command_controller->IsCommandEnabled(IDC_FORWARD);
+    owner.canGoForward = command_controller->IsCommandEnabled(IDC_FORWARD);
 
     auto* profile = browser->profile();
     auto* prefs = profile->GetPrefs();
@@ -470,8 +471,8 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
       isStarred_ ? kTouchBarStarActiveColor : kTouchBarDefaultIconColor;
   int tooltipId = isStarred_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
   if (!starredButton_) {
-    starredButton_.reset([CreateTouchBarButton(icon, self, IDC_BOOKMARK_PAGE,
-                                               tooltipId, iconColor) retain]);
+    starredButton_.reset([CreateTouchBarButton(
+        icon, self, IDC_BOOKMARK_THIS_TAB, tooltipId, iconColor) retain]);
     return;
   }
 
@@ -494,7 +495,7 @@ class API_AVAILABLE(macos(10.12.2)) TouchBarNotificationBridge
                                             defaultProvider->short_name());
 
   NSImage* image = nil;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   if (isGoogle) {
     image = NSImageFromImageSkiaWithColorSpace(
         gfx::CreateVectorIcon(kGoogleGLogoIcon, kTouchBarIconSize,

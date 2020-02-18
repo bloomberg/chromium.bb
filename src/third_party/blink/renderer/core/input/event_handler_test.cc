@@ -1019,8 +1019,7 @@ TEST_F(EventHandlerLatencyTest, NeedsUnbufferedInput) {
       "<canvas style='width: 100px; height: 100px' id='first' "
       "onpointermove='return;'>");
 
-  HTMLCanvasElement& canvas =
-      ToHTMLCanvasElement(*GetDocument().getElementById("first"));
+  auto& canvas = To<HTMLCanvasElement>(*GetDocument().getElementById("first"));
 
   ASSERT_FALSE(chrome_client_->ReceivedRequestForUnbufferedInput());
 
@@ -1049,7 +1048,7 @@ class NavigationCapturingFrameClient : public EmptyLocalFrameClient {
  public:
   NavigationCapturingFrameClient() = default;
 
-  bool NavigateBackForward(int offset) const override {
+  bool NavigateBackForward(int offset, bool from_script) const override {
     offset_ = offset;
     return true;
   }
@@ -1509,7 +1508,7 @@ TEST_F(EventHandlerSimTest, MouseLeaveIFrameResets) {
   EXPECT_FALSE(
       GetDocument().GetFrame()->GetEventHandler().IsMousePositionUnknown());
   auto* child_frame =
-      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   child_frame->contentDocument()->UpdateStyleAndLayout();
   EXPECT_TRUE(GetDocument().GetFrame()->Tree().FirstChild());
   EXPECT_FALSE(To<LocalFrame>(GetDocument().GetFrame()->Tree().FirstChild())
@@ -1614,7 +1613,7 @@ TEST_F(EventHandlerSimTest, TapActiveInFrame) {
   Compositor().BeginFrame();
 
   auto* iframe_element =
-      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
   Document* iframe_doc = iframe_element->contentDocument();
 
   TapDownEventBuilder tap_down(FloatPoint(10, 10));
@@ -1819,7 +1818,7 @@ TEST_F(EventHandlerSimTest,
   Compositor().BeginFrame();
 
   auto* iframe_element =
-      ToHTMLIFrameElement(GetDocument().getElementById("iframe"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("iframe"));
   Document* iframe_doc = iframe_element->contentDocument();
   FrameView* child_frame_view =
       iframe_element->GetLayoutEmbeddedContent()->ChildFrameView();
@@ -2714,7 +2713,7 @@ TEST_F(EventHandlerSimTest, MouseDragWithNoSubframeImplicitCapture) {
   WebView().MainFrameWidget()->HandleInputEvent(
       WebCoalescedInputEvent(mouse_move_inside_event));
   auto* iframe_element =
-      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   Document* iframe_doc = iframe_element->contentDocument();
   Element* target = iframe_doc->getElementById("target");
 
@@ -2798,7 +2797,7 @@ TEST_F(EventHandlerSimTest,
       WebCoalescedInputEvent(mouse_down_inside_event));
 
   auto* iframe_element =
-      ToHTMLIFrameElement(GetDocument().getElementById("frame"));
+      To<HTMLIFrameElement>(GetDocument().getElementById("frame"));
   Document* iframe_doc = iframe_element->contentDocument();
   Element* target = iframe_doc->getElementById("target");
 

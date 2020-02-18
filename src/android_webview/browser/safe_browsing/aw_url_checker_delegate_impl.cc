@@ -7,7 +7,7 @@
 #include "android_webview/browser/aw_browser_context.h"
 #include "android_webview/browser/aw_contents_client_bridge.h"
 #include "android_webview/browser/aw_contents_io_thread_client.h"
-#include "android_webview/browser/net/aw_web_resource_request.h"
+#include "android_webview/browser/network_service/aw_web_resource_request.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_ui_manager.h"
 #include "android_webview/browser/safe_browsing/aw_safe_browsing_whitelist_manager.h"
 #include "base/bind.h"
@@ -50,7 +50,7 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
   AwWebResourceRequest request(resource.url.spec(), method, is_main_frame,
                                has_user_gesture, headers);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&AwUrlCheckerDelegateImpl::StartApplicationResponse,
                      ui_manager_, resource, std::move(request)));
@@ -137,7 +137,7 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
   bool proceed;
   switch (action) {
     case SafeBrowsingAction::SHOW_INTERSTITIAL:
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(
               &AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
@@ -183,8 +183,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
   }
 
   // Reporting back that it is not okay to proceed with loading the URL.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(resource.callback, false));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(resource.callback, false));
 }
 
 }  // namespace android_webview

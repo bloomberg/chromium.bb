@@ -102,7 +102,6 @@
 #include "third_party/blink/renderer/platform/windows_keyboard_codes.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -242,7 +241,8 @@ void EventHandler::StartMiddleClickAutoscroll(LayoutObject* layout_object) {
   AutoscrollController* controller = scroll_manager_->GetAutoscrollController();
   if (!controller)
     return;
-  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(layout_object);
+  LayoutBox* scrollable = LayoutBox::FindAutoscrollable(
+      layout_object, /*is_middle_click_autoscroll*/ true);
   Page* page = frame_->GetPage();
   bool vertical_scroll_offset = false;
   bool horizontal_scroll_offset = false;
@@ -717,7 +717,8 @@ WebInputEventResult EventHandler::HandleMousePressEvent(
     return WebInputEventResult::kHandledSuppressed;
 
   std::unique_ptr<UserGestureIndicator> gesture_indicator =
-      LocalFrame::NotifyUserActivation(frame_);
+      LocalFrame::NotifyUserActivation(
+          frame_, UserGestureToken::kPossiblyExistingGesture, true);
   frame_->LocalFrameRoot()
       .GetEventHandler()
       .last_mouse_down_user_gesture_token_ =
@@ -1531,13 +1532,6 @@ WebInputEventResult EventHandler::HandleGestureScrollEvent(
     return WebInputEventResult::kNotHandled;
 
   return scroll_manager_->HandleGestureScrollEvent(gesture_event);
-}
-
-WebInputEventResult EventHandler::HandleGestureScrollEnd(
-    const WebGestureEvent& gesture_event) {
-  if (!frame_->GetPage())
-    return WebInputEventResult::kNotHandled;
-  return scroll_manager_->HandleGestureScrollEnd(gesture_event);
 }
 
 void EventHandler::SetMouseDownMayStartAutoscroll() {

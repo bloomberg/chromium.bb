@@ -62,7 +62,6 @@
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/timer.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -322,6 +321,14 @@ void TextFinder::StopFindingAndClearSelection() {
 
   // Let the frame know that we don't want tickmarks anymore.
   InvalidatePaintForTickmarks();
+
+  ReportFindInPageTerminationToAccessibility();
+}
+
+void TextFinder::ReportFindInPageTerminationToAccessibility() {
+  if (OwnerFrame().Client()) {
+    OwnerFrame().Client()->HandleAccessibilityFindInPageTermination();
+  }
 }
 
 void TextFinder::ReportFindInPageResultToAccessibility(int identifier) {

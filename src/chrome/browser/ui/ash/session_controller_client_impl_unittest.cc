@@ -35,7 +35,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
@@ -185,7 +185,7 @@ class SessionControllerClientImplTest : public testing::Test {
     return profile;
   }
 
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<AssistantClient> assistant_client_;
@@ -322,9 +322,7 @@ TEST_F(SessionControllerClientImplTest,
   net::CertificateList certificates;
   certificates.push_back(
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
-  service->OnPolicyProvidedCertsChanged(
-      certificates /* all_server_and_authority_certs */,
-      certificates /* trust_anchors */);
+  service->SetPolicyTrustAnchorsForTesting(/*trust_anchors=*/certificates);
   EXPECT_TRUE(service->has_policy_certificates());
   EXPECT_EQ(ash::AddUserSessionPolicy::ERROR_NOT_ALLOWED_PRIMARY_USER,
             SessionControllerClientImpl::GetAddUserSessionPolicy());

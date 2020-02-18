@@ -137,7 +137,8 @@ RTCPReceiver::RTCPReceiver(const RtpRtcp::Configuration& config,
                               ? config.rtcp_report_interval_ms
                               : (config.audio ? kDefaultAudioReportInterval
                                               : kDefaultVideoReportInterval)),
-      main_ssrc_(config.media_send_ssrc.value_or(0)),
+      // TODO(bugs.webrtc.org/10774): Remove fallback.
+      main_ssrc_(config.local_media_ssrc.value_or(0)),
       remote_ssrc_(0),
       remote_sender_rtp_time_(0),
       xr_rrtr_status_(false),
@@ -146,13 +147,14 @@ RTCPReceiver::RTCPReceiver(const RtpRtcp::Configuration& config,
       last_received_rb_ms_(0),
       last_increased_sequence_number_ms_(0),
       stats_callback_(nullptr),
+      cname_callback_(nullptr),
       report_block_data_observer_(nullptr),
       packet_type_counter_observer_(config.rtcp_packet_type_counter_observer),
       num_skipped_packets_(0),
       last_skipped_packets_warning_ms_(clock_->TimeInMilliseconds()) {
   RTC_DCHECK(owner);
-  if (config.media_send_ssrc) {
-    registered_ssrcs_.insert(*config.media_send_ssrc);
+  if (config.local_media_ssrc) {
+    registered_ssrcs_.insert(*config.local_media_ssrc);
   }
   if (config.rtx_send_ssrc) {
     registered_ssrcs_.insert(*config.rtx_send_ssrc);
@@ -664,8 +666,8 @@ void RTCPReceiver::HandleSdes(const CommonHeader& rtcp_block,
     received_cnames_[chunk.ssrc] = chunk.cname;
     {
       rtc::CritScope lock(&feedbacks_lock_);
-      if (stats_callback_)
-        stats_callback_->CNameChanged(chunk.cname.c_str(), chunk.ssrc);
+      if (cname_callback_)
+        cname_callback_->OnCname(chunk.ssrc, chunk.cname);
     }
   }
   packet_information->packet_type_flags |= kRtcpSdes;
@@ -998,6 +1000,11 @@ void RTCPReceiver::RegisterRtcpStatisticsCallback(
 RtcpStatisticsCallback* RTCPReceiver::GetRtcpStatisticsCallback() {
   rtc::CritScope cs(&feedbacks_lock_);
   return stats_callback_;
+}
+
+void RTCPReceiver::RegisterRtcpCnameCallback(RtcpCnameCallback* callback) {
+  rtc::CritScope cs(&feedbacks_lock_);
+  cname_callback_ = callback;
 }
 
 void RTCPReceiver::SetReportBlockDataObserver(

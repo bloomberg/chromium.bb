@@ -8,7 +8,7 @@
 #include "base/command_line.h"
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/base/media_switches.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -46,7 +46,7 @@ class MojoMjpegDecodeAcceleratorServiceTest : public ::testing::Test {
  private:
   // This is required to allow base::ThreadTaskRunnerHandle::Get() from the
   // test execution thread.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
@@ -73,8 +73,12 @@ TEST_F(MojoMjpegDecodeAcceleratorServiceTest, InitializeAndDecode) {
       base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(
           kInputBufferSizeInBytes);
 
+  // mojo::SharedBufferHandle::Create will make a writable region, but an unsafe
+  // one is needed.
   mojo::ScopedSharedBufferHandle output_frame_handle =
-      mojo::SharedBufferHandle::Create(kOutputFrameSizeInBytes);
+      mojo::WrapPlatformSharedMemoryRegion(
+          base::subtle::PlatformSharedMemoryRegion::CreateUnsafe(
+              kOutputFrameSizeInBytes));
 
   media::BitstreamBuffer bitstream_buffer(kArbitraryBitstreamBufferId,
                                           std::move(shm_region),

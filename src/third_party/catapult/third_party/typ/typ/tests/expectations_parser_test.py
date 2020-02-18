@@ -24,8 +24,8 @@ crbug.com/12345 [ Mac ] b1/s1 [ Skip ]
 crbug.com/23456 [ Mac Debug ] b1/s2 [ Skip ]
 """
         parser = expectations_parser.TaggedTestListParser(good_data)
-        tag_sets = [{'Debug', 'Release'},
-                    {'Linux', 'Mac', 'Mac10.1', 'Mac10.2', 'Win'}]
+        tag_sets = [{'debug', 'release'},
+                    {'linux', 'mac', 'mac10.1', 'mac10.2', 'win'}]
         self.assertEqual(tag_sets, parser.tag_sets)
         expected_outcome = [
             expectations_parser.Expectation('crbug.com/12345', 'b1/s1',
@@ -244,7 +244,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         with self.assertRaises(expectations_parser.ParseError) as context:
             expectations_parser.TaggedTestListParser(raw_data)
         self.assertEqual(
-            '1: The tag Mac was found in multiple tag sets',
+            '1: The tag mac was found in multiple tag sets',
             str(context.exception))
 
     def testTwoTagsinMultipleTagsets(self):
@@ -253,7 +253,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         with self.assertRaises(expectations_parser.ParseError) as context:
             expectations_parser.TaggedTestListParser(raw_data)
         self.assertEqual(
-            '2: The tags Mac and Win were found in multiple tag sets',
+            '2: The tags mac and win were found in multiple tag sets',
             str(context.exception))
 
     def testTwoPlusTagsinMultipleTagsets(self):
@@ -262,7 +262,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         with self.assertRaises(expectations_parser.ParseError) as context:
             expectations_parser.TaggedTestListParser(raw_data)
         self.assertEqual(
-            '3: The tags Mac, Win and bmw'
+            '3: The tags bmw, mac and win'
             ' were found in multiple tag sets',
             str(context.exception))
 
@@ -272,7 +272,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         with self.assertRaises(expectations_parser.ParseError) as context:
             expectations_parser.TaggedTestListParser(raw_data)
         self.assertEqual(
-            '4: The tags Android, Win and mac'
+            '4: The tags android, mac and win'
             ' were found in multiple tag sets',
             str(context.exception))
 
@@ -388,7 +388,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         self.assertEqual("5: Unrecognized value 'unknown' "
                          "given for conflicts_allowed descriptor", msg)
 
-    def testCollisionInTestExpectation(self):
+    def testConflictsInTestExpectation(self):
         expectations = expectations_parser.TestExpectations()
         _, errors = expectations.parse_tagged_list(
             '# tags: [ mac win linux ]\n'
@@ -396,20 +396,22 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
             '# tags: [ debug release ]\n'
             '# conflicts_allowed: False\n'
             '# results: [ Failure Skip RetryOnFailure ]\n'
-            '[ intel win ] a/b/c/d [ Failure ]\n'
-            '[ intel win debug ] a/b/c/d [ Skip ]\n'
-            '[ intel  ] a/b/c/d [ Failure ]\n'
+            '[ intel win ] a/b/c/* [ Failure ]\n'
+            '[ intel win debug ] a/b/c/* [ Skip ]\n'
+            '[ intel  ] a/b/c/* [ Failure ]\n'
             '[ amd mac ] a/b [ RetryOnFailure ]\n'
             '[ mac ] a/b [ Skip ]\n'
             '[ amd mac ] a/b/c [ Failure ]\n'
             '[ intel mac ] a/b/c [ Failure ]\n', 'test.txt')
-        self.assertIn("Found conflicts for test a/b/c/d in test.txt:", errors)
+        self.assertIn("Found conflicts for pattern a/b/c/* in test.txt:",
+                      errors)
         self.assertIn('line 6 conflicts with line 7', errors)
         self.assertIn('line 6 conflicts with line 8', errors)
         self.assertIn('line 7 conflicts with line 8', errors)
-        self.assertIn("Found conflicts for test a/b in test.txt:", errors)
+        self.assertIn("Found conflicts for pattern a/b in test.txt:", errors)
         self.assertIn('line 9 conflicts with line 10', errors)
-        self.assertNotIn("Found conflicts for test a/b/c in test.txt:", errors)
+        self.assertNotIn("Found conflicts for pattern a/b/c in test.txt:",
+                         errors)
 
     def testFileNameExcludedFromErrorMessageForExpectationConflicts(self):
         test_expectations = '''# tags: [ mac ]
@@ -420,7 +422,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         '''
         expectations = expectations_parser.TestExpectations()
         _, errors = expectations.parse_tagged_list(test_expectations)
-        self.assertIn("Found conflicts for test a/b/c/d:", errors)
+        self.assertIn("Found conflicts for pattern a/b/c/d:", errors)
 
     def testConflictsUsingUserDefinedTagsConflictFunction(self):
         test_expectations = '''# tags: [ win win7  ]
@@ -435,7 +437,7 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         expectations = expectations_parser.TestExpectations()
         _, errors = expectations.parse_tagged_list(
             test_expectations, tags_conflict=tags_conflict)
-        self.assertIn("Found conflicts for test a/b/c/d:", errors)
+        self.assertIn("Found conflicts for pattern a/b/c/d:", errors)
 
     def testNoCollisionInTestExpectations(self):
         test_expectations = '''# tags: [ mac win linux ]
@@ -461,9 +463,32 @@ crbug.com/12345 [ tag3 tag4 ] b1/s1 [ Skip ]
         [ intel ] a/b/c/d [ Failure ]
         '''
         expectations = expectations_parser.TestExpectations()
-        _, errors = expectations.parse_tagged_list(
+        _, msg = expectations.parse_tagged_list(
             test_expectations, 'test.txt')
-        self.assertFalse(errors)
+        self.assertFalse(msg)
+
+    def testConflictFoundRegardlessOfTagCase(self):
+        test_expectations = '''# tags: [ InTel AMD nvidia ]
+        # results: [ Failure ]
+        [ intel ] a/b/c/d [ Failure ]
+        [ Intel ] a/b/c/d [ Failure ]
+        '''
+        expectations = expectations_parser.TestExpectations()
+        ret, msg = expectations.parse_tagged_list(
+            test_expectations, 'test.txt')
+        self.assertTrue(ret)
+        self.assertIn('Found conflicts for pattern a/b/c/d', msg)
+
+    def testConflictNotFoundRegardlessOfTagCase(self):
+        test_expectations = '''# tags: [ InTel AMD nvidia ]
+        # results: [ Failure ]
+        [ intel ] a/b/c/d [ Failure ]
+        [ amd ] a/b/c/d [ Failure ]
+        '''
+        expectations = expectations_parser.TestExpectations()
+        _, msg = expectations.parse_tagged_list(
+            test_expectations, 'test.txt')
+        self.assertFalse(msg)
 
     def testExpectationPatternIsBroken(self):
         test_expectations = '# results: [ Failure ]\na/b [ Failure ]'

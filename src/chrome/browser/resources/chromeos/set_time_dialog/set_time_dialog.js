@@ -159,10 +159,11 @@ Polymer({
   },
 
   /**
-   * Values for reverting inputs when the user's date/time is invalid.
-   * @private {?Object}
+   * Values for reverting inputs when the user's date/time is invalid. The
+   * keys are element ids.
+   * @private {{dateInput: string, timeInput: string}}
    */
-  prevValues_: null,
+  prevValues_: {dateInput: '', timeInput: ''},
 
   /**
    * ID of the setTimeout() used to refresh the current time.
@@ -175,7 +176,6 @@ Polymer({
 
   /** @override */
   created: function() {
-    this.prevValues_ = {};
     this.browserProxy_ = settime.SetTimeBrowserProxyImpl.getInstance();
   },
 
@@ -216,6 +216,27 @@ Polymer({
   },
 
   /**
+   * @return {!number} Seconds since epoch representing the date on the dialog
+   *     inputs.
+   * @private
+   */
+  getInputTimeSinceEpoch_: function() {
+    const now = this.getInputTime_();
+
+    if (this.isTimezoneVisible_) {
+      // Add timezone offset to get real time. This is only necessary when the
+      // timezone was updated, which is only possible when the dropdown is
+      // visible.
+      const timezoneDelta = getTimezoneDelta(
+          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
+          this.selectedTimezone_);
+      now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
+    }
+
+    return Math.floor(now / 1000);
+  },
+
+  /**
    * Sets the current timezone.
    * @param {string} timezoneId The timezone ID to select.
    * @private
@@ -244,8 +265,8 @@ Polymer({
     if (document.activeElement.id != 'dateInput' &&
         document.activeElement.id != 'timeInput') {
       const htmlValues = dateToHtmlValues(newTime);
-      this.prevValues_.date = this.$.dateInput.value = htmlValues.date;
-      this.prevValues_.time = this.$.timeInput.value = htmlValues.time;
+      this.prevValues_.dateInput = this.$.dateInput.value = htmlValues.date;
+      this.prevValues_.timeInput = this.$.timeInput.value = htmlValues.time;
     }
 
     if (this.timeTimeoutId_) {
@@ -265,20 +286,7 @@ Polymer({
    * @private
    */
   applyTime_: function() {
-    const now = this.getInputTime_();
-
-    if (this.isTimezoneVisible_) {
-      // Add timezone offset to get real time. This is only necessary when the
-      // timezone was updated, which is only possible when the dropdown is
-      // visible.
-      const timezoneDelta = getTimezoneDelta(
-          /** @type {string} */ (loadTimeData.getValue('currentTimezoneId')),
-          this.selectedTimezone_);
-      now.setMilliseconds(now.getMilliseconds() + timezoneDelta);
-    }
-
-    const seconds = Math.floor(now / 1000);
-    this.browserProxy_.setTimeInSeconds(seconds);
+    this.browserProxy_.setTimeInSeconds(this.getInputTimeSinceEpoch_());
   },
 
   /**
@@ -317,7 +325,7 @@ Polymer({
    * @private
    */
   onDoneClick_: function() {
-    this.browserProxy_.doneClicked();
+    this.browserProxy_.doneClicked(this.getInputTimeSinceEpoch_());
   },
 
   /** @private */

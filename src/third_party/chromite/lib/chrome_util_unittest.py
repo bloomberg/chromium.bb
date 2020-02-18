@@ -63,7 +63,7 @@ class FileCopyTest(CopyTest):
     self._CopyAndVerify(path, src_struct, dest_struct)
 
   def testSurfaceRename(self):
-    """"Renaming of an element from the root."""
+    """Renaming of an element from the root."""
     src_struct = self.ELEMENTS_SRC
     dest_struct = [self.ELEMENT_DEST]
     path = chrome_util.Path(self.ELEMENT_SRC_NAME, dest=self.ELEMENT_DEST_NAME)

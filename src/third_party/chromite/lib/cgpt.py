@@ -54,7 +54,7 @@ class Disk(object):
 
     # Read header.
     if (not cmd_result.output
-        or cgpt_result.next().split() != ['start', 'size', 'part', 'contents']):
+        or next(cgpt_result).split() != ['start', 'size', 'part', 'contents']):
       raise Error('Unable to find header in cgpt output')
 
     partitions = collections.OrderedDict()
@@ -81,7 +81,7 @@ class Disk(object):
       attr = ''
       # Read next 3 lines for Type, UUID, and Attr.
       for _ in range(3):
-        line = cgpt_result.next()
+        line = next(cgpt_result)
         outputs = line.split()
         if len(outputs) != 2:
           raise Error('Unexpected line %r' % outputs)

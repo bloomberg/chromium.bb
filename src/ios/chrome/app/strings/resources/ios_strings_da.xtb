@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
+<translation id="1005230401424685968">ÅÅÅÅ</translation>
 <translation id="1016495303386450659">Elementet blev opdateret</translation>
 <translation id="1047726139967079566">Tilføj denne side som bogmærke...</translation>
 <translation id="1049743911850919806">Inkognito</translation>
@@ -43,6 +44,7 @@
 <translation id="1449835205994625556">Skjul adgangskode</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> elementer</translation>
 <translation id="1491277525950327607">Tryk to gange for at skifte indstilling</translation>
+<translation id="1509486075633541495">Log ind på website</translation>
 <translation id="152234381334907219">Gemmes aldrig</translation>
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Scan QR-kode</translation>
@@ -71,6 +73,7 @@
 <translation id="1820259098641718022">Føjet til læseliste</translation>
 <translation id="1828824471510190776">Foreslå adgangskode...</translation>
 <translation id="1870148520156231997">Vis adgangskode</translation>
+<translation id="1872096359983322073">Lommelygte</translation>
 <translation id="1876721852596493031">Send anvendelsesdata</translation>
 <translation id="1911619930368729126">Upload til Google Drev</translation>
 <translation id="1923342640370224680">Den seneste time</translation>
@@ -148,7 +151,6 @@
 <translation id="2921219216347069551">Siden kan ikke deles</translation>
 <translation id="2923448633003185837">Indsæt og fortsæt</translation>
 <translation id="292639812446257861">Markér som ulæst</translation>
-<translation id="2933759065870693102">Lommelygte</translation>
 <translation id="2958718410589002129">Adgangskoder</translation>
 <translation id="2969979262385602596">Login mislykkedes. Prøv igen senere.</translation>
 <translation id="298306318844797842">Tilføj betalingsmetode...</translation>
@@ -194,6 +196,7 @@
 <translation id="3607167657931203000">AutoFyld-data</translation>
 <translation id="3609785682760573515">Synkroniserer…</translation>
 <translation id="3638472932233958418">Forudindlæs websider</translation>
+<translation id="3670030362669914947">Nummer</translation>
 <translation id="3691593122358196899">Bogmærket er gemt i <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Inkognitofaner</translation>
 <translation id="3775743491439407556">Synkronisering fungerer ikke</translation>
@@ -207,7 +210,6 @@
 <translation id="3928666092801078803">Kombiner mine data</translation>
 <translation id="3929457972718048006">Adresser</translation>
 <translation id="3943492037546055397">Adgangskoder</translation>
-<translation id="3950820424414687140">Log ind</translation>
 <translation id="3967822245660637423">Download fuldført</translation>
 <translation id="3989635538409502728">Log ud</translation>
 <translation id="3995521777587992544">Statuslinje for sideindlæsning, <ph name="EMAIL" /> er indlæst.</translation>
@@ -227,7 +229,6 @@
 <translation id="4172051516777682613">Vis altid</translation>
 <translation id="418156467088430727">Se offlineversion på en ny fane</translation>
 <translation id="4181841719683918333">Sprog</translation>
-<translation id="4237682350741091554">Administrer Chrome-synkronisering og -tilpasning i <ph name="BEGIN_LINK" />Indstillinger<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Angiv adgangssætning</translation>
 <translation id="4272631900155121838">Aktivér kameraet i Indstillinger for at scanne en QR-kode</translation>
 <translation id="4281844954008187215">Servicevilkår</translation>
@@ -261,9 +262,11 @@ Dine data er krypteret med din adgangssætning til synkronisering. Angiv den for
 <translation id="4747097190499141774">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay. Det er kun personer med din adgangssætning, der kan læse dine krypterede data. Adgangssætningen sendes ikke til eller gemmes af Google. Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du nulstille synkronisering. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Find på siden...</translation>
 <translation id="4751645464639803239">Ny inkognitofane</translation>
+<translation id="4758977202923349869">Placer betalingskortet i dette felt</translation>
 <translation id="4802417911091824046">Kryptering med adgangssætning omfatter ikke betalingsmetoder og adresser fra Google Pay.
 
 Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkronisering<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Kortnummeret er ugyldigt</translation>
 <translation id="4807020197310989387">1 ulæst artikel på læselisten.</translation>
 <translation id="4818522717893377262">Tilføj sprog...</translation>
 <translation id="481968316161811770">Cookies, websitedata</translation>
@@ -279,7 +282,6 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="4979397965658815378">Log ind med din Google-konto for at få adgang til dine bogmærker, dine adgangskoder, din historik og andre indstillinger på alle dine enheder.</translation>
 <translation id="5005498671520578047">Kopiér adgangskode</translation>
 <translation id="5010803260590204777">Åbn en inkognitofane for at søge på nettet uden at blive registreret.</translation>
-<translation id="5011684439661633295">Hej <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Tillad</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Installer Google Drev</translation>
@@ -302,6 +304,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5327248766486351172">Navn</translation>
 <translation id="5388358297987318779">Åbn billede</translation>
+<translation id="5407969256130905701">Kassér ændringer</translation>
 <translation id="5409365236829784218">Der er ingen installerede apps, der kan åbne denne fil.</translation>
 <translation id="5416022985862681400">De seneste syv dage</translation>
 <translation id="5433691172869980887">Brugernavnet er kopieret</translation>
@@ -313,6 +316,7 @@ Hvis du vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille 
 Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enheder skal benytte den samme iCloud-konto.</translation>
 <translation id="5551897871312988470">Tilbyd at oversætte</translation>
 <translation id="5556459405103347317">Genindlæs</translation>
+<translation id="5592679540098330836">Aktivér synkronisering for <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Vil du gemme adgangskoden?</translation>
 <translation id="5626245204502895507">Filen kunne ikke downloades på nuværende tidspunkt.</translation>
 <translation id="5631164295104953411">Tilføj betalingsmetode</translation>
@@ -324,6 +328,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="5728700505257787410">Der var et problem med at logge ind på din konto.</translation>
 <translation id="5737974891429562743">Loginoplysningerne for kontoen er forældede. Opdater dem for at påbegynde synkroniseringen.</translation>
 <translation id="5738887413654608789">Dette giver dig mulighed for at opdage relevante websider baseret på dine omgivelser.</translation>
+<translation id="5803566855766646066">Er du sikker på, at du vil kassere dette nye kort?</translation>
 <translation id="5816228676161003208">Dette gør søgning ved hjælp af din stemme hurtigere.</translation>
 <translation id="5846482154967366008">Søgemaskine</translation>
 <translation id="5854790677617711513">Ældre end 30 dage</translation>
@@ -352,6 +357,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="605721222689873409">ÅÅ</translation>
 <translation id="6066301408025741299">Tryk for at annullere.</translation>
 <translation id="6108923351542677676">Konfigurationen er i gang...</translation>
+<translation id="6119050551270742952">Den aktuelle webside er i inkognitotilstand</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Elementet blev fjernet</translation>
 <translation id="6136914049981179737">Sek. siden</translation>
@@ -391,6 +397,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6476800141292307438">Siden oversættes til <ph name="LANGUAGE" />. Valgmulighederne findes nederst på skærmen.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> bogmærker blev slettet</translation>
 <translation id="6610002944194042868">Valgmuligheder for oversættelse</translation>
+<translation id="6628106477656132239">Udløbsdatoen er ugyldig</translation>
 <translation id="6642362222295953972">Skift til den eksisterende fane</translation>
 <translation id="6643016212128521049">Ryd</translation>
 <translation id="6656103420185847513">Rediger mappe</translation>
@@ -407,6 +414,9 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="6807889908376551050">Vis alle...</translation>
 <translation id="681368974849482173">Elementet blev oprettet</translation>
 <translation id="6851516051005285358">Vis computerversion</translation>
+<translation id="6858855187367714033">Scannet</translation>
+<translation id="6859944681507688231">Aktivér kameraet i Indstillinger for at scanne en QR-kode eller et betalingskort.</translation>
+<translation id="6873263987691478642">Opdelt visning</translation>
 <translation id="6896758677409633944">Kopiér</translation>
 <translation id="6903907808598579934">Aktivér synkronisering</translation>
 <translation id="6914583639806229067">Søg efter billede, du har kopieret</translation>
@@ -434,7 +444,6 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7189598951263744875">Del...</translation>
 <translation id="7192050974311852563">Start logføring</translation>
 <translation id="7203585745079012652">Giv talte svar</translation>
-<translation id="722055596168483966">Tilpas Google-tjenester</translation>
 <translation id="7265758999917665941">Aldrig for dette website</translation>
 <translation id="7272437679830969316">Din identitet kunne ikke bekræftes. Adgangskoden blev ikke kopieret.</translation>
 <translation id="7285236536143823449">JA TAK</translation>
@@ -446,9 +455,9 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7383797227493018512">Læseliste</translation>
 <translation id="7400418766976504921">Webadresse</translation>
 <translation id="7425346204213733349">Ændringer af dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres ikke længere til din Google-konto. Dine eksisterende data er dog stadig gemt på din Google-konto.</translation>
-<translation id="744343212394640790">Ikke <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Delstat/amt</translation>
 <translation id="7456847797759667638">Åbn placering...</translation>
+<translation id="7460314822154045102">Brug Kamera</translation>
 <translation id="7464701184726199289">Dette rydder synkroniserede data fra alle enheder. Gemte websiteindstillinger slettes ikke og kan afspejle dine søgevaner. <ph name="BEGIN_LINK" />Få flere oplysninger<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Virksomhedsnavn</translation>
 <translation id="7481312909269577407">Frem</translation>
@@ -504,7 +513,9 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8428045167754449968">By</translation>
 <translation id="8428213095426709021">Indstillinger</translation>
 <translation id="8458397775385147834">1 bogmærke blev slettet</translation>
+<translation id="8487667956631253959">Til</translation>
 <translation id="8487700953926739672">Tilgængelig offline</translation>
+<translation id="8490978609246021741">Gem ændringer</translation>
 <translation id="8503813439785031346">Brugernavn</translation>
 <translation id="850600235656508448">Åbn i inkognitotilstand</translation>
 <translation id="8517375800490286174">Open source-licenser</translation>
@@ -513,6 +524,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8532105204136943229">Udløbsår</translation>
 <translation id="8534481786647257214">Indlæg delt på Google+.</translation>
 <translation id="8548878600947630424">Find på siden...</translation>
+<translation id="8588404856427128947">Fra</translation>
 <translation id="8605219856220328675">Luk fane.</translation>
 <translation id="8620640915598389714">Rediger</translation>
 <translation id="8636825310635137004">Aktivér synkronisering for at få adgang til dine faner på dine andre enheder.</translation>
@@ -529,13 +541,10 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="8840513115188359703">Du bliver ikke logget ud af din Google-konto.</translation>
 <translation id="8870413625673593573">Senest lukkede</translation>
 <translation id="8881801611828450202">Søg på <ph name="SEARCH_ENGINE" /> efter dette billede</translation>
-<translation id="8904976895050290827">Chrome-synkronisering</translation>
 <translation id="895541991026785598">Rapportér et problem</translation>
-<translation id="8971089644512329999">OK</translation>
 <translation id="8976382372951310360">Hjælp</translation>
 <translation id="8981454092730389528">Aktivitetsadministration på Google</translation>
 <translation id="8985320356172329008">Du er logget ind på Google som</translation>
-<translation id="902659348151742535">Google kan bruge din browserhistorik til at tilpasse Søgning, annoncer og andre Google-tjenester personligt til dig.</translation>
 <translation id="9034759925968272072">Du logges ikke ud af din Google-konto. Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Båndbredde</translation>
 <translation id="9055772144595778347">Kan ikke logge ind</translation>
@@ -552,7 +561,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Der er sendt en nedbrudsrapport.</translation>
-<translation id="935490618240037774">Dine bogmærker, din historik, dine adgangskoder og andre indstillinger synkroniseres med din Google-konto, så du kan bruge dem på alle dine enheder.</translation>
+<translation id="952704832371081537">Annuller</translation>
 <translation id="976982866697960176">Administrer synkroniserede data...</translation>
 <translation id="988141524645182168">Andre enheder</translation>
 <translation id="989988560359834682">Rediger adresse</translation>

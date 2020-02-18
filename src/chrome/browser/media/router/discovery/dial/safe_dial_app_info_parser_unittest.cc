@@ -11,7 +11,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/data_decoder_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/cpp/safe_xml_parser.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
@@ -122,7 +122,7 @@ class SafeDialAppInfoParserTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   data_decoder::DataDecoderService data_decoder_service_;
   std::unique_ptr<ParsedDialAppInfo> app_info_;

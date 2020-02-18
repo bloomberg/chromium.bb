@@ -34,6 +34,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/base/big_buffer.h"
 #include "third_party/blink/public/mojom/loader/mhtml_load_result.mojom-blink.h"
 #include "third_party/blink/public/platform/scheduler/web_scoped_virtual_time_pauser.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
@@ -63,9 +64,9 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
 #include "third_party/blink/renderer/platform/loader/fetch/source_keyed_cached_metadata_handler.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 #include <memory>
 
@@ -75,7 +76,7 @@ class TickClock;
 
 namespace blink {
 
-class ApplicationCacheHost;
+class ApplicationCacheHostForFrame;
 class ContentSecurityPolicy;
 class Document;
 class DocumentParser;
@@ -207,7 +208,7 @@ class CORE_EXPORT DocumentLoader
 
   DocumentLoadTiming& GetTiming() { return document_load_timing_; }
 
-  ApplicationCacheHost* GetApplicationCacheHost() const {
+  ApplicationCacheHostForFrame* GetApplicationCacheHost() const {
     return application_cache_host_.Get();
   }
 
@@ -271,6 +272,10 @@ class CORE_EXPORT DocumentLoader
 
   int ErrorCode() const { return error_code_; }
 
+  network::mojom::IPAddressSpace GetIPAddressSpace() const {
+    return ip_address_space_;
+  }
+
   PrefetchedSignedExchangeManager* GetPrefetchedSignedExchangeManager() const;
 
   // UseCounter
@@ -279,7 +284,7 @@ class CORE_EXPORT DocumentLoader
 
   // The caller owns the |clock| which must outlive the DocumentLoader.
   void SetTickClockForTesting(const base::TickClock* clock) { clock_ = clock; }
-  void SetApplicationCacheHostForTesting(ApplicationCacheHost* host) {
+  void SetApplicationCacheHostForTesting(ApplicationCacheHostForFrame* host) {
     application_cache_host_ = host;
   }
 
@@ -379,7 +384,7 @@ class CORE_EXPORT DocumentLoader
   void ReportPreviewsIntervention() const;
 
   // WebNavigationBodyLoader::Client
-  void BodyCodeCacheReceived(base::span<const uint8_t>) override;
+  void BodyCodeCacheReceived(mojo_base::BigBuffer data) override;
   void BodyDataReceived(base::span<const char> data) override;
   void BodyLoadingFinished(base::TimeTicks completion_time,
                            int64_t total_encoded_data_length,
@@ -417,6 +422,8 @@ class CORE_EXPORT DocumentLoader
   int error_code_;
   std::unique_ptr<WebNavigationBodyLoader> body_loader_;
   base::UnguessableToken appcache_host_id_;
+  network::mojom::IPAddressSpace ip_address_space_ =
+      network::mojom::IPAddressSpace::kUnknown;
 
   // Params are saved in constructor and are cleared after StartLoading().
   // TODO(dgozman): remove once StartLoading is merged with constructor.
@@ -456,7 +463,7 @@ class CORE_EXPORT DocumentLoader
 
   base::TimeTicks time_of_last_data_received_;
 
-  Member<ApplicationCacheHost> application_cache_host_;
+  Member<ApplicationCacheHostForFrame> application_cache_host_;
 
   std::unique_ptr<WebServiceWorkerNetworkProvider>
       service_worker_network_provider_;

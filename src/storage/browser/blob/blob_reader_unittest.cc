@@ -19,7 +19,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "net/base/completion_once_callback.h"
@@ -270,7 +270,7 @@ class BlobReaderTest : public ::testing::Test {
     return reader_->total_size_calculated();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   BlobStorageContext context_;
   std::unique_ptr<BlobDataHandle> blob_handle_;

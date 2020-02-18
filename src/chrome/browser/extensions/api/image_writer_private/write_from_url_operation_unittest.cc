@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/test/url_loader_interceptor.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace extensions {
 namespace image_writer {
@@ -44,7 +43,6 @@ class WriteFromUrlOperationForTest : public WriteFromUrlOperation {
       const std::string& hash,
       const std::string& storage_unit_id)
       : WriteFromUrlOperation(manager,
-                              /*connector=*/nullptr,
                               extension_id,
                               std::move(factory_info),
                               url,
@@ -243,7 +241,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, VerifyFile) {
     // soon.
     operation->VerifyDownload(base::Bind(
         [](base::OnceClosure quit_closure) {
-          base::PostTaskWithTraits(
+          base::PostTask(
               FROM_HERE,
               {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
               std::move(quit_closure));

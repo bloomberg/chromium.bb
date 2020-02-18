@@ -8,9 +8,9 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/native_file_system/mock_native_file_system_permission_grant.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/browser/blob/blob_storage_context.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -44,8 +44,7 @@ class TestNativeFileSystemHandle : public NativeFileSystemHandleBase {
 class NativeFileSystemHandleBaseTest : public testing::Test {
  public:
   NativeFileSystemHandleBaseTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kNativeFileSystemAPI);
   }
@@ -60,14 +59,15 @@ class NativeFileSystemHandleBaseTest : public testing::Test {
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
         file_system_context_, chrome_blob_context_,
-        /*permission_context=*/nullptr);
+        /*permission_context=*/nullptr,
+        /*off_the_record=*/false);
   }
 
  protected:
-  const url::Origin kTestOrigin =
-      url::Origin::Create(GURL("https://example.com"));
+  const GURL kTestURL = GURL("https://example.com/test");
+  const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle scoped_task_environment_;
+  BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
@@ -93,7 +93,7 @@ TEST_F(NativeFileSystemHandleBaseTest, GetReadPermissionStatus) {
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -113,7 +113,7 @@ TEST_F(NativeFileSystemHandleBaseTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -133,7 +133,7 @@ TEST_F(NativeFileSystemHandleBaseTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -150,7 +150,7 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_AlreadyGranted) {
                                    base::FilePath::FromUTF8Unsafe("/test"));
   TestNativeFileSystemHandle handle(manager_.get(),
                                     NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, /*process_id=*/1,
+                                        kTestOrigin, kTestURL, /*process_id=*/1,
                                         /*frame_id=*/MSG_ROUTING_NONE),
                                     url, handle_state_);
 
@@ -162,10 +162,13 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission_AlreadyGranted) {
   base::RunLoop loop;
   handle.DoRequestPermission(
       /*writable=*/true,
-      base::BindLambdaForTesting([&](PermissionStatus result) {
-        EXPECT_EQ(PermissionStatus::GRANTED, result);
-        loop.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr error,
+              PermissionStatus result) {
+            EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, error->status);
+            EXPECT_EQ(PermissionStatus::GRANTED, result);
+            loop.Quit();
+          }));
   loop.Run();
 }
 
@@ -176,10 +179,11 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
   auto url =
       FileSystemURL::CreateForTest(kTestOrigin, storage::kFileSystemTypeTest,
                                    base::FilePath::FromUTF8Unsafe("/test"));
-  TestNativeFileSystemHandle handle(manager_.get(),
-                                    NativeFileSystemManagerImpl::BindingContext(
-                                        kTestOrigin, kProcessId, kFrameId),
-                                    url, handle_state_);
+  TestNativeFileSystemHandle handle(
+      manager_.get(),
+      NativeFileSystemManagerImpl::BindingContext(kTestOrigin, kTestURL,
+                                                  kProcessId, kFrameId),
+      url, handle_state_);
 
   EXPECT_CALL(*read_grant_, GetStatus())
       .WillRepeatedly(testing::Return(PermissionStatus::GRANTED));
@@ -189,7 +193,9 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
         .WillOnce(testing::Return(PermissionStatus::ASK));
     EXPECT_CALL(*write_grant_,
                 RequestPermission_(kProcessId, kFrameId, testing::_))
-        .WillOnce(RunOnceCallback<2>());
+        .WillOnce(
+            RunOnceCallback<2>(NativeFileSystemPermissionGrant::
+                                   PermissionRequestOutcome::kUserGranted));
     EXPECT_CALL(*write_grant_, GetStatus())
         .WillOnce(testing::Return(PermissionStatus::GRANTED));
   }
@@ -197,10 +203,13 @@ TEST_F(NativeFileSystemHandleBaseTest, RequestWritePermission) {
   base::RunLoop loop;
   handle.DoRequestPermission(
       /*writable=*/true,
-      base::BindLambdaForTesting([&](PermissionStatus result) {
-        EXPECT_EQ(PermissionStatus::GRANTED, result);
-        loop.Quit();
-      }));
+      base::BindLambdaForTesting(
+          [&](blink::mojom::NativeFileSystemErrorPtr error,
+              PermissionStatus result) {
+            EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, error->status);
+            EXPECT_EQ(PermissionStatus::GRANTED, result);
+            loop.Quit();
+          }));
   loop.Run();
 }
 

@@ -36,21 +36,29 @@ func New(path string) (*Subprocess, error) {
 		return nil, err
 	}
 
+	return NewWithIO(cmd, stdin, stdout), nil
+}
+
+// NewWithIO returns a new Subprocess middle layer with the given ReadCloser and
+// WriteCloser. The returned Subprocess will call Wait on the Cmd when closed.
+func NewWithIO(cmd *exec.Cmd, in io.WriteCloser, out io.ReadCloser) *Subprocess {
 	m := &Subprocess{
-		cmd:    cmd,
-		stdin:  stdin,
-		stdout: stdout,
+		cmd:	cmd,
+		stdin:  in,
+		stdout: out,
 	}
 
 	m.primitives = map[string]primitive{
-		"SHA-1":    &hashPrimitive{"SHA-1", 20, m},
-		"SHA2-224": &hashPrimitive{"SHA2-224", 28, m},
-		"SHA2-256": &hashPrimitive{"SHA2-256", 32, m},
-		"SHA2-384": &hashPrimitive{"SHA2-384", 48, m},
-		"SHA2-512": &hashPrimitive{"SHA2-512", 64, m},
+		"SHA-1":        &hashPrimitive{"SHA-1", 20, m},
+		"SHA2-224":     &hashPrimitive{"SHA2-224", 28, m},
+		"SHA2-256":     &hashPrimitive{"SHA2-256", 32, m},
+		"SHA2-384":     &hashPrimitive{"SHA2-384", 48, m},
+		"SHA2-512":     &hashPrimitive{"SHA2-512", 64, m},
+		"ACVP-AES-ECB": &blockCipher{"AES", 16, false, m},
+		"ACVP-AES-CBC": &blockCipher{"AES-CBC", 16, true, m},
 	}
 
-	return m, nil
+	return m
 }
 
 // Close signals the child process to exit and waits for it to complete.

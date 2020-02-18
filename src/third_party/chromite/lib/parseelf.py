@@ -68,13 +68,13 @@ def ParseELFSymbols(elf):
       # spec, "should equal the number of symbol table entries".
       # nchain is the second 32-bit integer at the address pointed by DT_HASH,
       # both for ELF and ELF64 formats.
-      fmt = "<I" if elf.little_endian else ">I"
+      fmt = '<I' if elf.little_endian else '>I'
       elf.stream.seek(dthash_ptr + 4)
       nsymbols = struct.unpack(fmt, elf.stream.read(4))[0]
     else:
       # Get the size of DYNSYM section from section header.
       symtab_size = int(GetSymbolTableSize(elf))
-      nsymbols = symtab_size / symbol_size
+      nsymbols = symtab_size // symbol_size
 
     # The first symbol is always local undefined, unnamed so we ignore it.
     for i in range(1, nsymbols):

@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_color_value.h"
+#include "third_party/blink/renderer/core/css/cssom/cross_thread_unit_value.h"
 #include "third_party/blink/renderer/core/css/cssom/css_style_value.h"
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_input.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -162,7 +164,9 @@ void PaintWorkletProxyClient::Trace(blink::Visitor* visitor) {
 }
 
 sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
-    const CompositorPaintWorkletInput* compositor_input) {
+    const CompositorPaintWorkletInput* compositor_input,
+    const CompositorPaintWorkletJob::AnimatedPropertyValues&
+        animated_property_values) {
   // TODO: Can this happen? We don't register till all are here.
   if (global_scopes_.IsEmpty())
     return sk_make_sp<PaintRecord>();
@@ -192,11 +196,13 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
     paint_arguments.push_back(style_value->ToCSSStyleValue());
   }
 
-  // TODO(crbug.com/980594): find a proper way to detect whether zoom_for_dsf is
-  // enabled.
+  ApplyAnimatedPropertyOverrides(style_map, animated_property_values);
+
+  device_pixel_ratio_ = input->DeviceScaleFactor() * input->EffectiveZoom();
+
   sk_sp<PaintRecord> result = definition->Paint(
       FloatSize(input->GetSize()), input->EffectiveZoom(), style_map,
-      &paint_arguments, 1.0 /* device_scale_factor */);
+      &paint_arguments, input->DeviceScaleFactor());
 
   // CSSPaintDefinition::Paint returns nullptr if it fails, but for
   // OffThread-PaintWorklet we prefer to insert empty PaintRecords into the
@@ -206,6 +212,43 @@ sk_sp<PaintRecord> PaintWorkletProxyClient::Paint(
   if (!result)
     result = sk_make_sp<PaintRecord>();
   return result;
+}
+
+void PaintWorkletProxyClient::ApplyAnimatedPropertyOverrides(
+    PaintWorkletStylePropertyMap* style_map,
+    const CompositorPaintWorkletJob::AnimatedPropertyValues&
+        animated_property_values) {
+  for (const auto& property_value : animated_property_values) {
+    DCHECK(property_value.second.has_value());
+    String property_name(property_value.first.c_str());
+    DCHECK(style_map->StyleMapData().Contains(property_name));
+    CrossThreadStyleValue* old_value =
+        style_map->StyleMapData().at(property_name);
+    switch (old_value->GetType()) {
+      case CrossThreadStyleValue::StyleValueType::kUnitType: {
+        DCHECK(property_value.second.float_value);
+        std::unique_ptr<CrossThreadUnitValue> new_value =
+            std::make_unique<CrossThreadUnitValue>(
+                property_value.second.float_value.value(),
+                DynamicTo<CrossThreadUnitValue>(old_value)->GetUnitType());
+        style_map->StyleMapData().Set(property_name, std::move(new_value));
+        break;
+      }
+      case CrossThreadStyleValue::StyleValueType::kColorType: {
+        DCHECK(property_value.second.color_value);
+        SkColor sk_color = property_value.second.color_value.value();
+        Color color(MakeRGBA(SkColorGetR(sk_color), SkColorGetG(sk_color),
+                             SkColorGetB(sk_color), SkColorGetA(sk_color)));
+        std::unique_ptr<CrossThreadColorValue> new_value =
+            std::make_unique<CrossThreadColorValue>(color);
+        style_map->StyleMapData().Set(property_name, std::move(new_value));
+        break;
+      }
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
 }
 
 void ProvidePaintWorkletProxyClientTo(WorkerClients* clients,

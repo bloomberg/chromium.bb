@@ -61,7 +61,7 @@ namespace content {
 PepperVpnProviderMessageFilter::PepperVpnProviderMessageFilter(
     BrowserPpapiHostImpl* host,
     PP_Instance instance)
-    : browser_context_(nullptr), bound_(false), weak_factory_(this) {
+    : browser_context_(nullptr), bound_(false) {
   DCHECK(host);
 
   document_url_ = host->GetDocumentURLForInstance(instance);
@@ -96,7 +96,7 @@ PepperVpnProviderMessageFilter::OverrideTaskRunnerForMessage(
     case PpapiHostMsg_VpnProvider_Bind::ID:
     case PpapiHostMsg_VpnProvider_SendPacket::ID:
     case PpapiHostMsg_VpnProvider_OnPacketReceivedReply::ID:
-      return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+      return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
   }
   return nullptr;
 }

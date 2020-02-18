@@ -49,8 +49,26 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
     virtual void OnDecodingErrorDetected(QuicStringPiece error_message) = 0;
   };
 
+  // Interface for keeping track of blocked streams for the purpose of enforcing
+  // the limit communicated to peer via QPACK_BLOCKED_STREAMS settings.
+  class QUIC_EXPORT_PRIVATE BlockedStreamLimitEnforcer {
+   public:
+    virtual ~BlockedStreamLimitEnforcer() {}
+
+    // Called when the stream becomes blocked.  Returns true if allowed. Returns
+    // false if limit is violated, in which case QpackProgressiveDecoder signals
+    // an error.
+    // Stream must not be already blocked.
+    virtual bool OnStreamBlocked(QuicStreamId stream_id) = 0;
+
+    // Called when the stream becomes unblocked.
+    // Stream must be blocked.
+    virtual void OnStreamUnblocked(QuicStreamId stream_id) = 0;
+  };
+
   QpackProgressiveDecoder() = delete;
   QpackProgressiveDecoder(QuicStreamId stream_id,
+                          BlockedStreamLimitEnforcer* enforcer,
                           QpackHeaderTable* header_table,
                           QpackDecoderStreamSender* decoder_stream_sender,
                           HeadersHandlerInterface* handler);
@@ -89,18 +107,6 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
   // failure due to overflow/underflow.
   bool DeltaBaseToBase(bool sign, uint64_t delta_base, uint64_t* base);
 
-  // The request stream can use relative index (but different from the kind of
-  // relative index used on the encoder stream), and post-base index.
-  // These methods convert relative index and post-base index to absolute index
-  // (one based).  They return true on success, or false if conversion fails due
-  // to overflow/underflow.  On success, |*absolute_index| is guaranteed to be
-  // strictly less than std::numeric_limits<uint64_t>::max().
-  bool RequestStreamRelativeIndexToAbsoluteIndex(
-      uint64_t relative_index,
-      uint64_t* absolute_index) const;
-  bool PostBaseIndexToAbsoluteIndex(uint64_t post_base_index,
-                                    uint64_t* absolute_index) const;
-
   const QuicStreamId stream_id_;
 
   // |prefix_decoder_| only decodes a handful of bytes then it can be
@@ -109,6 +115,7 @@ class QUIC_EXPORT_PRIVATE QpackProgressiveDecoder
   std::unique_ptr<QpackInstructionDecoder> prefix_decoder_;
   QpackInstructionDecoder instruction_decoder_;
 
+  BlockedStreamLimitEnforcer* const enforcer_;
   QpackHeaderTable* const header_table_;
   QpackDecoderStreamSender* const decoder_stream_sender_;
   HeadersHandlerInterface* const handler_;

@@ -305,10 +305,13 @@ class JsepTransportControllerTest : public JsepTransportController::Observer,
   }
 
   // JsepTransportController::Observer overrides.
-  bool OnTransportChanged(const std::string& mid,
-                          RtpTransportInternal* rtp_transport,
-                          rtc::scoped_refptr<DtlsTransport> dtls_transport,
-                          MediaTransportInterface* media_transport) override {
+  bool OnTransportChanged(
+      const std::string& mid,
+      RtpTransportInternal* rtp_transport,
+      rtc::scoped_refptr<DtlsTransport> dtls_transport,
+      MediaTransportInterface* media_transport,
+      DataChannelTransportInterface* data_channel_transport,
+      JsepTransportController::NegotiationState negotiation_state) override {
     changed_rtp_transport_by_mid_[mid] = rtp_transport;
     if (dtls_transport) {
       changed_dtls_transport_by_mid_[mid] = dtls_transport->internal();
@@ -442,7 +445,7 @@ TEST_F(JsepTransportControllerTest,
                   .ok());
 
   FakeMediaTransport* media_transport = static_cast<FakeMediaTransport*>(
-      transport_controller_->GetMediaTransportForDataChannel(kAudioMid1));
+      transport_controller_->GetDataChannelTransport(kAudioMid1));
 
   ASSERT_NE(nullptr, media_transport);
 
@@ -452,12 +455,62 @@ TEST_F(JsepTransportControllerTest,
 
   // Return nullptr for non-existing mids.
   EXPECT_EQ(nullptr,
-            transport_controller_->GetMediaTransportForDataChannel(kVideoMid2));
+            transport_controller_->GetDataChannelTransport(kVideoMid2));
 
   EXPECT_EQ(cricket::ICE_CANDIDATE_COMPONENT_RTP,
             transport_controller_->GetDtlsTransport(kAudioMid1)->component())
       << "Media transport for media was not enabled, and so DTLS transport "
          "should be created.";
+}
+
+TEST_F(JsepTransportControllerTest,
+       DtlsIsStillCreatedIfDatagramTransportIsOnlyUsedForDataChannels) {
+  FakeMediaTransportFactory fake_media_transport_factory("transport_params");
+  JsepTransportController::Config config;
+
+  config.rtcp_mux_policy = PeerConnectionInterface::kRtcpMuxPolicyRequire;
+  config.bundle_policy = PeerConnectionInterface::kBundlePolicyMaxBundle;
+  config.media_transport_factory = &fake_media_transport_factory;
+  config.use_datagram_transport_for_data_channels = true;
+  CreateJsepTransportController(config);
+
+  auto description = CreateSessionDescriptionWithBundleGroup();
+  AddCryptoSettings(description.get());
+  absl::optional<cricket::OpaqueTransportParameters> params =
+      transport_controller_->GetTransportParameters(kAudioMid1);
+  for (auto& info : description->transport_infos()) {
+    info.description.opaque_parameters = params;
+  }
+
+  EXPECT_TRUE(transport_controller_
+                  ->SetLocalDescription(SdpType::kOffer, description.get())
+                  .ok());
+  EXPECT_TRUE(transport_controller_
+                  ->SetRemoteDescription(SdpType::kAnswer, description.get())
+                  .ok());
+
+  FakeDatagramTransport* datagram_transport =
+      static_cast<FakeDatagramTransport*>(
+          transport_controller_->GetDataChannelTransport(kAudioMid1));
+
+  ASSERT_NE(nullptr, datagram_transport);
+
+  EXPECT_EQ(cricket::ICE_CANDIDATE_COMPONENT_RTP,
+            transport_controller_->GetDtlsTransport(kAudioMid1)->component())
+      << "Datagram transport for media was not enabled, and so DTLS transport "
+         "should be created.";
+
+  // Datagram transport is not used for media, so no max packet size is
+  // specified.
+  EXPECT_EQ(transport_controller_->GetMediaTransportConfig(kAudioMid1)
+                .rtp_max_packet_size,
+            absl::nullopt);
+
+  // Since datagram transport is not used for RTP, setting it to writable should
+  // not make the RTP transport writable.
+  datagram_transport->set_state(MediaTransportState::kWritable);
+  EXPECT_FALSE(transport_controller_->GetRtpTransport(kAudioMid1)
+                   ->IsWritable(/*rtcp=*/false));
 }
 
 TEST_F(JsepTransportControllerTest, GetMediaTransportInCaller) {

@@ -23,9 +23,9 @@
 #include <vector>
 
 #include "src/trace_processor/filtered_row_index.h"
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/sqlite_table.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 #include "src/trace_processor/storage_columns.h"
-#include "src/trace_processor/table.h"
 #include "src/trace_processor/trace_storage.h"
 
 namespace perfetto {
@@ -68,7 +68,7 @@ class StorageSchema {
     template <class Accessor>
     Builder& AddGenericNumericColumn(std::string column_name,
                                      Accessor accessor) {
-      columns_.emplace_back(new NumericColumn<decltype(accessor)>(
+      columns_.emplace_back(new NumericStorageColumn<decltype(accessor)>(
           column_name, false /* hidden */, accessor));
       return *this;
     }
@@ -103,7 +103,7 @@ class StorageSchema {
   StorageSchema();
   StorageSchema(Columns columns, std::vector<std::string> primary_keys);
 
-  Table::Schema ToTableSchema();
+  SqliteTable::Schema ToTableSchema();
 
   size_t ColumnIndexFromName(const std::string& name) const;
 

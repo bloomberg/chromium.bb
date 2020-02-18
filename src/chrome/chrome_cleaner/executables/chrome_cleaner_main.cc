@@ -18,11 +18,12 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -532,8 +533,7 @@ int APIENTRY wWinMain(HINSTANCE, HINSTANCE, wchar_t*, int) {
 
   // Many pieces of code below need a task executor to have been instantiated
   // before them.
-  base::SingleThreadTaskExecutor main_task_executor(
-      base::MessagePump::Type::UI);
+  base::SingleThreadTaskExecutor main_task_executor(base::MessagePumpType::UI);
 
   // The rebooter must be at the outermost scope so it can be called to reboot
   // before exiting, when appropriate.

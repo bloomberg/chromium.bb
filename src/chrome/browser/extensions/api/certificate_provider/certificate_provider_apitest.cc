@@ -173,7 +173,7 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 
   void AddFakeSignRequest() {
     cert_provider_service_->pin_dialog_manager()->AddSignRequestId(
-        extension_->id(), kFakeSignRequestId);
+        extension_->id(), kFakeSignRequestId, {});
   }
 
   void NavigateTo(const std::string& test_page_file_name) {
@@ -183,11 +183,13 @@ class CertificateProviderRequestPinTest : public CertificateProviderApiTest {
 
   chromeos::RequestPinView* GetActivePinDialogView() {
     return cert_provider_service_->pin_dialog_manager()
+        ->default_dialog_host_for_testing()
         ->active_view_for_testing();
   }
 
   views::Widget* GetActivePinDialogWindow() {
     return cert_provider_service_->pin_dialog_manager()
+        ->default_dialog_host_for_testing()
         ->active_window_for_testing();
   }
 

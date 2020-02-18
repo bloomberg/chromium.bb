@@ -9,7 +9,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,7 +20,7 @@ using ::testing::HasSubstr;
 using ::testing::Not;
 
 TEST_F(ArcMigrationGuideNotificationTest, BatteryPercent) {
-  content::TestBrowserThreadBundle browser_thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
 
   // Set a high battery state.

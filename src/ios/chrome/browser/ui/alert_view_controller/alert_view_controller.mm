@@ -114,18 +114,14 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
   [super traitCollectionDidChange:previousTraitCollection];
 
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
   if (@available(iOS 13, *)) {
     if ([self.traitCollection
             hasDifferentColorAppearanceComparedToTraitCollection:
                 previousTraitCollection]) {
-      [self.traitCollection performAsCurrentTraitCollection:^{
-        self.textFieldStackHolder.layer.borderColor =
-            UIColor.cr_separatorColor.CGColor;
-      }];
+      self.textFieldStackHolder.layer.borderColor =
+          UIColor.cr_separatorColor.CGColor;
     }
   }
-#endif
 }
 
 - (void)loadView {
@@ -210,6 +206,7 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
   ]];
 
   UIScrollView* scrollView = [[UIScrollView alloc] init];
+  scrollView.delaysContentTouches = NO;
   scrollView.showsVerticalScrollIndicator = YES;
   scrollView.showsHorizontalScrollIndicator = NO;
   scrollView.translatesAutoresizingMaskIntoConstraints = NO;
@@ -282,7 +279,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     UIView* stackHolder = [[UIView alloc] init];
     stackHolder.layer.cornerRadius = kTextFieldCornerRadius;
     stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
-#if defined(__IPHONE_13_0) && (__IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_13_0)
     if (@available(iOS 13, *)) {
       // Use performAsCurrentTraitCollection to get the correct CGColor for the
       // given dynamic color and current userInterfaceStyle.
@@ -290,7 +286,6 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
         stackHolder.layer.borderColor = UIColor.cr_separatorColor.CGColor;
       }];
     }
-#endif
     stackHolder.layer.borderWidth = 1.0 / [UIScreen mainScreen].scale;
     stackHolder.clipsToBounds = YES;
     stackHolder.backgroundColor = UIColor.cr_secondarySystemBackgroundColor;
@@ -387,13 +382,13 @@ constexpr NSUInteger kUIViewAnimationCurveToOptionsShift = 16;
     UIColor* textColor = nil;
     if (action.style == UIAlertActionStyleDefault) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = [UIColor colorNamed:kTintColor];
+      textColor = [UIColor colorNamed:kBlueColor];
     } else if (action.style == UIAlertActionStyleCancel) {
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-      textColor = [UIColor colorNamed:kTintColor];
+      textColor = [UIColor colorNamed:kBlueColor];
     } else {  // Style is UIAlertActionStyleDestructive
       font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
-      textColor = [UIColor colorNamed:kDestructiveTintColor];
+      textColor = [UIColor colorNamed:kRedColor];
     }
     button.titleLabel.font = font;
     button.titleLabel.adjustsFontForContentSizeCategory = YES;

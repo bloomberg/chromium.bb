@@ -29,7 +29,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_FRAME_H_
 
-#include "base/debug/stack_trace.h"
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
@@ -91,6 +90,8 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   virtual bool ShouldClose() = 0;
   virtual void DidFreeze() = 0;
   virtual void DidResume() = 0;
+  virtual void HookBackForwardCacheEviction() = 0;
+  virtual void RemoveBackForwardCacheEviction() = 0;
 
   FrameClient* Client() const;
 
@@ -208,14 +209,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   }
   const std::string& ToTraceValue();
 
-  // TODO(dcheng): temporary for debugging https://crbug.com/838348.
-  const base::debug::StackTrace& CreateStackForDebugging() {
-    return create_stack_;
-  }
-  const base::debug::StackTrace& DetachStackForDebugging() {
-    return detach_stack_;
-  }
-
   NavigationRateLimiter& navigation_rate_limiter() {
     return navigation_rate_limiter_;
   }
@@ -305,9 +298,6 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   bool is_loading_;
   base::UnguessableToken devtools_frame_token_;
   base::Optional<std::string> trace_value_;
-
-  base::debug::StackTrace create_stack_;
-  base::debug::StackTrace detach_stack_;
 };
 
 inline FrameClient* Frame::Client() const {

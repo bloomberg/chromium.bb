@@ -20,6 +20,7 @@ def build_command_buffer(api, chrome_dir, skia_dir, out):
       args=[
         '--chrome-dir', chrome_dir,
         '--output-dir', out,
+        '--extra-gn-args', 'mac_sdk_min="10.13"',
         '--no-sync', '--no-hooks', '--make-output-dir'])
 
 
@@ -90,6 +91,10 @@ def compile_fn(api, checkout_root, out_dir):
   if os == 'Mac':
     extra_cflags.append(
         '-DDUMMY_xcode_build_version=%s' % XCODE_BUILD_VERSION)
+    if XCODE_CLANG_VERSION.startswith('9.'):
+      # XCode 9 seems to handle try_acquire_capability wrong.
+      extra_cflags.append('-Wno-thread-safety-analysis')
+
     mac_toolchain_cmd = api.vars.slave_dir.join(
         'mac_toolchain', 'mac_toolchain')
     xcode_app_path = api.vars.cache_dir.join('Xcode.app')
@@ -277,9 +282,6 @@ def compile_fn(api, checkout_root, out_dir):
   if 'SafeStack' in extra_tokens:
     assert sanitize == ''
     sanitize = 'safe-stack'
-  if 'MSRTC' in extra_tokens:
-    assert sanitize == ''
-    sanitize = 'MSVC'
 
   if 'Wuffs' in extra_tokens:
     args['skia_use_wuffs'] = 'true'

@@ -19,10 +19,19 @@ class Connector;
 
 namespace device {
 
+enum class BioEnrollmentStatus {
+  kSuccess,
+  kAuthenticatorResponseInvalid,
+  kSoftPINBlock,
+  kHardPINBlock,
+  kNoPINSet,
+  kAuthenticatorMissingBioEnrollment,
+};
+
 class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
     : public FidoRequestHandlerBase {
  public:
-  using ErrorCallback = base::OnceCallback<void(FidoReturnCode)>;
+  using ErrorCallback = base::OnceCallback<void(BioEnrollmentStatus)>;
   using GetPINCallback =
       base::RepeatingCallback<void(int64_t retries,
                                    base::OnceCallback<void(std::string)>)>;
@@ -42,8 +51,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
       base::OnceClosure ready_callback,
       ErrorCallback error_callback,
       GetPINCallback get_pin_callback,
-      FidoDiscoveryFactory* factory =
-          std::make_unique<FidoDiscoveryFactory>().get());
+      FidoDiscoveryFactory* factory);
   ~BioEnrollmentHandler() override;
 
   // Returns the modality of the authenticator's user verification.
@@ -103,10 +111,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   void OnEnumerateTemplates(EnumerationCallback,
                             CtapDeviceResponseCode,
                             base::Optional<BioEnrollmentResponse>);
-  void OnRenameTemplate(StatusCallback,
-                        CtapDeviceResponseCode,
-                        base::Optional<BioEnrollmentResponse>);
-  void OnDeleteTemplate(StatusCallback,
+  void OnStatusCallback(StatusCallback,
                         CtapDeviceResponseCode,
                         base::Optional<BioEnrollmentResponse>);
 
@@ -117,7 +122,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) BioEnrollmentHandler
   ErrorCallback error_callback_;
   GetPINCallback get_pin_callback_;
   base::Optional<pin::TokenResponse> pin_token_response_;
-  base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_;
+  base::WeakPtrFactory<BioEnrollmentHandler> weak_factory_{this};
 
   BioEnrollmentHandler(const BioEnrollmentHandler&) = delete;
   BioEnrollmentHandler(BioEnrollmentHandler&&) = delete;

@@ -531,14 +531,14 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
             quic_race_cert_verification;
       }
 
-      std::string quic_host_whitelist;
-      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_whitelist)) {
+      std::string quic_host_allowlist;
+      if (quic_args->GetString(kQuicHostWhitelist, &quic_host_allowlist)) {
         std::vector<std::string> host_vector =
-            base::SplitString(quic_host_whitelist, ",", base::TRIM_WHITESPACE,
+            base::SplitString(quic_host_allowlist, ",", base::TRIM_WHITESPACE,
                               base::SPLIT_WANT_ALL);
-        session_params->quic_host_whitelist.clear();
+        session_params->quic_host_allowlist.clear();
         for (const std::string& host : host_vector) {
-          session_params->quic_host_whitelist.insert(host);
+          session_params->quic_host_allowlist.insert(host);
         }
       }
 
@@ -679,7 +679,8 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     CHECK(net_log) << "All DNS-related experiments require NetLog.";
     std::unique_ptr<net::HostResolver> host_resolver;
     net::HostResolver::ManagerOptions host_resolver_manager_options;
-    host_resolver_manager_options.dns_client_enabled = async_dns_enable;
+    host_resolver_manager_options.insecure_dns_client_enabled =
+        async_dns_enable;
     host_resolver_manager_options.check_ipv6_on_wifi = !disable_ipv6_on_wifi;
     // TODO(crbug.com/934402): Consider using a shared HostResolverManager for
     // Cronet HostResolvers.

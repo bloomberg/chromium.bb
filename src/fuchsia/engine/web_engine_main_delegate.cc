@@ -24,10 +24,14 @@ WebEngineMainDelegate* g_current_web_engine_main_delegate = nullptr;
 
 void InitLoggingFromCommandLine(const base::CommandLine& command_line) {
   logging::LoggingSettings settings;
-  settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  if (command_line.GetSwitchValueASCII(switches::kEnableLogging) == "stderr") {
+    settings.logging_dest = logging::LOG_TO_STDERR;
+  } else {
+    settings.logging_dest = logging::LOG_TO_SYSTEM_DEBUG_LOG;
+  }
   if (command_line.HasSwitch(switches::kLogFile)) {
     settings.logging_dest |= logging::LOG_TO_FILE;
-    settings.log_file =
+    settings.log_file_path =
         command_line.GetSwitchValueASCII(switches::kLogFile).c_str();
     settings.delete_old = logging::DELETE_OLD_LOG_FILE;
   }

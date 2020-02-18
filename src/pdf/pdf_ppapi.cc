@@ -52,7 +52,7 @@ pp::Instance* PDFModule::CreateInstance(PP_Instance instance) {
       v8::V8::SetNativesDataBlob(&natives);
       v8::V8::SetSnapshotDataBlob(&snapshot);
     }
-    if (!InitializeSDK())
+    if (!InitializeSDK(/*enable_v8=*/true))
       return nullptr;
     g_sdk_initialized_via_pepper = true;
   }

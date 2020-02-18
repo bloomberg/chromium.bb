@@ -5,11 +5,12 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_IMPL_H_
 #define CHROMEOS_SERVICES_ASSISTANT_ASSISTANT_MANAGER_SERVICE_IMPL_H_
 
+#include <map>
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "ash/public/interfaces/assistant_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
@@ -41,10 +42,6 @@ class AssistantManagerInternal;
 namespace network {
 class SharedURLLoaderFactoryInfo;
 }  // namespace network
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace chromeos {
 namespace assistant {
@@ -93,7 +90,7 @@ class AssistantManagerServiceImpl
  public:
   // |service| owns this class and must outlive this class.
   AssistantManagerServiceImpl(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       device::mojom::BatteryMonitorPtr battery_monitor,
       Service* service,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
@@ -157,7 +154,6 @@ class AssistantManagerServiceImpl
   void OnSpeechLevelUpdated(float speech_level) override;
 
   // assistant_client::ConversationStateListener overrides:
-  void OnConversationTurnStarted(bool is_mic_open) override;
   void OnConversationTurnFinished(
       assistant_client::ConversationStateListener::Resolution resolution)
       override;
@@ -172,6 +168,8 @@ class AssistantManagerServiceImpl
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
   bool SupportsModifySettings() override;
+  void OnConversationTurnStartedInternal(
+      const assistant_client::ConversationTurnMetadata& metadata) override;
   void OnNotificationRemoved(const std::string& grouping_key) override;
   void OnCommunicationError(int error_code) override;
   // Last search source will be cleared after it is retrieved.
@@ -195,6 +193,7 @@ class AssistantManagerServiceImpl
   assistant_client::AssistantManagerInternal* assistant_manager_internal() {
     return assistant_manager_internal_;
   }
+  PlatformApiImpl* platform_api() { return platform_api_.get(); }
 
   // media_session::mojom::MediaControllerObserver overrides:
   void MediaSessionInfoChanged(
@@ -230,7 +229,8 @@ class AssistantManagerServiceImpl
 
   void HandleLaunchMediaIntentResponse(bool app_opened);
 
-  void OnConversationTurnStartedOnMainThread(bool is_mic_open);
+  void OnConversationTurnStartedOnMainThread(
+      const assistant_client::ConversationTurnMetadata& metadata);
   void OnConversationTurnFinishedOnMainThread(
       assistant_client::ConversationStateListener::Resolution resolution);
   void OnShowHtmlOnMainThread(const std::string& html,
@@ -289,6 +289,7 @@ class AssistantManagerServiceImpl
 
   void UpdateMediaState();
 
+  mojom::Client* const client_;
   State state_ = State::STOPPED;
   std::unique_ptr<AssistantMediaSession> media_session_;
   std::unique_ptr<PlatformApiImpl> platform_api_;
@@ -322,6 +323,10 @@ class AssistantManagerServiceImpl
   base::TimeTicks started_time_;
 
   base::Thread background_thread_;
+
+  int next_interaction_id_ = 1;
+  std::map<std::string, mojom::AssistantInteractionMetadataPtr>
+      pending_interactions_;
 
   bool receive_modify_settings_proto_response_ = false;
   bool receive_inline_response_ = false;

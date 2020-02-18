@@ -30,11 +30,6 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       RenderFrameHost*,
       mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
 
-  // Temporary method while RenderProcessHostImpl does not migrate from using
-  // service_manager::BinderRegistry to using service_manager::BinderMap.
-  static void CreateFromRequest(RenderFrameHost*,
-                                blink::mojom::PictureInPictureServiceRequest);
-
   static PictureInPictureServiceImpl* CreateForTesting(
       RenderFrameHost*,
       mojo::PendingReceiver<blink::mojom::PictureInPictureService>);
@@ -45,7 +40,6 @@ class CONTENT_EXPORT PictureInPictureServiceImpl final
       const base::Optional<viz::SurfaceId>& surface_id,
       const gfx::Size& natural_size,
       bool show_play_pause_button,
-      bool show_mute_button,
       mojo::PendingRemote<blink::mojom::PictureInPictureSessionObserver>,
       StartSessionCallback) final;
 

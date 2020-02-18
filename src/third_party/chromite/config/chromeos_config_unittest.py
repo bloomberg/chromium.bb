@@ -9,10 +9,11 @@ from __future__ import print_function
 
 import copy
 import json
-import mock
 import os
 import re
 import unittest
+
+import mock
 
 from chromite.cbuildbot import builders
 from chromite.config import chromeos_config
@@ -214,7 +215,7 @@ class UnifiedBuildConfigTestCase(object):
   def setUp(self):
     # Code assumes at least one non-unified build exists, so we're accommodating
     # that by keeping the non-unified reef board.
-    self._fake_ge_build_config_json = '''
+    self._fake_ge_build_config_json = """
 {
   "metadata_version": "1.0",
   "release_branch": true,
@@ -254,7 +255,7 @@ class UnifiedBuildConfigTestCase(object):
     }
   ]
 }
-    '''
+    """
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
     defaults = chromeos_config.DefaultSettings()
@@ -630,7 +631,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if config.hw_tests or config.hw_tests_override:
         self.assertTrue(
             config.upload_hw_test_artifacts,
-            "%s is trying to run hw tests without uploading payloads." %
+            '%s is trying to run hw tests without uploading payloads.' %
             build_name)
 
   def testTryjobConfigsDontDefineOverrides(self):
@@ -659,7 +660,7 @@ class CBuildBotTest(ChromeosConfigTestBase):
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
             config.hw_tests,
-            "Release builder %s must run hw tests." % build_name)
+            'Release builder %s must run hw tests.' % build_name)
 
   def testHWTestsReleaseBuilderWeakRequirement(self):
     """Make sure most release configs run hw tests."""
@@ -669,11 +670,19 @@ class CBuildBotTest(ChromeosConfigTestBase):
       if build_name.startswith('clapper'):
         continue
 
+      if build_name.startswith('betty'):
+        continue
+
+      # Jetstream boards currently do not run hwtests in the release builder,
+      # b/140317527.
+      if build_name.startswith(('arkham', 'gale', 'mistral', 'whirlwind')):
+        continue
+
       if (config.build_type == 'canary' and 'test' in config.images and
           config.upload_hw_test_artifacts and config.hwqual):
         self.assertTrue(
             config.hw_tests,
-            "Release builder %s must run hw tests." % build_name)
+            'Release builder %s must run hw tests.' % build_name)
 
   def testValidUnifiedMasterConfig(self):
     """Make sure any unified master configurations are valid."""
@@ -733,33 +742,6 @@ class CBuildBotTest(ChromeosConfigTestBase):
   #   have_vm_tests = any([self.site_config[name].vm_tests
   #                        for name in pre_cq_configs])
   #   self.assertTrue(have_vm_tests, 'No Pre-CQ builder has VM tests enabled')
-
-  def testCqHasPrebuilts(self):
-    """Make sure every master has a sane list of slaves"""
-    cq = set()
-    for builder in set(self.site_config['master-paladin'].slave_configs):
-      if self.site_config[builder].important:
-        cq.update(self.site_config[builder].boards)
-
-    postsubmit = set()
-    for builder in set(self.site_config['master-postsubmit'].slave_configs):
-      postsubmit.update(self.site_config[builder].boards)
-
-    without_postsubmit = cq.difference(postsubmit)
-    self.assertFalse(without_postsubmit)
-
-  def testPreCqHasPrebuilts(self):
-    """Make sure every master has a sane list of slaves"""
-    precq = set()
-    for builder in set(constants.PRE_CQ_DEFAULT_CONFIGS):
-      precq.update(self.site_config[builder].boards)
-
-    postsubmit = set()
-    for builder in set(self.site_config['master-postsubmit'].slave_configs):
-      postsubmit.update(self.site_config[builder].boards)
-
-    without_postsubmit = precq.difference(postsubmit)
-    self.assertFalse(without_postsubmit)
 
   def testPfqsHavePaladins(self):
     """Make sure that every active PFQ has an associated Paladin.

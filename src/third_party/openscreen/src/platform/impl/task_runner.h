@@ -9,8 +9,7 @@
 #include <condition_variable>  // NOLINT
 #include <map>
 #include <memory>
-#include <mutex>   // NOLINT
-#include <thread>  // NOLINT
+#include <mutex>  // NOLINT
 #include <utility>
 #include <vector>
 
@@ -75,20 +74,30 @@ class TaskRunnerImpl final : public TaskRunner {
   void RunUntilIdleForTesting();
 
  private:
+#ifndef TRACE_FORCE_DISABLE
   // Wrapper around a Task used to store the TraceId Metadata along with the
   // task itself, and to set the current TraceIdHierarchy before executing the
   // task.
   class TaskWithMetadata {
    public:
-    // NOTE: Conversion constructor required due to condition_variable library.
-    TaskWithMetadata(Task task);
+    // NOTE: 'explicit' keyword omitted so that conversion construtor can be
+    // used. This simplifies switching between 'Task' and 'TaskWithMetadata'
+    // based on the compilation flag.
+    TaskWithMetadata(Task task)
+        : task_(std::move(task)), trace_ids_(TRACE_HIERARCHY){};
 
-    void operator()();
+    void operator()() {
+      TRACE_SET_HIERARCHY(trace_ids_);
+      std::move(task_)();
+    }
 
    private:
     Task task_;
     TraceIdHierarchy trace_ids_;
   };
+#else   // TRACE_FORCE_DISABLE defined
+  using TaskWithMetadata = Task;
+#endif  // TRACE_FORCE_DISABLE
 
   // Run all tasks already in the task queue. If the queue is empty, wait for
   // either (1) a delayed task to become available, or (2) a task to be added

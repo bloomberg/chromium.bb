@@ -28,6 +28,7 @@
 #include "net/base/io_buffer.h"
 #include "net/http/http_byte_range.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -73,8 +74,7 @@ class FileSystemReaderDataPipeProducer {
             FROM_HERE,
             mojo::SimpleWatcher::ArmingPolicy::MANUAL,
             base::SequencedTaskRunnerHandle::Get())),
-        callback_(std::move(callback)),
-        weak_ptr_factory_(this) {
+        callback_(std::move(callback)) {
     pipe_watcher_->Watch(
         producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
         MOJO_WATCH_CONDITION_SATISFIED,
@@ -187,7 +187,8 @@ class FileSystemReaderDataPipeProducer {
   int64_t total_bytes_written_;
   std::unique_ptr<mojo::SimpleWatcher> pipe_watcher_;
   base::OnceCallback<void(net::Error)> callback_;
-  base::WeakPtrFactory<FileSystemReaderDataPipeProducer> weak_ptr_factory_;
+  base::WeakPtrFactory<FileSystemReaderDataPipeProducer> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemReaderDataPipeProducer);
 };
@@ -211,7 +212,6 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override {}
-  void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -223,8 +223,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
       network::mojom::URLLoaderRequest loader,
       network::mojom::URLLoaderClientPtrInfo client_info)
       : binding_(this),
-        resolver_(std::make_unique<ExternalFileResolver>(profile_id)),
-        weak_ptr_factory_(this) {
+        resolver_(std::make_unique<ExternalFileResolver>(profile_id)) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
     binding_.Bind(std::move(loader));
     binding_.set_connection_error_handler(base::BindOnce(
@@ -329,7 +328,7 @@ class ExternalFileURLLoader : public network::mojom::URLLoader {
   storage::IsolatedContext::ScopedFSHandle isolated_file_system_scope_;
   std::unique_ptr<FileSystemReaderDataPipeProducer> data_producer_;
 
-  base::WeakPtrFactory<ExternalFileURLLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<ExternalFileURLLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExternalFileURLLoader);
 };
@@ -360,7 +359,7 @@ void ExternalFileURLLoaderFactory::CreateLoaderAndStart(
     mojo::ReportBadMessage("Unauthorized externalfile request");
     return;
   }
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&ExternalFileURLLoader::CreateAndStart, profile_id_,
                      request, std::move(loader), client.PassInterface()));

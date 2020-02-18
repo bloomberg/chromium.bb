@@ -36,7 +36,7 @@
 #include "chromecast/browser/cast_browser_process.h"
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_feature_list_creator.h"
-#include "chromecast/browser/cast_memory_pressure_monitor.h"
+#include "chromecast/browser/cast_system_memory_pressure_evaluator.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
@@ -58,6 +58,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/system_connector.h"
@@ -274,6 +275,7 @@ const DefaultCommandLineSwitch kDefaultSwitches[] = {
 #endif
 #if BUILDFLAG(IS_CAST_AUDIO_ONLY)
     {switches::kDisableGpu, ""},
+    {switches::kDisableSoftwareRasterizer, ""},
 #if defined(OS_ANDROID)
     {switches::kDisableFrameRateLimit, ""},
     {switches::kDisableGLDrawingForTests, ""},
@@ -483,7 +485,10 @@ int CastBrowserMainParts::PreCreateThreads() {
 
 void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
-  memory_pressure_monitor_.reset(new CastMemoryPressureMonitor());
+  memory_pressure_monitor_.reset(new util::MultiSourceMemoryPressureMonitor());
+  memory_pressure_monitor_->SetSystemEvaluator(
+      std::make_unique<CastSystemMemoryPressureEvaluator>(
+          memory_pressure_monitor_->CreateVoter()));
 
   // base::Unretained() is safe because the browser client will outlive any
   // component in the browser; this factory method will not be called after
@@ -494,8 +499,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 
 #if defined(OS_ANDROID)
-  crash_reporter_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+  crash_reporter_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   crash_reporter_runner_->PostTask(
       FROM_HERE,
@@ -505,13 +510,16 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
 
   url_request_context_factory_->InitializeOnUIThread(nullptr);
 
-  cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
-      url_request_context_factory_->GetSystemGetter()));
-
   cast_browser_process_->SetBrowserContext(
       std::make_unique<CastBrowserContext>());
+
+  cast_browser_process_->SetConnectivityChecker(ConnectivityChecker::Create(
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      content::BrowserContext::GetDefaultStoragePartition(
+          cast_browser_process_->browser_context())
+          ->GetURLLoaderFactoryForBrowserProcessIOThread(),
+      content::GetNetworkConnectionTracker()));
+
   cast_browser_process_->SetMetricsServiceClient(
       std::make_unique<metrics::CastMetricsServiceClient>(
           cast_browser_process_->browser_client(),

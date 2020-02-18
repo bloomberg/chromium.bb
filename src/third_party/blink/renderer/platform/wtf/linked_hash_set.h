@@ -121,7 +121,7 @@ class LinkedHashSetNodeBase {
   LinkedHashSetNodeBase(const LinkedHashSetNodeBase& other)
       : prev_(nullptr), next_(nullptr) {}
 
-  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other)
+  LinkedHashSetNodeBase(LinkedHashSetNodeBase&& other) noexcept
       : prev_(other.prev_), next_(other.next_) {
     other.prev_ = nullptr;
     other.next_ = nullptr;
@@ -146,7 +146,12 @@ class LinkedHashSetNode : public LinkedHashSetNodeBase {
                     LinkedHashSetNodeBase* next)
       : LinkedHashSetNodeBase(prev, next), value_(value) {}
 
-  LinkedHashSetNode(LinkedHashSetNode&& other)
+  LinkedHashSetNode(ValueArg&& value,
+                    LinkedHashSetNodeBase* prev,
+                    LinkedHashSetNodeBase* next)
+      : LinkedHashSetNodeBase(prev, next), value_(std::move(value)) {}
+
+  LinkedHashSetNode(LinkedHashSetNode&& other) noexcept
       : LinkedHashSetNodeBase(std::move(other)),
         value_(std::move(other.value_)) {}
 
@@ -209,9 +214,9 @@ class LinkedHashSet {
 
   LinkedHashSet();
   LinkedHashSet(const LinkedHashSet&);
-  LinkedHashSet(LinkedHashSet&&);
+  LinkedHashSet(LinkedHashSet&&) noexcept;
   LinkedHashSet& operator=(const LinkedHashSet&);
-  LinkedHashSet& operator=(LinkedHashSet&&);
+  LinkedHashSet& operator=(LinkedHashSet&&) noexcept;
 
   // Needs finalization. The anchor needs to unlink itself from the chain.
   ~LinkedHashSet();
@@ -307,9 +312,11 @@ class LinkedHashSet {
     impl_.Trace(visitor);
     // Should the underlying table be moved by GC, register a callback
     // that fixes up the interior pointers that the (Heap)LinkedHashSet keeps.
-    Allocator::RegisterBackingStoreCallback(visitor, &impl_.table_,
-                                            MoveBackingCallback,
-                                            reinterpret_cast<void*>(&anchor_));
+    if (impl_.table_) {
+      Allocator::RegisterBackingStoreCallback(
+          visitor, impl_.table_,
+          NodeHashTraits::template MoveBackingCallback<ImplType>);
+    }
   }
 
   int64_t Modifications() const { return impl_.Modifications(); }
@@ -345,50 +352,6 @@ class LinkedHashSet {
   }
   const_reverse_iterator MakeConstReverseIterator(const Node* position) const {
     return const_reverse_iterator(position, this);
-  }
-
-  static void MoveBackingCallback(void* anchor,
-                                  void* from,
-                                  void* to,
-                                  size_t size) {
-    // Note: the hash table move may have been overlapping; linearly scan the
-    // entire table and fixup interior pointers into the old region with
-    // correspondingly offset ones into the new.
-    size_t table_size = size / sizeof(Node);
-    Node* table = reinterpret_cast<Node*>(to);
-    NodeBase* from_start = reinterpret_cast<NodeBase*>(from);
-    NodeBase* from_end =
-        reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(from) + size);
-    for (Node* element = table + table_size - 1; element >= table; element--) {
-      Node& node = *element;
-      if (ImplType::IsEmptyOrDeletedBucket(node))
-        continue;
-      if (node.next_ >= from_start && node.next_ < from_end) {
-        size_t diff = reinterpret_cast<uintptr_t>(node.next_) -
-                      reinterpret_cast<uintptr_t>(from);
-        node.next_ =
-            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
-      }
-      if (node.prev_ >= from_start && node.prev_ < from_end) {
-        size_t diff = reinterpret_cast<uintptr_t>(node.prev_) -
-                      reinterpret_cast<uintptr_t>(from);
-        node.prev_ =
-            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
-      }
-    }
-    NodeBase* anchor_node = reinterpret_cast<NodeBase*>(anchor);
-    if (anchor_node->next_ >= from_start && anchor_node->next_ < from_end) {
-      size_t diff = reinterpret_cast<uintptr_t>(anchor_node->next_) -
-                    reinterpret_cast<uintptr_t>(from);
-      anchor_node->next_ =
-          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
-    }
-    if (anchor_node->prev_ >= from_start && anchor_node->prev_ < from_end) {
-      size_t diff = reinterpret_cast<uintptr_t>(anchor_node->prev_) -
-                    reinterpret_cast<uintptr_t>(from);
-      anchor_node->prev_ =
-          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
-    }
   }
 
   ImplType impl_;
@@ -440,15 +403,19 @@ template <typename Value, typename ValueTraitsArg, typename Allocator>
 struct LinkedHashSetTraits
     : public SimpleClassHashTraits<LinkedHashSetNode<Value, Allocator>> {
   STATIC_ONLY(LinkedHashSetTraits);
-  typedef LinkedHashSetNode<Value, Allocator> Node;
+  using Node = LinkedHashSetNode<Value, Allocator>;
+  using NodeBase = LinkedHashSetNodeBase;
   typedef ValueTraitsArg ValueTraits;
 
   // The slot is empty when the next_ field is zero so it's safe to zero
   // the backing.
-  static const bool kEmptyValueIsZero = true;
+  static const bool kEmptyValueIsZero = ValueTraits::kEmptyValueIsZero;
 
   static const bool kHasIsEmptyValueFunction = true;
   static bool IsEmptyValue(const Node& node) { return !node.next_; }
+  static Node EmptyValue() {
+    return Node(ValueTraits::EmptyValue(), nullptr, nullptr);
+  }
 
   static const int kDeletedValue = -1;
 
@@ -469,6 +436,71 @@ struct LinkedHashSetTraits
   };
   static const WeakHandlingFlag kWeakHandlingFlag =
       ValueTraits::kWeakHandlingFlag;
+
+  static constexpr bool kHasMovingCallback = true;
+
+  template <typename HashTable, typename Visitor>
+  static void RegisterMovingCallback(Visitor* visitor,
+                                     typename HashTable::ValueType* allocated) {
+    Allocator::RegisterBackingStoreCallback(visitor, allocated,
+                                            MoveBackingCallback<HashTable>);
+  }
+
+  template <typename HashTable>
+  static void MoveBackingCallback(void* from, void* to, size_t size) {
+    // Note: the hash table move may have been overlapping; linearly scan the
+    // entire table and fixup interior pointers into the old region with
+    // correspondingly offset ones into the new.
+    const size_t table_size = size / sizeof(Node);
+    Node* table = reinterpret_cast<Node*>(to);
+    NodeBase* from_start = reinterpret_cast<NodeBase*>(from);
+    NodeBase* from_end =
+        reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(from) + size);
+    NodeBase* anchor_node = nullptr;
+    for (Node* element = table + table_size - 1; element >= table; element--) {
+      Node& node = *element;
+      if (HashTable::IsEmptyOrDeletedBucket(node))
+        continue;
+      if (node.next_ >= from_start && node.next_ < from_end) {
+        const size_t diff = reinterpret_cast<uintptr_t>(node.next_) -
+                            reinterpret_cast<uintptr_t>(from);
+        node.next_ =
+            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+      } else {
+        DCHECK(!anchor_node || node.next_ == anchor_node);
+        anchor_node = node.next_;
+      }
+      if (node.prev_ >= from_start && node.prev_ < from_end) {
+        const size_t diff = reinterpret_cast<uintptr_t>(node.prev_) -
+                            reinterpret_cast<uintptr_t>(from);
+        node.prev_ =
+            reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+      } else {
+        DCHECK(!anchor_node || node.prev_ == anchor_node);
+        anchor_node = node.prev_;
+      }
+    }
+    // During incremental marking, HeapLinkedHashSet object may be marked, but
+    // later the mutator can destroy it. The compaction code will execute this
+    // callback, but the anchor will have already been unlinked.
+    if (!anchor_node) {
+      return;
+    }
+    {
+      DCHECK(anchor_node->prev_ >= from_start && anchor_node->prev_ < from_end);
+      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->prev_) -
+                          reinterpret_cast<uintptr_t>(from);
+      anchor_node->prev_ =
+          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+    }
+    {
+      DCHECK(anchor_node->next_ >= from_start && anchor_node->next_ < from_end);
+      const size_t diff = reinterpret_cast<uintptr_t>(anchor_node->next_) -
+                          reinterpret_cast<uintptr_t>(from);
+      anchor_node->next_ =
+          reinterpret_cast<NodeBase*>(reinterpret_cast<uintptr_t>(to) + diff);
+    }
+  }
 };
 
 template <typename LinkedHashSetType>
@@ -716,7 +748,7 @@ inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)
 }
 
 template <typename T, typename U, typename V, typename W>
-inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other)
+inline LinkedHashSet<T, U, V, W>::LinkedHashSet(LinkedHashSet&& other) noexcept
     : anchor_() {
   Swap(other);
 }
@@ -731,7 +763,7 @@ inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
 
 template <typename T, typename U, typename V, typename W>
 inline LinkedHashSet<T, U, V, W>& LinkedHashSet<T, U, V, W>::operator=(
-    LinkedHashSet&& other) {
+    LinkedHashSet&& other) noexcept {
   Swap(other);
   return *this;
 }

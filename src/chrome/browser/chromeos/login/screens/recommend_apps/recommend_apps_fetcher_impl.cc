@@ -4,8 +4,8 @@
 
 #include "chrome/browser/chromeos/login/screens/recommend_apps/recommend_apps_fetcher_impl.h"
 
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/json/json_reader.h"
@@ -274,8 +274,7 @@ RecommendAppsFetcherImpl::RecommendAppsFetcherImpl(
       connector_(connector),
       url_loader_factory_(url_loader_factory),
       arc_features_getter_(
-          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)),
-      weak_ptr_factory_(this) {
+          base::BindRepeating(&arc::ArcFeaturesParser::GetArcFeatures)) {
   connector_->BindInterface(ash::mojom::kServiceName, &cros_display_config_);
 }
 
@@ -336,8 +335,9 @@ void RecommendAppsFetcherImpl::MaybeStartCompressAndEncodeProtoMessage() {
   if (!ash_ready_ || !arc_features_ready_ || has_started_proto_processing_)
     return;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&CompressAndEncodeProtoMessageOnBlockingThread,
                      std::move(device_config_)),
       base::BindOnce(

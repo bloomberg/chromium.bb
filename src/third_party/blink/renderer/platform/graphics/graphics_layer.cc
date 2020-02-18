@@ -64,7 +64,7 @@
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/skia/include/core/SkMatrix44.h"
 
 namespace blink {
@@ -77,13 +77,10 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       contents_visible_(true),
       hit_testable_(false),
       needs_check_raster_invalidation_(false),
-      has_scroll_parent_(false),
-      has_clip_parent_(false),
       painted_(false),
       painting_phase_(kGraphicsLayerPaintAllWithOverflowClip),
       parent_(nullptr),
       mask_layer_(nullptr),
-      contents_clipping_mask_layer_(nullptr),
       contents_layer_(nullptr),
       contents_layer_id_(0),
       rendering_context3d_(0) {
@@ -116,10 +113,9 @@ GraphicsLayer::~GraphicsLayer() {
   DCHECK(!parent_);
 
   // This ensures we clean-up the ElementId to cc::Layer mapping in
-  // LayerTreeHost before a new layer with the same ElementId is added.
-  // Regression from BGPT: https://crbug.com/979002
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    SetElementId(CompositorElementId());
+  // LayerTreeHost before a new layer with the same ElementId is added. See
+  // https://crbug.com/979002 for more information.
+  SetElementId(CompositorElementId());
 }
 
 IntRect GraphicsLayer::VisualRect() const {
@@ -130,29 +126,6 @@ IntRect GraphicsLayer::VisualRect() const {
 void GraphicsLayer::SetHasWillChangeTransformHint(
     bool has_will_change_transform) {
   CcLayer()->SetHasWillChangeTransformHint(has_will_change_transform);
-}
-
-void GraphicsLayer::SetOverscrollBehavior(
-    const cc::OverscrollBehavior& behavior) {
-  CcLayer()->SetOverscrollBehavior(behavior);
-}
-
-void GraphicsLayer::SetSnapContainerData(
-    base::Optional<cc::SnapContainerData> data) {
-  CcLayer()->SetSnapContainerData(std::move(data));
-}
-
-void GraphicsLayer::SetIsResizedByBrowserControls(
-    bool is_resized_by_browser_controls) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  CcLayer()->SetIsResizedByBrowserControls(is_resized_by_browser_controls);
-}
-
-void GraphicsLayer::SetIsContainerForFixedPositionLayers(bool is_container) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  CcLayer()->SetIsContainerForFixedPositionLayers(is_container);
 }
 
 void GraphicsLayer::SetCompositingReasons(CompositingReasons reasons) {
@@ -221,28 +194,6 @@ void GraphicsLayer::AddChild(GraphicsLayer* child_layer) {
   UpdateChildList();
 }
 
-void GraphicsLayer::AddChildBelow(GraphicsLayer* child_layer,
-                                  GraphicsLayer* sibling) {
-  DCHECK_NE(child_layer, this);
-  child_layer->RemoveFromParent();
-
-  bool found = false;
-  for (unsigned i = 0; i < children_.size(); i++) {
-    if (sibling == children_[i]) {
-      children_.insert(i, child_layer);
-      found = true;
-      break;
-    }
-  }
-
-  child_layer->SetParent(this);
-
-  if (!found)
-    children_.push_back(child_layer);
-
-  UpdateChildList();
-}
-
 void GraphicsLayer::RemoveAllChildren() {
   while (!children_.IsEmpty()) {
     GraphicsLayer* cur_layer = children_.back();
@@ -258,14 +209,9 @@ void GraphicsLayer::RemoveFromParent() {
     SetParent(nullptr);
   }
 
-  // When using layer lists, cc::Layers are created and removed in
-  // PaintArtifactCompositor.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    CcLayer()->RemoveFromParent();
-  } else {
-    client_.GraphicsLayersDidChange();
-  }
+  // cc::Layers are created and removed in PaintArtifactCompositor so ensure it
+  // is notified that something has changed.
+  client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
@@ -278,11 +224,6 @@ void GraphicsLayer::SetOffsetFromLayoutObject(const IntSize& offset) {
 
   // If the compositing layer offset changes, we need to repaint.
   SetNeedsDisplay();
-}
-
-LayoutSize GraphicsLayer::OffsetFromLayoutObjectWithSubpixelAccumulation()
-    const {
-  return LayoutSize(OffsetFromLayoutObject()) + client_.SubpixelAccumulation();
 }
 
 IntRect GraphicsLayer::InterestRect() {
@@ -318,8 +259,6 @@ void GraphicsLayer::PaintRecursivelyInternal(
 
   if (MaskLayer())
     MaskLayer()->PaintRecursivelyInternal(repainted_layers);
-  if (ContentsClippingMaskLayer())
-    ContentsClippingMaskLayer()->PaintRecursivelyInternal(repainted_layers);
 
   for (auto* child : Children())
     child->PaintRecursivelyInternal(repainted_layers);
@@ -421,31 +360,8 @@ bool GraphicsLayer::PaintWithoutCommit(
 }
 
 void GraphicsLayer::UpdateChildList() {
-  // When using layer lists, cc::Layers are created in PaintArtifactCompositor.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    client_.GraphicsLayersDidChange();
-    return;
-  }
-
-  cc::Layer* child_host = layer_.get();
-  child_host->RemoveAllChildren();
-
-  ClearContentsLayerIfUnregistered();
-
-  if (contents_layer_) {
-    // FIXME: Add the contents layer in the correct order with negative z-order
-    // children. This does not currently cause visible rendering issues because
-    // contents layers are only used for replaced elements that don't have
-    // children.
-    child_host->AddChild(contents_layer_);
-  }
-
-  for (size_t i = 0; i < children_.size(); ++i)
-    child_host->AddChild(children_[i]->CcLayer());
-
-  for (size_t i = 0; i < link_highlights_.size(); ++i)
-    child_host->AddChild(link_highlights_[i]->Layer());
+  // cc::Layers are created in PaintArtifactCompositor.
+  client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::UpdateLayerIsDrawable() {
@@ -494,18 +410,6 @@ void GraphicsLayer::UpdateContentsRect() {
       image_layer_->SetTransform(image_transform);
       image_layer_->SetBounds(static_cast<gfx::Size>(image_size_));
     }
-  }
-
-  if (contents_clipping_mask_layer_) {
-    if (IntSize(contents_clipping_mask_layer_->Size()) !=
-        contents_rect_.Size()) {
-      contents_clipping_mask_layer_->SetSize(gfx::Size(contents_rect_.Size()));
-      contents_clipping_mask_layer_->SetNeedsDisplay();
-    }
-    contents_clipping_mask_layer_->SetPosition(FloatPoint());
-    contents_clipping_mask_layer_->SetOffsetFromLayoutObject(
-        OffsetFromLayoutObject() +
-        IntSize(contents_rect_.Location().X(), contents_rect_.Location().Y()));
   }
 }
 
@@ -562,17 +466,7 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
   contents_layer_->SetHitTestable(contents_visible_);
-
-  // Insert the content layer first. Video elements require this, because they
-  // have shadow content that must display in front of the video.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    CcLayer()->InsertChild(contents_layer_, 0);
-  }
-  cc::PictureLayer* border_cc_layer =
-      contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
-                                    : nullptr;
-  contents_layer_->SetMaskLayer(border_cc_layer);
+  contents_layer_->SetMaskLayer(nullptr);
   contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
@@ -761,16 +655,6 @@ void GraphicsLayer::SetContentsVisible(bool contents_visible) {
   UpdateLayerIsDrawable();
 }
 
-void GraphicsLayer::SetClipParent(cc::Layer* parent) {
-  has_clip_parent_ = !!parent;
-  CcLayer()->SetClipParent(parent);
-}
-
-void GraphicsLayer::SetScrollParent(cc::Layer* parent) {
-  has_scroll_parent_ = !!parent;
-  CcLayer()->SetScrollParent(parent);
-}
-
 RGBA32 GraphicsLayer::BackgroundColor() const {
   return CcLayer()->background_color();
 }
@@ -795,32 +679,10 @@ void GraphicsLayer::SetMaskLayer(GraphicsLayer* mask_layer) {
     return;
 
   mask_layer_ = mask_layer;
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    CcLayer()->SetMaskLayer(mask_layer_ ? mask_layer_->CcLayer() : nullptr);
-}
-
-void GraphicsLayer::SetContentsClippingMaskLayer(
-    GraphicsLayer* contents_clipping_mask_layer) {
-  if (contents_clipping_mask_layer == contents_clipping_mask_layer_)
-    return;
-
-  contents_clipping_mask_layer_ = contents_clipping_mask_layer;
-  cc::Layer* contents_layer = ContentsLayerIfRegistered();
-  if (!contents_layer)
-    return;
-  cc::PictureLayer* contents_clipping_mask_cc_layer =
-      contents_clipping_mask_layer_ ? contents_clipping_mask_layer_->CcLayer()
-                                    : nullptr;
-  contents_layer->SetMaskLayer(contents_clipping_mask_cc_layer);
-  UpdateContentsRect();
 }
 
 bool GraphicsLayer::BackfaceVisibility() const {
   return CcLayer()->double_sided();
-}
-
-void GraphicsLayer::SetBackfaceVisibility(bool visible) {
-  CcLayer()->SetDoubleSided(visible);
 }
 
 void GraphicsLayer::SetOpacity(float opacity) {
@@ -952,22 +814,6 @@ cc::PictureLayer* GraphicsLayer::CcLayer() const {
   return layer_.get();
 }
 
-void GraphicsLayer::SetFilters(CompositorFilterOperations filters) {
-  CcLayer()->SetFilters(filters.ReleaseCcFilterOperations());
-}
-
-void GraphicsLayer::SetBackdropFilters(
-    CompositorFilterOperations filters,
-    const gfx::RRectF& backdrop_filter_bounds) {
-  CcLayer()->SetBackdropFilters(filters.ReleaseCcFilterOperations());
-  CcLayer()->SetBackdropFilterBounds(backdrop_filter_bounds);
-}
-
-void GraphicsLayer::SetStickyPositionConstraint(
-    const cc::LayerStickyPositionConstraint& sticky_constraint) {
-  CcLayer()->SetStickyPositionConstraint(sticky_constraint);
-}
-
 void GraphicsLayer::SetFilterQuality(SkFilterQuality filter_quality) {
   if (image_layer_)
     image_layer_->SetNearestNeighbor(filter_quality == kNone_SkFilterQuality);
@@ -1038,12 +884,6 @@ void GraphicsLayer::SetElementId(const CompositorElementId& id) {
     layer->SetElementId(id);
 }
 
-CompositorElementId GraphicsLayer::GetElementId() const {
-  if (cc::Layer* layer = CcLayer())
-    return layer->element_id();
-  return CompositorElementId();
-}
-
 sk_sp<PaintRecord> GraphicsLayer::CapturePaintRecord() const {
   DCHECK(PaintsContentOrHitTest());
 
@@ -1080,11 +920,9 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    if (auto* layer = CcLayer())
-      layer->SetSubtreePropertyChanged();
-    client_.GraphicsLayersDidChange();
-  }
+  if (auto* layer = CcLayer())
+    layer->SetSubtreePropertyChanged();
+  client_.GraphicsLayersDidChange();
 }
 
 void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
@@ -1102,10 +940,8 @@ void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
         std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
   }
 
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-    ContentsLayer()->SetSubtreePropertyChanged();
-    client_.GraphicsLayersDidChange();
-  }
+  ContentsLayer()->SetSubtreePropertyChanged();
+  client_.GraphicsLayersDidChange();
 }
 
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(

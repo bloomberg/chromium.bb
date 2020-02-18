@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "ash/focus_cycler.h"
-#include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/lock_screen_action/lock_screen_action_background_state.h"
 #include "ash/login/login_screen_controller.h"
 #include "ash/login/ui/lock_screen.h"
@@ -28,12 +27,13 @@
 #include "ash/system/status_area_widget_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_popup_utils.h"
-#include "ash/tray_action/tray_action.h"
 #include "ash/wm/lock_state_controller.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/metrics/user_metrics.h"
 #include "base/sequence_checker.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "skia/ext/image_operations.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -216,6 +216,12 @@ class LoginShelfButton : public views::LabelButton {
     ink_drop->SetShowHighlightOnHover(false);
     ink_drop->SetShowHighlightOnFocus(false);
     return ink_drop;
+  }
+
+  base::string16 GetTooltipText(const gfx::Point& p) const override {
+    if (label()->IsDisplayTextTruncated())
+      return label()->GetText();
+    return base::string16();
   }
 
   void PaintDarkColors() {
@@ -550,7 +556,12 @@ void LoginShelfView::ButtonPressed(views::Button* sender,
       StartAddUser();
       break;
     case kParentAccess:
-      LockScreen::Get()->ShowParentAccessDialog();
+      // TODO(https://crbug.com/999387): Remove this when handling touch
+      // cancellation is fixed for system modal windows.
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, base::BindOnce([]() {
+            LockScreen::Get()->ShowParentAccessDialog();
+          }));
       break;
     default:
       NOTREACHED();

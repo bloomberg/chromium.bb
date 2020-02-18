@@ -15,6 +15,10 @@
 #include "src/sksl/ir/SkSLIndexExpression.h"
 #include "src/sksl/ir/SkSLVariableReference.h"
 
+#ifdef SK_VULKAN
+#include "src/gpu/vk/GrVkCaps.h"
+#endif
+
 namespace SkSL {
 
 static const int32_t SKSL_MAGIC  = 0x0; // FIXME: we should probably register a magic number
@@ -101,7 +105,9 @@ void SPIRVCodeGenerator::setupIntrinsics() {
     fIntrinsicMap[String("dFdy")]        = SPECIAL(DFdy);
     fIntrinsicMap[String("fwidth")]      = std::make_tuple(kSPIRV_IntrinsicKind, SpvOpFwidth,
                                                            SpvOpUndef, SpvOpUndef, SpvOpUndef);
-    fIntrinsicMap[String("texture")]     = SPECIAL(Texture);
+    fIntrinsicMap[String("makeSampler2D")] = SPECIAL(SampledImage);
+
+    fIntrinsicMap[String("sample")]      = SPECIAL(Texture);
     fIntrinsicMap[String("subpassLoad")] = SPECIAL(SubpassLoad);
 
     fIntrinsicMap[String("any")]              = std::make_tuple(kSPIRV_IntrinsicKind, SpvOpUndef,
@@ -206,6 +212,7 @@ void SPIRVCodeGenerator::writeOpCode(SpvOp_ opCode, int length, OutputStream& ou
         case SpvOpTypeStruct:        // fall through
         case SpvOpTypeImage:         // fall through
         case SpvOpTypeSampledImage:  // fall through
+        case SpvOpTypeSampler:       // fall through
         case SpvOpVariable:          // fall through
         case SpvOpFunction:          // fall through
         case SpvOpFunctionParameter: // fall through
@@ -526,20 +533,27 @@ SpvId SPIRVCodeGenerator::getType(const Type& rawType, const MemoryLayout& layou
             case Type::kSampler_Kind: {
                 SpvId image = result;
                 if (SpvDimSubpassData != type.dimensions()) {
-                    image = this->nextId();
+                    image = this->getType(type.textureType(), layout);
                 }
                 if (SpvDimBuffer == type.dimensions()) {
                     fCapabilities |= (((uint64_t) 1) << SpvCapabilitySampledBuffer);
                 }
-                this->writeInstruction(SpvOpTypeImage, image,
+                if (SpvDimSubpassData != type.dimensions()) {
+                    this->writeInstruction(SpvOpTypeSampledImage, result, image, fConstantBuffer);
+                }
+                break;
+            }
+            case Type::kSeparateSampler_Kind: {
+                this->writeInstruction(SpvOpTypeSampler, result, fConstantBuffer);
+                break;
+            }
+            case Type::kTexture_Kind: {
+                this->writeInstruction(SpvOpTypeImage, result,
                                        this->getType(*fContext.fFloat_Type, layout),
                                        type.dimensions(), type.isDepth(), type.isArrayed(),
                                        type.isMultisampled(), type.isSampled() ? 1 : 2,
                                        SpvImageFormatUnknown, fConstantBuffer);
-                fImageTypeMap[key] = image;
-                if (SpvDimSubpassData != type.dimensions()) {
-                    this->writeInstruction(SpvOpTypeSampledImage, result, image, fConstantBuffer);
-                }
+                fImageTypeMap[key] = result;
                 break;
             }
             default:
@@ -817,6 +831,18 @@ SpvId SPIRVCodeGenerator::writeSpecialIntrinsic(const FunctionCall& c, SpecialIn
             for (SpvId id : arguments) {
                 this->writeWord(id, out);
             }
+            break;
+        }
+        case kSampledImage_SpecialIntrinsic: {
+            SkASSERT(2 == c.fArguments.size());
+            SpvId img = this->writeExpression(*c.fArguments[0], out);
+            SpvId sampler = this->writeExpression(*c.fArguments[1], out);
+            this->writeInstruction(SpvOpSampledImage,
+                                   this->getType(c.fType),
+                                   result,
+                                   img,
+                                   sampler,
+                                   out);
             break;
         }
         case kSubpassLoad_SpecialIntrinsic: {
@@ -1786,10 +1812,26 @@ SpvId SPIRVCodeGenerator::writeVariableReference(const VariableReference& ref, O
             std::shared_ptr<SymbolTable> st(new SymbolTable(&fErrors));
             SkASSERT(fRTHeightFieldIndex == (SpvId) -1);
             std::vector<Type::Field> fields;
-            fields.emplace_back(Modifiers(), SKSL_RTHEIGHT_NAME, fContext.fFloat_Type.get());
+            SkASSERT(fProgram.fSettings.fRTHeightOffset >= 0);
+            fields.emplace_back(Modifiers(Layout(0, -1, fProgram.fSettings.fRTHeightOffset, -1,
+                                                 -1, -1, -1, -1, Layout::Format::kUnspecified,
+                                                 Layout::kUnspecified_Primitive, -1, -1, "",
+                                                 Layout::kNo_Key, Layout::CType::kDefault), 0),
+                                SKSL_RTHEIGHT_NAME, fContext.fFloat_Type.get());
             StringFragment name("sksl_synthetic_uniforms");
             Type intfStruct(-1, name, fields);
-            Layout layout(0, -1, -1, 1, -1, -1, -1, -1, Layout::Format::kUnspecified,
+            int binding;
+            int set;
+#ifdef SK_VULKAN
+            const GrVkCaps* vkCaps = fProgram.fSettings.fVkCaps;
+            SkASSERT(vkCaps);
+            binding = vkCaps->getFragmentUniformBinding();
+            set = vkCaps->getFragmentUniformSet();
+#else
+            binding = 0;
+            set = 0;
+#endif
+            Layout layout(0, -1, -1, binding, -1, set, -1, -1, Layout::Format::kUnspecified,
                           Layout::kUnspecified_Primitive, -1, -1, "", Layout::kNo_Key,
                           Layout::CType::kDefault);
             Variable* intfVar = (Variable*) fSynthetics.takeOwnership(std::unique_ptr<Symbol>(
@@ -2708,7 +2750,9 @@ void SPIRVCodeGenerator::writeGlobalVars(Program::Kind kind, const VarDeclaratio
         } else if (var->fModifiers.fFlags & Modifiers::kOut_Flag) {
             storageClass = SpvStorageClassOutput;
         } else if (var->fModifiers.fFlags & Modifiers::kUniform_Flag) {
-            if (var->fType.kind() == Type::kSampler_Kind) {
+            if (var->fType.kind() == Type::kSampler_Kind ||
+                var->fType.kind() == Type::kSeparateSampler_Kind ||
+                var->fType.kind() == Type::kTexture_Kind) {
                 storageClass = SpvStorageClassUniformConstant;
             } else {
                 storageClass = SpvStorageClassUniform;

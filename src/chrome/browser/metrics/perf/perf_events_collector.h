@@ -6,9 +6,14 @@
 #define CHROME_BROWSER_METRICS_PERF_PERF_EVENTS_COLLECTOR_H_
 
 #include <map>
+#include <memory>
+#include <string>
+#include <vector>
 
 #include "chrome/browser/metrics/perf/metric_collector.h"
+#include "chrome/browser/metrics/perf/perf_output.h"
 #include "chrome/browser/metrics/perf/random_selector.h"
+#include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace base {
 class SequencedTaskRunner;
@@ -17,23 +22,29 @@ class SequencedTaskRunner;
 namespace metrics {
 
 struct CPUIdentity;
-class PerfOutputCall;
 class WindowedIncognitoObserver;
 
 // Enables collection of perf events profile data. perf aka "perf events" is a
 // performance profiling infrastructure built into the linux kernel. For more
 // information, see: https://perf.wiki.kernel.org/index.php/Main_Page.
-class PerfCollector : public MetricCollector {
+class PerfCollector : public internal::MetricCollector {
  public:
   PerfCollector();
-  ~PerfCollector() override;
 
-  void Init() override;
+  // MetricCollector:
+  ~PerfCollector() override;
+  const char* ToolName() const override;
 
  protected:
   // Returns the perf proto type associated with the given vector of perf
   // arguments, starting with "perf" itself in |args[0]|.
   static PerfProtoType GetPerfProtoType(const std::vector<std::string>& args);
+
+  // For testing to mock PerfOutputCall.
+  virtual std::unique_ptr<PerfOutputCall> CreatePerfOutputCall(
+      base::TimeDelta duration,
+      const std::vector<std::string>& perf_args,
+      PerfOutputCall::DoneCallback callback);
 
   void OnPerfOutputComplete(
       std::unique_ptr<WindowedIncognitoObserver> incognito_observer,
@@ -52,12 +63,14 @@ class PerfCollector : public MetricCollector {
       std::unique_ptr<SampledProfile> sampled_profile,
       PerfProtoType type,
       bool has_cycles,
-      const std::string& perf_stdout);
+      std::string perf_stdout);
 
   // MetricCollector:
-  base::WeakPtr<MetricCollector> GetWeakPtr() override;
+  void SetUp() override;
+  base::WeakPtr<internal::MetricCollector> GetWeakPtr() override;
   bool ShouldCollect() const override;
   void CollectProfile(std::unique_ptr<SampledProfile> sampled_profile) override;
+  void StopCollection() override;
 
   const RandomSelector& command_selector() const { return command_selector_; }
 
@@ -66,8 +79,12 @@ class PerfCollector : public MetricCollector {
   static void ParseCPUFrequencies(
       scoped_refptr<base::SequencedTaskRunner> task_runner,
       base::WeakPtr<PerfCollector> perf_collector);
-  // Executes on the same sequence as the processing of perf data.
+  // Saves the given frequencies to |max_frequencies_mhz_|.
   void SaveCPUFrequencies(const std::vector<uint32_t>& frequencies);
+
+  const std::vector<uint32_t>& max_frequencies_mhz() const {
+    return max_frequencies_mhz_;
+  }
 
   // Enumeration representing success and various failure modes for parsing CPU
   // frequencies. These values are persisted to logs. Entries should not be
@@ -81,14 +98,12 @@ class PerfCollector : public MetricCollector {
     kMaxValue = kAllZeroCPUFrequencies,
   };
 
-  // Vector of max frequencies associated with each logical CPU. Computed
-  // asynchronously at start, but initialized using the same sequence as the
-  // perf data processing code.
-  std::vector<uint32_t> max_frequencies_mhz_;
+  SampledProfile::TriggerEvent current_trigger_ =
+      SampledProfile::UNKNOWN_TRIGGER_EVENT;
 
  private:
   // Change the values in |collection_params_| and the commands in
-  // |command_selector_| for any keys that are present in |params|.
+  // |command_selector| for any keys that are present in |params|.
   void SetCollectionParamsFromVariationParams(
       const std::map<std::string, std::string>& params);
 
@@ -98,7 +113,11 @@ class PerfCollector : public MetricCollector {
   // An active call to perf/quipper, if set.
   std::unique_ptr<PerfOutputCall> perf_output_call_;
 
-  base::WeakPtrFactory<PerfCollector> weak_factory_;
+  // Vector of max frequencies associated with each logical CPU. Computed
+  // asynchronously at start.
+  std::vector<uint32_t> max_frequencies_mhz_;
+
+  base::WeakPtrFactory<PerfCollector> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PerfCollector);
 };

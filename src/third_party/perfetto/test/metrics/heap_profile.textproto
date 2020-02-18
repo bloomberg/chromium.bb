@@ -1,0 +1,94 @@
+packet {
+  process_tree {
+    processes {
+      pid: 1
+      ppid: 0
+      cmdline: "init"
+    }
+    processes {
+      pid: 2
+      ppid: 1
+      cmdline: "system_server"
+    }
+  }
+}
+packet {
+  trusted_packet_sequence_id: 999
+  timestamp: 10
+  profile_packet {
+    strings {
+      iid: 1
+      str: "f1"
+    }
+    strings {
+      iid: 2
+      str: "f2"
+    }
+    strings {
+      iid: 3
+      str: "f3"
+    }
+    strings {
+      iid: 4
+      str: "liblib.so"
+    }
+    frames {
+      iid: 1
+      function_name_id: 1
+      mapping_id: 1
+    }
+    frames {
+      iid: 2
+      function_name_id: 2
+      mapping_id: 1
+    }
+    frames {
+      iid: 3
+      function_name_id: 3
+      mapping_id: 1
+    }
+    callstacks {
+      iid: 1
+      frame_ids: 1
+      frame_ids: 2
+      frame_ids: 3
+    }
+    mappings {
+      iid: 1
+      path_string_ids: 4
+    }
+    process_dumps {
+      pid: 2
+      samples {
+        callstack_id: 1
+        self_allocated: 2000
+        self_freed: 1000
+        alloc_count: 2
+        free_count: 1
+      }
+    }
+  }
+}
+# Add some symbolization packets
+packet {
+  trusted_packet_sequence_id: 999
+  interned_data {
+    function_names {
+      iid: 1000
+      str: "symbolized f3"
+    }
+    source_paths {
+      iid: 1001
+      str: "f3 file path"
+    }
+  }
+}
+packet {
+  trusted_packet_sequence_id: 999
+  profiled_frame_symbols {
+    frame_iid: 3
+    function_name_id: 1000
+    file_name_id: 1001
+    line_number: 333
+  }
+}

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2015 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -237,7 +237,7 @@ class ShCompileDesktopGLTest : public ShCompileTest
     void SetUp() override
     {
         sh::InitBuiltInResources(&mResources);
-        mCompiler = sh::ConstructCompiler(GL_FRAGMENT_SHADER, SH_GL3_3_SPEC,
+        mCompiler = sh::ConstructCompiler(GL_FRAGMENT_SHADER, SH_GL_COMPATIBILITY_SPEC,
                                           SH_GLSL_330_CORE_OUTPUT, &mResources);
         ASSERT_TRUE(mCompiler != nullptr) << "Compiler could not be constructed.";
     }

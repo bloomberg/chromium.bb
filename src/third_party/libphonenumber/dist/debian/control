@@ -3,7 +3,7 @@ Priority: optional
 Maintainer: Debian Java Maintainers <pkg-java-maintainers@lists.alioth.debian.org>
 Uploaders: Daniel Pocock <daniel@pocock.pro>, Fredrik Roubert <roubert@google.com>
 Build-Depends: cdbs,
-               cmake (>= 3.1),
+               cmake (>= 2.8),
                debhelper (>= 9),
                default-jdk | java-sdk,
                libboost-dev (>= 1.40),
@@ -30,7 +30,7 @@ Build-Depends: cdbs,
                libservlet2.5-java-doc
 Standards-Version: 3.9.6
 Section: libs
-Homepage: https://github.com/googlei18n/libphonenumber/
+Homepage: https://github.com/google/libphonenumber/
 Vcs-Browser: https://anonscm.debian.org/cgit/collab-maint/libphonenumber.git/
 Vcs-Git: git://anonscm.debian.org/collab-maint/libphonenumber.git
 

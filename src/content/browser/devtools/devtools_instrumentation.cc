@@ -55,22 +55,19 @@ FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
   // Navigation requests start in the browser, before process_id is assigned, so
   // the id is set to 0. In these situations, the routing_id is the frame tree
   // node id, and can be used directly.
-  int frame_tree_node_id =
-      process_id == 0 ? routing_id
-                      : RenderFrameHost::GetFrameTreeNodeIdForRoutingId(
-                            process_id, routing_id);
-  FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(frame_tree_node_id);
-
-  // If this is a navigation request (process_id == 0) of a child frame
-  // (ftn->parent()), then requestWillBeSent and responseReceived are delivered
-  // to the parent frame instead of the child because we don't know if the child
-  // will become an OOPIF with a separate target yet or not. Do the same for
-  // requestWillBeSentExtraInfo and responseReceivedExtraInfo.
-  if (ftn && process_id == 0 && ftn->parent()) {
-    ftn = ftn->parent();
+  if (process_id == 0) {
+    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(routing_id);
+    if (ftn == nullptr)
+      return nullptr;
+    // If this is a navigation request (process_id == 0) of a child frame
+    // (ftn->parent()), then requestWillBeSent and responseReceived are
+    // delivered to the parent frame instead of the child because we don't know
+    // if the child will become an OOPIF with a separate target yet or not. Do
+    // the same for requestWillBeSentExtraInfo and responseReceivedExtraInfo.
+    return ftn->parent() ? ftn->parent() : ftn;
   }
-
-  return ftn;
+  return FrameTreeNode::GloballyFindByID(
+      RenderFrameHost::GetFrameTreeNodeIdForRoutingId(process_id, routing_id));
 }
 
 }  // namespace
@@ -173,16 +170,6 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
 
   DevToolsAgentHostImpl* agent_host =
       RenderFrameDevToolsAgentHost::GetFor(frame_tree_node);
-  if (agent_host) {
-    // Interception might throttle navigations in inspected frames.
-    for (auto* network_handler :
-         protocol::NetworkHandler::ForAgentHost(agent_host)) {
-      std::unique_ptr<NavigationThrottle> throttle =
-          network_handler->CreateThrottleForNavigation(navigation_handle);
-      if (throttle)
-        result.push_back(std::move(throttle));
-    }
-  }
   FrameTreeNode* parent = frame_tree_node->parent();
   if (!parent) {
     if (WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal() &&

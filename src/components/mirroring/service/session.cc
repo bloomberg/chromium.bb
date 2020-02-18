@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
@@ -39,6 +40,7 @@
 #include "media/gpu/gpu_video_accelerator_util.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
+#include "mojo/public/cpp/base/shared_memory_utils.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "net/base/ip_endpoint.h"
@@ -377,7 +379,7 @@ Session::Session(mojom::SessionParametersPtr session_params,
                  mojom::ResourceProviderPtr resource_provider,
                  mojom::CastMessageChannelPtr outbound_channel,
                  mojom::CastMessageChannelRequest inbound_channel,
-                 std::unique_ptr<viz::Gpu> gpu)
+                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
     : session_params_(*session_params),
       state_(MIRRORING),
       observer_(std::move(observer)),
@@ -386,12 +388,18 @@ Session::Session(mojom::SessionParametersPtr session_params,
                           std::move(inbound_channel),
                           base::BindRepeating(&Session::OnResponseParsingError,
                                               base::Unretained(this))),
-      gpu_(std::move(gpu)),
       gpu_channel_host_(nullptr) {
   DCHECK(resource_provider_);
   mirror_settings_.SetResolutionContraints(max_resolution.width(),
                                            max_resolution.height());
   resource_provider_->GetNetworkContext(mojo::MakeRequest(&network_context_));
+
+  if (session_params->type != mojom::SessionType::AUDIO_ONLY &&
+      io_task_runner) {
+    mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
+    resource_provider_->BindGpu(remote_gpu.InitWithNewPipeAndPassReceiver());
+    gpu_ = viz::Gpu::Create(std::move(remote_gpu), io_task_runner);
+  }
 
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
@@ -441,6 +449,7 @@ Session::~Session() {
 }
 
 void Session::ReportError(SessionError error) {
+  UMA_HISTOGRAM_ENUMERATION("MediaRouter.MirroringService.SessionError", error);
   if (session_monitor_.has_value())
     session_monitor_->OnStreamingError(error);
   if (state_ == REMOTING) {
@@ -544,7 +553,7 @@ void Session::CreateVideoEncodeAccelerator(
     mojo_vea.reset(new media::MojoVideoEncodeAccelerator(std::move(vea),
                                                          supported_profiles_));
   }
-  callback.Run(video_encode_thread_, std::move(mojo_vea));
+  callback.Run(base::ThreadTaskRunnerHandle::Get(), std::move(mojo_vea));
 }
 
 void Session::CreateVideoEncodeMemory(
@@ -552,23 +561,13 @@ void Session::CreateVideoEncodeMemory(
     const media::cast::ReceiveVideoEncodeMemoryCallback& callback) {
   DVLOG(1) << __func__;
 
-  mojo::ScopedSharedBufferHandle mojo_buf =
-      mojo::SharedBufferHandle::Create(size);
-  if (!mojo_buf->is_valid()) {
-    LOG(WARNING) << "Browser failed to allocate shared memory.";
-    callback.Run(nullptr);
-    return;
-  }
+  base::UnsafeSharedMemoryRegion buf =
+      mojo::CreateUnsafeSharedMemoryRegion(size);
 
-  base::SharedMemoryHandle shared_buf;
-  if (mojo::UnwrapSharedMemoryHandle(std::move(mojo_buf), &shared_buf, nullptr,
-                                     nullptr) != MOJO_RESULT_OK) {
+  if (!buf.IsValid())
     LOG(WARNING) << "Browser failed to allocate shared memory.";
-    callback.Run(nullptr);
-    return;
-  }
 
-  callback.Run(std::make_unique<base::SharedMemory>(shared_buf, false));
+  callback.Run(std::move(buf));
 }
 
 void Session::OnTransportStatusChanged(CastTransportStatus status) {
@@ -667,12 +666,12 @@ void Session::OnAnswer(const std::vector<FrameSenderConfig>& audio_configs,
   const bool initially_starting_session =
       !audio_encode_thread_ && !video_encode_thread_;
   if (initially_starting_session) {
-    audio_encode_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING,
+    audio_encode_thread_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
-    video_encode_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING,
+    video_encode_thread_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::SingleThreadTaskRunnerThreadMode::DEDICATED);
   }

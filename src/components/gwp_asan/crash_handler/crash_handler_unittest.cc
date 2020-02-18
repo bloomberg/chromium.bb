@@ -14,6 +14,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/no_destructor.h"
+#include "base/path_service.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/gtest_util.h"
@@ -33,6 +34,10 @@
 #include "third_party/crashpad/crashpad/snapshot/minidump/process_snapshot_minidump.h"
 #include "third_party/crashpad/crashpad/tools/tool_support.h"
 
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+#include "third_party/crashpad/crashpad/snapshot/sanitized/sanitization_information.h"
+#endif
+
 namespace gwp_asan {
 namespace internal {
 
@@ -42,6 +47,7 @@ constexpr size_t kAllocationSize = 902;
 constexpr int kSuccess = 0;
 constexpr size_t kTotalPages = AllocatorState::kMaxSlots;
 
+#if !defined(OS_ANDROID)
 int HandlerMainAdaptor(int argc, char* argv[]) {
   crashpad::UserStreamDataSources user_stream_data_sources;
   user_stream_data_sources.push_back(
@@ -74,6 +80,7 @@ MULTIPROCESS_TEST_MAIN(CrashpadHandler) {
 
   return 0;
 }
+#endif  // !defined(OS_ANDROID)
 
 // Child process that launches the crashpad handler and then crashes.
 MULTIPROCESS_TEST_MAIN(CrashingProcess) {
@@ -114,9 +121,64 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   base::FilePath metrics_dir(FILE_PATH_LITERAL(""));
   std::map<std::string, std::string> annotations;
   std::vector<std::string> arguments;
+
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+  static crashpad::SanitizationInformation sanitization_info = {};
+  static crashpad::SanitizationMemoryRangeWhitelist memory_whitelist;
+  if (cmd_line->HasSwitch("sanitize")) {
+    auto memory_ranges = gpa->GetInternalMemoryRegions();
+    auto* range_array =
+        new crashpad::SanitizationMemoryRangeWhitelist::Range[memory_ranges
+                                                                  .size()];
+    for (size_t i = 0; i < memory_ranges.size(); i++) {
+      range_array[i].base =
+          reinterpret_cast<crashpad::VMAddress>(memory_ranges[i].first);
+      range_array[i].length = memory_ranges[i].second;
+    }
+    memory_whitelist.size = memory_ranges.size();
+    memory_whitelist.entries =
+        reinterpret_cast<crashpad::VMAddress>(range_array);
+    sanitization_info.memory_range_whitelist_address =
+        reinterpret_cast<crashpad::VMAddress>(&memory_whitelist);
+    arguments.push_back(base::StringPrintf("--sanitization-information=%p",
+                                           &sanitization_info));
+  }
+#endif
+
+#if !defined(OS_ANDROID)
   arguments.push_back("--test-child-process=CrashpadHandler");
+#endif
 
   crashpad::CrashpadClient* client = new crashpad::CrashpadClient();
+#if defined(OS_LINUX)
+  bool handler =
+      client->StartHandlerAtCrash(/* handler */ cmd_line->GetProgram(),
+                                  /* database */ directory,
+                                  /* metrics_dir */ metrics_dir,
+                                  /* url */ "",
+                                  /* annotations */ annotations,
+                                  /* arguments */ arguments);
+#elif defined(OS_ANDROID)
+  // TODO: Once the minSdkVersion is >= Q define a CrashpadHandlerMain() and
+  // use the /system/bin/linker approach instead of using
+  // libchrome_crashpad_handler.so
+  base::FilePath modules;
+  if (!base::PathService::Get(base::DIR_MODULE, &modules)) {
+    LOG(ERROR) << "Failed to read DIR_MODULE";
+    return kSuccess;
+  }
+
+  base::FilePath executable_path =
+      modules.AppendASCII("libchrome_crashpad_handler.so");
+
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string library_path;
+  env->GetVar("LD_LIBRARY_PATH", &library_path);
+  env->SetVar("LD_LIBRARY_PATH", library_path + ":" + modules.value());
+
+  bool handler = client->StartHandlerAtCrash(
+      executable_path, directory, metrics_dir, "", annotations, arguments);
+#else
   bool handler = client->StartHandler(/* handler */ cmd_line->GetProgram(),
                                       /* database */ directory,
                                       /* metrics_dir */ metrics_dir,
@@ -125,6 +187,8 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
                                       /* arguments */ arguments,
                                       /* restartable */ false,
                                       /* asynchronous_start */ false);
+#endif
+
   if (!handler) {
     LOG(ERROR) << "Crash handler failed to launch";
     return kSuccess;
@@ -179,10 +243,18 @@ MULTIPROCESS_TEST_MAIN(CrashingProcess) {
   return kSuccess;
 }
 
+struct TestParams {
+  TestParams(const char* allocator, bool sanitize)
+      : allocator(allocator), sanitize(sanitize) {}
+
+  const char* allocator;
+  bool sanitize;
+};
+
 class CrashHandlerTest : public base::MultiProcessTest,
-                         public testing::WithParamInterface<const char*> {
+                         public testing::WithParamInterface<TestParams> {
  protected:
-  CrashHandlerTest() : allocator_(GetParam()) {}
+  CrashHandlerTest() : params_(GetParam()) {}
 
   // Launch a child process and wait for it to crash. Set |gwp_asan_found_| if a
   // GWP-ASan data was found and if so, read it into |proto_|.
@@ -214,7 +286,10 @@ class CrashHandlerTest : public base::MultiProcessTest,
         base::GetMultiProcessTestChildBaseCommandLine();
     cmd_line.AppendSwitchPath("directory", database_dir);
     cmd_line.AppendSwitchASCII("test-name", test_name);
-    cmd_line.AppendSwitchASCII("allocator", allocator_);
+    cmd_line.AppendSwitchASCII("allocator", params_.allocator);
+
+    if (params_.sanitize)
+      cmd_line.AppendSwitch("sanitize");
 
     base::LaunchOptions options;
 #if defined(OS_WIN)
@@ -223,12 +298,23 @@ class CrashHandlerTest : public base::MultiProcessTest,
     base::Process process =
         base::SpawnMultiProcessTestChild("CrashingProcess", cmd_line, options);
 
+#if !defined(OS_ANDROID)
     int exit_code = -1;
     EXPECT_TRUE(WaitForMultiprocessTestChildExit(
         process, TestTimeouts::action_max_timeout(), &exit_code));
     EXPECT_NE(exit_code, kSuccess);
-
     return (exit_code != kSuccess);
+#else
+    // TODO(https://crbug.com/976063): Android's implementation of
+    // WaitForMultiprocessTestChildExit can't detect child process crashes, this
+    // can be fixed after minSdkVersion >= Q.
+    for (int i = 0; i < TestTimeouts::action_max_timeout().InSeconds(); i++) {
+      if (kill(process.Pid(), 0) && errno == ESRCH)
+        return true;
+      sleep(1);
+    }
+    return false;
+#endif
   }
 
   // Given a directory with a single crashpad exception, read and parse the
@@ -303,25 +389,25 @@ class CrashHandlerTest : public base::MultiProcessTest,
     EXPECT_FALSE(proto_.missing_metadata());
 
     EXPECT_TRUE(proto_.has_allocator());
-    if (allocator_ == "malloc")
+    if (!strcmp(params_.allocator, "malloc"))
       EXPECT_EQ(proto_.allocator(), Crash_Allocator_MALLOC);
-    else if (allocator_ == "partitionalloc")
+    else if (!strcmp(params_.allocator, "partitionalloc"))
       EXPECT_EQ(proto_.allocator(), Crash_Allocator_PARTITIONALLOC);
     else
       ASSERT_TRUE(false) << "Unknown allocator name";
   }
 
   gwp_asan::Crash proto_;
-  std::string allocator_;
+  TestParams params_;
   bool gwp_asan_found_;
 };
 
-#if defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#if defined(ADDRESS_SANITIZER) && (defined(OS_WIN) || defined(OS_ANDROID))
 // ASan intercepts crashes and crashpad doesn't have a chance to see them.
 #define MAYBE_DISABLED(name) DISABLED_ ##name
 #else
 #define MAYBE_DISABLED(name) name
-#endif  // defined(ADDRESS_SANITIZER) && defined(OS_WIN)
+#endif
 
 TEST_P(CrashHandlerTest, MAYBE_DISABLED(UseAfterFree)) {
   ASSERT_TRUE(gwp_asan_found_);
@@ -371,7 +457,12 @@ TEST_P(CrashHandlerTest, MAYBE_DISABLED(UnrelatedException)) {
 
 INSTANTIATE_TEST_SUITE_P(VaryAllocator,
                          CrashHandlerTest,
-                         testing::Values("malloc", "partitionalloc"));
+                         testing::Values(
+#if defined(OS_LINUX) || defined(OS_ANDROID)
+                             TestParams("malloc", true),
+#endif
+                             TestParams("malloc", false),
+                             TestParams("partitionalloc", false)));
 
 }  // namespace
 

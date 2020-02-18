@@ -83,9 +83,16 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   void PrepareToFetchCreditCard();
 
   // Calls |accessor->OnCreditCardFetched()| once credit card is fetched.
-  void FetchCreditCard(const CreditCard* card,
-                       base::WeakPtr<Accessor> accessor,
-                       const base::TimeTicks& timestamp = base::TimeTicks());
+  virtual void FetchCreditCard(
+      const CreditCard* card,
+      base::WeakPtr<Accessor> accessor,
+      const base::TimeTicks& timestamp = base::TimeTicks());
+
+  // If |opt_in| = true, opts the user into using FIDO authentication for card
+  // unmasking. Otherwise, opts the user out. If |creation_options| is set,
+  // WebAuthn registration prompt will be invoked to create a new credential.
+  void FIDOAuthOptChange(bool opt_in,
+                         base::Value creation_options = base::Value());
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 
@@ -106,6 +113,9 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   }
 #endif
 
+  // Returns false if all suggested cards are local cards, otherwise true.
+  bool ServerCardsAvailable();
+
   // Invoked from CreditCardFIDOAuthenticator::IsUserVerifiable().
   // |is_user_verifiable| is set to true only if user has a verifying platform
   // authenticator. e.g. Touch/Face ID, Windows Hello, Android fingerprint,
@@ -125,9 +135,8 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
 
   // CreditCardCVCAuthenticator::Requester:
   void OnCVCAuthenticationComplete(
-      bool did_succeed,
-      const CreditCard* card = nullptr,
-      const base::string16& cvc = base::string16()) override;
+      const CreditCardCVCAuthenticator::CVCAuthenticationResponse& response)
+      override;
 
 #if !defined(OS_IOS)
   // CreditCardFIDOAuthenticator::Requester:
@@ -187,6 +196,12 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // Authenticate() is called when signaled.
   base::WaitableEvent ready_to_start_authentication_;
 
+  // Required to avoid any unnecessary preflight calls to Payments servers.
+  // Initial state is signaled. Resets when PrepareToFetchCreditCard() is
+  // called. Signaled after an authentication is complete or after a timeout.
+  // GetUnmaskDetailsIfUserIsVerifiable() is not called unless this is signaled.
+  base::WaitableEvent can_fetch_unmask_details_;
+
   // The credit card being accessed.
   const CreditCard* card_;
 
@@ -194,6 +209,10 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // e.g. Touch/Face ID, Windows Hello, Android fingerprint, etc., is available
   // and enabled.
   base::Optional<bool> is_user_verifiable_;
+
+  // True only if currently waiting on unmask details. This avoids making
+  // unnecessary calls to payments.
+  bool unmask_details_request_in_progress_ = false;
 
   // The object attempting to access a card.
   base::WeakPtr<Accessor> accessor_;

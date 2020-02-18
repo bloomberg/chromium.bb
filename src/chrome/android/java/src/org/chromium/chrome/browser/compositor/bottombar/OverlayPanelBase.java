@@ -15,6 +15,7 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.PanelState;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -62,12 +63,22 @@ abstract class OverlayPanelBase {
 
     /** The opacity of the arrow icon when the Panel is expanded. */
     private static final float ARROW_ICON_OPACITY_STATE_EXPANDED = 0.f;
+    private static final float ARROW_ICON_OPACITY_TRANSPARENT = 0.f;
 
     /** The opacity of the arrow icon when the Panel is maximized. */
     private static final float ARROW_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /** The rotation of the arrow icon. */
     private static final float ARROW_ICON_ROTATION = -90.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is peeking. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_PEEKED = 1.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is expanded. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_EXPANDED = 0.f;
+
+    /** The opacity of the Open-Tab icon when the Panel is maximized. */
+    private static final float OPEN_TAB_ICON_OPACITY_STATE_MAXIMIZED = 0.f;
 
     /** The opacity of the close icon when the Panel is peeking. */
     private static final float CLOSE_ICON_OPACITY_STATE_PEEKED = 0.f;
@@ -99,19 +110,10 @@ abstract class OverlayPanelBase {
     /** The height of the Toolbar in dps. */
     private float mToolbarHeight;
 
-    /** The height of the Bar when the Panel is peeking, in dps. */
-    private final float mBarHeightPeeking;
-
-    /** The height of the Bar when the Panel is expanded, in dps. */
-    private final float mBarHeightExpanded;
-
-    /** The height of the Bar when the Panel is maximized, in dps. */
-    private final float mBarHeightMaximized;
-
     /** The background color of the Bar. */
     private final @ColorInt int mBarBackgroundColor;
 
-    /** The tint used for icons (e.g. arrow icon, close icon). */
+    /** The tint used for icons (e.g. close icon, etc). */
     private final @ColorInt int mIconColor;
 
     /** The tint used for drag handlebar. */
@@ -129,6 +131,9 @@ abstract class OverlayPanelBase {
     /** The current state of the Overlay Panel. */
     private @PanelState int mPanelState = PanelState.UNDEFINED;
 
+    /** The padding on each side of the close and open-tab icons. */
+    protected final int mButtonPaddingDps;
+
     // ============================================================================================
     // Constructor
     // ============================================================================================
@@ -140,18 +145,14 @@ abstract class OverlayPanelBase {
         mContext = context;
         mPxToDp = 1.f / mContext.getResources().getDisplayMetrics().density;
 
-        mBarHeightPeeking =
-                mContext.getResources().getDimension(R.dimen.overlay_panel_bar_height) * mPxToDp;
-        mBarHeightMaximized =
-                mContext.getResources().getDimension(R.dimen.toolbar_height_no_shadow) * mPxToDp;
-        mBarHeightExpanded = Math.round((mBarHeightPeeking + mBarHeightMaximized) / 2.f);
-
         mBarMarginSide = BAR_ICON_SIDE_PADDING_DP;
         mBarMarginTop = BAR_ICON_TOP_PADDING_DP;
         mProgressBarHeight = PROGRESS_BAR_HEIGHT_DP;
         mBarBorderHeight = BAR_BORDER_HEIGHT_DP;
 
-        mBarHeight = mBarHeightPeeking;
+        int bar_height_dimen = isNewLayout() ? R.dimen.overlay_panel_bar_height
+                                             : R.dimen.overlay_panel_bar_height_legacy;
+        mBarHeight = mContext.getResources().getDimension(bar_height_dimen) * mPxToDp;
 
         final Resources resources = mContext.getResources();
         mBarBackgroundColor = ApiCompatibilityUtils.getColor(
@@ -159,6 +160,10 @@ abstract class OverlayPanelBase {
         mIconColor = ApiCompatibilityUtils.getColor(resources, R.color.default_icon_color);
         mDragHandlebarColor =
                 ApiCompatibilityUtils.getColor(resources, R.color.drag_handlebar_color);
+        mButtonPaddingDps =
+                (int) (mPxToDp * resources.getDimension(R.dimen.overlay_panel_button_padding));
+        mBarShadowVisible = true;
+        mPanelShadowVisible = !isNewLayout();
     }
 
     // ============================================================================================
@@ -220,7 +225,7 @@ abstract class OverlayPanelBase {
     private float mMaximumHeight;
 
     private boolean mIsFullWidthSizePanelForTesting;
-    protected boolean mOverrideIsFullWidthSizePanelForTesting;
+    private boolean mOverrideIsFullWidthSizePanelForTesting;
 
     /**
      * Called when the layout has changed.
@@ -259,9 +264,8 @@ abstract class OverlayPanelBase {
      * @return Whether the given width matches the criteria required for a full width Panel.
      */
     protected boolean doesMatchFullWidthCriteria(float containerWidth) {
-        if (mOverrideIsFullWidthSizePanelForTesting) {
-            return mIsFullWidthSizePanelForTesting;
-        }
+        if (mOverrideIsFullWidthSizePanelForTesting) return mIsFullWidthSizePanelForTesting;
+
         return containerWidth <= SMALL_PANEL_WIDTH_THRESHOLD_DP;
     }
 
@@ -340,18 +344,20 @@ abstract class OverlayPanelBase {
         return getBarHeight();
     }
 
-    /**
-     * @return The width of the Overlay Panel Content View in pixels.
-     */
+    /** @return The width of the Overlay Panel Content View in pixels. */
     public int getContentViewWidthPx() {
         return getMaximumWidthPx();
     }
 
-    /**
-     * @return The height of the Overlay Panel Content View in pixels.
-     */
+    /** @return The height of the Overlay Panel Content View in pixels. */
     public int getContentViewHeightPx() {
         return Math.round(mMaximumHeight / mPxToDp);
+    }
+
+    /** @return Whether we're using the new Overlay layout feature. */
+    private boolean isNewLayout() {
+        return ChromeFeatureList.isInitialized()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT);
     }
 
     // ============================================================================================
@@ -368,14 +374,14 @@ abstract class OverlayPanelBase {
     private boolean mIsMaximized;
 
     /**
-     * @return The vertical offset of the Overlay Panel.
+     * @return The horizontal offset of the Overlay Panel in DPs.
      */
     public float getOffsetX() {
         return mOffsetX;
     }
 
     /**
-     * @return The vertical offset of the Overlay Panel.
+     * @return The vertical offset of the Overlay Panel in DPs.
      */
     public float getOffsetY() {
         return mOffsetY;
@@ -405,14 +411,14 @@ abstract class OverlayPanelBase {
     // --------------------------------------------------------------------------------------------
     // Panel Bar states
     // --------------------------------------------------------------------------------------------
-    private float mBarMarginSide;
-    private float mBarMarginTop;
+    private final float mBarMarginSide;
+    private final float mBarMarginTop;
+    private final boolean mBarShadowVisible;
+    private final boolean mPanelShadowVisible;
+
     private float mBarHeight;
     private boolean mIsBarBorderVisible;
     private float mBarBorderHeight;
-
-    private boolean mBarShadowVisible;
-    private float mBarShadowOpacity;
 
     private float mArrowIconOpacity;
 
@@ -457,17 +463,10 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return Whether the Bar shadow is visible.
+     * @return Whether the Bar shadow is visible (between the Bar and content).
      */
     public boolean getBarShadowVisible() {
         return mBarShadowVisible;
-    }
-
-    /**
-     * @return The opacity of the Bar shadow.
-     */
-    public float getBarShadowOpacity() {
-        return mBarShadowOpacity;
     }
 
     /**
@@ -475,6 +474,13 @@ abstract class OverlayPanelBase {
      */
     public int getBarBackgroundColor() {
         return mBarBackgroundColor;
+    }
+
+    /**
+     * @return Whether the shadow for the entire Panel & Bar is visible.
+     */
+    public boolean getPanelShadowVisible() {
+        return mPanelShadowVisible;
     }
 
     /**
@@ -491,11 +497,17 @@ abstract class OverlayPanelBase {
         return mDragHandlebarColor;
     }
 
+    /** @return the color to use to draw the separator between the Bar and Content. */
+    public int getSeparatorLineColor() {
+        return ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.overlay_panel_separator_line_color);
+    }
+
     /**
      * @return The opacity of the arrow icon.
      */
     public float getArrowIconOpacity() {
-        return mArrowIconOpacity;
+        return isNewLayout() ? ARROW_ICON_OPACITY_TRANSPARENT : mArrowIconOpacity;
     }
 
     /**
@@ -535,7 +547,7 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The width/height of the open tab icon.
+     * @return The width/height of the open tab icon in DPs.
      */
     public float getOpenTabIconDimension() {
         if (mOpenTabIconWidth == 0) {
@@ -547,10 +559,10 @@ abstract class OverlayPanelBase {
     }
 
     /**
-     * @return The left X coordinate of the open new tab icon.
+     * @return The left X coordinate of the open new tab icon in DPs.
      */
     public float getOpenTabIconX() {
-        float offset = getCloseIconDimension() + getBarMarginSide();
+        float offset = getCloseIconDimension() + 2 * mButtonPaddingDps;
         if (LocalizationUtils.isLayoutRtl()) {
             return getCloseIconX() + offset;
         } else {
@@ -742,7 +754,7 @@ abstract class OverlayPanelBase {
      * @return The peeked height of the panel in dps.
      */
     protected float getPeekedHeight() {
-        return mBarHeightPeeking;
+        return getBarHeight();
     }
 
     /**
@@ -803,7 +815,8 @@ abstract class OverlayPanelBase {
         int nextState = PanelState.UNDEFINED;
         @PanelState
         int prevState = nextState;
-        for (@PanelState int state = 0; state < PanelState.NUM_ENTRIES; state++) {
+        for (@PanelState int state = PanelState.UNDEFINED; state < PanelState.NUM_ENTRIES;
+                state++) {
             if (!isValidUiState(state)) continue;
             prevState = nextState;
             nextState = state;
@@ -917,7 +930,8 @@ abstract class OverlayPanelBase {
 
         // Iterate over all states and find the largest one which is being
         // transitioned to/from.
-        for (@PanelState int state = 0; state < PanelState.NUM_ENTRIES; state++) {
+        for (@PanelState int state = PanelState.UNDEFINED; state < PanelState.NUM_ENTRIES;
+                state++) {
             if (!isValidUiState(state)) continue;
             if (panelHeight <= getPanelHeightFromState(state)) {
                 stateFound = state;
@@ -968,9 +982,6 @@ abstract class OverlayPanelBase {
         // Base page brightness.
         mBasePageBrightness = BASE_PAGE_BRIGHTNESS_STATE_PEEKED;
 
-        // Bar height.
-        mBarHeight = mBarHeightPeeking;
-
         // Bar border.
         mIsBarBorderVisible = false;
 
@@ -982,9 +993,6 @@ abstract class OverlayPanelBase {
 
         // Progress Bar.
         mProgressBarOpacity = 0.f;
-
-        // Update the Bar Shadow.
-        updateBarShadow();
     }
 
     /**
@@ -1009,12 +1017,6 @@ abstract class OverlayPanelBase {
                 BASE_PAGE_BRIGHTNESS_STATE_PEEKED,
                 BASE_PAGE_BRIGHTNESS_STATE_EXPANDED,
                 percentage);
-
-        // Bar height.
-        mBarHeight = Math.round(MathUtils.interpolate(
-                mBarHeightPeeking,
-                getBarHeightExpanded(),
-                percentage));
 
         // Bar border.
         mIsBarBorderVisible = true;
@@ -1044,9 +1046,6 @@ abstract class OverlayPanelBase {
         // Fades the Progress Bar the closer it gets to the bottom of the
         // screen.
         mProgressBarOpacity = MathUtils.interpolate(0.f, 1.f, diff / threshold);
-
-        // Update the Bar Shadow.
-        updateBarShadow();
     }
 
     /**
@@ -1073,14 +1072,6 @@ abstract class OverlayPanelBase {
                 BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED,
                 percentage);
 
-        // Bar height.
-        float startBarHeight = supportsExpandedState
-                ? getBarHeightExpanded() : getBarHeightPeeking();
-        mBarHeight = Math.round(MathUtils.interpolate(
-                startBarHeight,
-                getBarHeightMaximized(),
-                percentage));
-
         // Bar border.
         mIsBarBorderVisible = true;
 
@@ -1092,9 +1083,6 @@ abstract class OverlayPanelBase {
 
         // Progress Bar.
         mProgressBarOpacity = 1.f;
-
-        // Update the Bar Shadow.
-        updateBarShadow();
     }
 
     /** Updates the Status Bar. */
@@ -1108,43 +1096,6 @@ abstract class OverlayPanelBase {
     /** @return the minimum brightness of the base page. */
     protected float getMinBasePageBrightness() {
         return BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED;
-    }
-
-    private float getBarHeightExpanded() {
-        return isFullWidthSizePanel() ? mBarHeightExpanded : mBarHeightPeeking;
-    }
-
-    private float getBarHeightMaximized() {
-        return isFullWidthSizePanel() ? mBarHeightMaximized : mBarHeightPeeking;
-    }
-
-    /**
-     * @return The peeking height of the panel's bar in dp.
-     */
-    protected float getBarHeightPeeking() {
-        return mBarHeightPeeking;
-    }
-
-    /**
-     * Updates the UI state for Bar Shadow.
-     */
-    protected void updateBarShadow() {
-        float barShadowOpacity = calculateBarShadowOpacity();
-
-        if (barShadowOpacity > 0.f) {
-            mBarShadowVisible = true;
-            mBarShadowOpacity = barShadowOpacity;
-        } else {
-            mBarShadowVisible = false;
-            mBarShadowOpacity = 0.f;
-        }
-    }
-
-    /**
-     * @return The new opacity value for the Bar Shadow.
-     */
-    protected float calculateBarShadowOpacity() {
-        return 0.f;
     }
 
     // ============================================================================================

@@ -47,9 +47,9 @@ def GetParser():
   parser.add_argument('--verbose', action='store_true',
                       help='Prints out debug info.')
   parser.add_argument('--dump-files', action='store_true',
-                      help="Dump the revved packages, new files list, and "
-                           "removed files list files. This is mostly for"
-                           "debugging right now.")
+                      help='Dump the revved packages, new files list, and '
+                           'removed files list files. This is mostly for'
+                           'debugging right now.')
 
   return parser
 

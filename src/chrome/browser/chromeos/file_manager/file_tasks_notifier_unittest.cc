@@ -16,8 +16,8 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
 #include "components/drive/file_errors.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/fake_download_item.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -173,7 +173,7 @@ class FileTasksNotifierTest : public testing::Test {
   const base::FilePath& my_files() { return my_files_; }
 
  private:
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeDriveFs fake_drivefs_;
   mojo::Binding<drivefs::mojom::DriveFs> drivefs_binding_;
   std::unique_ptr<TestingProfile> profile_;

@@ -305,7 +305,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreak) {
   ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
   const Node* br = GetDocument().QuerySelector("br");
   ASSERT_NE(nullptr, br);
-  ASSERT_TRUE(IsHTMLBRElement(br));
+  ASSERT_TRUE(IsA<HTMLBRElement>(br));
   const Node* line2 = GetDocument().QuerySelector("p")->lastChild();
   ASSERT_NE(nullptr, line2);
   ASSERT_TRUE(line2->IsTextNode());
@@ -350,7 +350,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
   ASSERT_TRUE(IsHTMLParagraphElement(paragraph));
   const Node* br = GetDocument().QuerySelector("br");
   ASSERT_NE(nullptr, br);
-  ASSERT_TRUE(IsHTMLBRElement(br));
+  ASSERT_TRUE(IsA<HTMLBRElement>(br));
   const Node* line2 = GetDocument().QuerySelector("p")->lastChild();
   ASSERT_NE(nullptr, line2);
   ASSERT_TRUE(line2->IsTextNode());
@@ -390,18 +390,18 @@ TEST_F(AccessibilitySelectionTest, SetSelectionAcrossLineBreakInEditableText) {
 //
 // Get selection tests.
 // Retrieving a selection with endpoints which have no corresponding objects in
-// the accessibility tree, e.g. which are aria-hidden, should shrink or extend
+// the accessibility tree, e.g. which are display:none, should shrink or extend
 // the |AXSelection| to valid endpoints.
 //
 
-TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
+TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   SetBodyInnerHTML(R"HTML(
       <div id="main" role="main">
-        <p id="beforeHidden">Before aria-hidden.</p>
-        <p id="hidden1" aria-hidden="true" style="display:inline">Aria-hidden 1.</p>
-        <p id="betweenHidden">In between two aria-hidden elements.</p>
-        <p id="hidden2" aria-hidden="true" style="display:inline">Aria-hidden 2.</p>
-        <p id="afterHidden">After aria-hidden.</p>
+        <p id="beforeHidden">Before display:none.</p>
+        <p id="hidden1" style="display:none">Display:none 1.</p>
+        <p id="betweenHidden">In between two display:none elements.</p>
+        <p id="hidden2" style="display:none">Display:none 2.</p>
+        <p id="afterHidden">After display:none.</p>
       </div>
       )HTML");
 
@@ -456,8 +456,8 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
   EXPECT_EQ(1, ax_selection_shrink.Extent().ChildIndex());
 
   // The extended selection should start after the children of the paragraph
-  // before the first aria-hidden element and end right before the paragraph
-  // after the last aria-hidden element.
+  // before the first display:none element and end right before the paragraph
+  // after the last display:none element.
   ASSERT_FALSE(ax_selection_extend.Base().IsTextPosition());
   EXPECT_EQ(ax_before, ax_selection_extend.Base().ContainerObject());
   EXPECT_EQ(1, ax_selection_extend.Base().ChildIndex());
@@ -469,17 +469,17 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInARIAHidden) {
   // Even though the two AX selections have different anchors and foci, the text
   // selected in the accessibility tree should not differ, because any
   // differences in the equivalent DOM selections concern elements that are
-  // aria-hidden. However, the AX selections should still differ if converted to
-  // DOM selections.
+  // display:none. However, the AX selections should still differ if converted
+  // to DOM selections.
   const std::string selection_text(
       "++<GenericContainer>\n"
       "++++<Main>\n"
       "++++++<Paragraph>\n"
-      "++++++++<StaticText: Before aria-hidden.>\n"
+      "++++++++<StaticText: Before display:none.>\n"
       "^++++++<Paragraph>\n"
-      "++++++++<StaticText: In between two aria-hidden elements.>\n"
+      "++++++++<StaticText: In between two display:none elements.>\n"
       "|++++++<Paragraph>\n"
-      "++++++++<StaticText: After aria-hidden.>\n");
+      "++++++++<StaticText: After display:none.>\n");
   EXPECT_EQ(selection_text, GetSelectionText(ax_selection_shrink));
   EXPECT_EQ(selection_text, GetSelectionText(ax_selection_extend));
 }
@@ -1122,13 +1122,14 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
   ASSERT_NE(nullptr, input);
   ASSERT_TRUE(IsTextControl(input));
   TextControlElement& text_control = ToTextControl(*input);
-  ASSERT_LE(1u, text_control.value().length());
+  ASSERT_LE(1u, text_control.InnerEditorValue().length());
 
   const AXObject* ax_input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, ax_input);
   ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
 
-  for (unsigned int i = 0; i < text_control.value().length() - 1; ++i) {
+  for (unsigned int i = 0; i < text_control.InnerEditorValue().length() - 1;
+       ++i) {
     AXSelection::Builder builder;
     AXSelection ax_selection =
         builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
@@ -1137,7 +1138,7 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
 
     testing::Message message;
     message << "While selecting forward character "
-            << char{text_control.value()[i]} << " at position " << i
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
             << " in text field.";
     SCOPED_TRACE(message);
     EXPECT_TRUE(ax_selection.Select());
@@ -1147,7 +1148,7 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
     EXPECT_EQ("forward", text_control.selectionDirection());
   }
 
-  for (unsigned int i = text_control.value().length(); i > 0; --i) {
+  for (unsigned int i = text_control.InnerEditorValue().length(); i > 0; --i) {
     AXSelection::Builder builder;
     AXSelection ax_selection =
         builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
@@ -1156,7 +1157,83 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
 
     testing::Message message;
     message << "While selecting backward character "
-            << char{text_control.value()[i]} << " at position " << i
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i - 1, text_control.selectionStart());
+    EXPECT_EQ(i, text_control.selectionEnd());
+    EXPECT_EQ("backward", text_control.selectionDirection());
+  }
+}
+
+TEST_F(AccessibilitySelectionTest,
+       SelectEachConsecutiveCharacterInEmailFieldWithInvalidAddress) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  String valid_email = "valid@example.com";
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" type="email" value=)HTML" +
+                   valid_email + R"HTML(>
+      )HTML");
+
+  // Add three spaces to the start of the address to make it invalid.
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let input = document.querySelector('input');
+      input.focus();
+      input.value = input.value.padStart(3, ' ');
+      input.selectionStart = 0;
+      input.selectionEnd = input.value.length;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  TextControlElement& text_control = ToTextControl(*input);
+  // The "value" attribute should not contain the extra spaces.
+  ASSERT_EQ(valid_email.length(), text_control.value().length());
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  // The address can still be navigated using cursor left / right, even though
+  // it's invalid.
+  for (unsigned int i = 0; i < text_control.InnerEditorValue().length() - 1;
+       ++i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i + 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting forward character "
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i, text_control.selectionStart());
+    EXPECT_EQ(i + 1, text_control.selectionEnd());
+    EXPECT_EQ("forward", text_control.selectionDirection());
+  }
+
+  for (unsigned int i = text_control.InnerEditorValue().length(); i > 0; --i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i - 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting backward character "
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
             << " in text field.";
     SCOPED_TRACE(message);
     EXPECT_TRUE(ax_selection.Select());
@@ -1602,6 +1679,17 @@ TEST_F(AccessibilitySelectionTest,
     EXPECT_EQ(int{i + 9}, dom_selection.Base().OffsetInContainerNode());
     EXPECT_EQ(int{i + 8}, dom_selection.Extent().OffsetInContainerNode());
   }
+}
+
+TEST_F(AccessibilitySelectionTest, SelectionWithEqualBaseAndExtent) {
+  SetBodyInnerHTML(R"HTML(
+      <select id="sel"><option>1</option></select>
+      )HTML");
+  AXObject* ax_sel = GetAXObjectByElementId("sel")->FirstChild();
+  AXPosition ax_position = AXPosition::CreatePositionBeforeObject(*ax_sel);
+  AXSelection::Builder builder;
+  AXSelection ax_selection =
+      builder.SetBase(ax_position).SetExtent(ax_position).Build();
 }
 
 //

@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/field_trial_params.h"
@@ -21,15 +22,17 @@
 #include "chrome/browser/ui/app_list/search/arc/arc_app_reinstall_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_app_shortcuts_search_provider.h"
 #include "chrome/browser/ui/app_list/search/arc/arc_playstore_search_provider.h"
+#include "chrome/browser/ui/app_list/search/drive_quick_access_provider.h"
 #include "chrome/browser/ui/app_list/search/launcher_search/launcher_search_provider.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/omnibox_provider.h"
 #include "chrome/browser/ui/app_list/search/search_controller.h"
-#include "chrome/browser/ui/app_list/search/search_result_ranker/search_result_ranker.h"
 #include "chrome/browser/ui/app_list/search/settings_shortcut/settings_shortcut_provider.h"
+#include "chrome/browser/ui/app_list/search/zero_state_file_provider.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/arc/arc_util.h"
+#include "content/public/browser/system_connector.h"
 
 namespace app_list {
 
@@ -41,8 +44,9 @@ namespace {
 // in some UI, so we need to allow returning more results than actual maximum
 // number of results to be displayed in UI.
 constexpr size_t kMaxAppsGroupResults = 7;
-constexpr size_t kMaxOmniboxResults = 4;
 constexpr size_t kMaxLauncherSearchResults = 2;
+constexpr size_t kMaxZeroStateFileResults = 6;
+constexpr size_t kMaxDriveQuickAccessResults = 6;
 constexpr size_t kMaxAppReinstallSearchResults = 1;
 // We show up to 6 Play Store results. However, part of Play Store results may
 // be filtered out because they may correspond to already installed Web apps. So
@@ -60,6 +64,7 @@ constexpr size_t kMaxAppShortcutResults = 4;
 constexpr size_t kMaxSettingsShortcutResults = 6;
 
 constexpr float kBoostOfSettingsShortcut = 10.0f;
+// Keep in sync with value in search_result_ranker.cc.
 constexpr float kBoostOfApps = 8.0f;
 
 }  // namespace
@@ -72,7 +77,8 @@ std::unique_ptr<SearchController> CreateSearchController(
       std::make_unique<SearchController>(model_updater, list_controller,
                                          profile);
 
-  AppSearchResultRanker* app_ranker = controller->GetAppSearchResultRanker();
+  // Set up rankers for search results.
+  controller->InitializeRankers(content::GetSystemConnector());
 
   // Add mixer groups. There are four main groups: answer card, apps
   // and omnibox. Each group has a "soft" maximum number of results. However, if
@@ -85,13 +91,14 @@ std::unique_ptr<SearchController> CreateSearchController(
   size_t answer_card_group_id = controller->AddGroup(1, 1.0, 5.0);
   size_t apps_group_id =
       controller->AddGroup(kMaxAppsGroupResults, 1.0, kBoostOfApps);
-  size_t omnibox_group_id = controller->AddGroup(kMaxOmniboxResults, 1.0, 0.0);
+  size_t omnibox_group_id = controller->AddGroup(
+      AppListConfig::instance().max_search_result_list_items(), 1.0, 0.0);
 
   // Add search providers.
-  controller->AddProvider(apps_group_id, std::make_unique<AppSearchProvider>(
-                                             profile, list_controller,
-                                             base::DefaultClock::GetInstance(),
-                                             model_updater, app_ranker));
+  controller->AddProvider(
+      apps_group_id, std::make_unique<AppSearchProvider>(
+                         profile, list_controller,
+                         base::DefaultClock::GetInstance(), model_updater));
   controller->AddProvider(omnibox_group_id, std::make_unique<OmniboxProvider>(
                                                 profile, list_controller));
   if (app_list_features::IsAnswerCardEnabled()) {
@@ -152,7 +159,22 @@ std::unique_ptr<SearchController> CreateSearchController(
     controller->AddProvider(
         app_shortcut_group_id,
         std::make_unique<ArcAppShortcutsSearchProvider>(
-            kMaxAppShortcutResults, profile, list_controller, app_ranker));
+            kMaxAppShortcutResults, profile, list_controller));
+  }
+
+  // This flag controls whether files are shown alongside Omnibox recent queries
+  // in the launcher. If enabled, Omnibox recent queries have their relevance
+  // scores changed to fit with these providers.
+  if (app_list_features::IsZeroStateMixedTypesRankerEnabled()) {
+    size_t zero_state_files_group_id =
+        controller->AddGroup(kMaxZeroStateFileResults, 1.0, 0.0);
+    controller->AddProvider(zero_state_files_group_id,
+                            std::make_unique<ZeroStateFileProvider>(profile));
+    size_t drive_quick_access_group_id =
+        controller->AddGroup(kMaxDriveQuickAccessResults, 1.0, 0.0);
+    controller->AddProvider(
+        drive_quick_access_group_id,
+        std::make_unique<DriveQuickAccessProvider>(profile));
   }
 
   return controller;

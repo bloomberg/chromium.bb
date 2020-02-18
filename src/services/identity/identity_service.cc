@@ -4,31 +4,33 @@
 
 #include "services/identity/identity_service.h"
 
+#include <memory>
 #include <utility>
 
-#include "base/bind.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/identity/identity_accessor_impl.h"
 
 namespace identity {
 
-IdentityService::IdentityService(signin::IdentityManager* identity_manager,
-                                 service_manager::mojom::ServiceRequest request)
-    : service_binding_(this, std::move(request)),
-      identity_manager_(identity_manager) {
-  registry_.AddInterface<mojom::IdentityAccessor>(
-      base::Bind(&IdentityService::Create, base::Unretained(this)));
-}
+IdentityService::IdentityService(
+    signin::IdentityManager* identity_manager,
+    mojo::PendingReceiver<mojom::IdentityService> receiver)
+    : receiver_(this, std::move(receiver)),
+      identity_manager_(identity_manager) {}
 
 IdentityService::~IdentityService() {
   ShutDown();
 }
 
-void IdentityService::OnBindInterface(
-    const service_manager::BindSourceInfo& source_info,
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle interface_pipe) {
-  registry_.BindInterface(interface_name, std::move(interface_pipe));
+void IdentityService::BindIdentityAccessor(
+    mojo::PendingReceiver<mojom::IdentityAccessor> receiver) {
+  // This instance cannot service IdentityAccessor requests once it has been
+  // shut down.
+  if (IsShutDown())
+    return;
+
+  identity_accessors_.Add(
+      std::make_unique<IdentityAccessorImpl>(identity_manager_),
+      std::move(receiver));
 }
 
 void IdentityService::ShutDown() {
@@ -36,21 +38,11 @@ void IdentityService::ShutDown() {
     return;
 
   identity_manager_ = nullptr;
-  identity_accessor_bindings_.CloseAllBindings();
+  identity_accessors_.Clear();
 }
 
 bool IdentityService::IsShutDown() {
   return (identity_manager_ == nullptr);
-}
-
-void IdentityService::Create(mojom::IdentityAccessorRequest request) {
-  // This instance cannot service requests if it has already been shut down.
-  if (IsShutDown())
-    return;
-
-  identity_accessor_bindings_.AddBinding(
-      std::make_unique<IdentityAccessorImpl>(identity_manager_),
-      std::move(request));
 }
 
 }  // namespace identity

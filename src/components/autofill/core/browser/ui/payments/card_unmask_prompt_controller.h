@@ -18,10 +18,11 @@ class CardUnmaskPromptController {
  public:
   // Interaction.
   virtual void OnUnmaskDialogClosed() = 0;
-  virtual void OnUnmaskResponse(const base::string16& cvc,
-                                const base::string16& exp_month,
-                                const base::string16& exp_year,
-                                bool should_store_pan) = 0;
+  virtual void OnUnmaskPromptAccepted(const base::string16& cvc,
+                                      const base::string16& exp_month,
+                                      const base::string16& exp_year,
+                                      bool should_store_pan,
+                                      bool enable_fido_auth) = 0;
   virtual void NewCardLinkClicked() = 0;
 
   // State.

@@ -11,6 +11,7 @@
 #include "audio/audio_send_stream.h"
 
 #include <string>
+#include <thread>
 #include <utility>
 #include <vector>
 
@@ -207,7 +208,7 @@ struct ConfigHelper {
     EXPECT_CALL(*channel_send_, GetRtpRtcp()).WillRepeatedly(Invoke([this]() {
       return &this->rtp_rtcp_;
     }));
-    EXPECT_CALL(*channel_send_, SetLocalSSRC(kSsrc)).Times(1);
+    EXPECT_CALL(rtp_rtcp_, SSRC).WillRepeatedly(Return(kSsrc));
     EXPECT_CALL(*channel_send_, SetRTCP_CNAME(StrEq(kCName))).Times(1);
     EXPECT_CALL(*channel_send_, SetFrameEncryptor(_)).Times(1);
     EXPECT_CALL(*channel_send_, SetExtmapAllowMixed(false)).Times(1);
@@ -415,8 +416,6 @@ TEST(AudioSendStreamTest, GetStats) {
   EXPECT_EQ(kReportBlock.cumulative_num_packets_lost, stats.packets_lost);
   EXPECT_EQ(Q8ToFloat(kReportBlock.fraction_lost), stats.fraction_lost);
   EXPECT_EQ(kIsacFormat.name, stats.codec_name);
-  EXPECT_EQ(static_cast<int32_t>(kReportBlock.extended_highest_sequence_number),
-            stats.ext_seqnum);
   EXPECT_EQ(static_cast<int32_t>(kReportBlock.interarrival_jitter /
                                  (kIsacFormat.clockrate_hz / 1000)),
             stats.jitter_ms);
@@ -677,6 +676,29 @@ TEST(AudioSendStreamTest, DontRecreateEncoder) {
   helper.config().send_codec_spec->cng_payload_type = 105;
   auto send_stream = helper.CreateAudioSendStream();
   send_stream->Reconfigure(helper.config());
+}
+
+// Allow to check for race conditions under tsan.
+// This mimicks the situation where 'ModuleProcessThread' (pacer thread) is
+// launched by webrtc::RtpTransportControllerSend::RtpTransportControllerSend().
+TEST(AudioSendStreamTest, RaceFree) {
+  ConfigHelper helper(false, false);
+  // Sanity checks: copy-pasted from DontRecreateEncoder test.
+  EXPECT_CALL(*helper.channel_send(), SetEncoderForMock(_, _))
+      .WillOnce(Return());
+
+  EXPECT_CALL(*helper.channel_send(), RegisterCngPayloadType(105, 8000));
+
+  helper.config().send_codec_spec =
+      AudioSendStream::Config::SendCodecSpec(9, kG722Format);
+  helper.config().send_codec_spec->cng_payload_type = 105;
+  auto send_stream = helper.CreateAudioSendStream();
+  std::thread pacer([&]() {
+    send_stream->OnPacketAdded(/*ssrc*/ 0xcafe,
+                               /*seq_num*/ 0xf00d);
+  });
+  send_stream->Reconfigure(helper.config());
+  pacer.join();
 }
 
 TEST(AudioSendStreamTest, ReconfigureTransportCcResetsFirst) {

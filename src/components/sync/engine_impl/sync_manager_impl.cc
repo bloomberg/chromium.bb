@@ -187,7 +187,7 @@ bool SyncManagerImpl::VisiblePositionsDiffer(
 
 bool SyncManagerImpl::VisiblePropertiesDiffer(
     const syncable::EntryKernelMutation& mutation,
-    Cryptographer* cryptographer) const {
+    const Cryptographer* cryptographer) const {
   const syncable::EntryKernel& a = mutation.original;
   const syncable::EntryKernel& b = mutation.mutated;
   const sync_pb::EntitySpecifics& a_specifics = a.ref(SPECIFICS);
@@ -241,10 +241,6 @@ void SyncManagerImpl::ConfigureSyncer(ConfigureReason reason,
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(!ready_task.is_null());
   DCHECK(initialized_);
-
-  // Don't download non-blocking types that have already completed initial sync.
-  to_download.RemoveAll(
-      model_type_registry_->GetInitialSyncDoneNonBlockingTypes());
 
   DVLOG(1) << "Configuring -"
            << "\n\t"
@@ -332,18 +328,14 @@ void SyncManagerImpl::Init(InitArgs* args) {
   std::unique_ptr<syncable::DirectoryBackingStore> backing_store =
       args->engine_components_factory->BuildDirectoryBackingStore(
           EngineComponentsFactory::STORAGE_ON_DISK,
-          args->authenticated_account_id, cache_guid_generator,
+          args->authenticated_account_id.id, cache_guid_generator,
           absolute_db_path);
 
   DCHECK(backing_store);
 
-  // Note: NigoriHandler and Cryptographer passed to Directory are nullptrs iff
-  // USS implementation of Nigori is enabled.
   share_->directory = std::make_unique<syncable::Directory>(
       std::move(backing_store), args->unrecoverable_error_handler,
-      report_unrecoverable_error_function_,
-      sync_encryption_handler_->GetNigoriHandler(),
-      sync_encryption_handler_->GetCryptographerUnsafe());
+      report_unrecoverable_error_function_, args->nigori_handler);
 
   DVLOG(1) << "AccountId: " << args->authenticated_account_id;
   if (!OpenDirectory(args)) {
@@ -505,7 +497,7 @@ bool SyncManagerImpl::OpenDirectory(InitArgs* args) {
       MakeWeakHandle(js_mutation_event_observer_.AsWeakPtr()));
 
   syncable::DirOpenResult open_result = syncable::NOT_INITIALIZED;
-  open_result = directory()->Open(args->authenticated_account_id, this,
+  open_result = directory()->Open(args->authenticated_account_id.id, this,
                                   transaction_observer);
   if (open_result != syncable::OPENED_NEW &&
       open_result != syncable::OPENED_EXISTING) {
@@ -794,7 +786,7 @@ void SyncManagerImpl::SetExtraChangeRecordData(
     int64_t id,
     ModelType type,
     ChangeReorderBuffer* buffer,
-    Cryptographer* cryptographer,
+    const Cryptographer* cryptographer,
     const syncable::EntryKernel& original,
     bool existed_before,
     bool exists_now) {
@@ -836,7 +828,7 @@ void SyncManagerImpl::HandleCalculateChangesChangeEventFromSyncer(
 
   ChangeReorderBuffer change_buffers[ModelType::NUM_ENTRIES];
 
-  Cryptographer* crypto = directory()->GetCryptographer(trans);
+  const Cryptographer* crypto = directory()->GetCryptographer(trans);
   const syncable::ImmutableEntryKernelMutationMap& mutations =
       write_transaction_info.Get().mutations;
   for (auto it = mutations.Get().begin(); it != mutations.Get().end(); ++it) {

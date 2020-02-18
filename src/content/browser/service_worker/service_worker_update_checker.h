@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "content/browser/service_worker/service_worker_database.h"
 #include "content/browser/service_worker/service_worker_single_script_update_checker.h"
+#include "content/browser/service_worker/service_worker_updated_script_loader.h"
 
 namespace network {
 class SharedURLLoaderFactory;
@@ -36,7 +37,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
         int64_t old_resource_id,
         ServiceWorkerSingleScriptUpdateChecker::Result result,
         std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-            paused_state);
+            paused_state,
+        std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+            failure_info);
     ComparedScriptInfo(ComparedScriptInfo&& other);
     ComparedScriptInfo& operator=(ComparedScriptInfo&& other);
     ~ComparedScriptInfo();
@@ -52,6 +55,11 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
     // ServiceWorkerCacheWriter, and Mojo endpoints for downloading.
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state;
+
+    // This is set when |result| is kFailed. This is used to keep the error code
+    // which the update checker saw to the renderer when installing the worker.
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info;
   };
 
   // This is to notify the update check result. Value of |result| can be:
@@ -95,17 +103,25 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
       std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
           paused_state);
 
+  const GURL& updated_script_url() const { return updated_script_url_; }
   bool network_accessed() const { return network_accessed_; }
 
  private:
   void CheckOneScript(const GURL& url, const int64_t resource_id);
-  void OnGetDefaultHeaders(base::Optional<net::HttpRequestHeaders> header);
+  void DidSetUpOnUI(net::HttpRequestHeaders header,
+                    ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+                        browser_context_getter);
+
+  const GURL main_script_url_;
+  const int64_t main_script_resource_id_;
 
   std::vector<ServiceWorkerDatabase::ResourceRecord> scripts_to_compare_;
   size_t next_script_index_to_compare_ = 0;
   std::map<GURL, ComparedScriptInfo> script_check_results_;
-  const GURL main_script_url_;
-  const int64_t main_script_resource_id_;
+
+  // The URL of the script for which a byte-for-byte change was found, or else
+  // the empty GURL if there is no such script.
+  GURL updated_script_url_;
 
   // The version which triggered this update.
   scoped_refptr<ServiceWorkerVersion> version_to_update_;
@@ -122,6 +138,9 @@ class CONTENT_EXPORT ServiceWorkerUpdateChecker {
 
   // Headers that need to be added to network requests for update checking.
   net::HttpRequestHeaders default_headers_;
+
+  ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+      browser_context_getter_;
 
   // True if any at least one of the scripts is fetched by network.
   bool network_accessed_ = false;

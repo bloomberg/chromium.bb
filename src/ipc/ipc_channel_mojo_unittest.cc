@@ -21,6 +21,7 @@
 #include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_mapping.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/optional.h"
 #include "base/path_service.h"
 #include "base/pickle.h"
@@ -29,7 +30,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "base/test/test_shared_memory_util.h"
 #include "base/test/test_timeouts.h"
@@ -787,7 +788,7 @@ class ChannelProxyRunner {
 
   void CreateProxy(IPC::Listener* listener) {
     io_thread_.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     proxy_ = IPC::SyncChannel::Create(listener, io_thread_.task_runner(),
                                       base::ThreadTaskRunnerHandle::Get(),
                                       &never_signaled_);
@@ -948,7 +949,7 @@ class ChannelProxyClient {
   IPC::ChannelProxy* proxy() { return runner_->proxy(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ChannelProxyRunner> runner_;
 };
 

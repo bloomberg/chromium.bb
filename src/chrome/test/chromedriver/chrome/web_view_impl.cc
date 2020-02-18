@@ -172,7 +172,7 @@ WebViewImpl::WebViewImpl(const std::string& id,
   // Page.setDownloadBehavior. This is handled by the
   // DownloadDirectoryOverrideManager, which is only instantiated
   // in headless chrome.
-  if (browser_info->browser_name == "headless chrome")
+  if (browser_info->is_headless)
     download_directory_override_manager_ =
         std::make_unique<DownloadDirectoryOverrideManager>(client_.get());
   client_->SetOwner(this);
@@ -274,6 +274,13 @@ Status WebViewImpl::Resume(const Timeout* timeout) {
 Status WebViewImpl::SendCommand(const std::string& cmd,
                                 const base::DictionaryValue& params) {
   return client_->SendCommand(cmd, params);
+}
+
+Status WebViewImpl::SendCommandFromWebSocket(
+    const std::string& cmd,
+    const base::DictionaryValue& params,
+    const int client_cmd_id) {
+  return client_->SendCommandFromWebSocket(cmd, params, client_cmd_id);
 }
 
 Status WebViewImpl::SendCommandAndGetResult(
@@ -511,10 +518,12 @@ Status WebViewImpl::DispatchTouchEventsForMouseEvents(
 }
 
 Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
-                                        const std::string& frame) {
+                                        const std::string& frame,
+                                        bool async_dispatch_events) {
   if (mobile_emulation_override_manager_->IsEmulatingTouch())
     return DispatchTouchEventsForMouseEvents(events, frame);
 
+  Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
     params.SetString("type", GetAsString(it->type));
@@ -525,18 +534,27 @@ Status WebViewImpl::DispatchMouseEvents(const std::list<MouseEvent>& events,
     params.SetInteger("buttons", it->buttons);
     params.SetInteger("clickCount", it->click_count);
     params.SetString("pointerType", GetAsString(it->pointer_type));
-    Status status = client_->SendCommand("Input.dispatchMouseEvent", params);
+
+    if (async_dispatch_events) {
+      status = client_->SendCommandAndIgnoreResponse("Input.dispatchMouseEvent",
+                                                     params);
+    } else {
+      status = client_->SendCommand("Input.dispatchMouseEvent", params);
+    }
+
     if (status.IsError())
       return status;
   }
-  return Status(kOk);
+  return status;
 }
 
-Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
+Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event,
+                                       bool async_dispatch_events) {
   base::DictionaryValue params;
   std::string type = GetAsString(event.type);
   params.SetString("type", type);
   std::unique_ptr<base::ListValue> point_list(new base::ListValue);
+  Status status(kOk);
   if (type == "touchStart" || type == "touchMove") {
     std::unique_ptr<base::DictionaryValue> point(new base::DictionaryValue());
     point->SetInteger("x", event.x);
@@ -549,19 +567,28 @@ Status WebViewImpl::DispatchTouchEvent(const TouchEvent& event) {
     point_list->Append(std::move(point));
   }
   params.Set("touchPoints", std::move(point_list));
-  return client_->SendCommand("Input.dispatchTouchEvent", params);
+  if (async_dispatch_events) {
+    status = client_->SendCommandAndIgnoreResponse("Input.dispatchTouchEvent",
+                                                   params);
+  } else {
+    status = client_->SendCommand("Input.dispatchTouchEvent", params);
+  }
+  return status;
 }
 
-Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events) {
+Status WebViewImpl::DispatchTouchEvents(const std::list<TouchEvent>& events,
+                                        bool async_dispatch_events) {
   for (auto it = events.begin(); it != events.end(); ++it) {
-    Status status = DispatchTouchEvent(*it);
+    Status status = DispatchTouchEvent(*it, async_dispatch_events);
     if (status.IsError())
       return status;
   }
   return Status(kOk);
 }
 
-Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
+Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events,
+                                      bool async_dispatch_events) {
+  Status status(kOk);
   for (auto it = events.begin(); it != events.end(); ++it) {
     base::DictionaryValue params;
     params.SetString("type", GetAsString(it->type));
@@ -597,11 +624,18 @@ Status WebViewImpl::DispatchKeyEvents(const std::list<KeyEvent>& events) {
       else
         params.SetInteger("location", it->location);
     }
-    Status status = client_->SendCommand("Input.dispatchKeyEvent", params);
+
+    if (async_dispatch_events) {
+      status = client_->SendCommandAndIgnoreResponse("Input.dispatchKeyEvent",
+                                                     params);
+    } else {
+      status = client_->SendCommand("Input.dispatchKeyEvent", params);
+    }
+
     if (status.IsError())
       return status;
   }
-  return Status(kOk);
+  return status;
 }
 
 Status WebViewImpl::GetCookies(std::unique_ptr<base::ListValue>* cookies,
@@ -1047,6 +1081,10 @@ Status WebViewImpl::IsNotPendingNavigation(const std::string& frame_id,
 
   *is_not_pending = !is_pending;
   return Status(kOk);
+}
+
+bool WebViewImpl::IsNonBlocking() {
+  return navigation_tracker_->IsNonBlocking();
 }
 
 bool WebViewImpl::IsOOPIF(const std::string& frame_id) {

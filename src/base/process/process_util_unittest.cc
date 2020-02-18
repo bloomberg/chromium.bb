@@ -30,7 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/multiprocess_test.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
@@ -476,6 +476,22 @@ TEST_F(ProcessUtilTest, HandlesToTransferClosedOnBadPathToMapFailure) {
   EXPECT_EQ(ZX_ERR_BAD_HANDLE, zx_handle_close(handles[0].get()));
   ignore_result(handles[0].release());
 }
+
+TEST_F(ProcessUtilTest, FuchsiaProcessNameSuffix) {
+  LaunchOptions options;
+  options.process_name_suffix = "#test";
+  Process process(SpawnChildWithOptions("SimpleChildProcess", options));
+
+  char name[256] = {};
+  size_t name_size = sizeof(name);
+  zx_status_t status =
+      zx_object_get_property(process.Handle(), ZX_PROP_NAME, name, name_size);
+  ASSERT_EQ(status, ZX_OK);
+  EXPECT_EQ(std::string(name),
+            CommandLine::ForCurrentProcess()->GetProgram().BaseName().value() +
+                "#test");
+}
+
 #endif  // defined(OS_FUCHSIA)
 
 // On Android SpawnProcess() doesn't use LaunchProcess() and doesn't support
@@ -751,7 +767,7 @@ TEST_F(ProcessUtilTest, GetTerminationStatusSigTerm) {
 #endif  // defined(OS_POSIX)
 
 TEST_F(ProcessUtilTest, EnsureTerminationUndying) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
 
   Process child_process = SpawnChild("process_util_test_never_die");
   ASSERT_TRUE(child_process.IsValid());
@@ -784,7 +800,7 @@ MULTIPROCESS_TEST_MAIN(process_util_test_never_die) {
 }
 
 TEST_F(ProcessUtilTest, EnsureTerminationGracefulExit) {
-  test::ScopedTaskEnvironment task_environment;
+  test::TaskEnvironment task_environment;
 
   Process child_process = SpawnChild("process_util_test_die_immediately");
   ASSERT_TRUE(child_process.IsValid());

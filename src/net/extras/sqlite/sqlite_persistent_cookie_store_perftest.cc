@@ -15,7 +15,7 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/test/perf_time_logger.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
@@ -66,8 +66,8 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
   }
 
   void Load() {
-    store_->Load(base::Bind(&SQLitePersistentCookieStorePerfTest::OnLoaded,
-                            base::Unretained(this)),
+    store_->Load(base::BindOnce(&SQLitePersistentCookieStorePerfTest::OnLoaded,
+                                base::Unretained(this)),
                  NetLogWithSource());
     loaded_event_.Wait();
   }
@@ -102,7 +102,7 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     store_ = nullptr;
 
     // Flush ThreadPool tasks, causing pending commits to run.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     store_ = new SQLitePersistentCookieStore(
         temp_dir_.GetPath().Append(cookie_filename), client_task_runner_,
@@ -141,11 +141,11 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
  protected:
   int seed_multiple_;
   base::Time test_start_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::WaitableEvent loaded_event_;
   base::WaitableEvent key_loaded_event_;
   std::vector<std::unique_ptr<CanonicalCookie>> cookies_;
@@ -162,8 +162,8 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
     StartPerfMeasurement();
     store_->LoadCookiesForKey(
         domain_name,
-        base::Bind(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
-                   base::Unretained(this)));
+        base::BindOnce(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
+                       base::Unretained(this)));
     key_loaded_event_.Wait();
     EndPerfMeasurement();
 

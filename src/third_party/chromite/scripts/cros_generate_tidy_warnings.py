@@ -64,12 +64,8 @@ class GenerateTidyWarnings(object):
   def _ParseLogFiles(self):
     log_files = self._FindLogFiles(self.options.logs_dir)
     for f in log_files:
-      cmd = [PARSING_SCRIPT, '--log_file', f, '--output_dir', self.warnings_dir]
-      cros_build_lib.RunCommand(cmd, cwd=WORKING_DIR, enter_chroot=True)
-      # Copy log file to output directory.  We want the log files in the
-      # tarball, for now, in case we ever need to re-process them. (A
-      # possibility, since the final dashboard details have not been worked out
-      # yet.)
+      # Copy log file to output directory because this is what we want to
+      # upload to gs
       shutil.copy2(f, self.warnings_dir)
 
   def _CreateTarball(self):

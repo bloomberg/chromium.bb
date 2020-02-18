@@ -7,6 +7,7 @@
 
 #include "modules/skottie/src/text/RangeSelector.h"
 
+#include "include/core/SkCubicMap.h"
 #include "modules/skottie/src/SkottieJson.h"
 #include "modules/skottie/src/SkottieValue.h"
 
@@ -29,8 +30,12 @@ T ParseEnum(const TArray& arr, const skjson::Value& jenum,
         return arr[idx - 1];
     }
 
-    abuilder->log(Logger::Level::kWarning, nullptr,
-                  "Ignoring unknown range selector %s '%d'", warn_name, idx);
+    // For animators without selectors, BM emits dummy selector entries with 0 (inval) props.
+    // Supress warnings for these as they are "normal".
+    if (idx != 0) {
+        abuilder->log(Logger::Level::kWarning, nullptr,
+                      "Ignoring unknown range selector %s '%d'", warn_name, idx);
+    }
 
     static_assert(SK_ARRAY_COUNT(arr) > 0, "");
     return arr[0];
@@ -135,48 +140,114 @@ private:
     size_t                         fDomainSize;
 };
 
-// Each shape generator is defined in a normalized domain, over three |t| intervals:
-//
-//   (-inf..0) -> lo (constant value)
-//   [0..1]    -> func(t)
-//   (1..+inf) -> hi (constant value)
-//
+
+/*
+  Selector shapes can be generalized as a signal generator with the following
+  parameters/properties:
+
+
+  1  +               -------------------------
+     |              /.           .           .\
+     |             / .           .           . \
+     |            /  .           .           .  \
+     |           /   .           .           .   \
+     |          /    .           .           .    \
+     |         /     .           .           .     \
+     |        /      .           .           .      \
+     |       /       .           .           .       \
+  0  +----------------------------------------------------------
+            ^ <----->            ^            <-----> ^
+           e0   crs             sp              crs    e1
+
+
+    * e0, e1: left/right edges
+    * sp    : symmetry/reflection point (sp == (e0+e1)/2)
+    * crs   : cubic ramp size (transitional portion mapped using a Bezier easing function)
+
+  Based on these,
+
+            |  0                  , t <= e0
+            |
+            |  Bez((t-e0)/crs)    , e0 < t < e0+crs
+     F(t) = |
+            |  1                  , e0 + crs <= t <= sp
+            |
+            |  F(reflect(t,sp))   , t > sp
+
+
+   Tweaking this function's parameters, we can achieve all range selectors shapes:
+
+     - square    -> e0:    0, e1:    1, crs: 0
+     - ramp up   -> e0:    0, e1: +inf, crs: 1
+     - ramp down -> e0: -inf, e1:    1, crs: 1
+     - triangle  -> e0:    0, e1:    1, crs: 0.5
+     - round     -> e0:    0, e1:    1, crs: 0.5   (nonlinear cubic mapper)
+     - smooth    -> e0:    0, e1:    1, crs: 0.5   (nonlinear cubic mapper)
+
+*/
+
+struct ShapeInfo {
+   SkVector ctrl0,
+            ctrl1;
+   float    e0, e1, crs;
+};
+
+SkVector EaseVec(float ease) {
+    return (ease < 0) ? SkVector{0, -ease} : SkVector{ease, 0};
+}
+
 struct ShapeGenerator {
-    float lo,             // constant value for t < 0
-          hi;             // constant value for t > 1
-    float (*func)(float); // shape generator for t in [0..1]
+    SkCubicMap shape_mapper,
+                ease_mapper;
+    float      e0, e1, crs;
 
-    float operator()(float t) const { return this->func(t); }
+    ShapeGenerator(const ShapeInfo& sinfo, float ease_lo, float ease_hi)
+        : shape_mapper(sinfo.ctrl0, sinfo.ctrl1)
+        , ease_mapper(EaseVec(ease_lo), SkVector{1,1} - EaseVec(ease_hi))
+        , e0(sinfo.e0)
+        , e1(sinfo.e1)
+        , crs(sinfo.crs) {}
+
+    float operator()(float t) const {
+        // SkCubicMap clamps its input, so we can let it all hang out.
+        t = std::min(t - e0, e1 - t);
+        t = sk_ieee_float_divide(t, crs);
+
+        return ease_mapper.computeYFromX(shape_mapper.computeYFromX(t));
+    }
 };
 
-static const ShapeGenerator gShapeGenerators[] = {
-    // Shape::kSquare
-    { 0, 0, [](float  )->float { return 1.0f; }},
-    // Shape::kRampUp
-    { 0, 1, [](float t)->float { return t; }},
-    // Shape::kRampDown
-    { 1, 0, [](float t)->float { return 1 - t; }},
-    // Shape::kTriangle
-    { 0, 0, [](float t)->float { return 1 - std::abs(0.5f - t) / 0.5f; }},
-    // Shape::kRound
-    { 0, 0, [](float t)->float {
-                                 static constexpr auto cx  = 0.5f,
-                                                       cx2 = cx * cx;
-                                 return std::sqrt(cx2 - (t - cx) * (t - cx));
-    }},
-    // Shape::kSmooth
-    { 0, 0, [](float t)->float { return (std::cos(SK_FloatPI * (1 + 2 * t)) + 1) * 0.5f; }},
+static constexpr ShapeInfo gShapeInfo[] = {
+    { {0  ,0  }, {1  ,1}, 0                       , 1               , 0.0f }, // Shape::kSquare
+    { {0  ,0  }, {1  ,1}, 0                       , SK_FloatInfinity, 1.0f }, // Shape::kRampUp
+    { {0  ,0  }, {1  ,1}, SK_FloatNegativeInfinity, 1               , 1.0f }, // Shape::kRampDown
+    { {0  ,0  }, {1  ,1}, 0                       , 1               , 0.5f }, // Shape::kTriangle
+    { {0  ,.5f}, {.5f,1}, 0                       , 1               , 0.5f }, // Shape::kRound
+    { {.5f,0  }, {.5f,1}, 0                       , 1               , 0.5f }, // Shape::kSmooth
 };
-
-float Lerp(float a, float b, float t) { return a + (b - a) * t; }
 
 } // namespace
 
 sk_sp<RangeSelector> RangeSelector::Make(const skjson::ObjectValue* jrange,
-                                         const AnimationBuilder* abuilder,
-                                         AnimatorScope *ascope) {
+                                         const AnimationBuilder* abuilder) {
     if (!jrange) {
         return nullptr;
+    }
+
+    enum : int32_t {
+             kRange_SelectorType = 0,
+        kExpression_SelectorType = 1,
+
+        // kWiggly_SelectorType = ? (not exported)
+    };
+
+    {
+        const auto type = ParseDefault<int>((*jrange)["t"], kRange_SelectorType);
+        if (type != kRange_SelectorType) {
+            abuilder->log(Logger::Level::kWarning, nullptr,
+                          "Ignoring unsupported selector type '%d'", type);
+            return nullptr;
+        }
     }
 
     static constexpr Units gUnitMap[] = {
@@ -209,23 +280,40 @@ sk_sp<RangeSelector> RangeSelector::Make(const skjson::ObjectValue* jrange,
                               ParseEnum<Domain>(gDomainMap, (*jrange)["b" ], abuilder, "domain"),
                               ParseEnum<Mode>  (gModeMap  , (*jrange)["m" ], abuilder, "mode"  ),
                               ParseEnum<Shape> (gShapeMap , (*jrange)["sh"], abuilder, "shape" )));
+    auto* raw_selector = selector.get();
 
-    abuilder->bindProperty<ScalarValue>((*jrange)["s"], ascope,
-        [selector](const ScalarValue& s) {
-            selector->fStart = s;
+    abuilder->bindProperty<ScalarValue>((*jrange)["s"],
+        [raw_selector](const ScalarValue& s) {
+            raw_selector->fStart = s;
         });
-    abuilder->bindProperty<ScalarValue>((*jrange)["e"], ascope,
-        [selector](const ScalarValue& e) {
-            selector->fEnd = e;
+    abuilder->bindProperty<ScalarValue>((*jrange)["e"],
+        [raw_selector](const ScalarValue& e) {
+            raw_selector->fEnd = e;
         });
-    abuilder->bindProperty<ScalarValue>((*jrange)["o"], ascope,
-        [selector](const ScalarValue& o) {
-            selector->fOffset = o;
+    abuilder->bindProperty<ScalarValue>((*jrange)["o"],
+        [raw_selector](const ScalarValue& o) {
+            raw_selector->fOffset = o;
         });
-    abuilder->bindProperty<ScalarValue>((*jrange)["a"], ascope,
-        [selector](const ScalarValue& a) {
-            selector->fAmount = a;
+    abuilder->bindProperty<ScalarValue>((*jrange)["a"],
+        [raw_selector](const ScalarValue& a) {
+            raw_selector->fAmount = a;
         });
+    abuilder->bindProperty<ScalarValue>((*jrange)["ne"],
+        [raw_selector](const ScalarValue& ne) {
+            raw_selector->fEaseLo = ne;
+        });
+    abuilder->bindProperty<ScalarValue>((*jrange)["xe"],
+        [raw_selector](const ScalarValue& xe) {
+            raw_selector->fEaseHi = xe;
+        });
+
+    // Optional square "smoothness" prop.
+    if (selector->fShape == Shape::kSquare) {
+        abuilder->bindProperty<ScalarValue>((*jrange)["sm"],
+            [selector](const ScalarValue& sm) {
+                selector->fSmoothness = sm;
+            });
+    }
 
     return selector;
 }
@@ -272,9 +360,6 @@ std::tuple<float, float> RangeSelector::resolve(size_t len) const {
  *   2) A shape generator is mapped to this interval and applied across the whole domain, yielding
  *      coverage values in [0..1].
  *
- *   2') When the interval extremes don't coincide with fragment boundaries, the corresponding
- *      fragment coverage is further modulated for partial interval overlap.
- *
  *   3) The coverage is then scaled by the |amount| parameter.
  *
  *   4) Finally, the resulting coverage is accumulated to existing fragment coverage based on
@@ -287,112 +372,41 @@ void RangeSelector::modulateCoverage(const TextAnimator::DomainMaps& maps,
         return;
     }
 
-    // Amount is percentage based [-100% .. 100%].
-    const auto amount = SkTPin<float>(fAmount / 100, -1, 1);
+    // Amount, ease-low and ease-high are percentage-based [-100% .. 100%].
+    const auto amount = SkTPin<float>(fAmount / 100, -1, 1),
+              ease_lo = SkTPin<float>(fEaseLo / 100, -1, 1),
+              ease_hi = SkTPin<float>(fEaseHi / 100, -1, 1);
 
-    // First, resolve to a float range in the given domain.
-    const auto f_range = this->resolve(coverage_proc.size());
+    // Resolve to a float range in the given domain.
+    const auto range = this->resolve(coverage_proc.size());
+    auto          r0 = std::get<0>(range),
+                 len = std::max(std::get<1>(range) - r0, std::numeric_limits<float>::epsilon());
 
-    // f_range pinned to [0..domain_size].
-    const auto f_dom_size = static_cast<float>(coverage_proc.size()),
-                       f0 = SkTPin(std::get<0>(f_range), 0.0f, f_dom_size),
-                       f1 = SkTPin(std::get<1>(f_range), 0.0f, f_dom_size);
+    SkASSERT(static_cast<size_t>(fShape) < SK_ARRAY_COUNT(gShapeInfo));
+    ShapeGenerator gen(gShapeInfo[static_cast<size_t>(fShape)], ease_lo, ease_hi);
 
-    SkASSERT(static_cast<size_t>(fShape) < SK_ARRAY_COUNT(gShapeGenerators));
-    const auto& generator = gShapeGenerators[static_cast<size_t>(fShape)];
+    if (fShape == Shape::kSquare) {
+        // Canonical square generators have collapsed ramps, but AE square selectors have
+        // an additional "smoothness" property (0..1) which introduces a non-zero transition.
+        // We achieve this by moving the range edges outward by |smoothness|/2, and adjusting
+        // the generator cubic ramp size.
 
-    // Blit constant coverage outside the shape.
-    {
-        // Constant coverage count before the shape left edge, and after the right edge.
-        const auto count_lo = static_cast<size_t>(std::floor(f0)),
-                   count_hi = static_cast<size_t>(f_dom_size - std::ceil (f1));
-        SkASSERT(count_lo <= coverage_proc.size());
-        SkASSERT(count_hi <= coverage_proc.size());
+        // smoothness is percentage-based [0..100]
+        const auto smoothness = SkTPin<float>(fSmoothness / 100, 0, 1);
 
-        coverage_proc(amount * generator.lo, 0                              , count_lo);
-        coverage_proc(amount * generator.hi, coverage_proc.size() - count_hi, count_hi);
+        r0  -= smoothness / 2;
+        len += smoothness;
 
-        if (count_lo == coverage_proc.size() || count_hi == coverage_proc.size()) {
-            // The shape is completely outside the domain - we're done.
-            return;
-        }
+        gen.crs += smoothness / len;
     }
 
-    // Integral/index range.
-    const auto i0 = std::min<size_t>(f0, coverage_proc.size() - 1),
-               i1 = std::min<size_t>(f1, coverage_proc.size() - 1);
-    SkASSERT(i0 <= i1);
+    SkASSERT(len > 0);
+    const auto dt = 1 / len;
+          auto  t = (0.5f - r0) / len; // sampling bias: mid-unit
 
-    const auto range_span = std::get<1>(f_range) - std::get<0>(f_range);
-    if (SkScalarNearlyZero(range_span)) {
-        // Empty range - the shape is collapsed. Modulate with lo/hi weighted average.
-        SkASSERT(i0 == i1);
-        const auto ratio = f0 - i0,
-                coverage = Lerp(generator.lo, generator.hi, ratio);
-        coverage_proc(amount * coverage, i0, 1);
-
-        return;
+    for (size_t i = 0; i < coverage_proc.size(); ++i, t += dt) {
+        coverage_proc(amount * gen(t), i, 1);
     }
-
-    // At this point the clamped range maps to the index interval [i0..i1],
-    // with the left/right edges falling within i0/i1, respectively:
-    //
-    //    -----------  ------------------  ------------------  -----------
-    //   |  0 |    | .. |    | i0 |    | .. |    | i1 |    | .. |    |  N |
-    //    -----------  ------------------  ------------------  -----------
-    //                          ^                   ^
-    //                          [___________________]
-    //
-    //                         f0                   f1
-    //
-    // Note: i0 and i1 can have partial coverage, and also i0 may be the same as i1.
-
-    // Computes partial coverage when one or both range edges fall within the same index [i].
-    const auto partial_coverage = [&](float shape_val, float i) {
-        // At least one of the range edges falls within the current fragment.
-        SkASSERT(SkScalarNearlyEqual(i, std::round(i)));
-        SkASSERT((i <= f0 && f0 <= i + 1) || (i <= f1 && f1 <= i + 1));
-
-        // The resulting coverage is a three-way weighted average
-        // of the three range segments (lo, shape_val, hi).
-        const auto lo_weight = std::max(f0 - i, 0.0f),
-                   mi_weight = std::min(f1 - i, 1.0f) - lo_weight,
-                   hi_weight = std::max(i + 1 - f1, 0.0f);
-
-        SkASSERT(0 <= lo_weight && lo_weight <= 1);
-        SkASSERT(0 <= mi_weight && mi_weight <= 1);
-        SkASSERT(0 <= hi_weight && hi_weight <= 1);
-        SkASSERT(SkScalarNearlyEqual(lo_weight + mi_weight + hi_weight, 1));
-
-        return lo_weight * generator.lo +
-               mi_weight * shape_val +
-               hi_weight * generator.hi;
-    };
-
-    // The shape domain [0..1] is mapped to the range.
-    const auto dt = 1 / range_span;
-          // note: we sample mid-fragment
-          auto  t = (i0 + 0.5f - std::get<0>(f_range)) / range_span;
-
-    // [i0] may have partial coverage.
-    coverage_proc(amount * partial_coverage(generator(std::max(t, 0.0f)), i0), i0, 1);
-
-    // If the whole range falls within a single fragment, we're done.
-    if (i0 == i1) {
-        return;
-    }
-
-    t += dt;
-
-    // [i0+1..i1-1] has full coverage.
-    for (auto i = i0 + 1; i < i1; ++i) {
-        SkASSERT(0 <= t && t <= 1);
-        coverage_proc(amount * generator(t), i, 1);
-        t += dt;
-    }
-
-    // [i1] may have partial coverage.
-    coverage_proc(amount * partial_coverage(generator(std::min(t, 1.0f)), i1), i1, 1);
 }
 
 } // namespace internal

@@ -147,6 +147,8 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/push_messaging",
     "//third_party/blink/renderer/modules/quota",
     "//third_party/blink/renderer/modules/remoteplayback",
+    "//third_party/blink/renderer/modules/scheduler",
+    "//third_party/blink/renderer/modules/screen_enumeration",
     "//third_party/blink/renderer/modules/screen_orientation",
     "//third_party/blink/renderer/modules/sensor",
     "//third_party/blink/renderer/modules/service_worker",
@@ -179,9 +181,11 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/bindings/modules/v8:bindings_modules_origin_trial_features",
     "//third_party/blink/renderer/core",
     "//third_party/icu",
+    "//third_party/webrtc/api/audio:aec3_config_json",
     "//third_party/webrtc/pc:libjingle_peerconnection",
     "//third_party/webrtc/rtc_base:rtc_base",
     "//third_party/webrtc_overrides:init_webrtc",
+    "//third_party/webrtc_overrides:task_queue_factory",
     "//third_party/zlib",
   ]
 
@@ -230,8 +234,8 @@ jumbo_source_set("modules_testing") {
     "service_worker/testing/internals_service_worker.h",
     "speech/testing/internals_speech_synthesis.cc",
     "speech/testing/internals_speech_synthesis.h",
-    "speech/testing/platform_speech_synthesizer_mock.cc",
-    "speech/testing/platform_speech_synthesizer_mock.h",
+    "speech/testing/mojom_speech_synthesis_mock.cc",
+    "speech/testing/mojom_speech_synthesis_mock.h",
     "vibration/testing/internals_vibration.cc",
     "vibration/testing/internals_vibration.h",
     "webaudio/testing/internals_web_audio.cc",
@@ -336,18 +340,24 @@ jumbo_source_set("unit_tests") {
     "mediarecorder/audio_track_recorder_unittest.cc",
     "mediarecorder/media_recorder_handler_unittest.cc",
     "mediarecorder/video_track_recorder_unittest.cc",
+    "mediasession/media_session_test.cc",
     "mediastream/media_constraints_test.cc",
     "mediastream/media_devices_test.cc",
+    "mediastream/media_stream_audio_processor_test.cc",
+    "mediastream/media_stream_constraints_util_audio_test.cc",
     "mediastream/media_stream_constraints_util_sets_test.cc",
     "mediastream/media_stream_constraints_util_test.cc",
     "mediastream/media_stream_constraints_util_video_content_test.cc",
     "mediastream/media_stream_constraints_util_video_device_test.cc",
+    "mediastream/media_stream_device_observer_test.cc",
     "mediastream/media_stream_video_capturer_source_test.cc",
     "mediastream/media_stream_video_renderer_sink_test.cc",
     "mediastream/media_stream_video_source_test.cc",
     "mediastream/media_stream_video_track_test.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.cc",
     "mediastream/mock_mojo_media_stream_dispatcher_host.h",
+    "mediastream/processed_local_audio_source_test.cc",
+    "mediastream/user_media_client_test.cc",
     "mediastream/video_track_adapter_unittest.cc",
     "mediastream/webaudio_media_stream_audio_sink_test.cc",
     "mediastream/webmediaplayer_ms_test.cc",
@@ -414,7 +424,12 @@ jumbo_source_set("unit_tests") {
     "webdatabase/quota_tracker_test.cc",
     "webshare/navigator_share_test.cc",
     "websockets/dom_websocket_test.cc",
+    "websockets/mock_websocket_channel.cc",
+    "websockets/mock_websocket_channel.h",
     "websockets/websocket_channel_impl_test.cc",
+    "websockets/websocket_common_test.cc",
+    "websockets/websocket_message_chunk_accumulator_test.cc",
+    "websockets/websocket_stream_test.cc",
     "worklet/animation_and_paint_worklet_thread_test.cc",
     "worklet/worklet_thread_test_common.cc",
     "worklet/worklet_thread_test_common.h",
@@ -422,6 +437,10 @@ jumbo_source_set("unit_tests") {
     "xr/xr_test_utils.cc",
     "xr/xr_view_test.cc",
   ]
+
+  if (is_android) {
+    sources += [ "payments/skip_to_gpay_utils_test.cc" ]
+  }
 
   if (is_android && notouch_build) {
     sources += [
@@ -443,13 +462,14 @@ jumbo_source_set("unit_tests") {
     "//media:test_support",
     "//net:quic_test_tools",
     "//services/device/public/cpp:test_support",
-    "//services/viz/public/interfaces:interfaces_blink",
+    "//services/viz/public/mojom:mojom_blink",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/blink/public:blink_headers",
     "//third_party/blink/renderer/core",
     "//third_party/blink/renderer/modules/gamepad:unit_tests",
+    "//third_party/blink/renderer/modules/hid:unit_tests",
     "//third_party/blink/renderer/modules/storage:unit_tests",
     "//third_party/blink/renderer/platform",
     "//third_party/blink/renderer/platform/wtf",
@@ -460,12 +480,19 @@ jumbo_source_set("unit_tests") {
 
   data_deps = [
     ":accessibility_unittests_data",
+    ":mediastream_unittests_data",
   ]
 }
 
 group("accessibility_unittests_data") {
   data = [
     "accessibility/testing/data/",
+  ]
+}
+
+group("mediastream_unittests_data") {
+  data = [
+    "//media/test/data/",
   ]
 }
 

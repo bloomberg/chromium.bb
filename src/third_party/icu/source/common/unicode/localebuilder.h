@@ -4,6 +4,7 @@
 #define __LOCALEBUILDER_H__
 
 #include "unicode/locid.h"
+#include "unicode/localematcher.h"
 #include "unicode/stringpiece.h"
 #include "unicode/uobject.h"
 #include "unicode/utypes.h"
@@ -277,6 +278,10 @@ public:
     Locale build(UErrorCode& status);
 
 private:
+    friend class LocaleMatcher::Result;
+
+    void copyExtensionsFrom(const Locale& src, UErrorCode& errorCode);
+
     UErrorCode status_;
     char language_[9];
     char script_[5];

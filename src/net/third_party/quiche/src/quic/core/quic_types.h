@@ -267,6 +267,10 @@ enum QuicIetfFrameType : uint8_t {
   IETF_EXTENSION_MESSAGE_NO_LENGTH = 0x20,
   IETF_EXTENSION_MESSAGE = 0x21,
 };
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(std::ostream& os,
+                                             const QuicIetfFrameType& c);
+QUIC_EXPORT_PRIVATE std::string QuicIetfFrameTypeString(QuicIetfFrameType t);
+
 // Masks for the bits that indicate the frame is a Stream frame vs the
 // bits used as flags.
 #define IETF_STREAM_FRAME_TYPE_MASK 0xfffffffffffffff8
@@ -298,7 +302,7 @@ const QuicVariableLengthIntegerLength kQuicDefaultLongHeaderLengthLength =
 enum QuicPacketNumberLength : uint8_t {
   PACKET_1BYTE_PACKET_NUMBER = 1,
   PACKET_2BYTE_PACKET_NUMBER = 2,
-  PACKET_3BYTE_PACKET_NUMBER = 3,  // Used in version > QUIC_VERSION_44.
+  PACKET_3BYTE_PACKET_NUMBER = 3,  // Used in versions 45+.
   PACKET_4BYTE_PACKET_NUMBER = 4,
   IETF_MAX_PACKET_NUMBER_LENGTH = 4,
   // TODO(rch): Remove this when we remove QUIC_VERSION_39.
@@ -519,9 +523,27 @@ enum QuicIetfTransportErrorCodes : uint16_t {
   PROTOCOL_VIOLATION = 0xA,
   INVALID_MIGRATION = 0xC,
 };
+QUIC_EXPORT_PRIVATE std::string QuicIetfTransportErrorCodeString(
+    QuicIetfTransportErrorCodes c);
+
 QUIC_EXPORT_PRIVATE std::ostream& operator<<(
     std::ostream& os,
     const QuicIetfTransportErrorCodes& c);
+
+// Returns the mapping of the QuicErrorCode to an IETF TransportErrorCode. If
+// first element of the pair is false, it means that an IETF Application Close
+// should be done instead.
+
+struct QuicErrorCodeToIetfMapping {
+  bool is_transport_close_;
+  union {
+    uint64_t application_error_code_;
+    QuicIetfTransportErrorCodes transport_error_code_;
+  };
+};
+
+QUIC_EXPORT_PRIVATE QuicErrorCodeToIetfMapping
+QuicErrorCodeToTransportErrorCode(QuicErrorCode error);
 
 // Please note, this value cannot used directly for packet serialization.
 enum QuicLongHeaderType : uint8_t {
@@ -623,6 +645,20 @@ enum AckResult {
                             // cannot be processed by the peer.
   PACKETS_ACKED_IN_WRONG_PACKET_NUMBER_SPACE,
 };
+
+// There are three different forms of CONNECTION_CLOSE.
+typedef enum QuicConnectionCloseType {
+  GOOGLE_QUIC_CONNECTION_CLOSE = 0,
+  IETF_QUIC_TRANSPORT_CONNECTION_CLOSE = 1,
+  IETF_QUIC_APPLICATION_CONNECTION_CLOSE = 2
+} QuicConnectionCloseType;
+
+QUIC_EXPORT_PRIVATE std::ostream& operator<<(
+    std::ostream& os,
+    const QuicConnectionCloseType type);
+
+QUIC_EXPORT_PRIVATE std::string QuicConnectionCloseTypeString(
+    QuicConnectionCloseType type);
 
 }  // namespace quic
 

@@ -11,7 +11,7 @@
 namespace gl
 {
 
-bool ValidateBindTextureUnit(Context *context, GLuint unit, GLuint texture)
+bool ValidateBindTextureUnit(Context *context, GLuint unit, TextureID texture)
 {
     return true;
 }
@@ -33,13 +33,13 @@ bool ValidateBlitNamedFramebuffer(Context *context,
     return true;
 }
 
-bool ValidateCheckNamedFramebufferStatus(Context *context, GLuint framebuffer, GLenum target)
+bool ValidateCheckNamedFramebufferStatus(Context *context, FramebufferID framebuffer, GLenum target)
 {
     return true;
 }
 
 bool ValidateClearNamedBufferData(Context *context,
-                                  GLuint buffer,
+                                  BufferID buffer,
                                   GLenum internalformat,
                                   GLenum format,
                                   GLenum type,
@@ -49,7 +49,7 @@ bool ValidateClearNamedBufferData(Context *context,
 }
 
 bool ValidateClearNamedBufferSubData(Context *context,
-                                     GLuint buffer,
+                                     BufferID buffer,
                                      GLenum internalformat,
                                      GLintptr offset,
                                      GLsizeiptr size,
@@ -61,7 +61,7 @@ bool ValidateClearNamedBufferSubData(Context *context,
 }
 
 bool ValidateClearNamedFramebufferfi(Context *context,
-                                     GLuint framebuffer,
+                                     FramebufferID framebuffer,
                                      GLenum buffer,
                                      GLint drawbuffer,
                                      GLfloat depth,
@@ -71,7 +71,7 @@ bool ValidateClearNamedFramebufferfi(Context *context,
 }
 
 bool ValidateClearNamedFramebufferfv(Context *context,
-                                     GLuint framebuffer,
+                                     FramebufferID framebuffer,
                                      GLenum buffer,
                                      GLint drawbuffer,
                                      const GLfloat *value)
@@ -80,7 +80,7 @@ bool ValidateClearNamedFramebufferfv(Context *context,
 }
 
 bool ValidateClearNamedFramebufferiv(Context *context,
-                                     GLuint framebuffer,
+                                     FramebufferID framebuffer,
                                      GLenum buffer,
                                      GLint drawbuffer,
                                      const GLint *value)
@@ -89,7 +89,7 @@ bool ValidateClearNamedFramebufferiv(Context *context,
 }
 
 bool ValidateClearNamedFramebufferuiv(Context *context,
-                                      GLuint framebuffer,
+                                      FramebufferID framebuffer,
                                       GLenum buffer,
                                       GLint drawbuffer,
                                       const GLuint *value)
@@ -103,7 +103,7 @@ bool ValidateClipControl(Context *context, GLenum origin, GLenum depth)
 }
 
 bool ValidateCompressedTextureSubImage1D(Context *context,
-                                         GLuint texture,
+                                         TextureID texture,
                                          GLint level,
                                          GLint xoffset,
                                          GLsizei width,
@@ -115,7 +115,7 @@ bool ValidateCompressedTextureSubImage1D(Context *context,
 }
 
 bool ValidateCompressedTextureSubImage2D(Context *context,
-                                         GLuint texture,
+                                         TextureID texture,
                                          GLint level,
                                          GLint xoffset,
                                          GLint yoffset,
@@ -129,7 +129,7 @@ bool ValidateCompressedTextureSubImage2D(Context *context,
 }
 
 bool ValidateCompressedTextureSubImage3D(Context *context,
-                                         GLuint texture,
+                                         TextureID texture,
                                          GLint level,
                                          GLint xoffset,
                                          GLint yoffset,
@@ -155,7 +155,7 @@ bool ValidateCopyNamedBufferSubData(Context *context,
 }
 
 bool ValidateCopyTextureSubImage1D(Context *context,
-                                   GLuint texture,
+                                   TextureID texture,
                                    GLint level,
                                    GLint xoffset,
                                    GLint x,
@@ -166,7 +166,7 @@ bool ValidateCopyTextureSubImage1D(Context *context,
 }
 
 bool ValidateCopyTextureSubImage2D(Context *context,
-                                   GLuint texture,
+                                   TextureID texture,
                                    GLint level,
                                    GLint xoffset,
                                    GLint yoffset,
@@ -179,7 +179,7 @@ bool ValidateCopyTextureSubImage2D(Context *context,
 }
 
 bool ValidateCopyTextureSubImage3D(Context *context,
-                                   GLuint texture,
+                                   TextureID texture,
                                    GLint level,
                                    GLint xoffset,
                                    GLint yoffset,
@@ -192,7 +192,7 @@ bool ValidateCopyTextureSubImage3D(Context *context,
     return true;
 }
 
-bool ValidateCreateBuffers(Context *context, GLsizei n, GLuint *buffers)
+bool ValidateCreateBuffers(Context *context, GLsizei n, BufferID *buffers)
 {
     return true;
 }
@@ -212,7 +212,7 @@ bool ValidateCreateQueries(Context *context, GLenum target, GLsizei n, GLuint *i
     return true;
 }
 
-bool ValidateCreateRenderbuffers(Context *context, GLsizei n, GLuint *renderbuffers)
+bool ValidateCreateRenderbuffers(Context *context, GLsizei n, RenderbufferID *renderbuffers)
 {
     return true;
 }
@@ -232,36 +232,36 @@ bool ValidateCreateTransformFeedbacks(Context *context, GLsizei n, GLuint *ids)
     return true;
 }
 
-bool ValidateCreateVertexArrays(Context *context, GLsizei n, GLuint *arrays)
+bool ValidateCreateVertexArrays(Context *context, GLsizei n, VertexArrayID *arrays)
 {
     return true;
 }
 
-bool ValidateDisableVertexArrayAttrib(Context *context, GLuint vaobj, GLuint index)
+bool ValidateDisableVertexArrayAttrib(Context *context, VertexArrayID vaobj, GLuint index)
 {
     return true;
 }
 
-bool ValidateEnableVertexArrayAttrib(Context *context, GLuint vaobj, GLuint index)
+bool ValidateEnableVertexArrayAttrib(Context *context, VertexArrayID vaobj, GLuint index)
 {
     return true;
 }
 
 bool ValidateFlushMappedNamedBufferRange(Context *context,
-                                         GLuint buffer,
+                                         BufferID buffer,
                                          GLintptr offset,
                                          GLsizeiptr length)
 {
     return true;
 }
 
-bool ValidateGenerateTextureMipmap(Context *context, GLuint texture)
+bool ValidateGenerateTextureMipmap(Context *context, TextureID texture)
 {
     return true;
 }
 
 bool ValidateGetCompressedTextureImage(Context *context,
-                                       GLuint texture,
+                                       TextureID texture,
                                        GLint level,
                                        GLsizei bufSize,
                                        void *pixels)
@@ -270,7 +270,7 @@ bool ValidateGetCompressedTextureImage(Context *context,
 }
 
 bool ValidateGetCompressedTextureSubImage(Context *context,
-                                          GLuint texture,
+                                          TextureID texture,
                                           GLint level,
                                           GLint xoffset,
                                           GLint yoffset,
@@ -290,25 +290,28 @@ bool ValidateGetGraphicsResetStatus(Context *context)
 }
 
 bool ValidateGetNamedBufferParameteri64v(Context *context,
-                                         GLuint buffer,
+                                         BufferID buffer,
                                          GLenum pname,
                                          GLint64 *params)
 {
     return true;
 }
 
-bool ValidateGetNamedBufferParameteriv(Context *context, GLuint buffer, GLenum pname, GLint *params)
+bool ValidateGetNamedBufferParameteriv(Context *context,
+                                       BufferID buffer,
+                                       GLenum pname,
+                                       GLint *params)
 {
     return true;
 }
 
-bool ValidateGetNamedBufferPointerv(Context *context, GLuint buffer, GLenum pname, void **params)
+bool ValidateGetNamedBufferPointerv(Context *context, BufferID buffer, GLenum pname, void **params)
 {
     return true;
 }
 
 bool ValidateGetNamedBufferSubData(Context *context,
-                                   GLuint buffer,
+                                   BufferID buffer,
                                    GLintptr offset,
                                    GLsizeiptr size,
                                    void *data)
@@ -317,7 +320,7 @@ bool ValidateGetNamedBufferSubData(Context *context,
 }
 
 bool ValidateGetNamedFramebufferAttachmentParameteriv(Context *context,
-                                                      GLuint framebuffer,
+                                                      FramebufferID framebuffer,
                                                       GLenum attachment,
                                                       GLenum pname,
                                                       GLint *params)
@@ -326,7 +329,7 @@ bool ValidateGetNamedFramebufferAttachmentParameteriv(Context *context,
 }
 
 bool ValidateGetNamedFramebufferParameteriv(Context *context,
-                                            GLuint framebuffer,
+                                            FramebufferID framebuffer,
                                             GLenum pname,
                                             GLint *param)
 {
@@ -334,7 +337,7 @@ bool ValidateGetNamedFramebufferParameteriv(Context *context,
 }
 
 bool ValidateGetNamedRenderbufferParameteriv(Context *context,
-                                             GLuint renderbuffer,
+                                             RenderbufferID renderbuffer,
                                              GLenum pname,
                                              GLint *params)
 {
@@ -343,7 +346,7 @@ bool ValidateGetNamedRenderbufferParameteriv(Context *context,
 
 bool ValidateGetQueryBufferObjecti64v(Context *context,
                                       GLuint id,
-                                      GLuint buffer,
+                                      BufferID buffer,
                                       GLenum pname,
                                       GLintptr offset)
 {
@@ -352,7 +355,7 @@ bool ValidateGetQueryBufferObjecti64v(Context *context,
 
 bool ValidateGetQueryBufferObjectiv(Context *context,
                                     GLuint id,
-                                    GLuint buffer,
+                                    BufferID buffer,
                                     GLenum pname,
                                     GLintptr offset)
 {
@@ -361,7 +364,7 @@ bool ValidateGetQueryBufferObjectiv(Context *context,
 
 bool ValidateGetQueryBufferObjectui64v(Context *context,
                                        GLuint id,
-                                       GLuint buffer,
+                                       BufferID buffer,
                                        GLenum pname,
                                        GLintptr offset)
 {
@@ -370,7 +373,7 @@ bool ValidateGetQueryBufferObjectui64v(Context *context,
 
 bool ValidateGetQueryBufferObjectuiv(Context *context,
                                      GLuint id,
-                                     GLuint buffer,
+                                     BufferID buffer,
                                      GLenum pname,
                                      GLintptr offset)
 {
@@ -378,7 +381,7 @@ bool ValidateGetQueryBufferObjectuiv(Context *context,
 }
 
 bool ValidateGetTextureImage(Context *context,
-                             GLuint texture,
+                             TextureID texture,
                              GLint level,
                              GLenum format,
                              GLenum type,
@@ -389,7 +392,7 @@ bool ValidateGetTextureImage(Context *context,
 }
 
 bool ValidateGetTextureLevelParameterfv(Context *context,
-                                        GLuint texture,
+                                        TextureID texture,
                                         GLint level,
                                         GLenum pname,
                                         GLfloat *params)
@@ -398,7 +401,7 @@ bool ValidateGetTextureLevelParameterfv(Context *context,
 }
 
 bool ValidateGetTextureLevelParameteriv(Context *context,
-                                        GLuint texture,
+                                        TextureID texture,
                                         GLint level,
                                         GLenum pname,
                                         GLint *params)
@@ -406,28 +409,37 @@ bool ValidateGetTextureLevelParameteriv(Context *context,
     return true;
 }
 
-bool ValidateGetTextureParameterIiv(Context *context, GLuint texture, GLenum pname, GLint *params)
+bool ValidateGetTextureParameterIiv(Context *context,
+                                    TextureID texture,
+                                    GLenum pname,
+                                    GLint *params)
 {
     return true;
 }
 
-bool ValidateGetTextureParameterIuiv(Context *context, GLuint texture, GLenum pname, GLuint *params)
+bool ValidateGetTextureParameterIuiv(Context *context,
+                                     TextureID texture,
+                                     GLenum pname,
+                                     GLuint *params)
 {
     return true;
 }
 
-bool ValidateGetTextureParameterfv(Context *context, GLuint texture, GLenum pname, GLfloat *params)
+bool ValidateGetTextureParameterfv(Context *context,
+                                   TextureID texture,
+                                   GLenum pname,
+                                   GLfloat *params)
 {
     return true;
 }
 
-bool ValidateGetTextureParameteriv(Context *context, GLuint texture, GLenum pname, GLint *params)
+bool ValidateGetTextureParameteriv(Context *context, TextureID texture, GLenum pname, GLint *params)
 {
     return true;
 }
 
 bool ValidateGetTextureSubImage(Context *context,
-                                GLuint texture,
+                                TextureID texture,
                                 GLint level,
                                 GLint xoffset,
                                 GLint yoffset,
@@ -467,7 +479,7 @@ bool ValidateGetTransformFeedbackiv(Context *context, GLuint xfb, GLenum pname, 
 }
 
 bool ValidateGetVertexArrayIndexed64iv(Context *context,
-                                       GLuint vaobj,
+                                       VertexArrayID vaobj,
                                        GLuint index,
                                        GLenum pname,
                                        GLint64 *param)
@@ -476,7 +488,7 @@ bool ValidateGetVertexArrayIndexed64iv(Context *context,
 }
 
 bool ValidateGetVertexArrayIndexediv(Context *context,
-                                     GLuint vaobj,
+                                     VertexArrayID vaobj,
                                      GLuint index,
                                      GLenum pname,
                                      GLint *param)
@@ -484,7 +496,7 @@ bool ValidateGetVertexArrayIndexediv(Context *context,
     return true;
 }
 
-bool ValidateGetVertexArrayiv(Context *context, GLuint vaobj, GLenum pname, GLint *param)
+bool ValidateGetVertexArrayiv(Context *context, VertexArrayID vaobj, GLenum pname, GLint *param)
 {
     return true;
 }
@@ -600,7 +612,7 @@ bool ValidateGetnTexImage(Context *context,
 }
 
 bool ValidateGetnUniformdv(Context *context,
-                           GLuint program,
+                           ShaderProgramID program,
                            GLint location,
                            GLsizei bufSize,
                            GLdouble *params)
@@ -609,7 +621,7 @@ bool ValidateGetnUniformdv(Context *context,
 }
 
 bool ValidateGetnUniformfv(Context *context,
-                           GLuint program,
+                           ShaderProgramID program,
                            GLint location,
                            GLsizei bufSize,
                            GLfloat *params)
@@ -618,7 +630,7 @@ bool ValidateGetnUniformfv(Context *context,
 }
 
 bool ValidateGetnUniformiv(Context *context,
-                           GLuint program,
+                           ShaderProgramID program,
                            GLint location,
                            GLsizei bufSize,
                            GLint *params)
@@ -627,7 +639,7 @@ bool ValidateGetnUniformiv(Context *context,
 }
 
 bool ValidateGetnUniformuiv(Context *context,
-                            GLuint program,
+                            ShaderProgramID program,
                             GLint location,
                             GLsizei bufSize,
                             GLuint *params)
@@ -636,7 +648,7 @@ bool ValidateGetnUniformuiv(Context *context,
 }
 
 bool ValidateInvalidateNamedFramebufferData(Context *context,
-                                            GLuint framebuffer,
+                                            FramebufferID framebuffer,
                                             GLsizei numAttachments,
                                             const GLenum *attachments)
 {
@@ -644,7 +656,7 @@ bool ValidateInvalidateNamedFramebufferData(Context *context,
 }
 
 bool ValidateInvalidateNamedFramebufferSubData(Context *context,
-                                               GLuint framebuffer,
+                                               FramebufferID framebuffer,
                                                GLsizei numAttachments,
                                                const GLenum *attachments,
                                                GLint x,
@@ -655,13 +667,13 @@ bool ValidateInvalidateNamedFramebufferSubData(Context *context,
     return true;
 }
 
-bool ValidateMapNamedBuffer(Context *context, GLuint buffer, GLenum access)
+bool ValidateMapNamedBuffer(Context *context, BufferID buffer, GLenum access)
 {
     return true;
 }
 
 bool ValidateMapNamedBufferRange(Context *context,
-                                 GLuint buffer,
+                                 BufferID buffer,
                                  GLintptr offset,
                                  GLsizeiptr length,
                                  GLbitfield access)
@@ -670,7 +682,7 @@ bool ValidateMapNamedBufferRange(Context *context,
 }
 
 bool ValidateNamedBufferData(Context *context,
-                             GLuint buffer,
+                             BufferID buffer,
                              GLsizeiptr size,
                              const void *data,
                              GLenum usage)
@@ -679,7 +691,7 @@ bool ValidateNamedBufferData(Context *context,
 }
 
 bool ValidateNamedBufferStorage(Context *context,
-                                GLuint buffer,
+                                BufferID buffer,
                                 GLsizeiptr size,
                                 const void *data,
                                 GLbitfield flags)
@@ -688,7 +700,7 @@ bool ValidateNamedBufferStorage(Context *context,
 }
 
 bool ValidateNamedBufferSubData(Context *context,
-                                GLuint buffer,
+                                BufferID buffer,
                                 GLintptr offset,
                                 GLsizeiptr size,
                                 const void *data)
@@ -696,13 +708,13 @@ bool ValidateNamedBufferSubData(Context *context,
     return true;
 }
 
-bool ValidateNamedFramebufferDrawBuffer(Context *context, GLuint framebuffer, GLenum buf)
+bool ValidateNamedFramebufferDrawBuffer(Context *context, FramebufferID framebuffer, GLenum buf)
 {
     return true;
 }
 
 bool ValidateNamedFramebufferDrawBuffers(Context *context,
-                                         GLuint framebuffer,
+                                         FramebufferID framebuffer,
                                          GLsizei n,
                                          const GLenum *bufs)
 {
@@ -710,40 +722,40 @@ bool ValidateNamedFramebufferDrawBuffers(Context *context,
 }
 
 bool ValidateNamedFramebufferParameteri(Context *context,
-                                        GLuint framebuffer,
+                                        FramebufferID framebuffer,
                                         GLenum pname,
                                         GLint param)
 {
     return true;
 }
 
-bool ValidateNamedFramebufferReadBuffer(Context *context, GLuint framebuffer, GLenum src)
+bool ValidateNamedFramebufferReadBuffer(Context *context, FramebufferID framebuffer, GLenum src)
 {
     return true;
 }
 
 bool ValidateNamedFramebufferRenderbuffer(Context *context,
-                                          GLuint framebuffer,
+                                          FramebufferID framebuffer,
                                           GLenum attachment,
                                           GLenum renderbuffertarget,
-                                          GLuint renderbuffer)
+                                          RenderbufferID renderbuffer)
 {
     return true;
 }
 
 bool ValidateNamedFramebufferTexture(Context *context,
-                                     GLuint framebuffer,
+                                     FramebufferID framebuffer,
                                      GLenum attachment,
-                                     GLuint texture,
+                                     TextureID texture,
                                      GLint level)
 {
     return true;
 }
 
 bool ValidateNamedFramebufferTextureLayer(Context *context,
-                                          GLuint framebuffer,
+                                          FramebufferID framebuffer,
                                           GLenum attachment,
-                                          GLuint texture,
+                                          TextureID texture,
                                           GLint level,
                                           GLint layer)
 {
@@ -751,7 +763,7 @@ bool ValidateNamedFramebufferTextureLayer(Context *context,
 }
 
 bool ValidateNamedRenderbufferStorage(Context *context,
-                                      GLuint renderbuffer,
+                                      RenderbufferID renderbuffer,
                                       GLenum internalformat,
                                       GLsizei width,
                                       GLsizei height)
@@ -760,7 +772,7 @@ bool ValidateNamedRenderbufferStorage(Context *context,
 }
 
 bool ValidateNamedRenderbufferStorageMultisample(Context *context,
-                                                 GLuint renderbuffer,
+                                                 RenderbufferID renderbuffer,
                                                  GLsizei samples,
                                                  GLenum internalformat,
                                                  GLsizei width,
@@ -787,15 +799,18 @@ bool ValidateTextureBarrier(Context *context)
     return true;
 }
 
-bool ValidateTextureBuffer(Context *context, GLuint texture, GLenum internalformat, GLuint buffer)
+bool ValidateTextureBuffer(Context *context,
+                           TextureID texture,
+                           GLenum internalformat,
+                           BufferID buffer)
 {
     return true;
 }
 
 bool ValidateTextureBufferRange(Context *context,
-                                GLuint texture,
+                                TextureID texture,
                                 GLenum internalformat,
-                                GLuint buffer,
+                                BufferID buffer,
                                 GLintptr offset,
                                 GLsizeiptr size)
 {
@@ -803,7 +818,7 @@ bool ValidateTextureBufferRange(Context *context,
 }
 
 bool ValidateTextureParameterIiv(Context *context,
-                                 GLuint texture,
+                                 TextureID texture,
                                  GLenum pname,
                                  const GLint *params)
 {
@@ -811,38 +826,41 @@ bool ValidateTextureParameterIiv(Context *context,
 }
 
 bool ValidateTextureParameterIuiv(Context *context,
-                                  GLuint texture,
+                                  TextureID texture,
                                   GLenum pname,
                                   const GLuint *params)
 {
     return true;
 }
 
-bool ValidateTextureParameterf(Context *context, GLuint texture, GLenum pname, GLfloat param)
+bool ValidateTextureParameterf(Context *context, TextureID texture, GLenum pname, GLfloat param)
 {
     return true;
 }
 
 bool ValidateTextureParameterfv(Context *context,
-                                GLuint texture,
+                                TextureID texture,
                                 GLenum pname,
                                 const GLfloat *param)
 {
     return true;
 }
 
-bool ValidateTextureParameteri(Context *context, GLuint texture, GLenum pname, GLint param)
+bool ValidateTextureParameteri(Context *context, TextureID texture, GLenum pname, GLint param)
 {
     return true;
 }
 
-bool ValidateTextureParameteriv(Context *context, GLuint texture, GLenum pname, const GLint *param)
+bool ValidateTextureParameteriv(Context *context,
+                                TextureID texture,
+                                GLenum pname,
+                                const GLint *param)
 {
     return true;
 }
 
 bool ValidateTextureStorage1D(Context *context,
-                              GLuint texture,
+                              TextureID texture,
                               GLsizei levels,
                               GLenum internalformat,
                               GLsizei width)
@@ -851,7 +869,7 @@ bool ValidateTextureStorage1D(Context *context,
 }
 
 bool ValidateTextureStorage2D(Context *context,
-                              GLuint texture,
+                              TextureID texture,
                               GLsizei levels,
                               GLenum internalformat,
                               GLsizei width,
@@ -861,7 +879,7 @@ bool ValidateTextureStorage2D(Context *context,
 }
 
 bool ValidateTextureStorage2DMultisample(Context *context,
-                                         GLuint texture,
+                                         TextureID texture,
                                          GLsizei samples,
                                          GLenum internalformat,
                                          GLsizei width,
@@ -872,7 +890,7 @@ bool ValidateTextureStorage2DMultisample(Context *context,
 }
 
 bool ValidateTextureStorage3D(Context *context,
-                              GLuint texture,
+                              TextureID texture,
                               GLsizei levels,
                               GLenum internalformat,
                               GLsizei width,
@@ -883,7 +901,7 @@ bool ValidateTextureStorage3D(Context *context,
 }
 
 bool ValidateTextureStorage3DMultisample(Context *context,
-                                         GLuint texture,
+                                         TextureID texture,
                                          GLsizei samples,
                                          GLenum internalformat,
                                          GLsizei width,
@@ -895,7 +913,7 @@ bool ValidateTextureStorage3DMultisample(Context *context,
 }
 
 bool ValidateTextureSubImage1D(Context *context,
-                               GLuint texture,
+                               TextureID texture,
                                GLint level,
                                GLint xoffset,
                                GLsizei width,
@@ -907,7 +925,7 @@ bool ValidateTextureSubImage1D(Context *context,
 }
 
 bool ValidateTextureSubImage2D(Context *context,
-                               GLuint texture,
+                               TextureID texture,
                                GLint level,
                                GLint xoffset,
                                GLint yoffset,
@@ -921,7 +939,7 @@ bool ValidateTextureSubImage2D(Context *context,
 }
 
 bool ValidateTextureSubImage3D(Context *context,
-                               GLuint texture,
+                               TextureID texture,
                                GLint level,
                                GLint xoffset,
                                GLint yoffset,
@@ -936,7 +954,10 @@ bool ValidateTextureSubImage3D(Context *context,
     return true;
 }
 
-bool ValidateTransformFeedbackBufferBase(Context *context, GLuint xfb, GLuint index, GLuint buffer)
+bool ValidateTransformFeedbackBufferBase(Context *context,
+                                         GLuint xfb,
+                                         GLuint index,
+                                         BufferID buffer)
 {
     return true;
 }
@@ -944,20 +965,20 @@ bool ValidateTransformFeedbackBufferBase(Context *context, GLuint xfb, GLuint in
 bool ValidateTransformFeedbackBufferRange(Context *context,
                                           GLuint xfb,
                                           GLuint index,
-                                          GLuint buffer,
+                                          BufferID buffer,
                                           GLintptr offset,
                                           GLsizeiptr size)
 {
     return true;
 }
 
-bool ValidateUnmapNamedBuffer(Context *context, GLuint buffer)
+bool ValidateUnmapNamedBuffer(Context *context, BufferID buffer)
 {
     return true;
 }
 
 bool ValidateVertexArrayAttribBinding(Context *context,
-                                      GLuint vaobj,
+                                      VertexArrayID vaobj,
                                       GLuint attribindex,
                                       GLuint bindingindex)
 {
@@ -965,7 +986,7 @@ bool ValidateVertexArrayAttribBinding(Context *context,
 }
 
 bool ValidateVertexArrayAttribFormat(Context *context,
-                                     GLuint vaobj,
+                                     VertexArrayID vaobj,
                                      GLuint attribindex,
                                      GLint size,
                                      GLenum type,
@@ -976,7 +997,7 @@ bool ValidateVertexArrayAttribFormat(Context *context,
 }
 
 bool ValidateVertexArrayAttribIFormat(Context *context,
-                                      GLuint vaobj,
+                                      VertexArrayID vaobj,
                                       GLuint attribindex,
                                       GLint size,
                                       GLenum type,
@@ -986,7 +1007,7 @@ bool ValidateVertexArrayAttribIFormat(Context *context,
 }
 
 bool ValidateVertexArrayAttribLFormat(Context *context,
-                                      GLuint vaobj,
+                                      VertexArrayID vaobj,
                                       GLuint attribindex,
                                       GLint size,
                                       GLenum type,
@@ -996,22 +1017,22 @@ bool ValidateVertexArrayAttribLFormat(Context *context,
 }
 
 bool ValidateVertexArrayBindingDivisor(Context *context,
-                                       GLuint vaobj,
+                                       VertexArrayID vaobj,
                                        GLuint bindingindex,
                                        GLuint divisor)
 {
     return true;
 }
 
-bool ValidateVertexArrayElementBuffer(Context *context, GLuint vaobj, GLuint buffer)
+bool ValidateVertexArrayElementBuffer(Context *context, VertexArrayID vaobj, BufferID buffer)
 {
     return true;
 }
 
 bool ValidateVertexArrayVertexBuffer(Context *context,
-                                     GLuint vaobj,
+                                     VertexArrayID vaobj,
                                      GLuint bindingindex,
-                                     GLuint buffer,
+                                     BufferID buffer,
                                      GLintptr offset,
                                      GLsizei stride)
 {
@@ -1019,10 +1040,10 @@ bool ValidateVertexArrayVertexBuffer(Context *context,
 }
 
 bool ValidateVertexArrayVertexBuffers(Context *context,
-                                      GLuint vaobj,
+                                      VertexArrayID vaobj,
                                       GLuint first,
                                       GLsizei count,
-                                      const GLuint *buffers,
+                                      const BufferID *buffers,
                                       const GLintptr *offsets,
                                       const GLsizei *strides)
 {

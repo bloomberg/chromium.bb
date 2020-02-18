@@ -9,12 +9,14 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/logging.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/child_accounts/parent_access_code/parent_access_service.h"
 #include "chrome/browser/chromeos/set_time_dialog.h"
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/system/timezone_util.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/system_clock/system_clock_client.h"
@@ -64,8 +66,7 @@ bool IsTimezoneAutomaticDetectionUserEditable() {
 
 }  // namespace
 
-DateTimeHandler::DateTimeHandler()
-    : scoped_observer_(this), weak_ptr_factory_(this) {}
+DateTimeHandler::DateTimeHandler() : scoped_observer_(this) {}
 
 DateTimeHandler::~DateTimeHandler() = default;
 
@@ -76,6 +77,9 @@ DateTimeHandler* DateTimeHandler::Create(
   html_source->AddString(
       "timeZoneID",
       system::TimezoneSettings::GetInstance()->GetCurrentTimezoneID());
+  html_source->AddBoolean(
+      "timeActionsProtectedForChild",
+      base::FeatureList::IsEnabled(features::kParentAccessCodeForTimeChange));
 
   return new DateTimeHandler;
 }
@@ -165,7 +169,8 @@ void DateTimeHandler::HandleShowParentAccessForTimeZone(
       user_manager::UserManager::Get()->GetActiveUser()->GetAccountId(),
       base::BindRepeating(&DateTimeHandler::OnParentAccessValidation,
                           weak_ptr_factory_.GetWeakPtr()),
-      ash::ParentAccessRequestReason::kChangeTimezone);
+      ash::ParentAccessRequestReason::kChangeTimezone, false /* extra_dimmer */,
+      base::Time());
 }
 
 void DateTimeHandler::OnParentAccessValidation(bool success) {

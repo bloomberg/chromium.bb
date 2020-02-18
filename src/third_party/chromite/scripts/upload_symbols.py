@@ -16,7 +16,6 @@ import httplib
 import itertools
 import json
 import os
-import requests
 import socket
 import sys
 import textwrap
@@ -24,6 +23,8 @@ import tempfile
 import time
 import urllib2
 import urlparse
+
+import requests
 
 from chromite.lib import constants
 
@@ -39,6 +40,7 @@ del third_party
 
 # Has to be after sys.path manipulation above.
 # And our sys.path muckery confuses pylint.
+# pylint: disable=wrong-import-position
 import poster  # pylint: disable=import-error
 
 from chromite.lib import cache
@@ -92,7 +94,7 @@ DEDUPE_NOTIFY_TIMEOUT = 240
 # The minimum average rate (in bytes per second) that we expect to maintain
 # when uploading symbols.  This has to allow for symbols that are up to
 # CRASH_SERVER_FILE_LIMIT in size.
-UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT / (30 * 60)
+UPLOAD_MIN_RATE = CRASH_SERVER_FILE_LIMIT // (30 * 60)
 
 # The lowest timeout (in seconds) we'll allow.  If the server is overloaded,
 # then there might be a delay in setting up the connection, not just with the
@@ -319,7 +321,7 @@ def GetUploadTimeout(symbol):
     Timeout length (in seconds)
   """
   # Scale the timeout based on the filesize.
-  return max(symbol.FileSize() / UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
+  return max(symbol.FileSize() // UPLOAD_MIN_RATE, UPLOAD_MIN_TIMEOUT)
 
 
 def ExecRequest(operator, url, timeout, api_key, **kwargs):
@@ -399,13 +401,13 @@ def FindDuplicates(symbols, status_url, api_key, timeout=DEDUPE_TIMEOUT):
 
 
 def UploadSymbolFile(upload_url, symbol, api_key):
-  '''Upload a symbol file to the crash server, returning the status result.
+  """Upload a symbol file to the crash server, returning the status result.
 
   Args:
     upload_url: The crash URL to POST the |sym_file| to
     symbol: A SymbolFile instance.
     api_key: Authentication key
-  '''
+  """
   timeout = GetUploadTimeout(symbol)
   upload = ExecRequest('post',
                        '%s/uploads:create' % upload_url, timeout, api_key)

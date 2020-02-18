@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -180,7 +180,7 @@ class FakeDemuxerStreamTest : public testing::Test {
     ReadAllBuffers(num_configs, num_buffers_in_one_config);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeDemuxerStream> stream_;
 
   DemuxerStream::Status status_;

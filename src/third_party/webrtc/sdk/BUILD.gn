@@ -373,6 +373,7 @@ if (is_ios || is_mac) {
       ]
       libs = [
         "VideoToolbox.framework",
+        "CoreGraphics.framework",
         "CoreVideo.framework",
       ]
     }
@@ -480,17 +481,18 @@ if (is_ios || is_mac) {
             "objc/components/renderer/metal/RTCMTLVideoView.m",
           ]
         }
-        if (is_mac) {
-          sources += [
-            "objc/components/renderer/metal/RTCMTLNSVideoView.h",
-            "objc/components/renderer/metal/RTCMTLNSVideoView.m",
-          ]
-        }
         libs = [
           "CoreVideo.framework",
           "Metal.framework",
           "MetalKit.framework",
         ]
+        if (is_mac) {
+          sources += [
+            "objc/components/renderer/metal/RTCMTLNSVideoView.h",
+            "objc/components/renderer/metal/RTCMTLNSVideoView.m",
+          ]
+          libs += [ "AppKit.framework" ]
+        }
         deps = [
           ":base_objc",
           ":peerconnectionfactory_base_objc",
@@ -920,6 +922,7 @@ if (is_ios || is_mac) {
         "../api:libjingle_peerconnection_api",
         "../api:rtc_event_log_output_file",
         "../api:rtc_stats_api",
+        "../api:rtp_parameters",
         "../api:scoped_refptr",
         "../api/audio_codecs:audio_codecs_api",
         "../api/audio_codecs:builtin_audio_decoder_factory",
@@ -1125,8 +1128,7 @@ if (is_ios || is_mac) {
             "objc/unittests/main.mm",
           ]
 
-          _bundle_id_suffix = ios_generic_test_bundle_id_suffix
-          extra_substitutions = [ "GTEST_BUNDLE_ID_SUFFIX=$_bundle_id_suffix" ]
+          extra_substitutions = [ "GTEST_BUNDLE_ID_SUFFIX=generic-unit-test" ]
           deps = [
             ":peerconnectionfactory_base_objc",
             ":sdk_unittests_bundle_data",
@@ -1145,8 +1147,7 @@ if (is_ios || is_mac) {
             "objc/unittests/main.mm",
           ]
 
-          _bundle_id_suffix = ios_generic_test_bundle_id_suffix
-          extra_substitutions = [ "GTEST_BUNDLE_ID_SUFFIX=$_bundle_id_suffix" ]
+          extra_substitutions = [ "GTEST_BUNDLE_ID_SUFFIX=generic-unit-test" ]
           deps = [
             ":framework_objc+link",
             ":ios_framework_bundle",

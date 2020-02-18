@@ -12,7 +12,7 @@
 #include "base/hash/hash.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_predictor_test_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/frecency_store.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
@@ -52,7 +52,7 @@ class RecurrenceRankerTest : public testing::Test {
     Wait();
   }
 
-  void Wait() { scoped_task_environment_.RunUntilIdle(); }
+  void Wait() { task_environment_.RunUntilIdle(); }
 
   // Returns the config for a ranker with a fake predictor.
   RecurrenceRankerConfigProto MakeSimpleConfig() {
@@ -69,7 +69,11 @@ class RecurrenceRankerTest : public testing::Test {
   std::unique_ptr<RecurrenceRanker> MakeSimpleRanker() {
     auto ranker = std::make_unique<RecurrenceRanker>(
         "MyModel", ranker_filepath_, MakeSimpleConfig(), false);
+    // There should be no model file written to disk immediately after
+    // construction, but there should be one once initialization is complete.
+    EXPECT_FALSE(base::PathExists(ranker_filepath_));
     Wait();
+    EXPECT_TRUE(base::PathExists(ranker_filepath_));
     return ranker;
   }
 
@@ -133,10 +137,14 @@ class RecurrenceRankerTest : public testing::Test {
                     bool has_saved = false) {
     // Total count of serialization reports:
     //  - one for either a kLoadOk or kModelReadError
-    //  - one if has_saved is true
+    //  - one if |fresh_model_created| because model is written to disk with a
+    //    kSaveOk on initialization.
+    //  - one if |has_saved| because model is again written to disk with a
+    //    kSaveOk.
     histogram_tester_.ExpectTotalCount(
         "RecurrenceRanker.SerializationStatus.MyModel",
-        static_cast<int>(has_saved) + 1);
+        1 + static_cast<int>(has_saved) +
+            static_cast<int>(fresh_model_created));
 
     // If a model doesn't already exist, a read error is logged.
     if (fresh_model_created) {
@@ -149,11 +157,10 @@ class RecurrenceRankerTest : public testing::Test {
           SerializationStatus::kLoadOk, 1);
     }
 
-    if (has_saved) {
-      histogram_tester_.ExpectBucketCount(
-          "RecurrenceRanker.SerializationStatus.MyModel",
-          SerializationStatus::kSaveOk, 1);
-    }
+    histogram_tester_.ExpectBucketCount(
+        "RecurrenceRanker.SerializationStatus.MyModel",
+        SerializationStatus::kSaveOk,
+        static_cast<int>(has_saved) + static_cast<int>(fresh_model_created));
 
     // Initialising with the fake predictor logs an UMA error, because it should
     // be used only in tests and not in production.
@@ -173,9 +180,9 @@ class RecurrenceRankerTest : public testing::Test {
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED};
   base::ScopedTempDir temp_dir_;
   base::test::ScopedFeatureList scoped_feature_list_;
   base::HistogramTester histogram_tester_;
@@ -309,8 +316,8 @@ TEST_F(RecurrenceRankerTest, SaveToDisk) {
   ASSERT_TRUE(ranker->load_from_disk_completed_);
   EXPECT_TRUE(ranker->Rank().empty());
 
-  // Check the ranker file is not created.
-  EXPECT_FALSE(base::PathExists(ranker_filepath_));
+  // Check the ranker file should have been created on initialization.
+  EXPECT_TRUE(base::PathExists(ranker_filepath_));
 
   // Make the ranker do a save.
   ranker->Record("A");
@@ -452,9 +459,12 @@ TEST_F(RecurrenceRankerTest, IntegrationWithZeroStateFrecencyPredictor) {
   ranker.RemoveTarget("E");
   ranker.RenameTarget("E", "A");
 
-  EXPECT_THAT(ranker.Rank(), UnorderedElementsAre(Pair("A", FloatEq(0.09375f)),
-                                                  Pair("B", FloatEq(0.125f)),
-                                                  Pair("C", FloatEq(0.25f))));
+  // E with score 0.5 not yet removed from model.
+  const float total = 0.09375f + 0.125f + 0.25f + 0.5f;
+  EXPECT_THAT(ranker.Rank(),
+              UnorderedElementsAre(Pair("A", FloatEq(0.09375f / total)),
+                                   Pair("B", FloatEq(0.125f / total)),
+                                   Pair("C", FloatEq(0.25f / total))));
   ExpectErrors(/* fresh_model_created = */ true,
                /* using_fake_predictor = */ false);
 }

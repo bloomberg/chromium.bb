@@ -19,6 +19,7 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 
 namespace offline_pages {
 
@@ -94,8 +95,7 @@ OfflinePageURLLoader::OfflinePageURLLoader(
       loader_callback_(std::move(callback)),
       binding_(this),
       is_offline_preview_allowed_(tentative_resource_request.previews_state &
-                                  content::OFFLINE_PAGE_ON),
-      weak_ptr_factory_(this) {
+                                  content::OFFLINE_PAGE_ON) {
   // TODO(crbug.com/876527): Figure out how offline page interception should
   // interact with URLLoaderThrottles. It might be incorrect to use
   // |tentative_resource_request.headers| here, since throttles can rewrite
@@ -117,10 +117,6 @@ void OfflinePageURLLoader::FollowRedirect(
     const std::vector<std::string>& removed_headers,
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
-  NOTREACHED();
-}
-
-void OfflinePageURLLoader::ProceedWithResponse() {
   NOTREACHED();
 }
 

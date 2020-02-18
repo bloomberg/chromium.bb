@@ -247,12 +247,11 @@ static HTMLElement* HighestAncestorToWrapMarkup(
   if (!special_common_ancestor && IsTabHTMLSpanElement(common_ancestor))
     special_common_ancestor = ToHTMLSpanElement(common_ancestor);
 
-  if (HTMLAnchorElement* enclosing_anchor =
-          ToHTMLAnchorElement(EnclosingElementWithTag(
-              Position::FirstPositionInNode(special_common_ancestor
-                                                ? *special_common_ancestor
-                                                : *common_ancestor),
-              kATag)))
+  if (auto* enclosing_anchor = To<HTMLAnchorElement>(EnclosingElementWithTag(
+          Position::FirstPositionInNode(special_common_ancestor
+                                            ? *special_common_ancestor
+                                            : *common_ancestor),
+          kATag)))
     special_common_ancestor = enclosing_anchor;
 
   return special_common_ancestor;
@@ -580,7 +579,7 @@ DocumentFragment* CreateFragmentFromText(const EphemeralRange& context,
   Element* block =
       EnclosingBlock(context.StartPosition().NodeAsRangeFirstNode());
   bool use_clones_of_enclosing_block =
-      block && !IsHTMLBodyElement(*block) && !IsHTMLHtmlElement(*block) &&
+      block && !IsA<HTMLBodyElement>(block) && !IsA<HTMLHtmlElement>(block) &&
       block != RootEditableElementOf(context.StartPosition());
 
   Vector<String> list;
@@ -696,8 +695,8 @@ DocumentFragment* CreateContextualFragment(
   Node* next_node = nullptr;
   for (Node* node = fragment->firstChild(); node; node = next_node) {
     next_node = node->nextSibling();
-    if (IsHTMLHtmlElement(*node) || IsHTMLHeadElement(*node) ||
-        IsHTMLBodyElement(*node)) {
+    if (IsA<HTMLHtmlElement>(node) || IsA<HTMLHeadElement>(node) ||
+        IsA<HTMLBodyElement>(node)) {
       auto* element = To<HTMLElement>(node);
       if (Node* first_child = element->firstChild())
         next_node = first_child;

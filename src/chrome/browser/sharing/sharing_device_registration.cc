@@ -12,8 +12,9 @@
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
+#include "chrome/browser/sharing/sharing_device_capability.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
@@ -26,6 +27,8 @@
 #if defined(OS_ANDROID)
 #include "chrome/android/chrome_jni_headers/SharingJNIBridge_jni.h"
 #endif
+
+using instance_id::InstanceID;
 
 SharingDeviceRegistration::SharingDeviceRegistration(
     SharingSyncPreference* sharing_sync_preference,
@@ -58,7 +61,7 @@ void SharingDeviceRegistration::RegisterDevice(RegistrationCallback callback) {
   instance_id_driver_->GetInstanceID(kSharingFCMAppID)
       ->GetToken(*authorized_entity, kFCMScope,
                  /*options=*/{},
-                 /*is_lazy=*/false,
+                 /*flags=*/{InstanceID::Flags::kBypassScheduler},
                  base::BindOnce(&SharingDeviceRegistration::OnFCMTokenReceived,
                                 weak_ptr_factory_.GetWeakPtr(),
                                 std::move(callback), *authorized_entity));
@@ -68,23 +71,21 @@ void SharingDeviceRegistration::OnFCMTokenReceived(
     RegistrationCallback callback,
     const std::string& authorized_entity,
     const std::string& fcm_registration_token,
-    instance_id::InstanceID::Result result) {
+    InstanceID::Result result) {
   switch (result) {
-    case instance_id::InstanceID::SUCCESS:
-      sharing_sync_preference_->SetFCMRegistration(
-          {authorized_entity, fcm_registration_token, base::Time::Now()});
+    case InstanceID::SUCCESS:
       RetrieveEncryptionInfo(std::move(callback), authorized_entity,
                              fcm_registration_token);
       break;
-    case instance_id::InstanceID::NETWORK_ERROR:
-    case instance_id::InstanceID::SERVER_ERROR:
-    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+    case InstanceID::NETWORK_ERROR:
+    case InstanceID::SERVER_ERROR:
+    case InstanceID::ASYNC_OPERATION_PENDING:
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       break;
-    case instance_id::InstanceID::INVALID_PARAMETER:
-    case instance_id::InstanceID::UNKNOWN_ERROR:
-    case instance_id::InstanceID::DISABLED:
+    case InstanceID::INVALID_PARAMETER:
+    case InstanceID::UNKNOWN_ERROR:
+    case InstanceID::DISABLED:
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       break;
   }
@@ -99,14 +100,20 @@ void SharingDeviceRegistration::RetrieveEncryptionInfo(
           authorized_entity,
           base::BindOnce(&SharingDeviceRegistration::OnEncryptionInfoReceived,
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback),
-                         fcm_registration_token));
+                         authorized_entity, fcm_registration_token));
 }
 
 void SharingDeviceRegistration::OnEncryptionInfoReceived(
     RegistrationCallback callback,
+    const std::string& authorized_entity,
     const std::string& fcm_registration_token,
     std::string p256dh,
     std::string auth_secret) {
+  sharing_sync_preference_->SetFCMRegistration(
+      SharingSyncPreference::FCMRegistration(authorized_entity,
+                                             fcm_registration_token, p256dh,
+                                             auth_secret, base::Time::Now()));
+
   const syncer::DeviceInfo* local_device_info =
       local_device_info_provider_->GetLocalDeviceInfo();
   if (!local_device_info) {
@@ -143,25 +150,24 @@ void SharingDeviceRegistration::UnregisterDevice(
                          weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void SharingDeviceRegistration::OnFCMTokenDeleted(
-    RegistrationCallback callback,
-    instance_id::InstanceID::Result result) {
+void SharingDeviceRegistration::OnFCMTokenDeleted(RegistrationCallback callback,
+                                                  InstanceID::Result result) {
   switch (result) {
-    case instance_id::InstanceID::SUCCESS:
+    case InstanceID::SUCCESS:
       // INVALID_PARAMETER is expected if InstanceID.GetToken hasn't been
       // invoked since restart.
-    case instance_id::InstanceID::INVALID_PARAMETER:
+    case InstanceID::INVALID_PARAMETER:
       sharing_sync_preference_->ClearFCMRegistration();
       std::move(callback).Run(SharingDeviceRegistrationResult::kSuccess);
       return;
-    case instance_id::InstanceID::NETWORK_ERROR:
-    case instance_id::InstanceID::SERVER_ERROR:
-    case instance_id::InstanceID::ASYNC_OPERATION_PENDING:
+    case InstanceID::NETWORK_ERROR:
+    case InstanceID::SERVER_ERROR:
+    case InstanceID::ASYNC_OPERATION_PENDING:
       std::move(callback).Run(
           SharingDeviceRegistrationResult::kFcmTransientError);
       return;
-    case instance_id::InstanceID::UNKNOWN_ERROR:
-    case instance_id::InstanceID::DISABLED:
+    case InstanceID::UNKNOWN_ERROR:
+    case InstanceID::DISABLED:
       std::move(callback).Run(SharingDeviceRegistrationResult::kFcmFatalError);
       return;
   }
@@ -188,15 +194,23 @@ base::Optional<std::string> SharingDeviceRegistration::GetAuthorizationEntity()
 }
 
 int SharingDeviceRegistration::GetDeviceCapabilities() const {
+  // Used in tests
+  if (device_capabilities_testing_value_)
+    return device_capabilities_testing_value_.value();
+
   int device_capabilities = static_cast<int>(SharingDeviceCapability::kNone);
-  if (IsTelephonySupported()) {
+  if (IsClickToCallSupported()) {
     device_capabilities |=
-        static_cast<int>(SharingDeviceCapability::kTelephony);
+        static_cast<int>(SharingDeviceCapability::kClickToCall);
+  }
+  if (IsSharedClipboardSupported()) {
+    device_capabilities |=
+        static_cast<int>(SharingDeviceCapability::kSharedClipboard);
   }
   return device_capabilities;
 }
 
-bool SharingDeviceRegistration::IsTelephonySupported() const {
+bool SharingDeviceRegistration::IsClickToCallSupported() const {
 #if defined(OS_ANDROID)
   if (!base::FeatureList::IsEnabled(kClickToCallReceiver))
     return false;
@@ -205,4 +219,13 @@ bool SharingDeviceRegistration::IsTelephonySupported() const {
 #endif
 
   return false;
+}
+
+bool SharingDeviceRegistration::IsSharedClipboardSupported() const {
+  return base::FeatureList::IsEnabled(kSharedClipboardReceiver);
+}
+
+void SharingDeviceRegistration::SetDeviceCapabilityForTesting(
+    int device_capabilities) {
+  device_capabilities_testing_value_ = device_capabilities;
 }

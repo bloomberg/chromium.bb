@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Разделителна способност на изображението</translation>
 <translation id="1943097386230153518">Инсталиране на нова услуга</translation>
 <translation id="1947424002851288782">Немска клавиатура</translation>
+<translation id="1972984168337863910">Разгъване на панелите с информация за файловете</translation>
 <translation id="197560921582345123">Може да редактира</translation>
 <translation id="1984603991036629094">Арменска фонетична клавиатура</translation>
 <translation id="2001796770603320721">Управление в Диск</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Трябва да сте онлайн, за да осъществите достъп до този файл.</translation>
 <translation id="4212740939091998969">Папката „<ph name="FOLDER_NAME" />“ вече съществува. Моля, изберете друго име.</translation>
 <translation id="4215448920900139318">Създаваме резервно копие на <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Отваряне на настройките</translation>
 <translation id="426015154560005552">Арабска клавиатура</translation>
 <translation id="4261901459838235729">Презентация в Google</translation>
 <translation id="4290535918735525311">1 папка е споделена с Linux</translation>
-<translation id="42981349822642051">Разгъване</translation>
 <translation id="4298972503445160211">Датска клавиатура</translation>
 <translation id="4299729908419173967">бразилска</translation>
 <translation id="4309915981827077375">Обща информация</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Автокоригиране</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4886021172213954916">Тамилска клавиатура (пишеща машина)</translation>
-<translation id="4892969127351273348">Отварянето чрез <ph name="APP_NAME" /> не е възможно</translation>
 <translation id="4905417359854579806">Готови сме да създадем резервно копие на <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Коригирано</translation>
 <translation id="4935975195727477204">Газания</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Швейцарска (френски) клавиатура</translation>
 <translation id="5234764350956374838">Отхвърляне</translation>
 <translation id="5241298539944515331">Виетнамска клавиатура (VIQR)</translation>
-<translation id="52446585071384036">За да отваряте файлове чрез <ph name="APP_NAME" />, първо копирайте в папката с файлове на Linux.</translation>
 <translation id="5253070652067921974">Създадено от</translation>
 <translation id="5257456363153333584">Водно конче</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Файловете ви ще са достъпни от всяко място дори когато сте офлайн.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">корейски</translation>
 <translation id="5819442873484330149">Хангъл, 3 набора (окончателна)</translation>
 <translation id="5833610766403489739">Този файл се е скрил някъде. Моля, проверете настройката си за местоположението на изтеглянията и опитайте отново.</translation>
-<translation id="5838051104334203064">Приложенията от Google Play Магазин нямат достъп до това устройство</translation>
 <translation id="5838451609423551646">Премахнахте избора на всички елементи.</translation>
 <translation id="5838825566232597749">Американска (Уъркман) международна клавиатура</translation>
 <translation id="5850516540536751549">Този файлов тип не се поддържа. Моля, посетете <ph name="BEGIN_LINK" />уеб магазина на Chrome<ph name="END_LINK" />, за да намерите приложение, което може да го отвори.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">За да запазите тези файлове за използване офлайн, върнете се онлайн, кликнете с десния бутон на мишката върху тях и изберете опцията „<ph name="OFFLINE_CHECKBOX_NAME" />“.</translation>
 <translation id="8249296373107784235">Прекратяване</translation>
 <translation id="8261506727792406068">Изтриване</translation>
+<translation id="8269755669432358899">Свиване на панелите с информация за файловете</translation>
 <translation id="8279388322240498158">Кюрдски (сорани), базирана на английски клавиатура</translation>
 <translation id="8280151743281770066">Арменска фонетична клавиатура</translation>
 <translation id="8294431847097064396">Източник</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Изберете файл за отваряне</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> елемента се синхронизират...</translation>
 <translation id="8600173386174225982">Списъкът с файлове е превключен към изглед с миниизображения.</translation>
+<translation id="8601932370724196034">Файл с образ на Crostini</translation>
 <translation id="8669949407341943408">Извършва се преместване...</translation>
 <translation id="8671210955687109937">Може да коментира</translation>
 <translation id="8686213429977032554">Този файл в Диск още не е споделен</translation>

@@ -9,9 +9,9 @@ import "mojo/public/mojom/base/time.mojom";
 import "gpu/ipc/common/mailbox_holder.mojom";
 import "gpu/ipc/common/sync_token.mojom";
 import "ui/display/mojom/display.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
-import "ui/gfx/mojo/gpu_fence_handle.mojom";
-import "ui/gfx/mojo/transform.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/gpu_fence_handle.mojom";
+import "ui/gfx/mojom/transform.mojom";
 
 //
 // WebXR interfaces
@@ -44,9 +44,29 @@ enum XRTargetRayMode {
   TAPPING = 3
 };
 
+// These correspond with the features from the WebXR Spec:
+// https://immersive-web.github.io/webxr/#feature-descriptor
+enum XRSessionFeature {
+  REF_SPACE_VIEWER = 1,
+  REF_SPACE_LOCAL = 2,
+  REF_SPACE_LOCAL_FLOOR = 3,
+  REF_SPACE_BOUNDED_FLOOR = 4,
+  REF_SPACE_UNBOUNDED = 5,
+};
+
 struct XRSessionOptions {
   bool immersive;
   bool environment_integration;
+
+  // Represents the set of requested features that have been marked "required",
+  // if any of these features are missing, a session will not be created.
+  array<XRSessionFeature> required_features;
+
+  // Represents the set of requested features that have been marked "optional",
+  // if any of these features are missing, a session will still be created, but
+  // the feature will not be added to the enabled_features set on the XRSession
+  // struct that is returned.
+  array<XRSessionFeature> optional_features;
 
   // This flag ensures that render paths that are only supported in WebXR are
   // not used for WebVR 1.1. It is also used for metrics to distinguish between
@@ -74,6 +94,10 @@ struct XRSession {
   VRDisplayInfo display_info;
   XRPresentationConnection? submit_frame_sink;
 
+  // Represents the set of requested features that are both supported by the
+  // runtime, and have been consented to by the user.
+  array<XRSessionFeature> enabled_features;
+
   // Indicates whether the device backing this session sends input events solely
   // via eventing (as opposed to polling).
   bool uses_input_eventing;
@@ -95,6 +119,12 @@ struct XRInputSourceDescription {
 
   // Transform from the grip matrix to the pointer's origin and orientation.
   gfx.mojom.Transform? pointer_offset;
+
+  // List of 0 or more names describing both the preferred visual representation
+  // and behavior of the associated input source. Each name is lowercase with no
+  // spaces and has separate words concatenated with a "-". These names are
+  // sorted in descending order of specificity.
+  array<string> profiles;
 };
 
 struct XRInputSourceState {
@@ -186,7 +216,13 @@ struct VRDisplayCapabilities {
 // Information about the optical properties for an eye in a VRDisplay.
 struct VREyeParameters {
   VRFieldOfView field_of_view;
-  gfx.mojom.Vector3dF offset;
+
+  // Describes the relationship between the head and eye space for this device.
+  // It should always include translation that is based on IPD (interpupillary
+  // distance), and will sometimes include rotation if the device has angled
+  // screens.
+  gfx.mojom.Transform head_from_eye;
+
   uint32 render_width;
   uint32 render_height;
 };
@@ -254,6 +290,8 @@ struct XRPlanePointData {
   float z;
 };
 
+// Struct containing plane-related information. A plane describes a flat surface
+// detected in the real world by the underlying system.
 struct XRPlaneData {
   // Unique (per session) identifier of the plane.
   int32 id;
@@ -270,15 +308,45 @@ struct XRPlaneData {
   array<XRPlanePointData> polygon;
 };
 
-// Struct containing information about existing & updated planes in frame N.
-// If the plane was removed between frame N-1 and N, its ID will not be present
-// in all_plane_ids.
+// Struct containing information about all tracked & updated planes in a given
+// frame. If a plane tracked in frame N-1 is no longer being tracked in frame N,
+// its ID will not be present in all_plane_ids and its XRPlaneData will not be
+// present in updated_planes_data.
 struct XRPlaneDetectionData {
-  // Array with ids of all planes.
+  // Array with ids of all tracked planes.
   array<int32> all_planes_ids;
 
-  // Array with plane data for updated planes.
+  // Array with plane data for all updated planes. Plane is considered updated
+  // if its position or polygon has changed. Updated planes are always a subset
+  // of all planes (i.e. for each plane found in updated_planes_data, its ID
+  // will be present in all_planes_ids).
   array<XRPlaneData> updated_planes_data;
+};
+
+// Struct containing anchor-related information. An anchor represents a pose
+// (position and orientation) in the real world. The anchor's pose will be
+// adjusted by the underlying system as its understanding of the real world
+// evolves.
+struct XRAnchorData {
+  // Unique (per session) identifier of the anchor.
+  int32 id;
+
+  // Pose of the anchor.
+  VRPose pose;
+};
+
+// Struct containing information about all tracked & updated anchors in a given
+// frame. If an anchor tracked in frame N-1 is no longer being tracked in
+// frame N, its ID will not be present in all_anchors_ids and its XRAnchorData
+// will not be present in updated_anchors_data.
+struct XRAnchorsData {
+  // Array with ids of all tracked anchors.
+  array<int32> all_anchors_ids;
+
+  // Array with anchor data for all updated anchors. Updated anchors are always
+  // a subset of all anchors (i.e. for each anchor found in
+  // updated_anchors_data, its ID will be present in all_anchors_ids).
+  array<XRAnchorData> updated_anchors_data;
 };
 
 // The data needed for each animation frame of an XRSession.
@@ -327,6 +395,9 @@ struct XRFrameData {
 
   // Detected plane information. Only present if plane detection is enabled.
   XRPlaneDetectionData? detected_planes_data;
+
+  // Tracked anchors information.
+  XRAnchorsData? anchors_data;
 };
 
 enum VRDisplayEventReason {
@@ -336,37 +407,13 @@ enum VRDisplayEventReason {
   UNMOUNTED = 3
 };
 
-// Interface for requesting XRDevice interfaces and registering for
-// notifications that the XRDevice has changed
-interface VRService {
-  // Returns the XRDevice interface which is used for creating XRSessions. This
-  // is not expected to be called once per renderer, unless the returned
-  // XRDevice is destroyed, then it might be called again to get another one.
-  RequestDevice() => (XRDevice? device);
-  // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
-  // The last provided listener will have events called on it.
-  SetClient(VRServiceClient client);
-
-  // WebVR 1.1 functionality compatibility method. To stop listening pass a null
-  // client.
-  SetListeningForActivate(VRDisplayClient? client);
-};
-
-// The interface for the renderer to listen to top level XR events, events that
-// can be listened to and triggered without the renderer calling requestDevice.
-interface VRServiceClient {
-  // Signals changes to the available physical device runtimes.
-  OnDeviceChanged();
-};
-
 enum RequestSessionError {
   ORIGIN_NOT_SECURE = 1,
-  IMMERSIVE_SESSION_REQUEST_FROM_OFF_FOCUS_PAGE = 2,
-  EXISTING_IMMERSIVE_SESSION = 3,
-  INVALID_CLIENT = 4,
-  USER_DENIED_CONSENT = 5,
-  NO_RUNTIME_FOUND = 6,
-  UNKNOWN_RUNTIME_ERROR = 7
+  EXISTING_IMMERSIVE_SESSION = 2,
+  INVALID_CLIENT = 3,
+  USER_DENIED_CONSENT = 4,
+  NO_RUNTIME_FOUND = 5,
+  UNKNOWN_RUNTIME_ERROR = 6
 };
 
 union RequestSessionResult {
@@ -374,9 +421,18 @@ union RequestSessionResult {
   RequestSessionError failure_reason;
 };
 
-// Supplies XRSessions and session support information. Implemented in the
-// browser process, consumed in the renderer process.
-interface XRDevice {
+// Interface for requesting XRDevice interfaces and registering for
+// notifications that the XRDevice has changed. Implemented in the browser
+// process and consumed in the renderer process.
+interface VRService {
+  // Optionally supply a VRServiceClient to listen for changes to the XRDevice.
+  // A bad message will be reported if this is called multiple times.
+  SetClient(pending_remote<VRServiceClient> client);
+
+  // WebVR 1.1 functionality compatibility method. To stop listening pass a null
+  // client.
+  SetListeningForActivate(pending_remote<VRDisplayClient>? client);
+
   // Request to initialize a session in the browser process. If successful, the
   // XRSession struct with the requisite interfaces will be returned.
   RequestSession(XRSessionOptions options) => (RequestSessionResult result);
@@ -389,6 +445,13 @@ interface XRDevice {
   GetImmersiveVRDisplayInfo() => (VRDisplayInfo? info);
 
   ExitPresent();
+};
+
+// The interface for the renderer to listen to top level XR events, events that
+// can be listened to and triggered without the renderer calling requestDevice.
+interface VRServiceClient {
+  // Signals changes to the available physical device runtimes.
+  OnDeviceChanged();
 };
 
 // Provides functionality for integrating environment information into an

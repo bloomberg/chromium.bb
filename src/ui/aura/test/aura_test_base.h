@@ -9,7 +9,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
@@ -66,7 +66,7 @@ class AuraTestBase : public testing::Test {
   client::FocusClient* focus_client() { return helper_->focus_client(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
 #if defined(OS_WIN)
   base::win::ScopedCOMInitializer com_initializer_;

@@ -27,9 +27,9 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/public/worker_pool.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_encoding_registry.h"
 
 namespace blink {
@@ -467,10 +467,10 @@ bool ScriptStreamer::TryStartStreaming(
   // Script streaming tasks are high priority, as they can block the parser,
   // and they can (and probably will) block during their own execution as
   // they wait for more input.
-  //
   // TODO(leszeks): Decrease the priority of these tasks where possible.
-  worker_pool::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::USER_BLOCKING, base::MayBlock()},
+  worker_pool::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING, base::MayBlock()},
       CrossThreadBindOnce(RunScriptStreamingTask,
                           WTF::Passed(std::move(script_streaming_task)),
                           WrapCrossThreadPersistent(this),

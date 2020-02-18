@@ -14,7 +14,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class SiteIsolationPolicyTest : public testing::Test {
@@ -27,7 +27,7 @@ class SiteIsolationPolicyTest : public testing::Test {
   TestingProfileManager* manager() { return &manager_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager manager_;
 
   DISALLOW_COPY_AND_ASSIGN(SiteIsolationPolicyTest);

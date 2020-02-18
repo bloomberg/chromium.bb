@@ -166,7 +166,7 @@ IN_PROC_BROWSER_TEST_F(LoggedInSpokenFeedbackTest, DISABLED_AddBookmark) {
   chrome::ExecuteCommand(browser(), IDC_SHOW_BOOKMARK_BAR);
 
   // Create a bookmark with title "foo".
-  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_PAGE);
+  chrome::ExecuteCommand(browser(), IDC_BOOKMARK_THIS_TAB);
   EXPECT_EQ("Bookmark added! dialog Bookmark name about:blank Edit text",
             speech_monitor_.GetNextUtterance());
   EXPECT_EQ("about:blank", speech_monitor_.GetNextUtterance());
@@ -327,7 +327,8 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, FocusShelf) {
 // Verifies that pressing right arrow button with search button should move
 // focus to the next ShelfItem instead of the last one
 // (see https://crbug.com/947683).
-IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, ShelfIconFocusForward) {
+// This test is flaky, see http://crbug.com/997628
+IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ShelfIconFocusForward) {
   const std::string title("MockApp");
   ChromeLauncherController* controller = ChromeLauncherController::instance();
 
@@ -554,7 +555,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, OverviewMode) {
   EXPECT_TRUE(PerformAcceleratorAction(ash::TOGGLE_OVERVIEW));
   while (true) {
     std::string utterance = speech_monitor_.GetNextUtterance();
-    if (utterance == "Entered window overview mode")
+    if (utterance == "Entered window overview mode. Press tab to navigate.")
       break;
   }
 
@@ -651,7 +652,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
 
   // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
   // it.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&LoggedInSpokenFeedbackTest::SendKeyPress,
                      base::Unretained(this), ui::VKEY_LWIN),
@@ -667,7 +668,7 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackTest, DISABLED_ChromeVoxNextStickyMode) {
 
   // Sticky key has a minimum 100 ms check to prevent key repeat from toggling
   // it.
-  base::PostDelayedTaskWithTraits(
+  base::PostDelayedTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&LoggedInSpokenFeedbackTest::SendKeyPress,
                      base::Unretained(this), ui::VKEY_LWIN),

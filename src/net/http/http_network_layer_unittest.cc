@@ -12,7 +12,7 @@
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_transaction_test_util.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
@@ -21,7 +21,7 @@
 #include "net/spdy/spdy_session_pool.h"
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,8 +34,7 @@ namespace net {
 
 namespace {
 
-class HttpNetworkLayerTest : public PlatformTest,
-                             public WithScopedTaskEnvironment {
+class HttpNetworkLayerTest : public PlatformTest, public WithTaskEnvironment {
  protected:
   HttpNetworkLayerTest()
       : ssl_config_service_(std::make_unique<SSLConfigServiceDefaults>()) {}
@@ -275,7 +274,7 @@ class HttpNetworkLayerTest : public PlatformTest,
   std::unique_ptr<HttpNetworkLayer> factory_;
 
  private:
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
 };
 
 TEST_F(HttpNetworkLayerTest, CreateAndDestroy) {

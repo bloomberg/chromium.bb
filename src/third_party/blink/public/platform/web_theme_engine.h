@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
 #include "base/time/time.h"
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -147,6 +148,11 @@ class WebThemeEngine {
     WebScrollbarOverlayColorTheme scrollbar_theme;
   };
 
+  struct ScrollbarButtonExtraParams {
+    float zoom;
+    bool right_to_left;
+  };
+
   union ExtraParams {
     ScrollbarTrackExtraParams scrollbar_track;
     ButtonExtraParams button;
@@ -156,6 +162,7 @@ class WebThemeEngine {
     InnerSpinButtonExtraParams inner_spin;
     ProgressBarExtraParams progress_bar;
     ScrollbarThumbExtraParams scrollbar_thumb;
+    ScrollbarButtonExtraParams scrollbar_button;
   };
 
   virtual ~WebThemeEngine() {}
@@ -194,7 +201,8 @@ class WebThemeEngine {
                      Part,
                      State,
                      const WebRect&,
-                     const ExtraParams*) {}
+                     const ExtraParams*,
+                     blink::WebColorScheme) {}
 };
 
 }  // namespace blink

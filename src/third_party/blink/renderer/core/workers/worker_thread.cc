@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/inspector/worker_devtools_params.h"
 #include "third_party/blink/renderer/core/inspector/worker_inspector_controller.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/worker_resource_timing_notifier_impl.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
 #include "third_party/blink/renderer/core/workers/worker_backing_thread.h"
@@ -49,6 +50,7 @@
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
+#include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/loader/fetch/worker_resource_timing_notifier.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -136,6 +138,7 @@ class WorkerThread::InterruptData {
 };
 
 WorkerThread::~WorkerThread() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(ThreadSetMutex());
   DCHECK(WorkerThreads().Contains(this));
   WorkerThreads().erase(this);
@@ -151,12 +154,8 @@ WorkerThread::~WorkerThread() {
 void WorkerThread::Start(
     std::unique_ptr<GlobalScopeCreationParams> global_scope_creation_params,
     const base::Optional<WorkerBackingThreadStartupData>& thread_startup_data,
-    std::unique_ptr<WorkerDevToolsParams> devtools_params,
-    ParentExecutionContextTaskRunners* parent_execution_context_task_runners) {
+    std::unique_ptr<WorkerDevToolsParams> devtools_params) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
-  DCHECK(!parent_execution_context_task_runners_);
-  parent_execution_context_task_runners_ =
-      parent_execution_context_task_runners;
   devtools_worker_token_ = devtools_params->devtools_worker_token;
 
   // Synchronously initialize the per-global-scope scheduler to prevent someone
@@ -167,7 +166,10 @@ void WorkerThread::Start(
       CrossThreadBindOnce(&WorkerThread::InitializeSchedulerOnWorkerThread,
                           CrossThreadUnretained(this),
                           CrossThreadUnretained(&waitable_event)));
-  waitable_event.Wait();
+  {
+    base::ScopedAllowBaseSyncPrimitives allow_wait;
+    waitable_event.Wait();
+  }
 
   inspector_task_runner_ =
       InspectorTaskRunner::Create(GetTaskRunner(TaskType::kInternalInspector));
@@ -195,8 +197,9 @@ void WorkerThread::EvaluateClassicScript(
 
 void WorkerThread::FetchAndRunClassicScript(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object_data,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -204,15 +207,16 @@ void WorkerThread::FetchAndRunClassicScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunClassicScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
-          WTF::Passed(outside_settings_object.CopyData()),
-          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          WTF::Passed(std::move(outside_settings_object_data)),
+          WrapCrossThreadPersistent(outside_resource_timing_notifier),
           stack_id));
 }
 
 void WorkerThread::FetchAndRunModuleScript(
     const KURL& script_url,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    WorkerResourceTimingNotifier& outside_resource_timing_notifier,
+    std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+        outside_settings_object_data,
+    WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   PostCrossThreadTask(
@@ -220,8 +224,8 @@ void WorkerThread::FetchAndRunModuleScript(
       CrossThreadBindOnce(
           &WorkerThread::FetchAndRunModuleScriptOnWorkerThread,
           CrossThreadUnretained(this), script_url,
-          WTF::Passed(outside_settings_object.CopyData()),
-          WrapCrossThreadPersistent(&outside_resource_timing_notifier),
+          WTF::Passed(std::move(outside_settings_object_data)),
+          WrapCrossThreadPersistent(outside_resource_timing_notifier),
           credentials_mode));
 }
 
@@ -401,6 +405,7 @@ bool WorkerThread::IsForciblyTerminated() {
 
 void WorkerThread::WaitForShutdownForTesting() {
   DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
+  base::ScopedAllowBaseSyncPrimitives allow_wait;
   shutdown_event_->Wait();
 }
 
@@ -433,20 +438,32 @@ void WorkerThread::ChildThreadTerminatedOnWorkerThread(WorkerThread* child) {
 }
 
 WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy)
+    : WorkerThread(worker_reporting_proxy, Thread::Current()->GetTaskRunner()) {
+}
+
+WorkerThread::WorkerThread(WorkerReportingProxy& worker_reporting_proxy,
+                           scoped_refptr<base::SingleThreadTaskRunner>
+                               parent_thread_default_task_runner)
     : time_origin_(base::TimeTicks::Now()),
       worker_thread_id_(GetNextWorkerThreadId()),
       forcible_termination_delay_(kForcibleTerminationDelay),
       worker_reporting_proxy_(worker_reporting_proxy),
+      parent_thread_default_task_runner_(
+          std::move(parent_thread_default_task_runner)),
       shutdown_event_(RefCountedWaitableEvent::Create()) {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   MutexLocker lock(ThreadSetMutex());
   WorkerThreads().insert(this);
 }
 
 void WorkerThread::ScheduleToTerminateScriptExecution() {
+  DCHECK_CALLED_ON_VALID_THREAD(parent_thread_checker_);
   DCHECK(!forcible_termination_task_handle_.IsActive());
+  // It's safe to post a task bound with |this| to the parent thread default
+  // task runner because this task is canceled on the destructor of this
+  // class on the parent thread.
   forcible_termination_task_handle_ = PostDelayedCancellableTask(
-      *parent_execution_context_task_runners_->Get(TaskType::kInternalDefault),
-      FROM_HERE,
+      *parent_thread_default_task_runner_, FROM_HERE,
       WTF::Bind(&WorkerThread::EnsureScriptExecutionTerminates,
                 WTF::Unretained(this), ExitCode::kAsyncForciblyTerminated),
       forcible_termination_delay_);
@@ -517,6 +534,7 @@ void WorkerThread::InitializeOnWorkerThread(
   DCHECK(IsCurrentThread());
   worker_reporting_proxy_.WillInitializeWorkerContext();
   {
+    TRACE_EVENT0("blink.worker", "WorkerThread::InitializeWorkerContext");
     MutexLocker lock(mutex_);
     DCHECK_EQ(ThreadState::kNotStarted, thread_state_);
 
@@ -550,7 +568,6 @@ void WorkerThread::InitializeOnWorkerThread(
       debugger->WorkerThreadCreated(this);
 
     GlobalScope()->ScriptController()->Initialize(url_for_debugger);
-    worker_reporting_proxy_.DidInitializeWorkerContext();
     v8::HandleScope handle_scope(GetIsolate());
     Platform::Current()->WorkerContextCreated(
         GlobalScope()->ScriptController()->GetContext());
@@ -598,7 +615,10 @@ void WorkerThread::FetchAndRunClassicScriptOnWorkerThread(
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(outside_resource_timing_notifier);
+  if (!outside_resource_timing_notifier) {
+    outside_resource_timing_notifier =
+        MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+  }
   To<WorkerGlobalScope>(GlobalScope())
       ->FetchAndRunClassicScript(
           script_url,
@@ -613,7 +633,10 @@ void WorkerThread::FetchAndRunModuleScriptOnWorkerThread(
         outside_settings_object,
     WorkerResourceTimingNotifier* outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
-  DCHECK(outside_resource_timing_notifier);
+  if (!outside_resource_timing_notifier) {
+    outside_resource_timing_notifier =
+        MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
+  }
   // Worklets have a different code path to import module scripts.
   // TODO(nhiroki): Consider excluding this code path from WorkerThread like
   // Worklets.

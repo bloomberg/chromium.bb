@@ -14,7 +14,7 @@
 #include "chrome/test/views/chrome_test_views_delegate.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/controls/tree/tree_view.h"
@@ -31,7 +31,7 @@ class BookmarkEditorViewTest : public testing::Test {
   BookmarkEditorViewTest() : model_(nullptr) {}
 
   void SetUp() override {
-    profile_.reset(new TestingProfile());
+    profile_ = std::make_unique<TestingProfile>();
     profile_->CreateBookmarkModel(true);
 
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
@@ -59,8 +59,8 @@ class BookmarkEditorViewTest : public testing::Test {
                     const BookmarkNode* parent,
                     const BookmarkEditor::EditDetails& details,
                     BookmarkEditor::Configuration configuration) {
-    editor_.reset(new BookmarkEditorView(profile, parent, details,
-                                         configuration));
+    editor_ = std::make_unique<BookmarkEditorView>(profile, parent, details,
+                                                   configuration);
   }
 
   void SetTitleText(const base::string16& title) {
@@ -74,7 +74,7 @@ class BookmarkEditorViewTest : public testing::Test {
 
   base::string16 GetURLText() const {
     if (editor_->details_.type != BookmarkEditor::EditDetails::NEW_FOLDER)
-      return editor_->url_tf_->text();
+      return editor_->url_tf_->GetText();
 
     return base::string16();
   }
@@ -108,7 +108,7 @@ class BookmarkEditorViewTest : public testing::Test {
 
   views::TreeView* tree_view() { return editor_->tree_view_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   BookmarkModel* model_;
   std::unique_ptr<TestingProfile> profile_;

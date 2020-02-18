@@ -673,6 +673,8 @@ class BBJSONGenerator(object):
         gpu = ['10de', '1cb3']
       elif gpu.startswith('intel-hd-630'):
         gpu = ['8086', '5912']
+      elif gpu.startswith('intel-uhd-630'):
+        gpu = ['8086', '3e92']
       else:
         gpu = gpu.split('-')[0].split(':')
       substitutions['gpu_vendor_id'] = gpu[0]
@@ -996,28 +998,22 @@ class BBJSONGenerator(object):
     # exist on any of the waterfalls or consoles.
     return [
       'GPU FYI Fuchsia Builder',
+      'ANGLE GPU Android Release (Nexus 5X)',
       'ANGLE GPU Linux Release (Intel HD 630)',
       'ANGLE GPU Linux Release (NVIDIA)',
       'ANGLE GPU Mac Release (Intel)',
       'ANGLE GPU Mac Retina Release (AMD)',
       'ANGLE GPU Mac Retina Release (NVIDIA)',
-      'ANGLE GPU Win10 Release (Intel HD 630)',
-      'ANGLE GPU Win10 Release (NVIDIA)',
-      'Dawn GPU Linux Release (Intel HD 630)',
-      'Dawn GPU Linux Release (NVIDIA)',
-      'Dawn GPU Mac Release (Intel)',
-      'Dawn GPU Mac Retina Release (AMD)',
-      'Dawn GPU Mac Retina Release (NVIDIA)',
-      'Dawn GPU Win10 Release (Intel HD 630)',
-      'Dawn GPU Win10 Release (NVIDIA)',
+      'ANGLE GPU Win10 x64 Release (Intel HD 630)',
+      'ANGLE GPU Win10 x64 Release (NVIDIA)',
       'Optional Android Release (Nexus 5X)',
       'Optional Linux Release (Intel HD 630)',
       'Optional Linux Release (NVIDIA)',
       'Optional Mac Release (Intel)',
       'Optional Mac Retina Release (AMD)',
       'Optional Mac Retina Release (NVIDIA)',
-      'Optional Win10 Release (Intel HD 630)',
-      'Optional Win10 Release (NVIDIA)',
+      'Optional Win10 x64 Release (Intel HD 630)',
+      'Optional Win10 x64 Release (NVIDIA)',
       'Win7 ANGLE Tryserver (AMD)',
       # chromium.fyi
       'linux-blink-rel-dummy',
@@ -1030,8 +1026,7 @@ class BBJSONGenerator(object):
       'win10-blink-rel-dummy',
       'Dummy WebKit Mac10.13',
       'WebKit Linux composite_after_paint Dummy Builder',
-      'WebKit Linux layout_ng Dummy Builder',
-      'WebKit Linux root_layer_scrolls Dummy Builder',
+      'WebKit Linux layout_ng_disabled Builder',
       # chromium, due to https://crbug.com/878915
       'win-dbg',
       'win32-dbg',
@@ -1042,11 +1037,9 @@ class BBJSONGenerator(object):
       # Defined in internal configs.
       'chromeos-amd64-generic-google-rel',
       'chromeos-betty-google-rel',
-      # code coverage, see see https://crbug.com/930364
-      'Linux Builder Code Coverage',
-      'Linux Tests Code Coverage',
-      'GPU Linux Builder Code Coverage',
-      'Linux Release Code Coverage (NVIDIA)',
+      'chromeos-kevin-google-rel',
+      # code coverage, see https://crbug.com/1000367.
+      'linux-chromeos-coverage-rel-dummy',
     ]
 
   def check_input_file_consistency(self, verbose=False):
@@ -1071,6 +1064,8 @@ class BBJSONGenerator(object):
                                    'webrtc.chromium.fyi.experimental']:
             # These waterfalls have their bot configs in a different repo.
             # so we don't know about their bot names.
+            continue  # pragma: no cover
+          if waterfall['name'] in ['client.devtools-frontend.integration']:
             continue  # pragma: no cover
           raise self.unknown_bot(bot_name, waterfall['name'])
 

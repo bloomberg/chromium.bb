@@ -8,7 +8,6 @@
 
 #include <utility>
 
-#include "core/fpdfapi/font/cpdf_font.h"
 #include "core/fpdfapi/page/cpdf_pageobject.h"
 #include "core/fpdfapi/page/cpdf_textobject.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
@@ -28,75 +27,6 @@
 #include "fxjs/cjs_field.h"
 #include "fxjs/cjs_icon.h"
 #include "fxjs/js_resources.h"
-
-namespace {
-
-#define ISLATINWORD(u) (u != 0x20 && u <= 0x28FF)
-
-int CountWords(const CPDF_TextObject* pTextObj) {
-  CPDF_Font* pFont = pTextObj->GetFont();
-  if (!pFont)
-    return 0;
-
-  bool bInLatinWord = false;
-  int nWords = 0;
-  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
-    uint32_t charcode = CPDF_Font::kInvalidCharCode;
-    float unused_kerning;
-
-    pTextObj->GetCharInfo(i, &charcode, &unused_kerning);
-    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
-
-    uint16_t unicode = 0;
-    if (swUnicode.GetLength() > 0)
-      unicode = swUnicode[0];
-
-    bool bIsLatin = ISLATINWORD(unicode);
-    if (bIsLatin && bInLatinWord)
-      continue;
-
-    bInLatinWord = bIsLatin;
-    if (unicode != 0x20)
-      nWords++;
-  }
-
-  return nWords;
-}
-
-WideString GetObjWordStr(const CPDF_TextObject* pTextObj, int nWordIndex) {
-  CPDF_Font* pFont = pTextObj->GetFont();
-  if (!pFont)
-    return WideString();
-
-  WideString swRet;
-  int nWords = 0;
-  bool bInLatinWord = false;
-  for (size_t i = 0, sz = pTextObj->CountChars(); i < sz; ++i) {
-    uint32_t charcode = CPDF_Font::kInvalidCharCode;
-    float unused_kerning;
-
-    pTextObj->GetCharInfo(i, &charcode, &unused_kerning);
-    WideString swUnicode = pFont->UnicodeFromCharCode(charcode);
-
-    uint16_t unicode = 0;
-    if (swUnicode.GetLength() > 0)
-      unicode = swUnicode[0];
-
-    bool bIsLatin = ISLATINWORD(unicode);
-    if (!bIsLatin || !bInLatinWord) {
-      bInLatinWord = bIsLatin;
-      if (unicode != 0x20)
-        nWords++;
-    }
-
-    if (nWords - 1 == nWordIndex)
-      swRet += unicode;
-  }
-
-  return swRet;
-}
-
-}  // namespace
 
 const JSPropertySpec CJS_Document::PropertySpecs[] = {
     {"ADBE", get_ADBE_static, set_ADBE_static},
@@ -893,14 +823,14 @@ CJS_Result CJS_Document::set_subject(CJS_Runtime* pRuntime,
 }
 
 CJS_Result CJS_Document::get_title(CJS_Runtime* pRuntime) {
-  if (!m_pFormFillEnv || !m_pFormFillEnv->GetPDFDocument())
+  if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   return getPropertyInternal(pRuntime, "Title");
 }
 
 CJS_Result CJS_Document::set_title(CJS_Runtime* pRuntime,
                                    v8::Local<v8::Value> vp) {
-  if (!m_pFormFillEnv || !m_pFormFillEnv->GetPDFDocument())
+  if (!m_pFormFillEnv)
     return CJS_Result::Failure(JSMessage::kBadObjectError);
   return setPropertyInternal(pRuntime, vp, "Title");
 }
@@ -1300,9 +1230,6 @@ CJS_Result CJS_Document::getPageNthWord(
   bool bStrip = params.size() > 2 ? pRuntime->ToBoolean(params[2]) : true;
 
   CPDF_Document* pDocument = m_pFormFillEnv->GetPDFDocument();
-  if (!pDocument)
-    return CJS_Result::Failure(JSMessage::kBadObjectError);
-
   if (nPageNo < 0 || nPageNo >= pDocument->GetPageCount())
     return CJS_Result::Failure(JSMessage::kValueError);
 
@@ -1319,9 +1246,9 @@ CJS_Result CJS_Document::getPageNthWord(
   for (auto& pPageObj : *page) {
     if (pPageObj->IsText()) {
       CPDF_TextObject* pTextObj = pPageObj->AsText();
-      int nObjWords = CountWords(pTextObj);
+      int nObjWords = pTextObj->CountWords();
       if (nWords + nObjWords >= nWordNo) {
-        swRet = GetObjWordStr(pTextObj, nWordNo - nWords);
+        swRet = pTextObj->GetWordString(nWordNo - nWords);
         break;
       }
       nWords += nObjWords;
@@ -1367,9 +1294,8 @@ CJS_Result CJS_Document::getPageNumWords(
   int nWords = 0;
   for (auto& pPageObj : *page) {
     if (pPageObj->IsText())
-      nWords += CountWords(pPageObj->AsText());
+      nWords += pPageObj->AsText()->CountWords();
   }
-
   return CJS_Result::Success(pRuntime->NewNumber(nWords));
 }
 
@@ -1442,9 +1368,6 @@ CJS_Result CJS_Document::gotoNamedDest(
     return CJS_Result::Failure(JSMessage::kBadObjectError);
 
   CPDF_Document* pDocument = m_pFormFillEnv->GetPDFDocument();
-  if (!pDocument)
-    return CJS_Result::Failure(JSMessage::kBadObjectError);
-
   CPDF_NameTree nameTree(pDocument, "Dests");
   CPDF_Array* destArray =
       nameTree.LookupNamedDest(pDocument, pRuntime->ToWideString(params[0]));

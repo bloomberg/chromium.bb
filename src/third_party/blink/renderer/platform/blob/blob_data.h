@@ -42,6 +42,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/thread_annotations.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -63,11 +64,8 @@ namespace blink {
 namespace mojom {
 namespace blink {
 class Blob;
-using BlobPtr = mojo::InterfacePtr<Blob>;
-using BlobPtrInfo = mojo::InterfacePtrInfo<Blob>;
 
 class BlobReaderClient;
-using BlobReaderClientPtr = mojo::InterfacePtr<BlobReaderClient>;
 
 class BlobRegistry;
 
@@ -196,10 +194,11 @@ class PLATFORM_EXPORT BlobDataHandle
     return base::AdoptRef(new BlobDataHandle(uuid, type, size));
   }
 
-  static scoped_refptr<BlobDataHandle> Create(const String& uuid,
-                                              const String& type,
-                                              uint64_t size,
-                                              mojom::blink::BlobPtrInfo);
+  static scoped_refptr<BlobDataHandle> Create(
+      const String& uuid,
+      const String& type,
+      uint64_t size,
+      mojo::PendingRemote<mojom::blink::Blob>);
 
   String Uuid() const { return uuid_.IsolatedCopy(); }
   String GetType() const { return type_.IsolatedCopy(); }
@@ -209,15 +208,15 @@ class PLATFORM_EXPORT BlobDataHandle
 
   ~BlobDataHandle();
 
-  mojom::blink::BlobPtr CloneBlobPtr();
+  mojo::PendingRemote<mojom::blink::Blob> CloneBlobRemote();
   network::mojom::blink::DataPipeGetterPtr AsDataPipeGetter();
 
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               mojom::blink::BlobReaderClientPtr);
+               mojo::PendingRemote<mojom::blink::BlobReaderClient>);
   void ReadRange(uint64_t offset,
                  uint64_t length,
                  mojo::ScopedDataPipeProducerHandle,
-                 mojom::blink::BlobReaderClientPtr);
+                 mojo::PendingRemote<mojom::blink::BlobReaderClient>);
 
   static mojom::blink::BlobRegistry* GetBlobRegistry();
   static void SetBlobRegistryForTesting(mojom::blink::BlobRegistry*);
@@ -229,18 +228,19 @@ class PLATFORM_EXPORT BlobDataHandle
   BlobDataHandle(const String& uuid,
                  const String& type,
                  uint64_t size,
-                 mojom::blink::BlobPtrInfo);
+                 mojo::PendingRemote<mojom::blink::Blob>);
 
   const String uuid_;
   const String type_;
   const uint64_t size_;
   const bool is_single_unknown_size_file_;
   // This class is supposed to be thread safe. So to be able to use the mojo
-  // Blob interface from multiple threads store a InterfacePtrInfo combined with
+  // Blob interface from multiple threads store a PendingRemote combined with
   // a mutex, and make sure any access to the mojo interface is done protected
   // by the mutex.
-  mojom::blink::BlobPtrInfo blob_info_ GUARDED_BY(blob_info_mutex_);
-  Mutex blob_info_mutex_;
+  mojo::PendingRemote<mojom::blink::Blob> blob_remote_
+      GUARDED_BY(blob_remote_mutex_);
+  Mutex blob_remote_mutex_;
 };
 
 }  // namespace blink

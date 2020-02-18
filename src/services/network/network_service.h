@@ -23,6 +23,7 @@
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/dns/dns_config.h"
 #include "net/http/http_auth_preferences.h"
 #include "net/log/net_log.h"
 #include "net/log/trace_net_log_observer.h"
@@ -56,7 +57,6 @@ class DnsConfigChangeManager;
 class HttpAuthCacheCopier;
 class NetworkContext;
 class NetworkUsageAccumulator;
-class URLRequestContextBuilderMojo;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
     : public service_manager::Service,
@@ -74,22 +74,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   // been invoked, so OSCrypt::SetConfig() does not need to be called before
   // encrypted storage can be used.
   void set_os_crypt_is_configured();
-
-  // Can be used to seed a NetworkContext with a consumer-configured
-  // URLRequestContextBuilder, which |params| will then be applied to. The
-  // results URLRequestContext will be written to |url_request_context|, which
-  // is owned by the NetworkContext, and can be further modified before first
-  // use. The returned NetworkContext must be destroyed before the
-  // NetworkService.
-  //
-  // This method is intended to ease the transition to an out-of-process
-  // NetworkService, and will be removed once that ships. It should only be
-  // called if the network service is disabled.
-  std::unique_ptr<mojom::NetworkContext> CreateNetworkContextWithBuilder(
-      mojom::NetworkContextRequest request,
-      mojom::NetworkContextParamsPtr params,
-      std::unique_ptr<URLRequestContextBuilderMojo> builder,
-      net::URLRequestContext** url_request_context);
 
   // Allows late binding if the mojo request wasn't specified in the
   // constructor.
@@ -138,11 +122,13 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void StartNetLog(base::File file,
                    net::NetLogCaptureMode capture_mode,
                    base::Value constants) override;
-  void SetSSLKeyLogFile(const base::FilePath& file) override;
-  void CreateNetworkContext(mojom::NetworkContextRequest request,
-                            mojom::NetworkContextParamsPtr params) override;
+  void SetSSLKeyLogFile(base::File file) override;
+  void CreateNetworkContext(
+      mojo::PendingReceiver<mojom::NetworkContext> receiver,
+      mojom::NetworkContextParamsPtr params) override;
   void ConfigureStubHostResolver(
-      bool stub_resolver_enabled,
+      bool insecure_dns_client_enabled,
+      net::DnsConfig::SecureDnsMode secure_dns_mode,
       base::Optional<std::vector<mojom::DnsOverHttpsServerPtr>>
           dns_over_https_servers) override;
   void DisableQuic() override;
@@ -176,6 +162,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void RemoveCorbExceptionForPlugin(uint32_t process_id) override;
   void AddExtraMimeTypesForCorb(
       const std::vector<std::string>& mime_types) override;
+  void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      const std::string& scheme,
+      mojom::NetworkService::
+          ExcludeSchemeFromRequestInitiatorSiteLockChecksCallback callback)
+      override;
   void OnMemoryPressure(base::MemoryPressureListener::MemoryPressureLevel
                             memory_pressure_level) override;
   void OnPeerToPeerConnectionsCountChange(uint32_t count) override;
@@ -188,9 +179,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void DumpWithoutCrashing(base::Time dump_request_time) override;
 #endif
 
-  // Returns the shared HttpAuthHandlerFactory for the NetworkService, creating
-  // one if needed.
-  net::HttpAuthHandlerFactory* GetHttpAuthHandlerFactory();
+  // Returns an HttpAuthHandlerFactory for the given NetworkContext.
+  std::unique_ptr<net::HttpAuthHandlerFactory> CreateHttpAuthHandlerFactory(
+      NetworkContext* network_context);
 
   // Notification that a URLLoader is about to start.
   void OnBeforeURLRequest();
@@ -291,9 +282,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<net::HostResolver::Factory> host_resolver_factory_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
 
-  // Must be above |http_auth_handler_factory_|, since it depends on this.
   net::HttpAuthPreferences http_auth_preferences_;
-  std::unique_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory_;
+  mojom::HttpAuthStaticParamsPtr http_auth_static_params_;
   std::unique_ptr<HttpAuthCacheCopier> http_auth_cache_copier_;
 
   // NetworkContexts created by CreateNetworkContext(). They call into the

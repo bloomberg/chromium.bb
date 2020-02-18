@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/windows_version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
@@ -40,6 +41,7 @@
 #include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
+#include "components/browsing_data/core/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/manage_passwords_referrer.h"
@@ -59,12 +61,14 @@
 #include "media/base/media_switches.h"
 #include "net/base/url_util.h"
 #include "services/device/public/cpp/device_features.h"
+#include "third_party/blink/public/common/features.h"
 #include "ui/accessibility/accessibility_switches.h"
+#include "ui/base/accelerators/accelerator.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_CHROMEOS)
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -81,6 +85,7 @@
 #include "chrome/browser/ui/webui/chromeos/network_element_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/chromeos/smb_shares/smb_shares_localized_strings_provider.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/assistant/public/features.h"
@@ -101,12 +106,12 @@
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "device/fido/win/webauthn_api.h"
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/strcat.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_WIN)
 
 #if defined(USE_NSS_CERTS)
@@ -115,10 +120,6 @@
 
 namespace settings {
 namespace {
-
-// Note that settings.html contains a <script> tag which imports a script of
-// the following name. These names must be kept in sync.
-constexpr char kLocalizedStringsFile[] = "strings.js";
 
 #if defined(OS_CHROMEOS)
 // Generates a Google Help URL which includes a "board type" parameter. Some
@@ -195,13 +196,17 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"moreFeaturesLinkDescription",
      IDS_SETTINGS_MORE_FEATURES_LINK_DESCRIPTION},
     {"captionsTitle", IDS_SETTINGS_CAPTIONS},
+    {"captionsSettings", IDS_SETTINGS_CAPTIONS_SETTINGS},
+    {"captionsPreview", IDS_SETTINGS_CAPTIONS_PREVIEW},
     {"captionsTextSize", IDS_SETTINGS_CAPTIONS_TEXT_SIZE},
     {"captionsTextFont", IDS_SETTINGS_CAPTIONS_TEXT_FONT},
     {"captionsTextColor", IDS_SETTINGS_CAPTIONS_TEXT_COLOR},
     {"captionsTextOpacity", IDS_SETTINGS_CAPTIONS_TEXT_OPACITY},
     {"captionsBackgroundOpacity", IDS_SETTINGS_CAPTIONS_BACKGROUND_OPACITY},
-    {"captionsOpacityMin", IDS_SETTINGS_CAPTIONS_OPACITY_MIN},
-    {"captionsOpacityMax", IDS_SETTINGS_CAPTIONS_OPACITY_MAX},
+    {"captionsOpacityOpaque", IDS_SETTINGS_CAPTIONS_OPACITY_OPAQUE},
+    {"captionsOpacitySemiTransparent",
+     IDS_SETTINGS_CAPTIONS_OPACITY_SEMI_TRANSPARENT},
+    {"captionsOpacityTransparent", IDS_SETTINGS_CAPTIONS_OPACITY_TRANSPARENT},
     {"captionsTextShadow", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW},
     {"captionsTextShadowNone", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_NONE},
     {"captionsTextShadowRaised", IDS_SETTINGS_CAPTIONS_TEXT_SHADOW_RAISED},
@@ -307,6 +312,8 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
     {"switchAccessAutoScanLabel", IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_LABEL},
     {"switchAccessAutoScanSpeedLabel",
      IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_SPEED_LABEL},
+    {"switchAccessAutoScanKeyboardSpeedLabel",
+     IDS_SETTINGS_SWITCH_ACCESS_AUTO_SCAN_KEYBOARD_SPEED_LABEL},
     {"durationInSeconds", IDS_SETTINGS_DURATION_IN_SECONDS},
     {"manageAccessibilityFeatures",
      IDS_SETTINGS_ACCESSIBILITY_MANAGE_ACCESSIBILITY_FEATURES},
@@ -396,6 +403,11 @@ void AddA11yStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean(
       "showExperimentalAccessibilitySwitchAccess",
       cmd.HasSwitch(::switches::kEnableExperimentalAccessibilitySwitchAccess));
+
+  html_source->AddBoolean(
+      "showExperimentalAccessibilitySwitchAccessImprovedTextInput",
+      cmd.HasSwitch(
+          ::switches::kEnableExperimentalAccessibilitySwitchAccessText));
 #endif
 }
 
@@ -403,7 +415,7 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
     {"aboutProductLogoAlt", IDS_SHORT_PRODUCT_LOGO_ALT_TEXT},
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"aboutReportAnIssue", IDS_SETTINGS_ABOUT_PAGE_REPORT_AN_ISSUE},
 #endif
 
@@ -431,6 +443,8 @@ void AddAboutStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_ABOUT_PAGE_RELAUNCH_AND_POWERWASH},
     {"aboutRollbackInProgress", IDS_SETTINGS_UPGRADE_ROLLBACK_IN_PROGRESS},
     {"aboutRollbackSuccess", IDS_SETTINGS_UPGRADE_ROLLBACK_SUCCESS},
+    {"aboutUpdateOsSettingsLink",
+     IDS_SETTINGS_ABOUT_SEE_OS_SETTINGS_FOR_UPDATE_MESSAGE},
     {"aboutUpgradeUpdatingChannelSwitch",
      IDS_SETTINGS_UPGRADE_UPDATING_CHANNEL_SWITCH},
     {"aboutUpgradeSuccessChannelSwitch",
@@ -567,9 +581,6 @@ void AddCrostiniStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "showCrostiniExportImport",
       crostini::IsCrostiniExportImportUIAllowedForProfile(profile));
-  html_source->AddBoolean(
-      "enableCrostiniUsbDeviceSupport",
-      base::FeatureList::IsEnabled(chromeos::features::kCrostiniUsbSupport));
 }
 
 void AddPluginVmStrings(content::WebUIDataSource* html_source,
@@ -622,10 +633,42 @@ void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
 void AddAppsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
       {"appsPageTitle", IDS_SETTINGS_APPS_TITLE},
-      {"manageYourApps", IDS_SETTINGS_APPS_LINK_TEXT},
-      {"manageYourAppsSublabel", IDS_SETTINGS_APPS_LINK_SUBLABEL_TEXT},
+      {"appManagementTitle", IDS_SETTINGS_APPS_LINK_TEXT},
   };
 
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          base::size(localized_strings));
+}
+
+void AddAppManagementStrings(content::WebUIDataSource* html_source) {
+  static constexpr LocalizedString localized_strings[] = {
+      {"appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE},
+      {"appNoPermission", IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
+      {"camera", IDS_APP_MANAGEMENT_CAMERA},
+      {"contacts", IDS_APP_MANAGEMENT_CONTACTS},
+      {"controlledByPolicy", IDS_CONTROLLED_SETTING_POLICY},
+      {"lessApps", IDS_APP_MANAGEMENT_LESS_APPS},
+      {"location", IDS_APP_MANAGEMENT_LOCATION},
+      {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
+      {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
+      {"moreSettings", IDS_APP_MANAGEMENT_MORE_SETTINGS},
+      {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
+      {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},
+      {"openAndroidSettings", IDS_APP_MANAGEMENT_ANDROID_SETTINGS},
+      {"openExtensionsSettings", IDS_APP_MANAGEMENT_EXTENSIONS_SETTINGS},
+      {"openSiteSettings", IDS_APP_MANAGEMENT_SITE_SETTING},
+      {"permissions", IDS_APP_MANAGEMENT_PERMISSIONS},
+      {"pinControlledByPolicy", IDS_APP_MANAGEMENT_PIN_ENFORCED_BY_POLICY},
+      {"pinToShelf", IDS_APP_MANAGEMENT_PIN_TO_SHELF},
+      {"policyAppUninstallPolicy", IDS_APP_MANAGEMENT_POLICY_APP_POLICY_STRING},
+      {"size", IDS_APP_MANAGEMENT_SIZE},
+      {"storage", IDS_APP_MANAGEMENT_STORAGE},
+      {"systemAppUninstallPolicy", IDS_APP_MANAGEMENT_SYSTEM_APP_POLICY_STRING},
+      {"thisAppCan", IDS_APP_MANAGEMENT_THIS_APP_CAN},
+      {"title", IDS_APP_MANAGEMENT_TITLE},
+      {"uninstallApp", IDS_APP_MANAGEMENT_UNINSTALL_APP},
+      {"version", IDS_APP_MANAGEMENT_VERSION},
+  };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           base::size(localized_strings));
 }
@@ -678,7 +721,6 @@ void AddAppearanceStrings(content::WebUIDataSource* html_source,
     {"personalizationPageTitle", IDS_OS_SETTINGS_PERSONALIZATION},
     {"openWallpaperApp", IDS_OS_SETTINGS_OPEN_WALLPAPER_APP},
     {"setWallpaper", IDS_OS_SETTINGS_SET_WALLPAPER},
-    {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
 #endif
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"showWindowDecorations", IDS_SHOW_WINDOW_DECORATIONS},
@@ -842,6 +884,7 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"mouseSpeed", IDS_SETTINGS_MOUSE_SPEED_LABEL},
       {"mouseSwapButtons", IDS_SETTINGS_MOUSE_SWAP_BUTTONS_LABEL},
       {"mouseReverseScroll", IDS_SETTINGS_MOUSE_REVERSE_SCROLL_LABEL},
+      {"pointerAccelerationLabel", IDS_SETTINGS_POINTER_ACCELERATION_LABEL},
   };
   AddLocalizedStringsBulk(html_source, kPointersStrings,
                           base::size(kPointersStrings));
@@ -988,6 +1031,10 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
   html_source->AddBoolean("hasExternalTouchDevice",
                           display::HasExternalTouchscreenDevice());
 
+  html_source->AddBoolean(
+      "allowDisableMouseAcceleration",
+      base::FeatureList::IsEnabled(features::kAllowDisableMouseAcceleration));
+
   static constexpr LocalizedString kStorageStrings[] = {
       {"storageTitle", IDS_SETTINGS_STORAGE_TITLE},
       {"storageItemInUse", IDS_SETTINGS_STORAGE_ITEM_IN_USE},
@@ -1019,10 +1066,10 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
       {"storageDeleteAllButtonTitle",
        IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE},
       {"storageExternal", IDS_SETTINGS_STORAGE_EXTERNAL},
-      {"storageAndroidAppsExternalDrives",
-       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES},
       {"storageAndroidAppsExternalDrivesNote",
-       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE}};
+       IDS_SETTINGS_STORAGE_ANDROID_APPS_ACCESS_EXTERNAL_DRIVES_NOTE},
+      {"storageExternalStorageListHeader",
+       IDS_SETTINGS_STORAGE_EXTERNAL_STORAGE_LIST_HEADER}};
   AddLocalizedStringsBulk(html_source, kStorageStrings,
                           base::size(kStorageStrings));
 
@@ -1098,7 +1145,7 @@ void AddDownloadsStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 void AddChromeCleanupStrings(content::WebUIDataSource* html_source) {
   const wchar_t kUnwantedSoftwareProtectionWhitePaperUrl[] =
       L"https://www.google.ca/chrome/browser/privacy/"
@@ -1227,11 +1274,11 @@ void AddIncompatibleApplicationsStrings(content::WebUIDataSource* html_source) {
   html_source->AddString("incompatibleApplicationsSubpageLearnHow",
                          learn_how_text);
 }
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
 void AddResetStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kLocalizedStrings[] = {
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetPageTitle", IDS_SETTINGS_RESET_AND_CLEANUP},
 #else
     {"resetPageTitle", IDS_SETTINGS_RESET},
@@ -1254,7 +1301,7 @@ void AddResetStrings(content::WebUIDataSource* html_source) {
     {"resetAutomatedDialogTitle", IDS_SETTINGS_RESET_AUTOMATED_DIALOG_TITLE},
     {"resetProfileBannerButton", IDS_SETTINGS_RESET_BANNER_RESET_BUTTON_TEXT},
     {"resetProfileBannerDescription", IDS_SETTINGS_RESET_BANNER_TEXT},
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {"resetCleanupComputerTrigger",
      IDS_SETTINGS_RESET_CLEAN_UP_COMPUTER_TRIGGER},
 #endif
@@ -1381,8 +1428,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_ADD_CONNECTION_NOT_ALLOWED},
       {"internetAddThirdPartyVPN", IDS_SETTINGS_INTERNET_ADD_THIRD_PARTY_VPN},
       {"internetAddVPN", IDS_SETTINGS_INTERNET_ADD_VPN},
-      {"internetAddArcVPN", IDS_SETTINGS_INTERNET_ADD_ARC_VPN},
-      {"internetAddArcVPNProvider", IDS_SETTINGS_INTERNET_ADD_ARC_VPN_PROVIDER},
       {"internetAddWiFi", IDS_SETTINGS_INTERNET_ADD_WIFI},
       {"internetConfigName", IDS_SETTINGS_INTERNET_CONFIG_NAME},
       {"internetDetailPageTitle", IDS_SETTINGS_INTERNET_DETAIL},
@@ -1400,8 +1445,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_TOGGLE_TETHER_SUBTEXT},
       {"internetToggleWiFiA11yLabel",
        IDS_SETTINGS_INTERNET_TOGGLE_WIFI_ACCESSIBILITY_LABEL},
-      {"internetToggleWiMAXA11yLabel",
-       IDS_SETTINGS_INTERNET_TOGGLE_WIMAX_ACCESSIBILITY_LABEL},
       {"knownNetworksAll", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_ALL},
       {"knownNetworksButton", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_BUTTON},
       {"knownNetworksMessage", IDS_SETTINGS_INTERNET_KNOWN_NETWORKS_MESSAGE},
@@ -1452,6 +1495,10 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
       {"networkShared", IDS_SETTINGS_INTERNET_NETWORK_SHARED},
       {"networkVpnBuiltin", IDS_NETWORK_TYPE_VPN_BUILTIN},
       {"networkOutOfRange", IDS_SETTINGS_INTERNET_WIFI_NETWORK_OUT_OF_RANGE},
+      {"cellularContactSpecificCarrier",
+       IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_SPECIFIC_CARRIER},
+      {"cellularContactDefaultCarrier",
+       IDS_SETTINGS_INTERNET_CELLULAR_CONTACT_DEFAULT_CARRIER},
       {"tetherPhoneOutOfRange",
        IDS_SETTINGS_INTERNET_TETHER_PHONE_OUT_OF_RANGE},
       {"gmscoreNotificationsTitle",
@@ -1521,6 +1568,8 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
     {"removeLanguage", IDS_SETTINGS_LANGUAGES_LANGUAGES_LIST_REMOVE},
     {"addLanguages", IDS_SETTINGS_LANGUAGES_LANGUAGES_ADD},
 #if defined(OS_CHROMEOS)
+    {"osLanguagesPageTitle", IDS_OS_SETTINGS_LANGUAGES_AND_INPUT_PAGE_TITLE},
+    {"osLanguagesListTitle", IDS_OS_SETTINGS_LANGUAGES_LIST_TITLE},
     {"inputMethodsListTitle", IDS_SETTINGS_LANGUAGES_INPUT_METHODS_LIST_TITLE},
     {"inputMethodEnabled", IDS_SETTINGS_LANGUAGES_INPUT_METHOD_ENABLED},
     {"inputMethodsExpandA11yLabel",
@@ -1612,6 +1661,15 @@ void AddChromeOSUserStrings(content::WebUIDataSource* html_source,
       "secondaryUserBannerText",
       l10n_util::GetStringFUTF16(IDS_SETTINGS_SECONDARY_USER_BANNER,
                                  base::ASCIIToUTF16(primary_user_email)));
+  html_source->AddString("browserSettingsBannerText",
+                         l10n_util::GetStringFUTF16(
+                             IDS_SETTINGS_BROWSER_SETTINGS_BANNER,
+                             base::ASCIIToUTF16(chrome::kChromeUISettingsURL)));
+  html_source->AddString(
+      "osSettingsBannerText",
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_OS_SETTINGS_BANNER,
+          base::ASCIIToUTF16(chrome::kChromeUIOSSettingsURL)));
   html_source->AddBoolean("isActiveDirectoryUser",
                           user && user->IsActiveDirectoryUser());
 
@@ -1688,6 +1746,14 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_LABEL},
       {"passwordsAutosigninDescription",
        IDS_SETTINGS_PASSWORDS_AUTOSIGNIN_CHECKBOX_DESC},
+      {"passwordsLeakDetectionLabel",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_LABEL},
+      {"passwordsLeakDetectionSignedInDescription",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_IN_DESC},
+      {"passwordsLeakDetectionSignedOutDisabledDescription",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_DISABLED_DESC},
+      {"passwordsLeakDetectionSignedOutEnabledDescription",
+       IDS_SETTINGS_PASSWORDS_LEAK_DETECTION_SIGNED_OUT_ENABLED_DESC},
       {"savedPasswordsHeading", IDS_SETTINGS_PASSWORDS_SAVED_HEADING},
       {"passwordExceptionsHeading", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING},
       {"deletePasswordException", IDS_SETTINGS_PASSWORDS_DELETE_EXCEPTION},
@@ -1766,6 +1832,16 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
               /*is_test_mode=*/false,
               /*log_manager=*/nullptr));
 
+  html_source->AddBoolean(
+      "passwordsLeakDetectionEnabled",
+      base::FeatureList::IsEnabled(password_manager::features::kLeakDetection));
+
+  ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
+  html_source->AddString(
+      "undoDescription",
+      l10n_util::GetStringFUTF16(IDS_UNDO_DESCRIPTION,
+                                 undoAccelerator.GetShortcutText()));
+
   AddLocalizedStringsBulk(html_source, kLocalizedStrings,
                           base::size(kLocalizedStrings));
 }
@@ -1835,6 +1911,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_KERBEROS_ACCOUNTS_REMOVE_ACCOUNT_LABEL},
     {"kerberosAccountsAccountRemovedTip",
      IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REMOVED_TIP},
+    {"kerberosAccountsAccountRefreshedTip",
+     IDS_SETTINGS_KERBEROS_ACCOUNTS_ACCOUNT_REFRESHED_TIP},
     {"kerberosAccountsSignedIn", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_IN},
     {"kerberosAccountsSignedOut", IDS_SETTINGS_KERBEROS_ACCOUNTS_SIGNED_OUT},
     {"kerberosAccountsReauthenticationLabel",
@@ -1909,7 +1987,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_FINGERPRINT_LESS_SECURE},
     {"lockScreenDeleteFingerprintLabel",
      IDS_SETTINGS_PEOPLE_LOCK_SCREEN_DELETE_FINGERPRINT_ARIA_LABEL},
-    {"lockScreenMediaKeys", IDS_SETTINGS_PEOPLE_LOCK_SCREEN_MEDIA_KEYS},
     {"lockScreenNotificationHide",
      IDS_ASH_SETTINGS_LOCK_SCREEN_NOTIFICATION_HIDE},
     {"lockScreenNotificationHideSensitive",
@@ -1960,6 +2037,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"photoDiscardAccessibleText", IDS_SETTINGS_PHOTO_DISCARD_ACCESSIBLE_TEXT},
     {"photoModeAccessibleText", IDS_SETTINGS_PHOTO_MODE_ACCESSIBLE_TEXT},
     {"videoModeAccessibleText", IDS_SETTINGS_VIDEO_MODE_ACCESSIBLE_TEXT},
+    {"wifiConfigurationsCheckboxLabel",
+     IDS_SETTINGS_WIFI_CONFIGURATIONS_CHECKBOX_LABEL},
 #else   // !defined(OS_CHROMEOS)
     {"domainManagedProfile", IDS_SETTINGS_PEOPLE_DOMAIN_MANAGED_PROFILE},
     {"editPerson", IDS_SETTINGS_EDIT_PERSON},
@@ -2223,7 +2302,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
     {"addCupsPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_ADD_PRINTER},
     {"editPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_EDIT},
     {"removePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTERS_REMOVE},
-    {"configurePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONFIGURE_BUTTON},
+    {"setupPrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SETUP_BUTTON},
+    {"savePrinter", IDS_SETTINGS_PRINTING_CUPS_PRINTER_SAVE_BUTTON},
     {"searchLabel", IDS_SETTINGS_PRINTING_CUPS_SEARCH_LABEL},
     {"noSearchResults", IDS_SEARCH_NO_RESULTS},
     {"printerDetailsTitle", IDS_SETTINGS_PRINTING_CUPS_PRINTER_DETAILS_TITLE},
@@ -2276,6 +2356,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_ADDED_PRINTER_DONE_MESSAGE},
     {"printerEditedSuccessfulMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_EDITED_PRINTER_DONE_MESSAGE},
+    {"printerUnavailableMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_UNAVAILABLE_MESSAGE},
     {"noPrinterNearbyMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_PRINTER_NEARBY},
     {"searchingNearbyPrinters",
@@ -2300,6 +2382,12 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
      IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_INVALID_PRINTER_UPDATE},
     {"requireNetworkMessage",
      IDS_SETTINGS_PRINTING_CUPS_PRINTER_REQUIRE_INTERNET_MESSAGE},
+    {"checkNetworkMessage",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_CHECK_CONNECTION_MESSAGE},
+    {"noInternetConnection",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_NO_INTERNET_CONNECTION},
+    {"checkNetworkAndTryAgain",
+     IDS_SETTINGS_PRINTING_CUPS_PRINTER_CONNECT_TO_NETWORK_SUBTEXT},
     {"editPrinterDialogTitle",
      IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_DIALOG_TITLE},
     {"editPrinterButtonText", IDS_SETTINGS_PRINTING_CUPS_EDIT_PRINTER_BUTTON},
@@ -2594,7 +2682,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
     {"appCacheOrigin", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
     {"cookieAppCache", IDS_SETTINGS_COOKIES_APPLICATION_CACHE},
     {"cookieCacheStorage", IDS_SETTINGS_COOKIES_CACHE_STORAGE},
-    {"cookieChannelId", IDS_SETTINGS_COOKIES_CHANNEL_ID},
     {"cookieDatabaseStorage", IDS_SETTINGS_COOKIES_DATABASE_STORAGE},
     {"cookieFileSystem", IDS_SETTINGS_COOKIES_FILE_SYSTEM},
     {"cookieFlashLso", IDS_SETTINGS_COOKIES_FLASH_LSO},
@@ -2610,10 +2697,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_COOKIES_LOCAL_STORAGE_LAST_MODIFIED_LABEL},
     {"cacheStorageOrigin", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL},
     {"cacheStorageSize", IDS_SETTINGS_COOKIES_LOCAL_STORAGE_SIZE_ON_DISK_LABEL},
-    {"channelIdServerId", IDS_SETTINGS_COOKIES_CHANNEL_ID_ORIGIN_LABEL},
-    {"channelIdType", IDS_SETTINGS_COOKIES_CHANNEL_ID_TYPE_LABEL},
-    {"channelIdCreated", IDS_SETTINGS_COOKIES_CHANNEL_ID_CREATED_LABEL},
-    {"channelIdExpires", IDS_SETTINGS_COOKIES_CHANNEL_ID_EXPIRES_LABEL},
     {"cookieAccessibleToScript",
      IDS_SETTINGS_COOKIES_COOKIE_ACCESSIBLE_TO_SCRIPT_LABEL},
     {"cookieContent", IDS_SETTINGS_COOKIES_COOKIE_CONTENT_LABEL},
@@ -2739,6 +2822,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_ASK_RECOMMENDED},
     {"siteSettingsUsbDevicesBlock",
      IDS_SETTINGS_SITE_SETTINGS_USB_DEVICES_BLOCK},
+    {"siteSettingsNativeFileSystemWrite",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE},
+    {"siteSettingsNativeFileSystemWriteAsk",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK},
+    {"siteSettingsNativeFileSystemWriteAskRecommended",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_ASK_RECOMMENDED},
+    {"siteSettingsNativeFileSystemWriteBlock",
+     IDS_SETTINGS_SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE_BLOCK},
     {"siteSettingsRemoveZoomLevel",
      IDS_SETTINGS_SITE_SETTINGS_REMOVE_ZOOM_LEVEL},
     {"siteSettingsZoomLevels", IDS_SETTINGS_SITE_SETTINGS_ZOOM_LEVELS},
@@ -2848,6 +2939,14 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL},
     {"siteSettingsCookieRemoveAllShown",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_SHOWN},
+    {"siteSettingsCookieRemoveAllThirdParty",
+     IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_ALL_THIRD_PARTY},
+    {"siteSettingsCookieRemoveThirdPartyDialogTitle",
+     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_DIALOG_TITLE},
+    {"siteSettingsCookieRemoveThirdPartyConfirmation",
+     IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE_REMOVE_CONFIRMATION},
+    {"siteSettingsCookiesClearThirdParty",
+     IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES},
     {"siteSettingsCookieRemoveDialogTitle",
      IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE},
     {"siteSettingsCookieRemoveMultipleConfirmation",
@@ -2951,10 +3050,6 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(media::kAutoplayWhitelistSettings));
 
   html_source->AddBoolean(
-      "enableSensorsContentSetting",
-      base::FeatureList::IsEnabled(features::kSensorContentSetting));
-
-  html_source->AddBoolean(
       "enablePaymentHandlerContentSetting",
       base::FeatureList::IsEnabled(features::kServiceWorkerPaymentApps));
 
@@ -2966,6 +3061,15 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddBoolean(
       "enableBluetoothScanningContentSetting",
       cmd.HasSwitch(::switches::kEnableWebBluetoothScanning));
+
+  html_source->AddBoolean(
+      "enableNativeFileSystemWriteContentSetting",
+      base::FeatureList::IsEnabled(::blink::features::kNativeFileSystemAPI));
+
+  html_source->AddBoolean(
+      "enableRemovingAllThirdPartyCookies",
+      base::FeatureList::IsEnabled(
+          browsing_data::features::kEnableRemovingAllThirdPartyCookies));
 }
 
 #if defined(OS_CHROMEOS)
@@ -3128,6 +3232,20 @@ void AddExtensionsStrings(content::WebUIDataSource* html_source) {
 
 void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString kSecurityKeysStrings[] = {
+      {"securityKeysBioEnrollmentDialogTitle",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_DIALOG_TITLE},
+      {"securityKeysBioEnrollmentEnrollingLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_ENROLLING_LABEL},
+      {"securityKeysBioEnrollmentLabel",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_LABEL},
+      {"securityKeysBioEnrollmentNoEnrollments",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_NO_ENROLLMENTS},
+      {"securityKeysBioEnrollmentPinPrompt",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_PIN_PROMPT},
+      {"securityKeysBioEnrollmentSubpageDescription",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_SUBPAGE_DESCRIPTION},
+      {"securityKeysBioEnrollmentTouch",
+       IDS_SETTINGS_SECURITY_KEYS_BIO_ENROLLMENT_TOUCH},
       {"securityKeysPINTooShort",
        IDS_SETTINGS_SECURITY_KEYS_PIN_ERROR_TOO_SHORT},
       {"securityKeysConfirmPIN", IDS_SETTINGS_SECURITY_KEYS_CONFIRM_PIN},
@@ -3201,24 +3319,22 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
   };
   AddLocalizedStringsBulk(html_source, kSecurityKeysStrings,
                           base::size(kSecurityKeysStrings));
-
-  html_source->AddBoolean(
-      "enableSecurityKeysSubpage",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport)
+  bool win_native_api_available = false;
 #if defined(OS_WIN)
-          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
+  win_native_api_available =
+      base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) &&
+      device::WinWebAuthnApi::GetDefault()->IsAvailable();
 #endif
-  );
+  html_source->AddBoolean("enableSecurityKeysSubpage",
+                          !win_native_api_available);
   html_source->AddBoolean(
       "enableSecurityKeysCredentialManagement",
-      base::FeatureList::IsEnabled(device::kWebAuthPINSupport) &&
-          base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement)
-#if defined(OS_WIN)
-          && (!base::FeatureList::IsEnabled(device::kWebAuthUseNativeWinApi) ||
-              !device::WinWebAuthnApi::GetDefault()->IsAvailable())
-#endif
-  );
+      base::FeatureList::IsEnabled(device::kWebAuthCredentialManagement) &&
+          !win_native_api_available);
+  html_source->AddBoolean(
+      "enableSecurityKeysBioEnrollment",
+      base::FeatureList::IsEnabled(device::kWebAuthBiometricEnrollment) &&
+          !win_native_api_available);
 }
 
 }  // namespace
@@ -3230,10 +3346,10 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddAutofillStrings(html_source, profile);
   AddAppearanceStrings(html_source, profile);
 
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
   AddChromeCleanupStrings(html_source);
   AddIncompatibleApplicationsStrings(html_source);
-#endif  // defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#endif  // defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
 
   AddChangePasswordStrings(html_source);
   AddClearBrowsingDataStrings(html_source, profile);
@@ -3255,12 +3371,12 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddWebContentStrings(html_source);
 
 #if defined(OS_CHROMEOS)
-  AddCrostiniStrings(html_source, profile);
-  AddPluginVmStrings(html_source, profile);
   AddAndroidAppStrings(html_source);
+  AddAppManagementStrings(html_source);
   AddAppsStrings(html_source);
   AddBluetoothStrings(html_source);
   AddChromeOSUserStrings(html_source, profile);
+  AddCrostiniStrings(html_source, profile);
   AddDateTimeStrings(html_source);
   AddDeviceStrings(html_source);
   AddEasyUnlockStrings(html_source);
@@ -3268,6 +3384,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddInternetStrings(html_source);
   AddMultideviceStrings(html_source);
   AddParentalControlStrings(html_source);
+  AddPluginVmStrings(html_source, profile);
   AddUsersStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);
@@ -3290,7 +3407,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   policy_indicator::AddLocalizedStrings(html_source);
   AddSecurityKeysStrings(html_source);
 
-  html_source->SetJsonPath(kLocalizedStringsFile);
+  html_source->UseStringsJs();
 }
 
 }  // namespace settings

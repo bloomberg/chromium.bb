@@ -20,7 +20,7 @@ from chromite.lib import parallel
 class TestWrapperProgressBarOperation(operation.ProgressBarOperation):
   """Inherit from operation.ProgressBarOperation for testing."""
   def ParseOutput(self, output=None):
-    print("Calling ParseOutput")
+    print('Calling ParseOutput')
     print(self._stdout.read())
 
 

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import itertools
+
 import mock
 
 from chromite.cbuildbot import relevant_changes

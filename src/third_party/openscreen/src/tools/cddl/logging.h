@@ -59,7 +59,7 @@ class Logger {
     return data;
   }
 
-  const char* MakePrintable(const std::string data);
+  const char* MakePrintable(const std::string& data);
 
   // Writes a log message to this instance of Logger's text file.
   template <typename... Args>

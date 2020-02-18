@@ -40,6 +40,7 @@ class CSSStyleDeclaration;
 class ImmutableCSSPropertyValueSet;
 class MutableCSSPropertyValueSet;
 class StyleSheetContents;
+enum class CSSValueID;
 enum class SecureContextMode;
 
 class CORE_EXPORT CSSPropertyValueSet
@@ -175,8 +176,8 @@ class CSSLazyPropertyParser
   DISALLOW_COPY_AND_ASSIGN(CSSLazyPropertyParser);
 };
 
-class CORE_EXPORT alignas(Member<const CSSValue>) alignas(
-    CSSPropertyValueMetadata) ImmutableCSSPropertyValueSet
+class CORE_EXPORT ALIGNAS(alignof(Member<const CSSValue>))
+    ALIGNAS(alignof(CSSPropertyValueMetadata)) ImmutableCSSPropertyValueSet
     : public CSSPropertyValueSet {
  public:
   ImmutableCSSPropertyValueSet(const CSSPropertyValue*,

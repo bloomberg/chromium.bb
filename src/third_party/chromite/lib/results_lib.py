@@ -64,9 +64,9 @@ Result = collections.namedtuple('Result', _result_fields)
 class _Results(object):
   """Static class that collects the results of our BuildStages as they run."""
 
-  SUCCESS = "Stage was successful"
-  FORGIVEN = "Stage failed but was optional"
-  SKIPPED = "Stage was skipped"
+  SUCCESS = 'Stage was successful'
+  FORGIVEN = 'Stage failed but was optional'
+  SKIPPED = 'Stage was skipped'
   NON_FAILURE_TYPES = (SUCCESS, FORGIVEN, SKIPPED)
 
   SPLIT_TOKEN = r'\_O_/'

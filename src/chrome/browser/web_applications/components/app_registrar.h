@@ -6,18 +6,27 @@
 #define CHROME_BROWSER_WEB_APPLICATIONS_COMPONENTS_APP_REGISTRAR_H_
 
 #include <map>
+#include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
+#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 class GURL;
 class Profile;
 
+namespace extensions {
+class BookmarkAppRegistrar;
+}
+
 namespace web_app {
 
 class AppRegistrarObserver;
+class WebAppRegistrar;
 
 enum class ExternalInstallSource;
 
@@ -28,19 +37,23 @@ class AppRegistrar {
 
   virtual void Init(base::OnceClosure callback) = 0;
 
-  // Returns true if the app with the specified |start_url| is currently fully
-  // locally installed. The provided |start_url| must exactly match the launch
-  // URL for the app; this method does not consult the app scope or match URLs
-  // that fall within the scope.
-  virtual bool IsInstalled(const GURL& start_url) const = 0;
+  // Safe downcasts. TODO(loyso): Subclass WebAppProvider to get rid of these:
+  virtual WebAppRegistrar* AsWebAppRegistrar();
+  virtual extensions::BookmarkAppRegistrar* AsBookmarkAppRegistrar();
 
   // Returns true if the app with |app_id| is currently installed.
   virtual bool IsInstalled(const AppId& app_id) const = 0;
+
+  // Returns true if the app with |app_id| is currently fully locally installed.
+  virtual bool IsLocallyInstalled(const AppId& app_id) const = 0;
 
   // Returns true if the app with |app_id| was previously uninstalled by the
   // user. For example, if a user uninstalls a default app ('default apps' are
   // considered external apps), then this will return true.
   virtual bool WasExternalAppUninstalledByUser(const AppId& app_id) const = 0;
+
+  // Returns true if the app was installed by user, false if default installed.
+  virtual bool WasInstalledByUser(const AppId& app_id) const = 0;
 
   // Returns the AppIds and URLs of apps externally installed from
   // |install_source|.
@@ -58,7 +71,7 @@ class AppRegistrar {
   // |app_id| from |install_source|.
   virtual bool HasExternalAppWithInstallSource(
       const AppId& app_id,
-      web_app::ExternalInstallSource install_source) const;
+      ExternalInstallSource install_source) const;
 
   // Searches for the first app id in the registry for which the |url| is in
   // scope.
@@ -76,14 +89,32 @@ class AppRegistrar {
       const AppId& app_id) const = 0;
   virtual const GURL& GetAppLaunchURL(const AppId& app_id) const = 0;
   virtual base::Optional<GURL> GetAppScope(const AppId& app_id) const = 0;
+  virtual LaunchContainer GetAppLaunchContainer(const AppId& app_id) const = 0;
+  virtual void SetAppLaunchContainer(const AppId& app_id,
+                                     LaunchContainer launch_container) = 0;
+
+  virtual std::vector<AppId> GetAppIds() const = 0;
+
+  // Finds all apps that are installed under |scope|.
+  std::vector<AppId> FindAppsInScope(const GURL& scope) const;
+
+  // Returns whether the app is a shortcut app (as opposed to a PWA).
+  bool IsShortcutApp(const AppId& app_id) const;
+
+  // Returns true if the app with the specified |start_url| is currently fully
+  // locally installed. The provided |start_url| must exactly match the launch
+  // URL for the app; this method does not consult the app scope or match URLs
+  // that fall within the scope.
+  bool IsLocallyInstalled(const GURL& start_url) const;
 
   void AddObserver(AppRegistrarObserver* observer);
   void RemoveObserver(const AppRegistrarObserver* observer);
 
+  void NotifyWebAppInstalled(const AppId& app_id);
+
  protected:
   Profile* profile() const { return profile_; }
 
-  void NotifyWebAppInstalled(const AppId& app_id);
   void NotifyWebAppUninstalled(const AppId& app_id);
   void NotifyAppRegistrarShutdown();
 

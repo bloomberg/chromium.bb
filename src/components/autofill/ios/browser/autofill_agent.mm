@@ -52,7 +52,7 @@
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
 #import "ios/web/public/navigation/navigation_context.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ui/gfx/geometry/rect.h"
 #include "url/gurl.h"
@@ -422,6 +422,15 @@ autofillManagerFromWebState:(web::WebState*)webState
                                  inFrame:frame
                        completionHandler:suggestionHandledCompletion_];
     suggestionHandledCompletion_ = nil;
+  } else if (suggestion.identifier ==
+             autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
+    web::WebFrame* frame =
+        GetWebFrameWithId(webState_, base::SysNSStringToUTF8(frameID));
+    autofill::AutofillManager* autofillManager =
+        [self autofillManagerFromWebState:webState_ webFrame:frame];
+    if (autofillManager) {
+      autofillManager->OnUserAcceptedCardsFromAccountOption();
+    }
   } else {
     NOTREACHED() << "unknown identifier " << suggestion.identifier;
   }
@@ -530,6 +539,10 @@ autofillManagerFromWebState:(web::WebState*)webState
       // Show "GPay branding" icon
       value = base::SysUTF16ToNSString(popup_suggestion.value);
       has_gpay_branding = true;
+    } else if (popup_suggestion.frontend_id ==
+               autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS) {
+      // Show opt-in for showing cards from account.
+      value = base::SysUTF16ToNSString(popup_suggestion.value);
     }
 
     if (!value)

@@ -205,13 +205,13 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
 
   // Media router.
   source_map->RegisterSource(
-      "chrome/common/media_router/mojo/media_controller.mojom",
+      "chrome/common/media_router/mojom/media_controller.mojom",
       IDR_MEDIA_CONTROLLER_MOJOM_JS);
   source_map->RegisterSource(
-      "chrome/common/media_router/mojo/media_router.mojom",
+      "chrome/common/media_router/mojom/media_router.mojom",
       IDR_MEDIA_ROUTER_MOJOM_JS);
   source_map->RegisterSource(
-      "chrome/common/media_router/mojo/media_status.mojom",
+      "chrome/common/media_router/mojom/media_status.mojom",
       IDR_MEDIA_STATUS_MOJOM_JS);
   source_map->RegisterSource("media_router_bindings",
                              IDR_MEDIA_ROUTER_BINDINGS_JS);
@@ -225,10 +225,10 @@ void ChromeExtensionsDispatcherDelegate::PopulateSourceMap(
                              IDR_MOJO_IP_ENDPOINT_MOJOM_JS);
   source_map->RegisterSource("url/mojom/origin.mojom", IDR_ORIGIN_MOJOM_JS);
   source_map->RegisterSource("url/mojom/url.mojom", IDR_MOJO_URL_MOJOM_JS);
-  source_map->RegisterSource("media/mojo/interfaces/remoting_common.mojom",
+  source_map->RegisterSource("media/mojo/mojom/remoting_common.mojom",
                              IDR_REMOTING_COMMON_JS);
   source_map->RegisterSource(
-      "media/mojo/interfaces/mirror_service_remoting.mojom",
+      "media/mojo/mojom/mirror_service_remoting.mojom",
       IDR_MEDIA_REMOTING_JS);
   source_map->RegisterSource(
       "components/mirroring/mojom/mirroring_service_host.mojom",

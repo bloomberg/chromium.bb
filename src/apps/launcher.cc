@@ -18,6 +18,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -155,9 +156,9 @@ class PlatformAppPathLauncher
   }
 
   void LaunchWithRelativePath(const base::FilePath& current_directory) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE,
-        {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock(),
          base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
         base::BindOnce(&PlatformAppPathLauncher::MakePathAbsolute, this,
                        current_directory));
@@ -173,7 +174,7 @@ class PlatformAppPathLauncher
          it != entry_paths_.end(); ++it) {
       if (!DoMakePathAbsolute(current_directory, &*it)) {
         LOG(WARNING) << "Cannot make absolute path from " << it->value();
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {BrowserThread::UI},
             base::BindOnce(&PlatformAppPathLauncher::LaunchWithBasicData,
                            this));
@@ -181,9 +182,8 @@ class PlatformAppPathLauncher
       }
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&PlatformAppPathLauncher::Launch, this));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&PlatformAppPathLauncher::Launch, this));
   }
 
   void OnFilesValid(std::unique_ptr<std::set<base::FilePath>> directory_paths) {
@@ -252,7 +252,7 @@ class PlatformAppPathLauncher
       return;
 
     // Find file handler from the platform app for the file being opened.
-    const extensions::FileHandlerInfo* handler = NULL;
+    const FileHandlerInfo* handler = nullptr;
     if (!handler_id_.empty()) {
       handler = FileHandlerForId(*app, handler_id_);
       if (handler) {
@@ -261,7 +261,7 @@ class PlatformAppPathLauncher
             LOG(WARNING)
                 << "Extension does not provide a valid file handler for "
                 << entry_paths_[i].value();
-            handler = NULL;
+            handler = nullptr;
             break;
           }
         }

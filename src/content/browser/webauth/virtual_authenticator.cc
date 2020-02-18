@@ -10,6 +10,8 @@
 #include "base/containers/span.h"
 #include "base/guid.h"
 #include "crypto/ec_private_key.h"
+#include "device/fido/public_key_credential_rp_entity.h"
+#include "device/fido/public_key_credential_user_entity.h"
 #include "device/fido/virtual_ctap2_device.h"
 #include "device/fido/virtual_u2f_device.h"
 
@@ -36,35 +38,53 @@ VirtualAuthenticator::VirtualAuthenticator(
 
 VirtualAuthenticator::~VirtualAuthenticator() = default;
 
-void VirtualAuthenticator::AddBinding(
-    blink::test::mojom::VirtualAuthenticatorRequest request) {
-  binding_set_.AddBinding(this, std::move(request));
+void VirtualAuthenticator::AddReceiver(
+    mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticator> receiver) {
+  receiver_set_.Add(this, std::move(receiver));
 }
 
 bool VirtualAuthenticator::AddRegistration(
     std::vector<uint8_t> key_handle,
-    const std::vector<uint8_t>& rp_id_hash,
+    base::span<const uint8_t, device::kRpIdHashLength> rp_id_hash,
     const std::vector<uint8_t>& private_key,
     int32_t counter) {
-  if (rp_id_hash.size() != device::kRpIdHashLength)
-    return false;
-
   auto ec_private_key =
       crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
   if (!ec_private_key)
     return false;
 
   return state_->registrations
-      .emplace(
-          std::move(key_handle),
-          ::device::VirtualFidoDevice::RegistrationData(
-              std::move(ec_private_key),
-              base::make_span<device::kRpIdHashLength>(rp_id_hash), counter))
+      .emplace(std::move(key_handle),
+               ::device::VirtualFidoDevice::RegistrationData(
+                   std::move(ec_private_key), std::move(rp_id_hash), counter))
       .second;
+}
+
+bool VirtualAuthenticator::AddResidentRegistration(
+    std::vector<uint8_t> key_handle,
+    std::string rp_id,
+    const std::vector<uint8_t>& private_key,
+    int32_t counter,
+    std::vector<uint8_t> user_handle) {
+  auto ec_private_key =
+      crypto::ECPrivateKey::CreateFromPrivateKeyInfo(private_key);
+  if (!ec_private_key)
+    return false;
+
+  return state_->InjectResidentKey(
+      std::move(key_handle),
+      device::PublicKeyCredentialRpEntity(std::move(rp_id)),
+      device::PublicKeyCredentialUserEntity(std::move(user_handle)), counter,
+      std::move(ec_private_key));
 }
 
 void VirtualAuthenticator::ClearRegistrations() {
   state_->registrations.clear();
+}
+
+bool VirtualAuthenticator::RemoveRegistration(
+    const std::vector<uint8_t>& key_handle) {
+  return state_->registrations.erase(key_handle) != 0;
 }
 
 void VirtualAuthenticator::SetUserPresence(bool is_user_present) {
@@ -118,9 +138,16 @@ void VirtualAuthenticator::GetRegistrations(GetRegistrationsCallback callback) {
 void VirtualAuthenticator::AddRegistration(
     blink::test::mojom::RegisteredKeyPtr registration,
     AddRegistrationCallback callback) {
-  std::move(callback).Run(AddRegistration(
-      std::move(registration->key_handle), registration->application_parameter,
-      registration->private_key, registration->counter));
+  if (registration->application_parameter.size() != device::kRpIdHashLength) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  std::move(callback).Run(
+      AddRegistration(std::move(registration->key_handle),
+                      base::make_span<device::kRpIdHashLength>(
+                          registration->application_parameter),
+                      registration->private_key, registration->counter));
 }
 
 void VirtualAuthenticator::ClearRegistrations(

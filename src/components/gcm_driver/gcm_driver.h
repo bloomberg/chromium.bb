@@ -103,8 +103,6 @@ class GCMDriver {
       base::OnceCallback<void(std::string p256dh, std::string auth_secret)>;
   using GetGCMStatisticsCallback =
       base::Callback<void(const GCMClient::GCMStatistics& stats)>;
-  using SendWebPushMessageCallback =
-      base::OnceCallback<void(base::Optional<std::string>)>;
 
   // Enumeration to be used with GetGCMStatistics() for indicating whether the
   // existing logs should be cleared or kept.
@@ -184,7 +182,7 @@ class GCMDriver {
                                   const std::string& fcm_token,
                                   crypto::ECPrivateKey* vapid_key,
                                   WebPushMessage message,
-                                  SendWebPushMessageCallback callback);
+                                  WebPushCallback callback);
 
   // Get the public encryption key and the authentication secret associated with
   // |app_id|. If none have been associated with |app_id| yet, they will be
@@ -254,7 +252,7 @@ class GCMDriver {
 
   // Removes the account mapping information reated to |account_id| from
   // persistent store.
-  virtual void RemoveAccountMapping(const std::string& account_id) = 0;
+  virtual void RemoveAccountMapping(const CoreAccountId& account_id) = 0;
 
   // Getter and setter of last token fetch time.
   virtual base::Time GetLastTokenFetchTime() = 0;
@@ -371,7 +369,7 @@ class GCMDriver {
   void OnMessageEncrypted(const std::string& fcm_token,
                           crypto::ECPrivateKey* vapid_key,
                           WebPushMessage message,
-                          SendWebPushMessageCallback callback,
+                          WebPushCallback callback,
                           GCMEncryptionResult result,
                           std::string payload);
 

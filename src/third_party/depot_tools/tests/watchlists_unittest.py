@@ -9,26 +9,26 @@
 
 import os
 import sys
+import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from testing_support import super_mox
-
+from third_party import mock
 import watchlists
 
 
-class WatchlistsTest(super_mox.SuperMoxTestBase):
+class WatchlistsTest(unittest.TestCase):
 
   def setUp(self):
-    super_mox.SuperMoxTestBase.setUp(self)
-    self.mox.StubOutWithMock(watchlists.Watchlists, '_HasWatchlistsFile')
-    self.mox.StubOutWithMock(watchlists.Watchlists, '_ContentsOfWatchlistsFile')
-    self.mox.StubOutWithMock(watchlists.logging, 'error')
+    super(WatchlistsTest, self).setUp()
+    mock.patch('watchlists.Watchlists._HasWatchlistsFile').start()
+    mock.patch('watchlists.Watchlists._ContentsOfWatchlistsFile').start()
+    mock.patch('watchlists.logging.error').start()
+    self.addCleanup(mock.patch.stopall)
 
   def testMissingWatchlistsFileOK(self):
     """Test that we act gracefully if WATCHLISTS file is missing."""
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(False)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = False
 
     wl = watchlists.Watchlists('/some/random/path')
     self.assertEqual(wl.GetWatchersForPaths(['some_path']), [])
@@ -36,10 +36,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
   def testGarbledWatchlistsFileOK(self):
     """Test that we act gracefully if WATCHLISTS file is garbled."""
     contents = 'some garbled and unwanted text'
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    watchlists.logging.error(super_mox.mox.IgnoreArg())
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists('/a/path')
     self.assertEqual(wl.GetWatchersForPaths(['some_path']), [])
@@ -57,9 +55,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
           'a_module': [],
         },
       } """
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists('/a/path')
     self.assertEqual(wl.GetWatchersForPaths(['a_module']), [])
@@ -77,9 +74,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
           'a_module': %s,
         },
       } """ % watchers
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists('/a/path')
     self.assertEqual(wl.GetWatchersForPaths(['a_module']), watchers)
@@ -101,9 +97,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
           'views': ['x2@chromium.org'],
         },
       } """
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists('/a/path')
     self.assertEqual(wl.GetWatchersForPaths(['file_views_mac']),
@@ -127,9 +122,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
           'views': %s,
         },
       } """ % (watchers, watchers)
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists('/a/path')
     self.assertEqual(wl.GetWatchersForPaths(['file_views_mac']), watchers)
@@ -150,9 +144,8 @@ class WatchlistsTest(super_mox.SuperMoxTestBase):
       } """ % watchers
     saved_sep = watchlists.os.sep
     watchlists.os.sep = '\\'  # to pose as win32
-    watchlists.Watchlists._HasWatchlistsFile().AndReturn(True)
-    watchlists.Watchlists._ContentsOfWatchlistsFile().AndReturn(contents)
-    self.mox.ReplayAll()
+    watchlists.Watchlists._HasWatchlistsFile.return_value = True
+    watchlists.Watchlists._ContentsOfWatchlistsFile.return_value = contents
 
     wl = watchlists.Watchlists(r'a\path')
     returned_watchers = wl.GetWatchersForPaths(

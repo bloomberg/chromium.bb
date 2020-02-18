@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
 
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 
@@ -32,16 +33,21 @@ class ResizeObserver;
 class ScriptPromiseResolver;
 class V8XRFrameRequestCallback;
 class XR;
+class XRAnchorSet;
 class XRCanvasInputProvider;
-class XRSpace;
+class XRHitTestOptionsInit;
 class XRRay;
 class XRReferenceSpace;
 class XRRenderState;
 class XRRenderStateInit;
+class XRRigidTransform;
+class XRSpace;
 class XRViewData;
 class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
+
+using XRSessionFeatureSet = WTF::HashSet<device::mojom::XRSessionFeature>;
 
 class XRSession final
     : public EventTargetWithInlineData,
@@ -65,24 +71,26 @@ class XRSession final
             SessionMode mode,
             EnvironmentBlendMode environment_blend_mode,
             bool uses_input_eventing,
-            bool sensorless_session);
+            bool sensorless_session,
+            XRSessionFeatureSet enabled_features);
   ~XRSession() override = default;
 
   XR* xr() const { return xr_; }
   const String& environmentBlendMode() const { return blend_mode_string_; }
+  const String& visibilityState() const { return visibility_state_string_; }
   XRRenderState* renderState() const { return render_state_; }
   XRWorldTrackingState* worldTrackingState() { return world_tracking_state_; }
   XRSpace* viewerSpace() const;
+  XRAnchorSet* trackedAnchors() const { return nullptr; }
 
   bool immersive() const;
 
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(blur, kBlur)
-  DEFINE_ATTRIBUTE_EVENT_LISTENER(focus, kFocus)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(end, kEnd)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(select, kSelect)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(inputsourceschange, kInputsourceschange)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectstart, kSelectstart)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(selectend, kSelectend)
+  DEFINE_ATTRIBUTE_EVENT_LISTENER(visibilitychange, kVisibilitychange)
 
   void updateRenderState(XRRenderStateInit* render_state_init,
                          ExceptionState& exception_state);
@@ -92,10 +100,17 @@ class XRSession final
   ScriptPromise requestReferenceSpace(ScriptState* script_state,
                                       const String& type);
 
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRRigidTransform* initial_pose,
+                             XRSpace* space);
+
   int requestAnimationFrame(V8XRFrameRequestCallback* callback);
   void cancelAnimationFrame(int id);
 
   XRInputSourceArray* inputSources() const;
+
+  ScriptPromise requestHitTestSource(ScriptState* script_state,
+                                     XRHitTestOptionsInit* options);
 
   ScriptPromise requestHitTest(ScriptState* script_state,
                                XRRay* ray,
@@ -229,11 +244,13 @@ class XRSession final
   const SessionMode mode_;
   const bool environment_integration_;
   String blend_mode_string_;
+  String visibility_state_string_;
   Member<XRRenderState> render_state_;
   Member<XRWorldTrackingState> world_tracking_state_;
   Member<XRWorldInformation> world_information_;
   HeapVector<Member<XRRenderStateInit>> pending_render_state_;
 
+  XRSessionFeatureSet enabled_features_;
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;

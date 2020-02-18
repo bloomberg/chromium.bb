@@ -130,7 +130,8 @@ class SystemNetworkContextManager {
 
   // Returns configuration that would be sent to the stub DNS resolver.
   static void GetStubResolverConfigForTesting(
-      bool* stub_resolver_enabled,
+      bool* insecure_stub_resolver_enabled,
+      net::DnsConfig::SecureDnsMode* secure_dns_mode,
       base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
           dns_over_https_servers);
 
@@ -138,6 +139,12 @@ class SystemNetworkContextManager {
   GetHttpAuthStaticParamsForTesting();
   static network::mojom::HttpAuthDynamicParamsPtr
   GetHttpAuthDynamicParamsForTesting();
+
+  // Enables Certificate Transparency and enforcing the Chrome Certificate
+  // Transparency Policy. For test use only. Use base::nullopt_t to reset to
+  // the default state.
+  static void SetEnableCertificateTransparencyForTesting(
+      base::Optional<bool> enabled);
 
  private:
   class URLLoaderFactoryForSystem;

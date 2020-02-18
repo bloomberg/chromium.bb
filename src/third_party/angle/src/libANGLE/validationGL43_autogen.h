@@ -89,17 +89,17 @@ bool ValidateGetObjectPtrLabel(Context *context,
                                GLsizei *length,
                                GLchar *label);
 bool ValidateGetProgramResourceLocationIndex(Context *context,
-                                             GLuint program,
+                                             ShaderProgramID programPacked,
                                              GLenum programInterface,
                                              const GLchar *name);
-bool ValidateInvalidateBufferData(Context *context, GLuint buffer);
+bool ValidateInvalidateBufferData(Context *context, BufferID bufferPacked);
 bool ValidateInvalidateBufferSubData(Context *context,
-                                     GLuint buffer,
+                                     BufferID bufferPacked,
                                      GLintptr offset,
                                      GLsizeiptr length);
-bool ValidateInvalidateTexImage(Context *context, GLuint texture, GLint level);
+bool ValidateInvalidateTexImage(Context *context, TextureID texturePacked, GLint level);
 bool ValidateInvalidateTexSubImage(Context *context,
-                                   GLuint texture,
+                                   TextureID texturePacked,
                                    GLint level,
                                    GLint xoffset,
                                    GLint yoffset,
@@ -131,13 +131,13 @@ bool ValidatePushDebugGroup(Context *context,
                             GLsizei length,
                             const GLchar *message);
 bool ValidateShaderStorageBlockBinding(Context *context,
-                                       GLuint program,
+                                       ShaderProgramID programPacked,
                                        GLuint storageBlockIndex,
                                        GLuint storageBlockBinding);
 bool ValidateTexBufferRange(Context *context,
                             GLenum target,
                             GLenum internalformat,
-                            GLuint buffer,
+                            BufferID bufferPacked,
                             GLintptr offset,
                             GLsizeiptr size);
 bool ValidateTexStorage3DMultisample(Context *context,
@@ -149,7 +149,7 @@ bool ValidateTexStorage3DMultisample(Context *context,
                                      GLsizei depth,
                                      GLboolean fixedsamplelocations);
 bool ValidateTextureView(Context *context,
-                         GLuint texture,
+                         TextureID texturePacked,
                          GLenum target,
                          GLuint origtexture,
                          GLenum internalformat,

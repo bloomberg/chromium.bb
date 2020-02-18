@@ -22,6 +22,7 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
+#include "components/viz/service/display/damage_frame_annotator.h"
 #include "components/viz/service/display/direct_renderer.h"
 #include "components/viz/service/display/display_client.h"
 #include "components/viz/service/display/display_scheduler.h"
@@ -35,7 +36,8 @@
 #include "components/viz/service/surfaces/surface.h"
 #include "components/viz/service/surfaces/surface_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "gpu/ipc/scheduler_sequence.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/overlay_transform_utils.h"
@@ -148,6 +150,10 @@ Display::Display(
 }
 
 Display::~Display() {
+#if DCHECK_IS_ON()
+  allow_schedule_gpu_task_during_destruction_.reset(
+      new gpu::ScopedAllowScheduleGpuTask);
+#endif
 #if defined(OS_ANDROID)
   // In certain cases, drivers hang when tearing down the display. Finishing
   // before teardown appears to address this. As we're during display teardown,
@@ -187,6 +193,7 @@ void Display::Initialize(DisplayClient* client,
                          bool enable_shared_images) {
   DCHECK(client);
   DCHECK(surface_manager);
+  gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
   client_ = client;
   surface_manager_ = surface_manager;
   if (scheduler_)
@@ -372,9 +379,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
       renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
   bool needs_surface_occluding_damage_rect =
       renderer_->OverlayNeedsSurfaceOccludingDamageRect();
-  aggregator_.reset(new SurfaceAggregator(
+  aggregator_ = std::make_unique<SurfaceAggregator>(
       surface_manager_, resource_provider_.get(), output_partial_list,
-      needs_surface_occluding_damage_rect));
+      needs_surface_occluding_damage_rect);
+  if (settings_.show_aggregated_damage)
+    aggregator_->SetFrameAnnotator(std::make_unique<DamageFrameAnnotator>());
+
   aggregator_->set_output_is_secure(output_is_secure_);
   aggregator_->SetOutputColorSpace(device_color_space_);
   // Consider adding a softare limit as well.
@@ -403,6 +413,7 @@ void Display::OnContextLost() {
 
 bool Display::DrawAndSwap() {
   TRACE_EVENT0("viz", "Display::DrawAndSwap");
+  gpu::ScopedAllowScheduleGpuTask allow_schedule_gpu_task;
 
   if (!current_surface_id_.is_valid()) {
     TRACE_EVENT_INSTANT0("viz", "No root surface.", TRACE_EVENT_SCOPE_THREAD);
@@ -530,6 +541,22 @@ bool Display::DrawAndSwap() {
       UMA_HISTOGRAM_COUNTS_1M("Compositing.DirectRenderer.GL.DrawFrameUs",
                               draw_timer->Elapsed().InMicroseconds());
     }
+
+    std::vector<std::unique_ptr<Surface::PresentationHelper>>
+        presentation_helper_list;
+    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
+      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
+      if (surface) {
+        std::unique_ptr<Surface::PresentationHelper> helper =
+            surface->TakePresentationHelperForPresentNotification();
+        if (helper) {
+          surface->OnWasDrawn(helper->frame_token(), draw_timer->Begin());
+          presentation_helper_list.push_back(std::move(helper));
+        }
+      }
+    }
+    pending_surfaces_with_presentation_helpers_.emplace_back(
+        std::make_pair(now_time, std::move(presentation_helper_list)));
   } else {
     TRACE_EVENT_INSTANT0("viz", "Draw skipped.", TRACE_EVENT_SCOPE_THREAD);
   }
@@ -548,18 +575,6 @@ bool Display::DrawAndSwap() {
           ui::LATENCY_BEGIN_FRAME_DISPLAY_COMPOSITOR_COMPONENT,
           scheduler_->current_frame_time());
     }
-
-    std::vector<std::unique_ptr<Surface::PresentationHelper>>
-        presentation_helper_list;
-    for (const auto& id_entry : aggregator_->previous_contained_surfaces()) {
-      Surface* surface = surface_manager_->GetSurfaceForId(id_entry.first);
-      if (surface) {
-        presentation_helper_list.push_back(
-            surface->TakePresentationHelperForPresentNotification());
-      }
-    }
-    pending_surfaces_with_presentation_helpers_.emplace_back(
-        std::make_pair(now_time, std::move(presentation_helper_list)));
 
     ui::LatencyInfo::TraceIntermediateFlowEvents(frame.metadata.latency_info,
                                                  "Display::DrawAndSwap");
@@ -681,8 +696,7 @@ void Display::DidReceivePresentationFeedback(
       "benchmark,viz", "Display::FrameDisplayed", TRACE_EVENT_SCOPE_THREAD,
       copy_feedback.timestamp);
   for (auto& presentation_helper : presentation_helper_list) {
-    if (presentation_helper)
-      presentation_helper->DidPresent(feedback);
+    presentation_helper->DidPresent(copy_feedback);
   }
   pending_surfaces_with_presentation_helpers_.pop_front();
 }
@@ -738,6 +752,16 @@ bool Display::SurfaceHasUnackedFrame(const SurfaceId& surface_id) const {
 void Display::DidFinishFrame(const BeginFrameAck& ack) {
   for (auto& observer : observers_)
     observer.OnDisplayDidFinishFrame(ack);
+
+  // Only used with experimental de-jelly effect. Forces us to produce a new
+  // un-skewed frame if the last one had a de-jelly skew applied. This prevents
+  // de-jelly skew from staying on screen for more than one frame.
+  if (aggregator_ && aggregator_->last_frame_had_jelly()) {
+    if (scheduler_) {
+      scheduler_->SetNeedsOneBeginFrame();
+      scheduler_->set_needs_draw();
+    }
+  }
 }
 
 const SurfaceId& Display::CurrentSurfaceId() {

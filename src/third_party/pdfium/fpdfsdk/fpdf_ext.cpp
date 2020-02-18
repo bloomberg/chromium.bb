@@ -6,7 +6,6 @@
 
 #include "public/fpdf_ext.h"
 
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
@@ -14,10 +13,6 @@
 #include "core/fxcrt/fx_extension.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "third_party/base/ptr_util.h"
-
-#ifdef PDF_ENABLE_XFA
-#include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#endif  // PDF_ENABLE_XFA
 
 static_assert(static_cast<int>(UnsupportedFeature::kDocumentXFAForm) ==
                   FPDF_UNSP_DOC_XFAFORM,
@@ -74,8 +69,7 @@ FSDK_SetUnSpObjProcessHandler(UNSUPPORT_INFO* unsp_info) {
   if (!unsp_info || unsp_info->version != 1)
     return false;
 
-  CPDF_ModuleMgr::Get()->SetUnsupportInfoAdapter(
-      pdfium::MakeUnique<fpdfapi::UnsupportedInfoAdapter>(unsp_info));
+  SetPDFUnsupportInfo(unsp_info);
   return true;
 }
 

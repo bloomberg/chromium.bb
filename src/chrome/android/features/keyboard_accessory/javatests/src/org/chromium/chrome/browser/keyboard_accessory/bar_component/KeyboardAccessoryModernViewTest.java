@@ -6,8 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.assertThat;
 import static android.support.test.espresso.matcher.ViewMatchers.isRoot;
+import static android.support.test.espresso.matcher.ViewMatchers.isSelected;
+import static android.support.test.espresso.matcher.ViewMatchers.withChild;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
 
 import static org.hamcrest.Matchers.is;
@@ -19,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.AUTOFILL_SUGGESTION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
@@ -159,6 +163,7 @@ public class KeyboardAccessoryModernViewTest {
                                                                      public void onTabLayoutUnbound(
                                                                              TabLayout tabs) {}
                                                                  }))
+                            .with(DISABLE_ANIMATIONS_FOR_TESTING, true)
                             .build();
             ViewStub viewStub =
                     mActivityTestRule.getActivity().findViewById(R.id.keyboard_accessory_stub);
@@ -246,11 +251,13 @@ public class KeyboardAccessoryModernViewTest {
 
         onView(isRoot()).check((root, e) -> waitForView((ViewGroup) root, withText("Johnathan")));
         waitForHelpBubble(withText(R.string.iph_keyboard_accessory_fill_password));
+        onView(withChild(withText("Johnathan"))).check(matches(isSelected()));
         onView(withText("Johnathan")).perform(click());
 
         assertThat(tracker.wasDismissed(), is(true));
         assertThat(tracker.getLastEmittedEvent(),
                 is(EventConstants.KEYBOARD_ACCESSORY_PASSWORD_AUTOFILLED));
+        onView(withChild(withText("Johnathan"))).check(matches(not(isSelected())));
     }
 
     @Test

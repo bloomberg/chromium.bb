@@ -79,7 +79,13 @@ void ReloadBypassingCacheBlockUntilNavigationsComplete(
 }
 
 bool NavigateToURL(Shell* window, const GURL& url) {
-  return NavigateToURL(window->web_contents(), url);
+  return NavigateToURL(window, url, url);
+}
+
+bool NavigateToURL(Shell* window,
+                   const GURL& url,
+                   const GURL& expected_commit_url) {
+  return NavigateToURL(window->web_contents(), url, expected_commit_url);
 }
 
 bool NavigateToURLFromRenderer(const ToRenderFrameHost& adapter,
@@ -134,7 +140,7 @@ void LookupAndLogNameAndIdOfFirstCamera() {
   MediaStreamManager* media_stream_manager =
       BrowserMainLoop::GetInstance()->media_stream_manager();
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           [](MediaStreamManager* media_stream_manager,

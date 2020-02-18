@@ -11,7 +11,10 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/optional.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/dbus/concierge_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_features.h"
 #include "components/exo/shell_surface_util.h"
@@ -48,6 +51,46 @@ void SetArcCpuRestrictionCallback(
   LOG(ERROR) << "Failed to " << message << " ARC";
 }
 
+void OnSetArcVmCpuRestriction(
+    base::Optional<vm_tools::concierge::SetVmCpuRestrictionResponse> response) {
+  if (!response) {
+    LOG(ERROR) << "Failed to call SetVmCpuRestriction";
+    return;
+  }
+  if (!response->success())
+    LOG(ERROR) << "SetVmCpuRestriction for ARCVM failed";
+}
+
+void SetArcVmCpuRestriction(bool do_restrict) {
+  auto* client = chromeos::DBusThreadManager::Get()->GetConciergeClient();
+  if (!client) {
+    LOG(WARNING) << "ConciergeClient is not available";
+    return;
+  }
+
+  vm_tools::concierge::SetVmCpuRestrictionRequest request;
+  request.set_cpu_cgroup(vm_tools::concierge::CPU_CGROUP_ARCVM);
+  request.set_cpu_restriction_state(
+      do_restrict ? vm_tools::concierge::CPU_RESTRICTION_BACKGROUND
+                  : vm_tools::concierge::CPU_RESTRICTION_FOREGROUND);
+
+  client->SetVmCpuRestriction(request,
+                              base::BindOnce(&OnSetArcVmCpuRestriction));
+}
+
+void SetArcContainerCpuRestriction(bool do_restrict) {
+  if (!chromeos::SessionManagerClient::Get()) {
+    LOG(WARNING) << "SessionManagerClient is not available";
+    return;
+  }
+
+  const login_manager::ContainerCpuRestrictionState state =
+      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
+                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
+  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
+      state, base::BindOnce(SetArcCpuRestrictionCallback, state));
+}
+
 }  // namespace
 
 bool IsArcAvailable() {
@@ -74,16 +117,6 @@ bool IsArcAvailable() {
 
 bool IsArcVmEnabled() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kEnableArcVm);
-}
-
-void EnableArcVmForTesting() {
-  base::CommandLine::ForCurrentProcess()->AppendSwitch(
-      chromeos::switches::kEnableArcVm);
-}
-
-void DisableArcVmForTesting() {
-  base::CommandLine::ForCurrentProcess()->RemoveSwitch(
       chromeos::switches::kEnableArcVm);
 }
 
@@ -167,12 +200,6 @@ bool IsArcAllowedForUser(const user_manager::User* user) {
     return false;
   }
 
-  if (user->GetType() == user_manager::USER_TYPE_CHILD &&
-      !base::FeatureList::IsEnabled(arc::kAvailableForChildAccountFeature)) {
-    VLOG(1) << "ARC usage by Child users is prohibited";
-    return false;
-  }
-
   return true;
 }
 
@@ -205,21 +232,16 @@ int GetTaskIdFromWindowAppId(const std::string& app_id) {
 }
 
 void SetArcCpuRestriction(bool do_restrict) {
-  if (!chromeos::SessionManagerClient::Get()) {
-    LOG(WARNING) << "SessionManagerClient is not available";
-    return;
-  }
-
   // Ignore any calls to restrict the ARC container if the specified command
   // line flag is set.
   if (chromeos::switches::IsArcCpuRestrictionDisabled() && do_restrict)
     return;
 
-  const login_manager::ContainerCpuRestrictionState state =
-      do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
-                  : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
-  chromeos::SessionManagerClient::Get()->SetArcCpuRestriction(
-      state, base::BindOnce(SetArcCpuRestrictionCallback, state));
+  if (IsArcVmEnabled()) {
+    SetArcVmCpuRestriction(do_restrict);
+  } else {
+    SetArcContainerCpuRestriction(do_restrict);
+  }
 }
 
 bool IsArcForceCacheAppIcon() {
@@ -249,13 +271,15 @@ bool IsArcPlayAutoInstallDisabled() {
 
 // static
 int32_t GetLcdDensityForDeviceScaleFactor(float device_scale_factor) {
-  // Keep this consistent with wayland_client.cpp on Android side.
-  // TODO(oshima): Consider sending this through wayland.
+  // TODO(b/131884992): Remove the logic to update default lcd density once
+  // per-display-density is supported.
   constexpr float kEpsilon = 0.001;
   if (std::abs(device_scale_factor - 2.25f) < kEpsilon)
     return 280;
   if (std::abs(device_scale_factor - 1.6f) < kEpsilon)
     return 213;  // TVDPI
+  if (std::abs(device_scale_factor - 2.5f) < kEpsilon)
+    return 320;  // XHDPI
 
   constexpr float kChromeScaleToAndroidScaleRatio = 0.75f;
   constexpr int32_t kDefaultDensityDpi = 160;

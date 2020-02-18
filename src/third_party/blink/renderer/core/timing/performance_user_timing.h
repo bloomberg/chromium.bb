@@ -26,18 +26,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_USER_TIMING_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_USER_TIMING_H_
 
-#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/timing/performance.h"
 #include "third_party/blink/renderer/core/timing/performance_timing.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
 class ExceptionState;
 class Performance;
 
-typedef uint64_t (PerformanceTiming::*NavigationTimingFunction)() const;
 using PerformanceEntryMap = HeapHashMap<AtomicString, PerformanceEntryVector>;
 
 class UserTiming final : public GarbageCollected<UserTiming> {
@@ -54,6 +52,7 @@ class UserTiming final : public GarbageCollected<UserTiming> {
   PerformanceMeasure* Measure(ScriptState*,
                               const AtomicString& measure_name,
                               const StringOrDouble& start,
+                              base::Optional<double> duration,
                               const StringOrDouble& end,
                               const ScriptValue& detail,
                               ExceptionState&);
@@ -82,4 +81,4 @@ class UserTiming final : public GarbageCollected<UserTiming> {
 
 }  // namespace blink
 
-#endif  // !defined(PerformanceUserTiming_h)
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_TIMING_PERFORMANCE_USER_TIMING_H_

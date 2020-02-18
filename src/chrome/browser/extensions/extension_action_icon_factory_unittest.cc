@@ -21,7 +21,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/image_util.h"
 #include "skia/ext/image_operations.h"
@@ -160,7 +160,7 @@ class ExtensionActionIconFactoryTest
   TestingProfile* profile() { return profile_.get(); }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   bool quit_in_icon_updated_;
   std::unique_ptr<TestingProfile> profile_;
   ExtensionService* extension_service_;

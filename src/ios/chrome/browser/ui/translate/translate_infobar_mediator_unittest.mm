@@ -24,7 +24,7 @@
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -87,6 +87,8 @@ class TranslateInfobarMediatorTest : public PlatformTest {
     CreateTranslateClient();
   }
 
+  ~TranslateInfobarMediatorTest() override { [mediator_ disconnect]; }
+
   WebStateList* web_state_list() { return web_state_list_.get(); }
 
   id selection_handler() { return selection_handler_; }
@@ -136,7 +138,7 @@ class TranslateInfobarMediatorTest : public PlatformTest {
   }
 
  private:
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   std::unique_ptr<WebStateList> web_state_list_;

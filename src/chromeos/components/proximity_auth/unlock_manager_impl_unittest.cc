@@ -299,18 +299,6 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       IsUnlockAllowed_SecureChannelNotEstablished) {
-  CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
-
-  life_cycle_.set_messenger(nullptr);
-  unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
-  life_cycle_.ChangeState(RemoteDeviceLifeCycle::State::AUTHENTICATING);
-  unlock_manager_->OnRemoteStatusUpdate(kRemoteScreenUnlocked);
-
-  EXPECT_FALSE(unlock_manager_->IsUnlockAllowed());
-}
-
-TEST_F(ProximityAuthUnlockManagerImplTest,
        IsUnlockAllowed_RemoteDeviceLifeCycleIsNull) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
@@ -408,7 +396,8 @@ TEST_F(ProximityAuthUnlockManagerImplTest,
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
   SimulateUserPresentState();
 
-  EXPECT_CALL(proximity_auth_client_, UpdateScreenlockState(_)).Times(0);
+  EXPECT_CALL(proximity_auth_client_,
+              UpdateScreenlockState(ScreenlockState::BLUETOOTH_CONNECTING));
   unlock_manager_->SetRemoteDeviceLifeCycle(&life_cycle_);
 }
 
@@ -628,7 +617,7 @@ TEST_F(
 }
 
 TEST_F(ProximityAuthUnlockManagerImplTest,
-       BluetoothOffMessagePresentedImmediatelyIfBluetoothWasOffBeforeSuspend) {
+       BluetoothOffMessageShownImmediatelyIfBluetoothWasOffBeforeSuspend) {
   CreateUnlockManager(ProximityAuthSystem::SESSION_LOCK);
 
   ON_CALL(*bluetooth_adapter_, IsPresent()).WillByDefault(Return(false));

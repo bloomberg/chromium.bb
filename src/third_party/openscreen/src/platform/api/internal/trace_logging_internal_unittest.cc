@@ -10,6 +10,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "platform/api/trace_logging.h"
+#include "platform/test/trace_logging_helpers.h"
 
 // TODO(issue/52): Remove duplicate code from trace logging+internal unit tests
 namespace openscreen {
@@ -20,67 +21,9 @@ using ::testing::_;
 using ::testing::DoAll;
 using ::testing::Invoke;
 
-class MockLoggingPlatform : public TraceLoggingPlatform {
- public:
-  MOCK_METHOD9(LogTrace,
-               void(const char*,
-                    const uint32_t,
-                    const char* file,
-                    Clock::time_point,
-                    Clock::time_point,
-                    TraceId,
-                    TraceId,
-                    TraceId,
-                    Error::Code));
-  MOCK_METHOD7(LogAsyncStart,
-               void(const char*,
-                    const uint32_t,
-                    const char* file,
-                    Clock::time_point,
-                    TraceId,
-                    TraceId,
-                    TraceId));
-  MOCK_METHOD5(LogAsyncEnd,
-               void(const uint32_t,
-                    const char* file,
-                    Clock::time_point,
-                    TraceId,
-                    Error::Code));
-};
-
-// Methods to validate the results of platform-layer calls.
-template <uint64_t milliseconds>
-void ValidateTraceTimestampDiff(const char* name,
-                                const uint32_t line,
-                                const char* file,
-                                Clock::time_point start_time,
-                                Clock::time_point end_time,
-                                TraceId trace_id,
-                                TraceId parent_id,
-                                TraceId root_id,
-                                Error error) {
-  const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-      end_time - start_time);
-  EXPECT_GE(static_cast<uint64_t>(elapsed.count()), milliseconds);
-}
-
-template <Error::Code result>
-void ValidateTraceErrorCode(const char* name,
-                            const uint32_t line,
-                            const char* file,
-                            Clock::time_point start_time,
-                            Clock::time_point end_time,
-                            TraceId trace_id,
-                            TraceId parent_id,
-                            TraceId root_id,
-                            Error error) {
-  EXPECT_EQ(error.code(), result);
-}
-
 // These tests validate that parameters are passed correctly by using the Trace
 // Internals.
-constexpr TraceCategory::Value category =
-    TraceCategory::Value::CastPlatformLayer;
+constexpr TraceCategory::Value category = TraceCategory::mDNS;
 constexpr uint32_t line = 10;
 
 TEST(TraceLoggingInternalTest, CreatingNoTraceObjectValid) {
@@ -91,7 +34,7 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
   constexpr uint32_t delay_in_ms = 50;
   MockLoggingPlatform platform;
   TRACE_SET_DEFAULT_PLATFORM(&platform);
-  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _, _, _))
+  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _))
       .Times(1)
       .WillOnce(DoAll(Invoke(ValidateTraceTimestampDiff<delay_in_ms>),
                       Invoke(ValidateTraceErrorCode<Error::Code::kNone>)));
@@ -114,7 +57,7 @@ TEST(TraceLoggingInternalTest, TestMacroStyleInitializationTrue) {
 TEST(TraceLoggingInternalTest, TestMacroStyleInitializationFalse) {
   MockLoggingPlatform platform;
   TRACE_SET_DEFAULT_PLATFORM(&platform);
-  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _, _, _)).Times(0);
+  EXPECT_CALL(platform, LogTrace(_, _, _, _, _, _, _)).Times(0);
 
   {
     uint8_t temp[sizeof(SynchronousTraceLogger)];
@@ -136,7 +79,7 @@ TEST(TraceLoggingInternalTest, ExpectParametersPassedToResult) {
   MockLoggingPlatform platform;
   TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogTrace(testing::StrEq("Name"), line,
-                                 testing::StrEq(__FILE__), _, _, _, _, _, _))
+                                 testing::StrEq(__FILE__), _, _, _, _))
       .WillOnce(Invoke(ValidateTraceErrorCode<Error::Code::kNone>));
 
   {
@@ -150,7 +93,7 @@ TEST(TraceLoggingInternalTest, CheckTraceAsyncStartLogsCorrectly) {
   MockLoggingPlatform platform;
   TRACE_SET_DEFAULT_PLATFORM(&platform);
   EXPECT_CALL(platform, LogAsyncStart(testing::StrEq("Name"), line,
-                                      testing::StrEq(__FILE__), _, _, _, _))
+                                      testing::StrEq(__FILE__), _, _))
       .Times(1);
 
   { AsynchronousTraceLogger{category, "Name", __FILE__, line}; }

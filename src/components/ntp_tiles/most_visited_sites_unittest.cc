@@ -22,7 +22,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/history/core/browser/top_sites.h"
@@ -559,7 +559,7 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
       suggestions_service_callbacks_;
   TopSitesCallbackList top_sites_callbacks_;
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride factory_override_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   PopularSitesFactoryForTest popular_sites_factory_;

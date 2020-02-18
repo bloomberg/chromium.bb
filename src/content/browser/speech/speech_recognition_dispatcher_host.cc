@@ -26,7 +26,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
@@ -44,10 +44,10 @@ SpeechRecognitionDispatcherHost::SpeechRecognitionDispatcherHost(
 void SpeechRecognitionDispatcherHost::Create(
     int render_process_id,
     int render_frame_id,
-    blink::mojom::SpeechRecognizerRequest request) {
-  mojo::MakeStrongBinding(std::make_unique<SpeechRecognitionDispatcherHost>(
-                              render_process_id, render_frame_id),
-                          std::move(request));
+    mojo::PendingReceiver<blink::mojom::SpeechRecognizer> receiver) {
+  mojo::MakeSelfOwnedReceiver(std::make_unique<SpeechRecognitionDispatcherHost>(
+                                  render_process_id, render_frame_id),
+                              std::move(receiver));
 }
 
 SpeechRecognitionDispatcherHost::~SpeechRecognitionDispatcherHost() {}
@@ -73,7 +73,7 @@ void SpeechRecognitionDispatcherHost::Start(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SpeechRecognitionDispatcherHost::StartRequestOnUI,
                      AsWeakPtr(), render_process_id_, render_frame_id_,
@@ -137,7 +137,7 @@ void SpeechRecognitionDispatcherHost::StartRequestOnUI(
   StoragePartition* storage_partition = BrowserContext::GetStoragePartition(
       browser_context, web_contents->GetSiteInstance());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SpeechRecognitionDispatcherHost::StartSessionOnIO,

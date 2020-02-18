@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
@@ -34,7 +34,7 @@ class TracingServiceTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory test_connector_factory_;
   TracingService service_;
 

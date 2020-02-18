@@ -178,7 +178,7 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   std::string GetSource() override;
   void StartDataRequest(
       const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const content::WebContents::Getter& wc_getter,
       const content::URLDataSource::GotDataCallback& callback) override;
   std::string GetMimeType(const std::string&) override { return "text/html"; }
   bool ShouldAddContentSecurityPolicy() override { return false; }
@@ -189,7 +189,7 @@ class MobileSetupUIHTMLSource : public content::URLDataSource {
   }
 
  private:
-  base::WeakPtrFactory<MobileSetupUIHTMLSource> weak_ptr_factory_;
+  base::WeakPtrFactory<MobileSetupUIHTMLSource> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MobileSetupUIHTMLSource);
 };
@@ -251,7 +251,7 @@ class MobileSetupHandler : public content::WebUIMessageHandler,
   // connection state. This value is reflected in portal webui for lte networks.
   // Initial value is true.
   bool lte_portal_reachable_;
-  base::WeakPtrFactory<MobileSetupHandler> weak_ptr_factory_;
+  base::WeakPtrFactory<MobileSetupHandler> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MobileSetupHandler);
 };
@@ -262,7 +262,7 @@ class MobileSetupHandler : public content::WebUIMessageHandler,
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() : weak_ptr_factory_(this) {}
+MobileSetupUIHTMLSource::MobileSetupUIHTMLSource() {}
 
 std::string MobileSetupUIHTMLSource::GetSource() {
   return chrome::kChromeUIMobileSetupHost;
@@ -270,7 +270,7 @@ std::string MobileSetupUIHTMLSource::GetSource() {
 
 void MobileSetupUIHTMLSource::StartDataRequest(
     const std::string& path,
-    const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const content::WebContents::Getter& wc_getter,
     const content::URLDataSource::GotDataCallback& callback) {
   // Sanity checks that activation was requested for an appropriate network.
   const NetworkState* network =
@@ -362,10 +362,7 @@ void MobileSetupUIHTMLSource::StartDataRequest(
 //
 ////////////////////////////////////////////////////////////////////////////////
 MobileSetupHandler::MobileSetupHandler()
-    : type_(TYPE_UNDETERMINED),
-      active_(false),
-      lte_portal_reachable_(true),
-      weak_ptr_factory_(this) {}
+    : type_(TYPE_UNDETERMINED), active_(false), lte_portal_reachable_(true) {}
 
 MobileSetupHandler::~MobileSetupHandler() {
   Reset();

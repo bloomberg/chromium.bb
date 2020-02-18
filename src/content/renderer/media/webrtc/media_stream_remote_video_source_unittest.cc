@@ -12,7 +12,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/mock_peer_connection_dependency_factory.h"
@@ -48,8 +48,7 @@ class MediaStreamRemoteVideoSourceTest
     : public ::testing::Test {
  public:
   MediaStreamRemoteVideoSourceTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         child_process_(new ChildProcess()),
         mock_factory_(new MockPeerConnectionDependencyFactory()),
         webrtc_video_track_(MockWebRtcVideoTrack::Create("test")),
@@ -150,7 +149,7 @@ class MediaStreamRemoteVideoSourceTest
       ++number_of_failed_track_starts_;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ChildProcess> child_process_;
   std::unique_ptr<MockPeerConnectionDependencyFactory> mock_factory_;
   scoped_refptr<webrtc::VideoTrackInterface> webrtc_video_track_;

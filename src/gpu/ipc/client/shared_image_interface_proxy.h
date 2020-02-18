@@ -46,14 +46,18 @@ class SharedImageInterfaceProxy : public SharedImageInterface {
   SyncToken GenUnverifiedSyncToken() override;
   void Flush() override;
 
-#if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
                                      uint32_t usage) override;
   void PresentSwapChain(const SyncToken& sync_token,
                         const Mailbox& mailbox) override;
-#endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token) override;
+  void ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id) override;
+#endif  // defined(OS_FUCHSIA)
 
  private:
   bool GetSHMForPixelData(base::span<const uint8_t> pixel_data,

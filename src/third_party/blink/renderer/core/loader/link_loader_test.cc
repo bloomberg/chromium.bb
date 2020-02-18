@@ -7,8 +7,9 @@
 #include <base/macros.h>
 #include <memory>
 #include "base/single_thread_task_runner.h"
+#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_prescient_networking.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -74,7 +75,9 @@ class NetworkHintsMock : public WebPrescientNetworking {
   void PrefetchDNS(const WebString& hostname) override {
     did_dns_prefetch_ = true;
   }
-  void Preconnect(const WebURL& url, const bool allow_credentials) override {
+  void Preconnect(WebLocalFrame* web_local_frame,
+                  const WebURL& url,
+                  const bool allow_credentials) override {
     did_preconnect_ = true;
     is_https_ = url.ProtocolIs("https");
     allow_credentials_ = allow_credentials;
@@ -122,9 +125,7 @@ class LinkLoaderPreloadTestBase : public testing::Test {
   }
 
   ~LinkLoaderPreloadTestBase() override {
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
@@ -137,6 +138,8 @@ class LinkLoaderPreloadTestBase : public testing::Test {
         MakeGarbageCollected<MockLinkLoaderClient>(
             expected.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |dummy_page_holder_|.
     url_test_helpers::RegisterMockedErrorURLLoad(params.href);
     loader->LoadLink(params, dummy_page_holder_->GetDocument());
     if (!expected.load_url.IsNull() &&
@@ -547,6 +550,71 @@ INSTANTIATE_TEST_SUITE_P(LinkLoaderModulePreloadTest,
                          LinkLoaderModulePreloadTest,
                          testing::ValuesIn(kModulePreloadTestParams));
 
+class LinkLoaderTestPrefetchPrivacyChanges
+
+    : public testing::Test,
+      public testing::WithParamInterface<bool> {
+ public:
+  LinkLoaderTestPrefetchPrivacyChanges()
+      : privacy_changes_enabled_(GetParam()) {}
+  void SetUp() override {
+    std::vector<base::Feature> enable_features;
+    std::vector<base::Feature> disabled_features;
+    if (GetParam()) {
+      enable_features.push_back(features::kPrefetchPrivacyChanges);
+    } else {
+      disabled_features.push_back(features::kPrefetchPrivacyChanges);
+    }
+    feature_list_.InitWithFeatures(enable_features, disabled_features);
+  }
+
+ protected:
+  const bool privacy_changes_enabled_;
+  ScopedTestingPlatformSupport<TestingPlatformSupportWithNetworkHintsMock>
+      platform_;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(LinkLoaderTestPrefetchPrivacyChanges,
+                         LinkLoaderTestPrefetchPrivacyChanges,
+                         testing::Values(false, true));
+
+TEST_P(LinkLoaderTestPrefetchPrivacyChanges, PrefetchPrivacyChanges) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(500, 500));
+  dummy_page_holder->GetFrame().GetSettings()->SetScriptEnabled(true);
+  Persistent<MockLinkLoaderClient> loader_client =
+      MakeGarbageCollected<MockLinkLoaderClient>(true);
+  LinkLoader* loader = LinkLoader::Create(loader_client.Get());
+  KURL href_url = KURL(NullURL(), "http://example.test/cat.jpg");
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder|.
+  url_test_helpers::RegisterMockedErrorURLLoad(href_url);
+  LinkLoadParameters params(
+      LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet, "image/jpg",
+      "", "", "", "", String(), network::mojom::ReferrerPolicy::kDefault,
+      href_url, String() /* image_srcset */, String() /* image_sizes */);
+  loader->LoadLink(params, dummy_page_holder->GetDocument());
+  ASSERT_TRUE(dummy_page_holder->GetDocument().Fetcher());
+  Resource* resource = loader->GetResourceForTesting();
+  EXPECT_TRUE(resource);
+
+  if (privacy_changes_enabled_) {
+    EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
+              network::mojom::RedirectMode::kError);
+    EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
+              network::mojom::ReferrerPolicy::kNever);
+  } else {
+    EXPECT_EQ(resource->GetResourceRequest().GetRedirectMode(),
+              network::mojom::RedirectMode::kFollow);
+    EXPECT_EQ(resource->GetResourceRequest().GetReferrerPolicy(),
+              network::mojom::ReferrerPolicy::kNoReferrerWhenDowngrade);
+  }
+
+  platform_->GetURLLoaderMockFactory()->UnregisterAllURLsAndClearMemoryCache();
+}
+
 class LinkLoaderTest : public testing::Test {
  protected:
   ScopedTestingPlatformSupport<TestingPlatformSupportWithNetworkHintsMock>
@@ -586,6 +654,8 @@ TEST_F(LinkLoaderTest, Prefetch) {
             test_case.link_loader_should_load_value);
     LinkLoader* loader = LinkLoader::Create(loader_client.Get());
     KURL href_url = KURL(NullURL(), test_case.href);
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |dummy_page_holder|.
     url_test_helpers::RegisterMockedErrorURLLoad(href_url);
     LinkLoadParameters params(
         LinkRelAttribute("prefetch"), kCrossOriginAttributeNotSet,
@@ -607,8 +677,7 @@ TEST_F(LinkLoaderTest, Prefetch) {
                   resource->GetResourceRequest().GetReferrerPolicy());
       }
     }
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
+    platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 }
@@ -701,6 +770,8 @@ TEST_F(LinkLoaderTest, PreloadAndPrefetch) {
       MakeGarbageCollected<MockLinkLoaderClient>(true);
   LinkLoader* loader = LinkLoader::Create(loader_client.Get());
   KURL href_url = KURL(KURL(), "https://www.example.com/");
+  // TODO(crbug.com/751425): We should use the mock functionality
+  // via |dummy_page_holder|.
   url_test_helpers::RegisterMockedErrorURLLoad(href_url);
   LinkLoadParameters params(
       LinkRelAttribute("preload prefetch"), kCrossOriginAttributeNotSet,

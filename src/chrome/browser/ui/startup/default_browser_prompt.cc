@@ -54,7 +54,7 @@ void ShowPrompt() {
 
     // |browser| may be null in UI tests. Also, don't show the prompt in an app
     // window, which is not meant to be treated as a Chrome window.
-    if (!browser || browser->is_app())
+    if (!browser || browser->deprecated_is_app())
       continue;
 
     // In ChromeBot tests, there might be a race. This line appears to get
@@ -172,9 +172,3 @@ void DefaultBrowserPromptDeclined(Profile* profile) {
 void ResetDefaultBrowserPrompt(Profile* profile) {
   profile->GetPrefs()->ClearPref(prefs::kDefaultBrowserLastDeclined);
 }
-
-#if !defined(OS_WIN)
-bool ShowFirstRunDefaultBrowserPrompt(Profile* profile) {
-  return false;
-}
-#endif

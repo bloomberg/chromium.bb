@@ -7,9 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
-import stat
+
+import mock
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
@@ -20,8 +20,8 @@ from chromite.lib import cros_test
 
 
 # pylint: disable=protected-access
-class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
-  """Test cros_test.CrOSTest."""
+class CrOSTesterBase(cros_test_lib.RunCommandTempDirTestCase):
+  """Base class for setup and creating a temp file path."""
 
   def setUp(self):
     """Common set up method for all tests."""
@@ -37,126 +37,12 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self.ssh_port = self._tester._device.ssh_port
 
   def TempFilePath(self, file_path):
+    """Creates a temporary file path lasting for the duration of a test."""
     return os.path.join(self.tempdir, file_path)
 
-  def CheckParserError(self, args, error_msg):
-    """Checks that parser error is raised.
 
-    Args:
-      args: List of commandline arguments.
-      error_msg: Error message to check for.
-    """
-    # Recreate args as a list if it is given as a string.
-    if isinstance(args, str):
-      args = [args]
-    # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
-    # swallows SystemExit exception check.
-    with self.assertRaises(SystemExit):
-      with cros_build_lib.OutputCapturer() as output:
-        cros_test.ParseCommandLine(args)
-    self.assertIn(error_msg, output.GetStderr())
-
-  def SetUpChromeTest(self, test_exe, test_label, test_args=None):
-    """Sets configurations necessary for running a chrome test.
-
-    Args:
-      test_exe: The name of the chrome test.
-      test_label: The label of the chrome test.
-      test_args: A list of arguments of the particular chrome test.
-    """
-    def CreateRuntimeFiles(files, build_dir):
-      """Creates files needed for running the chrome test.
-
-      Args:
-        files: List of files to touch.
-        build_dir: The directory where chrome is built.
-      """
-      file_list = files.split('\n')
-      for filename in file_list:
-        # Checks for the test_exe and makes it an executable.
-        mode = stat.S_IRWXU if filename == './%s' % test_exe else None
-        osutils.Touch(os.path.join(build_dir, filename),
-                      makedirs=True, mode=mode)
-
-    self._tester.args = [test_exe] + test_args if test_args else [test_exe]
-    self._tester.chrome_test = True
-    self._tester.build_dir = self.TempFilePath('out_amd64-generic/Release')
-    osutils.SafeMakedirs(self._tester.build_dir)
-    isolate_map = self.TempFilePath('testing/buildbot/gn_isolate_map.pyl')
-    # Add info about the specified chrome test to the isolate map.
-    osutils.WriteFile(isolate_map,
-                      '''{
-                        "%s": {
-                          "label": "%s",
-                          "type": "console_test_launcher",
-                        }
-                      }''' % (test_exe, test_label), makedirs=True)
-
-    self._tester.build = True
-    self._tester.deploy = True
-
-    self._tester.chrome_test_target = test_exe
-    self._tester.chrome_test_deploy_target_dir = '/usr/local/chrome_test'
-
-    # test_label looks like //crypto:crypto_unittests.
-    # label_root extracts 'crypto' from the test_label in this instance.
-    label_root = test_label.split(':')[0].lstrip('/')
-    # A few files used by the chrome test.
-    runtime_deps = [
-        './%s' % test_exe,
-        'gen.runtime/%s/%s/%s.runtime_deps'
-        % (label_root, test_exe, test_exe),
-        'test_fonts/Ahem.ttf',
-        'icudtl.dat',
-        '../../third_party/chromite']
-    CreateRuntimeFiles('\n'.join(runtime_deps), self._tester.build_dir)
-    # Mocks the output by providing necessary runtime files.
-    self.rc.AddCmdResult(
-        partial_mock.InOrder(['gn', 'desc', test_label]),
-        output='\n'.join(runtime_deps))
-
-  def CheckChromeTestCommands(self, test_exe, test_label, build_dir,
-                              test_args=None):
-    """Checks to see that chrome test commands ran properly.
-
-    Args:
-      test_exe: The name of the chrome test.
-      test_label: The label of the chrome test.
-      build_dir: The directory where chrome is built.
-      test_args: Chrome test arguments.
-    """
-    # Ensure chrome is being built.
-    self.assertCommandContains(['autoninja', '-C', build_dir, test_exe])
-    # Ensure that the runtime dependencies are checked for.
-    self.assertCommandContains(['gn', 'desc', build_dir, test_label,
-                                'runtime_deps'])
-    # Ensure UI is stopped so the test can grab the GPU if needed.
-    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
-                                'stop ui'])
-    # Ensure a user activity ping is sent to the device.
-    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
-                                'dbus-send', '--system', '--type=method_call',
-                                '--dest=org.chromium.PowerManager',
-                                '/org/chromium/PowerManager',
-                                'org.chromium.PowerManager.HandleUserActivity',
-                                'int32:0'])
-    args = ' '.join(test_args) if test_args else ''
-    # Ensure the chrome test is run.
-    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
-                                'cd /usr/local/chrome_test && su chronos -c -- '
-                                '"out_amd64-generic/Release/%s %s"'
-                                % (test_exe, args)])
-
-  @mock.patch('chromite.lib.vm.VM.IsRunning', return_value=True)
-  def testBasic(self, isrunning_mock):
-    """Tests basic functionality."""
-    self._tester.Run()
-    isrunning_mock.assert_called()
-    # Run vm_sanity.
-    self.assertCommandContains([
-        'ssh', '-p', '9222', 'root@localhost', '--',
-        '/usr/local/autotest/bin/vm_sanity.py'
-    ])
+class CrOSTester(CrOSTesterBase):
+  """Tests miscellaneous utility methods"""
 
   def testStartVM(self):
     """Verify that a new VM is started before running tests."""
@@ -188,6 +74,48 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self._tester.Run()
     self.assertCommandContains(['--nostrip', '--mount'])
 
+  def testFetchResults(self):
+    """Verify that results files/directories are copied from the DUT."""
+    self._tester.results_src = ['/tmp/results/cmd_results',
+                                '/tmp/results/filename.txt',
+                                '/tmp/results/test_results']
+    self._tester.results_dest_dir = self.TempFilePath('results_dir')
+    osutils.SafeMakedirs(self._tester.results_dest_dir)
+    self._tester.Run()
+    for filename in self._tester.results_src:
+      self.assertCommandContains(['scp', 'root@localhost:%s' % filename,
+                                  self._tester.results_dest_dir])
+
+  def testFileList(self):
+    """Verify that FileList returns the correct files."""
+    # Ensure FileList returns files when files_from is None.
+    files = ['/tmp/filename1', '/tmp/filename2']
+    self.assertEqual(files, cros_test.FileList(files, None))
+
+    # Ensure FileList returns files when files_from does not exist.
+    files_from = self.TempFilePath('file_list')
+    self.assertEqual(files, cros_test.FileList(files, files_from))
+
+    # Ensure FileList uses 'files_from' and ignores 'files'.
+    file_list = ['/tmp/file1', '/tmp/file2', '/tmp/file3']
+    osutils.WriteFile(files_from, '\n'.join(file_list))
+    self.assertEqual(file_list, cros_test.FileList(files, files_from))
+
+
+class CrOSTesterMiscTests(CrOSTesterBase):
+  """Tests miscellaneous test cases."""
+
+  @mock.patch('chromite.lib.vm.VM.IsRunning', return_value=True)
+  def testBasic(self, isrunning_mock):
+    """Tests basic functionality."""
+    self._tester.Run()
+    isrunning_mock.assert_called()
+    # Run vm_sanity.
+    self.assertCommandContains([
+        'ssh', '-p', '9222', 'root@localhost', '--',
+        '/usr/local/autotest/bin/vm_sanity.py'
+    ])
+
   def testCatapult(self):
     """Verify catapult test command."""
     self._tester.catapult_tests = ['testAddResults']
@@ -206,6 +134,74 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         'python', '/usr/local/telemetry/src/third_party/catapult/'
         'telemetry/bin/run_tests', '--browser=system-guest', 'testAddResults'
     ])
+
+  def testRunDeviceCmd(self):
+    """Verify a run device cmd call."""
+    self._tester.remote_cmd = True
+    self._tester.files = [self.TempFilePath('crypto_unittests')]
+    osutils.Touch(self._tester.files[0], mode=0o700)
+    self._tester.as_chronos = True
+    self._tester.args = ['crypto_unittests',
+                         '--test-launcher-print-test-stdio=always']
+
+    self._tester.Run()
+
+    # Ensure target directory is created on the DUT.
+    self.assertCommandContains(['mkdir', '-p', '/usr/local/cros_test'])
+    # Ensure test ssh keys are authorized with chronos.
+    self.assertCommandContains(['cp', '-r', '/root/.ssh/',
+                                '/home/chronos/user/'])
+    # Ensure chronos has ownership of the directory.
+    self.assertCommandContains(['chown', '-R', 'chronos:',
+                                '/usr/local/cros_test'])
+    # Ensure command runs in the target directory.
+    self.assertCommandContains('"cd /usr/local/cros_test && crypto_unittests '
+                               '--test-launcher-print-test-stdio=always"')
+    # Ensure target directory is removed at the end of the test.
+    self.assertCommandContains(['rm', '-rf', '/usr/local/cros_test'])
+
+  def testRunDeviceCmdWithSetCwd(self):
+    """Verify a run device command call when giving a cwd."""
+    self._tester.remote_cmd = True
+    self._tester.cwd = '/usr/local/autotest'
+    self._tester.args = ['./bin/vm_sanity.py']
+
+    self._tester.Run()
+
+    # Ensure command runs in the autotest directory.
+    self.assertCommandContains('"cd /usr/local/autotest && ./bin/vm_sanity.py"')
+
+  def testRunDeviceCmdWithoutSrcFiles(self):
+    """Verify running a remote command when src files are not specified.
+
+    The remote command should not change the working directory or create a temp
+    directory on the target.
+    """
+    self._tester.remote_cmd = True
+    self._tester.args = ['/usr/local/autotest/bin/vm_sanity.py']
+    self._tester.Run()
+    self.assertCommandContains(['ssh', '-p', '9222',
+                                '/usr/local/autotest/bin/vm_sanity.py'])
+    self.assertCommandContains(['mkdir', '-p'], expected=False)
+    self.assertCommandContains(['"cd %s && /usr/local/autotest/bin/'
+                                'vm_sanity.py"' % self._tester.cwd],
+                               expected=False)
+    self.assertCommandContains(['rm', '-rf'], expected=False)
+
+  def testHostCmd(self):
+    """Verify running a host command."""
+    self._tester.host_cmd = True
+    self._tester.args = ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin']
+    self._tester.Run()
+    # Ensure command is run and an exception is not raised if it fails.
+    self.assertCommandCalled(['tast', 'run', 'localhost:9222',
+                              'ui.ChromeLogin'], error_code_ok=True)
+    # Ensure that --host-cmd does not invoke ssh since it runs on the host.
+    self.assertCommandContains(['ssh', 'tast'], expected=False)
+
+
+class CrOSTesterAutotest(CrOSTesterBase):
+  """Tests autotest test cases."""
 
   def testBasicAutotest(self):
     """Tests a simple autotest call."""
@@ -276,8 +272,12 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     # Check that we enter the chroot before running test_that.
     self.assertIn(
         'cros_sdk -- test_that --board amd64-generic --no-quickmerge'
-        ' --ssh_options \'-F /dev/null -i /dev/null\' localhost:9222'
+        " --ssh_options '-F /dev/null -i /dev/null' localhost:9222"
         ' accessibility_Sanity', output.GetStderr())
+
+
+class CrOSTesterTast(CrOSTesterBase):
+  """Tests tast test cases."""
 
   def testSingleBaseTastTest(self):
     """Verify running a single tast test."""
@@ -339,69 +339,87 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
         '-extrauseflags=tast_vm', 'localhost:9222', 'ui.ChromeLogin'
     ])
 
-  def testRunDeviceCmd(self):
-    """Verify a run device cmd call."""
-    self._tester.remote_cmd = True
-    self._tester.files = [self.TempFilePath('crypto_unittests')]
-    osutils.Touch(self._tester.files[0], mode=stat.S_IRWXU)
-    self._tester.as_chronos = True
-    self._tester.args = ['crypto_unittests',
-                         '--test-launcher-print-test-stdio=always']
 
-    self._tester.Run()
+class CrOSTesterChromeTest(CrOSTesterBase):
+  """Tests chrome test test cases."""
 
-    # Ensure target directory is created on the DUT.
-    self.assertCommandContains(['mkdir', '-p', '/usr/local/cros_test'])
-    # Ensure test ssh keys are authorized with chronos.
-    self.assertCommandContains(['cp', '-r', '/root/.ssh/',
-                                '/home/chronos/user/'])
-    # Ensure chronos has ownership of the directory.
-    self.assertCommandContains(['chown', '-R', 'chronos:',
-                                '/usr/local/cros_test'])
-    # Ensure command runs in the target directory.
-    self.assertCommandContains('"cd /usr/local/cros_test && crypto_unittests '
-                               '--test-launcher-print-test-stdio=always"')
-    # Ensure target directory is removed at the end of the test.
-    self.assertCommandContains(['rm', '-rf', '/usr/local/cros_test'])
+  def SetUpChromeTest(self, test_exe, test_label, test_args=None):
+    """Sets configurations necessary for running a chrome test.
 
-  def testRunDeviceCmdWithSetCwd(self):
-    """Verify a run device command call when giving a cwd."""
-    self._tester.remote_cmd = True
-    self._tester.cwd = '/usr/local/autotest'
-    self._tester.args = ['./bin/vm_sanity.py']
-
-    self._tester.Run()
-
-    # Ensure command runs in the autotest directory.
-    self.assertCommandContains('"cd /usr/local/autotest && ./bin/vm_sanity.py"')
-
-  def testRunDeviceCmdWithoutSrcFiles(self):
-    """Verify running a remote command when src files are not specified.
-
-    The remote command should not change the working directory or create a temp
-    directory on the target.
+    Args:
+      test_exe: The name of the chrome test.
+      test_label: The label of the chrome test.
+      test_args: A list of arguments of the particular chrome test.
     """
-    self._tester.remote_cmd = True
-    self._tester.args = ['/usr/local/autotest/bin/vm_sanity.py']
-    self._tester.Run()
-    self.assertCommandContains(['ssh', '-p', '9222',
-                                '/usr/local/autotest/bin/vm_sanity.py'])
-    self.assertCommandContains(['mkdir', '-p'], expected=False)
-    self.assertCommandContains(['"cd %s && /usr/local/autotest/bin/'
-                                'vm_sanity.py"' % self._tester.cwd],
-                               expected=False)
-    self.assertCommandContains(['rm', '-rf'], expected=False)
+    self._tester.args = [test_exe] + test_args if test_args else [test_exe]
+    self._tester.chrome_test = True
+    self._tester.build_dir = self.TempFilePath('out_amd64-generic/Release')
+    osutils.SafeMakedirs(self._tester.build_dir)
+    isolate_map = self.TempFilePath('testing/buildbot/gn_isolate_map.pyl')
+    # Add info about the specified chrome test to the isolate map.
+    osutils.WriteFile(isolate_map,
+                      """{
+                        "%s": {
+                          "label": "%s",
+                          "type": "console_test_launcher",
+                        }
+                      }""" % (test_exe, test_label), makedirs=True)
 
-  def testHostCmd(self):
-    """Verify running a host command."""
-    self._tester.host_cmd = True
-    self._tester.args = ['tast', 'run', 'localhost:9222', 'ui.ChromeLogin']
-    self._tester.Run()
-    # Ensure command is run and an exception is not raised if it fails.
-    self.assertCommandCalled(['tast', 'run', 'localhost:9222',
-                              'ui.ChromeLogin'], error_code_ok=True)
-    # Ensure that --host-cmd does not invoke ssh since it runs on the host.
-    self.assertCommandContains(['ssh', 'tast'], expected=False)
+    self._tester.build = True
+    self._tester.deploy = True
+
+    self._tester.chrome_test_target = test_exe
+    self._tester.chrome_test_deploy_target_dir = '/usr/local/chrome_test'
+
+    # test_label looks like //crypto:crypto_unittests.
+    # label_root extracts 'crypto' from the test_label in this instance.
+    label_root = test_label.split(':')[0].lstrip('/')
+    # A few files used by the chrome test.
+    runtime_deps = [
+        './%s' % test_exe,
+        'gen.runtime/%s/%s/%s.runtime_deps' % (label_root, test_exe, test_exe),
+        '../../third_party/chromite']
+    # Creates the test_exe to be an executable.
+    osutils.Touch(os.path.join(self._tester.build_dir, runtime_deps[0]),
+                  mode=0o700)
+    for dep in runtime_deps[1:]:
+      osutils.Touch(os.path.join(self._tester.build_dir, dep), makedirs=True)
+    # Mocks the output by providing necessary runtime files.
+    self.rc.AddCmdResult(
+        partial_mock.InOrder(['gn', 'desc', test_label]),
+        output='\n'.join(runtime_deps))
+
+  def CheckChromeTestCommands(self, test_exe, test_label, build_dir,
+                              test_args=None):
+    """Checks to see that chrome test commands ran properly.
+
+    Args:
+      test_exe: The name of the chrome test.
+      test_label: The label of the chrome test.
+      build_dir: The directory where chrome is built.
+      test_args: Chrome test arguments.
+    """
+    # Ensure chrome is being built.
+    self.assertCommandContains(['autoninja', '-C', build_dir, test_exe])
+    # Ensure that the runtime dependencies are checked for.
+    self.assertCommandContains(['gn', 'desc', build_dir, test_label,
+                                'runtime_deps'])
+    # Ensure UI is stopped so the test can grab the GPU if needed.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'stop ui'])
+    # Ensure a user activity ping is sent to the device.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'dbus-send', '--system', '--type=method_call',
+                                '--dest=org.chromium.PowerManager',
+                                '/org/chromium/PowerManager',
+                                'org.chromium.PowerManager.HandleUserActivity',
+                                'int32:0'])
+    args = ' '.join(test_args) if test_args else ''
+    # Ensure the chrome test is run.
+    self.assertCommandContains(['ssh', '-p', '9222', 'root@localhost', '--',
+                                'cd /usr/local/chrome_test && su chronos -c -- '
+                                '"out_amd64-generic/Release/%s %s"'
+                                % (test_exe, args)])
 
   def testChromeTestRsync(self):
     """Verify build/deploy and chrome test commands using rsync to copy."""
@@ -440,17 +458,26 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
     self.CheckChromeTestCommands(test_exe, test_label, self._tester.build_dir,
                                  test_args)
 
-  def testFetchResults(self):
-    """Verify that results files/directories are copied from the DUT."""
-    self._tester.results_src = ['/tmp/results/cmd_results',
-                                '/tmp/results/filename.txt',
-                                '/tmp/results/test_results']
-    self._tester.results_dest_dir = self.TempFilePath('results_dir')
-    osutils.SafeMakedirs(self._tester.results_dest_dir)
-    self._tester.Run()
-    for filename in self._tester.results_src:
-      self.assertCommandContains(['scp', 'root@localhost:%s' % filename,
-                                  self._tester.results_dest_dir])
+
+class CrOSTesterParser(CrOSTesterBase):
+  """Tests parser test cases."""
+
+  def CheckParserError(self, args, error_msg):
+    """Checks that parser error is raised.
+
+    Args:
+      args: List of commandline arguments.
+      error_msg: Error message to check for.
+    """
+    # Recreate args as a list if it is given as a string.
+    if isinstance(args, str):
+      args = [args]
+    # Putting cros_build_lib.OutputCapturer() before assertRaises(SystemExit)
+    # swallows SystemExit exception check.
+    with self.assertRaises(SystemExit):
+      with cros_build_lib.OutputCapturer() as output:
+        cros_test.ParseCommandLine(args)
+    self.assertIn(error_msg, output.GetStderr())
 
   def testParserErrorChromeTest(self):
     """Verify we get a parser error for --chrome-test when no args are given."""
@@ -525,18 +552,3 @@ class CrOSTester(cros_test_lib.RunCommandTempDirTestCase):
 
     # Parser error when a non-existent file is passed to --files.
     self.CheckParserError(['--files', 'fake/file'], 'does not exist')
-
-  def testFileList(self):
-    """Verify that FileList returns the correct files."""
-    # Ensure FileList returns files when files_from is None.
-    files = ['/tmp/filename1', '/tmp/filename2']
-    self.assertEqual(files, cros_test.FileList(files, None))
-
-    # Ensure FileList returns files when files_from does not exist.
-    files_from = self.TempFilePath('file_list')
-    self.assertEqual(files, cros_test.FileList(files, files_from))
-
-    # Ensure FileList uses 'files_from' and ignores 'files'.
-    file_list = ['/tmp/file1', '/tmp/file2', '/tmp/file3']
-    osutils.WriteFile(files_from, '\n'.join(file_list))
-    self.assertEqual(file_list, cros_test.FileList(files, files_from))

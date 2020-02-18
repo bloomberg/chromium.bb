@@ -24,9 +24,11 @@
 #include "extensions/common/permissions/usb_device_permission.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/device/public/cpp/hid/hid_device_filter.h"
 #include "services/device/public/cpp/hid/hid_usage_and_page.h"
 #include "services/device/public/mojom/constants.mojom.h"
+#include "services/device/public/mojom/hid.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace hid = extensions::api::hid;
@@ -73,7 +75,8 @@ void PopulateHidDeviceInfo(hid::HidDeviceInfo* output,
 
 bool WillDispatchDeviceEvent(base::WeakPtr<HidDeviceManager> device_manager,
                              const device::mojom::HidDeviceInfo& device_info,
-                             content::BrowserContext* context,
+                             content::BrowserContext* browser_context,
+                             Feature::Context target_context,
                              const Extension* extension,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {
@@ -170,9 +173,10 @@ void HidDeviceManager::Connect(const std::string& device_guid,
                                ConnectCallback callback) {
   DCHECK(initialized_);
 
-  hid_manager_->Connect(device_guid, /*connection_client=*/nullptr,
-                        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
-                            std::move(callback), nullptr));
+  hid_manager_->Connect(
+      device_guid, mojo::PendingRemote<device::mojom::HidConnectionClient>(),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(std::move(callback),
+                                                  nullptr));
 }
 
 bool HidDeviceManager::HasPermission(

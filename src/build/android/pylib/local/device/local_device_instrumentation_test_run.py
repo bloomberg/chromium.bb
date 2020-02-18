@@ -79,6 +79,9 @@ EXTRA_TRACE_FILE = ('org.chromium.base.test.BaseJUnit4ClassRunner.TraceFile')
 _EXTRA_TEST_LIST = (
     'org.chromium.base.test.BaseChromiumAndroidJUnitRunner.TestList')
 
+_EXTRA_PACKAGE_UNDER_TEST = ('org.chromium.chrome.test.pagecontroller.rules.'
+                             'ChromeUiApplicationTestRule.PackageUnderTest')
+
 FEATURE_ANNOTATION = 'Feature'
 RENDER_TEST_FEATURE_ANNOTATION = 'RenderTest'
 
@@ -395,9 +398,8 @@ class LocalDeviceInstrumentationTestRun(
         if self._test_instance.package_info:
           cmdline_file = self._test_instance.package_info.cmdline_file
         else:
-          logging.warning(
-              'No PackageInfo found, falling back to using flag file %s',
-              cmdline_file)
+          raise Exception('No PackageInfo found but'
+                          '--use-apk-under-test-flags-file is specified.')
       self._flag_changers[str(device)] = flag_changer.FlagChanger(
           device, cmdline_file)
 
@@ -424,6 +426,11 @@ class LocalDeviceInstrumentationTestRun(
   #override
   def _RunTest(self, device, test):
     extras = {}
+
+    # Provide package name under test for apk_under_test.
+    if self._test_instance.apk_under_test:
+      package_name = self._test_instance.apk_under_test.GetPackageName()
+      extras[_EXTRA_PACKAGE_UNDER_TEST] = package_name
 
     flags_to_add = []
     test_timeout_scale = None
@@ -582,7 +589,7 @@ class LocalDeviceInstrumentationTestRun(
       def handle_coverage_data():
         if self._test_instance.coverage_directory:
           try:
-            device.PullFile(coverage_directory,
+            device.PullFile(coverage_device_file,
                             self._test_instance.coverage_directory)
             device.RunShellCommand(
                 'rm -f %s' % posixpath.join(coverage_directory, '*'),

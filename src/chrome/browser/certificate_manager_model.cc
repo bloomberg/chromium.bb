@@ -36,6 +36,7 @@
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
+#include "chromeos/network/onc/certificate_scope.h"
 #include "chromeos/network/policy_certificate_provider.h"
 #endif
 
@@ -299,9 +300,7 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
   }
 
   // chromeos::PolicyCertificateProvider::Observer
-  void OnPolicyProvidedCertsChanged(
-      const net::CertificateList& all_server_and_authority_certs,
-      const net::CertificateList& web_trusted_certs) override {
+  void OnPolicyProvidedCertsChanged() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     Refresh();
   }
@@ -310,11 +309,13 @@ class CertsSourcePolicy : public CertificateManagerModel::CertsSource,
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     switch (mode_) {
       case Mode::kPolicyCertsWithoutWebTrust:
-        RefreshImpl(policy_certs_provider_->GetCertificatesWithoutWebTrust(),
+        RefreshImpl(policy_certs_provider_->GetCertificatesWithoutWebTrust(
+                        chromeos::onc::CertificateScope::Default()),
                     false /* policy_web_trusted */);
         break;
       case Mode::kPolicyCertsWithWebTrust:
-        RefreshImpl(policy_certs_provider_->GetWebTrustedCertificates(),
+        RefreshImpl(policy_certs_provider_->GetWebTrustedCertificates(
+                        chromeos::onc::CertificateScope::Default()),
                     true /* policy_web_trusted */);
         break;
       default:
@@ -377,8 +378,8 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
                         std::unique_ptr<chromeos::CertificateProvider>
                             certificate_provider_service)
       : CertsSource(certs_source_updated_callback),
-        certificate_provider_service_(std::move(certificate_provider_service)),
-        weak_ptr_factory_(this) {}
+        certificate_provider_service_(std::move(certificate_provider_service)) {
+  }
 
   void Refresh() override {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -432,7 +433,7 @@ class CertsSourceExtensions : public CertificateManagerModel::CertsSource {
 
   std::unique_ptr<chromeos::CertificateProvider> certificate_provider_service_;
 
-  base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_;
+  base::WeakPtrFactory<CertsSourceExtensions> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CertsSourceExtensions);
 };
@@ -497,7 +498,7 @@ void CertificateManagerModel::Create(
       certificate_provider_service->CreateCertificateProvider();
 #endif
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&CertificateManagerModel::GetCertDBOnIOThread,
                      std::move(params), browser_context->GetResourceContext(),
@@ -699,7 +700,7 @@ void CertificateManagerModel::DidGetCertDBOnIOThread(
 #if defined(OS_CHROMEOS)
   is_tpm_available = crypto::IsTPMTokenEnabledForNSS();
 #endif
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&CertificateManagerModel::DidGetCertDBOnUIThread,
                      std::move(params), observer, callback, cert_db,

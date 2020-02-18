@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/mock_ime_candidate_window_handler.h"
@@ -366,7 +366,7 @@ class InputMethodChromeOSTest : public internal::InputMethodDelegate,
 
   TestInputMethodManager* input_method_manager_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodChromeOSTest);
 };
@@ -910,7 +910,7 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_NoComposition) {
   input_type_ = TEXT_INPUT_TYPE_TEXT;
   ime_->OnTextInputTypeChanged(this);
 
-  ime_->ConfirmCompositionText();
+  ime_->ConfirmCompositionText(/* reset_engine */ true);
 
   EXPECT_TRUE(confirmed_text_.text.empty());
   EXPECT_TRUE(composition_text_.text.empty());
@@ -924,7 +924,7 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetComposition) {
   CompositionText composition_text;
   composition_text.text = base::UTF8ToUTF16("hello");
   SetCompositionText(composition_text);
-  ime_->ConfirmCompositionText();
+  ime_->ConfirmCompositionText(/* reset_engine */ true);
 
   EXPECT_EQ(base::ASCIIToUTF16("hello"), confirmed_text_.text);
   EXPECT_TRUE(composition_text_.text.empty());
@@ -941,7 +941,7 @@ TEST_F(InputMethodChromeOSTest, ConfirmCompositionText_SetCompositionRange) {
 
   // "abc" is in composition. Put the two characters in composition.
   ime_->SetCompositionRange(0, 2, {});
-  ime_->ConfirmCompositionText();
+  ime_->ConfirmCompositionText(/* reset_engine */ true);
 
   EXPECT_EQ(base::ASCIIToUTF16("ab"), confirmed_text_.text);
   EXPECT_TRUE(composition_text_.text.empty());
@@ -1101,7 +1101,7 @@ TEST_F(InputMethodChromeOSKeyEventTest, DeadKeyPressTest) {
   EXPECT_EQ(VKEY_PROCESSKEY, key_event.key_code());
   EXPECT_EQ(eventA.code(), key_event.code());
   EXPECT_EQ(eventA.flags(), key_event.flags());
-  EXPECT_EQ(eventA.GetDomKey(), key_event.GetDomKey());
+  EXPECT_EQ(DomKey::PROCESS, key_event.GetDomKey());
   EXPECT_EQ(eventA.time_stamp(), key_event.time_stamp());
 }
 

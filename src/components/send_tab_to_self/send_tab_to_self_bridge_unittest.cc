@@ -12,8 +12,8 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/send_tab_to_self/proto/send_tab_to_self.pb.h"
@@ -195,7 +195,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
   base::SimpleTestClock clock_;
 
   // In memory model type store needs to be able to post tasks.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
 

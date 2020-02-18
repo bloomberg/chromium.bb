@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "storage/browser/fileapi/external_mount_points.h"
@@ -96,7 +96,7 @@ class FileSystemContextTest : public testing::Test {
 
  private:
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::SpecialStoragePolicy> storage_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
 };

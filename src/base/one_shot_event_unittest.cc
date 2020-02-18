@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -98,7 +98,7 @@ TEST(OneShotEventTest, PostDefaultsToCurrentMessageLoop) {
   OneShotEvent event;
   scoped_refptr<base::TestSimpleTaskRunner> runner(
       new base::TestSimpleTaskRunner);
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   int runner_i = 0;
   int loop_i = 0;
 
@@ -157,10 +157,9 @@ TEST(OneShotEventTest, DropsCallbackRefUponSignalled) {
   {
     auto ref_counted_class =
         base::MakeRefCounted<RefCountedClass>(&did_delete_instance);
-    event.Post(
-        FROM_HERE,
-        base::BindRepeating(&RefCountedClass::PerformTask, ref_counted_class),
-        runner);
+    event.Post(FROM_HERE,
+               base::BindOnce(&RefCountedClass::PerformTask, ref_counted_class),
+               runner);
     event.Signal();
     runner->RunPendingTasks();
     EXPECT_TRUE(ref_counted_class->did_perform_task());

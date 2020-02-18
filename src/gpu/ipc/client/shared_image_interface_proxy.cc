@@ -5,6 +5,7 @@
 #include "gpu/ipc/client/shared_image_interface_proxy.h"
 
 #include "base/bits.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/common/gpu_memory_buffer_support.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
@@ -176,6 +177,8 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
     const Mailbox& mailbox) {
   std::vector<SyncToken> dependencies;
   if (sync_token.HasData()) {
+    DCHECK(!acquire_fence);
+
     dependencies.push_back(sync_token);
     SyncToken& new_token = dependencies.back();
     if (!new_token.verified_flush()) {
@@ -201,9 +204,10 @@ void SharedImageInterfaceProxy::UpdateSharedImage(
           route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
       return;
     }
-    last_flush_id_ =
-        host_->EnqueueDeferredMessage(GpuChannelMsg_UpdateSharedImage(
-            route_id_, mailbox, ++next_release_id_, acquire_fence_handle));
+    last_flush_id_ = host_->EnqueueDeferredMessage(
+        GpuChannelMsg_UpdateSharedImage(route_id_, mailbox, ++next_release_id_,
+                                        acquire_fence_handle),
+        std::move(dependencies));
   }
 }
 
@@ -314,12 +318,12 @@ bool SharedImageInterfaceProxy::GetSHMForPixelData(
   return true;
 }
 
-#if defined(OS_WIN)
 SharedImageInterface::SwapChainMailboxes
 SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
                                            const gfx::Size& size,
                                            const gfx::ColorSpace& color_space,
                                            uint32_t usage) {
+#if defined(OS_WIN)
   GpuChannelMsg_CreateSwapChain_Params params;
   params.front_buffer_mailbox = Mailbox::GenerateForSharedImage();
   params.back_buffer_mailbox = Mailbox::GenerateForSharedImage();
@@ -334,10 +338,15 @@ SharedImageInterfaceProxy::CreateSwapChain(viz::ResourceFormat format,
         GpuChannelMsg_CreateSwapChain(route_id_, params));
   }
   return {params.front_buffer_mailbox, params.back_buffer_mailbox};
+#else
+  NOTREACHED();
+  return {};
+#endif  // OS_WIN
 }
 
 void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
                                                  const Mailbox& mailbox) {
+#if defined(OS_WIN)
   std::vector<SyncToken> dependencies;
   if (sync_token.HasData()) {
     dependencies.push_back(sync_token);
@@ -357,8 +366,25 @@ void SharedImageInterfaceProxy::PresentSwapChain(const SyncToken& sync_token,
     last_flush_id_ = host_->EnqueueDeferredMessage(
         GpuChannelMsg_PresentSwapChain(route_id_, mailbox, release_id),
         std::move(dependencies));
+    host_->EnsureFlush(last_flush_id_);
   }
-}
+#else
+  NOTREACHED();
 #endif  // OS_WIN
+}
+
+#if defined(OS_FUCHSIA)
+void SharedImageInterfaceProxy::RegisterSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id,
+    zx::channel token) {
+  host_->Send(
+      new GpuChannelMsg_RegisterSysmemBufferCollection(route_id_, id, token));
+}
+
+void SharedImageInterfaceProxy::ReleaseSysmemBufferCollection(
+    gfx::SysmemBufferCollectionId id) {
+  host_->Send(new GpuChannelMsg_ReleaseSysmemBufferCollection(route_id_, id));
+}
+#endif  // defined(OS_FUCHSIA)
 
 }  // namespace gpu

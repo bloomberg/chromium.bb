@@ -12150,47 +12150,140 @@ GroupEffect.prototype.init = function(data,element){
  * a wrapper that manages animation control for each animation.
  */
 
+/**
+ * An instance of the currently running lottie animation.
+ * @type {?AnimationItem}
+ */
 var currentAnimation = null;
 
+/**
+ * Events sent back to the parent thread.
+ */
+var events = {
+  INITIALIZED: 'initialized',  // Send when the animation was successfully
+                               // initialized.
+  RESIZED: 'resized',  // Sent when the animation has been resized.
+  PLAYING: 'playing'   // Send when the animation started playing.
+};
+
+/**
+ * Returns the size of the canvas on which the current animation is running on.
+ * @return {Object<string, number>} Returns the current size of canvas
+ */
+getCurrentCanvasSize = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  return {
+    height: canvas.height,
+    width: canvas.width
+  };
+}
+
+/**
+ * Informs the parent thread that the canvas has been resized and also sends the
+ * new size.
+ */
+sendResizeEvent = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  postMessage({
+    name: events.RESIZED,
+    size: getCurrentCanvasSize()
+  });
+};
+
+/**
+ * Informs the parent thread that the animation has started playing.
+ */
+sendPlayEvent = function() {
+  postMessage({
+    name: events.PLAYING
+  });
+}
+
+/**
+ * Informs the parent thread that the animation has finished initializing.
+ */
+sendInitializedEvent = function() {
+  var canvas = currentAnimation.renderer.canvasContext.canvas;
+  postMessage({
+    name: events.INITIALIZED,
+    success: currentAnimation.isLoaded
+  })
+}
+
+/**
+ * Initializes the animation using the animation data sent from the parent
+ * thread along with the init parameters. If an animation is already initialized
+ * this is a no-op.
+ * @param {JSON} animationData JSON data for the animation.
+ * @param {Object} initParams Parameters to initialize the animation with.
+ * @param {OffscreenCanvas} canvas The offsccreen canvas that will display the
+ *     animation.
+ */
+initAnimation = function(animationData, initParams, canvas) {
+  if (currentAnimation || !animationData || !initParams) {
+    return;
+  }
+
+  var ctx = canvas.getContext("2d");
+  currentAnimation = lottiejs.loadAnimation({
+    renderer: 'canvas',
+    loop: initParams.loop,
+    autoplay: initParams.autoplay,
+    animationData: animationData,
+    rendererSettings: {
+      context: ctx,
+      scaleMode: 'noScale',
+      clearCanvas: true
+    }
+  });
+
+  sendInitializedEvent();
+
+  // Play the animation if its not already playing.
+  if (initParams.autoplay) {
+    currentAnimation.play();
+  }
+
+  if (currentAnimation.isLoaded && !currentAnimation.isPaused) {
+    sendPlayEvent();
+  }
+}
+
+/**
+ * Updates the canvas draw size. If an animation is already initialized or
+ * playing, this would update the canvas for that as well.
+ * @param {OffscreenCanvas} canvas Draw size for this canvas is updated.
+ * @param {Object<string, number>} size Draw size to update the canvas to.
+ */
+updateCanvasSize = function(canvas, size) {
+  if (!size || !canvas) {
+    return;
+  }
+
+  if (size.height > 0 && size.width > 0) {
+    canvas.height = size.height;
+    canvas.width = size.width;
+  }
+
+  // If an animation is already initialized then update its canvas size.
+  if (currentAnimation) {
+    currentAnimation.resize();
+    sendResizeEvent();
+  }
+}
+
 onmessage = function(evt) {
-    if (!evt || !evt.data) return;
+  if (!evt || !evt.data) return;
 
-    var canvas = null;
-    if (currentAnimation) {
-        canvas = currentAnimation.renderer.canvasContext.canvas;
-    } else if (evt.data.canvas) {
-        canvas = evt.data.canvas;
-    } else {
-        return;
-    }
+  var canvas = null;
+  if (currentAnimation) {
+    canvas = currentAnimation.renderer.canvasContext.canvas;
+  } else if (evt.data.canvas) {
+    canvas = evt.data.canvas;
+  } else {
+    return;
+  }
 
-    // Set the draw size of the canvas. This is the pixel size at which the
-    // lottie renderer will render the frames.
-    if (evt.data.drawSize) {
-        canvas.height = evt.data.drawSize.height;
-        canvas.width = evt.data.drawSize.width;
-
-        // Update lottie player to use the new canvas size.
-        if (currentAnimation)
-            currentAnimation.resize();
-    }
-
-    if (!currentAnimation) {
-        if (!evt.data.animationData || !evt.data.params)
-            return;
-        var params = evt.data.params;
-        var ctx = canvas.getContext("2d");
-        currentAnimation = lottiejs.loadAnimation({
-            renderer: 'canvas',
-            loop: params.loop,
-            autoplay: params.autoplay,
-            animationData: evt.data.animationData,
-            rendererSettings: {
-                context: ctx,
-                scaleMode: 'noScale',
-                clearCanvas: true
-            }
-        });
-        currentAnimation.play();
-    }
+  updateCanvasSize(canvas, evt.data.drawSize);
+  initAnimation(evt.data.animationData, evt.data.params, canvas);
 };

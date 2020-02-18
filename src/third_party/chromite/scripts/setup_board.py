@@ -16,6 +16,7 @@ from __future__ import print_function
 from chromite.lib import build_target_util
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib
+from chromite.lib import portage_util
 from chromite.service import sysroot
 
 
@@ -131,5 +132,11 @@ def main(argv):
   opts = _ParseArgs(argv)
   try:
     sysroot.SetupBoard(opts.build_target, opts.accept_licenses, opts.run_config)
+  except portage_util.MissingOverlayError as e:
+    # Add a bit more user friendly message as people can typo names easily.
+    cros_build_lib.Die(
+        '%s\n'
+        "Double check the --board setting and make sure you're syncing the "
+        'right manifest (internal-vs-external).', e)
   except sysroot.Error as e:
     cros_build_lib.Die(e.message)

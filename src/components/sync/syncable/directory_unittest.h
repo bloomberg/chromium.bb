@@ -10,7 +10,7 @@
 #include <memory>
 #include <string>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/test_unrecoverable_error_handler.h"
 #include "components/sync/syncable/in_memory_directory_backing_store.h"
@@ -94,7 +94,7 @@ class SyncableDirectoryTest : public testing::Test {
                      int64_t server_version,
                      bool is_del);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<Directory> dir_;
   NullDirectoryChangeDelegate delegate_;
   FakeEncryptor encryptor_;

@@ -25,8 +25,8 @@
 #include "components/history/core/browser/download_row.h"
 #include "components/history/core/browser/history_service.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_download_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -55,10 +55,9 @@ class FakeHistoryAdapter : public DownloadHistory::HistoryAdapter {
   void QueryDownloads(
       history::HistoryService::DownloadQueryCallback callback) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
-                       base::Unretained(this), std::move(callback)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&FakeHistoryAdapter::QueryDownloadsDone,
+                                  base::Unretained(this), std::move(callback)));
   }
 
   void QueryDownloadsDone(
@@ -453,7 +452,7 @@ class DownloadHistoryTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::vector<std::unique_ptr<StrictMockDownloadItem>> items_;
   std::unique_ptr<content::MockDownloadManager> manager_;
   FakeHistoryAdapter* history_ = nullptr;

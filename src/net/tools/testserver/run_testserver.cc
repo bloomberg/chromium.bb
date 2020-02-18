@@ -9,6 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/single_thread_task_executor.h"
@@ -24,7 +25,7 @@ static void PrintUsage() {
 
 int main(int argc, const char* argv[]) {
   base::AtExitManager at_exit_manager;
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
   // Process command line
   base::CommandLine::Init(argc, argv);
@@ -32,7 +33,7 @@ int main(int argc, const char* argv[]) {
 
   logging::LoggingSettings settings;
   settings.logging_dest = logging::LOG_TO_ALL;
-  settings.log_file = FILE_PATH_LITERAL("testserver.log");
+  settings.log_file_path = FILE_PATH_LITERAL("testserver.log");
   if (!logging::InitLogging(settings)) {
     printf("Error: could not initialize logging. Exiting.\n");
     return -1;

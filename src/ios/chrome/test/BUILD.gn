@@ -67,6 +67,7 @@ source_set("test_support") {
 }
 
 source_set("eg_test_support") {
+  defines = [ "CHROME_EARL_GREY_1" ]
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
@@ -74,15 +75,34 @@ source_set("eg_test_support") {
     "scoped_eg_synchronization_disabler.mm",
   ]
   deps = [
-    ":test_support",
-    "//base:base",
+    "//base",
+    "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/earl_grey:earl_grey+link",
   ]
 }
 
+source_set("eg_test_support+eg2") {
+  defines = [ "CHROME_EARL_GREY_2" ]
+  configs += [
+    "//build/config/compiler:enable_arc",
+    "//build/config/ios:xctest_config",
+  ]
+  testonly = true
+  sources = [
+    "scoped_eg_synchronization_disabler.h",
+    "scoped_eg_synchronization_disabler.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/testing/earl_grey:eg_test_support+eg2",
+    "//ios/third_party/earl_grey2:test_lib",
+  ]
+  libs = [ "XCTest.framework" ]
+}
+
 source_set("block_cleanup_test") {
   # TODO(crbug.com/733237): Replace this comment with an explicit disable_arc config.
-  # The files in this target depend on non-ARC memeory management.
+  # The files in this target depend on non-ARC memory management.
   testonly = true
   sources = [
     "block_cleanup_test.h",
@@ -104,6 +124,7 @@ source_set("run_all_unittests") {
     ":test_support",
     "//base",
     "//base/test:test_support",
+    "//ios/chrome/app/startup:startup_basic",
     "//mojo/core/embedder",
   ]
 }
@@ -189,6 +210,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/authentication/cells:unit_tests",
     "//ios/chrome/browser/ui/autofill/cells:unit_tests",
     "//ios/chrome/browser/ui/autofill/manual_fill:unit_tests",
+    "//ios/chrome/browser/ui/badges:unit_tests",
     "//ios/chrome/browser/ui/bookmarks:unit_tests",
     "//ios/chrome/browser/ui/bookmarks/cells:unit_tests",
     "//ios/chrome/browser/ui/broadcaster:unit_tests",
@@ -225,6 +247,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/omnibox/popup:unit_tests",
     "//ios/chrome/browser/ui/open_in:unit_tests",
     "//ios/chrome/browser/ui/overlays:unit_tests",
+    "//ios/chrome/browser/ui/overlays/web_content_area/app_launcher:unit_tests",
     "//ios/chrome/browser/ui/overlays/web_content_area/http_auth_dialogs:unit_tests",
     "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs:unit_tests",
     "//ios/chrome/browser/ui/payments:unit_tests",
@@ -240,6 +263,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/settings/autofill:unit_tests",
     "//ios/chrome/browser/ui/settings/cells:unit_tests",
     "//ios/chrome/browser/ui/settings/clear_browsing_data:unit_tests",
+    "//ios/chrome/browser/ui/settings/credit_card_scanner:unit_tests",
     "//ios/chrome/browser/ui/settings/language:unit_tests",
     "//ios/chrome/browser/ui/settings/password:unit_tests",
     "//ios/chrome/browser/ui/settings/sync:unit_tests",

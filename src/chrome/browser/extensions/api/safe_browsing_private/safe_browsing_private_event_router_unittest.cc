@@ -6,13 +6,16 @@
 #include "base/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/api/safe_browsing_private/safe_browsing_private_event_router_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chrome/test/base/testing_profile_manager.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/test_event_router.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,64 +70,77 @@ std::unique_ptr<KeyedService> BuildSafeBrowsingPrivateEventRouter(
 
 class SafeBrowsingPrivateEventRouterTest : public testing::Test {
  public:
-  SafeBrowsingPrivateEventRouterTest() = default;
+  SafeBrowsingPrivateEventRouterTest()
+      : profile_manager_(TestingBrowserProcess::GetGlobal()) {
+    EXPECT_TRUE(profile_manager_.SetUp());
+    profile_ = profile_manager_.CreateTestingProfile("test-user");
+  }
+
   ~SafeBrowsingPrivateEventRouterTest() override = default;
 
   void TriggerOnPolicySpecifiedPasswordReuseDetectedEvent() {
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnPolicySpecifiedPasswordReuseDetected(GURL("https://phishing.com/"),
                                                  "user_name_1",
                                                  /*is_phishing_url*/ true);
   }
 
   void TriggerOnPolicySpecifiedPasswordChangedEvent() {
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnPolicySpecifiedPasswordChanged("user_name_2");
   }
 
   void TriggerOnDangerousDownloadOpenedEvent() {
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnDangerousDownloadOpened(GURL("https://evil.com/malware.exe"),
                                     "/path/to/malware.exe",
                                     "sha256_or_malware_exe");
   }
 
   void TriggerOnSecurityInterstitialShownEvent() {
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnSecurityInterstitialShown(GURL("https://phishing.com/"), "PHISHING",
                                       0);
   }
 
   void TriggerOnSecurityInterstitialProceededEvent() {
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->OnSecurityInterstitialProceeded(GURL("https://phishing.com/"),
                                           "PHISHING", -201);
   }
 
-  void SetUpRouters() {
-    event_router_ = extensions::CreateAndUseTestEventRouter(&profile_);
-    SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
-        &profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+  void SetReportingPolicy(bool enabled) {
+    TestingBrowserProcess::GetGlobal()->local_state()->SetBoolean(
+        prefs::kUnsafeEventsReportingEnabled, enabled);
 
-    // Make sure real-time feature is eanbled so that the tests will run.
-    scoped_feature_list_.InitAndEnableFeature(
-        SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature);
+    // If we are not enabling reporting, or if the client has already been
+    // set for testing, just return.
+    if (!enabled || client_)
+      return;
 
     // Set a mock cloud policy client in the router.  The router will own the
     // client, but a pointer to the client is maintained in the test class to
     // manage expectations.
     client_ = new policy::MockCloudPolicyClient();
     std::unique_ptr<policy::CloudPolicyClient> client(client_);
-    SafeBrowsingPrivateEventRouterFactory::GetForProfile(&profile_)
+    SafeBrowsingPrivateEventRouterFactory::GetForProfile(profile_)
         ->SetCloudPolicyClientForTesting(std::move(client));
   }
 
+  void SetUpRouters(bool realtime_reporting_enable = true) {
+    event_router_ = extensions::CreateAndUseTestEventRouter(profile_);
+    SafeBrowsingPrivateEventRouterFactory::GetInstance()->SetTestingFactory(
+        profile_, base::BindRepeating(&BuildSafeBrowsingPrivateEventRouter));
+
+    SetReportingPolicy(realtime_reporting_enable);
+  }
+
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
-  base::test::ScopedFeatureList scoped_feature_list_;
-  TestingProfile profile_;
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfileManager profile_manager_;
+  TestingProfile* profile_;
   extensions::TestEventRouter* event_router_ = nullptr;
-  policy::MockCloudPolicyClient* client_;
+  policy::MockCloudPolicyClient* client_ = nullptr;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouterTest);
@@ -137,9 +153,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnReuseDetected) {
           kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-  base::Value wrapper;
+  base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
-      .WillOnce(CaptureArg(&wrapper));
+      .WillOnce(CaptureArg(&report));
 
   TriggerOnPolicySpecifiedPasswordReuseDetectedEvent();
   base::RunLoop().RunUntilIdle();
@@ -149,9 +165,13 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnReuseDetected) {
   EXPECT_EQ("user_name_1", captured_args.FindKey("userName")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* wrapper =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
+  ASSERT_NE(nullptr, wrapper);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
   base::Value* event =
-      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent);
+      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("https://phishing.com/",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyUrl));
@@ -165,9 +185,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordChanged) {
       api::safe_browsing_private::OnPolicySpecifiedPasswordChanged::kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-  base::Value wrapper;
+  base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
-      .WillOnce(CaptureArg(&wrapper));
+      .WillOnce(CaptureArg(&report));
 
   TriggerOnPolicySpecifiedPasswordChangedEvent();
   base::RunLoop().RunUntilIdle();
@@ -176,9 +196,13 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnPasswordChanged) {
   EXPECT_EQ("user_name_2", captured_args.GetString());
 
   Mock::VerifyAndClearExpectations(client_);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
-  base::Value* event =
-      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyPasswordChangedEvent);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* wrapper =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
+  ASSERT_NE(nullptr, wrapper);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
+  base::Value* event = wrapper->FindKey(
+      SafeBrowsingPrivateEventRouter::kKeyPasswordChangedEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("user_name_2", *event->FindStringKey(
                                SafeBrowsingPrivateEventRouter::kKeyUserName));
@@ -190,9 +214,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
       api::safe_browsing_private::OnDangerousDownloadOpened::kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-  base::Value wrapper;
+  base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
-      .WillOnce(CaptureArg(&wrapper));
+      .WillOnce(CaptureArg(&report));
 
   TriggerOnDangerousDownloadOpenedEvent();
   base::RunLoop().RunUntilIdle();
@@ -207,8 +231,12 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnDangerousDownloadOpened) {
             captured_args.FindKey("downloadDigestSha256")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
-  base::Value* event = wrapper.FindKey(
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* wrapper =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
+  ASSERT_NE(nullptr, wrapper);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
+  base::Value* event = wrapper->FindKey(
       SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ(
@@ -223,9 +251,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
       api::safe_browsing_private::OnSecurityInterstitialProceeded::kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-  base::Value wrapper;
+  base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
-      .WillOnce(CaptureArg(&wrapper));
+      .WillOnce(CaptureArg(&report));
 
   TriggerOnSecurityInterstitialProceededEvent();
   base::RunLoop().RunUntilIdle();
@@ -237,9 +265,13 @@ TEST_F(SafeBrowsingPrivateEventRouterTest,
   EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* wrapper =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
+  ASSERT_NE(nullptr, wrapper);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
   base::Value* event =
-      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
+      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("PHISHING",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
@@ -255,9 +287,9 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
       api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
   event_router_->AddEventObserver(&event_observer);
 
-  base::Value wrapper;
+  base::Value report;
   EXPECT_CALL(*client_, UploadRealtimeReport(_, _))
-      .WillOnce(CaptureArg(&wrapper));
+      .WillOnce(CaptureArg(&report));
 
   TriggerOnSecurityInterstitialShownEvent();
   base::RunLoop().RunUntilIdle();
@@ -269,9 +301,13 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
   EXPECT_EQ("", captured_args.FindKey("userName")->GetString());
 
   Mock::VerifyAndClearExpectations(client_);
-  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper.type());
+  EXPECT_EQ(base::Value::Type::DICTIONARY, report.type());
+  base::Value* wrapper =
+      report.FindKey(policy::RealtimeReportingJobConfiguration::kEventKey);
+  ASSERT_NE(nullptr, wrapper);
+  EXPECT_EQ(base::Value::Type::DICTIONARY, wrapper->type());
   base::Value* event =
-      wrapper.FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
+      wrapper->FindKey(SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent);
   EXPECT_NE(nullptr, event);
   EXPECT_EQ("PHISHING",
             *event->FindStringKey(SafeBrowsingPrivateEventRouter::kKeyReason));
@@ -280,4 +316,45 @@ TEST_F(SafeBrowsingPrivateEventRouterTest, TestOnSecurityInterstitialShown) {
   EXPECT_FALSE(
       *event->FindBoolKey(SafeBrowsingPrivateEventRouter::kKeyClickedThrough));
 }
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOnToOffIsDynamic) {
+  SetUpRouters();
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(1);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+
+  // Now turn off policy.  This time no report should be generated.
+  SetReportingPolicy(false);
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(0);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+}
+
+TEST_F(SafeBrowsingPrivateEventRouterTest, PolicyControlOffToOnIsDynamic) {
+  SetUpRouters(/*realtime_reporting_enable=*/false);
+  SafeBrowsingEventObserver event_observer(
+      api::safe_browsing_private::OnSecurityInterstitialShown::kEventName);
+  event_router_->AddEventObserver(&event_observer);
+
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+
+  // Now turn on policy.
+  SetReportingPolicy(true);
+  EXPECT_CALL(*client_, UploadRealtimeReport(_, _)).Times(1);
+  TriggerOnSecurityInterstitialShownEvent();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1u, event_observer.PassEventArgs().GetList().size());
+  Mock::VerifyAndClearExpectations(client_);
+}
+
 }  // namespace extensions

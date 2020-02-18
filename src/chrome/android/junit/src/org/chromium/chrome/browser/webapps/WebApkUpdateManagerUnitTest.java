@@ -40,6 +40,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.test.ShadowUrlUtilities;
 import org.chromium.chrome.test.support.DisableHistogramsRule;
@@ -247,12 +248,17 @@ public class WebApkUpdateManagerUnitTest {
         }
     }
 
-    private static String getWebApkId(String packageName) {
-        return WebApkConstants.WEBAPK_ID_PREFIX + packageName;
+    private void registerStorageForWebApkPackage(String webApkPackageName) {
+        WebappRegistry.getInstance().register(WebappRegistry.webApkIdForPackage(webApkPackageName),
+                new WebappRegistry.FetchWebappDataStorageCallback() {
+                    @Override
+                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
+                });
     }
 
     private WebappDataStorage getStorage(String packageName) {
-        return WebappRegistry.getInstance().getWebappDataStorage(getWebApkId(packageName));
+        return WebappRegistry.getInstance().getWebappDataStorage(
+                WebappRegistry.webApkIdForPackage(packageName));
     }
 
     /**
@@ -358,14 +364,14 @@ public class WebApkUpdateManagerUnitTest {
         if (manifestData == null) return null;
 
         final String kPackageName = "org.random.webapk";
-        return WebApkInfo.create(getWebApkId(kPackageName), "", manifestData.scopeUrl,
-                new WebApkInfo.Icon(manifestData.primaryIcon),
-                new WebApkInfo.Icon(manifestData.badgeIcon), null, manifestData.name,
-                manifestData.shortName, manifestData.displayMode, manifestData.orientation, -1,
-                manifestData.themeColor, manifestData.backgroundColor,
+        return WebApkInfo.create("", manifestData.scopeUrl,
+                new WebappIcon(manifestData.primaryIcon), new WebappIcon(manifestData.badgeIcon),
+                null, manifestData.name, manifestData.shortName, manifestData.displayMode,
+                manifestData.orientation, -1, manifestData.themeColor, manifestData.backgroundColor,
                 manifestData.defaultBackgroundColor, false /* isPrimaryIconMaskable */,
-                kPackageName, -1, WEB_MANIFEST_URL, manifestData.startUrl,
-                WebApkInfo.WebApkDistributor.BROWSER, manifestData.iconUrlToMurmur2HashMap,
+                false /* isSplashIconMaskable*/, kPackageName, -1, WEB_MANIFEST_URL,
+                manifestData.startUrl, WebApkDistributor.BROWSER,
+                manifestData.iconUrlToMurmur2HashMap,
                 new WebApkInfo.ShareTarget(manifestData.shareTargetAction,
                         manifestData.shareTargetParamTitle, null, null,
                         manifestData.shareTargetMethod != null
@@ -375,7 +381,8 @@ public class WebApkUpdateManagerUnitTest {
                                         SHARE_TARGET_ENC_TYPE_MULTIPART),
                         manifestData.shareTargetFileNames, manifestData.shareTargetFileAccepts),
                 null /* shareTargetActivityName */, false /* forceNavigation */,
-                false /* isSplashProvidedByWebApk */, null /* shareData */);
+                false /* isSplashProvidedByWebApk */, null /* shareData */,
+                1 /* webApkVersionCode */);
     }
 
     /**
@@ -487,17 +494,14 @@ public class WebApkUpdateManagerUnitTest {
 
         registerWebApk(
                 WEBAPK_PACKAGE_NAME, defaultManifestData(), REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
-
-        WebappRegistry.getInstance().register(getWebApkId(WEBAPK_PACKAGE_NAME),
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
-                });
+        registerStorageForWebApkPackage(WEBAPK_PACKAGE_NAME);
 
         WebappDataStorage storage = getStorage(WEBAPK_PACKAGE_NAME);
         storage.updateTimeOfLastCheckForUpdatedWebManifest();
         storage.updateTimeOfLastWebApkUpdateRequestCompletion();
         storage.updateDidLastWebApkUpdateRequestSucceed(true);
+
+        ChromeBackgroundTaskFactory.setAsDefault();
     }
 
     @After
@@ -893,6 +897,17 @@ public class WebApkUpdateManagerUnitTest {
         assertTrue(checkUpdateNeededForFetchedManifest(fetchedV1ShareTarget, oldNoShareTarget));
     }
 
+    /** Test that an upgrade is requested when the Web Manifest 'scope' changes. */
+    @Test
+    public void testManifestScopeChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        // webapk_installer.cc sets the scope to the default scope if the scope is empty.
+        oldData.scopeUrl = "/scope1/";
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.scopeUrl = "/scope2/";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
     /**
      * Test that an upgrade is not requested when the Web Manifest did not change and the Web
      * Manifest scope is empty.
@@ -1036,6 +1051,62 @@ public class WebApkUpdateManagerUnitTest {
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
     }
 
+    /** Test that an upgrade is requested when the Web Manifest 'short_name' changes. */
+    @Test
+    public void testManifestShortNameChangedShouldUpgrade() {
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.shortName = SHORT_NAME + "2";
+        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'name' changes. */
+    @Test
+    public void testManifestNameChangedShouldUpgrade() {
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.name = NAME + "2";
+        assertTrue(checkUpdateNeededForFetchedManifest(defaultManifestData(), fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'display' changes. */
+    @Test
+    public void testManifestDisplayModeChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.displayMode = WebDisplayMode.STANDALONE;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.displayMode = WebDisplayMode.FULLSCREEN;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'orientation' changes. */
+    @Test
+    public void testManifestOrientationChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.orientation = ScreenOrientationValues.LANDSCAPE;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.orientation = ScreenOrientationValues.PORTRAIT;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'theme_color' changes. */
+    @Test
+    public void testManifestThemeColorChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.themeColor = 1L;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.themeColor = 2L;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'background_color' changes. */
+    @Test
+    public void testManifestBackgroundColorChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.backgroundColor = 1L;
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.backgroundColor = 2L;
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
+    }
+
     /**
      * Test that an upgrade is not requested if the AndroidManifest does not have a valid background
      * color and the default background color in the WebAPK's resources is different than
@@ -1043,7 +1114,7 @@ public class WebApkUpdateManagerUnitTest {
      * {@link SplashLayout#getDefaultBackgroundColor()} in a new Chrome version).
      */
     @Test
-    public void testDefaultBackgroundColorHasChangedShouldUpgrade() {
+    public void testDefaultBackgroundColorHasChangedShouldNotUpgrade() {
         int oldDefaultBackgroundColor = 3;
         int splashLayoutDefaultBackgroundColor =
                 SplashLayout.getDefaultBackgroundColor(RuntimeEnvironment.application);
@@ -1058,6 +1129,16 @@ public class WebApkUpdateManagerUnitTest {
         fetchedManifestData.defaultBackgroundColor = splashLayoutDefaultBackgroundColor;
 
         assertFalse(checkUpdateNeededForFetchedManifest(androidManifestData, fetchedManifestData));
+    }
+
+    /** Test that an upgrade is requested when the Web Manifest 'start_url' changes. */
+    @Test
+    public void testManifestStartUrlChangedShouldUpgrade() {
+        ManifestData oldData = defaultManifestData();
+        oldData.startUrl = "/old_start_url.html";
+        ManifestData fetchedData = defaultManifestData();
+        fetchedData.startUrl = "/new_start_url.html";
+        assertTrue(checkUpdateNeededForFetchedManifest(oldData, fetchedData));
     }
 
     /**
@@ -1165,11 +1246,7 @@ public class WebApkUpdateManagerUnitTest {
     public void testForceUpdateUnboundWebApk() throws Exception {
         registerWebApk(UNBOUND_WEBAPK_PACKAGE_NAME, defaultManifestData(),
                 REQUEST_UPDATE_FOR_SHELL_APK_VERSION);
-        WebappRegistry.getInstance().register(getWebApkId(UNBOUND_WEBAPK_PACKAGE_NAME),
-                new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {}
-                });
+        registerStorageForWebApkPackage(UNBOUND_WEBAPK_PACKAGE_NAME);
         WebappDataStorage storage = getStorage(UNBOUND_WEBAPK_PACKAGE_NAME);
         storage.updateWebApkPackageNameForTests(UNBOUND_WEBAPK_PACKAGE_NAME);
         // Should no-op for an unbound WebAPK.

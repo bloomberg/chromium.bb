@@ -20,10 +20,11 @@
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "net/base/network_change_notifier.h"
@@ -155,7 +156,7 @@ int main(int argc, char* argv[]) {
   logging::InitLogging(settings);
 
   // Just make the main task executor the network loop.
-  base::SingleThreadTaskExecutor io_task_executor(base::MessagePump::Type::IO);
+  base::SingleThreadTaskExecutor io_task_executor(base::MessagePumpType::IO);
 
   base::ThreadPoolInstance::CreateAndStartWithDefaultParams("NetWatcher");
 

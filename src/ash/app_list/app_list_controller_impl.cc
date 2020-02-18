@@ -27,12 +27,12 @@
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/app_list/app_list_client.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
 #include "ash/session/session_controller_impl.h"
@@ -48,7 +48,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -142,7 +142,7 @@ AppListControllerImpl::AppListControllerImpl()
   shell->AddShellObserver(this);
   shell->overview_controller()->AddObserver(this);
   keyboard::KeyboardUIController::Get()->AddObserver(this);
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  AssistantState::Get()->AddObserver(this);
   shell->window_tree_host_manager()->AddObserver(this);
   shell->mru_window_tracker()->AddObserver(this);
   if (app_list_features::IsEmbeddedAssistantUIEnabled()) {
@@ -295,7 +295,8 @@ void AppListControllerImpl::SetItemMetadata(
   // Folder icon is generated on ash side and chrome side passes a null
   // icon here. Skip it.
   if (data->icon.isNull())
-    data->icon = item->icon();
+    data->icon = item->GetIcon(AppListConfigType::kShared);
+
   item->SetMetadata(std::move(data));
 }
 
@@ -303,7 +304,7 @@ void AppListControllerImpl::SetItemIcon(const std::string& id,
                                         const gfx::ImageSkia& icon) {
   app_list::AppListItem* item = model_->FindItem(id);
   if (item)
-    item->SetIcon(icon);
+    item->SetIcon(AppListConfigType::kShared, icon);
 }
 
 void AppListControllerImpl::SetItemIsInstalling(const std::string& id,
@@ -643,12 +644,12 @@ void AppListControllerImpl::OnKeyboardVisibilityChanged(const bool is_visible) {
     app_list_view->OnScreenKeyboardShown(is_visible);
 }
 
-void AppListControllerImpl::OnVoiceInteractionStatusChanged(
+void AppListControllerImpl::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   UpdateAssistantVisibility();
 }
 
-void AppListControllerImpl::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void AppListControllerImpl::OnAssistantSettingsEnabled(bool enabled) {
   UpdateAssistantVisibility();
 }
 
@@ -1109,14 +1110,9 @@ bool AppListControllerImpl::KeyboardTraversalEngaged() {
 
 bool AppListControllerImpl::CanProcessEventsOnApplistViews() {
   // Do not allow processing events during overview or while overview is
-  // finished but still animating out. Note in clamshell mode, if overview and
-  // splitview is both active, we still allow the user to open app list and
-  // select an app. The app will be opened in snapped window state and overview
-  // will be ended after the app is opened.
+  // finished but still animating out.
   OverviewController* overview_controller = Shell::Get()->overview_controller();
-  auto* split_view_controller = Shell::Get()->split_view_controller();
-  if ((overview_controller->InOverviewSession() &&
-       !split_view_controller->InClamshellSplitViewMode()) ||
+  if (overview_controller->InOverviewSession() ||
       overview_controller->IsCompletingShutdownAnimations()) {
     return false;
   }
@@ -1175,17 +1171,13 @@ void AppListControllerImpl::NotifySearchResultsForLogging(
 }
 
 bool AppListControllerImpl::IsAssistantAllowedAndEnabled() const {
-  if (!chromeos::switches::IsAssistantEnabled())
-    return false;
-
   if (!Shell::Get()->assistant_controller()->IsAssistantReady())
     return false;
 
-  auto* controller = VoiceInteractionController::Get();
-  return controller->settings_enabled().value_or(false) &&
-         controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
-         controller->voice_interaction_state().value_or(
-             mojom::VoiceInteractionState::NOT_READY) !=
+  auto* state = AssistantState::Get();
+  return state->settings_enabled().value_or(false) &&
+         state->allowed_state() == mojom::AssistantAllowedState::ALLOWED &&
+         state->voice_interaction_state() !=
              mojom::VoiceInteractionState::NOT_READY;
 }
 
@@ -1447,7 +1439,7 @@ void AppListControllerImpl::Shutdown() {
   }
   shell->mru_window_tracker()->RemoveObserver(this);
   shell->window_tree_host_manager()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  AssistantState::Get()->RemoveObserver(this);
   keyboard::KeyboardUIController::Get()->RemoveObserver(this);
   shell->overview_controller()->RemoveObserver(this);
   shell->RemoveShellObserver(this);

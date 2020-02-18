@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Η τιμή πρέπει να είναι <ph name="MINIMUM_DATE_OR_TIME" /> ή μεταγενέστερη.</translation>
 <translation id="2759744352195237655">αναδυόμενο κουμπί</translation>
 <translation id="2761667185364618470">Αν θέλετε να συνεχίσετε, επιλέξτε αυτό το πλαίσιο.</translation>
+<translation id="2844350028562914727">λεπτομέρειες</translation>
 <translation id="2896972712917208084">ομάδα κουμπιών επιλογής</translation>
 <translation id="2908441821576996758">Εισαγάγετε μια λίστα διευθύνσεων ηλεκτρονικού ταχυδρομείου διαχωρισμένη με κόμματα.</translation>
 <translation id="2940813599313844715">αντικείμενο</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Η τιμή πρέπει να είναι μικρότερη ή ίση του <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">ορισμός</translation>
 <translation id="3557673793733683882">επικεφαλίδα <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">επιλογέας εβδομάδας</translation>
 <translation id="3685101356851116974">Εικόνα χωρίς ετικέτα</translation>
 <translation id="3706100364254443312">εναλλαγή</translation>
 <translation id="3732799496749320381">μμ</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">γραμμή κύλισης</translation>
 <translation id="4103419683916926126">Χιλιοστά του δευτερολέπτου</translation>
 <translation id="4151657705144244502">γραφικό</translation>
+<translation id="4160057747563657758">τηλέφωνο</translation>
 <translation id="4193965531860883258">εισαγωγή</translation>
 <translation id="4201051445878709314">Εμφάνιση προηγούμενου μήνα</translation>
 <translation id="421884353938374759">επιλογέας χρώματος</translation>
 <translation id="4248100235867064564">γραμμή μενού</translation>
-<translation id="4254339807215791271">πληροφορίες περιεχομένου</translation>
 <translation id="4360991593054037559">Καταχωρίστε μια έγκυρη τιμή. Οι δύο πιο κοντινές έγκυρες τιμές είναι <ph name="VALID_VALUE_LOW" /> και <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Ερωτήσεις και απαντήσεις</translation>
 <translation id="4413860115965805769">κουμπί μενού</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Απενεργοποιημένη</translation>
 <translation id="588258955323874662">Πλήρης οθόνη</translation>
 <translation id="5888666972993069672">Μετάδοση τώρα στη συσκευή <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">πλαίσιο αναζήτησης</translation>
 <translation id="5939518447894949180">Επαναφορά</translation>
 <translation id="5966707198760109579">Εβδομάδα</translation>
 <translation id="5987525920412732405">κουμπί αυξομείωσης</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">επίλογος</translation>
 <translation id="6209276755895393898">Φαίνεται πως είναι: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">γλωσσάρι</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Έξοδος από τη λειτουργία Picture-in-Picture</translation>
 <translation id="6398862346408813489">Εμφάνιση παραθύρου επιλογής μήνα</translation>
 <translation id="6404546809543547843">δείκτης χρόνου ήχου</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Αντιστοιχίστε τη ζητούμενη μορφή.</translation>
 <translation id="7118469954320184356">Δεν υπάρχει διαθέσιμη περιγραφή.</translation>
 <translation id="7139483182332611405">πρόλογος</translation>
+<translation id="7214187073215825913">πληροφορίες για το περιεχόμενο</translation>
 <translation id="7263440858009898357">Επιλέξτε ένα στοιχείο από τη λίστα.</translation>
 <translation id="727747134524199931">κεφαλίδα στήλης</translation>
 <translation id="7320576522385648310">αποθήκευση στην προσωρινή μνήμη</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Λήψη περιγραφής…</translation>
 <translation id="8117451130807776954">Αυτήν την εβδομάδα</translation>
 <translation id="8199524924445686405">εεεε</translation>
+<translation id="8208673686607688524">επιλογέας τοπικής ώρας και ημερομηνίας</translation>
 <translation id="8261464734335370856">Μη έγκυρη ορθογραφία</translation>
 <translation id="8284326494547611709">Υπότιτλοι</translation>
 <translation id="835897206747267392">Μη έγκυρη τιμή.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">πίνακας περιεχομένων</translation>
 <translation id="8613126697340063924">έλεγχος απομακρυσμένης αναπαραγωγής</translation>
 <translation id="862370744433916922">υπότιτλος</translation>
+<translation id="8711688047404765493">έξοδος</translation>
 <translation id="8750798805984357768">Ορίστε μία από αυτές τις επιλογές.</translation>
 <translation id="8808573423886751634">κεφάλαιο</translation>
 <translation id="8845239796550121995">Γίνεται μετάδοση στην TV</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Μήνας</translation>
 <translation id="901493112792887934">τρέχων χρόνος σε δευτερόλεπτα</translation>
+<translation id="901834265349196618">ηλεκτρονικό ταχυδρομείο</translation>
 <translation id="9048119486235211610">πλοήγηση</translation>
 <translation id="9062295712474918030">έγγραφο</translation>
 <translation id="9062307380734144336">Επιλέξτε για εναλλαγή αναπαραγωγής και παύσης.</translation>

@@ -58,7 +58,7 @@ class CONTENT_EXPORT BrowserThread {
     IO,
 
     // NOTE: do not add new threads here. Instead you should just use
-    // base::Create*TaskRunnerWithTraits to run tasks on the ThreadPool.
+    // base::Create*TaskRunner to run tasks on the ThreadPool.
 
     // This identifier does not represent a thread.  Instead it counts the
     // number of well-known threads.  Insert new well-known threads before this
@@ -70,7 +70,7 @@ class CONTENT_EXPORT BrowserThread {
   // browser_task_traits.h.
 
   // TODO(crbug.com/878356): Consider replacing callsites of this with
-  // base::CreateTaskRunnerWithTraits({id})->DeleteSoon(..).
+  // base::CreateTaskRunner({id})->DeleteSoon(..).
   template <class T>
   static bool DeleteSoon(ID identifier,
                          const base::Location& from_here,
@@ -206,6 +206,15 @@ class CONTENT_EXPORT BrowserThread {
   BrowserThread() {}
   DISALLOW_COPY_AND_ASSIGN(BrowserThread);
 };
+
+// Runs |task| on the thread specified by |thread_id| if already on that thread,
+// otherwise posts a task to that thread.
+//
+// This is intended to be a temporary helper function for the IO/UI thread
+// simplification effort.
+CONTENT_EXPORT void RunOrPostTaskOnThread(const base::Location& location,
+                                          BrowserThread::ID thread_id,
+                                          base::OnceClosure task);
 
 }  // namespace content
 

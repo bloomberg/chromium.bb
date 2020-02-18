@@ -14,7 +14,7 @@
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/wake_lock/arc_wake_lock_bridge.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -69,12 +69,12 @@ class ArcWakeLockBridge::WakeLockRequester {
     // Initialize |wake_lock_| if this is the first time we're using it.
     DVLOG(1) << "Partial wake lock new acquire. Count: " << wake_lock_count_;
     if (!wake_lock_) {
-      device::mojom::WakeLockProviderPtr provider;
-      connector_->BindInterface(device::mojom::kServiceName,
-                                mojo::MakeRequest(&provider));
+      mojo::Remote<device::mojom::WakeLockProvider> provider;
+      connector_->Connect(device::mojom::kServiceName,
+                          provider.BindNewPipeAndPassReceiver());
       provider->GetWakeLockWithoutContext(
           type_, device::mojom::WakeLockReason::kOther, kWakeLockReason,
-          mojo::MakeRequest(&wake_lock_));
+          wake_lock_.BindNewPipeAndPassReceiver());
     }
 
     wake_lock_->RequestWakeLock();
@@ -118,7 +118,7 @@ class ArcWakeLockBridge::WakeLockRequester {
   int64_t wake_lock_count_ = 0;
 
   // Lazily initialized in response to first request.
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WakeLockRequester);
 };
@@ -142,9 +142,7 @@ ArcWakeLockBridge* ArcWakeLockBridge::GetForBrowserContextForTesting(
 
 ArcWakeLockBridge::ArcWakeLockBridge(content::BrowserContext* context,
                                      ArcBridgeService* bridge_service)
-    : arc_bridge_service_(bridge_service),
-      binding_(this),
-      weak_ptr_factory_(this) {
+    : arc_bridge_service_(bridge_service), binding_(this) {
   arc_bridge_service_->wake_lock()->SetHost(this);
   arc_bridge_service_->wake_lock()->AddObserver(this);
 }

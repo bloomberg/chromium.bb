@@ -14,7 +14,7 @@
 #include "chrome/common/media_router/test/test_helper.h"
 #include "components/cast_channel/cast_test_util.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/data_decoder_service.h"
 #include "services/data_decoder/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -40,8 +40,8 @@ class CastMediaRouteProviderTest : public testing::Test {
   CastMediaRouteProviderTest()
       : data_decoder_service_(connector_factory_.RegisterInstance(
             data_decoder::mojom::kServiceName)),
-        socket_service_(base::CreateSingleThreadTaskRunnerWithTraits(
-            {content::BrowserThread::UI})),
+        socket_service_(
+            base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})),
         message_handler_(&socket_service_) {}
   ~CastMediaRouteProviderTest() override = default;
 
@@ -102,7 +102,7 @@ class CastMediaRouteProviderTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
   data_decoder::DataDecoderService data_decoder_service_;
 

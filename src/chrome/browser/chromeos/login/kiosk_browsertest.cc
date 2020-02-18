@@ -40,7 +40,6 @@
 #include "chrome/browser/chromeos/login/test/test_condition_waiter.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_webui.h"
-#include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
 #include "chrome/browser/chromeos/ownership/fake_owner_settings_service.h"
@@ -72,7 +71,6 @@
 #include "components/crx_file/crx_verifier.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "components/user_manager/scoped_user_manager.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -113,10 +111,6 @@ namespace {
 //   chrome/test/data/chromeos/app_mode/webstore/inlineinstall/
 //       detail/ggaeimfdpnmlhdhpcikgoblffmkckdmn
 const char kTestKioskApp[] = "ggaeimfdpnmlhdhpcikgoblffmkckdmn";
-
-// This is the same as above, but packed in deprecated CRX2. It should work
-// before full deprecation of CRX2.
-const char kTestKioskCrx2App[] = "ggbflgnkafappblpkiflbgpmkfdpnhhe";
 
 // This app creates a window and declares usage of the identity API in its
 // manifest, so we can test device robot token minting via the identity API.
@@ -1360,39 +1354,6 @@ IN_PROC_BROWSER_TEST_F(KioskTest, NoEnterpriseAutoLaunchWhenUntrusted) {
   EXPECT_FALSE(login_display_host->GetAppLaunchController());
 }
 
-class KioskCrx2Test : public KioskTest {
- public:
-  KioskCrx2Test()
-      : KioskTest(),
-        test_install_attributes_(
-            chromeos::StubInstallAttributes::CreateCloudManaged("example.com",
-                                                                "fake-id")) {}
-
- private:
-  // Set up fake install attributes to make the device appeared as
-  // enterprise-managed. This is needed because CRX2 is only allowed for
-  // policy-based kiosk apps.
-  chromeos::ScopedStubInstallAttributes test_install_attributes_;
-
-  DISALLOW_COPY_AND_ASSIGN(KioskCrx2Test);
-};
-
-// Test that CRX2-packed apps still work for kiosk. This is a regression for
-// crbug.com/960428. TODO(crbug.com/740715): This test should fail in M78 after
-// full deprecation of CRX2.
-IN_PROC_BROWSER_TEST_F(KioskCrx2Test, InstallAndLaunchCrx2App) {
-  set_test_app_id(kTestKioskCrx2App);
-  set_test_crx_file(test_app_id() + ".crx");
-  set_use_consumer_kiosk_mode(false);
-  StartAppLaunchFromLoginScreen(
-      NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_ONLINE);
-  WaitForAppLaunchSuccess();
-  KioskAppManager::App app;
-  ASSERT_TRUE(KioskAppManager::Get()->GetApp(test_app_id(), &app));
-  EXPECT_FALSE(app.was_auto_launched_with_zero_delay);
-  EXPECT_EQ(extensions::Manifest::EXTERNAL_POLICY, GetInstalledAppLocation());
-}
-
 class KioskUpdateTest : public KioskTest {
  public:
   KioskUpdateTest() {}
@@ -1959,7 +1920,16 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PermissionChange) {
   EXPECT_EQ("2.0.0", GetInstalledAppVersion().GetString());
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
+// TODO(crbug.com/949490): PreserveLocalData is flaky ChromeOS rel (timeout).
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_PRE_PreserveLocalData DISABLED_PRE_PreserveLocalData
+#define MAYBE_PreserveLocalData DISABLED_PreserveLocalData
+#else
+#define MAYBE_PRE_PreserveLocalData PRE_PreserveLocalData
+#define MAYBE_PreserveLocalData PreserveLocalData
+#endif
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PRE_PreserveLocalData) {
   // Installs v1 app and writes some local data.
   set_test_app_id(kTestLocalFsKioskApp);
   set_test_app_version("1.0.0");
@@ -1973,7 +1943,7 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_PreserveLocalData) {
   ASSERT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PreserveLocalData) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_PreserveLocalData) {
   // Update existing v1 app installed in PRE_PreserveLocalData to v2
   // that reads and verifies the local data.
   set_test_app_id(kTestLocalFsKioskApp);
@@ -2079,13 +2049,27 @@ IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, PRE_UpdateMultiAppKioskRemoveOneApp) {
+// TODO(crbug.com/949490): UpdateMultiAppKioskRemoveOneApp is flaky ChromeOS rel
+// (timeout).
+#if defined(OS_CHROMEOS) && defined(NDEBUG)
+#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
+  DISABLED_PRE_UpdateMultiAppKioskRemoveOneApp
+#define MAYBE_UpdateMultiAppKioskRemoveOneApp \
+  DISABLED_UpdateMultiAppKioskRemoveOneApp
+#else
+#define MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp \
+  PRE_UpdateMultiAppKioskRemoveOneApp
+#define MAYBE_UpdateMultiAppKioskRemoveOneApp UpdateMultiAppKioskRemoveOneApp
+#endif
+
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest,
+                       MAYBE_PRE_UpdateMultiAppKioskRemoveOneApp) {
   LaunchTestKioskAppWithTwoSecondaryApps();
 }
 
 // Update the primary app to version 2 which removes one of the secondary app
 // from its manifest.
-IN_PROC_BROWSER_TEST_F(KioskUpdateTest, UpdateMultiAppKioskRemoveOneApp) {
+IN_PROC_BROWSER_TEST_F(KioskUpdateTest, MAYBE_UpdateMultiAppKioskRemoveOneApp) {
   set_test_app_id(kTestPrimaryKioskApp);
   fake_cws()->SetUpdateCrx(kTestPrimaryKioskApp,
                            std::string(kTestPrimaryKioskApp) + "-2.0.0.crx",
@@ -2540,9 +2524,7 @@ class KioskHiddenWebUITest : public KioskTest,
 
 IN_PROC_BROWSER_TEST_F(KioskHiddenWebUITest, AutolaunchWarning) {
   // Add a device owner.
-  FakeChromeUserManager* user_manager = new FakeChromeUserManager();
-  user_manager->AddUser(test_owner_account_id_);
-  user_manager::ScopedUserManager enabler(base::WrapUnique(user_manager));
+  mock_user_manager()->AddUser(test_owner_account_id_);
 
   // Set kiosk app to autolaunch.
   EnableConsumerKioskMode();

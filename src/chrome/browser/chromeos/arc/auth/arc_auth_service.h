@@ -16,7 +16,7 @@
 #include "base/optional.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/arc/auth/arc_active_directory_enrollment_token_fetcher.h"
-#include "components/arc/common/auth.mojom.h"
+#include "components/arc/mojom/auth.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -190,6 +190,9 @@ class ArcAuthService : public KeyedService,
   // Google accounts in ARC.
   void DispatchAccountsInArc(GetGoogleAccountsInArcCallback callback);
 
+  // Response for |mojom::GetMainAccountResolutionStatus|.
+  void OnMainAccountResolutionStatus(mojom::MainAccountResolutionStatus status);
+
   // Non-owning pointers.
   Profile* const profile_;
   signin::IdentityManager* const identity_manager_;
@@ -207,7 +210,7 @@ class ArcAuthService : public KeyedService,
 
   bool skip_merge_session_for_testing_ = false;
 
-  base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcAuthService);
 };

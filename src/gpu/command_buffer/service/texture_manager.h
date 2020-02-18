@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/sampler_manager.h"
+#include "gpu/command_buffer/service/shared_image_representation.h"
 #include "gpu/command_buffer/service/texture_base.h"
 #include "gpu/gpu_gles2_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -30,10 +31,6 @@
 
 namespace gl {
 class ProgressReporter;
-}
-
-namespace media {
-class SharedImageVideo;
 }
 
 namespace gpu {
@@ -50,9 +47,10 @@ class SharedImageRepresentationSkiaGLAHB;
 class SharedImageBackingIOSurface;
 class SharedImageRepresentationGLTextureIOSurface;
 class SharedImageRepresentationSkiaIOSurface;
-class SharedImageBackingDXGISwapChain;
+class SharedImageBackingD3D;
+class SharedImageVideo;
 class StreamTexture;
-class SwapChainFactoryDXGI;
+class SharedImageBackingFactoryD3D;
 
 namespace gles2 {
 class GLStreamTextureImage;
@@ -434,15 +432,15 @@ class GPU_GLES2_EXPORT Texture final : public TextureBase {
   friend class MailboxManagerTest;
   friend class gpu::ExternalVkImageBacking;
   friend class gpu::ExternalVkImageGlRepresentation;
-  friend class media::SharedImageVideo;
+  friend class gpu::SharedImageVideo;
   friend class gpu::SharedImageBackingGLTexture;
   friend class gpu::SharedImageBackingFactoryGLTexture;
   friend class gpu::SharedImageBackingAHB;
   friend class gpu::SharedImageRepresentationGLTextureAHB;
   friend class gpu::SharedImageRepresentationSkiaGLAHB;
   friend class gpu::SharedImageBackingIOSurface;
-  friend class gpu::SharedImageBackingDXGISwapChain;
-  friend class gpu::SwapChainFactoryDXGI;
+  friend class gpu::SharedImageBackingD3D;
+  friend class gpu::SharedImageBackingFactoryD3D;
   friend class gpu::SharedImageRepresentationGLTextureIOSurface;
   friend class gpu::SharedImageRepresentationSkiaIOSurface;
   friend class gpu::StreamTexture;
@@ -796,6 +794,13 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   SharedImageRepresentationGLTexture* shared_image() const {
     return shared_image_.get();
   }
+  const base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>&
+  shared_image_scoped_access() const {
+    return shared_image_scoped_access_;
+  }
+
+  bool BeginAccessSharedImage(GLenum mode);
+  void EndAccessSharedImage();
 
   // When the TextureRef is destroyed, it will assume that the context has been
   // lost, regardless of the state of the TextureManager.
@@ -818,6 +823,8 @@ class GPU_GLES2_EXPORT TextureRef : public base::RefCounted<TextureRef> {
   bool force_context_lost_;
 
   std::unique_ptr<SharedImageRepresentationGLTexture> shared_image_;
+  base::Optional<SharedImageRepresentationGLTexture::ScopedAccess>
+      shared_image_scoped_access_;
 
   DISALLOW_COPY_AND_ASSIGN(TextureRef);
 };

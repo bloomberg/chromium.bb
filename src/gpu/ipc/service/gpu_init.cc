@@ -122,6 +122,19 @@ bool CanAccessNvidiaDeviceFile() {
 }
 #endif  // OS_LINUX && !OS_CHROMEOS && !IS_CHROMECAST
 
+class GpuWatchdogInit {
+ public:
+  GpuWatchdogInit() = default;
+  ~GpuWatchdogInit() {
+    if (watchdog_ptr_)
+      watchdog_ptr_->OnInitComplete();
+  }
+
+  void SetGpuWatchdogPtr(gpu::GpuWatchdogThread* ptr) { watchdog_ptr_ = ptr; }
+
+ private:
+  gpu::GpuWatchdogThread* watchdog_ptr_ = nullptr;
+};
 }  // namespace
 
 GpuInit::GpuInit() = default;
@@ -191,6 +204,10 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   enable_watchdog = false;
 #endif
 
+  // watchdog_init will call watchdog OnInitComplete() at the end of this
+  // function.
+  GpuWatchdogInit watchdog_init;
+
   bool delayed_watchdog_enable = false;
 
 #if defined(OS_CHROMEOS)
@@ -205,6 +222,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
       watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
+      watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
     } else {
       watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
@@ -246,10 +264,7 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   // may also have started at this point.
   ui::OzonePlatform::InitParams params;
   params.single_process = false;
-  params.using_mojo =
-      features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
-                                        ->GetPlatformProperties()
-                                        .requires_mojo;
+  params.using_mojo = features::IsOzoneDrmMojo();
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
   const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =
@@ -262,7 +277,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   if (gpu_preferences_.use_vulkan != gpu::VulkanImplementationName::kNone) {
     bool use_swiftshader = gpu_preferences_.use_vulkan ==
                            gpu::VulkanImplementationName::kSwiftshader;
-    vulkan_implementation_ = gpu::CreateVulkanImplementation(use_swiftshader);
+    const bool enforce_protected_memory =
+        gpu_preferences_.enforce_vulkan_protected_memory;
+    vulkan_implementation_ = gpu::CreateVulkanImplementation(
+        use_swiftshader,
+        enforce_protected_memory ? true : false /* allow_protected_memory */,
+        enforce_protected_memory);
     if (!vulkan_implementation_ ||
         !vulkan_implementation_->InitializeVulkanInstance(
             !gpu_preferences_.disable_vulkan_surface)) {
@@ -409,10 +429,12 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
     if (watchdog_thread_)
       watchdog_thread_->Stop();
     watchdog_thread_ = nullptr;
+    watchdog_init.SetGpuWatchdogPtr(nullptr);
   } else if (enable_watchdog && delayed_watchdog_enable) {
     if (base::FeatureList::IsEnabled(features::kGpuWatchdogV2)) {
       watchdog_thread_ = gpu::GpuWatchdogThreadImplV2::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
+      watchdog_init.SetGpuWatchdogPtr(watchdog_thread_.get());
     } else {
       watchdog_thread_ = gpu::GpuWatchdogThreadImplV1::Create(
           gpu_preferences_.watchdog_starts_backgrounded);
@@ -427,11 +449,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   }
   UMA_HISTOGRAM_BOOLEAN("GPU.Sandbox.InitializedSuccessfully",
                         gpu_info_.sandboxed);
-
-  // Notify the gpu watchdog that the gpu init has completed So the watchdog
-  // can be disarmed.
-  if (watchdog_thread_)
-    watchdog_thread_->OnInitComplete();
 
   init_successful_ = true;
 #if defined(USE_OZONE)
@@ -448,6 +465,9 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
   gpu_feature_info_.supported_buffer_formats_for_allocation_and_texturing =
       std::move(supported_buffer_formats_for_texturing);
 #endif
+
+  if (!watchdog_thread_)
+    watchdog_init.SetGpuWatchdogPtr(nullptr);
 
   return true;
 }
@@ -481,10 +501,7 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
   params.single_process = true;
-  params.using_mojo =
-      features::IsOzoneDrmMojo() || ui::OzonePlatform::EnsureInstance()
-                                        ->GetPlatformProperties()
-                                        .requires_mojo;
+  params.using_mojo = features::IsOzoneDrmMojo();
   params.viz_display_compositor = features::IsVizDisplayCompositorEnabled();
   ui::OzonePlatform::InitializeForGPU(params);
   const std::vector<gfx::BufferFormat> supported_buffer_formats_for_texturing =

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1005230401424685968">AAAA</translation>
 <translation id="1016495303386450659">Item atualizado</translation>
 <translation id="1047726139967079566">Marcar esta página...</translation>
 <translation id="1049743911850919806">Navegação anónima</translation>
@@ -43,6 +44,7 @@
 <translation id="1449835205994625556">Ocultar a palavra-passe</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> itens</translation>
 <translation id="1491277525950327607">Toque duas vezes para ativar ou desativar a definição</translation>
+<translation id="1509486075633541495">Inicie sessão no Website</translation>
 <translation id="152234381334907219">Nunca guardado</translation>
 <translation id="1540800554400757039">Morada 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
@@ -71,6 +73,7 @@
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1828824471510190776">Sugerir palavra-passe…</translation>
 <translation id="1870148520156231997">Mostrar palavra-passe</translation>
+<translation id="1872096359983322073">Lanterna</translation>
 <translation id="1876721852596493031">Enviar Dados de Uso</translation>
 <translation id="1911619930368729126">Carregar p/ Google Drive</translation>
 <translation id="1923342640370224680">Última Hora</translation>
@@ -148,7 +151,6 @@
 <translation id="2921219216347069551">Impossível Partilhar Página</translation>
 <translation id="2923448633003185837">Colar e ir</translation>
 <translation id="292639812446257861">Marcar como não lidas</translation>
-<translation id="2933759065870693102">Lanterna</translation>
 <translation id="2958718410589002129">Palavras-passe</translation>
 <translation id="2969979262385602596">Falha ao iniciar sessão. Tente nov. mais tarde.</translation>
 <translation id="298306318844797842">Adicionar método de pagamento…</translation>
@@ -165,7 +167,7 @@
 <translation id="3252394070589632019"><ph name="VALUE" />, <ph name="ADDITIONAL_INFO" />, <ph name="INDEX" /> de <ph name="NUM_SUGGESTIONS" /></translation>
 <translation id="3268451620468152448">Abrir Separadores</translation>
 <translation id="3277021493514034324">Endereço do site copiado</translation>
-<translation id="3290875554372353449">Selecionar uma conta</translation>
+<translation id="3290875554372353449">Selecione uma conta</translation>
 <translation id="3324193307694657476">Morada 2</translation>
 <translation id="3329904751041170572">Não foi possível ligar ao servidor.</translation>
 <translation id="3335947283844343239">Reabrir separador fechado</translation>
@@ -194,6 +196,7 @@
 <translation id="3607167657931203000">Dados de preenchimento automático</translation>
 <translation id="3609785682760573515">A sincronizar…</translation>
 <translation id="3638472932233958418">Pré-carregar Páginas Web</translation>
+<translation id="3670030362669914947">Número</translation>
 <translation id="3691593122358196899">Adicionado aos marcadores em <ph name="FOLDER_TITLE" /></translation>
 <translation id="3771033907050503522">Sep. nav. anónima</translation>
 <translation id="3775743491439407556">A sincronização não está a funcionar</translation>
@@ -207,7 +210,6 @@
 <translation id="3928666092801078803">Combinar os meus dados</translation>
 <translation id="3929457972718048006">Endereços</translation>
 <translation id="3943492037546055397">Palavras-passe</translation>
-<translation id="3950820424414687140">Iniciar sessão</translation>
 <translation id="3967822245660637423">Transferência concluída</translation>
 <translation id="3989635538409502728">Terminar sessão</translation>
 <translation id="3995521777587992544">Barra de progresso do carregamento de página, <ph name="EMAIL" /> carregado(s).</translation>
@@ -227,7 +229,6 @@
 <translation id="4172051516777682613">Mostrar sempre</translation>
 <translation id="418156467088430727">Ver versão offline num novo separador</translation>
 <translation id="4181841719683918333">Idiomas</translation>
-<translation id="4237682350741091554">Faça a gestão da Sincronização do Chrome e da personalização nas <ph name="BEGIN_LINK" />Definições<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Introduzir frase de acesso</translation>
 <translation id="4272631900155121838">Para ler um código QR, ative a câmara nas definições</translation>
 <translation id="4281844954008187215">Termos de Utilização</translation>
@@ -261,9 +262,11 @@ Os dados estão encriptados com a sua frase de acesso de sincronização. Introd
 <translation id="4747097190499141774">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay. Apenas alguém que conheça a sua frase de acesso pode ler os seus dados encriptados. A frase de acesso não é enviada para a Google nem armazenada pela mesma. Se se esquecer da frase de acesso ou pretender alterar esta definição, tem de repor a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Localizar na página…</translation>
 <translation id="4751645464639803239">Novo separador de navegação anónima</translation>
+<translation id="4758977202923349869">Posicione o cartão de crédito nesta moldura</translation>
 <translation id="4802417911091824046">A encriptação da frase de acesso não inclui métodos de pagamento nem endereços do Google Pay.
 
 Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização<ph name="END_LINK" />.</translation>
+<translation id="4805759445554688327">Número de cartão inválido</translation>
 <translation id="4807020197310989387">1 artigo não lido na Lista de leitura.</translation>
 <translation id="4818522717893377262">Adicionar idioma…</translation>
 <translation id="481968316161811770">Cookies, dados de sites</translation>
@@ -279,7 +282,6 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="4979397965658815378">Inicie sessão com a sua Conta Google para aceder aos marcadores, às palavras-passe, ao histórico e a outras definições em todos os dispositivos</translation>
 <translation id="5005498671520578047">Copiar palavra-passe</translation>
 <translation id="5010803260590204777">Abra um separador de navegação anónima para navegar na Web de forma privada.</translation>
-<translation id="5011684439661633295">Olá, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Instalar o Google Drive</translation>
@@ -302,6 +304,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 <translation id="5317780077021120954">Guardar</translation>
 <translation id="5327248766486351172">Nome</translation>
 <translation id="5388358297987318779">Abrir Imagem</translation>
+<translation id="5407969256130905701">Rejeitar alterações</translation>
 <translation id="5409365236829784218">Não existem aplicações instaladas que possam abrir este ficheiro.</translation>
 <translation id="5416022985862681400">Últimos 7 dias</translation>
 <translation id="5433691172869980887">Nome de utilizador copiado</translation>
@@ -313,6 +316,7 @@ Para alterar esta definição, <ph name="BEGIN_LINK" />reponha a sincronização
 A Entrega também tem de estar ativada na secção Geral das Definições e os seus dispositivos têm de utilizar a mesma conta iCloud.</translation>
 <translation id="5551897871312988470">Propor tradução</translation>
 <translation id="5556459405103347317">Recarregar</translation>
+<translation id="5592679540098330836">Ative a sincronização para <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Pretende guardar a palavra-passe?</translation>
 <translation id="5626245204502895507">De momento não é possível transferir o ficheiro.</translation>
 <translation id="5631164295104953411">Adicionar método de pagamento</translation>
@@ -324,6 +328,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="5728700505257787410">Lamentamos, mas houve um problema ao iniciar sessão na sua conta.</translation>
 <translation id="5737974891429562743">Os detalhes de início de sessão na conta estão desatualizados. Atualize-os para iniciar a sincronização.</translation>
 <translation id="5738887413654608789">Isto permite descobrir páginas Web relevantes com base no ambiente à sua volta.</translation>
+<translation id="5803566855766646066">Tem a certeza de que pretende rejeitar o novo cartão?</translation>
 <translation id="5816228676161003208">Isto permite-lhe pesquisar mais rapidamente com a sua voz.</translation>
 <translation id="5846482154967366008">Motor de Pesquisa</translation>
 <translation id="5854790677617711513">Com mais de 30 dias</translation>
@@ -352,6 +357,7 @@ A Entrega também tem de estar ativada na secção Geral das Definições e os s
 <translation id="605721222689873409">AA</translation>
 <translation id="6066301408025741299">Toque para cancelar.</translation>
 <translation id="6108923351542677676">Configuração em curso…</translation>
+<translation id="6119050551270742952">Página Web atual – Nav. anónima</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6127379762771434464">Item removido</translation>
 <translation id="6136914049981179737">Há segundos</translation>
@@ -391,6 +397,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6476800141292307438">A traduzir a página para <ph name="LANGUAGE" />. Estão disponíveis opções junto à parte inferior do ecrã.</translation>
 <translation id="6482629121755362506"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> itens eliminados</translation>
 <translation id="6610002944194042868">Opções de tradução</translation>
+<translation id="6628106477656132239">Data de validade inválida</translation>
 <translation id="6642362222295953972">Mudar para um separador existente</translation>
 <translation id="6643016212128521049">Limpar</translation>
 <translation id="6656103420185847513">Editar Pasta</translation>
@@ -407,6 +414,9 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="6807889908376551050">Mostrar todos...</translation>
 <translation id="681368974849482173">Item criado</translation>
 <translation id="6851516051005285358">Pedir site para computador</translation>
+<translation id="6858855187367714033">Lido</translation>
+<translation id="6859944681507688231">Para ler um código QR ou um cartão de crédito, ative a câmara nas definições.</translation>
+<translation id="6873263987691478642">Vista dividida</translation>
 <translation id="6896758677409633944">Copiar</translation>
 <translation id="6903907808598579934">Ativar sincronização</translation>
 <translation id="6914583639806229067">Pesquisar imagem que copiou</translation>
@@ -434,7 +444,6 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7189598951263744875">Partilhar...</translation>
 <translation id="7192050974311852563">Iniciar registo</translation>
 <translation id="7203585745079012652">Ouvir Respostas</translation>
-<translation id="722055596168483966">Personalizar os serviços Google</translation>
 <translation id="7265758999917665941">Nunca para este site</translation>
 <translation id="7272437679830969316">Não é possível validar a sua identidade. Palavra-passe não copiada.</translation>
 <translation id="7285236536143823449">SIM, ACEITO</translation>
@@ -446,9 +455,9 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="7383797227493018512">Lista de leitura</translation>
 <translation id="7400418766976504921">URL</translation>
 <translation id="7425346204213733349">As alterações aos marcadores, ao histórico, às palavras-passe e a outras definições deixam de ser sincronizadas com a Conta Google. Contudo, os dados existentes permanecem armazenados na Conta Google.</translation>
-<translation id="744343212394640790">Não é <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Distrito/concelho</translation>
 <translation id="7456847797759667638">Abrir localização...</translation>
+<translation id="7460314822154045102">Utilizar a Câmara</translation>
 <translation id="7464701184726199289">Esta ação limpa os dados sincronizados de todos os dispositivos. As definições de sites guardadas não são eliminadas e podem refletir os seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Nome da empresa</translation>
 <translation id="7481312909269577407">Avançar</translation>
@@ -504,7 +513,9 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8428045167754449968">Cidade/Localidade</translation>
 <translation id="8428213095426709021">Definições</translation>
 <translation id="8458397775385147834">1 item eliminado</translation>
+<translation id="8487667956631253959">Ativada</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
+<translation id="8490978609246021741">Guardar alterações</translation>
 <translation id="8503813439785031346">Nome de utilizador</translation>
 <translation id="850600235656508448">Abrir no modo de navegação anónima</translation>
 <translation id="8517375800490286174">Licenças de Código Aberto</translation>
@@ -513,6 +524,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8532105204136943229">Ano de validade</translation>
 <translation id="8534481786647257214">Publicação no Google+ concluído.</translation>
 <translation id="8548878600947630424">Localizar na página...</translation>
+<translation id="8588404856427128947">Desativada</translation>
 <translation id="8605219856220328675">Fechar separador.</translation>
 <translation id="8620640915598389714">Editar</translation>
 <translation id="8636825310635137004">Para obter os separadores dos seus outros dispositivos, ative a sincronização.</translation>
@@ -529,13 +541,10 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="8840513115188359703">A sessão na sua Conta Google não é terminada.</translation>
 <translation id="8870413625673593573">Fechadas recentemente</translation>
 <translation id="8881801611828450202">Pesquisar esta imagem no <ph name="SEARCH_ENGINE" /></translation>
-<translation id="8904976895050290827">Sincronização do Google Chrome</translation>
 <translation id="895541991026785598">Comunicar um problema</translation>
-<translation id="8971089644512329999">OK, compreendi</translation>
 <translation id="8976382372951310360">Ajuda</translation>
 <translation id="8981454092730389528">Controlos da atividade Google</translation>
 <translation id="8985320356172329008">Iniciou sessão no Google como</translation>
-<translation id="902659348151742535">A Google pode utilizar o seu histórico de navegação para personalizar a Pesquisa Google, os anúncios e outros serviços Google.</translation>
 <translation id="9034759925968272072">A sessão na sua Conta Google não é terminada. A sua Conta Google pode ter outras formas do histórico de navegação em <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Largura de banda</translation>
 <translation id="9055772144595778347">Impossível Iniciar Sessão</translation>
@@ -552,7 +561,7 @@ Os dados foram encriptados com a sua frase de acesso de sincronização em <ph n
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
 <translation id="9203116392574189331">Entrega</translation>
 <translation id="9223358826628549784">Relatório de falha enviado.</translation>
-<translation id="935490618240037774">Os marcadores, o histórico, as palavras-passe e outras definições são sincronizados com a sua Conta Google para que os possa utilizar em todos os dispositivos.</translation>
+<translation id="952704832371081537">Cancelar</translation>
 <translation id="976982866697960176">Gerir dados sincronizados...</translation>
 <translation id="988141524645182168">Outros Dispositivos</translation>
 <translation id="989988560359834682">Editar endereço</translation>

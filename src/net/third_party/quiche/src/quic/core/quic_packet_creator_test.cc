@@ -813,8 +813,11 @@ TEST_P(QuicPacketCreatorTest, SerializeVersionNegotiationPacket) {
   versions.push_back(test::QuicVersionMax());
   const bool ietf_quic =
       VersionHasIetfInvariantHeader(GetParam().version.transport_version);
+  const bool has_length_prefix =
+      GetParam().version.HasLengthPrefixedConnectionIds();
   std::unique_ptr<QuicEncryptedPacket> encrypted(
-      creator_.SerializeVersionNegotiationPacket(ietf_quic, versions));
+      creator_.SerializeVersionNegotiationPacket(ietf_quic, has_length_prefix,
+                                                 versions));
 
   {
     InSequence s;
@@ -1820,6 +1823,9 @@ TEST_P(QuicPacketCreatorTest, GetGuaranteedLargestMessagePayload) {
   if (QuicVersionHasLongHeaderLengths(version)) {
     expected_largest_payload -= 2;
   }
+  if (GetParam().version.HasLengthPrefixedConnectionIds()) {
+    expected_largest_payload -= 1;
+  }
   EXPECT_EQ(expected_largest_payload,
             creator_.GetGuaranteedLargestMessagePayload());
 }
@@ -1920,17 +1926,11 @@ TEST_P(QuicPacketCreatorTest, RetryToken) {
 }
 
 TEST_P(QuicPacketCreatorTest, GetConnectionId) {
-  if (!GetQuicRestartFlag(quic_do_not_override_connection_id)) {
-    EXPECT_EQ(TestConnectionId(2), creator_.GetDestinationConnectionId());
-    EXPECT_EQ(TestConnectionId(2), creator_.GetSourceConnectionId());
-    return;
-  }
   EXPECT_EQ(TestConnectionId(2), creator_.GetDestinationConnectionId());
   EXPECT_EQ(EmptyQuicConnectionId(), creator_.GetSourceConnectionId());
 }
 
 TEST_P(QuicPacketCreatorTest, ClientConnectionId) {
-  SetQuicRestartFlag(quic_do_not_override_connection_id, true);
   if (!client_framer_.version().SupportsClientConnectionIds()) {
     return;
   }

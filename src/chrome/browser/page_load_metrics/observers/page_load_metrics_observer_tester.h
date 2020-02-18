@@ -8,7 +8,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/test/weak_mock_timer.h"
+#include "components/page_load_metrics/common/test/weak_mock_timer.h"
 
 namespace blink {
 class WebInputEvent;
@@ -101,11 +101,14 @@ class PageLoadMetricsObserverTester : public test::WeakMockTimerProvider {
                             const net::CanonicalCookie& cookie,
                             bool blocked_by_policy);
 
+  // Simulate accessing the local storage or session storage.
+  void SimulateDomStorageAccess(const GURL& url,
+                                const GURL& first_party_url,
+                                bool local,
+                                bool blocked_by_policy);
+
   MetricsWebContentsObserver* observer() const;
-
-  // Gets the PageLoadExtraInfo for the committed_load_ in observer_.
-  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
-
+  const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad() const;
   void RegisterObservers(PageLoadTracker* tracker);
 
  private:

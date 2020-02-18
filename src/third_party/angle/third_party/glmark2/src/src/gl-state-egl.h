@@ -134,7 +134,7 @@ class GLStateEGL : public GLState
     void get_glvisualconfig(EGLConfig config, GLVisualConfig& visual_config);
     EGLConfig select_best_config(std::vector<EGLConfig>& configs);
 
-    static GLADapiproc load_proc(const char* name, void* userptr);
+    static GLADapiproc load_proc(void *userptr, const char* name);
 
 public:
     GLStateEGL() :
@@ -153,7 +153,7 @@ public:
     bool reset();
     void swap();
     // Performs a config search, returning a native visual ID on success
-    bool gotNativeConfig(int& vid);
+    bool gotNativeConfig(intptr_t& vid);
     void getVisualConfig(GLVisualConfig& vc);
 };
 

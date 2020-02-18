@@ -22,14 +22,10 @@ SSLConfig::CertAndStatus::CertAndStatus(const CertAndStatus& other) = default;
 SSLConfig::CertAndStatus::~CertAndStatus() = default;
 
 SSLConfig::SSLConfig()
-    : version_min(kDefaultSSLVersionMin),
-      version_max(kDefaultSSLVersionMax),
-      early_data_enabled(false),
-      false_start_enabled(true),
+    : early_data_enabled(false),
       require_ecdhe(false),
       ignore_certificate_errors(false),
       disable_cert_verification_network_fetches(false),
-      send_client_cert(false),
       renego_allowed_default(false),
       privacy_mode(PRIVACY_MODE_DISABLED) {}
 

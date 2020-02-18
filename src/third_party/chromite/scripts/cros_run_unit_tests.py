@@ -112,12 +112,16 @@ def main(argv):
   pkg_with_test = portage_util.PackagesWithTest(sysroot, packages)
 
   if packages - pkg_with_test:
-    logging.warning('The following packages do not have tests:')
-    logging.warning('\n'.join(sorted(packages - pkg_with_test)))
+    logging.warning('The following packages do not have tests:\n  %s',
+                    '\n  '.join(sorted(packages - pkg_with_test)))
+
+  if not pkg_with_test:
+    logging.error('No testable packages found!')
+    return 1
 
   if opts.pretend:
     print('\n'.join(sorted(pkg_with_test)))
-    return
+    return 0
 
   env = None
   if opts.nowithdebug:
@@ -133,11 +137,11 @@ def main(argv):
                          use_binary=False)
     except cros_build_lib.RunCommandError:
       logging.error('Failed building dependencies for unittests.')
-      raise
+      return 1
 
   try:
     chroot_util.RunUnittests(sysroot, pkg_with_test, extra_env=env,
                              jobs=min(10, multiprocessing.cpu_count()))
   except cros_build_lib.RunCommandError:
     logging.error('Unittests failed.')
-    raise
+    return 1

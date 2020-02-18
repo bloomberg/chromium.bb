@@ -49,18 +49,10 @@
 namespace {
 
 // Windows system color IDs cached and updated by the native theme.
-const int kSystemColors[] = {
-  COLOR_3DFACE,
-  COLOR_BTNFACE,
-  COLOR_BTNTEXT,
-  COLOR_GRAYTEXT,
-  COLOR_HIGHLIGHT,
-  COLOR_HIGHLIGHTTEXT,
-  COLOR_HOTLIGHT,
-  COLOR_MENUHIGHLIGHT,
-  COLOR_SCROLLBAR,
-  COLOR_WINDOW,
-  COLOR_WINDOWTEXT,
+const int kSysColors[] = {
+    COLOR_BTNFACE,       COLOR_BTNTEXT,    COLOR_GRAYTEXT,      COLOR_HIGHLIGHT,
+    COLOR_HIGHLIGHTTEXT, COLOR_HOTLIGHT,   COLOR_MENUHIGHLIGHT, COLOR_SCROLLBAR,
+    COLOR_WINDOW,        COLOR_WINDOWTEXT,
 };
 
 void SetCheckerboardShader(SkPaint* paint, const RECT& align_rect) {
@@ -148,6 +140,33 @@ class ScopedCreateDCWithBitmap {
 
 namespace ui {
 
+NativeTheme::SystemThemeColor SysColorToSystemThemeColor(int system_color) {
+  switch (system_color) {
+    case COLOR_BTNFACE:
+      return NativeTheme::SystemThemeColor::kButtonFace;
+    case COLOR_BTNTEXT:
+      return NativeTheme::SystemThemeColor::kButtonText;
+    case COLOR_GRAYTEXT:
+      return NativeTheme::SystemThemeColor::kGrayText;
+    case COLOR_HIGHLIGHT:
+      return NativeTheme::SystemThemeColor::kHighlight;
+    case COLOR_HIGHLIGHTTEXT:
+      return NativeTheme::SystemThemeColor::kHighlightText;
+    case COLOR_HOTLIGHT:
+      return NativeTheme::SystemThemeColor::kHotlight;
+    case COLOR_MENUHIGHLIGHT:
+      return NativeTheme::SystemThemeColor::kMenuHighlight;
+    case COLOR_SCROLLBAR:
+      return NativeTheme::SystemThemeColor::kScrollbar;
+    case COLOR_WINDOW:
+      return NativeTheme::SystemThemeColor::kWindow;
+    case COLOR_WINDOWTEXT:
+      return NativeTheme::SystemThemeColor::kWindowText;
+    default:
+      return NativeTheme::SystemThemeColor::kNotSupported;
+  }
+}
+
 NativeTheme* NativeTheme::GetInstanceForNativeUi() {
   return NativeThemeWin::instance();
 }
@@ -189,10 +208,11 @@ gfx::Size NativeThemeWin::GetPartSize(Part part,
   int part_id = GetWindowsPart(part, state, extra);
   int state_id = GetWindowsState(part, state, extra);
 
-  base::win::ScopedGetDC screen_dc(NULL);
+  base::win::ScopedGetDC screen_dc(nullptr);
   SIZE size;
-  if (SUCCEEDED(GetThemePartSize(GetThemeName(part), screen_dc, part_id,
-                                 state_id, NULL, TS_TRUE, &size)))
+  HANDLE handle = GetThemeHandle(GetThemeName(part));
+  if (handle && SUCCEEDED(GetThemePartSize(handle, screen_dc, part_id, state_id,
+                                           nullptr, TS_TRUE, &size)))
     return gfx::Size(size.cx, size.cy);
 
   // TODO(rogerta): For now, we need to support radio buttons and checkboxes
@@ -206,23 +226,24 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
                            Part part,
                            State state,
                            const gfx::Rect& rect,
-                           const ExtraParams& extra) const {
+                           const ExtraParams& extra,
+                           ColorScheme color_scheme) const {
   if (rect.IsEmpty())
     return;
 
   switch (part) {
     case kMenuPopupGutter:
-      PaintMenuGutter(canvas, rect);
+      PaintMenuGutter(canvas, rect, color_scheme);
       return;
     case kMenuPopupSeparator:
-      PaintMenuSeparator(canvas, extra.menu_separator);
+      PaintMenuSeparator(canvas, extra.menu_separator, color_scheme);
       return;
     case kMenuPopupBackground:
-      PaintMenuBackground(canvas, rect);
+      PaintMenuBackground(canvas, rect, color_scheme);
       return;
     case kMenuItemBackground:
       CommonThemePaintMenuItemBackground(this, canvas, state, rect,
-                                         extra.menu_item);
+                                         extra.menu_item, color_scheme);
       return;
     default:
       PaintIndirect(canvas, part, state, rect, extra);
@@ -230,30 +251,7 @@ void NativeThemeWin::Paint(cc::PaintCanvas* canvas,
   }
 }
 
-NativeThemeWin::NativeThemeWin()
-    : draw_theme_(NULL),
-      draw_theme_ex_(NULL),
-      get_theme_content_rect_(NULL),
-      get_theme_part_size_(NULL),
-      open_theme_(NULL),
-      close_theme_(NULL),
-      theme_dll_(LoadLibrary(L"uxtheme.dll")),
-      color_change_listener_(this) {
-  if (theme_dll_) {
-    draw_theme_ = reinterpret_cast<DrawThemeBackgroundPtr>(
-        GetProcAddress(theme_dll_, "DrawThemeBackground"));
-    draw_theme_ex_ = reinterpret_cast<DrawThemeBackgroundExPtr>(
-        GetProcAddress(theme_dll_, "DrawThemeBackgroundEx"));
-    get_theme_content_rect_ = reinterpret_cast<GetThemeContentRectPtr>(
-        GetProcAddress(theme_dll_, "GetThemeBackgroundContentRect"));
-    get_theme_part_size_ = reinterpret_cast<GetThemePartSizePtr>(
-        GetProcAddress(theme_dll_, "GetThemePartSize"));
-    open_theme_ = reinterpret_cast<OpenThemeDataPtr>(
-        GetProcAddress(theme_dll_, "OpenThemeData"));
-    close_theme_ = reinterpret_cast<CloseThemeDataPtr>(
-        GetProcAddress(theme_dll_, "CloseThemeData"));
-  }
-
+NativeThemeWin::NativeThemeWin() : color_change_listener_(this) {
   // If there's no sequenced task runner handle, we can't be called back for
   // dark mode changes. This generally happens in tests. As a result, ignore
   // dark mode in this case.
@@ -289,15 +287,19 @@ NativeThemeWin::NativeThemeWin()
 
   // Initialize the cached system colors.
   UpdateSystemColors();
+
+  // Initialize the native theme web instance with the system color info.
+  NativeTheme* web_instance = NativeTheme::GetInstanceForWeb();
+  web_instance->set_use_dark_colors(ShouldUseDarkColors());
+  web_instance->set_high_contrast(UsesHighContrastColors());
+  web_instance->set_preferred_color_scheme(GetPreferredColorScheme());
+  web_instance->set_system_colors(GetSystemColors());
 }
 
 NativeThemeWin::~NativeThemeWin() {
-  if (theme_dll_) {
-    // TODO(https://crbug.com/787692): Calling CloseHandles() here breaks
-    // certain tests and the reliability bots.
-    // CloseHandles();
-    FreeLibrary(theme_dll_);
-  }
+  // TODO(https://crbug.com/787692): Calling CloseHandles() here breaks
+  // certain tests and the reliability bots.
+  // CloseHandles();
 }
 
 bool NativeThemeWin::IsUsingHighContrastThemeInternal() const {
@@ -308,12 +310,9 @@ bool NativeThemeWin::IsUsingHighContrastThemeInternal() const {
 }
 
 void NativeThemeWin::CloseHandlesInternal() {
-  if (!close_theme_)
-    return;
-
   for (int i = 0; i < LAST; ++i) {
     if (theme_handles_[i]) {
-      close_theme_(theme_handles_[i]);
+      CloseThemeData(theme_handles_[i]);
       theme_handles_[i] = nullptr;
     }
   }
@@ -328,13 +327,14 @@ void NativeThemeWin::OnSysColorChange() {
 }
 
 void NativeThemeWin::UpdateSystemColors() {
-  for (int kSystemColor : kSystemColors)
-    system_colors_[kSystemColor] = color_utils::GetSysSkColor(kSystemColor);
+  for (int sys_color : kSysColors)
+    system_colors_[SysColorToSystemThemeColor(sys_color)] =
+        color_utils::GetSysSkColor(sys_color);
 }
 
-void NativeThemeWin::PaintMenuSeparator(
-    cc::PaintCanvas* canvas,
-    const MenuSeparatorExtraParams& params) const {
+void NativeThemeWin::PaintMenuSeparator(cc::PaintCanvas* canvas,
+                                        const MenuSeparatorExtraParams& params,
+                                        ColorScheme color_scheme) const {
   const gfx::RectF rect(*params.paint_rect);
   gfx::PointF start = rect.CenterPoint();
   gfx::PointF end = start;
@@ -347,22 +347,27 @@ void NativeThemeWin::PaintMenuSeparator(
   }
 
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, color_scheme));
   canvas->drawLine(start.x(), start.y(), end.x(), end.y(), flags);
 }
 
 void NativeThemeWin::PaintMenuGutter(cc::PaintCanvas* canvas,
-                                     const gfx::Rect& rect) const {
+                                     const gfx::Rect& rect,
+                                     ColorScheme color_scheme) const {
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuSeparatorColor, color_scheme));
   int position_x = rect.x() + rect.width() / 2;
   canvas->drawLine(position_x, rect.y(), position_x, rect.bottom(), flags);
 }
 
 void NativeThemeWin::PaintMenuBackground(cc::PaintCanvas* canvas,
-                                         const gfx::Rect& rect) const {
+                                         const gfx::Rect& rect,
+                                         ColorScheme color_scheme) const {
   cc::PaintFlags flags;
-  flags.setColor(GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor));
+  flags.setColor(
+      GetSystemColor(NativeTheme::kColorId_MenuBackgroundColor, color_scheme));
   canvas->drawRect(gfx::RectToSkRect(rect), flags);
 }
 
@@ -444,14 +449,18 @@ void NativeThemeWin::PaintDirect(SkCanvas* destination_canvas,
   }
 }
 
-SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
+SkColor NativeThemeWin::GetSystemColor(ColorId color_id,
+                                       ColorScheme color_scheme) const {
+  if (color_scheme == ColorScheme::kDefault)
+    color_scheme = GetSystemColorScheme();
+
   // Win32 system colors currently don't support Dark Mode. As a result,
   // fallback on the Aura colors. Inverted color schemes can be ignored here
   // as it's only true when Chrome is running on a high-contrast AND when the
   // relative luminance of COLOR_WINDOWTEXT is greater than COLOR_WINDOW (e.g.
   // white on black), which is basically like dark mode.
-  if (SystemDarkModeEnabled())
-    return GetAuraColor(color_id, this);
+  if (color_scheme == ColorScheme::kDark)
+    return GetAuraColor(color_id, this, color_scheme);
 
   // TODO: Obtain the correct colors for these using GetSysColor.
   // Button:
@@ -467,7 +476,7 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
   switch (color_id) {
     // Windows
     case kColorId_WindowBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
 
     // Dialogs
     case kColorId_DialogBackground:
@@ -481,72 +490,74 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
 
     // Button
     case kColorId_ButtonEnabledColor:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_ButtonHoverColor:
       return kButtonHoverColor;
 
     // Label
     case kColorId_LabelEnabledColor:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_LabelDisabledColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
     case kColorId_LabelTextSelectionColor:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_LabelTextSelectionBackgroundFocused:
       return kLabelTextSelectionBackgroundFocusedColor;
 
     // Textfield
     case kColorId_TextfieldDefaultColor:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TextfieldDefaultBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TextfieldReadOnlyColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
     case kColorId_TextfieldReadOnlyBackground:
-      return system_colors_[COLOR_3DFACE];
+      return system_colors_[SystemThemeColor::kButtonFace];
     case kColorId_TextfieldSelectionColor:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TextfieldSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
 
     // Tooltip
     case kColorId_TooltipBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TooltipText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
 
     // Tree
     // NOTE: these aren't right for all themes, but as close as I could get.
     case kColorId_TreeBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TreeText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TreeSelectedText:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TreeSelectedTextUnfocused:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_TreeSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
     case kColorId_TreeSelectionBackgroundUnfocused:
-      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
-                                                     : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors()
+                                ? SystemThemeColor::kMenuHighlight
+                                : SystemThemeColor::kButtonFace];
 
     // Table
     case kColorId_TableBackground:
-      return system_colors_[COLOR_WINDOW];
+      return system_colors_[SystemThemeColor::kWindow];
     case kColorId_TableText:
-      return system_colors_[COLOR_WINDOWTEXT];
+      return system_colors_[SystemThemeColor::kWindowText];
     case kColorId_TableSelectedText:
-      return system_colors_[COLOR_HIGHLIGHTTEXT];
+      return system_colors_[SystemThemeColor::kHighlightText];
     case kColorId_TableSelectedTextUnfocused:
-      return system_colors_[COLOR_BTNTEXT];
+      return system_colors_[SystemThemeColor::kButtonText];
     case kColorId_TableSelectionBackgroundFocused:
-      return system_colors_[COLOR_HIGHLIGHT];
+      return system_colors_[SystemThemeColor::kHighlight];
     case kColorId_TableSelectionBackgroundUnfocused:
-      return system_colors_[UsesHighContrastColors() ? COLOR_MENUHIGHLIGHT
-                                                     : COLOR_BTNFACE];
+      return system_colors_[UsesHighContrastColors()
+                                ? SystemThemeColor::kMenuHighlight
+                                : SystemThemeColor::kButtonFace];
     case kColorId_TableGroupingIndicatorColor:
-      return system_colors_[COLOR_GRAYTEXT];
+      return system_colors_[SystemThemeColor::kGrayText];
 
     default:
       break;
@@ -559,11 +570,12 @@ SkColor NativeThemeWin::GetSystemColor(ColorId color_id) const {
       case NativeTheme::kColorId_ProminentButtonColor:
         return kProminentButtonColorInvert;
       default:
-        return color_utils::InvertColor(GetAuraColor(color_id, this));
+        return color_utils::InvertColor(
+            GetAuraColor(color_id, this, color_scheme));
     }
   }
 
-  return GetAuraColor(color_id, this);
+  return GetAuraColor(color_id, this, color_scheme);
 }
 
 bool NativeThemeWin::SupportsNinePatch(Part part) const {
@@ -582,13 +594,13 @@ gfx::Rect NativeThemeWin::GetNinePatchAperture(Part part) const {
   return gfx::Rect();
 }
 
-bool NativeThemeWin::SystemDarkModeEnabled() const {
+bool NativeThemeWin::ShouldUseDarkColors() const {
   // Windows high contrast modes are entirely different themes,
   // so let them take priority over dark mode.
   // ...unless --force-dark-mode was specified in which case caveat emptor.
   if (UsesHighContrastColors() && !IsForcedDarkMode())
     return false;
-  return NativeTheme::SystemDarkModeEnabled();
+  return NativeTheme::ShouldUseDarkColors();
 }
 
 bool NativeThemeWin::SystemDarkModeSupported() const {
@@ -602,8 +614,8 @@ NativeThemeWin::CalculatePreferredColorScheme() const {
     // as a string. However, this string is language dependent. Instead, to
     // account for non-English systems, sniff out the system colors to
     // determine the high contrast color scheme.
-    SkColor fg_color = system_colors_[COLOR_WINDOWTEXT];
-    SkColor bg_color = system_colors_[COLOR_WINDOW];
+    SkColor fg_color = system_colors_[SystemThemeColor::kWindowText];
+    SkColor bg_color = system_colors_[SystemThemeColor::kWindow];
     if (bg_color == SK_ColorWHITE && fg_color == SK_ColorBLACK) {
       return NativeTheme::PreferredColorScheme::kLight;
     }
@@ -715,19 +727,6 @@ void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
       rect.y());
 }
 
-HRESULT NativeThemeWin::GetThemePartSize(ThemeName theme_name,
-                                         HDC hdc,
-                                         int part_id,
-                                         int state_id,
-                                         RECT* rect,
-                                         int ts,
-                                         SIZE* size) const {
-  HANDLE handle = GetThemeHandle(theme_name);
-  return (handle && get_theme_part_size_) ?
-      get_theme_part_size_(handle, hdc, part_id, state_id, rect, ts, size) :
-      E_NOTIMPL;
-}
-
 HRESULT NativeThemeWin::PaintButton(HDC hdc,
                                     State state,
                                     const ButtonExtraParams& extra,
@@ -735,8 +734,8 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
                                     int state_id,
                                     RECT* rect) const {
   HANDLE handle = GetThemeHandle(BUTTON);
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+  if (handle)
+    return DrawThemeBackground(handle, hdc, part_id, state_id, rect, nullptr);
 
   // Adjust classic_state based on part, state, and extras.
   int classic_state = extra.classic_state;
@@ -793,8 +792,8 @@ HRESULT NativeThemeWin::PaintButton(HDC hdc,
   if ((BP_PUSHBUTTON == part_id) && focused) {
     // The focus rect is inside the button.  The exact number of pixels depends
     // on whether we're in classic mode or using uxtheme.
-    if (handle && get_theme_content_rect_) {
-      get_theme_content_rect_(handle, hdc, part_id, state_id, rect, rect);
+    if (handle) {
+      GetThemeBackgroundContentRect(handle, hdc, part_id, state_id, rect, rect);
     } else {
       InflateRect(rect, -GetSystemMetrics(SM_CXEDGE),
                   -GetSystemMetrics(SM_CYEDGE));
@@ -827,10 +826,10 @@ HRESULT NativeThemeWin::PaintMenuArrow(
 
   HANDLE handle = GetThemeHandle(MENU);
   RECT rect_win = rect.ToRECT();
-  if (handle && draw_theme_) {
+  if (handle) {
     if (extra.pointing_right) {
-      return draw_theme_(handle, hdc, MENU_POPUPSUBMENU, state_id, &rect_win,
-                         NULL);
+      return DrawThemeBackground(handle, hdc, MENU_POPUPSUBMENU, state_id,
+                                 &rect_win, nullptr);
     }
     // There is no way to tell the uxtheme API to draw a left pointing arrow; it
     // doesn't have a flag equivalent to DFCS_MENUARROWRIGHT.  But they are
@@ -847,8 +846,9 @@ HRESULT NativeThemeWin::PaintMenuArrow(
                hdc, r.right()-1, r.y(), -r.width(), r.height(), SRCCOPY);
     // Draw the arrow.
     RECT theme_rect = {0, 0, r.width(), r.height()};
-    HRESULT result = draw_theme_(handle, mem_dc.Get(), MENU_POPUPSUBMENU,
-                                  state_id, &theme_rect, NULL);
+    HRESULT result =
+        DrawThemeBackground(handle, mem_dc.Get(), MENU_POPUPSUBMENU, state_id,
+                            &theme_rect, nullptr);
     // Copy and mirror the result back into mem_dc.
     StretchBlt(hdc, r.x(), r.y(), r.width(), r.height(),
                mem_dc.Get(), r.width()-1, 0, -r.width(), r.height(), SRCCOPY);
@@ -868,12 +868,13 @@ HRESULT NativeThemeWin::PaintMenuCheck(
     const gfx::Rect& rect,
     const MenuCheckExtraParams& extra) const {
   HANDLE handle = GetThemeHandle(MENU);
-  if (handle && draw_theme_) {
+  if (handle) {
     const int state_id = extra.is_radio ?
         ((state == kDisabled) ? MC_BULLETDISABLED : MC_BULLETNORMAL) :
         ((state == kDisabled) ? MC_CHECKMARKDISABLED : MC_CHECKMARKNORMAL);
     RECT rect_win = rect.ToRECT();
-    return draw_theme_(handle, hdc, MENU_POPUPCHECK, state_id, &rect_win, NULL);
+    return DrawThemeBackground(handle, hdc, MENU_POPUPCHECK, state_id,
+                               &rect_win, nullptr);
   }
 
   return PaintFrameControl(hdc, rect, DFC_MENU,
@@ -885,13 +886,13 @@ HRESULT NativeThemeWin::PaintMenuCheckBackground(HDC hdc,
                                                  State state,
                                                  const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(MENU);
-  if (!handle || !draw_theme_)
+  if (!handle)
     return S_OK;  // Nothing to do for background.
 
   int state_id = state == kDisabled ? MCB_DISABLED : MCB_NORMAL;
   RECT rect_win = rect.ToRECT();
-  return draw_theme_(handle, hdc, MENU_POPUPCHECKBACKGROUND, state_id,
-                     &rect_win, NULL);
+  return DrawThemeBackground(handle, hdc, MENU_POPUPCHECKBACKGROUND, state_id,
+                             &rect_win, nullptr);
 }
 
 HRESULT NativeThemeWin::PaintPushButton(HDC hdc,
@@ -1007,9 +1008,10 @@ HRESULT NativeThemeWin::PaintMenuList(HDC hdc,
       break;
   }
 
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, CP_DROPDOWNBUTTON, state_id, &rect_win,
-                       NULL);
+  if (handle) {
+    return DrawThemeBackground(handle, hdc, CP_DROPDOWNBUTTON, state_id,
+                               &rect_win, nullptr);
+  }
 
   // Draw it manually.
   DrawFrameControl(hdc, &rect_win, DFC_SCROLL,
@@ -1031,7 +1033,7 @@ HRESULT NativeThemeWin::PaintScrollbarArrow(
   };
   HANDLE handle = GetThemeHandle(SCROLLBAR);
   RECT rect_win = rect.ToRECT();
-  if (handle && draw_theme_) {
+  if (handle) {
     int index = part - kScrollbarDownArrow;
     DCHECK_GE(index, 0);
     DCHECK_LT(static_cast<size_t>(index), base::size(state_id_matrix));
@@ -1144,7 +1146,7 @@ HRESULT NativeThemeWin::PaintScrollbarThumb(
       break;
   }
 
-  if (handle && draw_theme_)
+  if (handle)
     return PaintScaledTheme(handle, hdc, part_id, state_id, rect);
 
   // Draw it manually.
@@ -1188,12 +1190,16 @@ HRESULT NativeThemeWin::PaintScrollbarTrack(
       break;
   }
 
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, &rect_win, NULL);
+  if (handle) {
+    return DrawThemeBackground(handle, hdc, part_id, state_id, &rect_win,
+                               nullptr);
+  }
 
   // Draw it manually.
-  if ((system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_3DFACE]) &&
-      (system_colors_[COLOR_SCROLLBAR] != system_colors_[COLOR_WINDOW])) {
+  if ((system_colors_[SystemThemeColor::kScrollbar] !=
+       system_colors_[SystemThemeColor::kButtonFace]) &&
+      (system_colors_[SystemThemeColor::kScrollbar] !=
+       system_colors_[SystemThemeColor::kWindow])) {
     FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_SCROLLBAR + 1));
   } else {
     SkPaint paint;
@@ -1234,8 +1240,11 @@ HRESULT NativeThemeWin::PaintSpinButton(
       break;
   }
 
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, &rect_win, NULL);
+  if (handle) {
+    return DrawThemeBackground(handle, hdc, part_id, state_id, &rect_win,
+                               nullptr);
+  }
+
   DrawFrameControl(hdc, &rect_win, DFC_SCROLL, extra.classic_state);
   return S_OK;
 }
@@ -1285,8 +1294,10 @@ HRESULT NativeThemeWin::PaintTrackbar(SkCanvas* canvas,
   }  // else this isn't actually a channel, so |channel_rect| == |rect|.
 
   HANDLE handle = GetThemeHandle(TRACKBAR);
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, part_id, state_id, &channel_rect, NULL);
+  if (handle) {
+    return DrawThemeBackground(handle, hdc, part_id, state_id, &channel_rect,
+                               nullptr);
+  }
 
   // Classic mode, draw it manually.
   if ((part_id == TKP_TRACK) || (part_id == TKP_TRACKVERT)) {
@@ -1364,14 +1375,14 @@ HRESULT NativeThemeWin::PaintProgressBar(
                               extra.value_rect_height).ToRECT();
 
   HANDLE handle = GetThemeHandle(PROGRESS);
-  if (!handle || !draw_theme_ || !draw_theme_ex_) {
+  if (!handle) {
     FillRect(hdc, &bar_rect, GetSysColorBrush(COLOR_BTNFACE));
     FillRect(hdc, &value_rect, GetSysColorBrush(COLOR_BTNSHADOW));
     DrawEdge(hdc, &bar_rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
     return S_OK;
   }
 
-  draw_theme_(handle, hdc, PP_BAR, 0, &bar_rect, NULL);
+  DrawThemeBackground(handle, hdc, PP_BAR, 0, &bar_rect, nullptr);
 
   int bar_width = bar_rect.right - bar_rect.left;
   if (!extra.determinate) {
@@ -1385,7 +1396,8 @@ HRESULT NativeThemeWin::PaintProgressBar(
         width_with_margin, overlay_width, kIndeterminateOverlayPixelsPerSecond,
         extra.animated_seconds);
     overlay_rect.right = overlay_rect.left + overlay_width;
-    draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &bar_rect);
+    DrawThemeBackground(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect,
+                        &bar_rect);
     return S_OK;
   }
 
@@ -1402,14 +1414,16 @@ HRESULT NativeThemeWin::PaintProgressBar(
   // On Vista or later, the progress bar part has a single-block value part
   // and a glossy effect. The value part has exactly same height as the bar
   // part, so we don't need to shrink the rect.
-  draw_theme_ex_(handle, hdc, PP_FILL, 0, &value_rect, &value_draw_options);
+  DrawThemeBackgroundEx(handle, hdc, PP_FILL, 0, &value_rect,
+                        &value_draw_options);
 
   RECT overlay_rect = value_rect;
   overlay_rect.left += ComputeAnimationProgress(
       bar_width, kDeterminateOverlayWidth, kDeterminateOverlayPixelsPerSecond,
       extra.animated_seconds);
   overlay_rect.right = overlay_rect.left + kDeterminateOverlayWidth;
-  draw_theme_(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect, &value_rect);
+  DrawThemeBackground(handle, hdc, PP_MOVEOVERLAY, 0, &overlay_rect,
+                      &value_rect);
   return S_OK;
 }
 
@@ -1417,11 +1431,11 @@ HRESULT NativeThemeWin::PaintWindowResizeGripper(HDC hdc,
                                                  const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(STATUS);
   RECT rect_win = rect.ToRECT();
-  if (handle && draw_theme_) {
+  if (handle) {
     // Paint the status bar gripper.  There doesn't seem to be a standard
     // gripper in Windows for the space between scrollbars.  This is pretty
     // close, but it's supposed to be painted over a status bar.
-    return draw_theme_(handle, hdc, SP_GRIPPER, 0, &rect_win, NULL);
+    return DrawThemeBackground(handle, hdc, SP_GRIPPER, 0, &rect_win, nullptr);
   }
 
   // Draw a windows classic scrollbar gripper.
@@ -1433,8 +1447,8 @@ HRESULT NativeThemeWin::PaintTabPanelBackground(HDC hdc,
                                                 const gfx::Rect& rect) const {
   HANDLE handle = GetThemeHandle(TAB);
   RECT rect_win = rect.ToRECT();
-  if (handle && draw_theme_)
-    return draw_theme_(handle, hdc, TABP_BODY, 0, &rect_win, NULL);
+  if (handle)
+    return DrawThemeBackground(handle, hdc, TABP_BODY, 0, &rect_win, nullptr);
 
   // Classic just renders a flat color background.
   FillRect(hdc, &rect_win, reinterpret_cast<HBRUSH>(COLOR_3DFACE + 1));
@@ -1492,9 +1506,7 @@ HRESULT NativeThemeWin::PaintTextField(HDC hdc,
   // and if not, just use the system color?
   // CreateSolidBrush() accepts a RGB value but alpha must be 0.
   base::win::ScopedGDIObject<HBRUSH> bg_brush(CreateSolidBrush(color));
-  // DrawThemeBackgroundEx was introduced in XP SP2, so that it's possible
-  // draw_theme_ex_ is NULL and draw_theme_ is non-null.
-  if (!handle || (!draw_theme_ex_ && (!draw_theme_ || !draw_edges))) {
+  if (!handle) {
     // Draw it manually.
     if (draw_edges)
       DrawEdge(hdc, rect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
@@ -1512,16 +1524,14 @@ HRESULT NativeThemeWin::PaintTextField(HDC hdc,
     DTBG_OMITBORDER,
     { 0, 0, 0, 0 }
   };
-  HRESULT hr = draw_theme_ex_ ?
-    draw_theme_ex_(handle, hdc, part_id, state_id, rect,
-                   draw_edges ? NULL : &omit_border_options) :
-    draw_theme_(handle, hdc, part_id, state_id, rect, NULL);
+  HRESULT hr =
+      DrawThemeBackgroundEx(handle, hdc, part_id, state_id, rect,
+                            draw_edges ? nullptr : &omit_border_options);
 
-  // TODO(maruel): Need to be fixed if get_theme_content_rect_ is NULL.
-  if (fill_content_area && get_theme_content_rect_) {
+  if (fill_content_area) {
     RECT content_rect;
-    hr = get_theme_content_rect_(handle, hdc, part_id, state_id, rect,
-                                  &content_rect);
+    hr = GetThemeBackgroundContentRect(handle, hdc, part_id, state_id, rect,
+                                       &content_rect);
     FillRect(hdc, &content_rect, bg_brush.get());
   }
   return hr;
@@ -1543,14 +1553,14 @@ HRESULT NativeThemeWin::PaintScaledTheme(HANDLE theme,
       gfx::Rect scaled_rect = gfx::ScaleToEnclosedRect(rect, scale);
       scaled_rect.Offset(save_transform.eDx, save_transform.eDy);
       RECT bounds = scaled_rect.ToRECT();
-      HRESULT result = draw_theme_(theme, hdc, part_id, state_id, &bounds,
-                                   NULL);
+      HRESULT result =
+          DrawThemeBackground(theme, hdc, part_id, state_id, &bounds, nullptr);
       SetWorldTransform(hdc, &save_transform);
       return result;
     }
   }
   RECT bounds = rect.ToRECT();
-  return draw_theme_(theme, hdc, part_id, state_id, &bounds, NULL);
+  return DrawThemeBackground(theme, hdc, part_id, state_id, &bounds, nullptr);
 }
 
 // static
@@ -1891,50 +1901,50 @@ HRESULT NativeThemeWin::PaintFrameControl(HDC hdc,
 }
 
 HANDLE NativeThemeWin::GetThemeHandle(ThemeName theme_name) const {
-  if (!open_theme_ || theme_name < 0 || theme_name >= LAST)
-    return 0;
+  if (theme_name < 0 || theme_name >= LAST)
+    return nullptr;
 
   if (theme_handles_[theme_name])
     return theme_handles_[theme_name];
 
   // Not found, try to load it.
-  HANDLE handle = 0;
+  HANDLE handle = nullptr;
   switch (theme_name) {
   case BUTTON:
-    handle = open_theme_(NULL, L"Button");
+    handle = OpenThemeData(nullptr, L"Button");
     break;
   case LIST:
-    handle = open_theme_(NULL, L"Listview");
+    handle = OpenThemeData(nullptr, L"Listview");
     break;
   case MENU:
-    handle = open_theme_(NULL, L"Menu");
+    handle = OpenThemeData(nullptr, L"Menu");
     break;
   case MENULIST:
-    handle = open_theme_(NULL, L"Combobox");
+    handle = OpenThemeData(nullptr, L"Combobox");
     break;
   case SCROLLBAR:
-    handle = open_theme_(NULL, L"Scrollbar");
+    handle = OpenThemeData(nullptr, L"Scrollbar");
     break;
   case STATUS:
-    handle = open_theme_(NULL, L"Status");
+    handle = OpenThemeData(nullptr, L"Status");
     break;
   case TAB:
-    handle = open_theme_(NULL, L"Tab");
+    handle = OpenThemeData(nullptr, L"Tab");
     break;
   case TEXTFIELD:
-    handle = open_theme_(NULL, L"Edit");
+    handle = OpenThemeData(nullptr, L"Edit");
     break;
   case TRACKBAR:
-    handle = open_theme_(NULL, L"Trackbar");
+    handle = OpenThemeData(nullptr, L"Trackbar");
     break;
   case WINDOW:
-    handle = open_theme_(NULL, L"Window");
+    handle = OpenThemeData(nullptr, L"Window");
     break;
   case PROGRESS:
-    handle = open_theme_(NULL, L"Progress");
+    handle = OpenThemeData(nullptr, L"Progress");
     break;
   case SPIN:
-    handle = open_theme_(NULL, L"Spin");
+    handle = OpenThemeData(nullptr, L"Spin");
     break;
   case LAST:
     NOTREACHED();
@@ -1957,14 +1967,14 @@ void NativeThemeWin::RegisterThemeRegkeyObserver() {
 }
 
 void NativeThemeWin::UpdateDarkModeStatus() {
-  bool fDarkModeEnabled = false;
+  bool dark_mode_enabled = false;
   if (hkcu_themes_regkey_.Valid()) {
     DWORD apps_use_light_theme = 1;
     hkcu_themes_regkey_.ReadValueDW(L"AppsUseLightTheme",
                                     &apps_use_light_theme);
-    fDarkModeEnabled = (apps_use_light_theme == 0);
+    dark_mode_enabled = (apps_use_light_theme == 0);
   }
-  set_dark_mode(fDarkModeEnabled);
+  set_use_dark_colors(dark_mode_enabled);
   set_preferred_color_scheme(CalculatePreferredColorScheme());
   NotifyObservers();
 }

@@ -30,8 +30,8 @@
 #include "build/build_config.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -305,11 +305,11 @@ class ThreadWatcherTest : public ::testing::Test {
   ThreadWatcherList* thread_watcher_list_;
 
   ThreadWatcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+      : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
         setup_complete_(&lock_),
         initialized_(false) {
     // Make sure UI and IO threads are started and ready.
-    thread_bundle_.RunIOThreadUntilIdle();
+    task_environment_.RunIOThreadUntilIdle();
 
     watchdog_thread_.reset(new WatchDogThread());
     watchdog_thread_->StartAndWaitForTesting();
@@ -371,7 +371,7 @@ class ThreadWatcherTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::Lock lock_;
   base::ConditionVariable setup_complete_;
   bool initialized_;
@@ -553,7 +553,7 @@ class ThreadWatcherTestThreadNotResponding
     // a very long time by posting a task on watched thread that keeps it busy.
     // It is safe to use base::Unretained because test is waiting for the method
     // to finish.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
                        base::Unretained(io_watcher_), kUnresponsiveTime * 10));
@@ -627,7 +627,7 @@ class ThreadWatcherTestMultipleThreadsNotResponding
     // a very long time by posting a task on watched thread that keeps it busy.
     // It is safe to use base::Unretained because test is waiting for the method
     // to finish.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&CustomThreadWatcher::VeryLongMethod,
                        base::Unretained(io_watcher_), kUnresponsiveTime * 10));
@@ -706,7 +706,7 @@ class ThreadWatcherListTest : public ::testing::Test {
     }
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::Lock lock_;
   base::ConditionVariable done_;
 
@@ -730,10 +730,10 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
-        base::TimeDelta::FromSeconds(
-            ThreadWatcherList::g_initialize_delay_seconds));
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                          run_loop.QuitWhenIdleClosure(),
+                          base::TimeDelta::FromSeconds(
+                              ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 
@@ -744,7 +744,7 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StartWatchingAll(*base::CommandLine::ForCurrentProcess());
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
         base::TimeDelta::FromSeconds(
             ThreadWatcherList::g_initialize_delay_seconds + 1));
@@ -758,10 +758,10 @@ TEST_F(ThreadWatcherListTest, Restart) {
   ThreadWatcherList::StopWatchingAll();
   {
     base::RunLoop run_loop;
-    base::PostDelayedTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI}, run_loop.QuitWhenIdleClosure(),
-        base::TimeDelta::FromSeconds(
-            ThreadWatcherList::g_initialize_delay_seconds));
+    base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                          run_loop.QuitWhenIdleClosure(),
+                          base::TimeDelta::FromSeconds(
+                              ThreadWatcherList::g_initialize_delay_seconds));
     run_loop.Run();
   }
 

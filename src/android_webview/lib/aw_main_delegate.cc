@@ -7,9 +7,11 @@
 #include <memory>
 
 #include "android_webview/browser/aw_content_browser_client.h"
+#include "android_webview/browser/aw_feature_list.h"
 #include "android_webview/browser/aw_media_url_interceptor.h"
 #include "android_webview/browser/gfx/browser_view_renderer.h"
-#include "android_webview/browser/gfx/deferred_gpu_command_service.h"
+#include "android_webview/browser/gfx/gpu_service_web_view.h"
+#include "android_webview/browser/gfx/viz_compositor_thread_runner_webview.h"
 #include "android_webview/browser/scoped_add_feature_flags.h"
 #include "android_webview/browser/tracing/aw_trace_event_args_whitelist.h"
 #include "android_webview/common/aw_descriptors.h"
@@ -35,9 +37,11 @@
 #include "cc/base/switches.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/crash/core/common/crash_key.h"
+#include "components/gwp_asan/buildflags/buildflags.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #include "components/services/heap_profiling/public/cpp/profiling_client.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
+#include "components/version_info/android/channel_getter.h"
 #include "components/viz/common/features.h"
 #include "content/public/browser/android/media_url_interceptor_register.h"
 #include "content/public/browser/browser_main_runner.h"
@@ -53,7 +57,6 @@
 #include "gpu/ipc/gl_in_process_context.h"
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
-#include "third_party/blink/public/common/features.h"
 #include "ui/base/ui_base_paths.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/events/gesture_detection/gesture_configuration.h"
@@ -61,6 +64,10 @@
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 #include "components/spellcheck/common/spellcheck_features.h"
 #endif  // ENABLE_SPELLCHECK
+
+#if BUILDFLAG(ENABLE_GWP_ASAN)
+#include "components/gwp_asan/client/gwp_asan.h"  // nogncheck
+#endif
 
 namespace android_webview {
 
@@ -123,6 +130,12 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // WebView does not support MediaSession API since there's no UI for media
   // metadata and controls.
   cl->AppendSwitch(switches::kDisableMediaSessionAPI);
+
+  // WebView CTS fails in numerous ways if we drop pre-commit input.
+  // We would like to remove this flag, but it requires a cross team effort to
+  // figure out how to address the failures.
+  // crbug.com/987626 is the tracking bug for removing this flag from tests.
+  cl->AppendSwitch(switches::kAllowPreCommitInput);
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
@@ -205,9 +218,8 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
     // WebView.
     features.DisableIfNotSet(::features::kSmsReceiver);
 
-    // WebView relies on tweaking the size heuristic to dynamically enable
-    // or disable accelerated cavnas 2d.
-    features.DisableIfNotSet(blink::features::kAlwaysAccelerateCanvas);
+    // De-jelly is never supported on WebView.
+    features.EnableIfNotSet(::features::kDisableDeJelly);
   }
 
   android_webview::RegisterPathProvider();
@@ -309,6 +321,30 @@ bool AwMainDelegate::ShouldCreateFeatureList() {
 void AwMainDelegate::PostEarlyInitialization(bool is_running_tests) {
   InitIcuAndResourceBundleBrowserSide();
   aw_feature_list_creator_->CreateFeatureListAndFieldTrials();
+  PostFieldTrialInitialization();
+}
+
+void AwMainDelegate::PostFieldTrialInitialization() {
+  version_info::Channel channel = version_info::android::GetChannel();
+  bool is_canary_dev = (channel == version_info::Channel::CANARY ||
+                        channel == version_info::Channel::DEV);
+  const base::CommandLine& command_line =
+      *base::CommandLine::ForCurrentProcess();
+  std::string process_type =
+      command_line.GetSwitchValueASCII(switches::kProcessType);
+  bool is_browser_process = process_type.empty();
+
+  ALLOW_UNUSED_LOCAL(is_canary_dev);
+  ALLOW_UNUSED_LOCAL(is_browser_process);
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_MALLOC)
+  gwp_asan::EnableForMalloc(is_canary_dev || is_browser_process,
+                            process_type.c_str());
+#endif
+
+#if BUILDFLAG(ENABLE_GWP_ASAN_PARTITIONALLOC)
+  gwp_asan::EnableForPartitionAlloc(is_canary_dev, process_type.c_str());
+#endif
 }
 
 content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
@@ -321,24 +357,33 @@ content::ContentBrowserClient* AwMainDelegate::CreateContentBrowserClient() {
 
 namespace {
 gpu::SyncPointManager* GetSyncPointManager() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
-  return DeferredGpuCommandService::GetInstance()->sync_point_manager();
+  DCHECK(GpuServiceWebView::GetInstance());
+  return GpuServiceWebView::GetInstance()->sync_point_manager();
 }
+
 gpu::SharedImageManager* GetSharedImageManager() {
-  DCHECK(DeferredGpuCommandService::GetInstance());
+  DCHECK(GpuServiceWebView::GetInstance());
   const bool enable_shared_image =
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebViewEnableSharedImage);
   return enable_shared_image
-             ? DeferredGpuCommandService::GetInstance()->shared_image_manager()
+             ? GpuServiceWebView::GetInstance()->shared_image_manager()
              : nullptr;
 }
+
+viz::VizCompositorThreadRunner* GetVizCompositorThreadRunner() {
+  return base::FeatureList::IsEnabled(features::kVizForWebView)
+             ? VizCompositorThreadRunnerWebView::GetInstance()
+             : nullptr;
+}
+
 }  // namespace
 
 content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
   content_gpu_client_ = std::make_unique<AwContentGpuClient>(
       base::BindRepeating(&GetSyncPointManager),
-      base::BindRepeating(&GetSharedImageManager));
+      base::BindRepeating(&GetSharedImageManager),
+      base::BindRepeating(&GetVizCompositorThreadRunner));
   return content_gpu_client_.get();
 }
 

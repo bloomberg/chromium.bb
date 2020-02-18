@@ -12,10 +12,12 @@
 #include "base/strings/string_util.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
+#include "chrome/browser/safe_browsing/download_protection/binary_upload_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/telemetry/telemetry_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/keyed_service/core/service_access_type.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/v4_local_database_manager.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -42,8 +44,7 @@ std::unique_ptr<ServicesDelegate> ServicesDelegate::CreateForTest(
 ServicesDelegateDesktop::ServicesDelegateDesktop(
     SafeBrowsingService* safe_browsing_service,
     ServicesDelegate::ServicesCreator* services_creator)
-    : safe_browsing_service_(safe_browsing_service),
-      services_creator_(services_creator) {
+    : ServicesDelegate(safe_browsing_service, services_creator) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 }
 
@@ -54,12 +55,12 @@ ServicesDelegateDesktop::~ServicesDelegateDesktop() {
 void ServicesDelegateDesktop::InitializeCsdService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-#if defined(SAFE_BROWSING_CSD)
+#if BUILDFLAG(SAFE_BROWSING_CSD)
   if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
           ::switches::kDisableClientSidePhishingDetection)) {
     csd_service_ = ClientSideDetectionService::Create(url_loader_factory);
   }
-#endif  // defined(SAFE_BROWSING_CSD)
+#endif  // BUILDFLAG(SAFE_BROWSING_CSD)
 }
 
 ExtendedReportingLevel
@@ -204,35 +205,6 @@ void ServicesDelegateDesktop::StopOnIOThread(bool shutdown) {
   database_manager_->StopOnIOThread(shutdown);
 }
 
-void ServicesDelegateDesktop::CreatePasswordProtectionService(
-    Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  DCHECK(it == password_protection_service_map_.end());
-  std::unique_ptr<ChromePasswordProtectionService> service =
-      std::make_unique<ChromePasswordProtectionService>(safe_browsing_service_,
-                                                        profile);
-  password_protection_service_map_[profile] = std::move(service);
-}
-
-void ServicesDelegateDesktop::RemovePasswordProtectionService(
-    Profile* profile) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  if (it != password_protection_service_map_.end())
-    password_protection_service_map_.erase(it);
-}
-
-PasswordProtectionService*
-ServicesDelegateDesktop::GetPasswordProtectionService(Profile* profile) const {
-  DCHECK(profile);
-  auto it = password_protection_service_map_.find(profile);
-  return it != password_protection_service_map_.end() ? it->second.get()
-                                                      : nullptr;
-}
-
 // Only implemented on Android.
 void ServicesDelegateDesktop::CreateTelemetryService(Profile* profile) {}
 
@@ -244,31 +216,29 @@ TelemetryService* ServicesDelegateDesktop::GetTelemetryService() const {
   return nullptr;
 }
 
-void ServicesDelegateDesktop::CreateVerdictCacheManager(Profile* profile) {
+void ServicesDelegateDesktop::CreateBinaryUploadService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  DCHECK(it == cache_manager_map_.end());
-  auto cache_manager = std::make_unique<VerdictCacheManager>(
-      HistoryServiceFactory::GetForProfile(profile,
-                                           ServiceAccessType::EXPLICIT_ACCESS),
-      HostContentSettingsMapFactory::GetForProfile(profile));
-  cache_manager_map_[profile] = std::move(cache_manager);
+  auto it = binary_upload_service_map_.find(profile);
+  DCHECK(it == binary_upload_service_map_.end());
+  auto service = std::make_unique<BinaryUploadService>(
+      safe_browsing_service_->GetURLLoaderFactory(), profile);
+  binary_upload_service_map_[profile] = std::move(service);
 }
 
-void ServicesDelegateDesktop::RemoveVerdictCacheManager(Profile* profile) {
+void ServicesDelegateDesktop::RemoveBinaryUploadService(Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  if (it != cache_manager_map_.end())
-    cache_manager_map_.erase(it);
+  auto it = binary_upload_service_map_.find(profile);
+  if (it != binary_upload_service_map_.end())
+    binary_upload_service_map_.erase(it);
 }
 
-VerdictCacheManager* ServicesDelegateDesktop::GetVerdictCacheManager(
+BinaryUploadService* ServicesDelegateDesktop::GetBinaryUploadService(
     Profile* profile) const {
   DCHECK(profile);
-  auto it = cache_manager_map_.find(profile);
-  DCHECK(it != cache_manager_map_.end());
+  auto it = binary_upload_service_map_.find(profile);
+  DCHECK(it != binary_upload_service_map_.end());
   return it->second.get();
 }
 

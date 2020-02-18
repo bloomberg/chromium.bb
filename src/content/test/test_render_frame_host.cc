@@ -18,6 +18,8 @@
 #include "content/browser/frame_host/render_frame_host_delegate.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_owner_properties.h"
+#include "content/common/navigation_params.h"
+#include "content/common/navigation_params_utils.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/common/navigation_policy.h"
 #include "content/public/common/url_constants.h"
@@ -27,6 +29,7 @@
 #include "content/test/test_render_view_host.h"
 #include "content/test/test_render_widget_host.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -59,8 +62,7 @@ TestRenderFrameHost::TestRenderFrameHost(
     FrameTree* frame_tree,
     FrameTreeNode* frame_tree_node,
     int32_t routing_id,
-    int32_t widget_routing_id,
-    int flags)
+    int32_t widget_routing_id)
     : RenderFrameHostImpl(site_instance,
                           std::move(render_view_host),
                           delegate,
@@ -68,8 +70,7 @@ TestRenderFrameHost::TestRenderFrameHost(
                           frame_tree_node,
                           routing_id,
                           widget_routing_id,
-                          flags,
-                          false),
+                          /*renderer_initiated_creation=*/false),
       child_creation_observer_(delegate ? delegate->GetAsWebContents()
                                         : nullptr),
       simulate_history_list_was_cleared_(false),
@@ -142,8 +143,9 @@ TestRenderFrameHost* TestRenderFrameHost::AppendChild(
   std::string frame_unique_name = base::GenerateGUID();
   OnCreateChildFrame(
       GetProcess()->GetNextRoutingID(), CreateStubInterfaceProviderRequest(),
-      CreateStubDocumentInterfaceBrokerRequest(),
-      CreateStubDocumentInterfaceBrokerRequest(),
+      CreateStubDocumentInterfaceBrokerReceiver(),
+      CreateStubDocumentInterfaceBrokerReceiver(),
+      CreateStubBrowserInterfaceBrokerReceiver(),
       blink::WebTreeScopeType::kDocument, frame_name, frame_unique_name, false,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), blink::FrameOwnerElementType::kIframe);
@@ -308,12 +310,12 @@ void TestRenderFrameHost::SendNavigateWithParamsAndInterfaceParams(
     FrameHostMsg_DidCommitProvisionalLoad_Params* params,
     mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params,
     bool was_within_same_document) {
-  if (GetNavigationHandle() && !GetNavigationHandle()->GetResponseHeaders()) {
+  if (navigation_request() && !navigation_request()->GetResponseHeaders()) {
     scoped_refptr<net::HttpResponseHeaders> response_headers =
         new net::HttpResponseHeaders(std::string());
     response_headers->AddHeader(std::string("Content-Type: ") +
                                 params->contents_mime_type);
-    GetNavigationHandle()->set_response_headers_for_testing(response_headers);
+    navigation_request()->set_response_headers_for_testing(response_headers);
   }
 
   if (was_within_same_document) {
@@ -347,23 +349,26 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
           std::string() /* searchable_form_encoding */,
           GURL() /* client_side_redirect_url */,
           base::nullopt /* devtools_initiator_info */);
-  CommonNavigationParams common_params;
-  common_params.url = url;
-  common_params.initiator_origin = GetLastCommittedOrigin();
-  common_params.referrer =
-      Referrer(GURL(), network::mojom::ReferrerPolicy::kDefault);
-  common_params.transition = ui::PAGE_TRANSITION_LINK;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.has_user_gesture = has_user_gesture;
+  mojom::CommonNavigationParamsPtr common_params =
+      mojom::CommonNavigationParams::New();
+  common_params->navigation_start = base::TimeTicks::Now();
+  common_params->url = url;
+  common_params->initiator_origin = GetLastCommittedOrigin();
+  common_params->referrer = blink::mojom::Referrer::New(
+      GURL(), network::mojom::ReferrerPolicy::kDefault);
+  common_params->transition = ui::PAGE_TRANSITION_LINK;
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->has_user_gesture = has_user_gesture;
 
   mojom::NavigationClientAssociatedPtr navigation_client_ptr;
   if (IsPerNavigationMojoInterfaceEnabled()) {
     GetRemoteAssociatedInterfaces()->GetInterface(&navigation_client_ptr);
-    BeginNavigation(common_params, std::move(begin_params), nullptr,
-                    navigation_client_ptr.PassInterface(), nullptr);
+    BeginNavigation(std::move(common_params), std::move(begin_params),
+                    mojo::NullRemote(), navigation_client_ptr.PassInterface(),
+                    mojo::NullRemote());
   } else {
-    BeginNavigation(common_params, std::move(begin_params), nullptr, nullptr,
-                    nullptr);
+    BeginNavigation(std::move(common_params), std::move(begin_params),
+                    mojo::NullRemote(), nullptr, mojo::NullRemote());
   }
 }
 
@@ -405,7 +410,7 @@ void TestRenderFrameHost::PrepareForCommitInternal(
   CHECK(request);
   bool have_to_make_network_request =
       IsURLHandledByNetworkStack(request->common_params().url) &&
-      !FrameMsg_Navigate_Type::IsSameDocument(
+      !NavigationTypeUtils::IsSameDocument(
           request->common_params().navigation_type);
 
   // Simulate a beforeUnload ACK from the renderer if the browser is waiting for
@@ -449,10 +454,12 @@ void TestRenderFrameHost::SimulateCommitProcessed(
     NavigationRequest* navigation_request,
     std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params,
     service_manager::mojom::InterfaceProviderRequest interface_provider_request,
-    blink::mojom::DocumentInterfaceBrokerRequest
-        document_interface_broker_content_request,
-    blink::mojom::DocumentInterfaceBrokerRequest
-        document_interface_broker_blink_request,
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_content_receiver,
+    mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+        document_interface_broker_blink_receiver,
+    mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+        browser_interface_broker_receiver,
     bool same_document) {
   CHECK(params);
   blink::mojom::CommitResult result = blink::mojom::CommitResult::Ok;
@@ -475,8 +482,9 @@ void TestRenderFrameHost::SimulateCommitProcessed(
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
                      std::move(interface_provider_request),
-                     std::move(document_interface_broker_content_request),
-                     std::move(document_interface_broker_blink_request)));
+                     std::move(document_interface_broker_content_receiver),
+                     std::move(document_interface_broker_blink_receiver),
+                     std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
     }
@@ -493,8 +501,9 @@ void TestRenderFrameHost::SimulateCommitProcessed(
             .Run(std::move(params),
                  mojom::DidCommitProvisionalLoadInterfaceParams::New(
                      std::move(interface_provider_request),
-                     std::move(document_interface_broker_content_request),
-                     std::move(document_interface_broker_blink_request)));
+                     std::move(document_interface_broker_content_receiver),
+                     std::move(document_interface_broker_blink_receiver),
+                     std::move(browser_interface_broker_receiver)));
         did_commit = true;
       }
     }
@@ -505,8 +514,9 @@ void TestRenderFrameHost::SimulateCommitProcessed(
         params.get(),
         mojom::DidCommitProvisionalLoadInterfaceParams::New(
             std::move(interface_provider_request),
-            std::move(document_interface_broker_content_request),
-            std::move(document_interface_broker_blink_request)),
+            std::move(document_interface_broker_content_receiver),
+            std::move(document_interface_broker_blink_receiver),
+            std::move(browser_interface_broker_receiver)),
         same_document);
   }
 }
@@ -528,8 +538,8 @@ void TestRenderFrameHost::SendFramePolicy(
 void TestRenderFrameHost::SendCommitNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    const content::CommonNavigationParams& common_params,
-    const content::CommitNavigationParams& commit_params,
+    mojom::CommonNavigationParamsPtr common_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     const network::ResourceResponseHead& response_head,
     mojo::ScopedDataPipeConsumerHandle response_body,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
@@ -556,8 +566,8 @@ void TestRenderFrameHost::SendCommitNavigation(
 void TestRenderFrameHost::SendCommitFailedNavigation(
     mojom::NavigationClient* navigation_client,
     NavigationRequest* navigation_request,
-    const content::CommonNavigationParams& common_params,
-    const content::CommitNavigationParams& commit_params,
+    mojom::CommonNavigationParamsPtr common_params,
+    mojom::CommitNavigationParamsPtr commit_params,
     bool has_stale_copy_in_cache,
     int32_t error_code,
     const base::Optional<std::string>& error_page_content,
@@ -637,25 +647,31 @@ TestRenderFrameHost::BuildDidCommitInterfaceParams(bool is_same_document) {
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request;
 
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content;
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_content_request;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_blink_request;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content_receiver;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink_receiver;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver;
 
   if (!is_same_document) {
     interface_provider_request = mojo::MakeRequest(&interface_provider);
-    document_interface_broker_content_request =
-        mojo::MakeRequest(&document_interface_broker_content);
-    document_interface_broker_blink_request =
-        mojo::MakeRequest(&document_interface_broker_blink);
+    document_interface_broker_content_receiver =
+        mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+            .InitWithNewPipeAndPassReceiver();
+    document_interface_broker_blink_receiver =
+        mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+            .InitWithNewPipeAndPassReceiver();
+    browser_interface_broker_receiver =
+        mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+            .InitWithNewPipeAndPassReceiver();
   }
 
   auto interface_params = mojom::DidCommitProvisionalLoadInterfaceParams::New(
       std::move(interface_provider_request),
-      std::move(document_interface_broker_content_request),
-      std::move(document_interface_broker_blink_request));
+      std::move(document_interface_broker_content_receiver),
+      std::move(document_interface_broker_blink_receiver),
+      std::move(browser_interface_broker_receiver));
   return interface_params;
 }
 
@@ -672,11 +688,17 @@ TestRenderFrameHost::CreateStubInterfaceProviderRequest() {
 }
 
 // static
-blink::mojom::DocumentInterfaceBrokerRequest
-TestRenderFrameHost::CreateStubDocumentInterfaceBrokerRequest() {
-  ::blink::mojom::DocumentInterfaceBrokerPtrInfo
-      dead_document_interface_broker_proxy;
-  return mojo::MakeRequest(&dead_document_interface_broker_proxy);
+mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+TestRenderFrameHost::CreateStubDocumentInterfaceBrokerReceiver() {
+  return mojo::PendingRemote<::blink::mojom::DocumentInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver();
+}
+
+// static
+mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+TestRenderFrameHost::CreateStubBrowserInterfaceBrokerReceiver() {
+  return mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+      .InitWithNewPipeAndPassReceiver();
 }
 
 }  // namespace content

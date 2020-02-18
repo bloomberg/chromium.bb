@@ -9,7 +9,7 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_backend.h"
@@ -122,7 +122,7 @@ class HistoryDeleteDirectiveHandlerTest : public testing::Test {
   DeleteDirectiveHandler* handler() { return delete_directive_handler_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir test_dir_;
   scoped_refptr<HistoryBackend> history_backend_;
   std::unique_ptr<DeleteDirectiveHandler> delete_directive_handler_;

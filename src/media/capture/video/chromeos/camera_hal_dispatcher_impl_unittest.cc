@@ -10,9 +10,9 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
-#include "media/capture/video/chromeos/mojo/camera_common.mojom.h"
-#include "media/capture/video/chromeos/mojo/cros_camera_service.mojom.h"
+#include "base/test/task_environment.h"
+#include "media/capture/video/chromeos/mojom/camera_common.mojom.h"
+#include "media/capture/video/chromeos/mojom/cros_camera_service.mojom.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -122,7 +122,7 @@ class CameraHalDispatcherImplTest : public ::testing::Test {
   CameraHalDispatcherImpl* dispatcher_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   DISALLOW_COPY_AND_ASSIGN(CameraHalDispatcherImplTest);
 };

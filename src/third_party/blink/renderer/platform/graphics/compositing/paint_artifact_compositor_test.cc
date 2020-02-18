@@ -161,8 +161,8 @@ class PaintArtifactCompositorTest : public testing::Test,
   cc::Layer* RootLayer() { return paint_artifact_compositor_->RootLayer(); }
 
   // CompositeAfterPaint creates scroll hit test display items (which create
-  // scroll hit test layers in PaintArtifactCompositor) whereas in
-  // BlinkGenPropertyTrees, scrollable foreign layers are created in
+  // scroll hit test layers in PaintArtifactCompositor) whereas before
+  // CompositeAfterPaint, scrollable foreign layers are created in
   // ScrollingCoordinator and passed to PaintArtifactCompositor. This function
   // is used to create a chunk representing the scrollable layer in either of
   // these modes.
@@ -170,52 +170,39 @@ class PaintArtifactCompositorTest : public testing::Test,
                              const TransformPaintPropertyNode& scroll_offset,
                              const ClipPaintPropertyNode& clip,
                              const EffectPaintPropertyNode& effect) {
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      // Create a foreign layer for scrolling, roughly matching the layer
-      // created by ScrollingCoordinator.
-      const auto* scroll_node = scroll_offset.ScrollNode();
-      scoped_refptr<cc::Layer> layer = cc::Layer::Create();
-      auto rect = scroll_node->ContainerRect();
-      layer->SetScrollable(gfx::Size(rect.Size()));
-      layer->SetBounds(gfx::Size(rect.Size()));
-      layer->SetElementId(scroll_node->GetCompositorElementId());
-      layer->set_did_scroll_callback(
-          paint_artifact_compositor_->scroll_callback_);
-      artifact.Chunk(scroll_offset, clip, effect)
-          .ForeignLayer(layer, FloatPoint(rect.Location()));
-      return;
-    }
-    // Scroll hit test layers are marked as scrollable for hit testing but are
-    // in the unscrolled transform space (scroll offset's parent).
-    artifact.Chunk(*scroll_offset.Parent(), clip, effect)
-        .ScrollHitTest(scroll_offset);
+    // Create a foreign layer for scrolling, roughly matching the layer
+    // created by ScrollingCoordinator.
+    const auto* scroll_node = scroll_offset.ScrollNode();
+    scoped_refptr<cc::Layer> layer = cc::Layer::Create();
+    auto rect = scroll_node->ContainerRect();
+    layer->SetScrollable(gfx::Size(rect.Size()));
+    layer->SetBounds(gfx::Size(rect.Size()));
+    layer->SetElementId(scroll_node->GetCompositorElementId());
+    layer->set_did_scroll_callback(
+        paint_artifact_compositor_->scroll_callback_);
+    artifact.Chunk(scroll_offset, clip, effect)
+        .ForeignLayer(layer, FloatPoint(rect.Location()));
   }
 
   // Returns the |num|th scrollable layer. In CompositeAfterPaint, this will be
-  // a scroll hit test layer, whereas in BlinkGenPropertyTrees this will be a
-  // content layer.
+  // a scroll hit test layer, whereas currently this will be a content layer.
   cc::Layer* ScrollableLayerAt(size_t num) {
-    if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      for (size_t content_layer_index = 0;
-           content_layer_index < ContentLayerCount(); content_layer_index++) {
-        auto* content_layer = ContentLayerAt(content_layer_index);
-        if (content_layer->scrollable()) {
-          if (num == 0)
-            return content_layer;
-          num--;
-        }
+    for (size_t content_layer_index = 0;
+         content_layer_index < ContentLayerCount(); content_layer_index++) {
+      auto* content_layer = ContentLayerAt(content_layer_index);
+      if (content_layer->scrollable()) {
+        if (num == 0)
+          return content_layer;
+        num--;
       }
-      return nullptr;
     }
-    return paint_artifact_compositor_->GetExtraDataForTesting()
-        ->scroll_hit_test_layers[num]
-        .get();
+    return nullptr;
   }
 
   // Returns the |num|th non-scrollable layer. In CompositeAfterPaint, content
-  // layers are not scrollable so this is the |num|th content layer. In
-  // BlinkGenPropertyTrees, content layers are scrollable and non-scrollable, so
-  // this will return the |num|th content layer that is not scrollable.
+  // layers are not scrollable so this is the |num|th content layer. Currently,
+  // content layers are scrollable and non-scrollable, so this will return the
+  // |num|th content layer that is not scrollable.
   cc::Layer* NonScrollableLayerAt(size_t num) {
     for (size_t content_layer_index = 0;
          content_layer_index < ContentLayerCount(); content_layer_index++) {
@@ -498,7 +485,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransform) {
         CreateTransform(*transform1, TransformationMatrix().Rotate3d(0, 45, 0));
     TransformPaintPropertyNode::State transform3_state{
         TransformationMatrix().Rotate3d(0, 45, 0)};
-    transform3_state.flattens_inherited_transform = transform_is_flattened;
+    transform3_state.flags.flattens_inherited_transform =
+        transform_is_flattened;
     auto transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
 
@@ -551,7 +539,8 @@ TEST_P(PaintArtifactCompositorTest, FlattensInheritedTransformWithAlias) {
     auto transform2 = TransformPaintPropertyNode::CreateAlias(*real_transform2);
     TransformPaintPropertyNode::State transform3_state{
         TransformationMatrix().Rotate3d(0, 45, 0)};
-    transform3_state.flattens_inherited_transform = transform_is_flattened;
+    transform3_state.flags.flattens_inherited_transform =
+        transform_is_flattened;
     auto real_transform3 = TransformPaintPropertyNode::Create(
         *transform2, std::move(transform3_state));
     auto transform3 = TransformPaintPropertyNode::CreateAlias(*real_transform3);
@@ -4031,7 +4020,7 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
   TransformationMatrix matrix;
   matrix.Scale(2);
   TransformPaintPropertyNode::State transform_state{matrix};
-  transform_state.in_subtree_of_page_scale = false;
+  transform_state.flags.in_subtree_of_page_scale = false;
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
 
@@ -4048,21 +4037,20 @@ TEST_P(PaintArtifactCompositorTest, CreatesViewportNodes) {
       transform_state.compositor_element_id);
   EXPECT_TRUE(cc_transform_node);
   EXPECT_EQ(TransformationMatrix::ToTransform(matrix),
-            cc_transform_node->post_local);
-  EXPECT_TRUE(cc_transform_node->local.IsIdentity());
-  EXPECT_TRUE(cc_transform_node->pre_local.IsIdentity());
+            cc_transform_node->local);
+  EXPECT_EQ(gfx::Point3F(), cc_transform_node->origin);
 }
 
 // Test that |cc::TransformNode::in_subtree_of_page_scale_layer| is not set on
 // the page scale transform node or ancestors, and is set on descendants.
 TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   TransformPaintPropertyNode::State ancestor_transform_state;
-  ancestor_transform_state.in_subtree_of_page_scale = false;
+  ancestor_transform_state.flags.in_subtree_of_page_scale = false;
   auto ancestor_transform = TransformPaintPropertyNode::Create(
       TransformPaintPropertyNode::Root(), std::move(ancestor_transform_state));
 
   TransformPaintPropertyNode::State page_scale_transform_state;
-  page_scale_transform_state.in_subtree_of_page_scale = false;
+  page_scale_transform_state.flags.in_subtree_of_page_scale = false;
   page_scale_transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
   auto page_scale_transform = TransformPaintPropertyNode::Create(
@@ -4071,7 +4059,7 @@ TEST_P(PaintArtifactCompositorTest, InSubtreeOfPageScale) {
   TransformPaintPropertyNode::State descendant_transform_state;
   descendant_transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(2);
-  descendant_transform_state.in_subtree_of_page_scale = true;
+  descendant_transform_state.flags.in_subtree_of_page_scale = true;
   descendant_transform_state.direct_compositing_reasons =
       CompositingReason::kWillChangeTransform;
   auto descendant_transform = TransformPaintPropertyNode::Create(
@@ -4110,7 +4098,7 @@ TEST_P(PaintArtifactCompositorTest, ViewportPageScale) {
   TransformationMatrix matrix;
   matrix.Scale(2);
   TransformPaintPropertyNode::State transform_state{matrix};
-  transform_state.in_subtree_of_page_scale = false;
+  transform_state.flags.in_subtree_of_page_scale = false;
   transform_state.compositor_element_id =
       CompositorElementIdFromUniqueObjectId(1);
   auto scale_transform_node = TransformPaintPropertyNode::Create(

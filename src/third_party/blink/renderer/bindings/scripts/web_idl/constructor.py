@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 import exceptions
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithOwner
-from .idl_member import IdlMember
+
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithOwner
 
 
-class Constrcutor(IdlMember):
+class Constrcutor(object):
     def is_custom(self):
         """
         Returns True if this Constructor is defined in the form of
@@ -43,7 +43,7 @@ class Constrcutor(IdlMember):
         raise exceptions.NotImplementedError()
 
 
-class ConstructorGroup(WithOwner, WithComponent, WithDebugInfo):
+class ConstructorGroup(object):
     def constructors(self):
         """
         Returns a list of constructors
@@ -52,7 +52,7 @@ class ConstructorGroup(WithOwner, WithComponent, WithDebugInfo):
         raise exceptions.NotImplementedError()
 
 
-class NamedConstructor(WithOwner, WithComponent, WithDebugInfo):
+class NamedConstructor(object):
     @property
     def return_type(self):
         """

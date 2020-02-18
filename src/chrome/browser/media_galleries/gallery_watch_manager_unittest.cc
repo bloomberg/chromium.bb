@@ -24,7 +24,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/storage_monitor/test_storage_monitor.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -56,7 +56,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
                                 public testing::Test {
  public:
   GalleryWatchManagerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
 #if defined(OS_CHROMEOS)
         test_user_manager_(std::make_unique<chromeos::ScopedTestUserManager>()),
 #endif
@@ -194,7 +194,7 @@ class GalleryWatchManagerTest : public GalleryWatchManagerObserver,
   std::unique_ptr<GalleryWatchManager> manager_;
 
   // Needed for extension service & friends to work.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<extensions::Extension> extension_;
 

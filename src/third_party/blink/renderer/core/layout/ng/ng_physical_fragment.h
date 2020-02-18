@@ -171,9 +171,7 @@ class CORE_EXPORT NGPhysicalFragment
   // incorrect, use |BaseDirection()| instead, and 2) margin/border/padding,
   // background etc. do not apply to the line box.
   const ComputedStyle& Style() const {
-    return StyleVariant() == NGStyleVariant::kStandard
-               ? layout_object_.StyleRef()
-               : SlowEffectiveStyle();
+    return layout_object_.EffectiveStyle(StyleVariant());
   }
   Node* GetNode() const;
 
@@ -222,6 +220,7 @@ class CORE_EXPORT NGPhysicalFragment
   PhysicalRect ScrollableOverflow() const;
 
   // ScrollableOverflow(), with transforms applied wrt container if needed.
+  // This does not include any offsets from the parent (including relpos).
   PhysicalRect ScrollableOverflowForPropagation(
       const LayoutObject* container) const;
 
@@ -297,6 +296,7 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalContainerFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned has_floating_descendants_ : 1;
+  unsigned has_adjoining_object_descendants_ : 1;
   unsigned has_orthogonal_flow_roots_ : 1;
   unsigned may_have_descendant_above_block_start_ : 1;
   unsigned depends_on_percentage_block_size_ : 1;
@@ -310,9 +310,11 @@ class CORE_EXPORT NGPhysicalFragment
   // The following bitfields are only to be used by NGPhysicalBoxFragment
   // (it's defined here to save memory, since that class has no bitfields).
   unsigned children_inline_ : 1;
+  unsigned has_fragment_items_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   unsigned has_borders_ : 1;
   unsigned has_padding_ : 1;
+  unsigned is_first_for_node_ : 1;
 
   // The following are only used by NGPhysicalBoxFragment but are initialized
   // for all types to allow methods using them to be inlined.

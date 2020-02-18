@@ -6,14 +6,14 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace updater {
 
 TEST(UpdaterTestNetwork, NetworkFetcherWinHTTPFactory) {
-  base::test::ScopedTaskEnvironment scoped_task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::UI);
   auto fetcher = base::MakeRefCounted<NetworkFetcherFactory>()->Create();
   EXPECT_NE(nullptr, fetcher.get());
 }

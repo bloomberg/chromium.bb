@@ -34,14 +34,15 @@
 #include "content/app/strings/grit/content_strings.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/appcache_interfaces.h"
+#include "content/common/child_process.mojom.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/features.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_data.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -87,8 +88,8 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #endif
 }
 
-int ToMessageID(WebLocalizedString::Name name) {
-  switch (name) {
+int ToMessageID(int resource_id) {
+  switch (resource_id) {
     case WebLocalizedString::kAXAMPMFieldText:
       return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::kAXCalendarShowDatePicker:
@@ -351,63 +352,6 @@ int ToMessageID(WebLocalizedString::Name name) {
   return -1;
 }
 
-WebData loadAudioSpatializationResource(const char* name) {
-#ifdef IDR_AUDIO_SPATIALIZATION_COMPOSITE
-  if (!strcmp(name, "Composite")) {
-    base::StringPiece resource = GetContentClient()->GetDataResource(
-        IDR_AUDIO_SPATIALIZATION_COMPOSITE, ui::SCALE_FACTOR_NONE);
-    return WebData(resource.data(), resource.size());
-  }
-#endif
-
-#ifdef IDR_AUDIO_SPATIALIZATION_T000_P000
-  const size_t kExpectedSpatializationNameLength = 31;
-  if (strlen(name) != kExpectedSpatializationNameLength) {
-    return WebData();
-  }
-
-  // Extract the azimuth and elevation from the resource name.
-  int azimuth = 0;
-  int elevation = 0;
-  int values_parsed =
-      sscanf(name, "IRC_Composite_C_R0195_T%3d_P%3d", &azimuth, &elevation);
-  if (values_parsed != 2) {
-    return WebData();
-  }
-
-  // The resource index values go through the elevations first, then azimuths.
-  const int kAngleSpacing = 15;
-
-  // 0 <= elevation <= 90 (or 315 <= elevation <= 345)
-  // in increments of 15 degrees.
-  int elevation_index =
-      elevation <= 90 ? elevation / kAngleSpacing :
-      7 + (elevation - 315) / kAngleSpacing;
-  bool is_elevation_index_good = 0 <= elevation_index && elevation_index < 10;
-
-  // 0 <= azimuth < 360 in increments of 15 degrees.
-  int azimuth_index = azimuth / kAngleSpacing;
-  bool is_azimuth_index_good = 0 <= azimuth_index && azimuth_index < 24;
-
-  const int kNumberOfElevations = 10;
-  const int kNumberOfAudioResources = 240;
-  int resource_index = kNumberOfElevations * azimuth_index + elevation_index;
-  bool is_resource_index_good = 0 <= resource_index &&
-      resource_index < kNumberOfAudioResources;
-
-  if (is_azimuth_index_good && is_elevation_index_good &&
-      is_resource_index_good) {
-    const int kFirstAudioResourceIndex = IDR_AUDIO_SPATIALIZATION_T000_P000;
-    base::StringPiece resource = GetContentClient()->GetDataResource(
-        kFirstAudioResourceIndex + resource_index, ui::SCALE_FACTOR_NONE);
-    return WebData(resource.data(), resource.size());
-  }
-#endif  // IDR_AUDIO_SPATIALIZATION_T000_P000
-
-  NOTREACHED();
-  return WebData();
-}
-
 // This must match third_party/WebKit/public/blink_resources.grd.
 // In particular, |is_gzipped| corresponds to compress="gzip".
 struct DataResource {
@@ -415,102 +359,6 @@ struct DataResource {
   int id;
   ui::ScaleFactor scale_factor;
   bool is_gzipped;
-};
-
-const DataResource kDataResources[] = {
-    {"missingImage", IDR_BROKENIMAGE, ui::SCALE_FACTOR_100P, false},
-    {"missingImage@2x", IDR_BROKENIMAGE, ui::SCALE_FACTOR_200P, false},
-    {"searchCancel", IDR_SEARCH_CANCEL, ui::SCALE_FACTOR_100P, false},
-    {"searchCancelPressed", IDR_SEARCH_CANCEL_PRESSED, ui::SCALE_FACTOR_100P,
-     false},
-    {"generatePassword", IDR_PASSWORD_GENERATION_ICON, ui::SCALE_FACTOR_100P,
-     false},
-    {"generatePasswordHover", IDR_PASSWORD_GENERATION_ICON_HOVER,
-     ui::SCALE_FACTOR_100P, false},
-    {"html.css", IDR_UASTYLE_HTML_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"quirks.css", IDR_UASTYLE_QUIRKS_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"view-source.css", IDR_UASTYLE_VIEW_SOURCE_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    // Not limited to Android since it's used for mobile layouts in inspector.
-    {"android.css", IDR_UASTYLE_THEME_CHROMIUM_ANDROID_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    // Not limited to Android since it's used for mobile layouts in inspector.
-    {"fullscreenAndroid.css", IDR_UASTYLE_FULLSCREEN_ANDROID_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    // Not limited to Linux since it's used for mobile layouts in inspector.
-    {"linux.css", IDR_UASTYLE_THEME_CHROMIUM_LINUX_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"input_multiple_fields.css", IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-#if defined(OS_MACOSX)
-    {"mac.css", IDR_UASTYLE_THEME_MAC_CSS, ui::SCALE_FACTOR_NONE, true},
-#endif
-    {"win.css", IDR_UASTYLE_THEME_WIN_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"win_quirks.css", IDR_UASTYLE_THEME_WIN_QUIRKS_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"controls_refresh.css", IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"forced_colors.css", IDR_UASTYLE_THEME_FORCED_COLORS_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"svg.css", IDR_UASTYLE_SVG_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"mathml.css", IDR_UASTYLE_MATHML_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"fullscreen.css", IDR_UASTYLE_FULLSCREEN_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"xhtmlmp.css", IDR_UASTYLE_XHTMLMP_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"viewportAndroid.css", IDR_UASTYLE_VIEWPORT_ANDROID_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-#if defined(ENABLE_TOUCHLESS_UASTYLE_THEME)
-    {"touchless.css", IDR_UASTYLE_THEME_TOUCHLESS_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-#endif
-    {"viewportTelevision.css", IDR_UASTYLE_VIEWPORT_TELEVISION_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_common.css", IDR_INSPECT_TOOL_COMMON_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_common.js", IDR_INSPECT_TOOL_COMMON_JS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_distances.html", IDR_INSPECT_TOOL_DISTANCES_HTML,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_highlight.html", IDR_INSPECT_TOOL_HIGHLIGHT_HTML,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_paused.html", IDR_INSPECT_TOOL_PAUSED_HTML,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_screenshot.html", IDR_INSPECT_TOOL_SCREENSHOT_HTML,
-     ui::SCALE_FACTOR_NONE, true},
-    {"inspect_tool_viewport_size.html", IDR_INSPECT_TOOL_VIEWPORT_SIZE_HTML,
-     ui::SCALE_FACTOR_NONE, true},
-    {"DocumentXMLTreeViewer.css", IDR_DOCUMENTXMLTREEVIEWER_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"DocumentXMLTreeViewer.js", IDR_DOCUMENTXMLTREEVIEWER_JS,
-     ui::SCALE_FACTOR_NONE, true},
-#ifdef IDR_PICKER_COMMON_JS
-    {"pickerCommon.js", IDR_PICKER_COMMON_JS, ui::SCALE_FACTOR_NONE, true},
-    {"pickerCommon.css", IDR_PICKER_COMMON_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"calendarPicker.js", IDR_CALENDAR_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
-    {"calendarPicker.css", IDR_CALENDAR_PICKER_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"listPicker.js", IDR_LIST_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
-    {"listPicker.css", IDR_LIST_PICKER_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"pickerButton.css", IDR_PICKER_BUTTON_CSS, ui::SCALE_FACTOR_NONE, true},
-    {"suggestionPicker.js", IDR_SUGGESTION_PICKER_JS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"suggestionPicker.css", IDR_SUGGESTION_PICKER_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"color_picker_common.js", IDR_COLOR_PICKER_COMMON_JS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"colorSuggestionPicker.js", IDR_COLOR_SUGGESTION_PICKER_JS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"colorSuggestionPicker.css", IDR_COLOR_SUGGESTION_PICKER_CSS,
-     ui::SCALE_FACTOR_NONE, true},
-    {"color_picker.js", IDR_COLOR_PICKER_JS, ui::SCALE_FACTOR_NONE, true},
-    {"color_picker.css", IDR_COLOR_PICKER_CSS, ui::SCALE_FACTOR_NONE, true},
-#endif
-    {"input_alert.svg", IDR_VALIDATION_BUBBLE_ICON, ui::SCALE_FACTOR_NONE,
-     true},
-    {"validation_bubble.css", IDR_VALIDATION_BUBBLE_CSS, ui::SCALE_FACTOR_NONE,
-     true},
-    {"placeholderIcon", IDR_PLACEHOLDER_ICON, ui::SCALE_FACTOR_100P, false},
-    {"brokenCanvas", IDR_BROKENCANVAS, ui::SCALE_FACTOR_100P, false},
-    {"brokenCanvas@2x", IDR_BROKENCANVAS, ui::SCALE_FACTOR_200P, false},
 };
 
 class NestedMessageLoopRunnerImpl
@@ -543,6 +391,34 @@ class NestedMessageLoopRunnerImpl
   SEQUENCE_CHECKER(sequence_checker_);
 };
 
+mojo::SharedRemote<mojom::ChildProcessHost> GetChildProcessHost() {
+  auto* thread = ChildThreadImpl::current();
+  if (thread)
+    return thread->child_process_host();
+  return {};
+}
+
+// An implementation of BrowserInterfaceBroker which forwards to the
+// ChildProcessHost interface. This lives on the IO thread.
+class BrowserInterfaceBrokerProxyImpl
+    : public blink::ThreadSafeBrowserInterfaceBrokerProxy {
+ public:
+  BrowserInterfaceBrokerProxyImpl() : process_host_(GetChildProcessHost()) {}
+
+  // blink::ThreadSafeBrowserInterfaceBrokerProxy implementation:
+  void GetInterfaceImpl(mojo::GenericPendingReceiver receiver) override {
+    if (process_host_)
+      process_host_->BindHostReceiver(std::move(receiver));
+  }
+
+ private:
+  ~BrowserInterfaceBrokerProxyImpl() override = default;
+
+  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserInterfaceBrokerProxyImpl);
+};
+
 }  // namespace
 
 // TODO(skyostil): Ensure that we always have an active task runner when
@@ -558,58 +434,45 @@ BlinkPlatformImpl::BlinkPlatformImpl(
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner)
     : main_thread_task_runner_(std::move(main_thread_task_runner)),
       io_thread_task_runner_(std::move(io_thread_task_runner)),
+      browser_interface_broker_proxy_(
+          base::MakeRefCounted<BrowserInterfaceBrokerProxyImpl>()),
       native_theme_engine_(GetWebThemeEngine()) {}
 
-BlinkPlatformImpl::~BlinkPlatformImpl() {}
+BlinkPlatformImpl::~BlinkPlatformImpl() = default;
 
 void BlinkPlatformImpl::RecordAction(const blink::UserMetricsAction& name) {
   if (ChildThread* child_thread = ChildThread::Get())
     child_thread->RecordComputedAction(name.Action());
 }
 
-WebData BlinkPlatformImpl::GetDataResource(const char* name) {
-  // Some clients will call into this method with an empty |name| when they have
-  // optional resources.  For example, the PopupMenuChromium code can have icons
-  // for some Autofill items but not for others.
-  if (!strlen(name))
-    return WebData();
-
-  // Check the name prefix to see if it's an audio resource.
-  if (base::StartsWith(name, "IRC_Composite", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(name, "Composite", base::CompareCase::SENSITIVE))
-    return loadAudioSpatializationResource(name);
-
-  // TODO(flackr): We should use a better than linear search here, a trie would
-  // be ideal.
-  for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    if (!strcmp(name, kDataResources[i].name)) {
-      base::StringPiece resource = GetContentClient()->GetDataResource(
-          kDataResources[i].id, kDataResources[i].scale_factor);
-      if (!resource.empty() && kDataResources[i].is_gzipped) {
-        std::string uncompressed;
-        CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
-        return WebData(uncompressed.data(), uncompressed.size());
-      }
-      return WebData(resource.data(), resource.size());
-    }
-  }
-
-  NOTREACHED() << "Unknown image resource " << name;
-  return WebData();
+WebData BlinkPlatformImpl::GetDataResource(int resource_id,
+                                           ui::ScaleFactor scale_factor) {
+  base::StringPiece resource =
+      GetContentClient()->GetDataResource(resource_id, scale_factor);
+  return WebData(resource.data(), resource.size());
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(
-    WebLocalizedString::Name name) {
-  int message_id = ToMessageID(name);
+WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
+  base::StringPiece resource =
+      GetContentClient()->GetDataResource(resource_id, ui::SCALE_FACTOR_NONE);
+  if (resource.empty())
+    return WebData(resource.data(), resource.size());
+  std::string uncompressed;
+  CHECK(compression::GzipUncompress(resource.as_string(), &uncompressed));
+  return WebData(uncompressed.data(), uncompressed.size());
+}
+
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id) {
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   return WebString::FromUTF16(
       GetContentClient()->GetLocalizedString(message_id));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
 
@@ -630,10 +493,10 @@ WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
       base::ReplaceStringPlaceholders(format_string, value.Utf16(), nullptr));
 }
 
-WebString BlinkPlatformImpl::QueryLocalizedString(WebLocalizedString::Name name,
+WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value1,
                                                   const WebString& value2) {
-  int message_id = ToMessageID(name);
+  int message_id = ToMessageID(resource_id);
   if (message_id < 0)
     return WebString();
   std::vector<base::string16> values;
@@ -654,8 +517,9 @@ blink::WebCrypto* BlinkPlatformImpl::Crypto() {
   return &web_crypto_;
 }
 
-const char* BlinkPlatformImpl::GetBrowserServiceName() const {
-  return mojom::kBrowserServiceName;
+blink::ThreadSafeBrowserInterfaceBrokerProxy*
+BlinkPlatformImpl::GetBrowserInterfaceBrokerProxy() {
+  return browser_interface_broker_proxy_.get();
 }
 
 WebThemeEngine* BlinkPlatformImpl::ThemeEngine() {

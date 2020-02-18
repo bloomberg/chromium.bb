@@ -89,7 +89,7 @@ class ECSigner(signer.BaseSigner):
     return re.search('KEY_RO', fmap.output) is not None
 
   def Sign(self, keyset, input_name, output_name):
-    """"Sign EC image
+    """Sign EC image
 
     Args:
       keyset: keyset used for this signing step
@@ -305,7 +305,7 @@ class Shellball(object):
       self._Run('--sb_extract', out_dir)
 
     except cros_build_lib.RunCommandError as err:
-      logging.error("Extracting firmware shellball failed")
+      logging.error('Extracting firmware shellball failed')
       raise ShellballExtractError(err.msg)
 
   def Repack(self, src_dir):
@@ -323,7 +323,7 @@ class Shellball(object):
         shutil.move(tmp_file.name, orig_file)
 
       except cros_build_lib.RunCommandError as err:
-        logging.error("Repacking firmware shellball failed")
+        logging.error('Repacking firmware shellball failed')
         raise ShellballRepackError(err.msg)
 
       finally:
@@ -354,7 +354,7 @@ def ResignImageFirmware(image_file, keyset):
     with osutils.MountImagePartition(image_file, 'ROOT-A', rootfs_dir):
       sb_file = os.path.join(rootfs_dir, 'usr/sbin/chromeos-firmware')
       if os.path.exists(sb_file):
-        logging.info("Found firmware, signing")
+        logging.info('Found firmware, signing')
         with Shellball(sb_file) as sb_dir:
           fw_signer = FirmwareSigner()
           if not fw_signer.Sign(keyset, sb_dir, None):
@@ -365,7 +365,7 @@ def ResignImageFirmware(image_file, keyset):
           with open(version_signer_path, 'w') as version_signer:
             WriteSignerNotes(keyset, version_signer)
       else:
-        logging.warning("No firmware found in image. Not signing firmware")
+        logging.warning('No firmware found in image. Not signing firmware')
 
 
 def SignerConfigsFromCSV(signer_config_file):
@@ -406,6 +406,6 @@ def WriteSignerNotes(keyset, outfile):
   if 'root_key' in root_keys and len(root_keys) == 1:
     outfile.write('root: %s\n' % (root_keys['root_key'].GetSHA1sum()))
   else:
-    outfile.write('List sha1sum of all loem/model\'s signatures:\n')
+    outfile.write("List sha1sum of all loem/model's signatures:\n")
     for key_id, key in root_keys.items():
       outfile.write('%s: %s\n' % (key_id, key.GetSHA1sum()))

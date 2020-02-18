@@ -10,7 +10,7 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/prefs/pref_member.h"
@@ -43,8 +43,8 @@ class SigninHeaderHelperTest : public testing::Test {
     settings_map_ = new HostContentSettingsMap(
         &prefs_, false /* is_off_the_record */, false /* store_last_modified */,
         false /* migrate_requesting_and_top_level_origin_settings */);
-    cookie_settings_ =
-        new content_settings::CookieSettings(settings_map_.get(), &prefs_, "");
+    cookie_settings_ = new content_settings::CookieSettings(settings_map_.get(),
+                                                            &prefs_, false, "");
   }
 
   void TearDown() override { settings_map_->ShutdownOnUIThread(); }
@@ -112,7 +112,7 @@ class SigninHeaderHelperTest : public testing::Test {
   }
 #endif
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool sync_enabled_ = false;
   std::string device_id_ = kTestDeviceId;

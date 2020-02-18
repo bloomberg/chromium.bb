@@ -262,6 +262,10 @@ class MediaRouterViewsUI
   void SendIssueForUnableToCast(MediaCastMode cast_mode,
                                 const MediaSink::Id& sink_id);
 
+  // Creates and sends an issue for notifying the user that the tab audio cannot
+  // be mirrored from their device.
+  void SendIssueForTabAudioNotSupported(const MediaSink::Id& sink_id);
+
   // Returns the IssueManager associated with |router_|.
   IssueManager* GetIssueManager();
 
@@ -419,7 +423,7 @@ class MediaRouterViewsUI
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   // Therefore |weak_factory_| must be placed at the end.
-  base::WeakPtrFactory<MediaRouterViewsUI> weak_factory_;
+  base::WeakPtrFactory<MediaRouterViewsUI> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(MediaRouterViewsUI);
 };

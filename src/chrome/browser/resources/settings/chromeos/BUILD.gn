@@ -28,6 +28,13 @@ if (optimize_webui) {
       "crisper.js",
       "lazy_load.crisper.js",
     ]
+    excludes = [
+      "chrome://os-settings/app-management/app_management.mojom-lite.js",
+      "chrome://os-settings/app-management/bitmap.mojom-lite.js",
+      "chrome://os-settings/app-management/image_info.mojom-lite.js",
+      "chrome://os-settings/app-management/image.mojom-lite.js",
+      "chrome://os-settings/app-management/types.mojom-lite.js",
+    ]
 
     deps = [
       ":unpak",
@@ -63,6 +70,7 @@ if (optimize_webui) {
 group("closure_compile") {
   deps = [
     "os_a11y_page:closure_compile",
+    "os_apps_page:closure_compile",
     "os_files_page:closure_compile",
     "os_languages_page:closure_compile",
     "os_people_page:closure_compile",

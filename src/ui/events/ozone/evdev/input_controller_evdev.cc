@@ -20,8 +20,7 @@ namespace ui {
 
 InputControllerEvdev::InputControllerEvdev(KeyboardEvdev* keyboard,
                                            MouseButtonMapEvdev* button_map)
-    : keyboard_(keyboard), button_map_(button_map), weak_ptr_factory_(this) {
-}
+    : keyboard_(keyboard), button_map_(button_map) {}
 
 InputControllerEvdev::~InputControllerEvdev() {
 }
@@ -155,6 +154,16 @@ void InputControllerEvdev::SetPrimaryButtonRight(bool right) {
 
 void InputControllerEvdev::SetMouseReverseScroll(bool enabled) {
   input_device_settings_.mouse_reverse_scroll_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SetMouseAcceleration(bool enabled) {
+  input_device_settings_.mouse_acceleration_enabled = enabled;
+  ScheduleUpdateDeviceSettings();
+}
+
+void InputControllerEvdev::SetTouchpadAcceleration(bool enabled) {
+  input_device_settings_.touchpad_acceleration_enabled = enabled;
   ScheduleUpdateDeviceSettings();
 }
 

@@ -42,7 +42,7 @@
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/system_connector.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/safe_json_parser.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -186,7 +186,7 @@ class AffiliatedInvalidationServiceProviderImplTest
   invalidation::FakeInvalidationService* profile_invalidation_service_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   chromeos::FakeChromeUserManager* fake_user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -493,8 +493,16 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
   SendInvalidatorStateChangeNotification(
       is_fcm_enabled(), device_invalidation_service_,
       syncer::INVALIDATION_CREDENTIALS_REJECTED);
-  EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
-  EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
+  if (is_fcm_enabled()) {
+    EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
+    EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
+  } else {
+    // TiclInvalidationService replaces INVALIDATION_CREDENTIALS_REJECTED with
+    // TRANSIENT_INVALIDATION_ERROR. Which doesn't cause disconnection.
+    EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
+    EXPECT_EQ(provider_->GetDeviceInvalidationServiceForTest(),
+              consumer_->GetInvalidationService());
+  }
 
   // Verify that the device-global invalidation service still exists.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());

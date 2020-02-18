@@ -11,7 +11,7 @@
 
 #include "base/scoped_observer.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -35,7 +35,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   MockSigninErrorControllerObserver observer;
   EXPECT_CALL(observer, OnErrorChanged()).Times(0);
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -51,7 +51,7 @@ TEST(SigninErrorControllerTest, SingleAccount) {
   // updated.
   EXPECT_CALL(observer, OnErrorChanged()).Times(0);
 
-  std::string test_account_id =
+  CoreAccountId test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
   ::testing::Mock::VerifyAndClearExpectations(&observer);
 
@@ -83,12 +83,12 @@ TEST(SigninErrorControllerTest, SingleAccount) {
 }
 
 TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
-  std::string test_account_id =
+  CoreAccountId test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
-  std::string other_test_account_id =
+  CoreAccountId other_test_account_id =
       identity_test_env.MakeAccountAvailable(kOtherTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -114,14 +114,14 @@ TEST(SigninErrorControllerTest, AccountTransitionAnyAccount) {
 // ChromeOS.
 #if !defined(OS_CHROMEOS)
 TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
   signin::PrimaryAccountMutator* primary_account_mutator =
       identity_test_env.identity_manager()->GetPrimaryAccountMutator();
 
-  std::string test_account_id =
+  CoreAccountId test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
-  std::string other_test_account_id =
+  CoreAccountId other_test_account_id =
       identity_test_env.MakeAccountAvailable(kOtherTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::PRIMARY_ACCOUNT,
@@ -179,10 +179,10 @@ TEST(SigninErrorControllerTest, AccountTransitionPrimaryAccount) {
 
 // Verify that SigninErrorController handles errors properly.
 TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
-  std::string test_account_id =
+  CoreAccountId test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -219,19 +219,19 @@ TEST(SigninErrorControllerTest, AuthStatusEnumerateAllErrors) {
     } else {
       EXPECT_EQ(GoogleServiceAuthError::NONE,
                 error_controller.auth_error().state());
-      EXPECT_EQ("", error_controller.error_account_id());
+      EXPECT_EQ(CoreAccountId(), error_controller.error_account_id());
     }
   }
 }
 
 // Verify that existing error is not replaced by new error.
 TEST(SigninErrorControllerTest, AuthStatusChange) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
-  std::string test_account_id =
+  CoreAccountId test_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
-  std::string other_test_account_id =
+  CoreAccountId other_test_account_id =
       identity_test_env.MakeAccountAvailable(kOtherTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -282,12 +282,12 @@ TEST(SigninErrorControllerTest, AuthStatusChange) {
 
 TEST(SigninErrorControllerTest,
      PrimaryAccountErrorsArePreferredToSecondaryAccountErrors) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =
       identity_test_env.MakePrimaryAccountAvailable(kPrimaryAccountEmail);
-  std::string secondary_account_id =
+  CoreAccountId secondary_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,
@@ -329,12 +329,12 @@ TEST(SigninErrorControllerTest,
 }
 
 TEST(SigninErrorControllerTest, PrimaryAccountErrorsAreSticky) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   signin::IdentityTestEnvironment identity_test_env;
 
   AccountInfo primary_account_info =
       identity_test_env.MakePrimaryAccountAvailable(kPrimaryAccountEmail);
-  std::string secondary_account_id =
+  CoreAccountId secondary_account_id =
       identity_test_env.MakeAccountAvailable(kTestEmail).account_id;
   SigninErrorController error_controller(
       SigninErrorController::AccountMode::ANY_ACCOUNT,

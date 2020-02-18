@@ -25,7 +25,7 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
     const base::FilePath& path,
     bool is_directory,
     base::OnceCallback<void(PermissionAction result)> callback)
-    : path_(path), is_directory_(is_directory), callback_(std::move(callback)) {
+    : path_(path), callback_(std::move(callback)) {
   const views::LayoutProvider* provider = ChromeLayoutProvider::Get();
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -35,7 +35,7 @@ NativeFileSystemPermissionView::NativeFileSystemPermissionView(
   AddChildView(native_file_system_ui_helper::CreateOriginPathLabel(
       is_directory ? IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TEXT
                    : IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TEXT,
-      origin, path, CONTEXT_BODY_TEXT_SMALL));
+      origin, path, CONTEXT_BODY_TEXT_SMALL, /*show_emphasis=*/true));
 }
 
 NativeFileSystemPermissionView::~NativeFileSystemPermissionView() {
@@ -57,17 +57,13 @@ views::Widget* NativeFileSystemPermissionView::ShowDialog(
 }
 
 base::string16 NativeFileSystemPermissionView::GetWindowTitle() const {
-  if (is_directory_) {
-    return l10n_util::GetStringUTF16(
-        IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_DIRECTORY_TITLE);
-  }
   return l10n_util::GetStringFUTF16(
-      IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_FILE_TITLE,
+      IDS_NATIVE_FILE_SYSTEM_WRITE_PERMISSION_TITLE,
       path_.BaseName().LossyDisplayName());
 }
 
 int NativeFileSystemPermissionView::GetDefaultDialogButton() const {
-  return ui::DIALOG_BUTTON_NONE;
+  return ui::DIALOG_BUTTON_OK;
 }
 
 base::string16 NativeFileSystemPermissionView::GetDialogButtonLabel(
@@ -101,6 +97,11 @@ gfx::Size NativeFileSystemPermissionView::CalculatePreferredSize() const {
 
 ui::ModalType NativeFileSystemPermissionView::GetModalType() const {
   return ui::MODAL_TYPE_CHILD;
+}
+
+views::View* NativeFileSystemPermissionView::GetInitiallyFocusedView() {
+  const views::DialogClientView* dcv = GetDialogClientView();
+  return dcv ? dcv->cancel_button() : nullptr;
 }
 
 void ShowNativeFileSystemPermissionDialog(

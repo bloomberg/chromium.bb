@@ -18,7 +18,7 @@
 #include "base/system/sys_info.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/content/browser/data_reduction_proxy_page_load_timing.h"
@@ -68,11 +68,8 @@ class TestDataReductionProxyPingbackClientImpl
     : public DataReductionProxyPingbackClientImpl {
  public:
   TestDataReductionProxyPingbackClientImpl(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner)
-      : DataReductionProxyPingbackClientImpl(url_loader_factory,
-                                             std::move(thread_task_runner),
-                                             kChannel),
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+      : DataReductionProxyPingbackClientImpl(url_loader_factory, kChannel),
         should_override_random_(false),
         override_value_(0.0f),
         current_time_(base::Time::Now()) {}
@@ -109,10 +106,9 @@ class TestDataReductionProxyPingbackClientImpl
 class DataReductionProxyPingbackClientImplTest : public testing::Test {
  public:
   DataReductionProxyPingbackClientImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC) {
-  }
+      : task_environment_(
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC) {}
 
   TestDataReductionProxyPingbackClientImpl* pingback_client() const {
     return pingback_client_.get();
@@ -135,8 +131,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
             &test_url_loader_factory_);
     pingback_client_ =
         std::make_unique<TestDataReductionProxyPingbackClientImpl>(
-            test_shared_loader_factory_,
-            scoped_task_environment_.GetMainThreadTaskRunner());
+            test_shared_loader_factory_);
     page_id_ = 0u;
   }
 
@@ -237,7 +232,7 @@ class DataReductionProxyPingbackClientImplTest : public testing::Test {
   int num_network_requests() { return num_network_requests_; }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -764,7 +759,7 @@ TEST_F(DataReductionProxyPingbackClientImplTest,
       false /* black_listed */);
 
   // Don't report the crash dump details.
-  scoped_task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 
   EXPECT_EQ(upload_content_type(), "application/x-protobuf");
   RecordPageloadMetricsRequest batched_request;

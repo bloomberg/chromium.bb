@@ -7,9 +7,9 @@
 
 #include <memory>
 #include <set>
-#include <unordered_map>
 #include <vector>
 
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -26,23 +26,26 @@ class IndexedDBOriginStateHandle;
 
 class CONTENT_EXPORT IndexedDBConnection {
  public:
-  // Used to report irrecoverable backend errors. The second argument can be
-  // null.
-  using ErrorCallback =
-      base::RepeatingCallback<void(leveldb::Status, const char*)>;
-
   IndexedDBConnection(int child_process_id,
                       IndexedDBOriginStateHandle origin_state_handle,
                       IndexedDBClassFactory* indexed_db_class_factory,
                       base::WeakPtr<IndexedDBDatabase> database,
                       base::RepeatingClosure on_version_change_ignored,
                       base::OnceCallback<void(IndexedDBConnection*)> on_close,
-                      ErrorCallback error_callback,
                       scoped_refptr<IndexedDBDatabaseCallbacks> callbacks);
   virtual ~IndexedDBConnection();
 
-  void Close();
-  void CloseAndReportForceClose();
+  enum class CloseErrorHandling {
+    // Returns from the function on the first encounter with an error.
+    kReturnOnFirstError,
+    // Continues to call Abort() on all transactions despite any errors.
+    // The last error encountered is returned.
+    kAbortAllReturnLastError,
+  };
+
+  leveldb::Status AbortTransactionsAndClose(CloseErrorHandling error_handling);
+
+  leveldb::Status CloseAndReportForceClose();
   bool IsConnected();
 
   void VersionChangeIgnored();
@@ -74,14 +77,14 @@ class CONTENT_EXPORT IndexedDBConnection {
       blink::mojom::IDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction);
 
-  void AbortTransaction(IndexedDBTransaction* transaction,
-                        const IndexedDBDatabaseError& error);
+  void AbortTransactionAndTearDownOnError(IndexedDBTransaction* transaction,
+                                          const IndexedDBDatabaseError& error);
 
-  // Aborts or commits each transaction owned by this connection depending on
-  // the transaction's current state. Any transaction with is_commit_pending_
-  // false is aborted, and any transaction with is_commit_pending_ true is
-  // committed.
-  void FinishAllTransactions(const IndexedDBDatabaseError& error);
+  leveldb::Status AbortAllTransactions(const IndexedDBDatabaseError& error);
+
+  // Returns the last error that occurred, if there is any.
+  leveldb::Status AbortAllTransactionsAndIgnoreErrors(
+      const IndexedDBDatabaseError& error);
 
   IndexedDBTransaction* GetTransaction(int64_t id) const;
 
@@ -92,7 +95,7 @@ class CONTENT_EXPORT IndexedDBConnection {
   // TODO(dmurph): Change that so this doesn't need to ignore unknown ids.
   void RemoveTransaction(int64_t id);
 
-  const std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>>&
+  const base::flat_map<int64_t, std::unique_ptr<IndexedDBTransaction>>&
   transactions() const {
     return transactions_;
   }
@@ -112,13 +115,12 @@ class CONTENT_EXPORT IndexedDBConnection {
 
   base::WeakPtr<IndexedDBDatabase> database_;
   base::RepeatingClosure on_version_change_ignored_;
-  // Note: Calling |on_close_| can destroy this object.
   base::OnceCallback<void(IndexedDBConnection*)> on_close_;
-  ErrorCallback error_callback_;
 
   // The connection owns transactions created on this connection.
-  std::unordered_map<int64_t, std::unique_ptr<IndexedDBTransaction>>
-      transactions_;
+  // This is |flat_map| to preserve ordering, and because the vast majority of
+  // users have less than 200 transactions.
+  base::flat_map<int64_t, std::unique_ptr<IndexedDBTransaction>> transactions_;
 
   // The callbacks_ member is cleared when the connection is closed.
   // May be NULL in unit tests.

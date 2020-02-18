@@ -36,6 +36,7 @@ struct NET_EXPORT DnsConfig {
 
   bool Equals(const DnsConfig& d) const;
   bool operator==(const DnsConfig& d) const;
+  bool operator!=(const DnsConfig& d) const;
 
   bool EqualsIgnoreHosts(const DnsConfig& d) const;
 
@@ -71,6 +72,11 @@ struct NET_EXPORT DnsConfig {
 
   // List of name server addresses.
   std::vector<IPEndPoint> nameservers;
+
+  // Status of system DNS-over-TLS (DoT).
+  bool dns_over_tls_active;
+  std::string dns_over_tls_hostname;
+
   // Suffix search list; used on first lookup when number of dots in given name
   // is less than |ndots|.
   std::vector<std::string> search;
@@ -114,6 +120,15 @@ struct NET_EXPORT DnsConfig {
   // server hostname) using |HostResolver::ResolveHostParameters::
   // secure_dns_mode_override|.
   SecureDnsMode secure_dns_mode;
+
+  // If set to |true|, we will attempt to upgrade the user's DNS configuration
+  // to use DoH server(s) operated by the same provider(s) when the user is
+  // in AUTOMATIC mode and has not pre-specified DoH servers.
+  bool allow_dns_over_https_upgrade;
+
+  // List of providers to exclude from upgrade mapping. See the
+  // mapping in net/dns/dns_util.cc for provider ids.
+  std::vector<std::string> disabled_upgrade_providers;
 };
 
 }  // namespace net

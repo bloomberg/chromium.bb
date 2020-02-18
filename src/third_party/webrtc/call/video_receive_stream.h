@@ -19,12 +19,14 @@
 
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
+#include "api/crypto/frame_decryptor_interface.h"
 #include "api/media_transport_config.h"
 #include "api/media_transport_interface.h"
 #include "api/rtp_headers.h"
 #include "api/rtp_parameters.h"
-#include "api/rtp_receiver_interface.h"
+#include "api/transport/rtp/rtp_source.h"
 #include "api/video/video_content_type.h"
+#include "api/video/video_frame.h"
 #include "api/video/video_sink_interface.h"
 #include "api/video/video_timing.h"
 #include "api/video_codecs/sdp_video_format.h"
@@ -34,7 +36,6 @@
 
 namespace webrtc {
 
-class FrameDecryptorInterface;
 class RtpPacketSinkInterface;
 class VideoDecoderFactory;
 
@@ -84,6 +85,9 @@ class VideoReceiveStream {
     int min_playout_delay_ms = 0;
     int render_delay_ms = 10;
     int64_t interframe_delay_max_ms = -1;
+    // Frames dropped due to decoding failures or if the system is too slow.
+    // https://www.w3.org/TR/webrtc-stats/#dom-rtcvideoreceiverstats-framesdropped
+    uint32_t frames_dropped = 0;
     uint32_t frames_decoded = 0;
     // https://w3c.github.io/webrtc-stats/#dom-rtcinboundrtpstreamstats-totaldecodetime
     uint64_t total_decode_time_ms = 0;
@@ -110,9 +114,8 @@ class VideoReceiveStream {
 
     uint32_t ssrc = 0;
     std::string c_name;
-    StreamDataCounters rtp_stats;
+    RtpReceiveStats rtp_stats;
     RtcpPacketTypeCounter rtcp_packet_type_counts;
-    RtcpStatistics rtcp_stats;
 
     // Timing frame info: all important timestamps for a full lifetime of a
     // single 'timing frame'.

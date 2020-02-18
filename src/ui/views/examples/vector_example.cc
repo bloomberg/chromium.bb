@@ -54,7 +54,7 @@ class VectorIconGallery : public View,
     box->SetFlexForView(image_view_container_, 1);
 
     auto file_chooser = std::make_unique<Textfield>();
-    file_chooser->set_placeholder_text(
+    file_chooser->SetPlaceholderText(
         base::ASCIIToUTF16("Enter a file to read"));
     auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
@@ -66,9 +66,9 @@ class VectorIconGallery : public View,
     file_box->SetFlexForView(file_chooser_, 1);
     AddChildView(std::move(file_container));
 
-    size_input_->set_placeholder_text(base::ASCIIToUTF16("Size in dip"));
+    size_input_->SetPlaceholderText(base::ASCIIToUTF16("Size in dip"));
     size_input_->set_controller(this);
-    color_input_->set_placeholder_text(base::ASCIIToUTF16("Color (AARRGGBB)"));
+    color_input_->SetPlaceholderText(base::ASCIIToUTF16("Color (AARRGGBB)"));
     color_input_->set_controller(this);
   }
 
@@ -102,9 +102,9 @@ class VectorIconGallery : public View,
     DCHECK_EQ(file_go_button_, sender);
     base::ScopedAllowBlockingForTesting allow_blocking;
 #if defined(OS_POSIX)
-    base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
+    base::FilePath path(base::UTF16ToUTF8(file_chooser_->GetText()));
 #elif defined(OS_WIN)
-    base::FilePath path(file_chooser_->text());
+    base::FilePath path(file_chooser_->GetText());
 #endif
     base::ReadFileToString(path, &contents_);
     // Skip over comments.

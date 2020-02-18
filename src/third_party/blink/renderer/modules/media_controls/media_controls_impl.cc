@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/events/pointer_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/core/html/media/autoplay_policy.h"
@@ -2006,7 +2007,7 @@ void MediaControlsImpl::UpdateActingAsAudioControls() {
 }
 
 bool MediaControlsImpl::ShouldShowAudioControls() const {
-  return (MediaElement().IsHTMLAudioElement() || is_acting_as_audio_controls_);
+  return IsA<HTMLAudioElement>(MediaElement()) || is_acting_as_audio_controls_;
 }
 
 bool MediaControlsImpl::ShouldShowVideoControls() const {

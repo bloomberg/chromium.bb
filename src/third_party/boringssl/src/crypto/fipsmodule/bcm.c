@@ -76,7 +76,6 @@
 #include "md4/md4.c"
 #include "md5/md5.c"
 #include "modes/cbc.c"
-#include "modes/ccm.c"
 #include "modes/cfb.c"
 #include "modes/ctr.c"
 #include "modes/gcm.c"
@@ -110,6 +109,8 @@ extern const uint8_t BORINGSSL_bcm_text_hash[];
 extern const uint8_t BORINGSSL_bcm_rodata_start[];
 extern const uint8_t BORINGSSL_bcm_rodata_end[];
 #endif
+#else
+static const uint8_t BORINGSSL_bcm_text_hash[SHA512_DIGEST_LENGTH] = {0};
 #endif
 
 static void __attribute__((constructor))
@@ -162,7 +163,7 @@ BORINGSSL_bcm_power_on_self_test(void) {
   }
 #endif
 
-  if (!BORINGSSL_self_test()) {
+  if (!BORINGSSL_self_test(BORINGSSL_bcm_text_hash)) {
     goto err;
   }
 

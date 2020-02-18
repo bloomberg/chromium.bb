@@ -19,10 +19,10 @@ namespace cups_proxy {
 namespace {
 
 // Mojom using statements to remove chrome::mojom everywhere...
-using cups_ipp_parser::mojom::IppAttributePtr;
-using cups_ipp_parser::mojom::IppMessagePtr;
-using cups_ipp_parser::mojom::IppRequestPtr;
-using cups_ipp_parser::mojom::ValueType;
+using ipp_parser::mojom::IppAttributePtr;
+using ipp_parser::mojom::IppMessagePtr;
+using ipp_parser::mojom::IppRequestPtr;
+using ipp_parser::mojom::ValueType;
 
 using Printer = chromeos::Printer;
 
@@ -31,8 +31,7 @@ std::string EncodeEndpointForPrinterId(std::string printer_id) {
 }
 
 // Fake backend for CupsProxyServiceDelegate.
-class FakeServiceDelegate
-    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
  public:
   FakeServiceDelegate() = default;
   ~FakeServiceDelegate() override = default;
@@ -79,17 +78,17 @@ class IppValidatorTest : public testing::Test {
 IppAttributePtr BuildAttributePtr(std::string name,
                                   ipp_tag_t group_tag,
                                   ipp_tag_t value_tag) {
-  auto ret = cups_ipp_parser::mojom::IppAttribute::New();
+  auto ret = ipp_parser::mojom::IppAttribute::New();
   ret->name = name;
   ret->group_tag = group_tag;
   ret->value_tag = value_tag;
-  ret->value = cups_ipp_parser::mojom::IppAttributeValue::New();
+  ret->value = ipp_parser::mojom::IppAttributeValue::New();
   return ret;
 }
 
 // Returns a mojom representation of a standard IPP request.
 IppRequestPtr GetBasicIppRequest() {
-  IppRequestPtr ret = cups_ipp_parser::mojom::IppRequest::New();
+  IppRequestPtr ret = ipp_parser::mojom::IppRequest::New();
 
   // Request line.
   ret->method = "POST";
@@ -106,7 +105,7 @@ IppRequestPtr GetBasicIppRequest() {
        "CUPS/2.3b1 (Linux 4.4.159-15303-g65f4b5a7b3d3; i686) IPP/2.0"}};
 
   // IppMessage.
-  IppMessagePtr ipp_message = cups_ipp_parser::mojom::IppMessage::New();
+  IppMessagePtr ipp_message = ipp_parser::mojom::IppMessage::New();
   ipp_message->major_version = 2;
   ipp_message->minor_version = 0;
   ipp_message->operation_id = IPP_OP_CUPS_GET_DEFAULT;
@@ -172,9 +171,29 @@ TEST_F(IppValidatorTest, MissingHeaderName) {
 TEST_F(IppValidatorTest, MissingHeaderValue) {
   auto request = GetBasicIppRequest();
 
-  // Adds new header with an empty name.
+  // Adds new header with an empty value.
   request->headers["arbitrary_valid_header_name"] = "";
   EXPECT_TRUE(RunValidateIppRequest(request));
+}
+
+// Test that we drop unknown attributes and succeed the request.
+TEST_F(IppValidatorTest, UnknownAttribute) {
+  auto request = GetBasicIppRequest();
+
+  // Add fake attribute.
+  std::string fake_attr_name = "fake-attribute-name";
+  IppAttributePtr fake_attr =
+      BuildAttributePtr(fake_attr_name, IPP_TAG_OPERATION, IPP_TAG_TEXT);
+  fake_attr->type = ValueType::STRING;
+  fake_attr->value->set_strings({"fake_attribute_value"});
+  request->ipp->attributes.push_back(std::move(fake_attr));
+
+  auto result = RunValidateIppRequest(request);
+  ASSERT_TRUE(result);
+
+  // Ensure resulting validated IPP request doesn't contain fake_attr_name.
+  ipp_t* ipp = result->ipp.get();
+  EXPECT_FALSE(ippFindAttribute(ipp, fake_attr_name.c_str(), IPP_TAG_TEXT));
 }
 
 // TODO(crbug.com/945409): Test IPP validation.

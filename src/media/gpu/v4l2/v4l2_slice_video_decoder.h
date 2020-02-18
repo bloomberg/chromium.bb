@@ -38,12 +38,15 @@ class V4L2DecodeSurface;
 class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
                                                public V4L2DecodeSurfaceHandler {
  public:
+  using GetFramePoolCB = base::RepeatingCallback<DmabufVideoFramePool*()>;
+
   // Create V4L2SliceVideoDecoder instance. The success of the creation doesn't
   // ensure V4L2SliceVideoDecoder is available on the device. It will be
   // determined in Initialize().
   static std::unique_ptr<VideoDecoder> Create(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool);
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
+      GetFramePoolCB get_pool_cb);
 
   static SupportedVideoDecoderConfigs GetSupportedConfigs();
 
@@ -80,8 +83,9 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
 
   V4L2SliceVideoDecoder(
       scoped_refptr<base::SequencedTaskRunner> client_task_runner,
+      scoped_refptr<base::SequencedTaskRunner> decoder_task_runner,
       scoped_refptr<V4L2Device> device,
-      std::unique_ptr<DmabufVideoFramePool> frame_pool);
+      GetFramePoolCB get_pool_cb);
   ~V4L2SliceVideoDecoder() override;
   void Destroy() override;
 
@@ -94,12 +98,13 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
     // The identifier for the decoder buffer.
     int32_t bitstream_id;
 
-    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id)
-        : buffer(std::move(buf)), decode_cb(std::move(cb)), bitstream_id(id) {}
+    DecodeRequest(scoped_refptr<DecoderBuffer> buf, DecodeCB cb, int32_t id);
 
     // Allow move, but not copy
-    DecodeRequest(DecodeRequest&&) = default;
-    DecodeRequest& operator=(DecodeRequest&&) = default;
+    DecodeRequest(DecodeRequest&&);
+    DecodeRequest& operator=(DecodeRequest&&);
+
+    ~DecodeRequest();
 
     DISALLOW_COPY_AND_ASSIGN(DecodeRequest);
   };
@@ -143,7 +148,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Call VIDIOC_S_FMT with |format_fourcc| and |size|. Returns v4l2_format
   // returned by VIDIOC_S_FMT on success, otherwise returns base::nullopt.
   // This should be called only from SetupOutputFormat().
-  base::Optional<struct v4l2_format> SetFormatOnOutputQueue(
+  base::Optional<struct v4l2_format> SetV4L2FormatOnOutputQueue(
       uint32_t format_fourcc,
       const gfx::Size& size);
   // Setup format for output queue. This function sets output format on output
@@ -217,7 +222,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // V4L2 device in use.
   scoped_refptr<V4L2Device> device_;
   // VideoFrame manager used to allocate and recycle video frame.
-  std::unique_ptr<DmabufVideoFramePool> frame_pool_;
+  GetFramePoolCB get_pool_cb_;
+  DmabufVideoFramePool* frame_pool_ = nullptr;
   // Video decoder used to parse stream headers by software.
   std::unique_ptr<AcceleratedVideoDecoder> avd_;
 

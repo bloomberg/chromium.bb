@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -62,8 +62,8 @@ class MediaResourceTrackerTest : public ::testing::Test {
     test_mocks_.reset(new MediaResourceTrackerTestMocks());
 
     resource_tracker_ = new TestMediaResourceTracker(
-        test_mocks_.get(), scoped_task_environment_.GetMainThreadTaskRunner(),
-        scoped_task_environment_.GetMainThreadTaskRunner());
+        test_mocks_.get(), task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner());
   }
 
   void InitializeMediaLib() {
@@ -72,7 +72,7 @@ class MediaResourceTrackerTest : public ::testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestMediaResourceTracker* resource_tracker_;
   std::unique_ptr<MediaResourceTrackerTestMocks> test_mocks_;
 

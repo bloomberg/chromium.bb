@@ -82,6 +82,9 @@ class CORE_EXPORT NGLayoutInputNode {
   bool IsBlock() const { return type_ == kBlock; }
 
   bool IsBlockFlow() const { return IsBlock() && box_->IsLayoutBlockFlow(); }
+  bool IsLayoutNGCustom() const {
+    return IsBlock() && box_->IsLayoutNGCustom();
+  }
   bool IsColumnSpanAll() const { return IsBlock() && box_->IsColumnSpanAll(); }
   bool IsFloating() const { return IsBlock() && box_->IsFloating(); }
   bool IsOutOfFlowPositioned() const {
@@ -111,7 +114,6 @@ class CORE_EXPORT NGLayoutInputNode {
     DCHECK(IsListMarker());
     return ToLayoutNGListMarker(box_)->NeedsOccupyWholeLine();
   }
-  bool IsTableCell() const { return IsBlock() && box_->IsTableCell(); }
   bool IsFieldsetContainer() const {
     return IsBlock() && box_->IsLayoutNGFieldset();
   }
@@ -160,9 +162,6 @@ class CORE_EXPORT NGLayoutInputNode {
                      base::Optional<LayoutUnit>* computed_block_size,
                      LogicalSize* aspect_ratio) const;
 
-  LayoutUnit IntrinsicPaddingBlockStart() const;
-  LayoutUnit IntrinsicPaddingBlockEnd() const;
-
   // Returns the next sibling.
   NGLayoutInputNode NextSibling();
 
@@ -178,6 +177,12 @@ class CORE_EXPORT NGLayoutInputNode {
   bool ShouldApplySizeContainment() const {
     return box_->ShouldApplySizeContainment();
   }
+  LayoutUnit ContentInlineSizeForSizeContainment() const {
+    return box_->ContentLogicalWidthForSizeContainment();
+  }
+  LayoutUnit ContentBlockSizeForSizeContainment() const {
+    return box_->ContentLogicalHeightForSizeContainment();
+  }
 
   // Display locking functionality.
   const DisplayLockContext& GetDisplayLockContext() const {
@@ -187,14 +192,19 @@ class CORE_EXPORT NGLayoutInputNode {
   bool DisplayLockInducesSizeContainment() const {
     return box_->DisplayLockInducesSizeContainment();
   }
-  bool LayoutBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget target) const {
+  bool LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget target) const {
     return box_->LayoutBlockedByDisplayLock(target);
   }
 
   // Returns the first NGPaintFragment for this node. When block fragmentation
   // occurs, there will be multiple NGPaintFragment for a node.
   const NGPaintFragment* PaintFragment() const;
+
+  CustomLayoutChild* GetCustomLayoutChild() const {
+    // TODO(ikilpatrick): Support NGInlineNode.
+    DCHECK(IsBlock());
+    return box_->GetCustomLayoutChild();
+  }
 
   String ToString() const;
 

@@ -8,7 +8,7 @@
 #include "third_party/blink/renderer/platform/loader/static_data_navigation_body_loader.h"
 #include "third_party/blink/renderer/platform/network/encoded_form_data.h"
 #include "third_party/blink/renderer/platform/network/http_names.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace blink {
 
@@ -41,6 +41,7 @@ std::unique_ptr<WebNavigationParams> WebNavigationParams::CreateFromInfo(
   result->navigation_timings.input_start = info.input_start;
   result->initiator_origin_trial_features =
       info.initiator_origin_trial_features;
+  result->ip_address_space = info.initiator_address_space;
   return result;
 }
 

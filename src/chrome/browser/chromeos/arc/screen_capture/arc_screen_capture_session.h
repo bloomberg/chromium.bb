@@ -10,7 +10,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/arc/common/screen_capture.mojom.h"
+#include "components/arc/mojom/screen_capture.mojom.h"
 #include "components/viz/common/gl_helper.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/compositor/compositor_animation_observer.h"
@@ -106,7 +106,7 @@ class ArcScreenCaptureSession : public mojom::ScreenCaptureSession,
   std::unique_ptr<ScreenCaptureNotificationUI> notification_ui_;
   std::unique_ptr<gfx::ClientNativePixmapFactory> client_native_pixmap_factory_;
 
-  base::WeakPtrFactory<ArcScreenCaptureSession> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcScreenCaptureSession> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcScreenCaptureSession);
 };

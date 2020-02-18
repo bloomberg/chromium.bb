@@ -6,8 +6,8 @@
 
 from __future__ import print_function
 
-import cStringIO
 import gzip
+import io
 import subprocess
 
 
@@ -37,7 +37,7 @@ def GzipString(data):
   # not have --rsyncable. If used over GzipStringRsyncable, the primary
   # difference of this function's compression will be larger updates every time
   # a compressed resource is changed.
-  gzip_output = cStringIO.StringIO()
+  gzip_output = io.BytesIO()
   with gzip.GzipFile(mode='wb', compresslevel=9, fileobj=gzip_output,
                      mtime=0) as gzip_file:
     gzip_file.write(data)

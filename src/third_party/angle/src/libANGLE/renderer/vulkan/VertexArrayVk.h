@@ -49,7 +49,7 @@ class VertexArrayVk : public VertexArrayImpl
                                  GLsizei vertexOrIndexCount,
                                  gl::DrawElementsType indexTypeOrInvalid,
                                  const void *indices,
-                                 size_t *indexCountOut);
+                                 uint32_t *indexCountOut);
 
     const gl::AttribArray<VkBuffer> &getCurrentArrayBufferHandles() const
     {
@@ -95,22 +95,21 @@ class VertexArrayVk : public VertexArrayImpl
                                          const gl::VertexBinding &binding,
                                          size_t attribIndex,
                                          const vk::Format &vertexFormat,
-                                         ConversionBuffer *conversion);
+                                         ConversionBuffer *conversion,
+                                         GLuint relativeOffset);
     angle::Result convertVertexBufferCPU(ContextVk *contextVk,
                                          BufferVk *srcBuffer,
                                          const gl::VertexBinding &binding,
                                          size_t attribIndex,
                                          const vk::Format &vertexFormat,
-                                         ConversionBuffer *conversion);
+                                         ConversionBuffer *conversion,
+                                         GLuint relativeOffset);
 
     angle::Result syncDirtyAttrib(ContextVk *contextVk,
                                   const gl::VertexAttribute &attrib,
                                   const gl::VertexBinding &binding,
-                                  size_t attribIndex);
-
-    void syncDirtyBuffer(ContextVk *contextVk,
-                         const gl::VertexBinding &binding,
-                         size_t bindingIndex);
+                                  size_t attribIndex,
+                                  bool bufferOnly);
 
     gl::AttribArray<VkBuffer> mCurrentArrayBufferHandles;
     gl::AttribArray<VkDeviceSize> mCurrentArrayBufferOffsets;

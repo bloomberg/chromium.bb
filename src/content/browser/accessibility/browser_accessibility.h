@@ -29,7 +29,6 @@
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_range.h"
 #include "ui/accessibility/ax_text_boundary.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/platform/ax_platform_node.h"
 #include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
@@ -105,6 +104,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   bool IsDocument() const;
 
   bool IsEditField() const;
+
+  bool IsIgnored() const;
 
   // Returns true if this object is used only for representing text.
   bool IsTextOnlyObject() const;
@@ -433,9 +434,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   const ui::AXTreeData& GetTreeData() const override;
   const ui::AXTree::Selection GetUnignoredSelection() const override;
   ui::AXNodePosition::AXPositionInstance CreateTextPositionAt(
-      int offset,
-      ax::mojom::TextAffinity affinity =
-          ax::mojom::TextAffinity::kDownstream) const override;
+      int offset) const override;
   gfx::NativeViewAccessible GetNSWindow() override;
   gfx::NativeViewAccessible GetParent() override;
   int GetChildCount() override;
@@ -476,7 +475,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   base::Optional<int> FindTextBoundary(
       ui::AXTextBoundary boundary,
       int offset,
-      ui::TextBoundaryDirection direction,
+      ui::AXTextBoundaryDirection direction,
       ax::mojom::TextAffinity affinity) const override;
 
   const std::vector<gfx::NativeViewAccessible> GetDescendants() const override;
@@ -518,6 +517,7 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
       ax::mojom::ImageAnnotationStatus status) const override;
   base::string16 GetLocalizedRoleDescriptionForUnlabeledImage() const override;
   base::string16 GetLocalizedStringForLandmarkType() const override;
+  base::string16 GetLocalizedStringForRoleDescription() const override;
   base::string16 GetStyleNameAttributeAsLocalizedString() const override;
   bool ShouldIgnoreHoveredStateForTesting() override;
   bool IsOffscreen() const override;

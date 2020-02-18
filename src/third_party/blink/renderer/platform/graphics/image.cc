@@ -48,8 +48,8 @@
 #include "third_party/blink/renderer/platform/graphics/scoped_interpolation_quality.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -93,8 +93,10 @@ cc::ImageDecodeCache& Image::SharedCCDecodeCache(SkColorType color_type) {
   return image_decode_cache;
 }
 
-scoped_refptr<Image> Image::LoadPlatformResource(const char* name) {
-  const WebData& resource = Platform::Current()->GetDataResource(name);
+scoped_refptr<Image> Image::LoadPlatformResource(int resource_id,
+                                                 ui::ScaleFactor scale_factor) {
+  const WebData& resource =
+      Platform::Current()->GetDataResource(resource_id, scale_factor);
   if (resource.IsEmpty())
     return Image::NullImage();
 
@@ -347,6 +349,29 @@ SkBitmap Image::AsSkBitmapForCurrentFrame(
   return bitmap;
 }
 
+bool Image::GetBitmap(const FloatRect& src_rect, SkBitmap* bitmap) {
+  if (!src_rect.Width() || !src_rect.Height())
+    return false;
+
+  SkScalar sx = SkFloatToScalar(src_rect.X());
+  SkScalar sy = SkFloatToScalar(src_rect.Y());
+  SkScalar sw = SkFloatToScalar(src_rect.Width());
+  SkScalar sh = SkFloatToScalar(src_rect.Height());
+  SkRect src = {sx, sy, sx + sw, sy + sh};
+  SkRect dest = {0, 0, sw, sh};
+
+  if (!bitmap || !bitmap->tryAllocPixels(SkImageInfo::MakeN32(
+                     static_cast<int>(src_rect.Width()),
+                     static_cast<int>(src_rect.Height()), kPremul_SkAlphaType)))
+    return false;
+
+  SkCanvas canvas(*bitmap);
+  canvas.clear(SK_ColorTRANSPARENT);
+  canvas.drawImageRect(PaintImageForCurrentFrame().GetSkImage(), src, dest,
+                       nullptr);
+  return true;
+}
+
 DarkModeClassification Image::GetDarkModeClassification(
     const FloatRect& src_rect) {
   // Assuming that multiple uses of the same sprite region all have the same
@@ -368,22 +393,6 @@ void Image::AddDarkModeClassification(
          DarkModeClassification::kNotClassified);
   ClassificationKey key(src_rect.X(), src_rect.Y());
   dark_mode_classifications_.insert(key, dark_mode_classification);
-}
-
-bool Image::ShouldApplyDarkModeFilter(const FloatRect& src_rect) {
-  // Check if the image has already been classified.
-  DarkModeClassification result = GetDarkModeClassification(src_rect);
-  if (result != DarkModeClassification::kNotClassified)
-    return result == DarkModeClassification::kApplyFilter;
-
-  result = ClassifyImageForDarkMode(src_rect);
-
-  // Store the classification result using src_rect's location
-  // as a key for the map.
-  if (ShouldCacheDarkModeClassification())
-    AddDarkModeClassification(src_rect, result);
-
-  return result == DarkModeClassification::kApplyFilter;
 }
 
 }  // namespace blink

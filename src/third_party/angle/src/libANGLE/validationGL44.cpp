@@ -15,7 +15,7 @@ bool ValidateBindBuffersBase(Context *context,
                              GLenum target,
                              GLuint first,
                              GLsizei count,
-                             const GLuint *buffers)
+                             const BufferID *buffers)
 {
     return true;
 }
@@ -24,7 +24,7 @@ bool ValidateBindBuffersRange(Context *context,
                               GLenum target,
                               GLuint first,
                               GLsizei count,
-                              const GLuint *buffers,
+                              const BufferID *buffers,
                               const GLintptr *offsets,
                               const GLsizeiptr *sizes)
 {
@@ -52,7 +52,7 @@ bool ValidateBindTextures(Context *context, GLuint first, GLsizei count, const G
 bool ValidateBindVertexBuffers(Context *context,
                                GLuint first,
                                GLsizei count,
-                               const GLuint *buffers,
+                               const BufferID *buffers,
                                const GLintptr *offsets,
                                const GLsizei *strides)
 {
@@ -69,7 +69,7 @@ bool ValidateBufferStorage(Context *context,
 }
 
 bool ValidateClearTexImage(Context *context,
-                           GLuint texture,
+                           TextureID texture,
                            GLint level,
                            GLenum format,
                            GLenum type,
@@ -79,7 +79,7 @@ bool ValidateClearTexImage(Context *context,
 }
 
 bool ValidateClearTexSubImage(Context *context,
-                              GLuint texture,
+                              TextureID texture,
                               GLint level,
                               GLint xoffset,
                               GLint yoffset,

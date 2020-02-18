@@ -31,12 +31,10 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_client.h"
-#include "cc/layers/layer_sticky_position_constraint.h"
 #include "third_party/blink/renderer/platform/geometry/float_point.h"
 #include "third_party/blink/renderer/platform/geometry/float_point_3d.h"
 #include "third_party/blink/renderer/platform/geometry/float_size.h"
@@ -62,12 +60,10 @@
 namespace cc {
 class PictureImageLayer;
 class PictureLayer;
-struct OverscrollBehavior;
 }  // namespace cc
 
 namespace blink {
 
-class CompositorFilterOperations;
 class Image;
 class LinkHighlight;
 class PaintController;
@@ -111,7 +107,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   // Add child layers. If the child is already parented, it will be removed from
   // its old parent.
   void AddChild(GraphicsLayer*);
-  void AddChildBelow(GraphicsLayer*, GraphicsLayer* sibling);
 
   void RemoveAllChildren();
   void RemoveFromParent();
@@ -119,16 +114,10 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   GraphicsLayer* MaskLayer() const { return mask_layer_; }
   void SetMaskLayer(GraphicsLayer*);
 
-  GraphicsLayer* ContentsClippingMaskLayer() const {
-    return contents_clipping_mask_layer_;
-  }
-  void SetContentsClippingMaskLayer(GraphicsLayer*);
-
   // The offset is the origin of the layoutObject minus the origin of the
   // graphics layer (so either zero or negative).
   IntSize OffsetFromLayoutObject() const { return offset_from_layout_object_; }
   void SetOffsetFromLayoutObject(const IntSize&);
-  LayoutSize OffsetFromLayoutObjectWithSubpixelAccumulation() const;
 
   // The position of the layer (the location of its top-left corner in its
   // parent).
@@ -168,9 +157,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool ContentsAreVisible() const { return contents_visible_; }
   void SetContentsVisible(bool);
 
-  void SetScrollParent(cc::Layer*);
-  void SetClipParent(cc::Layer*);
-
   // For special cases, e.g. drawing missing tiles on Android.
   // The compositor should never paint this color in normal cases because the
   // Layer will paint the background by itself.
@@ -182,7 +168,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetContentsOpaque(bool);
 
   bool BackfaceVisibility() const;
-  void SetBackfaceVisibility(bool visible);
 
   float Opacity() const;
   void SetOpacity(float);
@@ -194,11 +179,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   void SetHitTestable(bool);
   bool GetHitTestable() const { return hit_testable_; }
-
-  void SetFilters(CompositorFilterOperations);
-  void SetBackdropFilters(CompositorFilterOperations, const gfx::RRectF&);
-
-  void SetStickyPositionConstraint(const cc::LayerStickyPositionConstraint&);
 
   void SetFilterQuality(SkFilterQuality);
 
@@ -272,20 +252,12 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   PaintController& GetPaintController() const;
 
   void SetElementId(const CompositorElementId&);
-  CompositorElementId GetElementId() const;
 
   // DisplayItemClient methods
   String DebugName() const final { return client_.DebugName(this); }
   IntRect VisualRect() const override;
 
   void SetHasWillChangeTransformHint(bool);
-
-  void SetOverscrollBehavior(const cc::OverscrollBehavior&);
-
-  void SetSnapContainerData(base::Optional<cc::SnapContainerData>);
-
-  void SetIsResizedByBrowserControls(bool);
-  void SetIsContainerForFixedPositionLayers(bool);
 
   bool HasLayerState() const { return layer_state_.get(); }
   void SetLayerState(const PropertyTreeState&, const IntPoint& layer_offset);
@@ -312,9 +284,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   void SetNeedsCheckRasterInvalidation() {
     needs_check_raster_invalidation_ = true;
   }
-
-  bool HasScrollParent() const { return has_scroll_parent_; }
-  bool HasClipParent() const { return has_clip_parent_; }
 
   bool PaintWithoutCommitForTesting(
       const base::Optional<IntRect>& interest_rect = base::nullopt);
@@ -379,9 +348,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   bool hit_testable_ : 1;
   bool needs_check_raster_invalidation_ : 1;
 
-  bool has_scroll_parent_ : 1;
-  bool has_clip_parent_ : 1;
-
   bool painted_ : 1;
 
   GraphicsLayerPaintingPhase painting_phase_;
@@ -391,8 +357,6 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
 
   // Reference to mask layer. We don't own this.
   GraphicsLayer* mask_layer_;
-  // Reference to clipping mask layer. We don't own this.
-  GraphicsLayer* contents_clipping_mask_layer_;
 
   IntRect contents_rect_;
 

@@ -292,7 +292,7 @@ class GTEST_API_ AssertionResult {
   template <typename T>
   explicit AssertionResult(
       const T& success,
-      typename internal::EnableIf<
+      typename std::enable_if<
           !std::is_convertible<T, AssertionResult>::value>::type*
       /*enabler*/
       = nullptr)
@@ -308,7 +308,7 @@ class GTEST_API_ AssertionResult {
     return *this;
   }
 
-  // Returns true iff the assertion succeeded.
+  // Returns true if the assertion succeeded.
   operator bool() const { return success_; }  // NOLINT
 
   // Returns the assertion's negation. Used with EXPECT/ASSERT_FALSE.
@@ -412,6 +412,8 @@ class GTEST_API_ Test {
   // test in test case Foo.  Hence a sub-class can define its own
   // SetUpTestSuite() method to shadow the one defined in the super
   // class.
+  // Failures that happen during SetUpTestSuite are logged but otherwise
+  // ignored.
   static void SetUpTestSuite() {}
 
   // Tears down the stuff shared by all tests in this test suite.
@@ -420,6 +422,8 @@ class GTEST_API_ Test {
   // test in test case Foo.  Hence a sub-class can define its own
   // TearDownTestSuite() method to shadow the one defined in the super
   // class.
+  // Failures that happen during TearDownTestSuite are logged but otherwise
+  // ignored.
   static void TearDownTestSuite() {}
 
   // Legacy API is deprecated but still available
@@ -428,16 +432,16 @@ class GTEST_API_ Test {
   static void SetUpTestCase() {}
 #endif  // GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
-  // Returns true iff the current test has a fatal failure.
+  // Returns true if the current test has a fatal failure.
   static bool HasFatalFailure();
 
-  // Returns true iff the current test has a non-fatal failure.
+  // Returns true if the current test has a non-fatal failure.
   static bool HasNonfatalFailure();
 
-  // Returns true iff the current test was skipped.
+  // Returns true if the current test was skipped.
   static bool IsSkipped();
 
-  // Returns true iff the current test has a (either fatal or
+  // Returns true if the current test has a (either fatal or
   // non-fatal) failure.
   static bool HasFailure() { return HasFatalFailure() || HasNonfatalFailure(); }
 
@@ -468,7 +472,7 @@ class GTEST_API_ Test {
   virtual void TearDown();
 
  private:
-  // Returns true iff the current test has the same fixture class as
+  // Returns true if the current test has the same fixture class as
   // the first test in the current test suite.
   static bool HasSameFixtureClass();
 
@@ -570,23 +574,27 @@ class GTEST_API_ TestResult {
   // Returns the number of the test properties.
   int test_property_count() const;
 
-  // Returns true iff the test passed (i.e. no test part failed).
+  // Returns true if the test passed (i.e. no test part failed).
   bool Passed() const { return !Skipped() && !Failed(); }
 
-  // Returns true iff the test was skipped.
+  // Returns true if the test was skipped.
   bool Skipped() const;
 
-  // Returns true iff the test failed.
+  // Returns true if the test failed.
   bool Failed() const;
 
-  // Returns true iff the test fatally failed.
+  // Returns true if the test fatally failed.
   bool HasFatalFailure() const;
 
-  // Returns true iff the test has a non-fatal failure.
+  // Returns true if the test has a non-fatal failure.
   bool HasNonfatalFailure() const;
 
   // Returns the elapsed time, in milliseconds.
   TimeInMillis elapsed_time() const { return elapsed_time_; }
+
+  // Gets the time of the test case start, in ms from the start of the
+  // UNIX epoch.
+  TimeInMillis start_timestamp() const { return start_timestamp_; }
 
   // Returns the i-th test part result among all the results. i can range from 0
   // to total_part_count() - 1. If i is not in that range, aborts the program.
@@ -617,6 +625,9 @@ class GTEST_API_ TestResult {
   const std::vector<TestProperty>& test_properties() const {
     return test_properties_;
   }
+
+  // Sets the start time.
+  void set_start_timestamp(TimeInMillis start) { start_timestamp_ = start; }
 
   // Sets the elapsed time.
   void set_elapsed_time(TimeInMillis elapsed) { elapsed_time_ = elapsed; }
@@ -661,6 +672,8 @@ class GTEST_API_ TestResult {
   std::vector<TestProperty> test_properties_;
   // Running count of death tests.
   int death_test_count_;
+  // The start time, in milliseconds since UNIX Epoch.
+  TimeInMillis start_timestamp_;
   // The elapsed time, in milliseconds.
   TimeInMillis elapsed_time_;
 
@@ -737,7 +750,7 @@ class GTEST_API_ TestInfo {
   // contains the character 'A' or starts with "Foo.".
   bool should_run() const { return should_run_; }
 
-  // Returns true iff this test will appear in the XML report.
+  // Returns true if this test will appear in the XML report.
   bool is_reportable() const {
     // The XML report includes tests matching the filter, excluding those
     // run in other shards.
@@ -796,8 +809,8 @@ class GTEST_API_ TestInfo {
   const std::unique_ptr<const ::std::string> value_param_;
   internal::CodeLocation location_;
   const internal::TypeId fixture_class_id_;   // ID of the test fixture class
-  bool should_run_;                 // True iff this test should run
-  bool is_disabled_;                // True iff this test is disabled
+  bool should_run_;                 // True if this test should run
+  bool is_disabled_;                // True if this test is disabled
   bool matches_filter_;             // True if this test matches the
                                     // user-specified filter.
   bool is_in_another_shard_;        // Will be run in another shard.
@@ -872,14 +885,18 @@ class GTEST_API_ TestSuite {
   // Gets the number of all tests in this test suite.
   int total_test_count() const;
 
-  // Returns true iff the test suite passed.
+  // Returns true if the test suite passed.
   bool Passed() const { return !Failed(); }
 
-  // Returns true iff the test suite failed.
+  // Returns true if the test suite failed.
   bool Failed() const { return failed_test_count() > 0; }
 
   // Returns the elapsed time, in milliseconds.
   TimeInMillis elapsed_time() const { return elapsed_time_; }
+
+  // Gets the time of the test suite start, in ms from the start of the
+  // UNIX epoch.
+  TimeInMillis start_timestamp() const { return start_timestamp_; }
 
   // Returns the i-th test among all the tests. i can range from 0 to
   // total_test_count() - 1. If i is not in that range, returns NULL.
@@ -939,33 +956,33 @@ class GTEST_API_ TestSuite {
     }
   }
 
-  // Returns true iff test passed.
+  // Returns true if test passed.
   static bool TestPassed(const TestInfo* test_info) {
     return test_info->should_run() && test_info->result()->Passed();
   }
 
-  // Returns true iff test skipped.
+  // Returns true if test skipped.
   static bool TestSkipped(const TestInfo* test_info) {
     return test_info->should_run() && test_info->result()->Skipped();
   }
 
-  // Returns true iff test failed.
+  // Returns true if test failed.
   static bool TestFailed(const TestInfo* test_info) {
     return test_info->should_run() && test_info->result()->Failed();
   }
 
-  // Returns true iff the test is disabled and will be reported in the XML
+  // Returns true if the test is disabled and will be reported in the XML
   // report.
   static bool TestReportableDisabled(const TestInfo* test_info) {
     return test_info->is_reportable() && test_info->is_disabled_;
   }
 
-  // Returns true iff test is disabled.
+  // Returns true if test is disabled.
   static bool TestDisabled(const TestInfo* test_info) {
     return test_info->is_disabled_;
   }
 
-  // Returns true iff this test will appear in the XML report.
+  // Returns true if this test will appear in the XML report.
   static bool TestReportable(const TestInfo* test_info) {
     return test_info->is_reportable();
   }
@@ -997,8 +1014,10 @@ class GTEST_API_ TestSuite {
   internal::SetUpTestSuiteFunc set_up_tc_;
   // Pointer to the function that tears down the test suite.
   internal::TearDownTestSuiteFunc tear_down_tc_;
-  // True iff any test in this test suite should run.
+  // True if any test in this test suite should run.
   bool should_run_;
+  // The start time, in milliseconds since UNIX Epoch.
+  TimeInMillis start_timestamp_;
   // Elapsed time, in milliseconds.
   TimeInMillis elapsed_time_;
   // Holds test properties recorded during execution of SetUpTestSuite and
@@ -1297,7 +1316,7 @@ class GTEST_API_ UnitTest {
   int failed_test_case_count() const;
   int total_test_case_count() const;
   int test_case_to_run_count() const;
-#endif  //  EMOVE_LEGACY_TEST_CASEAPI
+#endif  //  GTEST_REMOVE_LEGACY_TEST_CASEAPI_
 
   // Gets the number of successful tests.
   int successful_test_count() const;
@@ -1330,10 +1349,10 @@ class GTEST_API_ UnitTest {
   // Gets the elapsed time, in milliseconds.
   TimeInMillis elapsed_time() const;
 
-  // Returns true iff the unit test passed (i.e. all test suites passed).
+  // Returns true if the unit test passed (i.e. all test suites passed).
   bool Passed() const;
 
-  // Returns true iff the unit test failed (i.e. some test suite failed
+  // Returns true if the unit test failed (i.e. some test suite failed
   // or something outside of all tests failed).
   bool Failed() const;
 
@@ -2248,7 +2267,7 @@ class GTEST_API_ ScopedTrace {
 
 
 // Compile-time assertion for type equality.
-// StaticAssertTypeEq<type1, type2>() compiles iff type1 and type2 are
+// StaticAssertTypeEq<type1, type2>() compiles if type1 and type2 are
 // the same type.  The value it returns is not interesting.
 //
 // Instead of making StaticAssertTypeEq a class template, we make it a

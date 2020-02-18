@@ -16,6 +16,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager.h"
+#include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/ui/webui/downloads/downloads_dom_handler.h"
 #include "chrome/browser/ui/webui/localized_string.h"
 #include "chrome/browser/ui/webui/managed_ui_handler.h"
@@ -51,8 +52,10 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIDownloadsHost);
 
-  bool requests_ap_verdicts = safe_browsing::AdvancedProtectionStatusManager::
-      RequestsAdvancedProtectionVerdicts(profile);
+  bool requests_ap_verdicts =
+      safe_browsing::AdvancedProtectionStatusManagerFactory::GetForProfile(
+          profile)
+          ->RequestsAdvancedProtectionVerdicts();
   source->AddBoolean("requestsApVerdicts", requests_ap_verdicts);
 
   static constexpr LocalizedString kStrings[] = {
@@ -114,7 +117,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   // definitions from JS to C++.
   ui::Accelerator undoAccelerator(ui::VKEY_Z, ui::EF_PLATFORM_ACCELERATOR);
   source->AddString("undoDescription", l10n_util::GetStringFUTF16(
-                                           IDS_DOWNLOAD_UNDO_DESCRIPTION,
+                                           IDS_UNDO_DESCRIPTION,
                                            undoAccelerator.GetShortcutText()));
 
   PrefService* prefs = profile->GetPrefs();
@@ -146,7 +149,7 @@ content::WebUIDataSource* CreateDownloadsUIHTMLSource(Profile* profile) {
   source->SetDefaultResource(IDR_DOWNLOADS_DOWNLOADS_HTML);
 #endif
 
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 
   return source;
 }
@@ -198,6 +201,6 @@ void DownloadsUI::CreatePageHandler(
   Profile* profile = Profile::FromWebUI(web_ui());
   DownloadManager* dlm = BrowserContext::GetDownloadManager(profile);
 
-  page_handler_.reset(new DownloadsDOMHandler(std::move(request),
-                                              std::move(page), dlm, web_ui()));
+  page_handler_ = std::make_unique<DownloadsDOMHandler>(
+      std::move(request), std::move(page), dlm, web_ui());
 }

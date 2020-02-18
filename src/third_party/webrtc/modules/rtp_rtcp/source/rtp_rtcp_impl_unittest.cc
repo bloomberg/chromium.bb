@@ -17,7 +17,6 @@
 #include "absl/memory/memory.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/video_codecs/video_codec.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "modules/rtp_rtcp/include/rtp_rtcp_defines.h"
 #include "modules/rtp_rtcp/source/playout_delay_oracle.h"
 #include "modules/rtp_rtcp/source/rtcp_packet.h"
@@ -28,12 +27,9 @@
 #include "test/gmock.h"
 #include "test/gtest.h"
 #include "test/rtcp_packet_parser.h"
+#include "test/rtp_header_parser.h"
 
-using ::testing::_;
 using ::testing::ElementsAre;
-using ::testing::NiceMock;
-using ::testing::Return;
-using ::testing::SaveArg;
 
 namespace webrtc {
 namespace {
@@ -72,7 +68,7 @@ class SendTransport : public Transport {
                size_t len,
                const PacketOptions& options) override {
     RTPHeader header;
-    std::unique_ptr<RtpHeaderParser> parser(RtpHeaderParser::Create());
+    std::unique_ptr<RtpHeaderParser> parser(RtpHeaderParser::CreateForTest());
     EXPECT_TRUE(parser->Parse(static_cast<const uint8_t*>(data), len, &header));
     ++rtp_packets_sent_;
     last_rtp_header_ = header;
@@ -162,7 +158,7 @@ class RtpRtcpModule : public RtcpPacketTypeCounterObserver {
     config.rtcp_packet_type_counter_observer = this;
     config.rtt_stats = &rtt_stats_;
     config.rtcp_report_interval_ms = rtcp_report_interval_ms_;
-    config.media_send_ssrc = kSenderSsrc;
+    config.local_media_ssrc = kSenderSsrc;
 
     impl_.reset(new ModuleRtpRtcpImpl(config));
     impl_->SetRTCPStatus(RtcpMode::kCompound);
@@ -180,7 +176,6 @@ class RtpRtcpImplTest : public ::testing::Test {
 
   void SetUp() override {
     // Send module.
-    sender_.impl_->SetSSRC(kSenderSsrc);
     EXPECT_EQ(0, sender_.impl_->SetSendingStatus(true));
     sender_.impl_->SetSendingMediaStatus(true);
     sender_.SetRemoteSsrc(kReceiverSsrc);

@@ -25,16 +25,13 @@ struct SkIRect;
 class SK_API SkNoDrawCanvas : public SkCanvasVirtualEnforcer<SkCanvas> {
 public:
     SkNoDrawCanvas(int width, int height);
-
-    // TODO: investigate the users of this ctor.
     SkNoDrawCanvas(const SkIRect&);
 
     explicit SkNoDrawCanvas(sk_sp<SkBaseDevice> device);
 
     // Optimization to reset state to be the same as after construction.
-    void resetCanvas(int width, int height) {
-        resetForNextPicture(SkIRect::MakeWH(width, height));
-    }
+    void resetCanvas(int w, int h)        { this->resetForNextPicture(SkIRect::MakeWH(w, h)); }
+    void resetCanvas(const SkIRect& rect) { this->resetForNextPicture(rect); }
 
 protected:
     SaveLayerStrategy getSaveLayerStrategy(const SaveLayerRec& rec) override;
@@ -77,7 +74,7 @@ protected:
     void onDrawShadowRec(const SkPath&, const SkDrawShadowRec&) override {}
     void onDrawPicture(const SkPicture*, const SkMatrix*, const SkPaint*) override {}
 
-    void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], QuadAAFlags, SkColor,
+    void onDrawEdgeAAQuad(const SkRect&, const SkPoint[4], QuadAAFlags, const SkColor4f&,
                           SkBlendMode) override {}
     void onDrawEdgeAAImageSet(const ImageSetEntry[], int, const SkPoint[],
                               const SkMatrix[], const SkPaint*, SrcRectConstraint) override {}

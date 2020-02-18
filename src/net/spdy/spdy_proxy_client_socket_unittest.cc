@@ -17,6 +17,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/base/winsock_init.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
@@ -41,7 +42,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -119,7 +120,7 @@ base::WeakPtr<SpdySession> CreateSpdyProxySession(
 }  // namespace
 
 class SpdyProxyClientSocketTest : public PlatformTest,
-                                  public WithScopedTaskEnvironment,
+                                  public WithTaskEnvironment,
                                   public ::testing::WithParamInterface<bool> {
  public:
   SpdyProxyClientSocketTest();
@@ -268,7 +269,8 @@ void SpdyProxyClientSocketTest::Initialize(base::span<const MockRead> reads,
       new HttpAuthController(
           HttpAuth::AUTH_PROXY, GURL("https://" + proxy_host_port_.ToString()),
           session_->http_auth_cache(), session_->http_auth_handler_factory(),
-          session_->host_resolver()));
+          session_->host_resolver(),
+          HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
 }
 
 scoped_refptr<IOBufferWithSize> SpdyProxyClientSocketTest::CreateBuffer(

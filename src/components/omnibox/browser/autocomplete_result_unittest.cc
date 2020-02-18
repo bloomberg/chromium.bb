@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_match.h"
@@ -33,6 +33,12 @@
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
+
+#if defined(OS_IOS) || defined(OS_ANDROID)
+#define MOBILE_DISABLED(name) DISABLED_##name
+#else
+#define MOBILE_DISABLED(name) name
+#endif
 
 using metrics::OmniboxEventProto;
 
@@ -124,7 +130,7 @@ class AutocompleteResultTest : public testing::Test {
     template_url_service_->Load();
   }
 
-  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   // Configures |match| from |data|.
   void PopulateAutocompleteMatch(const TestData& data,
@@ -156,7 +162,7 @@ class AutocompleteResultTest : public testing::Test {
   std::unique_ptr<TemplateURLService> template_url_service_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
 
   // For every provider mentioned in TestData, we need a mock provider.
@@ -629,15 +635,15 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
   // Expect 3 unique results after SortAndCull().
   ASSERT_EQ(3U, result.size());
 
-  // Check that 3rd and 4th result got added to the first result as dups
+  // Check that 3rd and 4th result got added to the first result as duplicates
   // and also duplicates of the 4th match got copied.
   ASSERT_EQ(4U, result.match_at(0)->duplicate_matches.size());
   const AutocompleteMatch* first_match = result.match_at(0);
   EXPECT_EQ(matches[2].destination_url,
             first_match->duplicate_matches.at(1).destination_url);
-  EXPECT_EQ(dup_match.destination_url,
-            first_match->duplicate_matches.at(2).destination_url);
   EXPECT_EQ(matches[3].destination_url,
+            first_match->duplicate_matches.at(2).destination_url);
+  EXPECT_EQ(dup_match.destination_url,
             first_match->duplicate_matches.at(3).destination_url);
 
   // Check that 6th result started a new list of dups for the second result.
@@ -647,6 +653,59 @@ TEST_F(AutocompleteResultTest, SortAndCullWithMatchDups) {
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({},
+                                {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+                                 omnibox::kOmniboxPreserveDefaultMatchScore});
+
+  // Add some matches.
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+      {"http://search-what-you-typed/",
+       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+      {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+      {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+  // Demote the search history match relevance score.
+  matches.back().relevance = 500;
+
+  // Add a rule demoting history-url and killing history-title.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "1:50,7:100,2:0";  // 3 == HOME_PAGE
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"), OmniboxEventProto::HOME_PAGE,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // Check the new ordering.  The history-title results should be omitted.
+  size_t expected_order[] = {1, 0, 3};
+  ASSERT_EQ(base::size(expected_order), result.size());
+  for (size_t i = 0; i < base::size(expected_order); ++i) {
+    EXPECT_EQ(data[expected_order[i]].destination_url,
+              result.match_at(i)->destination_url.spec());
+  }
+}
+
+TEST_F(AutocompleteResultTest,
+       MOBILE_DISABLED(
+           SortAndCullWithDemotionsByTypeWithPreserveAndGroupingFeatures)) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+                                 omnibox::kOmniboxPreserveDefaultMatchScore},
+                                {});
+
   // Add some matches.
   ACMatches matches;
   const AutocompleteMatchTestData data[] = {
@@ -679,18 +738,132 @@ TEST_F(AutocompleteResultTest, SortAndCullWithDemotionsByType) {
   result.SortAndCull(input, template_url_service_.get());
 
   // Check the new ordering.  The history-title results should be omitted.
-  // We cannot check relevance scores because the matches are sorted by
-  // demoted relevance but the actual relevance scores are not modified.
-  ASSERT_EQ(3u, result.size());
-  EXPECT_EQ("http://search-what-you-typed/",
-            result.match_at(0)->destination_url.spec());
-  EXPECT_EQ("http://history-url/",
-            result.match_at(1)->destination_url.spec());
-  EXPECT_EQ("http://search-history/",
-            result.match_at(2)->destination_url.spec());
+  // HistoryURL should still be first despite demotion because of the
+  // OmniboxPreserveDefaultMatchScore feature.
+  size_t expected_order[] = {0, 1, 3};
+
+  ASSERT_EQ(base::size(expected_order), result.size());
+  for (size_t i = 0; i < base::size(expected_order); ++i) {
+    EXPECT_EQ(data[expected_order[i]].destination_url,
+              result.match_at(i)->destination_url.spec());
+  }
+}
+
+TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {
+  // clang-format off
+  TestData data[] = {
+      {1, 1, 500,  true},
+      {2, 2, 1100, true},
+      {3, 2, 1000, true},
+      {4, 1, 1300, true},
+      {5, 1, 1200, true},
+  };
+  // clang-format on
+
+  ACMatches matches;
+  PopulateAutocompleteMatches(data, base::size(data), &matches);
+  matches[0].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[1].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[3].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[4].type = AutocompleteMatchType::SEARCH_SUGGEST;
+
+  // match1, match2 are set as on device head suggestion.
+  matches[1].subtype_identifier = 271;
+  matches[2].subtype_identifier = 271;
+  matches[0].provider->type_ = AutocompleteProvider::TYPE_SEARCH;
+  matches[1].provider->type_ = AutocompleteProvider::TYPE_ON_DEVICE_HEAD;
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+
+  // Test setting on device suggestion relevances to 0.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnDeviceHeadProvider,
+        {{"DemoteOnDeviceSearchSuggestionsMode", "remove-suggestions"}});
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.DemoteOnDeviceSearchSuggestions();
+    EXPECT_EQ(5UL, result.size());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(0)->provider->type());
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(1)->provider->type());
+    EXPECT_EQ(0, result.match_at(1)->relevance);
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(2)->provider->type());
+    EXPECT_EQ(0, result.match_at(2)->relevance);
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(3)->provider->type());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(4)->provider->type());
+  }
+
+  // Test setting on device suggestion relevances lower than search provider
+  // suggestions.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnDeviceHeadProvider,
+        {{"DemoteOnDeviceSearchSuggestionsMode", "decrease-relevances"}});
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.DemoteOnDeviceSearchSuggestions();
+    EXPECT_EQ(5UL, result.size());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(0)->provider->type());
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(1)->provider->type());
+    EXPECT_LT(result.match_at(1)->relevance, result.match_at(0)->relevance);
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(2)->provider->type());
+    EXPECT_LT(result.match_at(2)->relevance, result.match_at(0)->relevance);
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(3)->provider->type());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(4)->provider->type());
+  }
+
+  // Test no demotion should happen if search provider only returns trivial
+  // autocompletion, e.g. SEARCH_WHAT_YOU_TYPED or SEARCH_OTHER_ENGINE.
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeatureWithParameters(
+        omnibox::kOnDeviceHeadProvider,
+        {{"DemoteOnDeviceSearchSuggestionsMode", "remove-suggestions"}});
+
+    matches[0].type = AutocompleteMatchType::SEARCH_OTHER_ENGINE;
+    matches[3].type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+    matches[4].type = AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED;
+
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.DemoteOnDeviceSearchSuggestions();
+    EXPECT_EQ(5UL, result.size());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(0)->provider->type());
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(1)->provider->type());
+    EXPECT_EQ(1100, result.match_at(1)->relevance);
+    EXPECT_EQ(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(2)->provider->type());
+    EXPECT_EQ(1000, result.match_at(2)->relevance);
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(3)->provider->type());
+    EXPECT_NE(AutocompleteProvider::TYPE_ON_DEVICE_HEAD,
+              result.match_at(4)->provider->type());
+  }
 }
 
 TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {omnibox::kOmniboxPreserveDefaultMatchScore},
+      {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl});
+
   // Add some matches.
   ACMatches matches;
   const AutocompleteMatchTestData data[] = {
@@ -717,9 +890,6 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
   base::FieldTrialList::CreateFieldTrial(
       OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
 
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxPreserveDefaultMatchScore);
-
   {
     AutocompleteInput input(base::ASCIIToUTF16("a"),
                             OmniboxEventProto::HOME_PAGE,
@@ -729,15 +899,13 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
     result.SortAndCull(input, template_url_service_.get());
 
     // Make sure history-title is the default match, despite demotion.
-    ASSERT_EQ(4u, result.size());
-    EXPECT_EQ("http://history-title/",
-              result.match_at(0)->destination_url.spec());
-    EXPECT_EQ("http://history-url/",
-              result.match_at(1)->destination_url.spec());
-    EXPECT_EQ("http://search-what-you-typed/",
-              result.match_at(2)->destination_url.spec());
-    EXPECT_EQ("http://search-history/",
-              result.match_at(3)->destination_url.spec());
+    size_t expected_order[] = {1, 0, 2, 3};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
   }
 
   {
@@ -751,15 +919,13 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
     result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
 
-    ASSERT_EQ(4u, result.size());
-    EXPECT_EQ("http://search-history/",
-              result.match_at(0)->destination_url.spec());
-    EXPECT_EQ("http://history-url/",
-              result.match_at(1)->destination_url.spec());
-    EXPECT_EQ("http://search-what-you-typed/",
-              result.match_at(2)->destination_url.spec());
-    EXPECT_EQ("http://history-title/",
-              result.match_at(3)->destination_url.spec());
+    size_t expected_order[] = {3, 0, 2, 1};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
   }
 
   {
@@ -774,6 +940,84 @@ TEST_F(AutocompleteResultTest, DemoteByTypeButPreserveDefaultMatchScore) {
     result.SortAndCull(input, template_url_service_.get());
 
     size_t expected_order[] = {1, 0, 2, 3};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
+  }
+}
+
+TEST_F(
+    AutocompleteResultTest,
+    MOBILE_DISABLED(
+        DemoteByTypeButPreserveDefaultMatchScoreWithPreserveAndGroupingFeatures)) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+                                 omnibox::kOmniboxPreserveDefaultMatchScore},
+                                {});
+
+  // Add some matches.
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+      {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+      {"http://search-what-you-typed/",
+       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+      {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+  // Make history-title and search-history the only default matches, so that
+  // they compete.
+  matches[0].allowed_to_be_default_match = false;
+  matches[2].allowed_to_be_default_match = false;
+
+  // Add a rule demoting history-title.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":*:*"] = "2:50";
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  {
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            OmniboxEventProto::HOME_PAGE,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    // Make sure history-title is the default match, despite demotion.
+    // Make sure history-URL is the last match due to
+    // OmniboxGroupSuggestionsBySearchVsUrl.
+    size_t expected_order[] = {1, 2, 3, 0};
+
+    ASSERT_EQ(base::size(expected_order), result.size());
+    for (size_t i = 0; i < base::size(expected_order); ++i) {
+      EXPECT_EQ(data[expected_order[i]].destination_url,
+                result.match_at(i)->destination_url.spec());
+    }
+  }
+
+  {
+    // Re-sort with a page classification of fake-box, and make sure
+    // history-title is now demoted.
+    AutocompleteInput input(
+        base::ASCIIToUTF16("a"),
+        OmniboxEventProto::INSTANT_NTP_WITH_FAKEBOX_AS_STARTING_FOCUS,
+        TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    // Make sure history-URL is the last match due to
+    // OmniboxGroupSuggestionsBySearchVsUrl.
+    size_t expected_order[] = {3, 2, 0, 1};
 
     ASSERT_EQ(base::size(expected_order), result.size());
     for (size_t i = 0; i < base::size(expected_order); ++i) {
@@ -932,6 +1176,10 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntities) {
     },
     // This match will be the first result but it won't affect the entity
     // deduping because it has a different URL.
+    //
+    // Also keeping this as the default match allows us to test that Entities
+    // and plain matches are deduplicated when they are not the default match.
+    // See SortAndCullPreferEntitiesButKeepDefaultPlainMatches for details.
     {
       AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED,
       "http://search/?q=bar", 1200, true, "foo", "oo"
@@ -1001,6 +1249,50 @@ TEST_F(AutocompleteResultTest, SortAndCullPreferEntitiesFillIntoEditMustMatch) {
   EXPECT_TRUE(result.match_at(0)->allowed_to_be_default_match);
   EXPECT_EQ(base::ASCIIToUTF16("oo"),
             result.match_at(0)->inline_autocompletion);
+}
+
+TEST_F(AutocompleteResultTest,
+       SortAndCullPreferEntitiesButKeepDefaultPlainMatches) {
+  // clang-format off
+  std::vector<EntityTestData> test_cases = {
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      "http://search/?q=foo", 1001, true, "foo", ""
+    },
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+      "http://search/?q=foo", 1000, false, "foo", ""
+    },
+    {
+      AutocompleteMatchType::SEARCH_SUGGEST,
+      "http://search/?q=foo", 900, true, "foo", "oo"
+    },
+  };
+  // clang-format on
+  ACMatches matches;
+  PopulateEntityTestCases(test_cases, &matches);
+
+  AutocompleteInput input(base::ASCIIToUTF16("f"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // The first result will be a plain match.
+  EXPECT_EQ(2UL, result.size());
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST, result.match_at(0)->type);
+  EXPECT_EQ(1001, result.match_at(0)->relevance);
+
+  // The second result will be the result of deduping the Suggest Entity with
+  // the third result. It should have still consumed the inline autocomplete
+  // and allowed_to_be_default qualities from the other two.
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_SUGGEST_ENTITY,
+            result.match_at(1)->type);
+  EXPECT_EQ(1001, result.match_at(1)->relevance);
+  EXPECT_TRUE(result.match_at(1)->allowed_to_be_default_match);
+  EXPECT_EQ(base::ASCIIToUTF16("oo"),
+            result.match_at(1)->inline_autocompletion);
 }
 
 TEST_F(AutocompleteResultTest, SortAndCullPromoteDuplicateSearchURLs) {
@@ -1095,10 +1387,12 @@ TEST_F(AutocompleteResultTest, SortAndCullGroupSuggestionsByType) {
 
 TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
   base::test::ScopedFeatureList feature_list;
-  std::map<std::string, std::string> parameters = {
-      {OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}};
-  feature_list.InitAndEnableFeatureWithParameters(
-      omnibox::kOmniboxMaxURLMatches, parameters);
+  feature_list.InitWithFeaturesAndParameters(
+      {{omnibox::kOmniboxMaxURLMatches,
+        {{OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}}}},
+      {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+       omnibox::kOmniboxPreserveDefaultMatchScore});
+
   EXPECT_TRUE(OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled());
   EXPECT_EQ(OmniboxFieldTrial::GetMaxURLMatches(), 3u);
 
@@ -1125,7 +1419,6 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
     result.AppendMatches(input, matches);
     result.SortAndCull(input, template_url_service_.get());
 
-    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
     AutocompleteMatchType::Type expected_types[] = {
         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
         AutocompleteMatchType::SEARCH_HISTORY,
@@ -1134,6 +1427,96 @@ TEST_F(AutocompleteResultTest, SortAndCullMaxURLMatches) {
         AutocompleteMatchType::URL_WHAT_YOU_TYPED,
         AutocompleteMatchType::SEARCH_SUGGEST,
     };
+    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
+    for (size_t i = 0; i < result.size(); ++i)
+      EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
+  }
+
+  // Case 2: Do not eject URL match because there's no replacement.
+  {
+    ACMatches matches;
+    const AutocompleteMatchTestData data[] = {
+        {"http://search-what-you-typed/",
+         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+        {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+        {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+        {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+        {"http://url-what-you-typed/",
+         AutocompleteMatchType::URL_WHAT_YOU_TYPED},
+        {"http://clipboard-url/", AutocompleteMatchType::CLIPBOARD_URL},
+        {"http://bookmark-title/", AutocompleteMatchType::BOOKMARK_TITLE},
+    };
+    PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
+    AutocompleteMatchType::Type expected_types[] = {
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_HISTORY,
+        AutocompleteMatchType::HISTORY_URL,
+        AutocompleteMatchType::HISTORY_TITLE,
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+        AutocompleteMatchType::CLIPBOARD_URL,
+    };
+    for (size_t i = 0; i < result.size(); ++i)
+      EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
+  }
+}
+
+TEST_F(
+    AutocompleteResultTest,
+    MOBILE_DISABLED(SortAndCullMaxURLMatchesWithPreserveAndGroupingFeatures)) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeaturesAndParameters(
+      {{omnibox::kOmniboxMaxURLMatches,
+        {{OmniboxFieldTrial::kOmniboxMaxURLMatchesParam, "3"}}},
+       {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl, {}},
+       {omnibox::kOmniboxPreserveDefaultMatchScore, {}}},
+      {});
+
+  EXPECT_TRUE(OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled());
+  EXPECT_EQ(OmniboxFieldTrial::GetMaxURLMatches(), 3u);
+
+  // Case 1: Eject URL match for a search.
+  {
+    ACMatches matches;
+    const AutocompleteMatchTestData data[] = {
+        {"http://search-what-you-typed/",
+         AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+        {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+        {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+        {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+        {"http://url-what-you-typed/",
+         AutocompleteMatchType::URL_WHAT_YOU_TYPED},
+        {"http://clipboard-url/", AutocompleteMatchType::CLIPBOARD_URL},
+        {"http://search-suggest/", AutocompleteMatchType::SEARCH_SUGGEST},
+    };
+    PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+    AutocompleteInput input(base::ASCIIToUTF16("a"),
+                            metrics::OmniboxEventProto::OTHER,
+                            TestSchemeClassifier());
+    AutocompleteResult result;
+    result.AppendMatches(input, matches);
+    result.SortAndCull(input, template_url_service_.get());
+
+    // Expect the search suggest to be moved about URL suggestions due to
+    // OmniboxGroupSuggestionsBySearchVsUrl.
+    AutocompleteMatchType::Type expected_types[] = {
+        AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+        AutocompleteMatchType::SEARCH_HISTORY,
+        AutocompleteMatchType::SEARCH_SUGGEST,
+        AutocompleteMatchType::HISTORY_URL,
+        AutocompleteMatchType::HISTORY_TITLE,
+        AutocompleteMatchType::URL_WHAT_YOU_TYPED,
+    };
+    EXPECT_EQ(result.size(), AutocompleteResult::GetMaxMatches());
     for (size_t i = 0; i < result.size(); ++i)
       EXPECT_EQ(result.match_at(i)->type, expected_types[i]);
   }
@@ -1412,8 +1795,8 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
 
   FakeAutocompleteProviderClient client;
   result.AppendDedicatedPedalMatches(&client, input);
-  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
-                             &result.matches_);
+  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
+                            &result.matches_);
 
   // Exactly 2 (not 3) unique Pedals should be added with relevance close to max
   // of the triggering suggestions.
@@ -1428,8 +1811,8 @@ TEST_F(AutocompleteResultTest, PedalSuggestionsRemainUnique) {
   // no duplicates are added, but the existing Pedal suggestion is updated.
   result.match_at(3)->contents = base::UTF8ToUTF16("open incognito tab");
   result.AppendDedicatedPedalMatches(&client, input);
-  result.SortAndDedupMatches(metrics::OmniboxEventProto::OTHER,
-                             &result.matches_);
+  result.DeduplicateMatches(metrics::OmniboxEventProto::OTHER,
+                            &result.matches_);
   EXPECT_EQ(result.size(), 6u);
   EXPECT_NE(result.match_at(4)->pedal, nullptr);
   EXPECT_NE(result.match_at(5)->pedal, nullptr);
@@ -1463,21 +1846,25 @@ TEST_F(AutocompleteResultTest, TestGroupSuggestionsBySearchVsURL) {
   matches[2].type = AutocompleteMatchType::SEARCH_SUGGEST;
   // It's submatch to move up with it.
   matches[3].type = AutocompleteMatchType::HISTORY_URL;
+  matches[3].parent_type = AutocompleteMatchType::SEARCH_SUGGEST;
   matches[3].subrelevance = 4 + 1;
   // A non-search-type to move down.
   matches[4].type = AutocompleteMatchType::HISTORY_URL;
   // It's submatch to move down with it.
   matches[5].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[5].parent_type = AutocompleteMatchType::HISTORY_URL;
   matches[5].subrelevance = 8 + 1;
   // A search-type to move up.
   matches[6].type = AutocompleteMatchType::SEARCH_SUGGEST;
   // It's submatch to move up with it.
   matches[7].type = AutocompleteMatchType::HISTORY_URL;
+  matches[7].parent_type = AutocompleteMatchType::SEARCH_SUGGEST;
   matches[7].subrelevance = 12 + 1;
   // A non-search-type to "move down" (really, to stay).
   matches[8].type = AutocompleteMatchType::HISTORY_URL;
   // It's submatch to move down with it.
   matches[9].type = AutocompleteMatchType::SEARCH_SUGGEST;
+  matches[9].parent_type = AutocompleteMatchType::HISTORY_URL;
   matches[9].subrelevance = 16 + 1;
 
   AutocompleteResult::GroupSuggestionsBySearchVsURL(matches.begin(),
@@ -1490,4 +1877,66 @@ TEST_F(AutocompleteResultTest, TestGroupSuggestionsBySearchVsURL) {
     EXPECT_TRUE(!AutocompleteMatch::IsSearchType(matches[i].type) ||
                 matches[i].IsSubMatch());
   }
+}
+
+TEST_F(AutocompleteResultTest, SortAndCullWithDemotedSubmatches) {
+  base::test::ScopedFeatureList feature_list;
+  // Disable overriding features to only test standard sorting.
+  feature_list.InitWithFeatures({},
+                                {omnibox::kOmniboxGroupSuggestionsBySearchVsUrl,
+                                 omnibox::kOmniboxPreserveDefaultMatchScore});
+
+  ACMatches matches;
+  const AutocompleteMatchTestData data[] = {
+      {"http://history-url/", AutocompleteMatchType::HISTORY_URL},
+      {"http://search-history-submatch1/",
+       AutocompleteMatchType::SEARCH_HISTORY},
+      {"http://search-what-you-typed/",
+       AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED},
+      {"http://history-title/", AutocompleteMatchType::HISTORY_TITLE},
+      {"http://search-history-submatch2/",
+       AutocompleteMatchType::SEARCH_HISTORY},
+      {"http://search-history/", AutocompleteMatchType::SEARCH_HISTORY},
+  };
+  PopulateAutocompleteMatchesFromTestData(data, base::size(data), &matches);
+
+  // Construct submatch relations.
+  matches[0].subrelevance = 4;
+  matches[1].SetSubMatch(4 + 1, AutocompleteMatchType::HISTORY_URL);
+  matches[1].relevance = matches[0].relevance;
+
+  matches[3].subrelevance = 8;
+  matches[4].SetSubMatch(8 + 1, AutocompleteMatchType::HISTORY_TITLE);
+  matches[4].relevance = matches[3].relevance;
+
+  // Add a rule demoting history-url and killing history-title.
+  {
+    std::map<std::string, std::string> params;
+    params[std::string(OmniboxFieldTrial::kDemoteByTypeRule) + ":3:*"] =
+        "1:50,7:100,2:0";  // 3 == HOME_PAGE
+    ASSERT_TRUE(variations::AssociateVariationParams(
+        OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A", params));
+  }
+  base::FieldTrialList::CreateFieldTrial(
+      OmniboxFieldTrial::kBundledExperimentFieldTrialName, "A");
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"), OmniboxEventProto::HOME_PAGE,
+                          TestSchemeClassifier());
+  AutocompleteResult result;
+  result.AppendMatches(input, matches);
+  result.SortAndCull(input, template_url_service_.get());
+
+  // Check the new ordering. The search-history submatch should follow
+  // the demoted history-url match, and the history-title results and
+  // its submatch should be omitted.
+  ASSERT_EQ(4u, result.size());
+  EXPECT_EQ("http://search-what-you-typed/",
+            result.match_at(0)->destination_url.spec());
+  EXPECT_EQ("http://search-history/",
+            result.match_at(1)->destination_url.spec());
+  EXPECT_EQ("http://history-url/", result.match_at(2)->destination_url.spec());
+  EXPECT_EQ("http://search-history-submatch1/",
+            result.match_at(3)->destination_url.spec());
+  EXPECT_TRUE(AutocompleteMatch::IsSameFamily(
+      result.match_at(2)->subrelevance, result.match_at(3)->subrelevance));
 }

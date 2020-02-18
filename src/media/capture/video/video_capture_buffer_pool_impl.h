@@ -35,18 +35,14 @@ class CAPTURE_EXPORT VideoCaptureBufferPoolImpl
       int count);
 
   // VideoCaptureBufferPool implementation.
-  mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      int buffer_id,
-      bool read_only) override;
-  base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
+  base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion(
       int buffer_id) override;
+  mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer(int buffer_id) override;
   mojom::SharedMemoryViaRawFileDescriptorPtr
   CreateSharedMemoryViaRawFileDescriptorStruct(int buffer_id) override;
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) override;
-#if defined(OS_CHROMEOS)
   gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle(int buffer_id) override;
-#endif
   VideoCaptureDevice::Client::ReserveResult ReserveForProducer(
       const gfx::Size& dimensions,
       VideoPixelFormat format,

@@ -148,6 +148,12 @@ struct IceCandidateErrorEvent {
   std::string error_text;
 };
 
+struct CandidatePairChangeEvent {
+  CandidatePair selected_candidate_pair;
+  int64_t last_data_received_ms;
+  std::string reason;
+};
+
 typedef std::set<rtc::SocketAddress> ServerAddresses;
 
 // Represents a local communication mechanism that can be used to create

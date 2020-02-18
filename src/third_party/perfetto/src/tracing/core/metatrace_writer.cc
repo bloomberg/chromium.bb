@@ -21,8 +21,8 @@
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "perfetto/tracing/core/data_source_descriptor.h"
 
-#include "perfetto/trace/perfetto/perfetto_metatrace.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/perfetto/perfetto_metatrace.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 
@@ -100,6 +100,8 @@ void MetatraceWriter::WriteAllAvailableEvents() {
 void MetatraceWriter::WriteAllAndFlushTraceWriter(
     std::function<void()> callback) {
   PERFETTO_DCHECK_THREAD(thread_checker_);
+  if (!started_)
+    return;
   WriteAllAvailableEvents();
   trace_writer_->Flush(std::move(callback));
 }

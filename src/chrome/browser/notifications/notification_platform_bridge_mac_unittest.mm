@@ -7,6 +7,7 @@
 
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
@@ -251,6 +252,10 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayOneButton) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayProgress) {
+  // TODO(crbug.com/1007418): Enable this when we support alerts on 10.15 again.
+  if (base::mac::IsAtLeastOS10_15())
+    return;
+
   std::unique_ptr<Notification> notification =
       CreateBanner("Title", "Context", "https://gmail.com", nullptr, nullptr);
   const int kSamplePercent = 10;
@@ -328,6 +333,10 @@ TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesNotifications) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayAlert) {
+  // TODO(crbug.com/1007418): Enable this when we support alerts on 10.15 again.
+  if (base::mac::IsAtLeastOS10_15())
+    return;
+
   std::unique_ptr<Notification> alert =
       CreateAlert("Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
@@ -340,6 +349,10 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayAlert) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestDisplayBannerAndAlert) {
+  // TODO(crbug.com/1007418): Enable this when we support alerts on 10.15 again.
+  if (base::mac::IsAtLeastOS10_15())
+    return;
+
   std::unique_ptr<Notification> alert =
       CreateAlert("Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<Notification> banner = CreateBanner(
@@ -356,6 +369,10 @@ TEST_F(NotificationPlatformBridgeMacTest, TestDisplayBannerAndAlert) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestCloseAlert) {
+  // TODO(crbug.com/1007418): Enable this when we support alerts on 10.15 again.
+  if (base::mac::IsAtLeastOS10_15())
+    return;
+
   std::unique_ptr<Notification> alert =
       CreateAlert("Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<NotificationPlatformBridgeMac> bridge(
@@ -371,6 +388,10 @@ TEST_F(NotificationPlatformBridgeMacTest, TestCloseAlert) {
 }
 
 TEST_F(NotificationPlatformBridgeMacTest, TestQuitRemovesBannersAndAlerts) {
+  // TODO(crbug.com/1007418): Enable this when we support alerts on 10.15 again.
+  if (base::mac::IsAtLeastOS10_15())
+    return;
+
   std::unique_ptr<Notification> notification = CreateBanner(
       "Title", "Context", "https://gmail.com", "Button 1", nullptr);
   std::unique_ptr<Notification> alert =

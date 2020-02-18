@@ -16,7 +16,6 @@
 #include "src/core/SkNextID.h"
 
 #if SK_SUPPORT_GPU
-#include "include/gpu/GrSamplerState.h"
 #include "include/private/GrRecordingContext.h"
 #include "include/private/GrResourceKey.h"
 #include "src/gpu/GrCaps.h"
@@ -24,6 +23,7 @@
 #include "src/gpu/GrImageTextureMaker.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrYUVProvider.h"
 #include "src/gpu/SkGr.h"
 #endif
@@ -279,12 +279,68 @@ sk_sp<SkImage> SkImage_Lazy::onMakeColorTypeAndColorSpace(GrRecordingContext*,
     return result;
 }
 
+sk_sp<SkImage> SkImage_Lazy::onReinterpretColorSpace(sk_sp<SkColorSpace> newCS) const {
+    // TODO: The correct thing is to clone the generator, and modify its color space. That's hard,
+    // because we don't have a clone method, and generator is public (and derived-from by clients).
+    // So do the simple/inefficient thing here, and fallback to raster when this is called.
+
+    // We allocate the bitmap with the new color space, then generate the image using the original.
+    SkBitmap bitmap;
+    if (bitmap.tryAllocPixels(this->imageInfo().makeColorSpace(std::move(newCS)))) {
+        SkPixmap pixmap = bitmap.pixmap();
+        pixmap.setColorSpace(this->refColorSpace());
+        if (generate_pixels(ScopedGenerator(fSharedGenerator), pixmap, fOrigin.x(), fOrigin.y())) {
+            bitmap.setImmutable();
+            return SkImage::MakeFromBitmap(bitmap);
+        }
+    }
+    return nullptr;
+}
+
 sk_sp<SkImage> SkImage::MakeFromGenerator(std::unique_ptr<SkImageGenerator> generator,
                                           const SkIRect* subset) {
     SkImage_Lazy::Validator
             validator(SharedGenerator::Make(std::move(generator)), subset, nullptr, nullptr);
 
     return validator ? sk_make_sp<SkImage_Lazy>(&validator) : nullptr;
+}
+
+sk_sp<SkImage> SkImage::DecodeToRaster(const void* encoded, size_t length, const SkIRect* subset) {
+    // The generator will not outlive this function, so we can wrap the encoded data without copy
+    auto gen = SkImageGenerator::MakeFromEncoded(SkData::MakeWithoutCopy(encoded, length));
+    if (!gen) {
+        return nullptr;
+    }
+    SkImageInfo info = gen->getInfo();
+    if (info.isEmpty()) {
+        return nullptr;
+    }
+
+    SkIPoint origin = {0, 0};
+    if (subset) {
+        if (!SkIRect::MakeWH(info.width(), info.height()).contains(*subset)) {
+            return nullptr;
+        }
+        info = info.makeWH(subset->width(), subset->height());
+        origin = {subset->x(), subset->y()};
+    }
+
+    size_t rb = info.minRowBytes();
+    if (rb == 0) {
+        return nullptr; // rb was too big
+    }
+    size_t size = info.computeByteSize(rb);
+    if (size == SIZE_MAX) {
+        return nullptr;
+    }
+    auto data = SkData::MakeUninitialized(size);
+
+    SkPixmap pmap(info, data->writable_data(), rb);
+    if (!generate_pixels(gen.get(), pmap, origin.x(), origin.y())) {
+        return nullptr;
+    }
+
+    return SkImage::MakeRasterData(info, data, rb);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -396,7 +452,8 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(
 
     // 1. Check the cache for a pre-existing one
     if (key.isValid()) {
-        proxy = proxyProvider->findOrCreateProxyByUniqueKey(key, kTopLeft_GrSurfaceOrigin);
+        auto ct = SkColorTypeToGrColorType(this->colorType());
+        proxy = proxyProvider->findOrCreateProxyByUniqueKey(key, ct, kTopLeft_GrSurfaceOrigin);
         if (proxy) {
             SK_HISTOGRAM_ENUMERATION("LockTexturePath", kPreExisting_LockTexturePath,
                                      kLockTexturePathCount);
@@ -496,5 +553,15 @@ sk_sp<GrTextureProxy> SkImage_Lazy::lockTextureProxy(
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+sk_sp<SkImage> SkImage::DecodeToTexture(GrContext* ctx, const void* encoded, size_t length,
+                                        const SkIRect* subset) {
+    // img will not survive this function, so we don't need to copy/own the encoded data,
+    auto img = MakeFromEncoded(SkData::MakeWithoutCopy(encoded, length), subset);
+    if (!img) {
+        return nullptr;
+    }
+    return img->makeTextureImage(ctx);
+}
 
 #endif

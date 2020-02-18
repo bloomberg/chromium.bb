@@ -7,6 +7,10 @@ import("//build/config/ui.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
+if (is_android) {
+  import("//build/config/android/rules.gni")
+}
+
 # See //content/BUILD.gn for how this works.
 group("browser") {
   if (is_component_build) {
@@ -91,6 +95,7 @@ jumbo_source_set("browser_sources") {
     "browser_ppapi_host.h",
     "browser_task_traits.cc",
     "browser_task_traits.h",
+    "browser_thread.cc",
     "browser_thread.h",
     "browser_thread_delegate.h",
     "browser_url_handler.h",
@@ -111,6 +116,7 @@ jumbo_source_set("browser_sources") {
     "client_hints_controller_delegate.h",
     "color_chooser.h",
     "console_message.h",
+    "contacts_picker_properties_requested.h",
     "content_browser_client.cc",
     "content_browser_client.h",
     "content_index_context.h",
@@ -138,6 +144,8 @@ jumbo_source_set("browser_sources") {
     "devtools_manager_delegate.cc",
     "devtools_manager_delegate.h",
     "devtools_network_transaction_factory.h",
+    "devtools_permission_overrides.cc",
+    "devtools_permission_overrides.h",
     "devtools_socket_factory.h",
     "dom_storage_context.h",
     "download_item_utils.h",
@@ -196,6 +204,8 @@ jumbo_source_set("browser_sources") {
     "media_stream_request.h",
     "message_port_provider.h",
     "mhtml_extra_parts.h",
+    "mhtml_generation_result.cc",
+    "mhtml_generation_result.h",
     "native_event_processor_mac.h",
     "native_event_processor_observer_mac.h",
     "native_event_processor_observer_mac.mm",
@@ -203,6 +213,8 @@ jumbo_source_set("browser_sources") {
     "native_file_system_permission_context.h",
     "native_file_system_permission_grant.cc",
     "native_file_system_permission_grant.h",
+    "native_file_system_write_item.cc",
+    "native_file_system_write_item.h",
     "native_web_keyboard_event.h",
     "navigation_controller.cc",
     "navigation_controller.h",
@@ -215,6 +227,7 @@ jumbo_source_set("browser_sources") {
     "navigation_throttle.h",
     "navigation_type.h",
     "navigation_ui_data.h",
+    "network_context_client_base.h",
     "network_quality_observer_factory.h",
     "network_service_instance.h",
     "notification_database_data.cc",
@@ -238,7 +251,9 @@ jumbo_source_set("browser_sources") {
     "pepper_flash_settings_helper.h",
     "pepper_vpn_provider_resource_host_proxy.h",
     "permission_controller.h",
+    "permission_controller_delegate.cc",
     "permission_controller_delegate.h",
+    "permission_type.cc",
     "permission_type.h",
     "picture_in_picture_window_controller.h",
     "platform_notification_context.h",
@@ -268,13 +283,8 @@ jumbo_source_set("browser_sources") {
     "renderer_preferences_util.h",
     "replaced_navigation_entry_data.h",
     "resource_context.h",
-    "resource_dispatcher_host.h",
-    "resource_dispatcher_host_delegate.cc",
-    "resource_dispatcher_host_delegate.h",
-    "resource_request_info.h",
-    "resource_throttle.cc",
-    "resource_throttle.h",
     "restore_type.h",
+    "same_site_data_remover.h",
     "sandbox_type.h",
     "save_page_type.h",
     "screen_orientation_delegate.h",
@@ -296,11 +306,12 @@ jumbo_source_set("browser_sources") {
     "session_storage_namespace.h",
     "session_storage_usage_info.h",
     "shared_cors_origin_access_list.h",
+    "shared_worker_instance.cc",
+    "shared_worker_instance.h",
     "shared_worker_service.h",
     "site_instance.h",
     "site_isolation_policy.cc",
     "site_isolation_policy.h",
-    "sms_dialog.h",
     "speech_recognition_event_listener.h",
     "speech_recognition_manager.h",
     "speech_recognition_manager_delegate.h",
@@ -334,6 +345,7 @@ jumbo_source_set("browser_sources") {
     "url_loader_request_interceptor.h",
     "video_capture_device_launcher.cc",
     "video_capture_device_launcher.h",
+    "video_capture_service.h",
     "visibility.h",
     "vpn_service_proxy.h",
     "web_contents.cc",
@@ -388,7 +400,7 @@ jumbo_source_set("browser_sources") {
     "//components/download/public/common:public",
     "//content/public/common:common_sources",
     "//ipc",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//services/device/public/mojom:usb",
@@ -398,7 +410,8 @@ jumbo_source_set("browser_sources") {
     "//services/resource_coordinator/public/cpp:resource_coordinator_cpp",
     "//services/service_manager/public/cpp",
     "//services/tracing/public/cpp",
-    "//services/viz/public/interfaces",
+    "//services/video_capture/public/mojom",
+    "//services/viz/public/mojom",
     "//third_party/webrtc/modules/desktop_capture",
 
     # We expose skia headers in the public API.
@@ -461,5 +474,13 @@ jumbo_source_set("browser_sources") {
   if (is_chromeos) {
     sources +=
         [ "chromeos/delegate_to_browser_gpu_service_accelerator_factory.h" ]
+  }
+}
+
+if (is_android) {
+  java_cpp_enum("contacts_picker_properties_requested_javagen") {
+    sources = [
+      "contacts_picker_properties_requested.h",
+    ]
   }
 }

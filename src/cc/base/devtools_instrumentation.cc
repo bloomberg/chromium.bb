@@ -6,6 +6,27 @@
 
 namespace cc {
 namespace devtools_instrumentation {
+namespace {
+
+void RecordMicrosecondTimesUmaByDecodeType(
+    const std::string& metric_prefix,
+    base::TimeDelta duration,
+    base::TimeDelta min,
+    base::TimeDelta max,
+    uint32_t bucket_count,
+    ScopedImageDecodeTask::DecodeType decode_type_) {
+  switch (decode_type_) {
+    case ScopedImageDecodeTask::kSoftware:
+      UmaHistogramCustomMicrosecondsTimes(metric_prefix + ".Software", duration,
+                                          min, max, bucket_count);
+      break;
+    case ScopedImageDecodeTask::kGpu:
+      UmaHistogramCustomMicrosecondsTimes(metric_prefix + ".Gpu", duration, min,
+                                          max, bucket_count);
+      break;
+  }
+}
+}  // namespace
 
 namespace internal {
 constexpr const char CategoryName::CategoryName::kTimeline[];
@@ -31,10 +52,12 @@ const char kUpdateLayer[] = "UpdateLayer";
 
 ScopedImageDecodeTask::ScopedImageDecodeTask(const void* image_ptr,
                                              DecodeType decode_type,
-                                             TaskType task_type)
+                                             TaskType task_type,
+                                             ImageType image_type)
     : decode_type_(decode_type),
       task_type_(task_type),
-      start_time_(base::TimeTicks::Now()) {
+      start_time_(base::TimeTicks::Now()),
+      image_type_(image_type) {
   TRACE_EVENT_BEGIN1(internal::CategoryName::kTimeline,
                      internal::kImageDecodeTask, internal::kPixelRefId,
                      reinterpret_cast<uint64_t>(image_ptr));
@@ -46,34 +69,37 @@ ScopedImageDecodeTask::~ScopedImageDecodeTask() {
   if (suppress_metrics_)
     return;
 
-  base::TimeDelta duration = base::TimeTicks::Now() - start_time_;
+  const uint32_t bucket_count = 50;
+  base::TimeDelta min = base::TimeDelta::FromMicroseconds(1);
+  base::TimeDelta max = base::TimeDelta::FromMilliseconds(1000);
+  auto duration = base::TimeTicks::Now() - start_time_;
+  switch (image_type_) {
+    case ImageType::kWebP:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.WebP", duration, min, max,
+          bucket_count, decode_type_);
+      break;
+    case ImageType::kJpeg:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.Jpeg", duration, min, max,
+          bucket_count, decode_type_);
+      break;
+    case ImageType::kOther:
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.Other", duration, min, max,
+          bucket_count, decode_type_);
+      break;
+  }
   switch (task_type_) {
     case kInRaster:
-      switch (decode_type_) {
-        case kSoftware:
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Renderer4.ImageDecodeTaskDurationUs.Software",
-              duration.InMicroseconds());
-          break;
-        case kGpu:
-          UMA_HISTOGRAM_COUNTS_1M("Renderer4.ImageDecodeTaskDurationUs.Gpu",
-                                  duration.InMicroseconds());
-          break;
-      }
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs", duration, min, max,
+          bucket_count, decode_type_);
       break;
     case kOutOfRaster:
-      switch (decode_type_) {
-        case kSoftware:
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Software",
-              duration.InMicroseconds());
-          break;
-        case kGpu:
-          UMA_HISTOGRAM_COUNTS_1M(
-              "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster.Gpu",
-              duration.InMicroseconds());
-          break;
-      }
+      RecordMicrosecondTimesUmaByDecodeType(
+          "Renderer4.ImageDecodeTaskDurationUs.OutOfRaster", duration, min, max,
+          bucket_count, decode_type_);
       break;
   }
 }

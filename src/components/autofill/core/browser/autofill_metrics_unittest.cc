@@ -19,7 +19,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_data_util.h"
 #include "components/autofill/core/browser/autofill_external_delegate.h"
@@ -283,7 +283,7 @@ class AutofillMetricsTest : public testing::Test {
   // Purge recorded UKM metrics for running more tests.
   void PurgeUKM();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockAutofillClient autofill_client_;
   ukm::TestUkmRecorder* test_ukm_recorder_;
   syncer::TestSyncService sync_service_;
@@ -400,7 +400,8 @@ void AutofillMetricsTest::OnDidGetRealPan(
           ->GetOrCreateCVCAuthenticator()
           ->full_card_request_.get();
   DCHECK(full_card_request);
-  full_card_request->OnDidGetRealPan(result, real_pan);
+  payments::PaymentsClient::UnmaskResponseDetails response;
+  full_card_request->OnDidGetRealPan(result, response.with_real_pan(real_pan));
 }
 
 void AutofillMetricsTest::RecreateCreditCards(

@@ -11,14 +11,14 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/task/sequence_manager/sequence_manager.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/task_observer.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -72,12 +72,12 @@ void DeferredQuitRunLoop(const base::Closure& quit_task,
 }
 
 // Monitors if any task is processed by the message loop.
-class TaskObserver : public base::MessageLoop::TaskObserver {
+class TaskObserver : public base::TaskObserver {
  public:
   TaskObserver() : processed_(false) {}
   ~TaskObserver() override {}
 
-  // MessageLoop::TaskObserver overrides.
+  // TaskObserver overrides.
   void WillProcessTask(const base::PendingTask& pending_task) override {}
   void DidProcessTask(const base::PendingTask& pending_task) override {
     processed_ = true;
@@ -200,9 +200,8 @@ void IsolateAllSitesForTesting(base::CommandLine* command_line) {
 }
 
 void ResetSchemesAndOriginsWhitelist() {
-  url::Shutdown();
+  url::ResetForTests();
   RegisterContentSchemes(false);
-  url::Initialize();
 }
 
 GURL GetWebUIURL(const std::string& host) {
@@ -343,7 +342,7 @@ void InProcessUtilityThreadHelper::JoinAllUtilityThreads() {
 }
 
 void InProcessUtilityThreadHelper::CheckHasRunningChildProcess() {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &InProcessUtilityThreadHelper::CheckHasRunningChildProcessOnIO,
@@ -458,10 +457,10 @@ GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
 }
 
 bool EffectiveURLContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    BrowserOrResourceContext browser_or_resource_context,
+    BrowserContext* browser_context,
     const GURL& effective_site_url) {
-  GURL expected_effective_site_url = SiteInstance::GetSiteForURL(
-      browser_or_resource_context.ToBrowserContext(), url_to_modify_);
+  GURL expected_effective_site_url =
+      SiteInstance::GetSiteForURL(browser_context, url_to_modify_);
 
   return requires_dedicated_process_ &&
          expected_effective_site_url == effective_site_url;

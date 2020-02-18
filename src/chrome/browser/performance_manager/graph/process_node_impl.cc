@@ -4,6 +4,8 @@
 
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
@@ -11,25 +13,16 @@
 
 namespace performance_manager {
 
-ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph)
-    : TypedNodeBase(graph), binding_(this) {
+ProcessNodeImpl::ProcessNodeImpl(GraphImpl* graph,
+                                 RenderProcessHostProxy render_process_proxy)
+    : TypedNodeBase(graph),
+      binding_(this),
+      render_process_host_proxy_(std::move(render_process_proxy)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 ProcessNodeImpl::~ProcessNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-}
-
-void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  const bool inserted = frame_nodes_.insert(frame_node).second;
-  DCHECK(inserted);
-}
-
-void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(base::Contains(frame_nodes_, frame_node));
-  frame_nodes_.erase(frame_node);
 }
 
 void ProcessNodeImpl::SetCPUUsage(double cpu_usage) {
@@ -61,7 +54,7 @@ void ProcessNodeImpl::SetProcessExitStatus(int32_t exit_status) {
   exit_status_ = exit_status;
 
   // Close the process handle to kill the zombie.
-  process_.Close();
+  process_.SetAndNotify(this, base::Process());
 
   // No more message should be received from this process.
   binding_.Close();
@@ -74,7 +67,7 @@ void ProcessNodeImpl::SetProcess(base::Process process,
   // Either this is the initial process associated with this process node,
   // or it's a subsequent process. In the latter case, there must have been
   // an exit status associated with the previous process.
-  DCHECK(!process_.IsValid() || exit_status_.has_value());
+  DCHECK(!process_.value().IsValid() || exit_status_.has_value());
 
   base::ProcessId pid = process.Pid();
   SetProcessImpl(std::move(process), pid, launch_time);
@@ -96,6 +89,30 @@ PageNodeImpl* ProcessNodeImpl::GetPageNodeIfExclusive() const {
   return page_node;
 }
 
+void ProcessNodeImpl::AddFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool inserted = frame_nodes_.insert(frame_node).second;
+  DCHECK(inserted);
+}
+
+void ProcessNodeImpl::RemoveFrame(FrameNodeImpl* frame_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::Contains(frame_nodes_, frame_node));
+  frame_nodes_.erase(frame_node);
+}
+
+void ProcessNodeImpl::AddWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  const bool inserted = worker_nodes_.insert(worker_node).second;
+  DCHECK(inserted);
+}
+
+void ProcessNodeImpl::RemoveWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(base::Contains(worker_nodes_, worker_node));
+  worker_nodes_.erase(worker_node);
+}
+
 void ProcessNodeImpl::SetProcessImpl(base::Process process,
                                      base::ProcessId new_pid,
                                      base::Time launch_time) {
@@ -103,17 +120,20 @@ void ProcessNodeImpl::SetProcessImpl(base::Process process,
 
   graph()->BeforeProcessPidChange(this, new_pid);
 
-  process_ = std::move(process);
-  process_id_ = new_pid;
-  launch_time_ = launch_time;
-
   // Clear the exit status for the previous process (if any).
   exit_status_.reset();
 
   // Also clear the measurement data (if any), as it references the previous
   // process.
   private_footprint_kb_ = 0;
+  resident_set_kb_ = 0;
   cumulative_cpu_usage_ = base::TimeDelta();
+
+  process_id_ = new_pid;
+  launch_time_ = launch_time;
+
+  // Set the process variable last, as it will fire the notification.
+  process_.SetAndNotify(this, std::move(process));
 }
 
 base::ProcessId ProcessNodeImpl::GetProcessId() const {
@@ -181,9 +201,18 @@ uint64_t ProcessNodeImpl::GetPrivateFootprintKb() const {
   return private_footprint_kb();
 }
 
+uint64_t ProcessNodeImpl::GetResidentSetKb() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return resident_set_kb();
+}
+
+const RenderProcessHostProxy& ProcessNodeImpl::GetRenderProcessHostProxy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return render_process_host_proxy();
+}
+
 void ProcessNodeImpl::OnAllFramesInProcessFrozen() {
-  for (auto& observer : observers())
-    observer.OnAllFramesInProcessFrozen(this);
   for (auto* observer : GetObservers())
     observer->OnAllFramesInProcessFrozen(this);
 }

@@ -73,6 +73,7 @@ static int exynos_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		ret = drmIoctl(bo->drv->fd, DRM_IOCTL_EXYNOS_GEM_CREATE, &gem_create);
 		if (ret) {
 			drv_log("DRM_IOCTL_EXYNOS_GEM_CREATE failed (size=%zu)\n", size);
+			ret = -errno;
 			goto cleanup_planes;
 		}
 

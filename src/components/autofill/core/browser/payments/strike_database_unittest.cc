@@ -11,7 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/proto/strike_data.pb.h"
 #include "components/leveldb_proto/public/proto_database.h"
@@ -129,7 +129,7 @@ class StrikeDatabaseTest : public ::testing::Test {
 
  protected:
   base::HistogramTester* GetHistogramTester() { return &histogram_tester_; }
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<leveldb_proto::ProtoDatabaseProvider> db_provider_;
   std::unique_ptr<TestStrikeDatabase> strike_database_;
   base::ScopedTempDir temp_dir_;

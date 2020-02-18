@@ -127,7 +127,7 @@ class WindowsSpellChecker {
   // used to post task to the background thread from main thread.
   scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   scoped_refptr<base::SingleThreadTaskRunner> background_task_runner_;
-  base::WeakPtrFactory<WindowsSpellChecker> weak_ptr_factory_;
+  base::WeakPtrFactory<WindowsSpellChecker> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowsSpellChecker);
 };
@@ -136,8 +136,7 @@ WindowsSpellChecker::WindowsSpellChecker(
     const scoped_refptr<base::SingleThreadTaskRunner> main_task_runner,
     const scoped_refptr<base::SingleThreadTaskRunner> background_task_runner)
     : main_task_runner_(main_task_runner),
-      background_task_runner_(background_task_runner),
-      weak_ptr_factory_(this) {
+      background_task_runner_(background_task_runner) {
   background_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -451,7 +450,8 @@ std::unique_ptr<WindowsSpellChecker>& GetWindowsSpellChecker() {
   static base::NoDestructor<std::unique_ptr<WindowsSpellChecker>>
       win_spell_checker(std::make_unique<WindowsSpellChecker>(
           base::ThreadTaskRunnerHandle::Get(),
-          base::CreateCOMSTATaskRunnerWithTraits({base::MayBlock()})));
+          base::CreateCOMSTATaskRunner(
+              {base::ThreadPool(), base::MayBlock()})));
   return *win_spell_checker;
 }
 }  // anonymous namespace

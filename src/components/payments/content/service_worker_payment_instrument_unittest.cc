@@ -8,12 +8,11 @@
 
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_feature_list.h"
+#include "components/payments/content/mock_identity_observer.h"
 #include "components/payments/core/mock_payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
-#include "content/public/common/content_features.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
@@ -120,7 +119,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
     instrument_ = std::make_unique<ServiceWorkerPaymentInstrument>(
         &browser_context_, GURL("https://testmerchant.com"),
         GURL("https://testmerchant.com/bobpay"), spec_.get(),
-        std::move(stored_app), &delegate_);
+        std::move(stored_app), &delegate_, identity_observer_.AsWeakPtr());
   }
 
   ServiceWorkerPaymentInstrument* GetInstrument() { return instrument_.get(); }
@@ -135,7 +134,8 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
 
  private:
   MockPaymentRequestDelegate delegate_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  MockIdentityObserver identity_observer_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestBrowserContext browser_context_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
@@ -222,10 +222,6 @@ TEST_F(ServiceWorkerPaymentInstrumentTest, CreateCanMakePaymentEvent) {
 // Test the case when CanMakePaymentEvent cannot be fired. The instrument should
 // be considered valid, but not ready for payment.
 TEST_F(ServiceWorkerPaymentInstrumentTest, ValidateCanMakePayment) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      features::kPaymentRequestHasEnrolledInstrument);
-
   // CanMakePaymentEvent is not fired because this test instrument does not have
   // any explicitly verified methods.
   CreateServiceWorkerPaymentInstrument(/*with_url_method=*/true);

@@ -116,7 +116,7 @@ void DialURLFetcher::Start(const GURL& url,
   //     help.
   // net::LOAD_DISABLE_CACHE: The request should not touch the cache.
   request->load_flags = net::LOAD_BYPASS_PROXY | net::LOAD_DISABLE_CACHE;
-  request->allow_credentials = false;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   loader_ = network::SimpleURLLoader::Create(std::move(request),
                                              kDialUrlFetcherTrafficAnnotation);
@@ -168,10 +168,9 @@ void DialURLFetcher::StartDownload() {
   // this conditional.
   auto mojo_request = mojo::MakeRequest(&loader_factory);
   if (content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
-                       std::move(mojo_request)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&BindURLLoaderFactoryRequestOnUIThread,
+                                  std::move(mojo_request)));
   }
 
   loader_->DownloadToString(

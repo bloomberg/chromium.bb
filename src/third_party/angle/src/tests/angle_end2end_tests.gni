@@ -1,4 +1,4 @@
-# Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+# Copyright 2014 The ANGLE Project Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -29,6 +29,7 @@ angle_end2end_tests_sources = [
   "gl_tests/DepthStencilTest.cpp",
   "gl_tests/DifferentStencilMasksTest.cpp",
   "gl_tests/DiscardFramebufferEXTTest.cpp",
+  "gl_tests/DrawBaseVertexBaseInstanceTest.cpp",
   "gl_tests/DrawBuffersTest.cpp",
   "gl_tests/DrawElementsTest.cpp",
   "gl_tests/DXT1CompressedTextureTest.cpp",
@@ -135,6 +136,7 @@ angle_end2end_tests_sources = [
   "egl_tests/EGLChooseConfigTest.cpp",
   "egl_tests/EGLContextCompatibilityTest.cpp",
   "egl_tests/EGLContextSharingTest.cpp",
+  "egl_tests/EGLCreateContextAttribsTest.cpp",
   "egl_tests/EGLDebugTest.cpp",
   "egl_tests/EGLProgramCacheControlTest.cpp",
   "egl_tests/EGLQueryContextTest.cpp",

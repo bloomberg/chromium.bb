@@ -22,18 +22,14 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "content/public/common/buildflags.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "content/public/common/webrtc_ip_handling_policy.h"
 #include "content/public/renderer/content_renderer_client.h"
-#include "content/renderer/media/webrtc/audio_codec_factory.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
 #include "content/renderer/media/webrtc/stun_field_trial.h"
 #include "content/renderer/media/webrtc/video_codec_factory.h"
-#include "content/renderer/media/webrtc/webrtc_audio_device_impl.h"
 #include "content/renderer/p2p/empty_network_manager.h"
 #include "content/renderer/p2p/filtering_network_manager.h"
 #include "content/renderer/p2p/ipc_network_manager.h"
@@ -48,7 +44,9 @@
 #include "media/base/media_permission.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
+#include "third_party/blink/public/platform/modules/peerconnection/audio_codec_factory.h"
 #include "third_party/blink/public/platform/modules/webrtc/webrtc_logging.h"
 #include "third_party/blink/public/platform/web_media_constraints.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
@@ -57,6 +55,7 @@
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_source.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_video_track.h"
+#include "third_party/blink/public/web/modules/webrtc/webrtc_audio_device_impl.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/webrtc/api/call/call_factory_interface.h"
@@ -174,7 +173,8 @@ void PeerConnectionDependencyFactory::CreatePeerConnectionFactory() {
 
 #if BUILDFLAG(RTC_USE_H264) && BUILDFLAG(ENABLE_FFMPEG_VIDEO_DECODERS)
   // Building /w |rtc_use_h264|, is the corresponding run-time feature enabled?
-  if (!base::FeatureList::IsEnabled(kWebRtcH264WithOpenH264FFmpeg)) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebRtcH264WithOpenH264FFmpeg)) {
     // Feature is to be disabled.
     webrtc::DisableRtcUseH264();
   }
@@ -329,8 +329,8 @@ void PeerConnectionDependencyFactory::InitializeSignalingThread(
   cricket::MediaEngineDependencies media_deps;
   media_deps.task_queue_factory = pcf_deps.task_queue_factory.get();
   media_deps.adm = audio_device_.get();
-  media_deps.audio_encoder_factory = CreateWebrtcAudioEncoderFactory();
-  media_deps.audio_decoder_factory = CreateWebrtcAudioDecoderFactory();
+  media_deps.audio_encoder_factory = blink::CreateWebrtcAudioEncoderFactory();
+  media_deps.audio_decoder_factory = blink::CreateWebrtcAudioDecoderFactory();
   media_deps.video_encoder_factory = std::move(webrtc_encoder_factory);
   media_deps.video_decoder_factory = std::move(webrtc_decoder_factory);
   media_deps.audio_processing = webrtc::AudioProcessingBuilder().Create();
@@ -533,7 +533,7 @@ PeerConnectionDependencyFactory::CreateIceCandidate(
   return webrtc::CreateIceCandidate(sdp_mid, sdp_mline_index, sdp, nullptr);
 }
 
-WebRtcAudioDeviceImpl*
+blink::WebRtcAudioDeviceImpl*
 PeerConnectionDependencyFactory::GetWebRtcAudioDevice() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   EnsureWebRtcAudioDeviceImpl();
@@ -643,7 +643,7 @@ void PeerConnectionDependencyFactory::EnsureWebRtcAudioDeviceImpl() {
   if (audio_device_.get())
     return;
 
-  audio_device_ = new rtc::RefCountedObject<WebRtcAudioDeviceImpl>();
+  audio_device_ = new rtc::RefCountedObject<blink::WebRtcAudioDeviceImpl>();
 }
 
 std::unique_ptr<webrtc::RtpCapabilities>

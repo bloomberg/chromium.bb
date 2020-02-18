@@ -304,9 +304,7 @@ std::string OfflinePageBridge::GetEncodedOriginApp(
 OfflinePageBridge::OfflinePageBridge(JNIEnv* env,
                                      SimpleFactoryKey* key,
                                      OfflinePageModel* offline_page_model)
-    : key_(key),
-      offline_page_model_(offline_page_model),
-      weak_ptr_factory_(this) {
+    : key_(key), offline_page_model_(offline_page_model) {
   ScopedJavaLocalRef<jobject> j_offline_page_bridge =
       Java_OfflinePageBridge_create(env, reinterpret_cast<jlong>(this));
   java_ref_.Reset(j_offline_page_bridge);
@@ -776,8 +774,9 @@ void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
   }
 
   ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
       base::Bind(&OfflinePageBridge::GetSizeAndComputeDigestDone,
                  weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
@@ -811,8 +810,9 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&ArchiveValidator::ValidateFile, offline_page->file_path,
                  offline_page->file_size, offline_page->digest),
       base::Bind(&ValidateFileCallback, launch_location, j_callback_obj,

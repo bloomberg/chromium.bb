@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
-#include "components/arc/common/tracing.mojom.h"
+#include "components/arc/mojom/tracing.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "services/tracing/public/cpp/base_agent.h"
@@ -141,7 +141,7 @@ class ArcTracingBridge : public KeyedService,
 
   // NOTE: Weak pointers must be invalidated before all other member variables
   // so it must be the last member.
-  base::WeakPtrFactory<ArcTracingBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcTracingBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingBridge);
 };

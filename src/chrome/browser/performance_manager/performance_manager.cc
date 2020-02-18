@@ -4,6 +4,7 @@
 
 #include "chrome/browser/performance_manager/performance_manager.h"
 
+#include <atomic>
 #include <memory>
 #include <utility>
 
@@ -15,72 +16,130 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "build/build_config.h"
+#include "chrome/browser/performance_manager/decorators/freeze_origin_trial_policy_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/frozen_frame_aggregator.h"
 #include "chrome/browser/performance_manager/decorators/page_almost_idle_decorator.h"
+#include "chrome/browser/performance_manager/decorators/process_metrics_decorator.h"
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
+#include "chrome/browser/performance_manager/graph/policies/policy_features.h"
+#include "chrome/browser/performance_manager/graph/policies/working_set_trimmer_policy.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/graph/system_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/observers/isolation_context_metrics.h"
 #include "chrome/browser/performance_manager/observers/metrics_collector.h"
-#include "chrome/browser/performance_manager/observers/working_set_trimmer_observer_win.h"
 #include "content/public/browser/system_connector.h"
-#include "services/resource_coordinator/public/cpp/resource_coordinator_features.h"
+#include "content/public/common/content_features.h"
+
+#if defined(OS_LINUX)
+#include "base/allocator/buildflags.h"
+#if BUILDFLAG(USE_TCMALLOC)
+#include "chrome/browser/performance_manager/graph/policies/dynamic_tcmalloc_policy_linux.h"
+#include "chrome/common/performance_manager/mojom/tcmalloc.mojom.h"
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
 
 namespace performance_manager {
 
 namespace {
-PerformanceManager* g_performance_manager = nullptr;
+
+class Singleton {
+ public:
+  Singleton() = default;
+  ~Singleton() = default;
+
+  // Safe to call from any thread.
+  PerformanceManager* Get() {
+    return instance_.load(std::memory_order_acquire);
+  }
+
+  // Should be called from the main thread only.
+  void Set(PerformanceManager* instance) {
+    DCHECK_NE(nullptr, instance);
+    auto* old_value = instance_.exchange(instance, std::memory_order_release);
+    DCHECK_EQ(nullptr, old_value);
+  }
+
+  // Should be called from the main thread only.
+  void Clear(PerformanceManager* instance) {
+    DCHECK_NE(nullptr, instance);
+    auto* old_value = instance_.exchange(nullptr, std::memory_order_release);
+    DCHECK_EQ(instance, old_value);
+  }
+
+ private:
+  std::atomic<PerformanceManager*> instance_{nullptr};
+};
+Singleton g_performance_manager;
 
 scoped_refptr<base::SequencedTaskRunner> CreateTaskRunner() {
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::USER_VISIBLE,
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN, base::MayBlock()});
 }
 
 }  // namespace
 
-PerformanceManager* PerformanceManager::GetInstance() {
-  return g_performance_manager;
-}
-
-PerformanceManager::PerformanceManager() : task_runner_(CreateTaskRunner()) {
-  DETACH_FROM_SEQUENCE(sequence_checker_);
-}
-
 PerformanceManager::~PerformanceManager() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // TODO(https://crbug.com/966840): Move this to a TearDown function.
+  graph_.TearDown();
+}
 
-  for (auto& observer : observers_)
-    graph_.UnregisterObserver(observer.get());
+// static
+bool PerformanceManager::IsAvailable() {
+  return g_performance_manager.Get();
+}
+
+// static
+void PerformanceManager::CallOnGraph(const base::Location& from_here,
+                                     GraphCallback callback) {
+  DCHECK(callback);
+
+  // Passing |pm| unretained is safe as it is actually destroyed on the
+  // destination sequence, and g_performance_manager.Get() would return nullptr
+  // if its deletion task was already posted.
+  auto* pm = g_performance_manager.Get();
+  pm->task_runner_->PostTask(
+      from_here, base::BindOnce(&PerformanceManager::CallOnGraphImpl,
+                                base::Unretained(pm), std::move(callback)));
+}
+
+// static
+void PerformanceManager::PassToGraph(const base::Location& from_here,
+                                     std::unique_ptr<GraphOwned> graph_owned) {
+  DCHECK(graph_owned);
+
+  // Passing |graph_| unretained is safe as it is actually destroyed on the
+  // destination sequence, and g_performance_manager.Get() would return nullptr
+  // if its deletion task was already posted.
+  auto* pm = g_performance_manager.Get();
+  pm->task_runner_->PostTask(
+      from_here,
+      base::BindOnce(&GraphImpl::PassToGraph, base::Unretained(&pm->graph_),
+                     std::move(graph_owned)));
+}
+
+PerformanceManager* PerformanceManager::GetInstance() {
+  return g_performance_manager.Get();
 }
 
 // static
 std::unique_ptr<PerformanceManager> PerformanceManager::Create() {
-  DCHECK_EQ(nullptr, g_performance_manager);
   std::unique_ptr<PerformanceManager> instance =
       base::WrapUnique(new PerformanceManager());
 
   instance->OnStart();
-  g_performance_manager = instance.get();
+  g_performance_manager.Set(instance.get());
 
   return instance;
 }
 
 // static
 void PerformanceManager::Destroy(std::unique_ptr<PerformanceManager> instance) {
-  DCHECK_EQ(instance.get(), g_performance_manager);
-  g_performance_manager = nullptr;
-
+  g_performance_manager.Clear(instance.get());
   instance->task_runner_->DeleteSoon(FROM_HERE, instance.release());
-}
-
-void PerformanceManager::CallOnGraph(const base::Location& from_here,
-                                     GraphCallback callback) {
-  DCHECK(!callback.is_null());
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PerformanceManager::CallOnGraphImpl,
-                                base::Unretained(this), std::move(callback)));
 }
 
 std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
@@ -114,15 +173,29 @@ std::unique_ptr<FrameNodeImpl> PerformanceManager::CreateFrameNode(
 
 std::unique_ptr<PageNodeImpl> PerformanceManager::CreatePageNode(
     const WebContentsProxy& contents_proxy,
+    const std::string& browser_context_id,
     bool is_visible,
     bool is_audible) {
   return CreateNodeImpl<PageNodeImpl>(base::OnceCallback<void(PageNodeImpl*)>(),
-                                      contents_proxy, is_visible, is_audible);
+                                      contents_proxy, browser_context_id,
+                                      is_visible, is_audible);
 }
 
-std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode() {
+std::unique_ptr<ProcessNodeImpl> PerformanceManager::CreateProcessNode(
+    RenderProcessHostProxy proxy) {
   return CreateNodeImpl<ProcessNodeImpl>(
-      base::OnceCallback<void(ProcessNodeImpl*)>());
+      base::OnceCallback<void(ProcessNodeImpl*)>(), proxy);
+}
+
+std::unique_ptr<WorkerNodeImpl> PerformanceManager::CreateWorkerNode(
+    const std::string& browser_context_id,
+    WorkerNode::WorkerType worker_type,
+    ProcessNodeImpl* process_node,
+    const GURL& url,
+    const base::UnguessableToken& dev_tools_token) {
+  return CreateNodeImpl<WorkerNodeImpl>(
+      base::OnceCallback<void(WorkerNodeImpl*)>(), browser_context_id,
+      worker_type, process_node, url, dev_tools_token);
 }
 
 void PerformanceManager::BatchDeleteNodes(
@@ -132,20 +205,8 @@ void PerformanceManager::BatchDeleteNodes(
                                 base::Unretained(this), std::move(nodes)));
 }
 
-void PerformanceManager::RegisterObserver(
-    std::unique_ptr<GraphImplObserver> observer) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  graph_.RegisterObserver(observer.get());
-  observers_.push_back(std::move(observer));
-}
-
-void PerformanceManager::PostBindInterface(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&PerformanceManager::BindInterfaceImpl,
-                                        base::Unretained(this), interface_name,
-                                        std::move(message_pipe)));
+PerformanceManager::PerformanceManager() : task_runner_(CreateTaskRunner()) {
+  DETACH_FROM_SEQUENCE(sequence_checker_);
 }
 
 namespace {
@@ -158,7 +219,7 @@ void AddNodeAndInvokeCreationCallback(
     NodeType* node,
     GraphImpl* graph) {
   graph->AddNewNode(node);
-  if (!callback.is_null())
+  if (callback)
     std::move(callback).Run(node);
 }
 
@@ -265,58 +326,30 @@ void PerformanceManager::OnStartImpl(
     std::unique_ptr<service_manager::Connector> connector) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  graph_.PassToGraph(std::make_unique<FreezeOriginTrialPolicyAggregator>());
   graph_.PassToGraph(std::make_unique<FrozenFrameAggregator>());
   graph_.PassToGraph(std::make_unique<PageAlmostIdleDecorator>());
   graph_.PassToGraph(std::make_unique<IsolationContextMetrics>());
   graph_.PassToGraph(std::make_unique<MetricsCollector>());
+  graph_.PassToGraph(std::make_unique<ProcessMetricsDecorator>());
 
-#if defined(OS_WIN)
-  if (base::FeatureList::IsEnabled(features::kEmptyWorkingSet))
-    graph_.PassToGraph(std::make_unique<WorkingSetTrimmer>());
-#endif
+  if (policies::WorkingSetTrimmerPolicy::PlatformSupportsWorkingSetTrim()) {
+    graph_.PassToGraph(
+        policies::WorkingSetTrimmerPolicy::CreatePolicyForPlatform());
+  }
 
-  interface_registry_.AddInterface(base::BindRepeating(
-      &PerformanceManager::BindWebUIGraphDump, base::Unretained(this)));
+#if defined(OS_LINUX)
+#if BUILDFLAG(USE_TCMALLOC)
+  if (base::FeatureList::IsEnabled(features::kDynamicTcmallocTuning)) {
+    graph_.PassToGraph(std::make_unique<policies::DynamicTcmallocPolicy>());
+  }
+#endif  // BUILDFLAG(USE_TCMALLOC)
+#endif  // defined(OS_LINUX)
 
   if (connector) {
     ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector.get());
     graph_.set_ukm_recorder(ukm_recorder_.get());
   }
-}
-
-void PerformanceManager::BindInterfaceImpl(
-    const std::string& interface_name,
-    mojo::ScopedMessagePipeHandle message_pipe) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  interface_registry_.BindInterface(interface_name, std::move(message_pipe),
-                                    service_manager::BindSourceInfo());
-}
-
-void PerformanceManager::BindWebUIGraphDump(
-    mojom::WebUIGraphDumpRequest request,
-    const service_manager::BindSourceInfo& source_info) {
-  std::unique_ptr<WebUIGraphDumpImpl> graph_dump =
-      std::make_unique<WebUIGraphDumpImpl>(&graph_);
-
-  auto error_callback =
-      base::BindOnce(&PerformanceManager::OnGraphDumpConnectionError,
-                     base::Unretained(this), graph_dump.get());
-  graph_dump->Bind(std::move(request), std::move(error_callback));
-
-  graph_dumps_.push_back(std::move(graph_dump));
-}
-
-void PerformanceManager::OnGraphDumpConnectionError(
-    WebUIGraphDumpImpl* graph_dump) {
-  const auto it = std::find_if(
-      graph_dumps_.begin(), graph_dumps_.end(),
-      [graph_dump](const std::unique_ptr<WebUIGraphDumpImpl>& graph_dump_ptr) {
-        return graph_dump_ptr.get() == graph_dump;
-      });
-
-  DCHECK(it != graph_dumps_.end());
-
-  graph_dumps_.erase(it);
 }
 
 }  // namespace performance_manager

@@ -407,6 +407,96 @@ TEST(CSSPropertyParserTest, CrossFadeUseCount) {
   EXPECT_TRUE(document.IsUseCounted(feature));
 }
 
+TEST(CSSPropertyParserTest, TwoValueOverflowOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OneValueOverflowOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowXOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow-x: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowYOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow-y: overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowFirstValueOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: overlay scroll;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
+TEST(CSSPropertyParserTest, OverflowSecondValueOverlayCount) {
+  auto dummy_page_holder = std::make_unique<DummyPageHolder>(IntSize(800, 600));
+  Document& document = dummy_page_holder->GetDocument();
+  Page::InsertOrdinaryPageForTesting(&dummy_page_holder->GetPage());
+  WebFeature feature = WebFeature::kCSSValueOverflowOverlay;
+  WebFeature feature2 = WebFeature::kTwoValuedOverflow;
+  EXPECT_FALSE(document.IsUseCounted(feature));
+  EXPECT_FALSE(document.IsUseCounted(feature2));
+  document.documentElement()->SetInnerHTMLFromString(
+      "<div style=\"height: 10px; width: 10px; overflow: scroll overlay;\">"
+      "<div style=\"height: 50px; width: 50px;\"></div></div>");
+  EXPECT_TRUE(document.IsUseCounted(feature));
+  EXPECT_TRUE(document.IsUseCounted(feature2));
+}
+
 TEST(CSSPropertyParserTest, DropViewportDescriptor) {
   EXPECT_FALSE(IsValidPropertyValueForStyleRule(CSSPropertyID::kOrientation,
                                                 "portrait"));
@@ -583,6 +673,45 @@ TEST_F(CSSPropertyUseCounterTest, CSSPropertyFontSizeWebkitXxxLargeUseCount) {
   EXPECT_FALSE(IsCounted(feature));
   ParseProperty(CSSPropertyID::kFontSize, "-webkit-xxx-large");
   EXPECT_TRUE(IsCounted(feature));
+}
+
+TEST(CSSPropertyParserTest, InternalLightDarkColorAuthor) {
+  auto* context = MakeGarbageCollected<CSSParserContext>(
+      kHTMLStandardMode, SecureContextMode::kInsecureContext);
+  // -internal-light-dark-color() is only valid in UA sheets.
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(#000000, #ffffff)",
+      context));
+  ASSERT_FALSE(CSSParser::ParseSingleValue(
+      CSSPropertyID::kColor, "-internal-light-dark-color(red, green)",
+      context));
+}
+
+TEST(CSSPropertyParserTest, UAInternalLightDarkColor) {
+  auto* ua_context = MakeGarbageCollected<CSSParserContext>(
+      kUASheetMode, SecureContextMode::kInsecureContext);
+
+  const struct {
+    const char* value;
+    bool valid;
+  } tests[] = {
+      {"-internal-light-dark-color()", false},
+      {"-internal-light-dark-color(#feedab)", false},
+      {"-internal-light-dark-color(red blue)", false},
+      {"-internal-light-dark-color(red,,blue)", false},
+      {"-internal-light-dark-color(red, blue)", true},
+      {"-internal-light-dark-color(#000000, #ffffff)", true},
+      {"-internal-light-dark-color(rgb(0, 0, 0), hsl(180, 75%, 50%))", true},
+      {"-internal-light-dark-color(rgba(0, 0, 0, 0.5), hsla(180, 75%, 50%, "
+       "0.7))",
+       true},
+  };
+
+  for (const auto& test : tests) {
+    EXPECT_EQ(!!CSSParser::ParseSingleValue(CSSPropertyID::kColor, test.value,
+                                            ua_context),
+              test.valid);
+  }
 }
 
 }  // namespace blink

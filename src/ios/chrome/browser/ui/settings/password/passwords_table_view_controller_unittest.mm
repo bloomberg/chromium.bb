@@ -24,7 +24,7 @@
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -167,7 +167,7 @@ class PasswordsTableViewControllerTest : public ChromeTableViewControllerTest {
         base::test::ios::kWaitForUIElementTimeout, condition);
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
@@ -334,7 +334,7 @@ TEST_F(PasswordsTableViewControllerTest,
 
   CheckTextCellTextWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
-  EXPECT_NSEQ([UIColor colorNamed:kTintColor], exportButton.textColor);
+  EXPECT_NSEQ([UIColor colorNamed:kBlueColor], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }
@@ -371,7 +371,7 @@ TEST_F(PasswordsTableViewControllerTest,
   [passwords_controller setEditing:YES animated:NO];
   [passwords_controller setEditing:NO animated:NO];
 
-  EXPECT_NSEQ([UIColor colorNamed:kTintColor], exportButton.textColor);
+  EXPECT_NSEQ([UIColor colorNamed:kBlueColor], exportButton.textColor);
   EXPECT_FALSE(exportButton.accessibilityTraits &
                UIAccessibilityTraitNotEnabled);
 }

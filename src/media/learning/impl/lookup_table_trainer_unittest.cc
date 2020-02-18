@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
@@ -23,11 +23,11 @@ class LookupTableTrainerTest : public testing::Test {
             [](std::unique_ptr<Model>* model_out,
                std::unique_ptr<Model> model) { *model_out = std::move(model); },
             &model));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     return model;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   LookupTableTrainer trainer_;
   LearningTask task_;

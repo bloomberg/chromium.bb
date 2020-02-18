@@ -126,20 +126,46 @@ bool LitePagePreviewsTriggerOnLocalhost();
 // page hints for the host.
 bool LitePagePreviewsOverridePageHints();
 
-// The maximum data byte size for the server-provided blacklist. This is
-// a client-side safety limit for RAM use in case server sends too large of
-// a blacklist.
-int LitePageRedirectPreviewMaxServerBlacklistByteSize();
-
 // The maximum number of times that a Lite Page Redirect preview should restart
 // a navigation.
 size_t LitePageRedirectPreviewMaxNavigationRestarts();
 
-// Whether we should preresolve the lite page redirect server.
+// Whether we should preconnect to the lite page redirect server or the origin.
+bool LitePageRedirectPreviewShouldPreconnect();
+
+// Whether we should preresolve the lite page redirect server or the origin.
 bool LitePageRedirectPreviewShouldPresolve();
 
-// The duration in between preresolving the lite page redirect server.
-base::TimeDelta LitePageRedirectPreviewPresolveInterval();
+// Whether the Optimization Guide logic should be ignored for lite page redirect
+// previews.
+bool LitePageRedirectPreviewIgnoresOptimizationGuideFilter();
+
+// Whether to only trigger a lite page preview if there has been a successful
+// probe to the server. This is returns true, lite page redirect previews should
+// only been attempted when a probe to the previews server has completed
+// successfully.
+bool LitePageRedirectOnlyTriggerOnSuccessfulProbe();
+
+// The URL to probe on the lite pages server.
+GURL LitePageRedirectProbeURL();
+
+// The duration in between preresolving or preconnecting the lite page redirect
+// server or the origin.
+base::TimeDelta LitePageRedirectPreviewPreresolvePreconnectInterval();
+
+// The ect threshold at which, or below, we should preresolve or preconnect for
+// lite page redirect previews.
+net::EffectiveConnectionType
+LitePageRedirectPreviewPreresolvePreconnectECTThreshold();
+
+// The duration in between probes to the lite page redirect server.
+base::TimeDelta LitePageRedirectPreviewProbeInterval();
+
+// Whether the origin should be successfully probed before showing a preview.
+bool LitePageRedirectShouldProbeOrigin();
+
+// The timeout for the origin probe on lite page redirect previews.
+base::TimeDelta LitePageRedirectPreviewOriginProbeTimeout();
 
 // The maximum number of seconds to loadshed the Previews server for.
 int PreviewServerLoadshedMaxSeconds();

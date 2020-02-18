@@ -19,6 +19,7 @@
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace content {
 class NavigationHandle;
@@ -29,6 +30,7 @@ namespace autofill {
 
 class AutofillClient;
 class AutofillProvider;
+class LogManager;
 
 // Class that drives autofill flow in the browser process based on
 // communication from the renderer and from the external world. There is one
@@ -56,11 +58,11 @@ class ContentAutofillDriver : public AutofillDriver,
   bool IsIncognito() const override;
   bool IsInMainFrame() const override;
   ui::AXTreeID GetAxTreeId() const override;
-  net::URLRequestContextGetter* GetURLRequestContext() override;
   scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool RendererIsAvailable() override;
   void ConnectToAuthenticator(
-      blink::mojom::InternalAuthenticatorRequest request) override;
+      mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver)
+      override;
   void SendFormDataToRenderer(int query_id,
                               RendererFormDataAction action,
                               const FormData& data) override;
@@ -172,6 +174,8 @@ class ContentAutofillDriver : public AutofillDriver,
   std::unique_ptr<AutofillExternalDelegate> autofill_external_delegate_;
 
   KeyPressHandlerManager key_press_handler_manager_;
+
+  LogManager* const log_manager_;
 
   mojo::AssociatedReceiver<mojom::AutofillDriver> receiver_{this};
 

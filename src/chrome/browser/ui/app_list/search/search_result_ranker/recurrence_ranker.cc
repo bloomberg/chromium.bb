@@ -164,11 +164,10 @@ RecurrenceRanker::RecurrenceRanker(const std::string& model_identifier,
       is_ephemeral_user_(is_ephemeral_user),
       min_seconds_between_saves_(
           TimeDelta::FromSeconds(config.min_seconds_between_saves())),
-      time_of_last_save_(Time::Now()),
-      weak_factory_(this) {
+      time_of_last_save_(Time::Now()) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
   targets_ = std::make_unique<FrecencyStore>(config.target_limit(),
@@ -208,9 +207,13 @@ void RecurrenceRanker::OnLoadProtoFromDiskComplete(
                           InitializationStatus::kInitialized);
 
   // If OnLoadFromDisk returned nullptr, no saved ranker proto was available on
-  // disk, and there is nothing to load.
-  if (!proto)
+  // disk, and there is nothing to load. Save a blank ranker to prevent metrics
+  // from reporting no ranker exists on future loads. Use SaveToDisk rather than
+  // MaybeSave because the time of last save is set to the time at construction.
+  if (!proto) {
+    SaveToDisk();
     return;
+  }
 
   if (!proto->has_config_hash() || proto->config_hash() != config_hash_) {
     // The configuration of the saved ranker doesn't match the configuration for

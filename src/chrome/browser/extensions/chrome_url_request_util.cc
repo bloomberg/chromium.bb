@@ -17,7 +17,6 @@
 #include "base/task/post_task.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/chrome_manifest_url_handlers.h"
-#include "content/public/browser/resource_request_info.h"
 #include "extensions/browser/component_extension_resource_manager.h"
 #include "extensions/browser/extension_protocols.h"
 #include "extensions/browser/extensions_browser_client.h"
@@ -30,7 +29,7 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
-#include "third_party/zlib/google/compression_utils.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
 
@@ -64,30 +63,15 @@ scoped_refptr<base::RefCountedMemory> GetResource(
                 ->GetTemplateReplacementsForExtension(extension_id)
           : nullptr;
 
-  bool is_gzipped = rb.IsGzipped(resource_id);
-  if (!bytes->size() || (!replacements && !is_gzipped)) {
+  if (replacements) {
+    base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
+                            bytes->size());
+    std::string temp_str = ui::ReplaceTemplateExpressions(input, *replacements);
+    DCHECK(!temp_str.empty());
+    return base::RefCountedString::TakeString(&temp_str);
+  } else {
     return bytes;
   }
-
-  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                          bytes->size());
-
-  std::string temp_str;
-
-  base::StringPiece source = input;
-  if (is_gzipped) {
-    temp_str.resize(compression::GetUncompressedSize(input));
-    source = temp_str;
-    CHECK(compression::GzipUncompress(input, source));
-  }
-
-  if (replacements) {
-    temp_str = ui::ReplaceTemplateExpressions(source, *replacements);
-  }
-
-  DCHECK(!temp_str.empty());
-
-  return base::RefCountedString::TakeString(&temp_str);
 }
 
 // Loads an extension resource in a Chrome .pak file. These are used by
@@ -122,7 +106,6 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
   void ResumeReadingBodyFromNet() override {}
-  void ProceedWithResponse() override {}
 
  private:
   ResourceBundleFileLoader(const std::string& content_security_policy,
@@ -147,8 +130,8 @@ class ResourceBundleFileLoader : public network::mojom::URLLoader {
     auto data = GetResource(resource_id, request.url.host());
 
     std::string* read_mime_type = new std::string;
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&net::GetMimeTypeFromFile, filename,
                        base::Unretained(read_mime_type)),
         base::BindOnce(&ResourceBundleFileLoader::OnMimeTypeRead,

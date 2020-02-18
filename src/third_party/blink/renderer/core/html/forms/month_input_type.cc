@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/platform/wtf/date_math.h"
 #include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -77,7 +76,7 @@ String MonthInputType::SerializeWithMilliseconds(double value) const {
 Decimal MonthInputType::DefaultValueForStepUp() const {
   DateComponents date;
   date.SetMillisecondsSinceEpochForMonth(
-      ConvertToLocalTime(base::Time::Now().ToDoubleT() * 1000.0));
+      ConvertToLocalTime(base::Time::Now()).InMillisecondsF());
   double months = date.MonthsSinceEpoch();
   DCHECK(std::isfinite(months));
   return Decimal::FromDouble(months);

@@ -295,7 +295,7 @@ class BuildPackagesTest(cros_test_lib.RunCommandTestCase):
     """Test package failure handling."""
     failed = ['cat/pkg', 'foo/bar']
     cpvs = [portage_util.SplitCPV(p, strict=False) for p in failed]
-    self.PatchObject(portage_util, 'ParseParallelEmergeStatusFile',
+    self.PatchObject(portage_util, 'ParseDieHookStatusFile',
                      return_value=cpvs)
 
     config = sysroot.BuildPackagesRunConfig()

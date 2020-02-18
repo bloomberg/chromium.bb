@@ -214,7 +214,7 @@ DragDownloadFile::~DragDownloadFile() {
   // the UI thread so that it calls RemoveObserver on the right thread, and so
   // that this task will run after the InitiateDownload task runs on the UI
   // thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DragDownloadFileUI::Delete, base::Unretained(drag_ui_)));
   drag_ui_ = nullptr;
@@ -231,7 +231,7 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
   observer_ = observer;
   DCHECK(observer_.get());
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&DragDownloadFileUI::InitiateDownload,
                      base::Unretained(drag_ui_), std::move(file_), file_path_));
@@ -239,17 +239,21 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
 bool DragDownloadFile::Wait() {
   CheckThread();
+  // Store the weakptr in a local variable as |this| may be deleted while
+  // waiting for the nested RunLoop.
+  auto ref = weak_ptr_factory_.GetWeakPtr();
   if (state_ == STARTED)
     nested_loop_.Run();
-  return state_ == SUCCESS;
+  // If the weakptr is destroyed, the download should be successful.
+  return !ref.get() || state_ == SUCCESS;
 }
 
 void DragDownloadFile::Stop() {
   CheckThread();
   if (drag_ui_) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             base::BindOnce(&DragDownloadFileUI::Cancel,
-                                            base::Unretained(drag_ui_)));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&DragDownloadFileUI::Cancel,
+                                  base::Unretained(drag_ui_)));
   }
 }
 

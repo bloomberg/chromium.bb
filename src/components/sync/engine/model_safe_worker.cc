@@ -52,12 +52,6 @@ std::string ModelSafeGroupToString(ModelSafeGroup group) {
   switch (group) {
     case GROUP_UI:
       return "Group UI";
-    case GROUP_DB:
-      return "Group DB";
-    case GROUP_FILE:
-      return "Group File";
-    case GROUP_HISTORY:
-      return "Group History";
     case GROUP_PASSIVE:
       return "Group Passive";
     case GROUP_PASSWORD:

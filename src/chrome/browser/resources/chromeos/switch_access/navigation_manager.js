@@ -9,8 +9,15 @@
 class NavigationManager {
   /**
    * @param {!chrome.automation.AutomationNode} desktop
+   * @param {!SwitchAccessInterface} switchAccess
    */
-  constructor(desktop) {
+  constructor(desktop, switchAccess) {
+    /**
+     * Handles communication with Switch Access.
+     * @private {!SwitchAccessInterface}
+     */
+    this.switchAccess_ = switchAccess;
+
     /**
      * Handles communication with and navigation within the Switch Access menu.
      * @private {!MenuManager}
@@ -23,6 +30,14 @@ class NavigationManager {
      * @private {!BackButtonManager}
      */
     this.backButtonManager_ = new BackButtonManager(this);
+
+    /**
+     * Handles setting, changing, and clearing the focus rings onscreen.
+     * Can be accessed directly by NavigationManager's children.
+     * @public {!FocusRingManager}
+     */
+    this.focusRingManager =
+        new FocusRingManager(switchAccess, this.backButtonManager_);
 
     /**
      * Handles the details of text input, including typing and showing an
@@ -72,34 +87,6 @@ class NavigationManager {
      */
     this.inSystemMenu_ = false;
 
-    /**
-     * @private {chrome.accessibilityPrivate.FocusRingInfo}
-     */
-    this.primaryFocusRing_ = {
-      id: SAConstants.Focus.PRIMARY_ID,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.SOLID,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-
-    /**
-     * @private {chrome.accessibilityPrivate.FocusRingInfo}
-     */
-    this.scopeFocusRing_ = {
-      id: SAConstants.Focus.SCOPE_ID,
-      rects: [],
-      type: chrome.accessibilityPrivate.FocusType.DASHED,
-      color: SAConstants.Focus.PRIMARY_COLOR,
-      secondaryColor: SAConstants.Focus.SECONDARY_COLOR
-    };
-
-    /**
-     * The currently highlighted scope object. Tracked for comparison purposes.
-     * @private {chrome.automation.AutomationNode}
-     */
-    this.focusedScope_;
-
     this.init_();
   }
 
@@ -115,16 +102,31 @@ class NavigationManager {
    * Open the Switch Access menu for the currently highlighted node.
    */
   enterMenu() {
-    // If the back button is focused, select it.
-    if (this.backButtonManager_.select())
-      return;
-
     // If we're currently visiting the Switch Access menu, this command should
     // select the highlighted element.
-    if (this.menuManager_.selectCurrentNode())
+    if (this.menuManager_.selectCurrentNode()) {
       return;
+    }
+
+    // If the back button is focused, select it.
+    if (this.backButtonManager_.select()) {
+      return;
+    }
 
     this.menuManager_.enter(this.node_);
+  }
+
+  /**
+   * Selects the back button while navigating in the menu.
+   * @return {boolean} Whether or not the back button was successfully selected.
+   */
+  selectBackButtonInMenu() {
+    if (!this.menuManager_.inMenu()) {
+      return false;
+    }
+
+    this.menuManager_.selectBackButton();
+    return true;
   }
 
   /**
@@ -135,7 +137,7 @@ class NavigationManager {
     if (this.menuManager_.moveBackward())
       return;
 
-    if (this.node_ === this.backButtonManager_.buttonNode()) {
+    if (this.node_ === this.backButtonManager_.backButtonNode()) {
       if (SwitchAccessPredicate.isActionable(this.scope_))
         this.setCurrentNode_(this.scope_);
       else
@@ -152,7 +154,7 @@ class NavigationManager {
     let node = treeWalker.next().node;
 
     if (node === this.scope_)
-      node = this.backButtonManager_.buttonNode();
+      node = this.backButtonManager_.backButtonNode();
 
     if (!node)
       node = this.youngestDescendant_(this.scope_);
@@ -177,7 +179,7 @@ class NavigationManager {
 
     this.startAtValidNode_();
 
-    const backButtonNode = this.backButtonManager_.buttonNode();
+    const backButtonNode = this.backButtonManager_.backButtonNode();
     if (this.node_ === this.scope_ && backButtonNode) {
       this.setCurrentNode_(backButtonNode);
       return;
@@ -243,6 +245,29 @@ class NavigationManager {
       scrollNode.scrollBackward(() => {});
     else
       console.log('Unrecognized scroll action: ', scrollAction);
+  }
+
+  /**
+   * Simulates a single key stroke with the given key code
+   * and keyboard modifiers (whether or not CTRL, ALT, SEARCH,
+   * SHIFT are being held).
+   *
+   * @param {number} keyCode
+   * @param {!chrome.accessibilityPrivate.SyntheticKeyboardModifiers} modifiers
+   * @public
+   */
+  simulateKeyPress(keyCode, modifiers) {
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYDOWN,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
+
+    chrome.accessibilityPrivate.sendSyntheticKeyEvent({
+      type: chrome.accessibilityPrivate.SyntheticKeyboardEventType.KEYUP,
+      keyCode: keyCode,
+      modifiers: modifiers
+    });
   }
 
   /**
@@ -316,25 +341,49 @@ class NavigationManager {
    * node.
    * @public
    */
-  setSelectStart() {
-    this.textNavigationManager_.setSelectStart();
+  saveSelectStart() {
+    this.textNavigationManager_.saveSelectStart();
   }
 
   /**
    * Sets the selectionEnd variable based on the selection of the current node.
    * @public
    */
-  setSelectEnd() {
-    this.textNavigationManager_.setSelectEnd();
+  endSelection() {
+    this.textNavigationManager_.resetCurrentlySelecting();
   }
 
   /**
-   * Returns whether or not the first selection index has been set.
+   * Returns whether or not a selection is being made.
    * @return {boolean}
    * @public
    */
-  selectionStarted() {
-    return this.textNavigationManager_.isSelStartIndexSet();
+  currentlySelecting() {
+    return this.textNavigationManager_.currentlySelecting();
+  }
+
+  /**
+   * Cuts selected text.
+   * @public
+   */
+  cut() {
+    this.textInputManager_.cut();
+  }
+
+  /**
+   * Copies selected text.
+   * @public
+   */
+  copy() {
+    this.textInputManager_.copy();
+  }
+
+  /**
+   * Pastes selected text.
+   * @public
+   */
+  paste() {
+    this.textInputManager_.paste();
   }
 
   /**
@@ -344,16 +393,19 @@ class NavigationManager {
    * interesting, perform the default action on it.
    */
   selectCurrentNode() {
-    if (this.backButtonManager_.select())
+    if (this.menuManager_.selectCurrentNode()) {
       return;
+    }
 
-    if (this.menuManager_.selectCurrentNode())
+    if (this.backButtonManager_.select()) {
       return;
+    }
 
-    if (!this.node_.role)
+    if (!this.node_.role) {
       return;
+    }
 
-    if (window.switchAccess.textEditingEnabled()) {
+    if (this.switchAccess_.improvedTextInputEnabled()) {
       if (SwitchAccessPredicate.isTextInput(this.node_)) {
         this.node_.focus();
         return;
@@ -405,7 +457,16 @@ class NavigationManager {
       this.scope_ = this.scopeStack_.pop();
     } while (!this.scope_.role && this.scopeStack_.length > 0);
 
-    this.updateFocusRings_();
+    this.focusRingManager.setFocusNodes(this.node_, this.scope_);
+  }
+
+  /**
+   * Checks if the current scope is in the virtual keyboard.
+   * @return {boolean}
+   * @public
+   */
+  inVirtualKeyboard() {
+    return this.textInputManager_.inVirtualKeyboard(this.scope_);
   }
 
   /**
@@ -420,6 +481,10 @@ class NavigationManager {
     chrome.accessibilityPrivate.setVirtualKeyboardVisible(
         true /* is_visible */);
     this.setScope_(this.textInputManager_.getKeyboard(this.desktop_));
+
+    if (this.switchAccess_.improvedTextInputEnabled()) {
+      this.switchAccess_.restartAutoScan();
+    }
   }
 
   /**
@@ -510,15 +575,27 @@ class NavigationManager {
     if (this.node_ === event.target)
       return;
 
+    // Exit the menu if it is open.
+    if (this.menuManager_.inMenu()) {
+      this.menuManager_.exit();
+    }
+
     // Rebuild scope stack and set scope for focused node.
     this.buildScopeStack_(event.target);
+
+    this.textNavigationManager_.resetSelStartIndex();
+
+    // Restart auto-scan.
+    if (this.switchAccess_.improvedTextInputEnabled()) {
+      this.switchAccess_.restartAutoScan();
+    }
 
     // Move to focused node.
     this.node_ = event.target;
 
     // In case the node that gained focus is not a subtreeLeaf.
     if (SwitchAccessPredicate.isInteresting(this.node_, this.scope_))
-      this.updateFocusRings_();
+      this.focusRingManager.setFocusNodes(this.node_, this.scope_);
     else
       this.moveForward();
   }
@@ -555,7 +632,12 @@ class NavigationManager {
     if (!removedByRWA && treeChange.target !== this.node_)
       return;
 
-    this.clearFocusRings_();
+    if (this.inSystemMenu_) {
+      // The node removed was the system menu.
+      this.inSystemMenu_ = false;
+    }
+
+    this.focusRingManager.clearAll();
 
     // Current node not invalid until after treeChange callback, so move to
     // valid node after callback. Delay added to prevent moving to another
@@ -571,6 +653,9 @@ class NavigationManager {
    * @private
    */
   init_() {
+    // TODO(anastasi): call this when it's actually ready
+    this.focusRingManager.onPrefsReady();
+
     this.desktop_.addEventListener(
         chrome.automation.EventType.FOCUS, this.onFocusChange_.bind(this),
         false);
@@ -591,7 +676,7 @@ class NavigationManager {
    */
   setCurrentNode_(node) {
     this.node_ = node;
-    this.updateFocusRings_();
+    this.focusRingManager.setFocusNodes(this.node_, this.scope_);
   }
 
   /**
@@ -606,7 +691,7 @@ class NavigationManager {
 
     // The first node will come immediately after the back button, so we set
     // |this.node_| to the back button and call |moveForward|.
-    const backButtonNode = this.backButtonManager_.buttonNode();
+    const backButtonNode = this.backButtonManager_.backButtonNode();
     if (backButtonNode)
       this.node_ = backButtonNode;
     else
@@ -639,56 +724,6 @@ class NavigationManager {
       this.node_ = this.scopeStack_.pop();
       this.scope_ = this.node_;
     }
-  }
-
-  /**
-   * Set the focus ring for the current node and scope.
-   * @private
-   */
-  updateFocusRings_() {
-    const focusRect = this.node_.location;
-
-    // If the scope element has not changed, we want to use the previously
-    // calculated rect as the current scope rect.
-    let scopeRect = this.scope_.location;
-    if (this.scopeFocusRing_.rects.length && this.scope_ === this.focusedScope_)
-      scopeRect = this.scopeFocusRing_.rects[0];
-    this.focusedScope_ = this.scope_;
-
-    if (this.node_ === this.backButtonManager_.buttonNode()) {
-      this.backButtonManager_.show(scopeRect);
-
-      this.primaryFocusRing_.rects = [];
-      this.scopeFocusRing_.rects = [scopeRect];
-
-      chrome.accessibilityPrivate.setFocusRings(
-          [this.primaryFocusRing_, this.scopeFocusRing_]);
-
-      return;
-    }
-    this.backButtonManager_.hide();
-
-    // If the current element is not the back button, the scope rect should
-    // expand to contain the focus rect.
-    scopeRect = RectHelper.expandToFitWithPadding(
-        SAConstants.Focus.SCOPE_BUFFER, scopeRect, focusRect);
-
-    this.primaryFocusRing_.rects = [focusRect];
-    this.scopeFocusRing_.rects = [scopeRect];
-
-    chrome.accessibilityPrivate.setFocusRings(
-        [this.primaryFocusRing_, this.scopeFocusRing_]);
-  }
-
-  /**
-   * Clears all focus rings.
-   * @private
-   */
-  clearFocusRings_() {
-    this.primaryFocusRing_.rects = [];
-    this.scopeFocusRing_.rects = [];
-    chrome.accessibilityPrivate.setFocusRings(
-        [this.primaryFocusRing_, this.scopeFocusRing_]);
   }
 
   /**

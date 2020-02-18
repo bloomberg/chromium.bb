@@ -14,7 +14,7 @@
 #include "chrome/browser/media/router/event_page_request_manager_factory.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -95,7 +95,7 @@ class ExtensionMediaRouteProviderProxyTest : public testing::Test {
     provider_proxy_->RegisterMediaRouteProvider(std::move(mock_provider_ptr));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionMediaRouteProviderProxyTest);

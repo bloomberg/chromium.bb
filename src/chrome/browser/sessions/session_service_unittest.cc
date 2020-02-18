@@ -35,6 +35,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_command.h"
 #include "components/sessions/core/session_types.h"
@@ -43,8 +44,10 @@
 #include "content/public/common/page_state.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 using content::NavigationEntry;
+using sessions::ContentTestHelper;
 using sessions::SerializedNavigationEntry;
 using sessions::SerializedNavigationEntryTestHelper;
 
@@ -63,9 +66,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
 
     helper_.SetService(session_service);
 
-    service()->SetWindowType(window_id,
-                             Browser::TYPE_TABBED,
-                             SessionService::TYPE_NORMAL);
+    service()->SetWindowType(window_id, Browser::TYPE_NORMAL);
     service()->SetWindowBounds(window_id,
                                window_bounds,
                                ui::SHOW_STATE_NORMAL);
@@ -122,8 +123,7 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
   bool CreateAndWriteSessionWithOneTab(bool pinned_state, bool write_always) {
     SessionID tab_id = SessionID::NewUnique();
     SerializedNavigationEntry nav1 =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            "http://google.com", "abc");
+        ContentTestHelper::CreateNavigation("http://google.com", "abc");
 
     helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
     UpdateNavigation(window_id, tab_id, nav1, true);
@@ -153,18 +153,14 @@ class SessionServiceTest : public BrowserWithTestWindowTest {
       const SessionID& tab2_id,
       SerializedNavigationEntry* nav1,
       SerializedNavigationEntry* nav2) {
-    *nav1 = SerializedNavigationEntryTestHelper::CreateNavigation(
-        "http://google.com", "abc");
-    *nav2 = SerializedNavigationEntryTestHelper::CreateNavigation(
-        "http://google2.com", "abcd");
+    *nav1 = ContentTestHelper::CreateNavigation("http://google.com", "abc");
+    *nav2 = ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
     helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
     UpdateNavigation(window_id, tab1_id, *nav1, true);
 
     const gfx::Rect window2_bounds(3, 4, 5, 6);
-    service()->SetWindowType(window2_id,
-                             Browser::TYPE_TABBED,
-                             SessionService::TYPE_NORMAL);
+    service()->SetWindowType(window2_id, Browser::TYPE_NORMAL);
     service()->SetWindowBounds(window2_id,
                                window2_bounds,
                                ui::SHOW_STATE_MAXIMIZED);
@@ -192,8 +188,7 @@ TEST_F(SessionServiceTest, Basic) {
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntryTestHelper::SetOriginalRequestURL(
       GURL("http://original.request.com"), &nav1);
 
@@ -209,7 +204,7 @@ TEST_F(SessionServiceTest, Basic) {
   ASSERT_EQ(0, windows[0]->selected_tab_index);
   ASSERT_EQ(window_id, windows[0]->window_id);
   ASSERT_EQ(1U, windows[0]->tabs.size());
-  ASSERT_EQ(sessions::SessionWindow::TYPE_TABBED, windows[0]->type);
+  ASSERT_EQ(sessions::SessionWindow::TYPE_NORMAL, windows[0]->type);
 
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   helper_.AssertTabEquals(window_id, tab_id, 0, 0, 1, *tab);
@@ -223,8 +218,7 @@ TEST_F(SessionServiceTest, PersistPostData) {
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
@@ -242,11 +236,9 @@ TEST_F(SessionServiceTest, ClosingTabStaysClosed) {
   ASSERT_NE(tab_id, tab2_id);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -273,11 +265,9 @@ TEST_F(SessionServiceTest, Pruning) {
   SessionID tab_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   for (int i = 0; i < 6; ++i) {
@@ -365,16 +355,13 @@ TEST_F(SessionServiceTest, WindowWithNoTabsGetsPruned) {
   SessionID tab2_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
 
   helper_.PrepareTabInWindow(window_id, tab1_id, 0, true);
   UpdateNavigation(window_id, tab1_id, nav1, true);
 
   const gfx::Rect window2_bounds(3, 4, 5, 6);
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_TABBED,
-                           SessionService::TYPE_NORMAL);
+  service()->SetWindowType(window2_id, Browser::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window2_bounds,
                              ui::SHOW_STATE_NORMAL);
@@ -399,11 +386,9 @@ TEST_F(SessionServiceTest, ClosingWindowDoesntCloseTabs) {
   ASSERT_NE(tab_id, tab2_id);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -467,19 +452,15 @@ TEST_F(SessionServiceTest, WindowCloseCommittedAfterNavigate) {
   SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_TABBED,
-                           SessionService::TYPE_NORMAL);
+  service()->SetWindowType(window2_id, Browser::TYPE_NORMAL);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -511,20 +492,16 @@ TEST_F(SessionServiceTest, IgnorePopups) {
   SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_POPUP,
-                           SessionService::TYPE_NORMAL);
+  service()->SetWindowType(window2_id, Browser::TYPE_POPUP);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
   service()->SetWindowWorkspace(window2_id, window_workspace);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -548,13 +525,13 @@ TEST_F(SessionServiceTest, IgnorePopups) {
 TEST_F(SessionServiceTest, RemoveUnusedRestoreWindowsTest) {
   std::vector<std::unique_ptr<sessions::SessionWindow>> windows_list;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
-  windows_list.back()->type = sessions::SessionWindow::TYPE_TABBED;
+  windows_list.back()->type = sessions::SessionWindow::TYPE_NORMAL;
   windows_list.push_back(std::make_unique<sessions::SessionWindow>());
   windows_list.back()->type = sessions::SessionWindow::TYPE_POPUP;
 
   service()->RemoveUnusedRestoreWindows(&windows_list);
   ASSERT_EQ(1U, windows_list.size());
-  EXPECT_EQ(sessions::SessionWindow::TYPE_TABBED, windows_list[0]->type);
+  EXPECT_EQ(sessions::SessionWindow::TYPE_NORMAL, windows_list[0]->type);
 }
 
 #if defined (OS_CHROMEOS)
@@ -565,20 +542,16 @@ TEST_F(SessionServiceTest, RestoreApp) {
   SessionID tab2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id,
-                           Browser::TYPE_POPUP,
-                           SessionService::TYPE_APP);
+  service()->SetWindowType(window2_id, Browser::TYPE_APP);
   service()->SetWindowBounds(window2_id,
                              window_bounds,
                              ui::SHOW_STATE_NORMAL);
   service()->SetWindowAppName(window2_id, "TestApp");
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google2.com", "abcd");
+      ContentTestHelper::CreateNavigation("http://google2.com", "abcd");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -590,8 +563,8 @@ TEST_F(SessionServiceTest, RestoreApp) {
   ReadWindows(&windows, NULL);
 
   ASSERT_EQ(2U, windows.size());
-  int tabbed_index = windows[0]->type == sessions::SessionWindow::TYPE_TABBED ?
-      0 : 1;
+  int tabbed_index =
+      windows[0]->type == sessions::SessionWindow::TYPE_NORMAL ? 0 : 1;
   int app_index = tabbed_index == 0 ? 1 : 0;
   ASSERT_EQ(0, windows[tabbed_index]->selected_tab_index);
   ASSERT_EQ(window_id, windows[tabbed_index]->window_id);
@@ -604,7 +577,7 @@ TEST_F(SessionServiceTest, RestoreApp) {
   ASSERT_EQ(0, windows[app_index]->selected_tab_index);
   ASSERT_EQ(window2_id, windows[app_index]->window_id);
   ASSERT_EQ(1U, windows[app_index]->tabs.size());
-  ASSERT_TRUE(windows[app_index]->type == sessions::SessionWindow::TYPE_POPUP);
+  ASSERT_TRUE(windows[app_index]->type == sessions::SessionWindow::TYPE_APP);
   ASSERT_EQ("TestApp", windows[app_index]->app_name);
 
   tab = windows[app_index]->tabs[0].get();
@@ -617,8 +590,7 @@ TEST_F(SessionServiceTest, IgnoreCrostiniApps) {
   SessionID window2_id = SessionID::NewUnique();
   ASSERT_NE(window2_id, window_id);
 
-  service()->SetWindowType(window2_id, Browser::TYPE_POPUP,
-                           SessionService::TYPE_NORMAL);
+  service()->SetWindowType(window2_id, Browser::TYPE_APP);
   service()->SetWindowBounds(window2_id, window_bounds, ui::SHOW_STATE_NORMAL);
   service()->SetWindowAppName(window2_id, "_crostini_fakeappid");
 
@@ -640,9 +612,8 @@ TEST_F(SessionServiceTest, PruneFromFront) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::NumberToString(i), "a");
+    SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+        base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -692,9 +663,8 @@ TEST_F(SessionServiceTest, PruneFromMiddle) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::NumberToString(i), "a");
+    SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+        base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -814,9 +784,8 @@ TEST_F(SessionServiceTest, PruneToEmpty) {
 
   // Add 5 navigations, with the 4th selected.
   for (int i = 0; i < 5; ++i) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::NumberToString(i), "a");
+    SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+        base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, (i == 3));
   }
@@ -862,8 +831,7 @@ TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
   std::string app_id("foo");
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -885,8 +853,7 @@ TEST_F(SessionServiceTest, PersistUserAgentOverrides) {
       "Safari/535.19";
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntryTestHelper::SetIsOverridingUserAgent(true, &nav1);
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
@@ -909,8 +876,7 @@ TEST_F(SessionServiceTest, CloseTabUserGesture) {
   ASSERT_NE(window_id, tab_id);
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -927,8 +893,7 @@ TEST_F(SessionServiceTest, DontPersistDefault) {
   SessionID tab_id = SessionID::NewUnique();
   ASSERT_NE(window_id, tab_id);
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
   service()->SetWindowBounds(window_id,
@@ -952,17 +917,16 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
   // Create a TabNavigation containing page_state and representing a POST
   // request.
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "title");
+      ContentTestHelper::CreateNavigation("http://google.com", "title");
   SerializedNavigationEntryTestHelper::SetEncodedPageState(
       page_state.ToEncodedData(), &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
+  nav1.set_index(0);
 
   // Create a TabNavigation containing page_state and representing a normal
   // request.
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com/nopost", "title");
+      ContentTestHelper::CreateNavigation("http://google.com/nopost", "title");
   SerializedNavigationEntryTestHelper::SetEncodedPageState(
       page_state.ToEncodedData(), &nav2);
   nav2.set_index(1);
@@ -978,8 +942,14 @@ TEST_F(SessionServiceTest, KeepPostDataWithoutPasswords) {
 
   // Expected: the page state of both navigations was saved and restored.
   ASSERT_EQ(2u, windows[0]->tabs[0]->navigations.size());
-  helper_.AssertNavigationEquals(nav1, windows[0]->tabs[0]->navigations[0]);
-  helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
+  {
+    SCOPED_TRACE("Comparing |nav1| and |navigations[0]|");
+    helper_.AssertNavigationEquals(nav1, windows[0]->tabs[0]->navigations[0]);
+  }
+  {
+    SCOPED_TRACE("Comparing |nav2| and |navigations[1]|");
+    helper_.AssertNavigationEquals(nav2, windows[0]->tabs[0]->navigations[1]);
+  }
 }
 
 TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
@@ -993,8 +963,7 @@ TEST_F(SessionServiceTest, RemovePostDataWithPasswords) {
   // Create a TabNavigation containing page_state and representing a POST
   // request with passwords.
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "title");
+      ContentTestHelper::CreateNavigation("http://google.com", "title");
   SerializedNavigationEntryTestHelper::SetEncodedPageState(
       page_state.ToEncodedData(), &nav1);
   SerializedNavigationEntryTestHelper::SetHasPostData(true, &nav1);
@@ -1020,9 +989,8 @@ TEST_F(SessionServiceTest, ReplacePendingNavigation) {
 
   // Add 5 navigations, some with the same index
   for (int i = 0; i < 5; ++i) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::NumberToString(i), "a");
+    SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+        base_url + base::NumberToString(i), "a");
     nav.set_index(i / 2);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
@@ -1050,9 +1018,8 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
 
   for (int i = 0; i < 5; ++i) {
-    SerializedNavigationEntry nav =
-        SerializedNavigationEntryTestHelper::CreateNavigation(
-            base_url + base::NumberToString(i), "a");
+    SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+        base_url + base::NumberToString(i), "a");
     nav.set_index(i);
     UpdateNavigation(window_id, tab_id, nav, true);
   }
@@ -1070,9 +1037,8 @@ TEST_F(SessionServiceTest, ReplacePendingNavigationAndPrune) {
   EXPECT_EQ(0, available_range.second);
 
   // Add another navigation to replace the last one.
-  SerializedNavigationEntry nav =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          base_url + base::NumberToString(5), "a");
+  SerializedNavigationEntry nav = ContentTestHelper::CreateNavigation(
+      base_url + base::NumberToString(5), "a");
   nav.set_index(4);
   UpdateNavigation(window_id, tab_id, nav, true);
 
@@ -1138,14 +1104,11 @@ TEST_F(SessionServiceTest, IgnoreBlacklistedUrls) {
   SessionID tab_id = SessionID::NewUnique();
 
   SerializedNavigationEntry nav1 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://google.com", "abc");
+      ContentTestHelper::CreateNavigation("http://google.com", "abc");
   SerializedNavigationEntry nav2 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          chrome::kChromeUIQuitURL, "quit");
-  SerializedNavigationEntry nav3 =
-      SerializedNavigationEntryTestHelper::CreateNavigation(
-          chrome::kChromeUIRestartURL, "restart");
+      ContentTestHelper::CreateNavigation(chrome::kChromeUIQuitURL, "quit");
+  SerializedNavigationEntry nav3 = ContentTestHelper::CreateNavigation(
+      chrome::kChromeUIRestartURL, "restart");
 
   helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
   UpdateNavigation(window_id, tab_id, nav1, true);
@@ -1173,13 +1136,14 @@ TEST_F(SessionServiceTest, TabGroupDefaultsToNone) {
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(1U, windows[0]->tabs.size());
+  ASSERT_EQ(0U, windows[0]->tab_groups.size());
 
   // Verify that the recorded tab has no group.
   sessions::SessionTab* tab = windows[0]->tabs[0].get();
   EXPECT_EQ(base::nullopt, tab->group);
 }
 
-TEST_F(SessionServiceTest, TabGroupIdsSaved) {
+TEST_F(SessionServiceTest, TabGroupsSaved) {
   const auto group1_token = base::Token::CreateRandom();
   const auto group2_token = base::Token::CreateRandom();
   constexpr int kNumTabs = 5;
@@ -1198,10 +1162,50 @@ TEST_F(SessionServiceTest, TabGroupIdsSaved) {
 
   ASSERT_EQ(1U, windows.size());
   ASSERT_EQ(kNumTabs, static_cast<int>(windows[0]->tabs.size()));
+  ASSERT_EQ(2U, windows[0]->tab_groups.size());
 
   for (int tab_ndx = 0; tab_ndx < kNumTabs; ++tab_ndx) {
     sessions::SessionTab* tab = windows[0]->tabs[tab_ndx].get();
     EXPECT_EQ(groups[tab_ndx], tab->group);
+  }
+}
+
+TEST_F(SessionServiceTest, TabGroupMetadataSaved) {
+  constexpr int kNumGroups = 2;
+  const std::array<base::Token, kNumGroups> group_ids = {
+      base::Token::CreateRandom(), base::Token::CreateRandom()};
+  const std::array<base::string16, kNumGroups> titles = {
+      base::ASCIIToUTF16("Foo"), base::ASCIIToUTF16("Bar")};
+  const std::array<SkColor, kNumGroups> colors = {SK_ColorBLUE, SK_ColorGREEN};
+
+  // Create |kNumGroups| tab groups, each with one tab.
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    const SessionID tab_id =
+        CreateTabWithTestNavigationData(window_id, group_ndx);
+    service()->SetTabGroup(window_id, tab_id, group_ids[group_ndx]);
+    service()->SetTabGroupMetadata(window_id, group_ids[group_ndx],
+                                   titles[group_ndx], colors[group_ndx]);
+  }
+
+  std::vector<std::unique_ptr<sessions::SessionWindow>> windows;
+  ReadWindows(&windows, nullptr);
+
+  ASSERT_EQ(1U, windows.size());
+  ASSERT_EQ(2U, windows[0]->tabs.size());
+  ASSERT_EQ(2U, windows[0]->tab_groups.size());
+
+  // There's no guaranteed order in |SessionWindow::tab_groups|, so use a map.
+  base::flat_map<base::Token, sessions::SessionTabGroup*> tab_groups;
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    tab_groups.emplace(windows[0]->tab_groups[group_ndx]->group_id,
+                       windows[0]->tab_groups[group_ndx].get());
+  }
+
+  for (int group_ndx = 0; group_ndx < kNumGroups; ++group_ndx) {
+    const base::Token group_id = group_ids[group_ndx];
+    ASSERT_TRUE(base::Contains(tab_groups, group_id));
+    EXPECT_EQ(titles[group_ndx], tab_groups[group_id]->title);
+    EXPECT_EQ(colors[group_ndx], tab_groups[group_id]->color);
   }
 }
 

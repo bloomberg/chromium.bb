@@ -49,27 +49,18 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.url = GURL("https://example.com/resources/dummy.xml");
   original.site_for_cookies = GURL("https://example.com/index.html");
   url::Origin origin = url::Origin::Create(original.url);
-  ;
   original.top_frame_origin = origin;
-  original.trusted_network_isolation_key =
-      net::NetworkIsolationKey(origin, origin);
-  original.update_network_isolation_key_on_redirect = network::mojom::
-      UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
   original.attach_same_site_cookies = true;
   original.update_first_party_url_on_redirect = false;
   original.request_initiator = url::Origin::Create(original.url);
   original.referrer = GURL("https://referrer.com/");
   original.referrer_policy =
       net::URLRequest::ORIGIN_ONLY_ON_TRANSITION_CROSS_ORIGIN;
-  original.is_prerendering = false;
   original.headers.SetHeader("Accept", "text/xml");
   original.cors_exempt_headers.SetHeader("X-Requested-With", "ForTesting");
   original.load_flags = 3;
-  original.allow_credentials = true;
-  original.plugin_child_id = 5;
   original.resource_type = 2;
   original.priority = net::IDLE;
-  original.appcache_host_id = base::UnguessableToken::Create();
   original.should_reset_appcache = true;
   original.is_external_request = false;
   original.cors_preflight_policy =
@@ -89,16 +80,20 @@ TEST(URLRequestMojomTraitsTest, Roundtrips_ResourceRequest) {
   original.render_frame_id = 5;
   original.is_main_frame = true;
   original.transition_type = 0;
-  original.allow_download = false;
   original.report_raw_headers = true;
   original.previews_state = 0;
-  original.initiated_in_secure_context = false;
   original.upgrade_if_insecure = true;
   original.is_revalidating = false;
   original.throttling_profile_id = base::UnguessableToken::Create();
   original.custom_proxy_pre_cache_headers.SetHeader("pre_x", "x_value");
   original.custom_proxy_post_cache_headers.SetHeader("post_y", "y_value");
   original.fetch_window_id = base::UnguessableToken::Create();
+
+  original.trusted_params = ResourceRequest::TrustedParams();
+  original.trusted_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
+  original.trusted_params->update_network_isolation_key_on_redirect = network::
+      mojom::UpdateNetworkIsolationKeyOnRedirect::kUpdateTopFrameAndFrameOrigin;
 
   network::ResourceRequest copied;
   EXPECT_TRUE(mojo::test::SerializeAndDeserialize<mojom::URLRequest>(&original,

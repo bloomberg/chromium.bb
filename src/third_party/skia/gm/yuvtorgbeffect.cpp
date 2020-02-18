@@ -22,7 +22,6 @@
 #include "include/core/SkTypes.h"
 #include "include/core/SkYUVAIndex.h"
 #include "include/gpu/GrContext.h"
-#include "include/gpu/GrSamplerState.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrClip.h"
 #include "src/gpu/GrContextPriv.h"
@@ -31,6 +30,7 @@
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRenderTargetContext.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/GrTextureProxy.h"
 #include "src/gpu/effects/GrPorterDuffXferProcessor.h"
 #include "src/gpu/effects/GrYUVtoRGBEffect.h"
@@ -100,8 +100,8 @@ protected:
         sk_sp<GrTextureProxy> proxies[3];
 
         for (int i = 0; i < 3; ++i) {
-            proxies[i] = proxyProvider->createTextureProxy(fImage[i], GrRenderable::kNo, 1,
-                                                           SkBudgeted::kYes, SkBackingFit::kExact);
+            proxies[i] = proxyProvider->createTextureProxy(fImage[i], 1, SkBudgeted::kYes,
+                                                           SkBackingFit::kExact);
             if (!proxies[i]) {
                 *errorMsg = "Failed to create proxy";
                 return DrawResult::kFail;
@@ -219,8 +219,8 @@ protected:
         sk_sp<GrTextureProxy> proxies[2];
 
         for (int i = 0; i < 2; ++i) {
-            proxies[i] = proxyProvider->createTextureProxy(fImage[i], GrRenderable::kNo, 1,
-                                                           SkBudgeted::kYes, SkBackingFit::kExact);
+            proxies[i] = proxyProvider->createTextureProxy(fImage[i], 1, SkBudgeted::kYes,
+                                                           SkBackingFit::kExact);
             if (!proxies[i]) {
                 *errorMsg = "Failed to create proxy";
                 return DrawResult::kFail;
@@ -316,8 +316,8 @@ protected:
         sk_sp<GrTextureProxy> proxies[3];
 
         for (int i = 0; i < 3; ++i) {
-            proxies[i] = proxyProvider->createTextureProxy(fImage[i], GrRenderable::kNo, 1,
-                                                           SkBudgeted::kYes, SkBackingFit::kExact);
+            proxies[i] = proxyProvider->createTextureProxy(fImage[i], 1, SkBudgeted::kYes,
+                                                           SkBackingFit::kExact);
             if (!proxies[i]) {
                 *errorMsg = "Failed to create proxy";
                 return DrawResult::kFail;

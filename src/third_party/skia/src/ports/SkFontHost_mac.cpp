@@ -1789,10 +1789,10 @@ std::unique_ptr<SkAdvancedTypefaceMetrics> SkTypeface_Mac::onGetAdvancedMetrics(
     CGRect bbox = CTFontGetBoundingBox(ctFont.get());
 
     SkRect r;
-    r.set( CGToScalar(CGRectGetMinX_inline(bbox)),   // Left
-           CGToScalar(CGRectGetMaxY_inline(bbox)),   // Top
-           CGToScalar(CGRectGetMaxX_inline(bbox)),   // Right
-           CGToScalar(CGRectGetMinY_inline(bbox)));  // Bottom
+    r.setLTRB(CGToScalar(CGRectGetMinX_inline(bbox)),   // Left
+              CGToScalar(CGRectGetMaxY_inline(bbox)),   // Top
+              CGToScalar(CGRectGetMaxX_inline(bbox)),   // Right
+              CGToScalar(CGRectGetMinY_inline(bbox)));  // Bottom
 
     r.roundOut(&(info->fBBox));
 
@@ -2109,7 +2109,7 @@ static SkUniqueCFRef<CFDictionaryRef> ct_variation_from_cg_variation(CFDictionar
 
         CFDictionaryAddValue(ctVariations.get(), axisTag, axisValue);
     }
-    return std::move(ctVariations);
+    return ctVariations;
 }
 
 int SkTypeface_Mac::onGetVariationDesignPosition(
@@ -2760,7 +2760,7 @@ protected:
                 CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value));
             CFDictionaryAddValue(dict.get(), axisName, valueNumber.get());
         }
-        return std::move(dict);
+        return dict;
     }
     sk_sp<SkTypeface> onMakeFromStreamArgs(std::unique_ptr<SkStreamAsset> s,
                                            const SkFontArguments& args) const override {
@@ -2847,7 +2847,7 @@ protected:
                     CFNumberCreate(kCFAllocatorDefault, kCFNumberDoubleType, &value));
             CFDictionaryAddValue(dict.get(), axisName, valueNumber.get());
         }
-        return std::move(dict);
+        return dict;
     }
     sk_sp<SkTypeface> onMakeFromFontData(std::unique_ptr<SkFontData> fontData) const override {
         if (fontData->getIndex() != 0) {

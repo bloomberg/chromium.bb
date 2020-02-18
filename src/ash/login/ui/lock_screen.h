@@ -6,7 +6,9 @@
 #define ASH_LOGIN_UI_LOCK_SCREEN_H_
 
 #include "ash/ash_export.h"
+#include "ash/public/cpp/login_types.h"
 #include "ash/session/session_observer.h"
+#include "ash/tray_action/tray_action.h"
 #include "ash/tray_action/tray_action_observer.h"
 #include "base/macros.h"
 #include "base/scoped_observer.h"
@@ -19,7 +21,6 @@ class Widget;
 namespace ash {
 
 class LockContentsView;
-class TrayAction;
 
 class ASH_EXPORT LockScreen : public TrayActionObserver,
                               public SessionObserver {
@@ -63,6 +64,8 @@ class ASH_EXPORT LockScreen : public TrayActionObserver,
   void FocusNextUser();
   void FocusPreviousUser();
   void ShowParentAccessDialog();
+  void RequestSecurityTokenPin(SecurityTokenPinRequest request);
+  void ClearSecurityTokenPinRequest();
 
   // TrayActionObserver:
   void OnLockScreenNoteStateChanged(mojom::TrayActionState state) override;

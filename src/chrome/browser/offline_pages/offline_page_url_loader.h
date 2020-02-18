@@ -59,7 +59,6 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -113,7 +112,7 @@ class OfflinePageURLLoader : public network::mojom::URLLoader,
   OfflinePageRequestHandler::Delegate::TabIdGetter tab_id_getter_;
   bool is_offline_preview_allowed_;
 
-  base::WeakPtrFactory<OfflinePageURLLoader> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageURLLoader> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageURLLoader);
 };

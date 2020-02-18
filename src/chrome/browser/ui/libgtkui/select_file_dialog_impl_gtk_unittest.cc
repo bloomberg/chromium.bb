@@ -3,14 +3,15 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/ui/libgtkui/select_file_dialog_impl_gtk.h"
+
 #include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/browser/ui/libgtkui/gtk_ui.h"
 #include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::RunLoop;
@@ -99,7 +100,7 @@ class FilePicker : public ui::SelectFileDialog::Listener {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_EXISTING_FOLDER);
@@ -114,7 +115,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectExistingFolder) {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_UPLOAD_FOLDER);
@@ -129,7 +130,7 @@ TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectUploadFolder) {
 
 // Flaky, see crbug.com/853079.
 TEST_F(SelectFileDialogImplGtkTest, DISABLED_SelectFolder) {
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedTestingLocalState local_state(TestingBrowserProcess::GetGlobal());
 
   FilePicker file_picker(ui::SelectFileDialog::SELECT_FOLDER);

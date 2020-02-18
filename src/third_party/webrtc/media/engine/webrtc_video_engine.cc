@@ -27,7 +27,6 @@
 #include "api/video_codecs/video_encoder.h"
 #include "api/video_codecs/video_encoder_factory.h"
 #include "call/call.h"
-#include "media/engine/constants.h"
 #include "media/engine/simulcast.h"
 #include "media/engine/webrtc_media_engine.h"
 #include "media/engine/webrtc_voice_engine.h"
@@ -44,6 +43,11 @@ namespace cricket {
 namespace {
 
 const int kMinLayerSize = 16;
+
+// Field trial which controls whether to report standard-compliant bytes
+// sent/received per stream.  If enabled, padding and headers are not included
+// in bytes sent or received.
+constexpr char kUseStandardBytesStats[] = "WebRTC-UseStandardBytesStats";
 
 // If this field trial is enabled, we will enable sending FlexFEC and disable
 // sending ULPFEC whenever the former has been negotiated in the SDPs.
@@ -324,7 +328,13 @@ absl::optional<int> GetFallbackMinBpsFromFieldTrial(
 }
 
 int GetMinVideoBitrateBps(webrtc::VideoCodecType type) {
-  return GetFallbackMinBpsFromFieldTrial(type).value_or(kMinVideoBitrateBps);
+  if (GetFallbackMinBpsFromFieldTrial(type).has_value()) {
+    return GetFallbackMinBpsFromFieldTrial(type).value();
+  }
+  if (webrtc::field_trial::IsEnabled(kMinVideoBitrateExperiment)) {
+    return MinVideoBitrateConfig().min_video_bitrate->bps();
+  }
+  return kMinVideoBitrateBps;
 }
 }  // namespace
 
@@ -1795,7 +1805,9 @@ WebRtcVideoChannel::WebRtcVideoSendStream::WebRtcVideoSendStream(
       encoder_sink_(nullptr),
       parameters_(std::move(config), options, max_bitrate_bps, codec_settings),
       rtp_parameters_(CreateRtpParametersWithEncodings(sp)),
-      sending_(false) {
+      sending_(false),
+      use_standard_bytes_stats_(
+          webrtc::field_trial::IsEnabled(kUseStandardBytesStats)) {
   // Maximum packet size may come in RtpConfig from external transport, for
   // example from QuicTransportInterface implementation, so do not exceed
   // given max_packet_size.
@@ -2331,6 +2343,8 @@ VideoSenderInfo WebRtcVideoChannel::WebRtcVideoSendStream::GetVideoSenderInfo(
 
   info.quality_limitation_reason = stats.quality_limitation_reason;
   info.quality_limitation_durations_ms = stats.quality_limitation_durations_ms;
+  info.quality_limitation_resolution_changes =
+      stats.quality_limitation_resolution_changes;
   info.encoder_implementation_name = stats.encoder_implementation_name;
   info.ssrc_groups = ssrc_groups_;
   info.framerate_input = stats.input_frame_rate;
@@ -2362,11 +2376,13 @@ VideoSenderInfo WebRtcVideoChannel::WebRtcVideoSendStream::GetVideoSenderInfo(
        it != stats.substreams.end(); ++it) {
     // TODO(pbos): Wire up additional stats, such as padding bytes.
     webrtc::VideoSendStream::StreamStats stream_stats = it->second;
-    // TODO(http://crbug.com/webrtc/10525): Bytes sent should only include
-    // payload bytes, not header and padding bytes.
-    info.bytes_sent += stream_stats.rtp_stats.transmitted.payload_bytes +
-                       stream_stats.rtp_stats.transmitted.header_bytes +
-                       stream_stats.rtp_stats.transmitted.padding_bytes;
+    if (use_standard_bytes_stats_) {
+      info.bytes_sent += stream_stats.rtp_stats.transmitted.payload_bytes;
+    } else {
+      info.bytes_sent += stream_stats.rtp_stats.transmitted.payload_bytes +
+                         stream_stats.rtp_stats.transmitted.header_bytes +
+                         stream_stats.rtp_stats.transmitted.padding_bytes;
+    }
     info.packets_sent += stream_stats.rtp_stats.transmitted.packets;
     info.total_packet_send_delay_ms += stream_stats.total_packet_send_delay_ms;
     // TODO(https://crbug.com/webrtc/10555): RTX retransmissions should show up
@@ -2482,7 +2498,9 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::WebRtcVideoReceiveStream(
       decoder_factory_(decoder_factory),
       sink_(NULL),
       first_frame_timestamp_(-1),
-      estimated_remote_start_ntp_time_ms_(0) {
+      estimated_remote_start_ntp_time_ms_(0),
+      use_standard_bytes_stats_(
+          webrtc::field_trial::IsEnabled(kUseStandardBytesStats)) {
   config_.renderer = this;
   ConfigureCodecs(recv_codecs);
   ConfigureFlexfecCodec(flexfec_config.payload_type);
@@ -2783,11 +2801,13 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::GetVideoReceiverInfo(
   if (stats.current_payload_type != -1) {
     info.codec_payload_type = stats.current_payload_type;
   }
-  info.bytes_rcvd = stats.rtp_stats.transmitted.payload_bytes +
-                    stats.rtp_stats.transmitted.header_bytes +
-                    stats.rtp_stats.transmitted.padding_bytes;
-  info.packets_rcvd = stats.rtp_stats.transmitted.packets;
-  info.packets_lost = stats.rtcp_stats.packets_lost;
+  if (use_standard_bytes_stats_) {
+    info.bytes_rcvd = stats.rtp_stats.packet_counter.payload_bytes;
+  } else {
+    info.bytes_rcvd = stats.rtp_stats.packet_counter.TotalBytes();
+  }
+  info.packets_rcvd = stats.rtp_stats.packet_counter.packets;
+  info.packets_lost = stats.rtp_stats.packets_lost;
 
   info.framerate_rcvd = stats.network_frame_rate;
   info.framerate_decoded = stats.decode_frame_rate;
@@ -2811,6 +2831,7 @@ WebRtcVideoChannel::WebRtcVideoReceiveStream::GetVideoReceiverInfo(
   info.render_delay_ms = stats.render_delay_ms;
   info.frames_received =
       stats.frame_counts.key_frames + stats.frame_counts.delta_frames;
+  info.frames_dropped = stats.frames_dropped;
   info.frames_decoded = stats.frames_decoded;
   info.key_frames_decoded = stats.frame_counts.key_frames;
   info.frames_rendered = stats.frames_rendered;
@@ -2872,46 +2893,58 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
   RTC_DCHECK(!codecs.empty());
 
   std::vector<VideoCodecSettings> video_codecs;
-  std::map<int, bool> payload_used;
   std::map<int, VideoCodec::CodecType> payload_codec_type;
   // |rtx_mapping| maps video payload type to rtx payload type.
   std::map<int, int> rtx_mapping;
 
   webrtc::UlpfecConfig ulpfec_config;
-  int flexfec_payload_type = -1;
+  absl::optional<int> flexfec_payload_type;
 
-  for (size_t i = 0; i < codecs.size(); ++i) {
-    const VideoCodec& in_codec = codecs[i];
-    int payload_type = in_codec.id;
+  for (const VideoCodec& in_codec : codecs) {
+    const int payload_type = in_codec.id;
 
-    if (payload_used[payload_type]) {
+    if (payload_codec_type.find(payload_type) != payload_codec_type.end()) {
       RTC_LOG(LS_ERROR) << "Payload type already registered: "
                         << in_codec.ToString();
-      return std::vector<VideoCodecSettings>();
+      return {};
     }
-    payload_used[payload_type] = true;
     payload_codec_type[payload_type] = in_codec.GetCodecType();
 
     switch (in_codec.GetCodecType()) {
       case VideoCodec::CODEC_RED: {
-        // RED payload type, should not have duplicates.
-        RTC_DCHECK_EQ(-1, ulpfec_config.red_payload_type);
-        ulpfec_config.red_payload_type = in_codec.id;
-        continue;
+        if (ulpfec_config.red_payload_type != -1) {
+          RTC_LOG(LS_ERROR)
+              << "Duplicate RED codec: ignoring PT=" << payload_type
+              << " in favor of PT=" << ulpfec_config.red_payload_type
+              << " which was specified first.";
+          break;
+        }
+        ulpfec_config.red_payload_type = payload_type;
+        break;
       }
 
       case VideoCodec::CODEC_ULPFEC: {
-        // ULPFEC payload type, should not have duplicates.
-        RTC_DCHECK_EQ(-1, ulpfec_config.ulpfec_payload_type);
-        ulpfec_config.ulpfec_payload_type = in_codec.id;
-        continue;
+        if (ulpfec_config.ulpfec_payload_type != -1) {
+          RTC_LOG(LS_ERROR)
+              << "Duplicate ULPFEC codec: ignoring PT=" << payload_type
+              << " in favor of PT=" << ulpfec_config.ulpfec_payload_type
+              << " which was specified first.";
+          break;
+        }
+        ulpfec_config.ulpfec_payload_type = payload_type;
+        break;
       }
 
       case VideoCodec::CODEC_FLEXFEC: {
-        // FlexFEC payload type, should not have duplicates.
-        RTC_DCHECK_EQ(-1, flexfec_payload_type);
-        flexfec_payload_type = in_codec.id;
-        continue;
+        if (flexfec_payload_type) {
+          RTC_LOG(LS_ERROR)
+              << "Duplicate FLEXFEC codec: ignoring PT=" << payload_type
+              << " in favor of PT=" << *flexfec_payload_type
+              << " which was specified first.";
+          break;
+        }
+        flexfec_payload_type = payload_type;
+        break;
       }
 
       case VideoCodec::CODEC_RTX: {
@@ -2922,49 +2955,57 @@ WebRtcVideoChannel::MapCodecs(const std::vector<VideoCodec>& codecs) {
           RTC_LOG(LS_ERROR)
               << "RTX codec with invalid or no associated payload type: "
               << in_codec.ToString();
-          return std::vector<VideoCodecSettings>();
+          return {};
         }
-        rtx_mapping[associated_payload_type] = in_codec.id;
-        continue;
+        rtx_mapping[associated_payload_type] = payload_type;
+        break;
       }
 
-      case VideoCodec::CODEC_VIDEO:
+      case VideoCodec::CODEC_VIDEO: {
+        video_codecs.emplace_back();
+        video_codecs.back().codec = in_codec;
         break;
+      }
     }
-
-    video_codecs.push_back(VideoCodecSettings());
-    video_codecs.back().codec = in_codec;
   }
 
   // One of these codecs should have been a video codec. Only having FEC
   // parameters into this code is a logic error.
   RTC_DCHECK(!video_codecs.empty());
 
-  for (std::map<int, int>::const_iterator it = rtx_mapping.begin();
-       it != rtx_mapping.end(); ++it) {
-    if (!payload_used[it->first]) {
-      RTC_LOG(LS_ERROR) << "RTX mapped to payload not in codec list.";
-      return std::vector<VideoCodecSettings>();
+  for (const auto& entry : rtx_mapping) {
+    const int associated_payload_type = entry.first;
+    const int rtx_payload_type = entry.second;
+    auto it = payload_codec_type.find(associated_payload_type);
+    if (it == payload_codec_type.end()) {
+      RTC_LOG(LS_ERROR) << "RTX codec (PT=" << rtx_payload_type
+                        << ") mapped to PT=" << associated_payload_type
+                        << " which is not in the codec list.";
+      return {};
     }
-    if (payload_codec_type[it->first] != VideoCodec::CODEC_VIDEO &&
-        payload_codec_type[it->first] != VideoCodec::CODEC_RED) {
+    const VideoCodec::CodecType associated_codec_type = it->second;
+    if (associated_codec_type != VideoCodec::CODEC_VIDEO &&
+        associated_codec_type != VideoCodec::CODEC_RED) {
       RTC_LOG(LS_ERROR)
-          << "RTX not mapped to regular video codec or RED codec.";
-      return std::vector<VideoCodecSettings>();
+          << "RTX PT=" << rtx_payload_type
+          << " not mapped to regular video codec or RED codec (PT="
+          << associated_payload_type << ").";
+      return {};
     }
 
-    if (it->first == ulpfec_config.red_payload_type) {
-      ulpfec_config.red_rtx_payload_type = it->second;
+    if (associated_payload_type == ulpfec_config.red_payload_type) {
+      ulpfec_config.red_rtx_payload_type = rtx_payload_type;
     }
   }
 
-  for (size_t i = 0; i < video_codecs.size(); ++i) {
-    video_codecs[i].ulpfec = ulpfec_config;
-    video_codecs[i].flexfec_payload_type = flexfec_payload_type;
-    if (rtx_mapping[video_codecs[i].codec.id] != 0 &&
-        rtx_mapping[video_codecs[i].codec.id] !=
-            ulpfec_config.red_payload_type) {
-      video_codecs[i].rtx_payload_type = rtx_mapping[video_codecs[i].codec.id];
+  for (VideoCodecSettings& codec_settings : video_codecs) {
+    const int payload_type = codec_settings.codec.id;
+    codec_settings.ulpfec = ulpfec_config;
+    codec_settings.flexfec_payload_type = flexfec_payload_type.value_or(-1);
+    auto it = rtx_mapping.find(payload_type);
+    if (it != rtx_mapping.end()) {
+      const int rtx_payload_type = it->second;
+      codec_settings.rtx_payload_type = rtx_payload_type;
     }
   }
 

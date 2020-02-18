@@ -10,7 +10,8 @@
 # List of supported extensions. Add to this list to enable new extensions
 # available in gl.xml.
 
-import sys, os
+import sys
+import os
 import xml.etree.ElementTree as etree
 
 xml_inputs = [
@@ -30,9 +31,10 @@ angle_extensions = [
     "GL_CHROMIUM_copy_texture",
     "GL_CHROMIUM_copy_compressed_texture",
     "GL_CHROMIUM_lose_context",
+    "GL_ANGLE_copy_texture_3d",
+    "GL_ANGLE_program_binary",
     "GL_ANGLE_request_extension",
     "GL_ANGLE_robust_client_memory",
-    "GL_ANGLE_copy_texture_3d",
     "GL_ANGLE_texture_external_update",
 ]
 
@@ -64,6 +66,7 @@ gles_extensions = [
     "GL_EXT_map_buffer_range",
     "GL_EXT_memory_object",
     "GL_EXT_memory_object_fd",
+    "GL_EXT_multisampled_render_to_texture",
     "GL_EXT_occlusion_query_boolean",
     "GL_EXT_robustness",
     "GL_EXT_semaphore",
@@ -82,6 +85,7 @@ gles_extensions = [
     "GL_OVR_multiview2",
     "GL_KHR_parallel_shader_compile",
     "GL_ANGLE_multi_draw",
+    "GL_ANGLE_base_vertex_base_instance",
 ]
 
 supported_extensions = sorted(angle_extensions + gles1_extensions + gles_extensions)
@@ -123,6 +127,25 @@ strip_suffixes = ["ANGLE", "EXT", "KHR", "OES", "CHROMIUM"]
 # The EGL_ANGLE_explicit_context extension is generated differently from other extensions.
 # Toggle generation here.
 support_EGL_ANGLE_explicit_context = True
+
+# For ungrouped GLenum types
+default_enum_group_name = "DefaultGroup"
+
+# Group names that appear in command/param, but not present in groups/group
+unsupported_enum_group_names = {
+    'GetMultisamplePNameNV',
+    'BufferPNameARB',
+    'BufferPointerNameARB',
+    'VertexAttribPointerPropertyARB',
+    'VertexAttribPropertyARB',
+    'FenceParameterNameNV',
+    'FenceConditionNV',
+    'BufferPointerNameARB',
+    'MatrixIndexPointerTypeARB',
+    'PointParameterNameARB',
+    'ClampColorTargetARB',
+    'ClampColorModeARB',
+}
 
 
 def script_relative(path):

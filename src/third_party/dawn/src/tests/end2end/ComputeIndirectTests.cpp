@@ -47,40 +47,35 @@ void ComputeIndirectTests::BasicTest(std::initializer_list<uint32_t> bufferList,
                                      uint64_t indirectOffset) {
     dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStageBit::Compute, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStageBit::Compute, dawn::BindingType::StorageBuffer},
+                    {0, dawn::ShaderStage::Compute, dawn::BindingType::UniformBuffer},
+                    {1, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
                 });
 
     // Set up shader and pipeline
     dawn::ShaderModule module =
-        utils::CreateShaderModule(device, utils::ShaderStage::Compute, shaderSource);
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shaderSource);
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
     csDesc.layout = pl;
-
-    dawn::PipelineStageDescriptor computeStage;
-    computeStage.module = module;
-    computeStage.entryPoint = "main";
-    csDesc.computeStage = &computeStage;
-
+    csDesc.computeStage.module = module;
+    csDesc.computeStage.entryPoint = "main";
     dawn::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     // Set up dst storage buffer to contain dispatch x, y, z
-    dawn::Buffer dst = utils::CreateBufferFromData<uint32_t>(device,
-                                                             dawn::BufferUsageBit::Storage |
-                                                                 dawn::BufferUsageBit::CopySrc |
-                                                                 dawn::BufferUsageBit::CopyDst,
-                                                             {0, 0, 0});
+    dawn::Buffer dst = utils::CreateBufferFromData<uint32_t>(
+        device,
+        dawn::BufferUsage::Storage | dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst,
+        {0, 0, 0});
 
     std::vector<uint32_t> indirectBufferData = bufferList;
 
     dawn::Buffer indirectBuffer =
-        utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsageBit::Indirect, bufferList);
+        utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsage::Indirect, bufferList);
 
     dawn::Buffer expectedBuffer =
         utils::CreateBufferFromData(device, &indirectBufferData[indirectOffset / sizeof(uint32_t)],
-                                    3 * sizeof(uint32_t), dawn::BufferUsageBit::Uniform);
+                                    3 * sizeof(uint32_t), dawn::BufferUsage::Uniform);
 
     // Set up bind group and issue dispatch
     dawn::BindGroup bindGroup =

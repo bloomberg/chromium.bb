@@ -25,6 +25,10 @@
 #include "gpu/command_buffer/service/shared_image_representation.h"
 #include "ui/gl/gl_version_info.h"
 
+#if defined(OS_WIN)
+#include "gpu/command_buffer/service/shared_image_backing_factory_d3d.h"
+#endif  // OS_WIN
+
 namespace gpu {
 namespace gles2 {
 
@@ -212,13 +216,29 @@ void PassthroughResources::Destroy(gl::GLApi* api) {
         [](GLuint client_id, scoped_refptr<TexturePassthrough> texture) {
           texture->MarkContextLost();
         });
-    for (const auto& pair : texture_shared_image_map) {
-      pair.second->OnContextLost();
+    for (auto& pair : texture_shared_image_map) {
+      pair.second.representation()->OnContextLost();
     }
   }
   texture_object_map.Clear();
   texture_shared_image_map.clear();
   DestroyPendingTextures(have_context);
+}
+
+PassthroughResources::SharedImageData::SharedImageData() = default;
+PassthroughResources::SharedImageData::SharedImageData(
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        representation)
+    : representation_(std::move(representation)) {}
+PassthroughResources::SharedImageData::SharedImageData(
+    SharedImageData&& other) = default;
+PassthroughResources::SharedImageData::~SharedImageData() = default;
+
+PassthroughResources::SharedImageData& PassthroughResources::SharedImageData::
+operator=(SharedImageData&& other) {
+  scoped_access_ = std::move(other.scoped_access_);
+  representation_ = std::move(other.representation_);
+  return *this;
 }
 
 ScopedFramebufferBindingReset::ScopedFramebufferBindingReset(
@@ -773,6 +793,7 @@ gpu::ContextResult GLES2DecoderPassthroughImpl::Initialize(
           "GL_EXT_blend_minmax",
           "GL_EXT_discard_framebuffer",
           "GL_EXT_disjoint_timer_query",
+          "GL_EXT_multisampled_render_to_texture",
           "GL_EXT_occlusion_query_boolean",
           "GL_EXT_sRGB",
           "GL_EXT_sRGB_write_control",
@@ -1385,6 +1406,10 @@ gpu::Capabilities GLES2DecoderPassthroughImpl::GetCapabilities() {
   caps.use_dc_overlays_for_video = surface_->UseOverlaysForVideo();
   caps.protected_video_swap_chain = surface_->SupportsProtectedVideo();
   caps.gpu_vsync = surface_->SupportsGpuVSync();
+#if defined(OS_WIN)
+  caps.shared_image_swap_chain =
+      SharedImageBackingFactoryD3D::IsSwapChainSupported();
+#endif  // OS_WIN
   caps.texture_npot = feature_info_->feature_flags().npot_ok;
   caps.texture_storage_image =
       feature_info_->feature_flags().chromium_texture_storage_image;
@@ -1680,7 +1705,8 @@ void GLES2DecoderPassthroughImpl::BindImage(uint32_t client_texture_id,
                                             bool can_bind_to_sampler) {
   scoped_refptr<TexturePassthrough> passthrough_texture = nullptr;
   if (!resources_->texture_object_map.GetServiceID(client_texture_id,
-                                                   &passthrough_texture)) {
+                                                   &passthrough_texture) ||
+      passthrough_texture == nullptr) {
     return;
   }
 
@@ -1835,6 +1861,7 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
     case GL_COPY_WRITE_BUFFER_BINDING:
     case GL_UNIFORM_BUFFER_BINDING:
     case GL_DISPATCH_INDIRECT_BUFFER_BINDING:
+    case GL_DRAW_INDIRECT_BUFFER_BINDING:
       if (*params != 0 &&
           !GetClientID(&resources_->buffer_id_map, *params, params)) {
         return error::kInvalidArguments;
@@ -2095,6 +2122,7 @@ bool GLES2DecoderPassthroughImpl::IsEmulatedQueryTarget(GLenum target) const {
     case GL_COMMANDS_COMPLETED_CHROMIUM:
     case GL_READBACK_SHADOW_COPIES_UPDATED_CHROMIUM:
     case GL_COMMANDS_ISSUED_CHROMIUM:
+    case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
     case GL_LATENCY_QUERY_CHROMIUM:
     case GL_ASYNC_PIXEL_PACK_COMPLETED_CHROMIUM:
     case GL_GET_ERROR_QUERY_CHROMIUM:
@@ -2134,6 +2162,14 @@ error::Error GLES2DecoderPassthroughImpl::ProcessQueries(bool did_finish) {
       case GL_COMMANDS_ISSUED_CHROMIUM:
         result_available = GL_TRUE;
         result = query.commands_issued_time.InMicroseconds();
+        break;
+
+      case GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM:
+        result_available = GL_TRUE;
+        DCHECK_GT(
+            query.commands_issued_timestamp.since_origin().InMicroseconds(), 0);
+        result =
+            query.commands_issued_timestamp.since_origin().InMicroseconds();
         break;
 
       case GL_LATENCY_QUERY_CHROMIUM:
@@ -2515,7 +2551,8 @@ void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromTarget(GLenum target) {
 void GLES2DecoderPassthroughImpl::UpdateTextureSizeFromClientID(
     GLuint client_id) {
   scoped_refptr<TexturePassthrough> texture = nullptr;
-  if (resources_->texture_object_map.GetServiceID(client_id, &texture)) {
+  if (resources_->texture_object_map.GetServiceID(client_id, &texture) &&
+      texture != nullptr) {
     UpdateTextureSizeFromTexturePassthrough(texture.get(), client_id);
   }
 }

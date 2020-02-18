@@ -77,7 +77,6 @@
 #include "third_party/blink/renderer/core/layout/layout_scrollbar_part.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -146,7 +145,8 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
-  UpdateResizerAreaSet();
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    UpdateResizerAreaSet();
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -185,9 +185,11 @@ void PaintLayerScrollableArea::DisposeImpl() {
       element->SetSavedLayerScrollOffset(scroll_offset_);
   }
 
-  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-    if (LocalFrameView* frame_view = frame->View())
-      frame_view->RemoveResizerArea(*GetLayoutBox());
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
+      if (LocalFrameView* frame_view = frame->View())
+        frame_view->RemoveResizerArea(*GetLayoutBox());
+    }
   }
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
@@ -340,7 +342,7 @@ IntRect PaintLayerScrollableArea::ScrollCornerRect() const {
   // (b) Both scrollbars are present.
   bool has_horizontal_bar = HorizontalScrollbar();
   bool has_vertical_bar = VerticalScrollbar();
-  bool has_resizer = GetLayoutBox()->StyleRef().Resize() != EResize::kNone;
+  bool has_resizer = GetLayoutBox()->StyleRef().HasResize();
   if ((has_horizontal_bar && has_vertical_bar) ||
       (has_resizer && (has_horizontal_bar || has_vertical_bar))) {
     return CornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
@@ -789,7 +791,7 @@ bool PaintLayerScrollableArea::UserInputScrollable(
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
     ScrollbarMode mode =
         (orientation == kHorizontalScrollbar) ? h_mode : v_mode;
-    return mode == kScrollbarAuto || mode == kScrollbarAlwaysOn;
+    return mode == ScrollbarMode::kAuto || mode == ScrollbarMode::kAlwaysOn;
   }
 
   EOverflow overflow_style = (orientation == kHorizontalScrollbar)
@@ -1113,6 +1115,10 @@ ScrollBehavior PaintLayerScrollableArea::ScrollBehaviorStyle() const {
   return GetLayoutBox()->StyleRef().GetScrollBehavior();
 }
 
+WebColorScheme PaintLayerScrollableArea::UsedColorScheme() const {
+  return GetLayoutBox()->StyleRef().UsedColorScheme();
+}
+
 bool PaintLayerScrollableArea::HasHorizontalOverflow() const {
   // TODO(szager): Make the algorithm for adding/subtracting overflow:auto
   // scrollbars memoryless (crbug.com/625300).  This client_width hack will
@@ -1182,6 +1188,10 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar, kForbidAddingAutoBars);
 
+  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
+    UpdateResizerAreaSet();
+  UpdateResizerStyle(old_style);
+
   // Avoid some unnecessary computation if there were and will be no scrollbars.
   if (!HasScrollbar() && !needs_horizontal_scrollbar &&
       !needs_vertical_scrollbar)
@@ -1222,8 +1232,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
     VerticalScrollbar()->StyleChanged();
 
   UpdateScrollCornerStyle();
-  UpdateResizerAreaSet();
-  UpdateResizerStyle(old_style);
 }
 
 void PaintLayerScrollableArea::UpdateAfterOverflowRecalc() {
@@ -1374,9 +1382,9 @@ int PaintLayerScrollableArea::HypotheticalScrollbarThickness(
   }
 
   ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-  if (style_source.StyleRef().HasAppearance()) {
+  if (style_source.StyleRef().HasEffectiveAppearance()) {
     scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-        style_source.StyleRef().Appearance());
+        style_source.StyleRef().EffectiveAppearance());
   }
   ScrollbarTheme& theme = GetPageScrollbarTheme();
   if (theme.UsesOverlayScrollbars())
@@ -1475,13 +1483,13 @@ void PaintLayerScrollableArea::ComputeScrollbarExistence(
     // StyleResolver::styleForDocument returns documentStyle with no overflow
     // values, due to which we are destroying the scrollbars that were already
     // present.
-    if (h_mode == kScrollbarAlwaysOn)
+    if (h_mode == ScrollbarMode::kAlwaysOn)
       needs_horizontal_scrollbar = true;
-    else if (h_mode == kScrollbarAlwaysOff)
+    else if (h_mode == ScrollbarMode::kAlwaysOff)
       needs_horizontal_scrollbar = false;
-    if (v_mode == kScrollbarAlwaysOn)
+    if (v_mode == ScrollbarMode::kAlwaysOn)
       needs_vertical_scrollbar = true;
-    else if (v_mode == kScrollbarAlwaysOff)
+    else if (v_mode == ScrollbarMode::kAlwaysOff)
       needs_vertical_scrollbar = false;
   }
 }
@@ -1501,7 +1509,7 @@ bool PaintLayerScrollableArea::TryRemovingAutoScrollbars(
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode != kScrollbarAuto || v_mode != kScrollbarAuto)
+    if (h_mode != ScrollbarMode::kAuto || v_mode != ScrollbarMode::kAuto)
       return false;
 
     IntSize visible_size_with_scrollbars =
@@ -1639,8 +1647,17 @@ void PaintLayerScrollableArea::SnapAfterScrollbarScrolling(
                                           orientation == kVerticalScrollbar);
 }
 
+bool PaintLayerScrollableArea::HasOverflowControls() const {
+  // We do not need to check for ScrollCorner because it only exists iff there
+  // are scrollbars, see: |ScrollCornerRect| and |UpdateScrollCornerStyle|.
+  // TODO(pdr, majinfeng1): Re-enable this DCHECK when https://crbug.com/999062
+  // is resolved. This is temporarily disabled to prevent crashes.
+  // DCHECK(!ScrollCorner() || HasScrollbar());
+  return HasScrollbar() || GetLayoutBox()->CanResize();
+}
+
 void PaintLayerScrollableArea::PositionOverflowControls() {
-  if (!HasScrollbar() && !GetLayoutBox()->CanResize())
+  if (!HasOverflowControls())
     return;
 
   const IntRect border_box =
@@ -1652,9 +1669,8 @@ void PaintLayerScrollableArea::PositionOverflowControls() {
   if (Scrollbar* horizontal_scrollbar = HorizontalScrollbar())
     horizontal_scrollbar->SetFrameRect(RectForHorizontalScrollbar(border_box));
 
-  const IntRect& scroll_corner = ScrollCornerRect();
   if (scroll_corner_)
-    scroll_corner_->SetFrameRect(LayoutRect(scroll_corner));
+    scroll_corner_->SetFrameRect(LayoutRect(ScrollCornerRect()));
 
   if (resizer_)
     resizer_->SetFrameRect(
@@ -1684,9 +1700,8 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
     if (!scroll_corner_) {
       scroll_corner_ = LayoutScrollbarPart::CreateAnonymous(
           &GetLayoutBox()->GetDocument(), this);
-      scroll_corner_->SetDangerousOneWayParent(GetLayoutBox());
     }
-    scroll_corner_->SetStyleWithWritingModeOfParent(std::move(corner));
+    scroll_corner_->SetStyle(std::move(corner));
   } else if (scroll_corner_) {
     scroll_corner_->Destroy();
     scroll_corner_ = nullptr;
@@ -1696,11 +1711,11 @@ void PaintLayerScrollableArea::UpdateScrollCornerStyle() {
 bool PaintLayerScrollableArea::HitTestOverflowControls(
     HitTestResult& result,
     const IntPoint& local_point) {
-  if (!HasScrollbar() && !GetLayoutBox()->CanResize())
+  if (!HasOverflowControls())
     return false;
 
   IntRect resize_control_rect;
-  if (GetLayoutBox()->StyleRef().Resize() != EResize::kNone) {
+  if (GetLayoutBox()->StyleRef().HasResize()) {
     resize_control_rect =
         ResizerCornerRect(GetLayoutBox()->PixelSnappedBorderBoxRect(
                               Layer()->SubpixelAccumulation()),
@@ -1756,7 +1771,7 @@ bool PaintLayerScrollableArea::HitTestOverflowControls(
 IntRect PaintLayerScrollableArea::ResizerCornerRect(
     const IntRect& bounds,
     ResizerHitTestType resizer_hit_test_type) const {
-  if (GetLayoutBox()->StyleRef().Resize() == EResize::kNone)
+  if (!GetLayoutBox()->StyleRef().HasResize())
     return IntRect();
   IntRect corner = CornerRect(bounds);
 
@@ -1836,7 +1851,8 @@ void PaintLayerScrollableArea::UpdateResizerAreaSet() {
 void PaintLayerScrollableArea::UpdateResizerStyle(
     const ComputedStyle* old_style) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && old_style &&
-      old_style->Resize() != GetLayoutBox()->StyleRef().Resize()) {
+      old_style->UnresolvedResize() !=
+          GetLayoutBox()->StyleRef().UnresolvedResize()) {
     // Invalidate the composited scroll corner layer on resize style change.
     if (auto* graphics_layer = LayerForScrollCorner())
       graphics_layer->SetNeedsDisplay();
@@ -1855,9 +1871,8 @@ void PaintLayerScrollableArea::UpdateResizerStyle(
     if (!resizer_) {
       resizer_ = LayoutScrollbarPart::CreateAnonymous(
           &GetLayoutBox()->GetDocument(), this);
-      resizer_->SetDangerousOneWayParent(GetLayoutBox());
     }
-    resizer_->SetStyleWithWritingModeOfParent(std::move(resizer));
+    resizer_->SetStyle(std::move(resizer));
   } else if (resizer_) {
     resizer_->Destroy();
     resizer_ = nullptr;
@@ -1972,9 +1987,8 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
   bool is_box_sizing_border =
       GetLayoutBox()->StyleRef().BoxSizing() == EBoxSizing::kBorderBox;
 
-  EResize resize =
-      ResolvedResize(GetLayoutBox()->StyleRef(),
-                     GetLayoutBox()->ContainingBlock()->StyleRef());
+  EResize resize = GetLayoutBox()->StyleRef().Resize(
+      GetLayoutBox()->ContainingBlock()->StyleRef());
   if (resize != EResize::kVertical && difference.Width()) {
     if (element->IsFormControlElement()) {
       // Make implicit margins from the theme explicit (see
@@ -2124,7 +2138,8 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
     ScrollbarMode h_mode;
     ScrollbarMode v_mode;
     ToLayoutView(GetLayoutBox())->CalculateScrollbarModes(h_mode, v_mode);
-    if (h_mode == kScrollbarAlwaysOff && v_mode == kScrollbarAlwaysOff)
+    if (h_mode == ScrollbarMode::kAlwaysOff &&
+        v_mode == ScrollbarMode::kAlwaysOff)
       has_overflow = false;
   }
   scrolls_overflow_ = has_overflow && is_visible_to_hit_test;
@@ -2150,7 +2165,7 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
     // Scroll hit test display items depend on whether the box scrolls overflow.
     // The scroll hit test display items paint in the background phase
     // (see: BoxPainter::PaintBoxDecorationBackground).
@@ -2176,21 +2191,10 @@ void PaintLayerScrollableArea::UpdateCompositingLayersAfterScroll() {
     DCHECK(Layer()->HasCompositedLayerMapping());
     ScrollingCoordinator* scrolling_coordinator = GetScrollingCoordinator();
     bool handled_scroll =
-        (Layer()->IsRootLayer() ||
-         RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) &&
         scrolling_coordinator &&
         scrolling_coordinator->UpdateCompositedScrollOffset(this);
 
     if (!handled_scroll) {
-      if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-        // In non-BGPT mode, we need to do a full sub-tree update here, because
-        // we need to update the position property to compute
-        // offset_to_transform_parent. For more context, see the comment from
-        // chrishtr@ here:
-        // https://chromium-review.googlesource.com/c/chromium/src/+/1403639/6/third_party/blink/renderer/core/paint/paint_layer_scrollable_area.cc
-        Layer()->GetCompositedLayerMapping()->SetNeedsGraphicsLayerUpdate(
-            kGraphicsLayerUpdateSubtree);
-      }
       compositor->SetNeedsCompositingUpdate(
           kCompositingUpdateAfterGeometryChange);
     }
@@ -2437,17 +2441,21 @@ Scrollbar* PaintLayerScrollableArea::ScrollbarManager::CreateScrollbar(
         ScrollableArea(), orientation, To<Element>(style_source.GetNode()));
   } else {
     ScrollbarControlSize scrollbar_size = kRegularScrollbar;
-    if (style_source.StyleRef().HasAppearance()) {
+    if (style_source.StyleRef().HasEffectiveAppearance()) {
       scrollbar_size = LayoutTheme::GetTheme().ScrollbarControlSizeForPart(
-          style_source.StyleRef().Appearance());
+          style_source.StyleRef().EffectiveAppearance());
     }
-    scrollbar = MakeGarbageCollected<Scrollbar>(ScrollableArea(), orientation,
-                                                scrollbar_size,
-                                                &ScrollableArea()
-                                                     ->GetLayoutBox()
-                                                     ->GetFrame()
-                                                     ->GetPage()
-                                                     ->GetChromeClient());
+    Element* style_source_element = nullptr;
+    if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
+      style_source_element = DynamicTo<Element>(style_source.GetNode());
+    }
+    scrollbar = MakeGarbageCollected<Scrollbar>(
+        ScrollableArea(), orientation, scrollbar_size, style_source_element,
+        &ScrollableArea()
+             ->GetLayoutBox()
+             ->GetFrame()
+             ->GetPage()
+             ->GetChromeClient());
   }
   ScrollableArea()->GetLayoutBox()->GetDocument().View()->AddScrollbar(
       scrollbar);

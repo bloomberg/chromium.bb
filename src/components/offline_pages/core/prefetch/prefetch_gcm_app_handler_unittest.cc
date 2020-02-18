@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/offline_pages/core/prefetch/prefetch_service_test_taco.h"
 #include "components/offline_pages/core/prefetch/test_prefetch_dispatcher.h"
@@ -54,7 +54,7 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
   ~PrefetchGCMAppHandlerTest() override {
     // Ensures that the store is properly disposed off.
     prefetch_service_taco_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   TestPrefetchDispatcher* dispatcher() { return test_dispatcher_; }
@@ -62,7 +62,7 @@ class PrefetchGCMAppHandlerTest : public testing::Test {
   TestTokenFactory* token_factory() { return token_factory_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<PrefetchServiceTestTaco> prefetch_service_taco_;
 
   // Owned by the taco.

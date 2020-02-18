@@ -15,9 +15,9 @@
 #include "base/strings/string_piece.h"
 #include "base/sync_socket.h"
 #include "base/timer/timer.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -107,7 +107,7 @@ class OutputStream final : public media::mojom::AudioOutputStream,
   base::RepeatingTimer poll_timer_;
   bool is_audible_ = false;
 
-  base::WeakPtrFactory<OutputStream> weak_factory_;
+  base::WeakPtrFactory<OutputStream> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OutputStream);
 };

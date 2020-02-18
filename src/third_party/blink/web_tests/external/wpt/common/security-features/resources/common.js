@@ -100,7 +100,7 @@
   from the outer-most to inner-most environment settings objects.
 
   For example:
-    [{sourceContextType: "srcdoc"}, {sourceContextType: "classic-worker"}]
+    [{sourceContextType: "srcdoc"}, {sourceContextType: "worker-classic"}]
   means that a subresource request is to be sent from
   a classic dedicated worker created from <iframe srcdoc>
   inside the top-level HTML document.
@@ -1059,19 +1059,19 @@ function invokeRequest(subresource, sourceContextList) {
     "iframe": { // <iframe src="same-origin-URL"></iframe>
       invoker: invokeFromIframe,
     },
-    "classic-worker": {
+    "worker-classic": {
       // Classic dedicated worker loaded from same-origin.
       invoker: invokeFromWorker.bind(undefined, false, {}),
     },
-    "classic-data-worker": {
+    "worker-classic-data": {
       // Classic dedicated worker loaded from data: URL.
       invoker: invokeFromWorker.bind(undefined, true, {}),
     },
-    "module-worker": {
+    "worker-module": {
       // Module dedicated worker loaded from same-origin.
       invoker: invokeFromWorker.bind(undefined, false, {type: 'module'}),
     },
-    "module-data-worker": {
+    "worker-module-data": {
       // Module dedicated worker loaded from data: URL.
       invoker: invokeFromWorker.bind(undefined, true, {type: 'module'}),
     },
@@ -1104,7 +1104,7 @@ self.invokeRequest = invokeRequest;
 */
 function invokeFromWorker(isDataUrl, workerOptions,
                           subresource, sourceContextList) {
-  const currentSourceContext = sourceContextList.shift();
+  const currentSourceContext = sourceContextList[0];
   let workerUrl =
     "/common/security-features/scope/worker.py?policyDeliveries=" +
     encodeURIComponent(JSON.stringify(
@@ -1128,7 +1128,7 @@ function invokeFromWorker(isDataUrl, workerOptions,
     .then(url => {
       const worker = new Worker(url, workerOptions);
       worker.postMessage({subresource: subresource,
-                          sourceContextList: sourceContextList});
+                          sourceContextList: sourceContextList.slice(1)});
       return bindEvents2(worker, "message", worker, "error", window, "error");
     })
     .then(event => {
@@ -1139,7 +1139,7 @@ function invokeFromWorker(isDataUrl, workerOptions,
 }
 
 function invokeFromIframe(subresource, sourceContextList) {
-  const currentSourceContext = sourceContextList.shift();
+  const currentSourceContext = sourceContextList[0];
   const frameUrl =
     "/common/security-features/scope/document.py?policyDeliveries=" +
     encodeURIComponent(JSON.stringify(
@@ -1165,7 +1165,7 @@ function invokeFromIframe(subresource, sourceContextList) {
                   window, "message", iframe, "error", window, "error");
               iframe.contentWindow.postMessage(
                   {subresource: subresource,
-                   sourceContextList: sourceContextList},
+                   sourceContextList: sourceContextList.slice(1)},
                   "*");
               return promise;
             })

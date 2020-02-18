@@ -53,13 +53,14 @@ namespace sw
 			bool clampToEdge : 1;
 		};
 
-		struct State : Options
+		struct State : Memset<State>, Options
 		{
-			State() = default;
-			State(const Options &options) : Options(options) {}
+			State() : Memset(this, 0) {}
+			State(const Options &options) : Memset(this, 0), Options(options) {}
 
 			bool operator==(const State &state) const
 			{
+				static_assert(is_memcmparable<State>::value, "Cannot memcmp State");
 				return memcmp(this, &state, sizeof(State)) == 0;
 			}
 
@@ -111,7 +112,7 @@ namespace sw
 		static Float4 LinearToSRGB(Float4 &color);
 		static Float4 sRGBtoLinear(Float4 &color);
 		bool blitReactor(Surface *source, const SliceRectF &sRect, Surface *dest, const SliceRect &dRect, const Options &options);
-		Routine *generate(const State &state);
+		std::shared_ptr<Routine> generate(const State &state);
 
 		RoutineCache<State> *blitCache;
 		MutexLock criticalSection;

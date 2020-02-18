@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -158,6 +158,24 @@ unsigned int ResourcesHLSL::assignUniformRegister(const TType &type,
     if (uniform->name == "angle_DrawID" && uniform->mappedName == "angle_DrawID")
     {
         mUniformRegisterMap["gl_DrawID"] = registerIndex;
+    }
+    else
+    {
+        mUniformRegisterMap[uniform->name] = registerIndex;
+    }
+
+    if (uniform->name == "angle_BaseVertex" && uniform->mappedName == "angle_BaseVertex")
+    {
+        mUniformRegisterMap["gl_BaseVertex"] = registerIndex;
+    }
+    else
+    {
+        mUniformRegisterMap[uniform->name] = registerIndex;
+    }
+
+    if (uniform->name == "angle_BaseInstance" && uniform->mappedName == "angle_BaseInstance")
+    {
+        mUniformRegisterMap["gl_BaseInstance"] = registerIndex;
     }
     else
     {

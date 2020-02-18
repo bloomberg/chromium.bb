@@ -204,7 +204,7 @@ class BackgroundFetchDataManagerTest
             embedded_worker_test_helper()->context_wrapper());
 
     background_fetch_data_manager_->AddObserver(this);
-    background_fetch_data_manager_->InitializeOnIOThread();
+    background_fetch_data_manager_->InitializeOnCoreThread();
   }
 
   // Synchronous version of BackgroundFetchDataManager::GetInitializationData().
@@ -850,7 +850,7 @@ class BackgroundFetchDataManagerTest
 
   std::string CopyBody(blink::mojom::Blob* blob) {
     mojo::DataPipe pipe;
-    blob->ReadAll(std::move(pipe.producer_handle), /* client= */ nullptr);
+    blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
 
     std::string output;
     DataPipeDrainerClient client(&output);
@@ -2217,7 +2217,7 @@ TEST_F(BackgroundFetchDataManagerTest, Cleanup) {
 
   // Cleanup should delete the registration.
   background_fetch_data_manager_->Cleanup();
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   EXPECT_EQ(0u,
             GetRegistrationUserDataByKeyPrefix(sw_id, kUserDataPrefix).size());
 

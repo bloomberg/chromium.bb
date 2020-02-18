@@ -118,14 +118,39 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu",
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/",
           "--no-xvfb"
         ],
         "isolate_name": "blink_web_tests_exparchive",
@@ -264,14 +289,39 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "linux-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu",
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/",
           "--no-xvfb"
         ],
         "isolate_name": "blink_web_tests_exparchive",
@@ -364,6 +414,33 @@
         },
         "test": "dawn_end2end_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-ubuntu-stable",
+              "os": "linux-intel-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Linux x64 Release (NVIDIA)": {
@@ -434,6 +511,33 @@
           ]
         },
         "test": "dawn_end2end_tests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-ubuntu-stable",
+              "os": "linux-nvidia-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -558,14 +662,40 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "mac-amd-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu"
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -698,14 +828,38 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "mac-intel-stable"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu"
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -799,6 +953,34 @@
         },
         "test": "dawn_end2end_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6821",
+              "hidpi": "1",
+              "os": "mac-amd-stable",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Mac x64 Release (Intel)": {
@@ -866,6 +1048,32 @@
           ]
         },
         "test": "dawn_end2end_tests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "mac-intel-stable"
+            }
+          ]
+        }
       }
     ]
   },
@@ -985,16 +1193,41 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "-t",
           "Release_x64",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1131,16 +1364,41 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
           "-t",
           "Release_x64",
-          "webgpu"
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1232,6 +1490,33 @@
         },
         "test": "dawn_end2end_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Win10 x64 Release (NVIDIA)": {
@@ -1302,6 +1587,33 @@
           ]
         },
         "test": "dawn_end2end_tests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   },
@@ -1421,14 +1733,39 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu"
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1565,14 +1902,39 @@
     "isolated_scripts": [
       {
         "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
           "--additional-driver-flag",
           "--enable-unsafe-webgpu",
           "--additional-driver-flag",
           "--disable-gpu-sandbox",
           "--driver-logging",
-          "--skipped",
-          "ignore",
-          "webgpu"
+          "--ignore-default-expectations",
+          "--additional-expectations=../../third_party/blink/web_tests/WebGPUExpectations",
+          "external/wpt/webgpu/"
         ],
         "isolate_name": "blink_web_tests_exparchive",
         "merge": {
@@ -1664,6 +2026,33 @@
         },
         "test": "dawn_end2end_tests"
       }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "intel-hd-630-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
+      }
     ]
   },
   "Dawn Win10 x86 Release (NVIDIA)": {
@@ -1734,6 +2123,33 @@
           ]
         },
         "test": "dawn_end2end_tests"
+      }
+    ],
+    "isolated_scripts": [
+      {
+        "args": [
+          "--override-steps=1",
+          "--gtest-benchmark-name=dawn_perf_tests",
+          "-v"
+        ],
+        "isolate_name": "dawn_perf_tests",
+        "merge": {
+          "args": [
+            "--smoke-test-mode"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "dawn_perf_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "nvidia-quadro-p400-win10-stable",
+              "os": "Windows-10",
+              "pool": "Chrome-GPU"
+            }
+          ]
+        }
       }
     ]
   }

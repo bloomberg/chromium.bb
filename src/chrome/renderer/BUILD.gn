@@ -30,8 +30,8 @@ grit("resources") {
     "mojom_root=" + rebase_path(root_gen_dir, root_build_dir),
   ]
   deps = [
-    "//chrome/common/media_router/mojo:media_controller_js",
-    "//chrome/common/media_router/mojo:media_router_js",
+    "//chrome/common/media_router/mojom:media_controller_js",
+    "//chrome/common/media_router/mojom:media_router_js",
     "//services/network/public/mojom:mojom_js",
     "//url/mojom:url_mojom_gurl_js",
     "//url/mojom:url_mojom_origin_js",
@@ -73,13 +73,6 @@ jumbo_static_library("renderer") {
     "net/net_error_page_controller.h",
     "net_benchmarking_extension.cc",
     "net_benchmarking_extension.h",
-    "page_load_metrics/metrics_render_frame_observer.cc",
-    "page_load_metrics/metrics_render_frame_observer.h",
-    "page_load_metrics/page_resource_data_use.cc",
-    "page_load_metrics/page_resource_data_use.h",
-    "page_load_metrics/page_timing_metrics_sender.cc",
-    "page_load_metrics/page_timing_metrics_sender.h",
-    "page_load_metrics/page_timing_sender.h",
     "plugins/non_loadable_plugin_placeholder.cc",
     "plugins/non_loadable_plugin_placeholder.h",
     "plugins/pdf_plugin_placeholder.cc",
@@ -100,6 +93,8 @@ jumbo_static_library("renderer") {
     "sandbox_status_extension_android.h",
     "security_interstitials/security_interstitial_page_controller.cc",
     "security_interstitials/security_interstitial_page_controller.h",
+    "subresource_redirect/subresource_redirect_experiments.cc",
+    "subresource_redirect/subresource_redirect_experiments.h",
     "subresource_redirect/subresource_redirect_params.cc",
     "subresource_redirect/subresource_redirect_params.h",
     "subresource_redirect/subresource_redirect_url_loader_throttle.cc",
@@ -108,8 +103,6 @@ jumbo_static_library("renderer") {
     "subresource_redirect/subresource_redirect_util.h",
     "supervised_user/supervised_user_error_page_controller.cc",
     "supervised_user/supervised_user_error_page_controller.h",
-    "tts_dispatcher.cc",
-    "tts_dispatcher.h",
     "url_loader_throttle_provider_impl.cc",
     "url_loader_throttle_provider_impl.h",
     "v8_unwinder.cc",
@@ -142,9 +135,11 @@ jumbo_static_library("renderer") {
     "//components/network_hints/renderer",
     "//components/omnibox/common",
     "//components/page_image_annotation/content/renderer",
+    "//components/page_load_metrics/renderer",
     "//components/plugins/renderer",
     "//components/rappor/public/mojom",
     "//components/resources:components_resources",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing/common:interfaces",
     "//components/safe_browsing/renderer:throttles",
     "//components/security_interstitials/core:",
@@ -196,7 +191,6 @@ jumbo_static_library("renderer") {
       "//components/nacl/renderer",
     ]
   }
-
   if (enable_plugins) {
     sources += [
       "pepper/chrome_renderer_pepper_host_factory.cc",
@@ -417,6 +411,15 @@ jumbo_static_library("renderer") {
       "chromeos_merge_session_loader_throttle.cc",
       "chromeos_merge_session_loader_throttle.h",
     ]
+  }
+
+  if (is_linux) {
+    sources += [
+      "performance_manager/mechanisms/tcmalloc_tunables_impl.cc",
+      "performance_manager/mechanisms/tcmalloc_tunables_impl.h",
+    ]
+
+    deps += [ "//chrome/common/performance_manager/mojom" ]
   }
 }
 

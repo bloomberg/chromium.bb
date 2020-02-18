@@ -198,8 +198,7 @@ DeviceEmulatorMessageHandler::DeviceEmulatorMessageHandler()
     : fake_bluetooth_device_client_(
           static_cast<bluez::FakeBluetoothDeviceClient*>(
               bluez::BluezDBusManager::Get()->GetBluetoothDeviceClient())),
-      fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()),
-      weak_ptr_factory_(this) {
+      fake_power_manager_client_(chromeos::FakePowerManagerClient::Get()) {
   device::BluetoothAdapterFactory::GetAdapter(
       base::BindOnce(&DeviceEmulatorMessageHandler::BluetoothDeviceAdapterReady,
                      weak_ptr_factory_.GetWeakPtr()));
@@ -553,9 +552,9 @@ void DeviceEmulatorMessageHandler::RegisterMessages() {
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {
-  bluetooth_observer_.reset(new BluetoothObserver(this));
-  cras_audio_observer_.reset(new CrasAudioObserver(this));
-  power_observer_.reset(new PowerObserver(this));
+  bluetooth_observer_ = std::make_unique<BluetoothObserver>(this);
+  cras_audio_observer_ = std::make_unique<CrasAudioObserver>(this);
+  power_observer_ = std::make_unique<PowerObserver>(this);
 
   system::InputDeviceSettings::Get()->TouchpadExists(
       base::BindOnce(&DeviceEmulatorMessageHandler::TouchpadExists,

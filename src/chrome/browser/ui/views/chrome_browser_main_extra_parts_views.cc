@@ -13,11 +13,15 @@
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/devtools_process_observer.h"
 #include "chrome/browser/ui/views/relaunch_notification/relaunch_notification_controller.h"
 #include "components/constrained_window/constrained_window_views.h"
+#include "components/ui_devtools/connector_delegate.h"
 #include "components/ui_devtools/switches.h"
 #include "components/ui_devtools/views/devtools_server_util.h"
+#include "content/public/browser/system_connector.h"
 #include "services/service_manager/sandbox/switches.h"
+#include "services/tracing/public/mojom/constants.mojom.h"
 #include "ui/base/material_design/material_design_controller.h"
 
 #if defined(USE_AURA)
@@ -44,6 +48,20 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+// This connector is used in ui_devtools's TracingAgent to hook up with the
+// tracing service.
+class UiDevtoolsConnector : public ui_devtools::ConnectorDelegate {
+ public:
+  UiDevtoolsConnector() {}
+  ~UiDevtoolsConnector() override = default;
+
+  void BindTracingConsumerHost(
+      mojo::PendingReceiver<tracing::mojom::ConsumerHost> receiver) override {
+    content::GetSystemConnector()->Connect(tracing::mojom::kServiceName,
+                                           std::move(receiver));
+  }
+};
+
 ChromeBrowserMainExtraPartsViews::ChromeBrowserMainExtraPartsViews() {}
 
 ChromeBrowserMainExtraPartsViews::~ChromeBrowserMainExtraPartsViews() {
@@ -64,7 +82,7 @@ void ChromeBrowserMainExtraPartsViews::ToolkitInitialized() {
   ui::MaterialDesignController::Initialize();
 
 #if defined(USE_AURA)
-  wm_state_.reset(new wm::WMState);
+  wm_state_ = std::make_unique<wm::WMState>();
 #endif
 
   // TODO(pkasting): Try to move ViewsDelegate creation here as well;
@@ -83,8 +101,12 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   if (ui_devtools::UiDevToolsServer::IsUiDevToolsEnabled(
           ui_devtools::switches::kEnableUiDevTools)) {
     // Starts the UI Devtools server for browser UI (and Ash UI on Chrome OS).
+    auto connector = std::make_unique<UiDevtoolsConnector>();
     devtools_server_ = ui_devtools::CreateUiDevToolsServerForViews(
-        g_browser_process->system_network_context_manager()->GetContext());
+        g_browser_process->system_network_context_manager()->GetContext(),
+        std::move(connector));
+    devtools_process_observer_ = std::make_unique<DevtoolsProcessObserver>(
+        devtools_server_->tracing_agent());
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)

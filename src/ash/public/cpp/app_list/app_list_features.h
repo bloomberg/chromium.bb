@@ -41,10 +41,13 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateSuggestions;
 // Enables the feature to autocomplete text typed in the AppList search box.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListSearchAutocomplete;
 
-// Enable an model that ranks query based apps search result.
-ASH_PUBLIC_EXPORT extern const base::Feature kEnableQueryBasedAppsRanker;
+// Enable app ranking models.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppRanker;
 
 // Enable an model that ranks zero-state apps search result.
+// TODO(crbug.com/989350): This flag can be removed once the
+// AppSearchResultRanker is removed. Same with the
+// AppSearchResultRankerPredictorName.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableZeroStateAppsRanker;
 
 // Enable an model that ranks query based non-apps result.
@@ -68,6 +71,14 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppListLaunchRecording;
 
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableSearchBoxSelection;
 
+// Enables using the aggregated Ml model to rank suggested apps.
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableAggregatedMlAppRanking;
+
+// If enabled, app list will support separate configurations (for app list items
+// sizing and spacing) for smaller screens (instead of a single configuration
+// that optionally gets scaled down).
+ASH_PUBLIC_EXPORT extern const base::Feature kScalableAppList;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
 bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
@@ -75,7 +86,7 @@ bool ASH_PUBLIC_EXPORT IsAppDataSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateSuggestionsEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListSearchAutocompleteEnabled();
-bool ASH_PUBLIC_EXPORT IsQueryBasedAppsRankerEnabled();
+bool ASH_PUBLIC_EXPORT IsAppRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateAppsRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsQueryBasedMixedTypesRankerEnabled();
 bool ASH_PUBLIC_EXPORT IsZeroStateMixedTypesRankerEnabled();
@@ -84,6 +95,8 @@ bool ASH_PUBLIC_EXPORT IsEmbeddedAssistantUIEnabled();
 bool ASH_PUBLIC_EXPORT IsAppGridGhostEnabled();
 bool ASH_PUBLIC_EXPORT IsAppListLaunchRecordingEnabled();
 bool ASH_PUBLIC_EXPORT IsSearchBoxSelectionEnabled();
+bool ASH_PUBLIC_EXPORT IsAggregatedMlAppRankingEnabled();
+bool ASH_PUBLIC_EXPORT IsScalableAppListEnabled();
 
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();

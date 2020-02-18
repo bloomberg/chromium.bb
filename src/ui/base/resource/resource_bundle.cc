@@ -149,18 +149,16 @@ bool BrotliDecompress(base::StringPiece input, std::string* output) {
 }
 
 // Helper function for decompressing resource.
-std::string Decompress(base::StringPiece data) {
-  std::string response;
-  if (HasBrotliHeader(data)) {
-    bool success = BrotliDecompress(data, &response);
+void Decompress(base::StringPiece data, std::string* output) {
+  if (HasGzipHeader(data)) {
+    bool success = compression::GzipUncompress(data, output);
     DCHECK(success);
-  } else if (HasGzipHeader(data)) {
-    bool success = compression::GzipUncompress(data, &response);
+  } else if (HasBrotliHeader(data)) {
+    bool success = BrotliDecompress(data, output);
     DCHECK(success);
   } else {
     NOTREACHED() << "Resource is not compressed";
   }
-  return response;
 }
 
 }  // namespace
@@ -451,11 +449,11 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
   if (!path.empty() && data_pack->LoadFromPath(path))
     AddDataPack(std::move(data_pack));
 
-  data_pack.reset(new DataPack(ui::SCALE_FACTOR_NONE));
+  data_pack = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   if (!locale_path.empty() && data_pack->LoadFromPath(locale_path)) {
     locale_resources_data_ = std::move(data_pack);
   } else {
-    locale_resources_data_.reset(new DataPack(ui::SCALE_FACTOR_NONE));
+    locale_resources_data_ = std::make_unique<DataPack>(ui::SCALE_FACTOR_NONE);
   }
   // This is necessary to initialize ICU since we won't be calling
   // LoadLocaleResources in this case.
@@ -565,7 +563,7 @@ gfx::Image& ResourceBundle::GetImageNamed(int resource_id) {
   }
 
   // The load was successful, so cache the image.
-  auto inserted = images_.insert(std::make_pair(resource_id, image));
+  auto inserted = images_.emplace(resource_id, image);
   DCHECK(inserted.second);
   return inserted.first->second;
 }
@@ -580,17 +578,23 @@ base::RefCountedMemory* ResourceBundle::LoadDataResourceBytes(
 base::RefCountedMemory* ResourceBundle::LoadDataResourceBytesForScale(
     int resource_id,
     ScaleFactor scale_factor) const {
-  base::RefCountedMemory* bytes = NULL;
+  base::RefCountedMemory* bytes = nullptr;
   if (delegate_)
     bytes = delegate_->LoadDataResourceBytes(resource_id, scale_factor);
 
   if (!bytes) {
     base::StringPiece data =
         GetRawDataResourceForScale(resource_id, scale_factor);
-    if (!data.empty())
-      bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+    if (!data.empty()) {
+      if (HasGzipHeader(data) || HasBrotliHeader(data)) {
+        base::RefCountedString* bytes_string = new base::RefCountedString();
+        Decompress(data, &(bytes_string->data()));
+        bytes = bytes_string;
+      } else {
+        bytes = new base::RefCountedStaticMemory(data.data(), data.length());
+      }
+    }
   }
-
   return bytes;
 }
 
@@ -635,7 +639,9 @@ std::string ResourceBundle::DecompressDataResource(int resource_id) {
 std::string ResourceBundle::DecompressDataResourceScaled(
     int resource_id,
     ScaleFactor scaling_factor) {
-  return Decompress(GetRawDataResourceForScale(resource_id, scaling_factor));
+  std::string output;
+  Decompress(GetRawDataResourceForScale(resource_id, scaling_factor), &output);
+  return output;
 }
 
 std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
@@ -653,7 +659,9 @@ std::string ResourceBundle::DecompressLocalizedDataResource(int resource_id) {
       data = GetRawDataResource(resource_id);
     }
   }
-  return Decompress(data);
+  std::string output;
+  Decompress(data, &output);
+  return output;
 }
 
 bool ResourceBundle::IsGzipped(int resource_id) const {
@@ -714,7 +722,7 @@ const gfx::FontList& ResourceBundle::GetFontListWithTypefaceAndDelta(
           : gfx::FontList({typeface}, default_font_list.GetFontStyle(),
                           default_font_list.GetFontSize(),
                           default_font_list.GetFontWeight());
-  font_cache_.insert({base_key, base_font_list});
+  font_cache_.emplace(base_key, base_font_list);
   gfx::FontList& base = font_cache_.find(base_key)->second;
   if (styled_key == base_key)
     return base;
@@ -725,14 +733,14 @@ const gfx::FontList& ResourceBundle::GetFontListWithTypefaceAndDelta(
   // to the existing entry that the insertion collided with.
   const FontKey sized_key(typeface, size_delta, gfx::Font::NORMAL,
                           gfx::Font::Weight::NORMAL);
-  auto sized = font_cache_.insert(std::make_pair(sized_key, base_font_list));
+  auto sized = font_cache_.emplace(sized_key, base_font_list);
   if (sized.second)
     sized.first->second = base.DeriveWithSizeDelta(size_delta);
   if (styled_key == sized_key) {
     return sized.first->second;
   }
 
-  auto styled = font_cache_.insert(std::make_pair(styled_key, base_font_list));
+  auto styled = font_cache_.emplace(styled_key, base_font_list);
   DCHECK(styled.second);  // Otherwise font_cache_.find(..) would have found it.
   styled.first->second = sized.first->second.Derive(
       0, sized.first->second.GetFontStyle() | style, weight);

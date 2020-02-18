@@ -28,8 +28,8 @@ BrowserInfo::BrowserInfo()
     : major_version(0),
       build_no(kToTBuildNo),
       blink_revision(kToTBlinkRevision),
-      is_android(false) {
-}
+      is_android(false),
+      is_headless(false) {}
 
 BrowserInfo::~BrowserInfo() {}
 
@@ -79,9 +79,6 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
-  const Status error =
-      Status(kUnknownError, "unrecognized Chrome version: " + browser_string);
-
   int build_no = 0;
   if (base::StartsWith(browser_string, kVersionPrefix,
                        base::CompareCase::SENSITIVE) ||
@@ -101,10 +98,12 @@ Status ParseBrowserString(bool has_android_package,
       return status;
 
     if (build_no != 0) {
-      if (headless)
+      if (headless) {
         browser_info->browser_name = "headless chrome";
-      else
+        browser_info->is_headless = true;
+      } else {
         browser_info->browser_name = "chrome";
+      }
       browser_info->browser_version = version;
       browser_info->build_no = build_no;
       return Status(kOk);
@@ -125,7 +124,8 @@ Status ParseBrowserString(bool has_android_package,
     return Status(kOk);
   }
 
-  return error;
+  return Status(kUnknownError,
+                "unrecognized Chrome version: " + browser_string);
 }
 
 Status ParseBrowserVersionString(const std::string& browser_version,

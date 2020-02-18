@@ -36,6 +36,12 @@ namespace
 constexpr unsigned int kEmulatedAlphaValue = 1;
 
 constexpr size_t kMinReadPixelsBufferSize = 128000;
+
+// Alignment value to accommodate the largest known, for now, uncompressed Vulkan format
+// VK_FORMAT_R64G64B64A64_SFLOAT, while supporting 3-component types such as
+// VK_FORMAT_R16G16B16_SFLOAT.
+constexpr size_t kReadPixelsBufferAlignment = 32 * 3;
+
 // Clear values are only used when loadOp=Clear is set in clearWithRenderPassOp.  When starting a
 // new render pass, the clear value is set to an unlikely value (bright pink) to stand out better
 // in case of a bug.
@@ -164,8 +170,8 @@ FramebufferVk::FramebufferVk(RendererVk *renderer,
                              WindowSurfaceVk *backbuffer)
     : FramebufferImpl(state), mBackbuffer(backbuffer), mActiveColorComponents(0)
 {
-    mReadPixelBuffer.init(renderer, VK_BUFFER_USAGE_TRANSFER_DST_BIT, 4, kMinReadPixelsBufferSize,
-                          true);
+    mReadPixelBuffer.init(renderer, VK_BUFFER_USAGE_TRANSFER_DST_BIT, kReadPixelsBufferAlignment,
+                          kMinReadPixelsBufferSize, true);
 }
 
 FramebufferVk::~FramebufferVk() = default;
@@ -519,6 +525,13 @@ RenderTargetVk *FramebufferVk::getDepthStencilRenderTarget() const
     return mRenderTargetCache.getDepthStencil();
 }
 
+RenderTargetVk *FramebufferVk::getColorDrawRenderTarget(size_t colorIndex) const
+{
+    RenderTargetVk *renderTarget = mRenderTargetCache.getColorDraw(mState, colorIndex);
+    ASSERT(renderTarget && renderTarget->getImage().valid());
+    return renderTarget;
+}
+
 RenderTargetVk *FramebufferVk::getColorReadRenderTarget() const
 {
     RenderTargetVk *renderTarget = mRenderTargetCache.getColorRead(mState);
@@ -829,8 +842,8 @@ angle::Result FramebufferVk::blit(const gl::Context *context,
         else
         {
             // Create depth- and stencil-only views for reading.
-            vk::Scoped<vk::ImageView> depthView(contextVk->getDevice());
-            vk::Scoped<vk::ImageView> stencilView(contextVk->getDevice());
+            vk::DeviceScoped<vk::ImageView> depthView(contextVk->getDevice());
+            vk::DeviceScoped<vk::ImageView> stencilView(contextVk->getDevice());
 
             vk::ImageHelper *depthStencilImage = &readRenderTarget->getImage();
             uint32_t levelIndex                = readRenderTarget->getLevelIndex();
@@ -859,8 +872,8 @@ angle::Result FramebufferVk::blit(const gl::Context *context,
             // Blit depth. If shader stencil export is present, blit stencil as well.
             if (blitDepthBuffer || (blitStencilBuffer && hasShaderStencilExport))
             {
-                vk::ImageView *depth = blitDepthBuffer ? &depthView.get() : nullptr;
-                vk::ImageView *stencil =
+                const vk::ImageView *depth = blitDepthBuffer ? &depthView.get() : nullptr;
+                const vk::ImageView *stencil =
                     blitStencilBuffer && hasShaderStencilExport ? &stencilView.get() : nullptr;
 
                 ANGLE_TRY(utilsVk.depthStencilBlitResolve(contextVk, this, depthStencilImage, depth,
@@ -1072,8 +1085,10 @@ angle::Result FramebufferVk::syncState(const gl::Context *context,
             case gl::Framebuffer::DIRTY_BIT_STENCIL_BUFFER_CONTENTS:
                 ANGLE_TRY(mRenderTargetCache.getDepthStencil()->flushStagedUpdates(contextVk));
                 break;
-            case gl::Framebuffer::DIRTY_BIT_DRAW_BUFFERS:
             case gl::Framebuffer::DIRTY_BIT_READ_BUFFER:
+                ANGLE_TRY(mRenderTargetCache.update(context, mState, dirtyBits));
+                break;
+            case gl::Framebuffer::DIRTY_BIT_DRAW_BUFFERS:
             case gl::Framebuffer::DIRTY_BIT_DEFAULT_WIDTH:
             case gl::Framebuffer::DIRTY_BIT_DEFAULT_HEIGHT:
             case gl::Framebuffer::DIRTY_BIT_DEFAULT_SAMPLES:
@@ -1097,10 +1112,13 @@ angle::Result FramebufferVk::syncState(const gl::Context *context,
                     ANGLE_TRY(mRenderTargetCache.getColors()[colorIndexGL]->flushStagedUpdates(
                         contextVk));
                 }
-                break;
             }
         }
     }
+
+    // The FBOs new attachment may have changed the renderable area
+    const gl::State &glState = context->getState();
+    contextVk->updateScissor(glState);
 
     mActiveColorComponents = gl_vk::GetColorComponentFlags(
         mActiveColorComponentMasksForClear[0].any(), mActiveColorComponentMasksForClear[1].any(),
@@ -1197,6 +1215,14 @@ angle::Result FramebufferVk::getFramebuffer(ContextVk *contextVk, vk::Framebuffe
         attachmentsSize = depthStencilRenderTarget->getExtents();
     }
 
+    if (attachmentsSize.empty())
+    {
+        // No attachments, so use the default values.
+        attachmentsSize.height = mState.getDefaultHeight();
+        attachmentsSize.width  = mState.getDefaultWidth();
+        attachmentsSize.depth  = 0;
+    }
+
     VkFramebufferCreateInfo framebufferInfo = {};
 
     framebufferInfo.sType           = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -1246,7 +1272,7 @@ angle::Result FramebufferVk::clearWithRenderPassOp(
     {
         if (clearColorBuffers.test(colorIndexGL))
         {
-            RenderTargetVk *renderTarget = getColorReadRenderTarget();
+            RenderTargetVk *renderTarget = getColorDrawRenderTarget(colorIndexGL);
 
             // If the render target doesn't have alpha, but its emulated format has it, clear the
             // alpha to 1.
@@ -1306,7 +1332,7 @@ angle::Result FramebufferVk::clearWithDraw(ContextVk *contextVk,
         ASSERT(colorRenderTarget);
 
         params.colorFormat            = &colorRenderTarget->getImage().getFormat().imageFormat();
-        params.colorAttachmentIndexGL = colorIndexGL;
+        params.colorAttachmentIndexGL = static_cast<uint32_t>(colorIndexGL);
         params.colorMaskFlags         = colorMaskFlags;
         if (mEmulatedAlphaAttachmentMask[colorIndexGL])
         {
@@ -1420,16 +1446,30 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
         readFormat = &GetDepthStencilImageToBufferFormat(*readFormat, copyAspectFlags);
     }
 
-    size_t level         = renderTarget->getLevelIndex();
-    size_t layer         = renderTarget->getLayerIndex();
+    uint32_t level       = renderTarget->getLevelIndex();
+    uint32_t layer       = renderTarget->getLayerIndex();
     VkOffset3D srcOffset = {area.x, area.y, 0};
+
+    VkImageSubresourceLayers srcSubresource = {};
+    srcSubresource.aspectMask               = copyAspectFlags;
+    srcSubresource.mipLevel                 = level;
+    srcSubresource.baseArrayLayer           = layer;
+    srcSubresource.layerCount               = 1;
+
     VkExtent3D srcExtent = {static_cast<uint32_t>(area.width), static_cast<uint32_t>(area.height),
                             1};
+
+    if (srcImage->getExtents().depth > 1)
+    {
+        // Depth > 1 means this is a 3D texture and we need special handling
+        srcOffset.z                   = layer;
+        srcSubresource.baseArrayLayer = 0;
+    }
 
     // If the source image is multisampled, we need to resolve it into a temporary image before
     // performing a readback.
     bool isMultisampled = srcImage->getSamples() > 1;
-    vk::Scoped<vk::ImageHelper> resolvedImage(contextVk->getDevice());
+    vk::DeviceScoped<vk::ImageHelper> resolvedImage(contextVk->getDevice());
     if (isMultisampled)
     {
         ANGLE_TRY(resolvedImage.get().init2DStaging(
@@ -1445,10 +1485,7 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
         ASSERT(copyAspectFlags == VK_IMAGE_ASPECT_COLOR_BIT);
 
         VkImageResolve resolveRegion                = {};
-        resolveRegion.srcSubresource.aspectMask     = copyAspectFlags;
-        resolveRegion.srcSubresource.mipLevel       = level;
-        resolveRegion.srcSubresource.baseArrayLayer = layer;
-        resolveRegion.srcSubresource.layerCount     = 1;
+        resolveRegion.srcSubresource                = srcSubresource;
         resolveRegion.srcOffset                     = srcOffset;
         resolveRegion.dstSubresource.aspectMask     = copyAspectFlags;
         resolveRegion.dstSubresource.mipLevel       = 0;
@@ -1463,10 +1500,13 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
                                          commandBuffer);
 
         // Make the resolved image the target of buffer copy.
-        srcImage  = &resolvedImage.get();
-        level     = 0;
-        layer     = 0;
-        srcOffset = {0, 0, 0};
+        srcImage                      = &resolvedImage.get();
+        level                         = 0;
+        layer                         = 0;
+        srcOffset                     = {0, 0, 0};
+        srcSubresource.baseArrayLayer = 0;
+        srcSubresource.layerCount     = 1;
+        srcSubresource.mipLevel       = 0;
     }
 
     VkBuffer bufferHandle      = VK_NULL_HANDLE;
@@ -1477,16 +1517,13 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
     ANGLE_TRY(mReadPixelBuffer.allocate(contextVk, allocationSize, &readPixelBuffer, &bufferHandle,
                                         &stagingOffset, nullptr));
 
-    VkBufferImageCopy region               = {};
-    region.bufferImageHeight               = srcExtent.height;
-    region.bufferOffset                    = stagingOffset;
-    region.bufferRowLength                 = srcExtent.width;
-    region.imageExtent                     = srcExtent;
-    region.imageOffset                     = srcOffset;
-    region.imageSubresource.aspectMask     = copyAspectFlags;
-    region.imageSubresource.baseArrayLayer = layer;
-    region.imageSubresource.layerCount     = 1;
-    region.imageSubresource.mipLevel       = level;
+    VkBufferImageCopy region = {};
+    region.bufferImageHeight = srcExtent.height;
+    region.bufferOffset      = stagingOffset;
+    region.bufferRowLength   = srcExtent.width;
+    region.imageExtent       = srcExtent;
+    region.imageOffset       = srcOffset;
+    region.imageSubresource  = srcSubresource;
 
     commandBuffer->copyImageToBuffer(srcImage->getImage(), srcImage->getCurrentLayout(),
                                      bufferHandle, 1, &region);
@@ -1499,8 +1536,24 @@ angle::Result FramebufferVk::readPixelsImpl(ContextVk *contextVk,
     // created with the host coherent bit.
     ANGLE_TRY(mReadPixelBuffer.invalidate(contextVk));
 
-    PackPixels(packPixelsParams, *readFormat, area.width * readFormat->pixelBytes, readPixelBuffer,
-               static_cast<uint8_t *>(pixels));
+    const gl::State &glState = contextVk->getState();
+    gl::Buffer *packBuffer   = glState.getTargetBuffer(gl::BufferBinding::PixelPack);
+    if (packBuffer != nullptr)
+    {
+        // Must map the PBO in order to read its contents (and then unmap it later)
+        BufferVk *packBufferVk = vk::GetImpl(packBuffer);
+        void *mapPtr           = nullptr;
+        ANGLE_TRY(packBufferVk->mapImpl(contextVk, &mapPtr));
+        uint8_t *dest = static_cast<uint8_t *>(mapPtr) + reinterpret_cast<ptrdiff_t>(pixels);
+        PackPixels(packPixelsParams, *readFormat, area.width * readFormat->pixelBytes,
+                   readPixelBuffer, static_cast<uint8_t *>(dest));
+        packBufferVk->unmapImpl(contextVk);
+    }
+    else
+    {
+        PackPixels(packPixelsParams, *readFormat, area.width * readFormat->pixelBytes,
+                   readPixelBuffer, static_cast<uint8_t *>(pixels));
+    }
 
     return angle::Result::Continue;
 }
@@ -1515,13 +1568,14 @@ gl::Extents FramebufferVk::getReadImageExtents() const
 
 gl::Rectangle FramebufferVk::getCompleteRenderArea() const
 {
-    return gl::Rectangle(0, 0, mState.getDimensions().width, mState.getDimensions().height);
+    const gl::Box &dimensions = mState.getDimensions();
+    return gl::Rectangle(0, 0, dimensions.width, dimensions.height);
 }
 
 gl::Rectangle FramebufferVk::getScissoredRenderArea(ContextVk *contextVk) const
 {
-    const gl::Rectangle renderArea(0, 0, mState.getDimensions().width,
-                                   mState.getDimensions().height);
+    const gl::Box &dimensions = mState.getDimensions();
+    const gl::Rectangle renderArea(0, 0, dimensions.width, dimensions.height);
     bool invertViewport = contextVk->isViewportFlipEnabledForDrawFBO();
 
     return ClipRectToScissor(contextVk->getState(), renderArea, invertViewport);

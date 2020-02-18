@@ -21,6 +21,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_event_logger_helper.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
 #include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
@@ -46,38 +47,11 @@ const char AppLaunchEventLogger::kShouldSync[] = "should_sync";
 namespace {
 
 constexpr unsigned int kNumRandomAppsToLog = 25;
-const char kArcScheme[] = "arc://";
-const char kExtensionSchemeWithDelimiter[] = "chrome-extension://";
 
 constexpr base::TimeDelta kHourDuration = base::TimeDelta::FromHours(1);
 constexpr base::TimeDelta kDayDuration = base::TimeDelta::FromDays(1);
 constexpr int kMinutesInAnHour = 60;
 constexpr int kQuarterHoursInADay = 24 * 4;
-constexpr float kTotalHoursBucketSizeMultiplier = 1.25;
-
-constexpr std::array<chromeos::power::ml::Bucket, 2> kClickBuckets = {
-    {{20, 1}, {200, 10}}};
-constexpr std::array<chromeos::power::ml::Bucket, 6>
-    kTimeSinceLastClickBuckets = {{{60, 1},
-                                   {600, 60},
-                                   {1200, 300},
-                                   {3600, 600},
-                                   {18000, 1800},
-                                   {86400, 3600}}};
-
-// Returns the nearest bucket for |value|, where bucket sizes are determined
-// exponentially, with each bucket size increasing by a factor of |base|.
-// The return value is rounded to the nearest integer.
-int ExponentialBucket(int value, float base) {
-  if (base <= 0) {
-    LOG(DFATAL) << "Base of exponential must be positive.";
-    return 0;
-  }
-  if (value <= 0) {
-    return 0;
-  }
-  return round(pow(base, round(log(value) / log(base))));
-}
 
 // Selects a random sample of size |sample_size| from |population|.
 std::vector<std::string> Sample(const std::vector<std::string>& population,
@@ -99,18 +73,6 @@ std::vector<std::string> Sample(const std::vector<std::string>& population,
   return sample;
 }
 
-int HourOfDay(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return exploded.hour;
-}
-
-int DayOfWeek(base::Time time) {
-  base::Time::Exploded exploded;
-  time.LocalExplode(&exploded);
-  return exploded.day_of_week;
-}
-
 }  // namespace
 
 AppLaunchEventLogger::AppLaunchEventLogger()
@@ -124,9 +86,10 @@ AppLaunchEventLogger::AppLaunchEventLogger()
               kDayDuration,
               kQuarterHoursInADay)),
       weak_factory_(this) {
-  task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::TaskPriority::BEST_EFFORT,
+  task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  EnforceLoggingPolicy();
 }
 
 AppLaunchEventLogger::~AppLaunchEventLogger() {}
@@ -170,14 +133,24 @@ void AppLaunchEventLogger::OnGridClicked(const std::string& id) {
                                         weak_factory_.GetWeakPtr(), event));
 }
 
-void AppLaunchEventLogger::SetAppDataForTesting(
-    extensions::ExtensionRegistry* registry,
-    base::DictionaryValue* arc_apps,
-    base::DictionaryValue* arc_packages) {
-  testing_ = true;
-  registry_ = registry;
-  arc_apps_ = arc_apps;
-  arc_packages_ = arc_packages;
+void AppLaunchEventLogger::CreateRankings() {
+  const base::TimeDelta duration = base::Time::Now() - start_time_;
+  if (!ml_app_rank_provider_) {
+    ml_app_rank_provider_ = std::make_unique<MlAppRankProvider>();
+  }
+
+  ml_app_rank_provider_->CreateRankings(
+      app_features_map_,
+      ExponentialBucket(duration.InHours(), kTotalHoursBucketSizeMultiplier),
+      Bucketize(all_clicks_last_hour_->GetTotal(duration), kClickBuckets),
+      Bucketize(all_clicks_last_24_hours_->GetTotal(duration), kClickBuckets));
+}
+
+std::map<std::string, float> AppLaunchEventLogger::RetrieveRankings() {
+  if (!ml_app_rank_provider_) {
+    return {};
+  }
+  return ml_app_rank_provider_->RetrieveRankings();
 }
 
 std::string AppLaunchEventLogger::RemoveScheme(const std::string& id) {
@@ -200,40 +173,8 @@ const GURL& AppLaunchEventLogger::GetLaunchWebURL(
   return extensions::AppLaunchInfo::GetLaunchWebURL(extension);
 }
 
-void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
-                                 const std::string& app_id,
-                                 const std::string& arc_package_name,
-                                 const std::string& pwa_url) {
-  if (app_features_map_.find(app_id) == app_features_map_.end()) {
-    AppLaunchFeatures app_launch_features;
-    app_launch_features.set_app_id(app_id);
-    app_launch_features.set_app_type(app_type);
-    if (app_type == AppLaunchEvent_AppType_PWA) {
-      app_launch_features.set_pwa_url(pwa_url);
-    } else if (app_type == AppLaunchEvent_AppType_PLAY) {
-      app_launch_features.set_arc_package_name(arc_package_name);
-    }
-    app_features_map_[app_id] = app_launch_features;
-  }
-  app_features_map_[app_id].set_is_policy_compliant(true);
-}
-
 void AppLaunchEventLogger::EnforceLoggingPolicy() {
-  // Tests provide installed app information, so don't overwrite that.
-  if (!testing_) {
-    Profile* profile = ProfileManager::GetLastUsedProfile();
-    if (!profile) {
-      LOG(DFATAL) << "No profile";
-      return;
-    }
-    registry_ = extensions::ExtensionRegistry::Get(profile);
-
-    PrefService* pref_service = profile->GetPrefs();
-    if (pref_service) {
-      arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
-      arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
-    }
-  }
+  SetRegistryAndArcInfo();
 
   for (auto& app : app_features_map_) {
     app.second.set_is_policy_compliant(false);
@@ -282,6 +223,39 @@ void AppLaunchEventLogger::EnforceLoggingPolicy() {
                 [](const std::pair<std::string, AppLaunchFeatures>& pair) {
                   return !pair.second.is_policy_compliant();
                 });
+}
+
+void AppLaunchEventLogger::SetRegistryAndArcInfo() {
+  Profile* profile = ProfileManager::GetPrimaryUserProfile();
+  if (!profile) {
+    // Tests will exit the method here.
+    return;
+  }
+  registry_ = extensions::ExtensionRegistry::Get(profile);
+
+  PrefService* pref_service = profile->GetPrefs();
+  if (pref_service) {
+    arc_apps_ = pref_service->GetDictionary(arc::prefs::kArcApps);
+    arc_packages_ = pref_service->GetDictionary(arc::prefs::kArcPackages);
+  }
+}
+
+void AppLaunchEventLogger::OkApp(AppLaunchEvent_AppType app_type,
+                                 const std::string& app_id,
+                                 const std::string& arc_package_name,
+                                 const std::string& pwa_url) {
+  if (app_features_map_.find(app_id) == app_features_map_.end()) {
+    AppLaunchFeatures app_launch_features;
+    app_launch_features.set_app_id(app_id);
+    app_launch_features.set_app_type(app_type);
+    if (app_type == AppLaunchEvent_AppType_PWA) {
+      app_launch_features.set_pwa_url(pwa_url);
+    } else if (app_type == AppLaunchEvent_AppType_PLAY) {
+      app_launch_features.set_arc_package_name(arc_package_name);
+    }
+    app_features_map_[app_id] = app_launch_features;
+  }
+  app_features_map_[app_id].set_is_policy_compliant(true);
 }
 
 void AppLaunchEventLogger::UpdateClickRank() {

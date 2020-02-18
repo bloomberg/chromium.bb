@@ -22,9 +22,12 @@ class ServiceWorkerContextWrapper;
 class ServiceWorkerNavigationHandle;
 
 // This class is created on the UI thread, but should only be accessed from the
-// IO thread afterwards. It is the IO thread pendant of
+// service worker core thread afterwards. It is the core thread pendant of
 // ServiceWorkerNavigationHandle. See the ServiceWorkerNavigationHandle header
 // for more details about the lifetime of both classes.
+//
+// TODO(crbug.com/824858): Merge this class into ServiceWorkerNavigationHandle
+// when the core thread moves to the UI thread.
 class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
  public:
   ServiceWorkerNavigationHandleCore(
@@ -46,9 +49,6 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
   ServiceWorkerContextWrapper* context_wrapper() const {
     return context_wrapper_.get();
   }
-
-  /////////////////////////////////////////////////////////////////////////////
-  // NavigationLoaderOnUI:
 
   void set_provider_host(
       base::WeakPtr<ServiceWorkerProviderHost> provider_host) {
@@ -72,16 +72,11 @@ class CONTENT_EXPORT ServiceWorkerNavigationHandleCore {
     return weak_factory_.GetWeakPtr();
   }
 
-  /////////////////////////////////////////////////////////////////////////////
-
  private:
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
   base::WeakPtr<ServiceWorkerNavigationHandle> ui_handle_;
   base::WeakPtr<ServiceWorkerProviderHost> provider_host_;
-
-  // NavigationLoaderOnUI:
   std::unique_ptr<ServiceWorkerControlleeRequestHandler> interceptor_;
-
   base::WeakPtrFactory<ServiceWorkerNavigationHandleCore> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerNavigationHandleCore);

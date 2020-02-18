@@ -6,7 +6,7 @@
 
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/metrics/call_stack_profile_builder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -21,8 +21,8 @@
 
 class HeapProfilerControllerTest : public testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+  base::test::TaskEnvironment task_environment{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 };
 
 TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
@@ -34,7 +34,7 @@ TEST_F(HeapProfilerControllerTest, MAYBE_EmptyProfileIsNotEmitted) {
           }));
   controller.Start();
 
-  scoped_task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
+  task_environment.FastForwardBy(base::TimeDelta::FromDays(365));
 }
 
 // Sampling profiler is not capable of unwinding stack on Android under tests.
@@ -83,7 +83,7 @@ TEST_F(HeapProfilerControllerTest, ProfileCollectionsScheduler) {
   sampler->RecordAlloc(reinterpret_cast<void*>(0x7331), kAllocationSize,
                        base::PoissonAllocationSampler::kMalloc, nullptr);
 
-  scoped_task_environment.FastForwardUntilNoTasksRemain();
+  task_environment.FastForwardUntilNoTasksRemain();
   EXPECT_LE(kSnapshotsToCollect, profile_count);
 }
 #endif

@@ -12,6 +12,8 @@ import contextlib
 import os
 import re
 
+import six
+
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import git
@@ -329,13 +331,13 @@ def _ListArg(arg):
   """Return a new list from arg.
 
   Args:
-    arg: If a non-basestring iterable, return a new list with its contents. If
+    arg: If a non-string iterable, return a new list with its contents. If
       None, return an empty list.
 
   Raises:
-    TypeError: if arg is a basestring or non-iterable (except None).
+    TypeError: if arg is a string or non-iterable (except None).
   """
-  if isinstance(arg, basestring):
+  if isinstance(arg, six.string_types):
     raise TypeError('string not allowed')
   if arg is None:
     return []

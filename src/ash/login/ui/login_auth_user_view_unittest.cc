@@ -167,7 +167,7 @@ TEST_F(LoginAuthUserViewUnittest,
        PasswordClearedAfterAnimationIfPasswordDisabled) {
   LoginPasswordView::TestApi password_test(view_->password_view());
   auto has_password = [&]() {
-    return !password_test.textfield()->text().empty();
+    return !password_test.textfield()->GetText().empty();
   };
 
   // Set a password.
@@ -209,12 +209,26 @@ TEST_F(LoginAuthUserViewUnittest, AttemptsUnlockOnLidOpen) {
   base::RunLoop().RunUntilIdle();
 
   LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
-  EXPECT_FALSE(password_test.textfield()->read_only());
+  EXPECT_FALSE(password_test.textfield()->GetReadOnly());
   EXPECT_TRUE(test_auth_user_view.external_binary_auth_button()->state() ==
               views::Button::STATE_NORMAL);
   EXPECT_TRUE(
       test_auth_user_view.external_binary_enrollment_button()->state() ==
       views::Button::STATE_NORMAL);
+}
+
+TEST_F(LoginAuthUserViewUnittest, PasswordFieldChangeOnUpdateUser) {
+  LoginAuthUserView::TestApi test_auth_user_view(view_);
+  LoginPasswordView::TestApi password_test(test_auth_user_view.password_view());
+
+  const auto password = base::ASCIIToUTF16("abc1");
+  password_test.textfield()->SetText(password);
+  view_->UpdateForUser(user_);
+  EXPECT_EQ(password_test.textfield()->GetText(), password);
+
+  auto another_user = CreateUser("user2@domain.com");
+  view_->UpdateForUser(another_user);
+  EXPECT_TRUE(password_test.textfield()->GetText().empty());
 }
 
 }  // namespace ash

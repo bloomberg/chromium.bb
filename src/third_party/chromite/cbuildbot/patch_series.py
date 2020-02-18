@@ -11,6 +11,8 @@ import contextlib
 import functools
 import sys
 
+import six
+
 from chromite.lib import config_lib
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -50,9 +52,9 @@ class PatchSeriesTooLong(cros_patch.PatchException):
     self.max_length = max_length
 
   def ShortExplanation(self):
-    return ("The Pre-CQ cannot handle a patch series longer than %s patches. "
-            "Please wait for some patches to be submitted before marking more "
-            "patches as ready. "  % (self.max_length,))
+    return ('The Pre-CQ cannot handle a patch series longer than %s patches. '
+            'Please wait for some patches to be submitted before marking more '
+            'patches as ready. '  % (self.max_length,))
 
   def __str__(self):
     return self.ShortExplanation()
@@ -91,7 +93,7 @@ class GerritHelperNotAvailable(gerrit.GerritException):
   def __str__(self):
     return (
         "Needed a remote=%s gerrit_helper, but one isn't allowed by this "
-        "HelperPool instance.") % (self.remote,)
+        'HelperPool instance.') % (self.remote,)
 
 
 def _PatchWrapException(functor):
@@ -107,15 +109,15 @@ def _PatchWrapException(functor):
       return functor(self, parent, *args, **kwargs)
     except gerrit.GerritException as e:
       if isinstance(e, gerrit.QueryNotSpecific):
-        e = ("%s\nSuggest you use gerrit numbers instead (prefixed with a "
+        e = ('%s\nSuggest you use gerrit numbers instead (prefixed with a '
              "'chrome-internal:' if it's an internal change)." % e)
       new_exc = cros_patch.PatchException(parent, e)
-      raise new_exc.__class__, new_exc, sys.exc_info()[2]
+      six.reraise(new_exc.__class__, new_exc, sys.exc_info()[2])
     except cros_patch.PatchException as e:
       if e.patch.id == parent.id:
         raise
       new_exc = cros_patch.DependencyError(parent, e)
-      raise new_exc.__class__, new_exc, sys.exc_info()[2]
+      six.reraise(new_exc.__class__, new_exc, sys.exc_info()[2])
 
   f.__name__ = functor.__name__
   return f
@@ -294,7 +296,7 @@ class PatchSeries(object):
       if manifest:
         if not wipe:
           raise ValueError("manifest can't be specified when one is forced "
-                           "via __init__")
+                           'via __init__')
       elif wipe:
         manifest = git.ManifestCheckout.Cached(self._path)
       else:
@@ -404,7 +406,7 @@ class PatchSeries(object):
         self._LookupHelper(dep)
       except GerritHelperNotAvailable:
         # Internal dependencies are irrelevant to external builders.
-        logging.info("Skipping internal dependency: %s", dep)
+        logging.info('Skipping internal dependency: %s', dep)
         continue
 
       dep_change = self._lookup_cache[dep]
@@ -707,14 +709,14 @@ class PatchSeries(object):
         self._helper_pool.ForChange(change)
       except GerritHelperNotAvailable:
         # Internal patches are irrelevant to external builders.
-        logging.info("Skipping internal patch: %s", change)
+        logging.info('Skipping internal patch: %s', change)
         continue
 
       repo = None
       try:
         repo = self.GetGitRepoForChange(change, strict=True, manifest=manifest)
       except cros_patch.ChangeNotInManifest as e:
-        logging.info('Skipping patch %s as it\'s not in manifest.', change)
+        logging.info("Skipping patch %s as it's not in manifest.", change)
         not_in_manifest.append(e)
         continue
 
@@ -768,7 +770,7 @@ class PatchSeries(object):
       fetch: Indicates whether to sync the remotes before resetting.
     """
     if not self.manifest:
-      logging.info("No manifest, skipping reset.")
+      logging.info('No manifest, skipping reset.')
       return
 
     def _Reset(checkout):
@@ -852,11 +854,11 @@ class PatchSeries(object):
     planned = set()
     for change, plan, ex in self.CreateTransactions(changes, limit_to=limit_to):
       if ex is not None:
-        logging.info("Failed creating transaction for %s: %s", change, ex)
+        logging.info('Failed creating transaction for %s: %s', change, ex)
         failed.append(ex)
       else:
         resolved.append((change, plan))
-        logging.info("Transaction for %s is %s.",
+        logging.info('Transaction for %s is %s.',
                      change, ', '.join(str(x) for x in resolved[-1][-1]))
         planned.update(plan)
 
@@ -879,12 +881,12 @@ class PatchSeries(object):
     for inducing_change, transaction_changes in resolved:
       try:
         with self._Transaction(transaction_changes):
-          logging.debug("Attempting transaction for %s: changes: %s",
+          logging.debug('Attempting transaction for %s: changes: %s',
                         inducing_change,
                         ', '.join(str(x) for x in transaction_changes))
           self._ApplyChanges(inducing_change, transaction_changes)
       except cros_patch.PatchException as e:
-        logging.info("Failed applying transaction for %s: %s",
+        logging.info('Failed applying transaction for %s: %s',
                      inducing_change, e)
         failed.append(e)
       else:
@@ -939,7 +941,7 @@ class PatchSeries(object):
     try:
       yield
     except Exception:
-      logging.info("Rewinding transaction: failed changes: %s .",
+      logging.info('Rewinding transaction: failed changes: %s .',
                    ', '.join(str(x) for x in commits), exc_info=True)
 
       for project_dir, sha1 in resets:
@@ -1001,7 +1003,7 @@ class PatchSeries(object):
 
     if 'forced_manifest' in kwargs:
       raise ValueError("RawPatchSeries doesn't allow a forced_manifest "
-                       "argument.")
+                       'argument.')
     kwargs['forced_manifest'] = _ManifestShim(git_repo, tracking_branch)
 
     return cls(git_repo, **kwargs)

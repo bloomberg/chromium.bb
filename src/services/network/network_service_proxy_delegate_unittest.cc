@@ -6,7 +6,8 @@
 
 #include <string>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -45,7 +46,8 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
   std::unique_ptr<NetworkServiceProxyDelegate> CreateDelegate(
       mojom::CustomProxyConfigPtr config) {
     auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
-        network::mojom::CustomProxyConfig::New(), mojo::MakeRequest(&client_));
+        network::mojom::CustomProxyConfig::New(),
+        client_.BindNewPipeAndPassReceiver());
     SetConfig(std::move(config));
     return delegate;
   }
@@ -57,19 +59,19 @@ class NetworkServiceProxyDelegateTest : public testing::Test {
 
   void SetConfig(mojom::CustomProxyConfigPtr config) {
     client_->OnCustomProxyConfigUpdated(std::move(config));
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
-  mojom::CustomProxyConfigClientPtr client_;
+  mojo::Remote<mojom::CustomProxyConfigClient> client_;
   std::unique_ptr<net::TestURLRequestContext> context_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(NetworkServiceProxyDelegateTest, NullConfigDoesNotCrash) {
-  mojom::CustomProxyConfigClientPtr client;
+  mojo::Remote<mojom::CustomProxyConfigClient> client;
   auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
-      nullptr, mojo::MakeRequest(&client));
+      nullptr, client.BindNewPipeAndPassReceiver());
 
   net::HttpRequestHeaders headers;
   auto request = CreateRequest(GURL(kHttpUrl));
@@ -563,9 +565,9 @@ TEST_F(NetworkServiceProxyDelegateTest, OnResolveProxyAllProxiesBad) {
 TEST_F(NetworkServiceProxyDelegateTest, InitialConfigUsedForProxy) {
   auto config = mojom::CustomProxyConfig::New();
   config->rules.ParseFromString("http=foo");
-  mojom::CustomProxyConfigClientPtr client;
+  mojo::Remote<mojom::CustomProxyConfigClient> client;
   auto delegate = std::make_unique<NetworkServiceProxyDelegate>(
-      std::move(config), mojo::MakeRequest(&client));
+      std::move(config), client.BindNewPipeAndPassReceiver());
 
   net::ProxyInfo result;
   result.UseDirect();

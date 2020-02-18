@@ -8,7 +8,21 @@
 from __future__ import print_function
 
 
-def Collection(classname, **kwargs):
+def _CollectionExec(expr, classname):
+  """Hack to workaround <=Python-2.7.8 exec bug.
+
+  See https://bugs.python.org/issue21591 for details.
+
+  TODO(crbug.com/998624): Drop this in Jan 2020.
+  """
+  namespace = {}
+  exec(expr, {}, namespace)  # pylint: disable=exec-used
+  return namespace[classname]
+
+
+# We have nested kwargs below, so disable the |kwargs| naming here.
+# pylint: disable=docstring-misnamed-args
+def Collection(classname, **default_kwargs):
   """Create a new class with mutable named members.
 
   This is like collections.namedtuple, but mutable.  Also similar to the
@@ -26,7 +40,7 @@ def Collection(classname, **kwargs):
   def sn_init(self, **kwargs):
     """The new class's __init__ function."""
     # First verify the kwargs don't have excess settings.
-    valid_keys = set(self.__slots__[1:])
+    valid_keys = set(self.__slots__)
     these_keys = set(kwargs.keys())
     invalid_keys = these_keys - valid_keys
     if invalid_keys:
@@ -35,35 +49,32 @@ def Collection(classname, **kwargs):
 
     # Now initialize this object.
     for k in valid_keys:
-      setattr(self, k, kwargs.get(k, self.__defaults__[k]))
+      setattr(self, k, kwargs.get(k, default_kwargs[k]))
 
   def sn_repr(self):
     """The new class's __repr__ function."""
     return '%s(%s)' % (classname, ', '.join(
-        '%s=%r' % (k, getattr(self, k)) for k in self.__slots__[1:]))
+        '%s=%r' % (k, getattr(self, k)) for k in self.__slots__))
 
   # Give the new class a unique name and then generate the code for it.
   classname = 'Collection_%s' % classname
   expr = '\n'.join((
       'class %(classname)s(object):',
-      '  __slots__ = ["__defaults__", "%(slots)s"]',
-      '  __defaults__ = {}',
+      '  __slots__ = ["%(slots)s"]',
   )) % {
       'classname': classname,
-      'slots': '", "'.join(sorted(str(k) for k in kwargs)),
+      'slots': '", "'.join(sorted(default_kwargs)),
   }
 
   # Create the class in a local namespace as exec requires.
-  namespace = {}
-  exec expr in namespace  # pylint: disable=exec-used
-  new_class = namespace[classname]
+  new_class = _CollectionExec(expr, classname)
 
   # Bind the helpers.
-  new_class.__defaults__ = kwargs.copy()
   new_class.__init__ = sn_init
   new_class.__repr__ = sn_repr
 
   return new_class
+# pylint: enable=docstring-misnamed-args
 
 
 def GroupByKey(input_iter, key):

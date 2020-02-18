@@ -16,8 +16,6 @@
 
 #include "src/trace_processor/proto_trace_tokenizer.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "perfetto/ext/base/string_view.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "src/trace_processor/args_tracker.h"
@@ -26,29 +24,33 @@
 #include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/proto_trace_parser.h"
 #include "src/trace_processor/slice_tracker.h"
+#include "src/trace_processor/stack_profile_tracker.h"
 #include "src/trace_processor/systrace_parser.h"
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/virtual_track_tracker.h"
+#include "test/gtest_and_gmock.h"
 
-#include "perfetto/common/sys_stats_counters.pbzero.h"
-#include "perfetto/trace/android/packages_list.pbzero.h"
-#include "perfetto/trace/chrome/chrome_benchmark_metadata.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
-#include "perfetto/trace/ftrace/generic.pbzero.h"
-#include "perfetto/trace/ftrace/power.pbzero.h"
-#include "perfetto/trace/ftrace/sched.pbzero.h"
-#include "perfetto/trace/ftrace/task.pbzero.h"
-#include "perfetto/trace/interned_data/interned_data.pbzero.h"
-#include "perfetto/trace/ps/process_tree.pbzero.h"
-#include "perfetto/trace/sys_stats/sys_stats.pbzero.h"
-#include "perfetto/trace/trace.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
-#include "perfetto/trace/track_event/debug_annotation.pbzero.h"
-#include "perfetto/trace/track_event/task_execution.pbzero.h"
-#include "perfetto/trace/track_event/thread_descriptor.pbzero.h"
-#include "perfetto/trace/track_event/track_event.pbzero.h"
+#include "protos/perfetto/common/sys_stats_counters.pbzero.h"
+#include "protos/perfetto/trace/android/packages_list.pbzero.h"
+#include "protos/perfetto/trace/chrome/chrome_benchmark_metadata.pbzero.h"
+#include "protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "protos/perfetto/trace/ftrace/generic.pbzero.h"
+#include "protos/perfetto/trace/ftrace/power.pbzero.h"
+#include "protos/perfetto/trace/ftrace/sched.pbzero.h"
+#include "protos/perfetto/trace/ftrace/task.pbzero.h"
+#include "protos/perfetto/trace/interned_data/interned_data.pbzero.h"
+#include "protos/perfetto/trace/profiling/profile_packet.pbzero.h"
+#include "protos/perfetto/trace/ps/process_tree.pbzero.h"
+#include "protos/perfetto/trace/sys_stats/sys_stats.pbzero.h"
+#include "protos/perfetto/trace/trace.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/track_event/debug_annotation.pbzero.h"
+#include "protos/perfetto/trace/track_event/task_execution.pbzero.h"
+#include "protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
+#include "protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -66,6 +68,16 @@ using ::testing::NiceMock;
 using ::testing::Pointwise;
 using ::testing::Return;
 using ::testing::UnorderedElementsAreArray;
+
+MATCHER_P(DoubleEq, exp, "Double matcher that satisfies -Wfloat-equal") {
+  // The IEEE standard says that any comparison operation involving
+  // a NAN must return false.
+  double d_exp = exp;
+  double d_arg = arg;
+  if (isnan(d_exp) || isnan(d_arg))
+    return false;
+  return fabs(d_arg - d_exp) < 1e-128;
+}
 
 class MockEventTracker : public EventTracker {
  public:
@@ -189,6 +201,7 @@ class ProtoTraceParserTest : public ::testing::Test {
     context_.sorter.reset(new TraceSorter(&context_, 0 /*window size*/));
     context_.parser.reset(new ProtoTraceParser(&context_));
     context_.systrace_parser.reset(new SystraceParser(&context_));
+    context_.stack_profile_tracker.reset(new StackProfileTracker(&context_));
   }
 
   void ResetTraceBuffers() {
@@ -512,8 +525,9 @@ TEST_F(ProtoTraceParserTest, LoadMemInfo) {
   uint32_t value = 10;
   meminfo->set_value(value);
 
-  EXPECT_CALL(*event_, PushCounter(static_cast<int64_t>(ts), value * 1024, _, 0,
-                                   RefType::kRefNoRef, false));
+  EXPECT_CALL(*event_,
+              PushCounter(static_cast<int64_t>(ts), DoubleEq(value * 1024.0), _,
+                          0, RefType::kRefNoRef, false));
   Tokenize();
 }
 
@@ -527,8 +541,8 @@ TEST_F(ProtoTraceParserTest, LoadVmStats) {
   uint32_t value = 10;
   meminfo->set_value(value);
 
-  EXPECT_CALL(*event_, PushCounter(static_cast<int64_t>(ts), value, _, 0,
-                                   RefType::kRefNoRef, false));
+  EXPECT_CALL(*event_, PushCounter(static_cast<int64_t>(ts), DoubleEq(value), _,
+                                   0, RefType::kRefNoRef, false));
   Tokenize();
 }
 
@@ -542,8 +556,8 @@ TEST_F(ProtoTraceParserTest, LoadCpuFreq) {
   cpu_freq->set_cpu_id(10);
   cpu_freq->set_state(2000);
 
-  EXPECT_CALL(*event_,
-              PushCounter(1000, 2000, _, 10, RefType::kRefCpuId, false));
+  EXPECT_CALL(*event_, PushCounter(1000, DoubleEq(2000), _, 10,
+                                   RefType::kRefCpuId, false));
   Tokenize();
 }
 
@@ -628,14 +642,14 @@ TEST_F(ProtoTraceParserTest, ThreadNameFromThreadDescriptor) {
 
   EXPECT_CALL(*storage_, InternString(base::StringView("OldThreadName")))
       .WillOnce(Return(1));
-  EXPECT_CALL(*process_, UpdateThreadName(16, 1));
+  EXPECT_CALL(*process_, UpdateThreadName(16, StringId(1)));
   // Packet with same thread, but different name should update the name.
   EXPECT_CALL(*storage_, InternString(base::StringView("NewThreadName")))
       .WillOnce(Return(2));
-  EXPECT_CALL(*process_, UpdateThreadName(16, 2));
+  EXPECT_CALL(*process_, UpdateThreadName(16, StringId(2)));
   EXPECT_CALL(*storage_, InternString(base::StringView("DifferentThreadName")))
       .WillOnce(Return(3));
-  EXPECT_CALL(*process_, UpdateThreadName(11, 3));
+  EXPECT_CALL(*process_, UpdateThreadName(11, StringId(3)));
 
   Tokenize();
   context_.sorter->ExtractEventsForced();
@@ -701,17 +715,20 @@ TEST_F(ProtoTraceParserTest, TrackEventWithoutInternedData) {
   MockArgsTracker args(&context_);
 
   InSequence in_sequence;  // Below slices should be sorted by timestamp.
-  EXPECT_CALL(*slice_, Scoped(1005000, 1, RefType::kRefUtid, 0, 0, 23000, _))
+  EXPECT_CALL(*slice_, Scoped(1005000, 1, RefType::kRefUtid, kNullStringId,
+                              kNullStringId, 23000, _))
       .WillOnce(DoAll(
           InvokeArgument<6>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 0u)),
           Return(0u)));
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 0, 0, _))
+  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, kNullStringId,
+                             kNullStringId, _))
       .WillOnce(DoAll(
           InvokeArgument<5>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 1u)),
           Return(1u)));
-  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, 0, 0, _))
+  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, kNullStringId,
+                           kNullStringId, _))
       .WillOnce(DoAll(
           InvokeArgument<5>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 1u)),
@@ -726,6 +743,93 @@ TEST_F(ProtoTraceParserTest, TrackEventWithoutInternedData) {
   EXPECT_EQ(storage_->thread_slices().slice_ids()[1], 1u);
   EXPECT_EQ(storage_->thread_slices().thread_timestamp_ns()[1], 2005000);
   EXPECT_EQ(storage_->thread_slices().thread_duration_ns()[1], 5000);
+}
+
+TEST_F(ProtoTraceParserTest, TrackEventWithoutInternedDataWithTypes) {
+  context_.sorter.reset(new TraceSorter(
+      &context_, std::numeric_limits<int64_t>::max() /*window size*/));
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    packet->set_incremental_state_cleared(true);
+    auto* thread_desc = packet->set_thread_descriptor();
+    thread_desc->set_pid(15);
+    thread_desc->set_tid(16);
+    thread_desc->set_reference_timestamp_us(1000);
+    thread_desc->set_reference_thread_time_us(2000);
+  }
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* event = packet->set_track_event();
+    event->set_timestamp_delta_us(10);   // absolute: 1010.
+    event->set_thread_time_delta_us(5);  // absolute: 2005.
+    event->add_category_iids(1);
+    event->set_type(protos::pbzero::TrackEvent::TYPE_SLICE_BEGIN);
+    auto* legacy_event = event->set_legacy_event();
+    legacy_event->set_name_iid(1);
+  }
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* event = packet->set_track_event();
+    event->set_timestamp_delta_us(10);   // absolute: 1020.
+    event->set_thread_time_delta_us(5);  // absolute: 2010.
+    event->add_category_iids(1);
+    event->set_type(protos::pbzero::TrackEvent::TYPE_SLICE_END);
+    auto* legacy_event = event->set_legacy_event();
+    legacy_event->set_name_iid(1);
+  }
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* event = packet->set_track_event();
+    event->set_timestamp_absolute_us(1015);
+    event->set_thread_time_absolute_us(2007);
+    event->add_category_iids(2);
+    event->set_type(protos::pbzero::TrackEvent::TYPE_INSTANT);
+    auto* legacy_event = event->set_legacy_event();
+    legacy_event->set_name_iid(2);
+  }
+
+  Tokenize();
+
+  EXPECT_CALL(*process_, UpdateThread(16, 15))
+      .Times(3)
+      .WillRepeatedly(Return(1));
+
+  MockArgsTracker args(&context_);
+
+  InSequence in_sequence;  // Below slices should be sorted by timestamp.
+  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, kNullStringId,
+                             kNullStringId, _))
+      .WillOnce(DoAll(
+          InvokeArgument<5>(
+              &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 0u)),
+          Return(0u)));
+  EXPECT_CALL(*slice_, Scoped(1015000, 1, RefType::kRefUtid, kNullStringId,
+                              kNullStringId, 0, _))
+      .WillOnce(DoAll(
+          InvokeArgument<6>(
+              &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 1u)),
+          Return(1u)));
+  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, kNullStringId,
+                           kNullStringId, _))
+      .WillOnce(DoAll(
+          InvokeArgument<5>(
+              &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 0u)),
+          Return(0u)));
+
+  context_.sorter->ExtractEventsForced();
+
+  EXPECT_EQ(storage_->thread_slices().slice_count(), 2u);
+  EXPECT_EQ(storage_->thread_slices().slice_ids()[0], 0u);
+  EXPECT_EQ(storage_->thread_slices().thread_timestamp_ns()[0], 2005000);
+  EXPECT_EQ(storage_->thread_slices().thread_duration_ns()[0], 5000);
+  EXPECT_EQ(storage_->thread_slices().slice_ids()[1], 1u);
+  EXPECT_EQ(storage_->thread_slices().thread_timestamp_ns()[1], 2007000);
+  EXPECT_EQ(storage_->thread_slices().thread_duration_ns()[1], 0);
 }
 
 TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
@@ -759,7 +863,7 @@ TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
   }
@@ -822,7 +926,7 @@ TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
     auto cat3 = interned_data->add_event_categories();
     cat3->set_iid(3);
     cat3->set_name("cat3");
-    auto ev2 = interned_data->add_legacy_event_names();
+    auto ev2 = interned_data->add_event_names();
     ev2->set_iid(2);
     ev2->set_name("ev2");
   }
@@ -843,7 +947,8 @@ TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev2")))
       .WillOnce(Return(2));
-  EXPECT_CALL(*slice_, Scoped(1005000, 1, RefType::kRefUtid, 1, 2, 23000, _))
+  EXPECT_CALL(*slice_, Scoped(1005000, 1, RefType::kRefUtid, StringId(1),
+                              StringId(2), 23000, _))
       .WillOnce(DoAll(
           InvokeArgument<6>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 0u)),
@@ -853,25 +958,29 @@ TEST_F(ProtoTraceParserTest, TrackEventWithInternedData) {
       .WillOnce(Return(3));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
       .WillOnce(Return(4));
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 3, 4, _))
+  EXPECT_CALL(*slice_,
+              Begin(1010000, 1, RefType::kRefUtid, StringId(3), StringId(4), _))
       .WillOnce(DoAll(
           InvokeArgument<5>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 1u)),
           Return(1u)));
 
-  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, 3, 4, _))
+  EXPECT_CALL(*slice_,
+              End(1020000, 1, RefType::kRefUtid, StringId(3), StringId(4), _))
       .WillOnce(DoAll(
           InvokeArgument<5>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 1u)),
           Return(1u)));
 
-  EXPECT_CALL(*slice_, Scoped(1040000, 1, RefType::kRefUtid, 3, 4, 0, _))
+  EXPECT_CALL(*slice_, Scoped(1040000, 1, RefType::kRefUtid, StringId(3),
+                              StringId(4), 0, _))
       .WillOnce(DoAll(
           InvokeArgument<6>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 2u)),
           Return(2u)));
 
-  EXPECT_CALL(*slice_, Scoped(1050000, 2, RefType::kRefUpid, 3, 4, 0, _))
+  EXPECT_CALL(*slice_, Scoped(1050000, 2, RefType::kRefUpid, StringId(3),
+                              StringId(4), 0, _))
       .WillOnce(DoAll(
           InvokeArgument<6>(
               &args, TraceStorage::CreateRowId(TableId::kNestableSlices, 3u)),
@@ -930,7 +1039,7 @@ TEST_F(ProtoTraceParserTest, TrackEventAsyncEvents) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
   }
@@ -963,7 +1072,7 @@ TEST_F(ProtoTraceParserTest, TrackEventAsyncEvents) {
     auto cat2 = interned_data->add_event_categories();
     cat2->set_iid(2);
     cat2->set_name("cat2");
-    auto ev2 = interned_data->add_legacy_event_names();
+    auto ev2 = interned_data->add_event_names();
     ev2->set_iid(2);
     ev2->set_name("ev2");
   }
@@ -993,29 +1102,34 @@ TEST_F(ProtoTraceParserTest, TrackEventAsyncEvents) {
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
       .WillOnce(Return(2));
-  EXPECT_CALL(*slice_, Begin(1010000, 0, RefType::kRefTrack, 1, 2, _))
+  EXPECT_CALL(*slice_, Begin(1010000, 0, RefType::kRefTrack, StringId(1),
+                             StringId(2), _))
       .WillOnce(Return(0u));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("cat2")))
       .WillOnce(Return(3));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev2")))
       .WillOnce(Return(4));
-  EXPECT_CALL(*slice_, Scoped(1015000, 0, RefType::kRefTrack, 3, 4, 0, _));
+  EXPECT_CALL(*slice_, Scoped(1015000, 0, RefType::kRefTrack, StringId(3),
+                              StringId(4), 0, _));
 
-  EXPECT_CALL(*slice_, End(1020000, 0, RefType::kRefTrack, 1, 2, _))
+  EXPECT_CALL(*slice_,
+              End(1020000, 0, RefType::kRefTrack, StringId(1), StringId(2), _))
       .WillOnce(Return(0u));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("scope1")))
       .WillOnce(Return(5));
-  EXPECT_CALL(*slice_, Scoped(1030000, 1, RefType::kRefTrack, 3, 4, 0, _));
+  EXPECT_CALL(*slice_, Scoped(1030000, 1, RefType::kRefTrack, StringId(3),
+                              StringId(4), 0, _));
 
   context_.sorter->ExtractEventsForced();
 
+  EXPECT_EQ(storage_->tracks().track_count(), 2u);
+  EXPECT_EQ(storage_->tracks().names()[0], 2u);
+  EXPECT_EQ(storage_->tracks().names()[1], 4u);
   EXPECT_EQ(storage_->virtual_tracks().virtual_track_count(), 2u);
   EXPECT_EQ(storage_->virtual_tracks().track_ids()[0], 0u);
   EXPECT_EQ(storage_->virtual_tracks().track_ids()[1], 1u);
-  EXPECT_EQ(storage_->virtual_tracks().names()[0], 2u);
-  EXPECT_EQ(storage_->virtual_tracks().names()[1], 4u);
   EXPECT_EQ(storage_->virtual_tracks().scopes()[0], VirtualTrackScope::kGlobal);
   EXPECT_EQ(storage_->virtual_tracks().scopes()[1],
             VirtualTrackScope::kProcess);
@@ -1179,8 +1293,10 @@ TEST_F(ProtoTraceParserTest, TrackEventWithDataLoss) {
       .WillRepeatedly(Return(1));
 
   InSequence in_sequence;  // Below slices should be sorted by timestamp.
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 0, 0, _));
-  EXPECT_CALL(*slice_, End(2010000, 1, RefType::kRefUtid, 0, 0, _));
+  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, kNullStringId,
+                             kNullStringId, _));
+  EXPECT_CALL(*slice_, End(2010000, 1, RefType::kRefUtid, kNullStringId,
+                           kNullStringId, _));
 
   context_.sorter->ExtractEventsForced();
 }
@@ -1214,7 +1330,7 @@ TEST_F(ProtoTraceParserTest, TrackEventMultipleSequences) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
   }
@@ -1243,7 +1359,7 @@ TEST_F(ProtoTraceParserTest, TrackEventMultipleSequences) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev2 = interned_data->add_legacy_event_names();
+    auto ev2 = interned_data->add_event_names();
     ev2->set_iid(1);
     ev2->set_name("ev2");
   }
@@ -1286,16 +1402,20 @@ TEST_F(ProtoTraceParserTest, TrackEventMultipleSequences) {
   EXPECT_CALL(*storage_, InternString(base::StringView("ev2")))
       .WillOnce(Return(2));
 
-  EXPECT_CALL(*slice_, Begin(1005000, 2, RefType::kRefUtid, 1, 2, _));
+  EXPECT_CALL(*slice_, Begin(1005000, 2, RefType::kRefUtid, StringId(1),
+                             StringId(2), _));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("cat1")))
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
       .WillOnce(Return(3));
 
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 1, 3, _));
-  EXPECT_CALL(*slice_, End(1015000, 2, RefType::kRefUtid, 1, 2, _));
-  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, 1, 3, _));
+  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, StringId(1),
+                             StringId(3), _));
+  EXPECT_CALL(*slice_,
+              End(1015000, 2, RefType::kRefUtid, StringId(1), StringId(2), _));
+  EXPECT_CALL(*slice_,
+              End(1020000, 1, RefType::kRefUtid, StringId(1), StringId(3), _));
 
   context_.sorter->ExtractEventsForced();
 }
@@ -1358,7 +1478,7 @@ TEST_F(ProtoTraceParserTest, TrackEventWithDebugAnnotations) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
     auto an1 = interned_data->add_debug_annotation_names();
@@ -1430,19 +1550,22 @@ TEST_F(ProtoTraceParserTest, TrackEventWithDebugAnnotations) {
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
       .WillOnce(Return(2));
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 1, 2, _))
+  EXPECT_CALL(*slice_,
+              Begin(1010000, 1, RefType::kRefUtid, StringId(1), StringId(2), _))
       .WillOnce(DoAll(InvokeArgument<5>(&args, 1u), Return(1u)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an1")))
       .WillOnce(Return(3));
-  EXPECT_CALL(args, AddArg(1u, 3, 3, Variadic::UnsignedInteger(10u)));
+  EXPECT_CALL(args, AddArg(1u, StringId(3), StringId(3),
+                           Variadic::UnsignedInteger(10u)));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2")))
       .WillOnce(Return(4));
-  EXPECT_CALL(*storage_, GetString(4)).WillOnce(Return("debug.an2"));
+  EXPECT_CALL(*storage_, GetString(StringId(4))).WillOnce(Return("debug.an2"));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child1")))
       .Times(2)
       .WillRepeatedly(Return(5));
-  EXPECT_CALL(args, AddArg(1u, 5, 5, Variadic::Boolean(true)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(5), StringId(5), Variadic::Boolean(true)));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child2")))
       .WillOnce(Return(6));
@@ -1450,45 +1573,53 @@ TEST_F(ProtoTraceParserTest, TrackEventWithDebugAnnotations) {
       .WillOnce(Return(7));
   EXPECT_CALL(*storage_, InternString(base::StringView("child21")))
       .WillOnce(Return(8));
-  EXPECT_CALL(args, AddArg(1u, 6, 7, Variadic::String(8)));
+  EXPECT_CALL(args, AddArg(1u, StringId(6), StringId(7),
+                           Variadic::String(StringId(8))));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child2")))
       .WillOnce(Return(6));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child2[1]")))
       .WillOnce(Return(9));
-  EXPECT_CALL(args, AddArg(1u, 6, 9, Variadic::Real(2.2)));
+  EXPECT_CALL(args, AddArg(1u, StringId(6), StringId(9), Variadic::Real(2.2)));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child2")))
       .WillOnce(Return(6));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an2.child2[2]")))
       .WillOnce(Return(10));
-  EXPECT_CALL(args, AddArg(1u, 6, 10, Variadic::Integer(23)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(6), StringId(10), Variadic::Integer(23)));
 
-  EXPECT_CALL(*slice_, End(1020000, 1, RefType::kRefUtid, 1, 2, _))
+  EXPECT_CALL(*slice_,
+              End(1020000, 1, RefType::kRefUtid, StringId(1), StringId(2), _))
       .WillOnce(DoAll(InvokeArgument<5>(&args, 1u), Return(1u)));
 
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an3")))
       .WillOnce(Return(11));
-  EXPECT_CALL(args, AddArg(1u, 11, 11, Variadic::Integer(-3)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(11), StringId(11), Variadic::Integer(-3)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an4")))
       .WillOnce(Return(12));
-  EXPECT_CALL(args, AddArg(1u, 12, 12, Variadic::Boolean(true)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(12), StringId(12), Variadic::Boolean(true)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an5")))
       .WillOnce(Return(13));
-  EXPECT_CALL(args, AddArg(1u, 13, 13, Variadic::Real(-5.5)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(13), StringId(13), Variadic::Real(-5.5)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an6")))
       .WillOnce(Return(14));
-  EXPECT_CALL(args, AddArg(1u, 14, 14, Variadic::Pointer(20u)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(14), StringId(14), Variadic::Pointer(20u)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an7")))
       .WillOnce(Return(15));
   EXPECT_CALL(*storage_, InternString(base::StringView("val7")))
       .WillOnce(Return(16));
-  EXPECT_CALL(args, AddArg(1u, 15, 15, Variadic::String(16)));
+  EXPECT_CALL(args,
+              AddArg(1u, StringId(15), StringId(15), Variadic::String(16)));
   EXPECT_CALL(*storage_, InternString(base::StringView("debug.an8")))
       .WillOnce(Return(17));
   EXPECT_CALL(*storage_, InternString(base::StringView("val8")))
       .WillOnce(Return(18));
-  EXPECT_CALL(args, AddArg(1u, 17, 17, Variadic::Json(18)));
+  EXPECT_CALL(args, AddArg(1u, StringId(17), StringId(17), Variadic::Json(18)));
 
   context_.sorter->ExtractEventsForced();
 }
@@ -1525,13 +1656,14 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTaskExecution) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
     auto loc1 = interned_data->add_source_locations();
     loc1->set_iid(1);
     loc1->set_file_name("file1");
     loc1->set_function_name("func1");
+    loc1->set_line_number(42);
   }
 
   Tokenize();
@@ -1544,7 +1676,8 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTaskExecution) {
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
       .WillOnce(Return(2));
-  EXPECT_CALL(*slice_, Begin(1010000, 1, RefType::kRefUtid, 1, 2, _))
+  EXPECT_CALL(*slice_,
+              Begin(1010000, 1, RefType::kRefUtid, StringId(1), StringId(2), _))
       .WillOnce(DoAll(InvokeArgument<5>(&args, 1u), Return(1u)));
   EXPECT_CALL(*storage_, InternString(base::StringView("file1")))
       .WillOnce(Return(3));
@@ -1552,8 +1685,88 @@ TEST_F(ProtoTraceParserTest, TrackEventWithTaskExecution) {
       .WillOnce(Return(4));
   EXPECT_CALL(args, AddArg(1u, _, _, Variadic::String(3)));
   EXPECT_CALL(args, AddArg(1u, _, _, Variadic::String(4)));
+  EXPECT_CALL(args, AddArg(1u, _, _, Variadic::UnsignedInteger(42)));
 
   context_.sorter->ExtractEventsForced();
+}
+
+TEST_F(ProtoTraceParserTest, TrackEventWithLogMessage) {
+  context_.sorter.reset(new TraceSorter(
+      &context_, std::numeric_limits<int64_t>::max() /*window size*/));
+  MockArgsTracker args(&context_);
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    packet->set_incremental_state_cleared(true);
+    auto* thread_desc = packet->set_thread_descriptor();
+    thread_desc->set_pid(15);
+    thread_desc->set_tid(16);
+    thread_desc->set_reference_timestamp_us(1000);
+    thread_desc->set_reference_thread_time_us(2000);
+  }
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* event = packet->set_track_event();
+    event->set_timestamp_delta_us(10);   // absolute: 1010.
+    event->set_thread_time_delta_us(5);  // absolute: 2005.
+    event->add_category_iids(1);
+
+    auto* log_message = event->set_log_message();
+    log_message->set_body_iid(1);
+    log_message->set_source_location_iid(1);
+
+    auto* legacy_event = event->set_legacy_event();
+    legacy_event->set_name_iid(1);
+    legacy_event->set_phase('I');
+
+    auto* interned_data = packet->set_interned_data();
+    auto cat1 = interned_data->add_event_categories();
+    cat1->set_iid(1);
+    cat1->set_name("cat1");
+
+    auto ev1 = interned_data->add_event_names();
+    ev1->set_iid(1);
+    ev1->set_name("ev1");
+
+    auto body = interned_data->add_log_message_body();
+    body->set_iid(1);
+    body->set_body("body1");
+
+    auto loc1 = interned_data->add_source_locations();
+    loc1->set_iid(1);
+    loc1->set_file_name("file1");
+    loc1->set_function_name("func1");
+    loc1->set_line_number(1);
+  }
+
+  Tokenize();
+
+  EXPECT_CALL(*process_, UpdateThread(16, 15)).WillOnce(Return(1));
+
+  InSequence in_sequence;  // Below slices should be sorted by timestamp.
+
+  EXPECT_CALL(*storage_, InternString(base::StringView("cat1")))
+      .WillOnce(Return(1));
+  EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
+      .WillOnce(Return(2));
+
+  EXPECT_CALL(*slice_, Scoped(1010000, 1, RefType::kRefUtid, StringId(1),
+                              StringId(2), 0, _))
+      .WillOnce(DoAll(InvokeArgument<6>(&args, 1u), Return(1u)));
+
+  EXPECT_CALL(*storage_, InternString(base::StringView("body1")))
+      .WillOnce(Return(3));
+
+  // Call with logMessageBody (body1 in this case).
+  EXPECT_CALL(args, AddArg(1u, _, _, Variadic::String(StringId(3))));
+
+  context_.sorter->ExtractEventsForced();
+
+  EXPECT_TRUE(context_.storage->android_logs().size() > 0);
+  EXPECT_EQ(context_.storage->android_logs().timestamps()[0], 1010000);
+  EXPECT_EQ(context_.storage->android_logs().msg_ids()[0], 3u);
 }
 
 TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
@@ -1600,7 +1813,7 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
     auto cat1 = interned_data->add_event_categories();
     cat1->set_iid(1);
     cat1->set_name("cat1");
-    auto ev1 = interned_data->add_legacy_event_names();
+    auto ev1 = interned_data->add_event_names();
     ev1->set_iid(1);
     ev1->set_name("ev1");
     auto an1 = interned_data->add_debug_annotation_names();
@@ -1612,8 +1825,6 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
 
   EXPECT_CALL(*process_, UpdateThread(16, 15)).WillOnce(Return(1));
 
-  InSequence in_sequence;  // Below slices should be sorted by timestamp.
-
   EXPECT_CALL(*storage_, InternString(base::StringView("cat1")))
       .WillOnce(Return(1));
   EXPECT_CALL(*storage_, InternString(base::StringView("ev1")))
@@ -1621,9 +1832,10 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
   EXPECT_CALL(*storage_, InternString(base::StringView("scope1")))
       .Times(2)
       .WillRepeatedly(Return(3));
-
-  EXPECT_CALL(*storage_, InternString(base::StringView("debug.an1")))
+  EXPECT_CALL(*storage_, InternString(base::StringView("?")))
       .WillOnce(Return(4));
+  EXPECT_CALL(*storage_, InternString(base::StringView("debug.an1")))
+      .WillOnce(Return(5));
 
   context_.sorter->ExtractEventsForced();
 
@@ -1646,7 +1858,7 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
   EXPECT_TRUE(HasArg(1u, storage_->InternString("legacy_event.name"),
                      Variadic::String(2u)));
   EXPECT_TRUE(HasArg(1u, storage_->InternString("legacy_event.phase"),
-                     Variadic::Integer('?')));
+                     Variadic::String(4u)));
   EXPECT_TRUE(HasArg(1u, storage_->InternString("legacy_event.duration_ns"),
                      Variadic::Integer(23000)));
   EXPECT_TRUE(HasArg(1u,
@@ -1668,7 +1880,108 @@ TEST_F(ProtoTraceParserTest, TrackEventParseLegacyEventIntoRawTable) {
                      Variadic::Boolean(true)));
   EXPECT_TRUE(HasArg(1u, storage_->InternString("legacy_event.flow_direction"),
                      Variadic::String(storage_->InternString("inout"))));
-  EXPECT_TRUE(HasArg(1u, 4u, Variadic::UnsignedInteger(10u)));
+  EXPECT_TRUE(HasArg(1u, 5u, Variadic::UnsignedInteger(10u)));
+}
+
+TEST_F(ProtoTraceParserTest, ParseChromeMetadataEventIntoRawTable) {
+  static const char kStringName[] = "string_name";
+  static const char kStringValue[] = "string_value";
+  static const char kIntName[] = "int_name";
+  static const int kIntValue = 123;
+
+  context_.sorter.reset(new TraceSorter(
+      &context_, std::numeric_limits<int64_t>::max() /*window size*/));
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* bundle = packet->set_chrome_events();
+    auto* metadata = bundle->add_metadata();
+    metadata->set_name(kStringName);
+    metadata->set_string_value(kStringValue);
+    metadata = bundle->add_metadata();
+    metadata->set_name(kIntName);
+    metadata->set_int_value(kIntValue);
+  }
+
+  Tokenize();
+  context_.sorter->ExtractEventsForced();
+
+  // Verify raw_events and args contents.
+  const auto& raw_events = storage_->raw_events();
+  EXPECT_EQ(raw_events.raw_event_count(), 1u);
+  EXPECT_EQ(raw_events.name_ids()[0],
+            storage_->InternString("chrome_event.metadata"));
+  EXPECT_EQ(raw_events.arg_set_ids()[0], 1u);
+
+  EXPECT_EQ(storage_->args().args_count(), 2u);
+  EXPECT_TRUE(HasArg(1u, storage_->InternString(kStringName),
+                     Variadic::String(storage_->InternString(kStringValue))));
+  EXPECT_TRUE(HasArg(1u, storage_->InternString(kIntName),
+                     Variadic::Integer(kIntValue)));
+}
+
+TEST_F(ProtoTraceParserTest, ParseChromeLegacyFtraceIntoRawTable) {
+  static const char kDataPart0[] = "aaa";
+  static const char kDataPart1[] = "bbb";
+  static const char kFullData[] = "aaabbb";
+
+  context_.sorter.reset(new TraceSorter(
+      &context_, std::numeric_limits<int64_t>::max() /*window size*/));
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* bundle = packet->set_chrome_events();
+    bundle->add_legacy_ftrace_output(kDataPart0);
+    bundle->add_legacy_ftrace_output(kDataPart1);
+  }
+
+  Tokenize();
+
+  context_.sorter->ExtractEventsForced();
+
+  // Verify raw_events and args contents.
+  const auto& raw_events = storage_->raw_events();
+  EXPECT_EQ(raw_events.raw_event_count(), 1u);
+  EXPECT_EQ(raw_events.name_ids()[0],
+            storage_->InternString("chrome_event.legacy_system_trace"));
+  EXPECT_EQ(raw_events.arg_set_ids()[0], 1u);
+
+  EXPECT_EQ(storage_->args().args_count(), 1u);
+  EXPECT_TRUE(HasArg(1u, storage_->InternString("data"),
+                     Variadic::String(storage_->InternString(kFullData))));
+}
+
+TEST_F(ProtoTraceParserTest, ParseChromeLegacyJsonIntoRawTable) {
+  static const char kUserTraceEvent[] = "{\"user\":1}";
+
+  context_.sorter.reset(new TraceSorter(
+      &context_, std::numeric_limits<int64_t>::max() /*window size*/));
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* bundle = packet->set_chrome_events();
+    auto* user_trace = bundle->add_legacy_json_trace();
+    user_trace->set_type(protos::pbzero::ChromeLegacyJsonTrace::USER_TRACE);
+    user_trace->set_data(kUserTraceEvent);
+  }
+
+  Tokenize();
+
+  context_.sorter->ExtractEventsForced();
+
+  // Verify raw_events and args contents.
+  const auto& raw_events = storage_->raw_events();
+  EXPECT_EQ(raw_events.raw_event_count(), 1u);
+  EXPECT_EQ(raw_events.name_ids()[0],
+            storage_->InternString("chrome_event.legacy_user_trace"));
+  EXPECT_EQ(raw_events.arg_set_ids()[0], 1u);
+
+  EXPECT_EQ(storage_->args().args_count(), 1u);
+  EXPECT_TRUE(HasArg(1u, storage_->InternString("data"),
+                     Variadic::Json(storage_->InternString(kUserTraceEvent))));
 }
 
 TEST_F(ProtoTraceParserTest, LoadChromeBenchmarkMetadata) {
@@ -1790,6 +2103,86 @@ TEST_F(ProtoTraceParserTest, AndroidPackagesList) {
   EXPECT_EQ(find_arg(second_set_id, "profileable_from_shell").bool_value,
             false);
   EXPECT_EQ(find_arg(second_set_id, "version_code").int_value, 43);
+}
+
+TEST_F(ProtoTraceParserTest, ParseCPUProfileSamplesIntoTable) {
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    packet->set_incremental_state_cleared(true);
+
+    auto* thread_desc = packet->set_thread_descriptor();
+    thread_desc->set_pid(15);
+    thread_desc->set_tid(16);
+    thread_desc->set_reference_timestamp_us(1);
+    thread_desc->set_reference_thread_time_us(2);
+
+    auto* interned_data = packet->set_interned_data();
+
+    auto mapping = interned_data->add_mappings();
+    mapping->set_iid(1);
+
+    auto frame = interned_data->add_frames();
+    frame->set_iid(1);
+    frame->set_rel_pc(0x42);
+    frame->set_mapping_id(1);
+
+    auto frame2 = interned_data->add_frames();
+    frame2->set_iid(2);
+    frame2->set_rel_pc(0x4242);
+    frame2->set_mapping_id(1);
+
+    auto callstack = interned_data->add_callstacks();
+    callstack->set_iid(1);
+    callstack->add_frame_ids(1);
+
+    auto callstack2 = interned_data->add_callstacks();
+    callstack2->set_iid(42);
+    callstack2->add_frame_ids(2);
+  }
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+
+    auto* samples = packet->set_streaming_profile_packet();
+    samples->add_callstack_iid(42);
+    samples->add_timestamp_delta_us(10);
+
+    samples->add_callstack_iid(1);
+    samples->add_timestamp_delta_us(15);
+  }
+
+  {
+    auto* packet = trace_.add_packet();
+    packet->set_trusted_packet_sequence_id(1);
+    auto* samples = packet->set_streaming_profile_packet();
+
+    samples->add_callstack_iid(42);
+    samples->add_timestamp_delta_us(42);
+  }
+
+  EXPECT_CALL(*process_, UpdateThread(16, 15))
+      .Times(2)
+      .WillRepeatedly(Return(1));
+
+  Tokenize();
+
+  // Verify cpu_profile_samples.
+  const auto& samples = storage_->cpu_profile_stack_samples();
+  EXPECT_EQ(samples.size(), 3u);
+
+  EXPECT_EQ(samples.timestamps()[0], 1010);
+  EXPECT_EQ(samples.callsite_ids()[0], 0);
+  EXPECT_EQ(samples.utids()[0], 1u);
+
+  EXPECT_EQ(samples.timestamps()[1], 1025);
+  EXPECT_EQ(samples.callsite_ids()[1], 1);
+  EXPECT_EQ(samples.utids()[1], 1u);
+
+  EXPECT_EQ(samples.timestamps()[2], 1067);
+  EXPECT_EQ(samples.callsite_ids()[2], 0);
+  EXPECT_EQ(samples.utids()[2], 1u);
 }
 
 }  // namespace

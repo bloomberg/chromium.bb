@@ -576,7 +576,8 @@ def CheckTreeIsOpen(input_api, output_api,
   return []
 
 def GetUnitTestsInDirectory(
-    input_api, output_api, directory, whitelist=None, blacklist=None, env=None):
+    input_api, output_api, directory, whitelist=None, blacklist=None, env=None,
+    run_on_python2=True, run_on_python3=True):
   """Lists all files in a directory and runs them. Doesn't recurse.
 
   It's mainly a wrapper for RunUnitTests. Use whitelist and blacklist to filter
@@ -609,14 +610,24 @@ def GetUnitTestsInDirectory(
           'Out of %d files, found none that matched w=%r, b=%r in directory %s'
           % (found, whitelist, blacklist, directory))
     ]
-  return GetUnitTests(input_api, output_api, unit_tests, env)
+  return GetUnitTests(
+      input_api, output_api, unit_tests, env, run_on_python2, run_on_python3)
 
 
-def GetUnitTests(input_api, output_api, unit_tests, env=None):
+def GetUnitTests(
+    input_api, output_api, unit_tests, env=None, run_on_python2=True,
+    run_on_python3=True):
   """Runs all unit tests in a directory.
 
   On Windows, sys.executable is used for unit tests ending with ".py".
   """
+  assert run_on_python3 or run_on_python2, (
+      'At least one of "run_on_python2" or "run_on_python3" must be set.')
+  def has_py3_shebang(test):
+    with open(test) as f:
+      maybe_shebang = f.readline()
+    return maybe_shebang.startswith('#!') and 'python3' in maybe_shebang
+
   # We don't want to hinder users from uploading incomplete patches.
   if input_api.is_committing:
     message_type = output_api.PresubmitError
@@ -631,11 +642,26 @@ def GetUnitTests(input_api, output_api, unit_tests, env=None):
     kwargs = {'cwd': input_api.PresubmitLocalPath()}
     if env:
       kwargs['env'] = env
-    results.append(input_api.Command(
-        name=unit_test,
-        cmd=cmd,
-        kwargs=kwargs,
-        message=message_type))
+    if not unit_test.endswith('.py'):
+      results.append(input_api.Command(
+          name=unit_test,
+          cmd=cmd,
+          kwargs=kwargs,
+          message=message_type))
+    else:
+      if has_py3_shebang(unit_test) and run_on_python3:
+        results.append(input_api.Command(
+            name=unit_test,
+            cmd=cmd,
+            kwargs=kwargs,
+            message=message_type,
+            python3=True))
+      if run_on_python2:
+        results.append(input_api.Command(
+            name=unit_test,
+            cmd=cmd,
+            kwargs=kwargs,
+            message=message_type))
   return results
 
 
@@ -834,9 +860,10 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
     # Windows needs help running python files so we explicitly specify
     # the interpreter to use. It also has limitations on the size of
     # the command-line, so we pass arguments via a pipe.
-    cmd = [input_api.python_executable,
-           input_api.os_path.join(_HERE, 'third_party', 'pylint.py'),
-           '--args-on-stdin']
+    tool = input_api.os_path.join(_HERE, 'pylint')
+    if input_api.platform == 'win32':
+      tool += '.bat'
+    cmd = [tool, '--args-on-stdin']
     if len(flist) == 1:
       description = flist[0]
     else:
@@ -1394,7 +1421,7 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     return [output_api.PresubmitError(
         'Config set request to luci-config failed', long_text=str(e))]
   if not config_sets:
-    return [output_api.PresubmitWarning('No config_sets were returned')]
+    return [output_api.PresubmitPromptWarning('No config_sets were returned')]
   loc_pref = '%s/+/%s/' % (remote_host_url, remote_branch)
   logging.debug('Derived location prefix: %s', loc_pref)
   dir_to_config_set = {
@@ -1403,6 +1430,21 @@ def CheckChangedLUCIConfigs(input_api, output_api):
     if cs['location'].startswith(loc_pref) or
     ('%s/' % cs['location']) == loc_pref
   }
+  if not dir_to_config_set:
+    warning_long_text_lines = [
+        'No config_set found for %s.' % loc_pref,
+        'Found the following:',
+    ]
+    for loc in sorted(cs['location'] for cs in config_sets):
+      warning_long_text_lines.append('  %s' % loc)
+    warning_long_text_lines.append('')
+    warning_long_text_lines.append(
+        'If the requested location is internal,'
+        ' the requester may not have access.')
+
+    return [output_api.PresubmitPromptWarning(
+        warning_long_text_lines[0],
+        long_text='\n'.join(warning_long_text_lines))]
   cs_to_files = collections.defaultdict(list)
   for f in input_api.AffectedFiles(include_deletes=False):
     # windows

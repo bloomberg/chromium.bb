@@ -298,11 +298,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // The physical offset from this PaintLayer to its ContainingLayer.
   // Does not include any scroll offset of the ContainingLayer. Also does not
   // include offsets for positioned elements.
-  const PhysicalOffset& Location() const {
+  const PhysicalOffset& LocationWithoutPositionOffset() const {
 #if DCHECK_IS_ON()
     DCHECK(!needs_position_update_);
 #endif
-    return location_;
+    return location_without_position_offset_;
   }
 
   LayoutSize ScrolledContentOffset() const;
@@ -587,6 +587,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   static void MapPointInPaintInvalidationContainerToBacking(
       const LayoutBoxModelObject& paint_invalidation_container,
       PhysicalOffset&);
+  static void MapQuadInPaintInvalidationContainerToBacking(
+      const LayoutBoxModelObject& paint_invalidation_container,
+      FloatQuad&);
 
   bool PaintsWithTransparency(GlobalPaintFlags global_paint_flags) const {
     return IsTransparent() && !PaintsIntoOwnBacking(global_paint_flags);
@@ -781,7 +784,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
     const LayoutBoxModelObject* clipping_container = nullptr;
 
-    bool is_under_video = false;
     bool is_under_position_sticky = false;
   };
   void SetNeedsVisualOverflowRecalc();
@@ -856,9 +858,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
   const PaintLayer* MaskAncestor() const {
     return GetAncestorDependentCompositingInputs().mask_ancestor;
-  }
-  bool IsUnderVideo() const {
-    return GetAncestorDependentCompositingInputs().is_under_video;
   }
   bool HasDescendantWithClipPath() const {
     DCHECK(!needs_descendant_dependent_flags_update_);
@@ -945,10 +944,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
       const PaintLayer& ancestor_layer) const;
 
   void DidUpdateScrollsOverflow();
-
-  PhysicalRect PaintingExtent(const PaintLayer* root_layer,
-                              const PhysicalOffset& sub_pixel_accumulation,
-                              GlobalPaintFlags);
 
   void AppendSingleFragmentIgnoringPagination(
       PaintLayerFragments&,
@@ -1379,8 +1374,9 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   PaintLayer* first_;
   PaintLayer* last_;
 
-  // Our (x,y) coordinates are in our containing layer's coordinate space.
-  PhysicalOffset location_;
+  // Our (x,y) coordinates are in our containing layer's coordinate space,
+  // excluding positioning offset and scroll.
+  PhysicalOffset location_without_position_offset_;
 
   // The layer's size.
   //

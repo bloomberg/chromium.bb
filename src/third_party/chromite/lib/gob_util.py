@@ -32,6 +32,7 @@ try:
 except ImportError:  # Newer oauth2client versions put it in .contrib
   # pylint: disable=import-error,no-name-in-module
   from oauth2client.contrib import gce
+import six
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -662,7 +663,7 @@ def AddReviewers(host, change, add=None):
   """Add reviewers to a change."""
   if not add:
     return
-  if isinstance(add, basestring):
+  if isinstance(add, six.string_types):
     add = (add,)
   path = '%s/reviewers' % _GetChangePath(change)
   for r in add:
@@ -675,7 +676,7 @@ def RemoveReviewers(host, change, remove=None):
   """Remove reveiewers from a change."""
   if not remove:
     return
-  if isinstance(remove, basestring):
+  if isinstance(remove, six.string_types):
     remove = (remove,)
   for r in remove:
     path = '%s/reviewers/%s' % (_GetChangePath(change), r)

@@ -121,6 +121,10 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
+  // Sets a |PrefService|. Account Manager will use this instance to read its
+  // policies.
+  void SetPrefService(PrefService* pref_service);
+
   // |home_dir| is the path of the Device Account's home directory (root of the
   // user's cryptohome).
   // |request_context| is a non-owning pointer.
@@ -131,8 +135,23 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   void Initialize(
       const base::FilePath& home_dir,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      DelayNetworkCallRunner delay_network_call_runner);
+
+  // Same as above except that it accepts an |initialization_callback|, which
+  // will be called after Account Manager has been fully initialized.
+  // If Account Manager has already been fully initialized,
+  // |initialization_callback| is called immediately.
+  // Note: During initialization, there is no ordering guarantee between
+  // |initialization_callback| and Account Manager's observers getting their
+  // callbacks.
+  void Initialize(
+      const base::FilePath& home_dir,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DelayNetworkCallRunner delay_network_call_runner,
-      PrefService* pref_service);
+      base::OnceClosure initialization_callback);
+
+  // Returns |true| if |AccountManager| has been fully initialized.
+  bool IsInitialized() const;
 
   // Gets (async) a list of account keys known to |AccountManager|. Note that
   // |callback| will be immediately called in the same thread if
@@ -244,7 +263,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   class GaiaTokenRevocationRequest;
 
   friend class AccountManagerTest;
-  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitialization);
+  FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestInitializationCompletes);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest, TestTokenPersistence);
   FRIEND_TEST_ALL_PREFIXES(AccountManagerTest,
                            UpdatingAccountEmailShouldNotOverwriteTokens);
@@ -259,7 +278,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       DelayNetworkCallRunner delay_network_call_runner,
       scoped_refptr<base::SequencedTaskRunner> task_runner,
-      PrefService* pref_service);
+      base::OnceClosure initialization_callback);
 
   // Loads accounts from disk and returns the result.
   static AccountMap LoadAccountsFromDisk(
@@ -357,7 +376,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
   DelayNetworkCallRunner delay_network_call_runner_;
 
   // Non-owning pointer.
-  PrefService* pref_service_;
+  PrefService* pref_service_ = nullptr;
 
   // A task runner for disk I/O.
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
@@ -382,7 +401,7 @@ class COMPONENT_EXPORT(ACCOUNT_MANAGER) AccountManager {
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<AccountManager> weak_factory_;
+  base::WeakPtrFactory<AccountManager> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(AccountManager);
 };
 

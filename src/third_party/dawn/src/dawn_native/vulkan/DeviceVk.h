@@ -20,9 +20,13 @@
 #include "common/Serial.h"
 #include "common/SerialQueue.h"
 #include "dawn_native/Device.h"
+#include "dawn_native/vulkan/CommandRecordingContext.h"
 #include "dawn_native/vulkan/Forward.h"
 #include "dawn_native/vulkan/VulkanFunctions.h"
 #include "dawn_native/vulkan/VulkanInfo.h"
+
+#include "dawn_native/vulkan/external_memory/MemoryService.h"
+#include "dawn_native/vulkan/external_semaphore/SemaphoreService.h"
 
 #include <memory>
 #include <queue>
@@ -31,6 +35,7 @@ namespace dawn_native { namespace vulkan {
 
     class Adapter;
     class BufferUploader;
+    struct ExternalImageDescriptor;
     class FencedDeleter;
     class MapRequestTracker;
     class MemoryAllocator;
@@ -59,9 +64,17 @@ namespace dawn_native { namespace vulkan {
         RenderPassCache* GetRenderPassCache() const;
 
         VkCommandBuffer GetPendingCommandBuffer();
+        CommandRecordingContext* GetPendingRecordingContext();
         Serial GetPendingCommandSerial() const override;
         void SubmitPendingCommands();
-        void AddWaitSemaphore(VkSemaphore semaphore);
+
+        TextureBase* CreateTextureWrappingVulkanImage(
+            const ExternalImageDescriptor* descriptor,
+            ExternalMemoryHandle memoryHandle,
+            const std::vector<ExternalSemaphoreHandle>& waitHandles);
+
+        MaybeError SignalAndExportExternalTexture(Texture* texture,
+                                                  ExternalSemaphoreHandle* outHandle);
 
         // Dawn API
         CommandBufferBase* CreateCommandBuffer(CommandEncoderBase* encoder,
@@ -104,6 +117,8 @@ namespace dawn_native { namespace vulkan {
         ResultOrError<VulkanDeviceKnobs> CreateDevice(VkPhysicalDevice physicalDevice);
         void GatherQueueFromDevice();
 
+        void InitTogglesFromDriver();
+
         // To make it easier to use fn it is a public const member. However
         // the Device is allowed to mutate them through these private methods.
         VulkanFunctions* GetMutableFunctions();
@@ -117,6 +132,9 @@ namespace dawn_native { namespace vulkan {
         std::unique_ptr<MapRequestTracker> mMapRequestTracker;
         std::unique_ptr<MemoryAllocator> mMemoryAllocator;
         std::unique_ptr<RenderPassCache> mRenderPassCache;
+
+        std::unique_ptr<external_memory::Service> mExternalMemoryService;
+        std::unique_ptr<external_semaphore::Service> mExternalSemaphoreService;
 
         VkFence GetUnusedFence();
         void CheckPassedFences();
@@ -142,7 +160,14 @@ namespace dawn_native { namespace vulkan {
         SerialQueue<CommandPoolAndBuffer> mCommandsInFlight;
         std::vector<CommandPoolAndBuffer> mUnusedCommands;
         CommandPoolAndBuffer mPendingCommands;
-        std::vector<VkSemaphore> mWaitSemaphores;
+        CommandRecordingContext mRecordingContext;
+
+        MaybeError ImportExternalImage(const ExternalImageDescriptor* descriptor,
+                                       ExternalMemoryHandle memoryHandle,
+                                       const std::vector<ExternalSemaphoreHandle>& waitHandles,
+                                       VkSemaphore* outSignalSemaphore,
+                                       VkDeviceMemory* outAllocation,
+                                       std::vector<VkSemaphore>* outWaitSemaphores);
     };
 
 }}  // namespace dawn_native::vulkan

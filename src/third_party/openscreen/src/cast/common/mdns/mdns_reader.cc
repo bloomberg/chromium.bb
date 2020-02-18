@@ -202,7 +202,7 @@ bool MdnsReader::Read(MdnsRecord* out) {
   if (Read(&name) && Read(&type) && Read(&rrclass) && Read(&ttl) &&
       Read(static_cast<DnsType>(type), &rdata)) {
     *out = MdnsRecord(std::move(name), static_cast<DnsType>(type),
-                      GetDnsClass(rrclass), GetCacheFlush(rrclass), ttl,
+                      GetDnsClass(rrclass), GetRecordType(rrclass), ttl,
                       std::move(rdata));
     cursor.Commit();
     return true;
@@ -218,7 +218,7 @@ bool MdnsReader::Read(MdnsQuestion* out) {
   uint16_t rrclass;
   if (Read(&name) && Read(&type) && Read(&rrclass)) {
     *out = MdnsQuestion(std::move(name), static_cast<DnsType>(type),
-                        GetDnsClass(rrclass), GetUnicastResponse(rrclass));
+                        GetDnsClass(rrclass), GetResponseType(rrclass));
     cursor.Commit();
     return true;
   }
@@ -237,8 +237,12 @@ bool MdnsReader::Read(MdnsMessage* out) {
       Read(header.answer_count, &answers) &&
       Read(header.authority_record_count, &authority_records) &&
       Read(header.additional_record_count, &additional_records)) {
-    *out = MdnsMessage(header.id, header.flags, questions, answers,
-                       authority_records, additional_records);
+    // TODO(yakimakha): Skip messages with non-zero opcode and rcode.
+    // One way to do this is to change the method signature to return
+    // ErrorOr<MdnsMessage> and return different error codes for failure to read
+    // and for messages that were read successfully but are non-conforming.
+    *out = MdnsMessage(header.id, GetMessageType(header.flags), questions,
+                       answers, authority_records, additional_records);
     cursor.Commit();
     return true;
   }

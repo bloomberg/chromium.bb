@@ -30,7 +30,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="2008474315282236005">This will delete 1 item from this device. To retrieve your data later, sign in to Chromium as <ph name="USER_EMAIL" />.</translation>
 <translation id="2117378023188580026">Your administrator asks that you relaunch Chromium to apply this update</translation>
 <translation id="2119636228670142020">About &amp;Chromium OS</translation>
-<translation id="2178765360243863853">You should restart Chromium now</translation>
 <translation id="2241627712206172106">If you share a computer, friends and family can browse separately and set up Chromium just the way they want.</translation>
 <translation id="2265088490657775772">get Chromium on your iPhone</translation>
 <translation id="2347108572062610441">This extension has changed the page that is shown when you start Chromium.</translation>
@@ -125,11 +124,9 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5623402015214259806">{0,plural, =0{A Chromium update is available}=1{A Chromium update is available}other{A Chromium update has been available for # days}}</translation>
 <translation id="5631814766731275228">Chromium name and picture</translation>
 <translation id="5634636535844844681">Chromium requires Windows 7 or higher.</translation>
+<translation id="5653831366781983928">Please restart Chromium now</translation>
 <translation id="5680901439334282664">sign in to Chromium</translation>
 <translation id="5698481217667032250">Display Chromium in this language</translation>
-<translation id="5756484659843248772">This language is used to display the Chromium OS UI</translation>
-<translation id="5768914737813585044">Display Chromium OS in this language</translation>
-<translation id="5796460469508169315">Chromium is almost ready.</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5862307444128926510">Welcome to Chromium</translation>
 <translation id="5877064549588274448">Channel changed. Restart your device to apply changes.</translation>
@@ -170,6 +167,7 @@ Some features may be unavailable. Please specify a different profile directory o
 <translation id="6734080038664603509">Update &amp;Chromium</translation>
 <translation id="6734291798041940871">Chromium is already installed for all users on your computer.</translation>
 <translation id="6810143991807788455">Help make Chromium better by reporting the current settings</translation>
+<translation id="6847869444787758381">Chromium lets you know if your passwords are ever compromised</translation>
 <translation id="6857782730669500492">Chromium - <ph name="PAGE_TITLE" /></translation>
 <translation id="6863361426438995919">Google Pay (copied to Chromium)</translation>
 <translation id="6868056391275687737">Other copies of Chromium are running. To update, close them.</translation>
@@ -192,12 +190,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7337881442233988129">Chromium</translation>
 <translation id="7339898014177206373">New window</translation>
 <translation id="734373864078049451">Your web, bookmarks and other Chromium stuff live here.</translation>
-<translation id="7344413941077984497">To set which websites <ph name="NEW_PROFILE_NAME" /> can view, you can configure restrictions and settings by visiting <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. If you do not change the default settings, <ph name="NEW_PROFILE_NAME" /> can browse everything on the web.
-
-To prevent <ph name="NEW_PROFILE_NAME" /> from accessing your account, make sure that you lock your profile when you're not using Chromium. To do this, click your profile name in the upper-right corner of the browser, and select "Exit and child lock."
-<ph name="BEGIN_LINK_2" />Learn more<ph name="END_LINK_2" />
-
-Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.</translation>
 <translation id="7349591376906416160">Your system administrator has configured Chromium to open <ph name="ALTERNATIVE_BROWSER_NAME" /> to access <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7448255348454382571">Restart Chromium OS</translation>
 <translation id="7449453770951226939"><ph name="PAGE_TITLE" /> – Chromium Dev</translation>
@@ -206,6 +198,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="753534427205733210">{0,plural, =1{Chromium will relaunch in 1 minute}other{Chromium will relaunch in # minutes}}</translation>
 <translation id="7549178288319965365">About Chromium OS</translation>
 <translation id="7561906087460245826">Also clear data from Chromium (<ph name="URL" />)</translation>
+<translation id="7585853947355360626">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chromium OS settings<ph name="LINK_END" /></translation>
 <translation id="761356813943268536">Chromium is using your camera and microphone.</translation>
 <translation id="7617377681829253106">Chromium just got better</translation>
 <translation id="7686590090926151193">Chromium isn't your default browser</translation>
@@ -217,6 +211,7 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7827169012280634081">Clear cookies and site data when you quit Chromium</translation>
 <translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
+<translation id="7898472181347242998">To see if your device is up to date, go to <ph name="LINK_BEGIN" />Chromium OS Settings<ph name="LINK_END" /></translation>
 <translation id="7901117350626490574">A new update for Chromium is available and will be applied as soon as you relaunch.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
 <translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>
@@ -231,7 +226,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8290862415967981663">This file may be dangerous, so Chromium has blocked it.</translation>
 <translation id="8330519371938183845">Sign in to sync and personalise Chromium across your devices</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> was previously using Chromium</translation>
-<translation id="8375950122744241554">Supervised user profiles will no longer be available starting with Chromium 70.</translation>
 <translation id="8417404458978023919">{0,plural, =1{Relaunch Chromium within a day}other{Relaunch Chromium within # days}}</translation>
 <translation id="8453117565092476964">The installer archive is corrupted or invalid. Please download Chromium again.</translation>
 <translation id="8493179195440786826">Chromium is Out of Date</translation>
@@ -240,6 +234,8 @@ Please check your email at <ph name="ACCOUNT_EMAIL" /> for further instructions.
 <translation id="8619360774459241877">Launching Chromium...</translation>
 <translation id="8621669128220841554">Installation failed due to unspecified error. Please download Chromium again.</translation>
 <translation id="8667808506758191620">Your <ph name="DEVICE_TYPE" /> is up to date.</translation>
+<translation id="8682540261359803721">If a setting doesn't show on this page, look in your <ph name="LINK_BEGIN" />
+      Chromium browser settings<ph name="LINK_END" /></translation>
 <translation id="8697124171261953979">It also controls what page is shown when you start Chromium or search from the Omnibox.</translation>
 <translation id="8704119203788522458">This is your Chromium</translation>
 <translation id="8739167630197873875">You clear cookies when you quit Chromium. To keep syncing, change this <ph name="COOKIE_SETTINGS_LINK" />.</translation>

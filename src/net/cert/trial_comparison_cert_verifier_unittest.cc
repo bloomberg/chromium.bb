@@ -22,7 +22,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -256,7 +256,7 @@ void RecordTrialReport(std::vector<TrialReportInfo>* reports,
 
 }  // namespace
 
-class TrialComparisonCertVerifierTest : public TestWithScopedTaskEnvironment {
+class TrialComparisonCertVerifierTest : public TestWithTaskEnvironment {
   void SetUp() override {
     cert_chain_1_ = CreateCertificateChainFromFile(
         GetTestCertsDirectory(), "multi-root-chain1.pem",
@@ -1206,7 +1206,7 @@ TEST_F(TrialComparisonCertVerifierTest, CancelledDuringPrimaryVerification) {
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
-      verifier.Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+      verifier.Verify(params, &result, base::BindOnce(&NotCalledCallback),
                       &request, NetLogWithSource());
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request);
@@ -1264,7 +1264,7 @@ TEST_F(TrialComparisonCertVerifierTest, DeletedDuringPrimaryVerification) {
   CertVerifyResult result;
   std::unique_ptr<CertVerifier::Request> request;
   int error =
-      verifier->Verify(params, &result, base::BindRepeating(&NotCalledCallback),
+      verifier->Verify(params, &result, base::BindOnce(&NotCalledCallback),
                        &request, NetLogWithSource());
   ASSERT_THAT(error, IsError(ERR_IO_PENDING));
   EXPECT_TRUE(request);

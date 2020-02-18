@@ -34,7 +34,6 @@
 #include "build/build_config.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/input/scrollbar.h"
-#include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -300,12 +299,13 @@ void ScrollableArea::ProgrammaticScrollHelper(const ScrollOffset& offset,
   CancelScrollAnimation();
 
   ScrollCallback callback = std::move(on_finish);
-  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+  if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled() ||
+      RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
     callback = ScrollCallback(WTF::Bind(
         [](ScrollCallback original_callback,
            WeakPersistent<ScrollableArea> area) {
           if (area)
-            area->MarkHoverStateDirty();
+            area->OnScrollFinished();
           if (original_callback)
             std::move(original_callback).Run();
         },
@@ -663,16 +663,22 @@ void ScrollableArea::CancelProgrammaticScrollAnimation() {
 }
 
 bool ScrollableArea::ShouldScrollOnMainThread() const {
+  return !!(GetMainThreadScrollingReasons() &
+            ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
+}
+
+MainThreadScrollingReasons ScrollableArea::GetMainThreadScrollingReasons()
+    const {
   if (GraphicsLayer* layer = LayerForScrolling()) {
-    uint32_t reasons = layer->CcLayer()->GetMainThreadScrollingReasons();
-    // Should scroll on main thread unless the reason is the one that is set
-    // by the ScrollAnimator, in which case, the animation can still be
-    // scheduled on the compositor.
-    // TODO(ymalik): We have a non-transient "main thread scrolling reason"
-    // that doesn't actually cause shouldScrollOnMainThread() to be true.
-    // This is confusing and should be cleaned up.
-    return !!(reasons &
-              ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread);
+    // Property tree state is not available until the PrePaint lifecycle stage.
+    DCHECK(GetDocument()->Lifecycle().GetState() >=
+           DocumentLifecycle::kPrePaintClean);
+    if (const auto* scroll = layer->GetPropertyTreeState()
+                                 .Transform()
+                                 .NearestScrollTranslationNode()
+                                 .ScrollNode()) {
+      return scroll->GetMainThreadScrollingReasons();
+    }
   }
   return true;
 }
@@ -730,6 +736,10 @@ void ScrollableArea::ShowOverlayScrollbars() {
   if (!scrollbar_captured_ && !mouse_over_scrollbar_) {
     fade_overlay_scrollbars_timer_->StartOneShot(time_until_disable, FROM_HERE);
   }
+}
+
+const Document* ScrollableArea::GetDocument() const {
+  return &GetLayoutBox()->GetDocument();
 }
 
 IntSize ScrollableArea::ClampScrollOffset(const IntSize& scroll_offset) const {
@@ -817,13 +827,19 @@ CompositorElementId ScrollableArea::GetScrollbarElementId(
       scrollable_element_id.GetInternalValue(), element_id_namespace);
 }
 
-void ScrollableArea::MarkHoverStateDirty() {
+void ScrollableArea::OnScrollFinished() {
   if (GetLayoutBox()) {
-    GetLayoutBox()
-        ->GetFrame()
-        ->LocalFrameRoot()
-        .GetEventHandler()
-        .MarkHoverStateDirty();
+    if (RuntimeEnabledFeatures::OverscrollCustomizationEnabled()) {
+      if (Node* node = GetLayoutBox()->GetNode())
+        node->GetDocument().EnqueueScrollEndEventForNode(node);
+    }
+    if (RuntimeEnabledFeatures::UpdateHoverAtBeginFrameEnabled()) {
+      GetLayoutBox()
+          ->GetFrame()
+          ->LocalFrameRoot()
+          .GetEventHandler()
+          .MarkHoverStateDirty();
+    }
   }
 }
 

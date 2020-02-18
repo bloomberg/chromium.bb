@@ -236,23 +236,27 @@ class TestInterstitialPageStateGuard : public TestInterstitialPage::Delegate {
 class WebContentsImplTestBrowserClient : public TestContentBrowserClient {
  public:
   WebContentsImplTestBrowserClient()
-      : assign_site_for_url_(false),
-        original_browser_client_(SetBrowserClientForTesting(this)) {}
+      : original_browser_client_(SetBrowserClientForTesting(this)) {}
 
   ~WebContentsImplTestBrowserClient() override {
     SetBrowserClientForTesting(original_browser_client_);
   }
 
   bool ShouldAssignSiteForURL(const GURL& url) override {
-    return assign_site_for_url_;
+    if (site_assignment_for_url_.find(url) != site_assignment_for_url_.end()) {
+      return site_assignment_for_url_[url];
+    }
+
+    return true;
   }
 
-  void set_assign_site_for_url(bool assign) {
-    assign_site_for_url_ = assign;
+  void set_assign_site_for_url(bool assign, const GURL& url) {
+    DCHECK(url.is_valid());
+    site_assignment_for_url_[url] = assign;
   }
 
  private:
-  bool assign_site_for_url_;
+  std::map<GURL, bool> site_assignment_for_url_;
   ContentBrowserClient* original_browser_client_;
 };
 
@@ -710,9 +714,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   orig_rfh->GetRenderViewHost()->set_delete_counter(&orig_rvh_delete_count);
   SiteInstanceImpl* orig_instance = contents()->GetSiteInstance();
 
-  browser_client.set_assign_site_for_url(false);
   // Navigate to an URL that will not assign a new SiteInstance.
   const GURL native_url("non-site-url://stuffandthings");
+  browser_client.set_assign_site_for_url(false, native_url);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), native_url);
 
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
@@ -723,9 +727,9 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_EQ(GURL(), contents()->GetSiteInstance()->GetSiteURL());
   EXPECT_FALSE(orig_instance->HasSite());
 
-  browser_client.set_assign_site_for_url(true);
   // Navigate to new site (should keep same site instance).
   const GURL url("http://www.google.com");
+  browser_client.set_assign_site_for_url(true, url);
   auto navigation1 =
       NavigationSimulator::CreateBrowserInitiated(url, contents());
   navigation1->ReadyToCommit();
@@ -735,6 +739,24 @@ TEST_F(WebContentsImplTest, NavigateFromSitelessUrl) {
   EXPECT_FALSE(contents()->GetPendingMainFrame());
   navigation1->Commit();
 
+  // The first entry's SiteInstance should be reset to a new, related one. This
+  // prevents wrongly detecting a SiteInstance mismatch when returning to it
+  // later.
+  SiteInstanceImpl* prev_entry_instance = contents()
+                                              ->GetController()
+                                              .GetEntryAtIndex(0)
+                                              ->root_node()
+                                              ->frame_entry->site_instance();
+  EXPECT_NE(prev_entry_instance, orig_instance);
+  EXPECT_TRUE(orig_instance->IsRelatedSiteInstance(prev_entry_instance));
+  EXPECT_FALSE(prev_entry_instance->HasSite());
+
+  SiteInstanceImpl* curr_entry_instance = contents()
+                                              ->GetController()
+                                              .GetEntryAtIndex(1)
+                                              ->root_node()
+                                              ->frame_entry->site_instance();
+  EXPECT_EQ(curr_entry_instance, orig_instance);
   // Keep the number of active frames in orig_rfh's SiteInstance
   // non-zero so that orig_rfh doesn't get deleted when it gets
   // swapped out.
@@ -798,8 +820,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
 
   // Restore a navigation entry for URL that should not assign site to the
   // SiteInstance.
-  browser_client.set_assign_site_for_url(false);
   const GURL native_url("non-site-url://stuffandthings");
+  browser_client.set_assign_site_for_url(false, native_url);
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
@@ -822,8 +844,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredSitelessUrl) {
   EXPECT_FALSE(orig_instance->HasSite());
 
   // Navigate to a regular site and verify that the SiteInstance was kept.
-  browser_client.set_assign_site_for_url(true);
   const GURL url("http://www.google.com");
+  browser_client.set_assign_site_for_url(true, url);
   NavigationSimulator::NavigateAndCommitFromBrowser(contents(), url);
   EXPECT_EQ(orig_instance, contents()->GetSiteInstance());
 
@@ -841,8 +863,8 @@ TEST_F(WebContentsImplTest, NavigateFromRestoredRegularUrl) {
 
   // Restore a navigation entry for a regular URL ensuring that the embedder
   // ShouldAssignSiteForUrl override is disabled (i.e. returns true).
-  browser_client.set_assign_site_for_url(true);
   const GURL regular_url("http://www.yahoo.com");
+  browser_client.set_assign_site_for_url(true, regular_url);
   std::vector<std::unique_ptr<NavigationEntry>> entries;
   std::unique_ptr<NavigationEntry> new_entry =
       NavigationController::CreateNavigationEntry(
@@ -3029,7 +3051,10 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the main RenderFrame and commit. The frame should still be
   // loading.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), main_url);
+  auto main_frame_navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(main_url, contents());
+  main_frame_navigation->SetKeepLoading(true);
+  main_frame_navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_TRUE(contents()->IsLoading());
@@ -3044,18 +3069,11 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Navigate the child frame to about:blank, which will send DidStopLoading
   // message.
-  {
-    NavigationSimulator::NavigateAndCommitFromDocument(initial_url, subframe);
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
-  }
+  NavigationSimulator::NavigateAndCommitFromDocument(initial_url, subframe);
 
   // Navigate the frame to another URL, which will send again
   // DidStartLoading and DidStopLoading messages.
-  subframe = static_cast<TestRenderFrameHost*>(
-      NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe));
-  subframe->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
+  NavigationSimulator::NavigateAndCommitFromDocument(foo_url, subframe);
 
   // Since the main frame hasn't sent any DidStopLoading messages, it is
   // expected that the WebContents is still in loading state.
@@ -3085,9 +3103,6 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
     navigation->Commit();
     subframe = static_cast<TestRenderFrameHost*>(
         navigation->GetFinalRenderFrameHost());
-
-    subframe->OnMessageReceived(
-        FrameHostMsg_DidStopLoading(subframe->GetRoutingID()));
   }
 
   // At this point the status should still be loading, since the main frame
@@ -3098,8 +3113,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, StartStopEventsBalance) {
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  main_frame_navigation->StopLoading();
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(observer.is_loading());
   EXPECT_FALSE(observer.did_receive_response());
@@ -3114,7 +3128,10 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 
   // Navigate the main RenderFrame and commit. The frame should still be
   // loading.
-  NavigationSimulator::NavigateAndCommitFromBrowser(contents(), main_url);
+  auto navigation =
+      NavigationSimulatorImpl::CreateBrowserInitiated(main_url, contents());
+  navigation->SetKeepLoading(true);
+  navigation->Commit();
   EXPECT_FALSE(contents()->CrossProcessNavigationPending());
   EXPECT_EQ(orig_rfh, main_test_rfh());
   EXPECT_TRUE(contents()->IsLoading());
@@ -3122,8 +3139,7 @@ TEST_F(WebContentsImplTestWithSiteIsolation, IsLoadingToDifferentDocument) {
 
   // Send the DidStopLoading for the main frame and ensure it isn't loading
   // anymore.
-  orig_rfh->OnMessageReceived(
-      FrameHostMsg_DidStopLoading(orig_rfh->GetRoutingID()));
+  navigation->StopLoading();
   EXPECT_FALSE(contents()->IsLoading());
   EXPECT_FALSE(contents()->IsLoadingToDifferentDocument());
 
@@ -3390,6 +3406,8 @@ class MockWebContentsDelegate : public WebContentsDelegate {
  public:
   MOCK_METHOD2(HandleContextMenu,
                bool(RenderFrameHost*, const ContextMenuParams&));
+  MOCK_METHOD4(RegisterProtocolHandler,
+               void(WebContents*, const std::string&, const GURL&, bool));
 };
 
 }  // namespace
@@ -3404,6 +3422,63 @@ TEST_F(WebContentsImplTest, HandleContextMenuDelegate) {
 
   ContextMenuParams params;
   contents()->ShowContextMenu(rfh, params);
+
+  contents()->SetDelegate(nullptr);
+}
+
+TEST_F(WebContentsImplTest, RegisterProtocolHandlerDifferentOrigin) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  GURL url("https://www.google.com");
+  GURL handler_url1("https://www.google.com/handler/%s");
+  GURL handler_url2("https://www.example.com/handler/%s");
+
+  contents()->NavigateAndCommit(url);
+
+  // Only the first call to RegisterProtocolHandler should register because the
+  // other call has a handler from a different origin.
+  EXPECT_CALL(delegate,
+              RegisterProtocolHandler(contents(), "mailto", handler_url1, true))
+      .Times(1);
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", handler_url1,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", handler_url2,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
+
+  contents()->SetDelegate(nullptr);
+}
+
+TEST_F(WebContentsImplTest, RegisterProtocolHandlerDataURL) {
+  MockWebContentsDelegate delegate;
+  contents()->SetDelegate(&delegate);
+
+  GURL data("data:text/html,<html><body><b>hello world</b></body></html>");
+  GURL data_handler(data.spec() + "%s");
+
+  contents()->NavigateAndCommit(data);
+
+  // Data URLs should fail.
+  EXPECT_CALL(delegate,
+              RegisterProtocolHandler(contents(), "mailto", data_handler, true))
+      .Times(0);
+
+  {
+    FrameHostMsg_RegisterProtocolHandler message(
+        main_test_rfh()->GetRoutingID(), "mailto", data_handler,
+        base::string16(), /*user_gesture=*/true);
+    contents()->OnMessageReceived(main_test_rfh(), message);
+  }
 
   contents()->SetDelegate(nullptr);
 }

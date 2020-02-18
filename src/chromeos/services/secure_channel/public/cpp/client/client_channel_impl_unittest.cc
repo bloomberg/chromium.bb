@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/null_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/fake_channel.h"
@@ -23,11 +23,8 @@
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt_impl.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel_observer.h"
 #include "chromeos/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
-#include "chromeos/services/secure_channel/public/mojom/constants.mojom.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/services/secure_channel/secure_channel_impl.h"
-#include "chromeos/services/secure_channel/secure_channel_service.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -99,7 +96,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
     static_cast<ClientChannelImpl*>(client_channel_.get())->FlushForTesting();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeChannel> fake_channel_;
   mojom::MessageReceiverPtr message_receiver_ptr_;

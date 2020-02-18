@@ -19,6 +19,7 @@
 
 #include "absl/types/optional.h"
 #include "api/network_state_predictor.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "api/transport/field_trial_based_config.h"
 #include "api/transport/network_control.h"
 #include "api/transport/network_types.h"
@@ -26,7 +27,6 @@
 #include "api/units/data_rate.h"
 #include "api/units/data_size.h"
 #include "api/units/timestamp.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/bitrate_controller/send_side_bandwidth_estimation.h"
 #include "modules/congestion_controller/goog_cc/acknowledged_bitrate_estimator.h"
 #include "modules/congestion_controller/goog_cc/alr_detector.h"
@@ -85,7 +85,6 @@ class GoogCcNetworkController : public NetworkControllerInterface {
   const bool packet_feedback_only_;
   FieldTrialFlag safe_reset_on_route_change_;
   FieldTrialFlag safe_reset_acknowledged_rate_;
-  const bool use_stable_bandwidth_estimate_;
   const bool use_downlink_delay_for_congestion_window_;
   const bool fall_back_to_probe_rate_;
   const bool use_min_allocatable_as_lower_bound_;

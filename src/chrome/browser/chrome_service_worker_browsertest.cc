@@ -237,7 +237,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &content::ServiceWorkerContext::StartServiceWorkerAndDispatchMessage,
@@ -262,7 +262,7 @@ IN_PROC_BROWSER_TEST_F(ChromeServiceWorkerTest,
   msg.owned_encoded_message = blink::EncodeStringMessage(message_data);
   msg.encoded_message = msg.owned_encoded_message;
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&content::ServiceWorkerContext::
                          StartServiceWorkerAndDispatchLongRunningMessage,
@@ -721,10 +721,9 @@ class StaticURLDataSource : public content::URLDataSource {
 
   // content::URLDataSource:
   std::string GetSource() override { return source_; }
-  void StartDataRequest(
-      const std::string& path,
-      const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const GotDataCallback& callback) override {
+  void StartDataRequest(const std::string& path,
+                        const content::WebContents::Getter& wc_getter,
+                        const GotDataCallback& callback) override {
     std::string data(content_);
     callback.Run(base::RefCountedString::TakeString(&data));
   }

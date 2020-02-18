@@ -2,110 +2,100 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import exceptions
 from .argument import Argument
-from .common import WithCodeGeneratorInfo
-from .common import WithComponent
-from .common import WithDebugInfo
-from .common import WithExposure
-from .common import WithExtendedAttributes
-from .common import WithIdentifier
-from .common import WithOwner
-from .idl_member import IdlMember
+from .code_generator_info import CodeGeneratorInfo
+from .composition_parts import WithCodeGeneratorInfo
+from .composition_parts import WithComponent
+from .composition_parts import WithDebugInfo
+from .composition_parts import WithExposure
+from .composition_parts import WithExtendedAttributes
+from .composition_parts import WithOwner
+from .exposure import Exposure
+from .function_like import FunctionLike
 from .idl_type import IdlType
+from .make_copy import make_copy
+from .overload_group import OverloadGroup
 
 
-class Operation(IdlMember):
-    """https://heycam.github.io/webidl/#idl-operations
-    https://www.w3.org/TR/WebIDL-1/#idl-special-operations"""
+class Operation(FunctionLike, WithExtendedAttributes, WithCodeGeneratorInfo,
+                WithExposure, WithOwner, WithComponent, WithDebugInfo):
+    """https://heycam.github.io/webidl/#idl-operations"""
 
-    class IR(WithIdentifier, WithExtendedAttributes, WithExposure,
-             WithCodeGeneratorInfo, WithComponent, WithDebugInfo):
+    class IR(FunctionLike.IR, WithExtendedAttributes, WithCodeGeneratorInfo,
+             WithExposure, WithComponent, WithDebugInfo):
         def __init__(self,
                      identifier,
                      arguments,
                      return_type,
                      is_static=False,
                      extended_attributes=None,
-                     exposures=None,
-                     code_generator_info=None,
                      component=None,
-                     components=None,
                      debug_info=None):
-            assert isinstance(arguments, (list, tuple)) and all(
-                isinstance(arg, Argument.IR) for arg in arguments)
-            assert isinstance(return_type, IdlType)
-            assert isinstance(is_static, bool)
-
-            WithIdentifier.__init__(self, identifier)
+            FunctionLike.IR.__init__(
+                self,
+                identifier=identifier,
+                arguments=arguments,
+                return_type=return_type,
+                is_static=is_static)
             WithExtendedAttributes.__init__(self, extended_attributes)
-            WithExposure.__init__(self, exposures)
-            WithCodeGeneratorInfo.__init__(self, code_generator_info)
-            WithComponent.__init__(
-                self, component=component, components=components)
+            WithCodeGeneratorInfo.__init__(self)
+            WithExposure.__init__(self)
+            WithComponent.__init__(self, component=component)
             WithDebugInfo.__init__(self, debug_info)
 
-            self.arguments = list(arguments)
-            self.return_type = return_type
-            self.is_static = is_static
+            self.is_stringifier = False
 
-        def make_copy(self):
-            return Operation.IR(
-                identifier=self.identifier,
-                arguments=map(Argument.IR.make_copy, self.arguments),
-                return_type=self.return_type,
-                is_static=self.is_static,
-                extended_attributes=self.extended_attributes.make_copy(),
-                code_generator_info=self.code_generator_info.make_copy(),
-                components=self.components,
-                debug_info=self.debug_info.make_copy())
+    def __init__(self, ir, owner):
+        assert isinstance(ir, Operation.IR)
 
-    @property
-    def is_static(self):
-        """
-        Returns True if 'static' is specified.
-        @return bool
-        """
-        raise exceptions.NotImplementedError()
+        FunctionLike.__init__(self, ir)
+        WithExtendedAttributes.__init__(self, ir.extended_attributes)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithOwner.__init__(self, owner)
+        WithComponent.__init__(self, components=ir.components)
+        WithDebugInfo.__init__(self, ir.debug_info)
+
+        self._is_stringifier = ir.is_stringifier
 
     @property
-    def return_type(self):
-        """
-        Returns the type of return value.
-        @return IdlType
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def arguments(self):
-        """
-        Returns a list of arguments.
-        @return tuple(Argument)
-        """
-        raise exceptions.NotImplementedError()
-
-    @property
-    def overloaded_index(self):
-        """
-        Returns the index in the OperationGroup that |self| belongs to.
-        @return int
-        """
-        raise exceptions.NotImplementedError()
+    def is_stringifier(self):
+        return self._is_stringifier
 
 
-class OperationGroup(WithIdentifier, WithCodeGeneratorInfo, WithOwner,
-                     WithComponent, WithDebugInfo):
+class OperationGroup(OverloadGroup, WithCodeGeneratorInfo, WithExposure,
+                     WithOwner, WithDebugInfo):
     """
-    OperationGroup class has all Operation's with a same identifier, even if the
-    operation is not overloaded. Then we can handle overloaded and
-    non-overloaded operations seamlessly.
-    From the ES bindings' view point, OperationGroup tells something for properties,
-    and Operation tells something for actual behaviors.
+    Represents a group of operations with the same identifier.
+
+    The number of operations in this group may be 1 or 2+.  In the latter case,
+    the operations are overloaded.
     """
 
-    def operations(self):
-        """
-        Returns a list of operations whose identifier is |identifier()|
-        @return tuple(Operation)
-        """
-        raise exceptions.NotImplementedError()
+    class IR(OverloadGroup.IR, WithCodeGeneratorInfo, WithExposure,
+             WithDebugInfo):
+        def __init__(self,
+                     operations,
+                     code_generator_info=None,
+                     debug_info=None):
+            OverloadGroup.IR.__init__(self, operations)
+            WithCodeGeneratorInfo.__init__(self, code_generator_info)
+            WithExposure.__init__(self)
+            WithDebugInfo.__init__(self, debug_info)
+
+    def __init__(self, ir, operations, owner):
+        assert isinstance(ir, OperationGroup.IR)
+        assert isinstance(operations, (list, tuple))
+        assert all(
+            isinstance(operation, Operation) for operation in operations)
+        assert all(
+            operation.identifier == ir.identifier for operation in operations)
+
+        ir = make_copy(ir)
+        OverloadGroup.__init__(self, functions=operations)
+        WithCodeGeneratorInfo.__init__(
+            self, CodeGeneratorInfo(ir.code_generator_info))
+        WithExposure.__init__(self, Exposure(ir.exposure))
+        WithOwner.__init__(self, owner)
+        WithDebugInfo.__init__(self, ir.debug_info)

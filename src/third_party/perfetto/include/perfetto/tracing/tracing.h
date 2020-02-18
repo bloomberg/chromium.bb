@@ -62,6 +62,20 @@ struct TracingInitArgs {
   // not set it will use Platform::GetDefaultPlatform().
   Platform* platform = nullptr;
 
+  // [Optional] Tune the size of the shared memory buffer between the current
+  // process and the service backend(s). This is a trade-off between memory
+  // footprint and the ability to sustain bursts of trace writes (see comments
+  // in shared_memory_abi.h).
+  // If set, the value must be a multiple of 4KB. The value can be ignored if
+  // larger than kMaxShmSize (32MB) or not a multiple of 4KB.
+  uint32_t shmem_size_hint_kb = 0;
+
+  // [Optional] Specifies the preferred size of each page in the shmem buffer.
+  // This is a trade-off between IPC overhead and fragmentation/efficiency of
+  // the shmem buffer in presence of multiple writer threads.
+  // Must be one of [4, 8, 16, 32].
+  uint32_t shmem_page_size_hint_kb = 0;
+
  protected:
   friend class Tracing;
   bool dcheck_is_on_ = PERFETTO_DCHECK_IS_ON();
@@ -90,8 +104,11 @@ class PERFETTO_EXPORT TracingSession {
   virtual ~TracingSession();
 
   // Configure the session passing the trace config.
+  // If a writable file handle is given through |fd|, the trace will
+  // automatically written to that file. Otherwise you should call ReadTrace()
+  // to retrieve the trace data. This call does not take ownership of |fd|.
   // TODO(primiano): add an error callback.
-  virtual void Setup(const TraceConfig&) = 0;
+  virtual void Setup(const TraceConfig&, int fd = -1) = 0;
 
   // Enable tracing asynchronously.
   virtual void Start() = 0;

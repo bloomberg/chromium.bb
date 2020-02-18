@@ -40,14 +40,14 @@
         const SkImageInfo ii = SkImageInfo::Make(kSize, kSize,
                                                  kRGBA_8888_SkColorType, kPremul_SkAlphaType);
 
-        sk_sp<GrRenderTargetContext> readRTC(
+        auto readRTC =
                 context->priv().makeDeferredRenderTargetContext(SkBackingFit::kExact,
                                                                 kSize, kSize,
-                                                                kColorType, nullptr));
-        sk_sp<GrRenderTargetContext> tempRTC(
+                                                                kColorType, nullptr);
+        auto tempRTC =
                 context->priv().makeDeferredRenderTargetContext(SkBackingFit::kExact,
                                                                 kSize, kSize,
-                                                                kColorType, nullptr));
+                                                                kColorType, nullptr);
         if (!readRTC || !readRTC->asTextureProxy() || !tempRTC) {
             return false;
         }
@@ -65,7 +65,6 @@
         sk_sp<SkImage> image = SkImage::MakeFromRaster(pixmap, nullptr, nullptr);
 
         sk_sp<GrTextureProxy> dataProxy = proxyProvider->createTextureProxy(std::move(image),
-                                                                            GrRenderable::kNo,
                                                                             1,
                                                                             SkBudgeted::kYes,
                                                                             SkBackingFit::kExact);

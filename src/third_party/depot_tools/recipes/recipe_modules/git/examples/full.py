@@ -98,7 +98,10 @@ def RunSteps(api):
 
 
 def GenTests(api):
-  yield api.test('basic')
+  yield (
+    api.test('basic') +
+    api.runtime(is_luci=False, is_experimental=False)
+  )
   yield (
     api.test('basic_luci') +
     api.runtime(is_luci=True, is_experimental=False)

@@ -24,7 +24,7 @@
 #include "components/offline_pages/core/model/offline_page_model_utils.h"
 #include "components/offline_pages/core/offline_clock.h"
 #include "components/offline_pages/core/test_scoped_offline_clock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace offline_pages {
@@ -99,10 +99,12 @@ void TestMHTMLArchiver::GenerateMHTML(
   base::FilePath archive_file_path =
       archives_dir.AppendASCII(url_.ExtractFileName());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
-                                base::Unretained(this), url_, archive_file_path,
-                                kTestTitle, create_archive_params.name_space,
-                                OfflineTimeNow(), kTestFileSize));
+      FROM_HERE,
+      base::BindOnce(&TestMHTMLArchiver::OnGenerateMHTMLDone,
+                     base::Unretained(this), url_, archive_file_path,
+                     kTestTitle, create_archive_params.name_space,
+                     OfflineTimeNow(),
+                     content::MHTMLGenerationResult(kTestFileSize, nullptr)));
 
   clock_->Advance(kTimeToSaveMhtml);
 }
@@ -159,7 +161,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
                            int64_t file_size,
                            const std::string& digest);
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::FilePath archive_dir_path_;
   base::HistogramTester histogram_tester_;
 
@@ -177,7 +179,7 @@ class OfflinePageMHTMLArchiverTest : public testing::Test {
 };
 
 OfflinePageMHTMLArchiverTest::OfflinePageMHTMLArchiverTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
+    : task_environment_(content::BrowserTaskEnvironment::REAL_IO_THREAD),
       last_result_(OfflinePageArchiver::ArchiverResult::ERROR_DEVICE_FULL),
       last_file_size_(0L) {}
 

@@ -151,9 +151,42 @@ suite('settings-fingerprint-list', function() {
         });
   });
 
+  test('EnrollingFingerprintLottieAnimation', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.TABLET_POWER_BUTTON,
+    });
+    openDialog();
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$$('#dialog').open);
+      assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
+      assertFalse(dialog.$$('#scannerLocationLottie').hidden);
+    });
+  });
+
+  test('EnrollingFingerprintPNG', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_TOP_RIGHT,
+    });
+    openDialog();
+    return browserProxy.whenCalled('startEnroll').then(function() {
+      assertTrue(dialog.$$('#dialog').open);
+      assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
+      assertFalse(dialog.$$('#scannerLocation').hidden);
+    });
+  });
+
   // Verify running through the enroll session workflow
   // (settings-setup-fingerprint-dialog) works as expected.
   test('EnrollingFingerprint', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_BOTTOM_RIGHT,
+    });
     openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       assertTrue(dialog.$$('#dialog').open);
@@ -201,7 +234,7 @@ suite('settings-fingerprint-list', function() {
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
       dialog.$$('#closeButton').click();
-      return PolymerTest.flushTasks().then(function() {
+      return test_util.flushTasks().then(function() {
         Promise
             .all([
               browserProxy.whenCalled('startAuthentication'),
@@ -217,6 +250,11 @@ suite('settings-fingerprint-list', function() {
   // Verify enrolling a fingerprint, then enrolling another without closing the
   // dialog works as intended.
   test('EnrollingAnotherFingerprint', function() {
+    loadTimeData.overrideValues({
+      fingerprintUnlockEnabled: true,
+      fingerprintReaderLocation:
+          settings.FingerprintLocation.KEYBOARD_TOP_RIGHT,
+    });
     openDialog();
     return browserProxy.whenCalled('startEnroll')
         .then(function() {

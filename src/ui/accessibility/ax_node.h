@@ -59,6 +59,7 @@ class AX_EXPORT AXNode final {
                                const AXNode* ordered_set) = 0;
     virtual Selection GetUnignoredSelection() const = 0;
     virtual bool GetTreeUpdateInProgressState() const = 0;
+    virtual bool HasPaginationSupport() const = 0;
   };
 
   template <typename NodeType,

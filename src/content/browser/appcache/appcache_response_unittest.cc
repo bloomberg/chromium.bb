@@ -14,12 +14,12 @@
 #include "base/compiler_specific.h"
 #include "base/containers/stack.h"
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/pickle.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -70,16 +70,15 @@ class AppCacheResponseTest : public testing::Test {
   }
 
   static void SetUpTestCase() {
-    scoped_task_environment_ =
-        std::make_unique<base::test::ScopedTaskEnvironment>();
+    task_environment_ = std::make_unique<base::test::TaskEnvironment>();
     io_thread_ = std::make_unique<base::Thread>("AppCacheResponseTest Thread");
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     io_thread_->StartWithOptions(options);
   }
 
   static void TearDownTestCase() {
     io_thread_.reset();
-    scoped_task_environment_.reset();
+    task_environment_.reset();
   }
 
   AppCacheResponseTest() {}
@@ -798,14 +797,13 @@ class AppCacheResponseTest : public testing::Test {
   bool write_callback_was_called_;
 
   static std::unique_ptr<base::Thread> io_thread_;
-  static std::unique_ptr<base::test::ScopedTaskEnvironment>
-      scoped_task_environment_;
+  static std::unique_ptr<base::test::TaskEnvironment> task_environment_;
 };
 
 // static
 std::unique_ptr<base::Thread> AppCacheResponseTest::io_thread_;
-std::unique_ptr<base::test::ScopedTaskEnvironment>
-    AppCacheResponseTest::scoped_task_environment_;
+std::unique_ptr<base::test::TaskEnvironment>
+    AppCacheResponseTest::task_environment_;
 
 TEST_F(AppCacheResponseTest, ReadNonExistentResponse) {
   RunTestOnIOThread(&AppCacheResponseTest::ReadNonExistentResponse);

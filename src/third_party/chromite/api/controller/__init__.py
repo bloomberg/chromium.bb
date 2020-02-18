@@ -17,3 +17,9 @@ RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE = 2
 # Notes the endpoint completed via a well handled path, but the result was not
 # a successful execution of the endpoint.
 RETURN_CODE_COMPLETED_UNSUCCESSFULLY = 3
+
+
+# Validate only request successfully validated.
+RETURN_CODE_VALID_INPUT = 0
+# Validate only request did not pass validation.
+RETURN_CODE_INVALID_INPUT = 1

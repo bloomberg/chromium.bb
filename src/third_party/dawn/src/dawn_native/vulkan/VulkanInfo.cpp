@@ -38,6 +38,16 @@ namespace dawn_native { namespace vulkan {
     const char kExtensionNameExtDebugMarker[] = "VK_EXT_debug_marker";
     const char kExtensionNameExtDebugReport[] = "VK_EXT_debug_report";
     const char kExtensionNameMvkMacosSurface[] = "VK_MVK_macos_surface";
+    const char kExtensionNameKhrExternalMemory[] = "VK_KHR_external_memory";
+    const char kExtensionNameKhrExternalMemoryCapabilities[] =
+        "VK_KHR_external_memory_capabilities";
+    const char kExtensionNameKhrExternalMemoryFD[] = "VK_KHR_external_memory_fd";
+    const char kExtensionNameKhrExternalSemaphore[] = "VK_KHR_external_semaphore";
+    const char kExtensionNameKhrExternalSemaphoreCapabilities[] =
+        "VK_KHR_external_semaphore_capabilities";
+    const char kExtensionNameKhrExternalSemaphoreFD[] = "VK_KHR_external_semaphore_fd";
+    const char kExtensionNameKhrGetPhysicalDeviceProperties2[] =
+        "VK_KHR_get_physical_device_properties2";
     const char kExtensionNameKhrSurface[] = "VK_KHR_surface";
     const char kExtensionNameKhrSwapchain[] = "VK_KHR_swapchain";
     const char kExtensionNameKhrWaylandSurface[] = "VK_KHR_wayland_surface";
@@ -57,13 +67,13 @@ namespace dawn_native { namespace vulkan {
             // incomplete otherwise. This means that both values represent a success.
             // This is the same for all Enumarte functions
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceLayerProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateInstanceLayerProperties");
             }
 
             info.layers.resize(count);
             result = vkFunctions.EnumerateInstanceLayerProperties(&count, info.layers.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceLayerProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateInstanceLayerProperties");
             }
 
             for (const auto& layer : info.layers) {
@@ -85,14 +95,14 @@ namespace dawn_native { namespace vulkan {
             VkResult result =
                 vkFunctions.EnumerateInstanceExtensionProperties(nullptr, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
             }
 
             info.extensions.resize(count);
             result = vkFunctions.EnumerateInstanceExtensionProperties(nullptr, &count,
                                                                       info.extensions.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateInstanceExtensionProperties");
             }
 
             for (const auto& extension : info.extensions) {
@@ -101,6 +111,15 @@ namespace dawn_native { namespace vulkan {
                 }
                 if (IsExtensionName(extension, kExtensionNameMvkMacosSurface)) {
                     info.macosSurface = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrExternalMemoryCapabilities)) {
+                    info.externalMemoryCapabilities = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphoreCapabilities)) {
+                    info.externalSemaphoreCapabilities = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrGetPhysicalDeviceProperties2)) {
+                    info.getPhysicalDeviceProperties2 = true;
                 }
                 if (IsExtensionName(extension, kExtensionNameKhrSurface)) {
                     info.surface = true;
@@ -120,6 +139,19 @@ namespace dawn_native { namespace vulkan {
             }
         }
 
+        // Gather info on available API version
+        {
+            uint32_t supportedAPIVersion = VK_MAKE_VERSION(1, 0, 0);
+            if (vkFunctions.EnumerateInstanceVersion) {
+                vkFunctions.EnumerateInstanceVersion(&supportedAPIVersion);
+            }
+
+            // Use Vulkan 1.1 if it's available.
+            info.apiVersion = (supportedAPIVersion >= VK_MAKE_VERSION(1, 1, 0))
+                                  ? VK_MAKE_VERSION(1, 1, 0)
+                                  : VK_MAKE_VERSION(1, 0, 0);
+        }
+
         // TODO(cwallez@chromium:org): Each layer can expose additional extensions, query them?
 
         return info;
@@ -132,13 +164,13 @@ namespace dawn_native { namespace vulkan {
         uint32_t count = 0;
         VkResult result = vkFunctions.EnumeratePhysicalDevices(instance, &count, nullptr);
         if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-            return DAWN_CONTEXT_LOST_ERROR("vkEnumeratePhysicalDevices");
+            return DAWN_DEVICE_LOST_ERROR("vkEnumeratePhysicalDevices");
         }
 
         std::vector<VkPhysicalDevice> physicalDevices(count);
         result = vkFunctions.EnumeratePhysicalDevices(instance, &count, physicalDevices.data());
         if (result != VK_SUCCESS) {
-            return DAWN_CONTEXT_LOST_ERROR("vkEnumeratePhysicalDevices");
+            return DAWN_DEVICE_LOST_ERROR("vkEnumeratePhysicalDevices");
         }
 
         return physicalDevices;
@@ -180,14 +212,14 @@ namespace dawn_native { namespace vulkan {
             VkResult result =
                 vkFunctions.EnumerateDeviceLayerProperties(physicalDevice, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceLayerProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateDeviceLayerProperties");
             }
 
             info.layers.resize(count);
             result = vkFunctions.EnumerateDeviceLayerProperties(physicalDevice, &count,
                                                                 info.layers.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceLayerProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateDeviceLayerProperties");
             }
         }
 
@@ -197,21 +229,32 @@ namespace dawn_native { namespace vulkan {
             VkResult result = vkFunctions.EnumerateDeviceExtensionProperties(
                 physicalDevice, nullptr, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
             }
 
             info.extensions.resize(count);
             result = vkFunctions.EnumerateDeviceExtensionProperties(physicalDevice, nullptr, &count,
                                                                     info.extensions.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
+                return DAWN_DEVICE_LOST_ERROR("vkEnumerateDeviceExtensionProperties");
             }
 
             for (const auto& extension : info.extensions) {
                 if (IsExtensionName(extension, kExtensionNameExtDebugMarker)) {
                     info.debugMarker = true;
                 }
-
+                if (IsExtensionName(extension, kExtensionNameKhrExternalMemory)) {
+                    info.externalMemory = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrExternalMemoryFD)) {
+                    info.externalMemoryFD = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphore)) {
+                    info.externalSemaphore = true;
+                }
+                if (IsExtensionName(extension, kExtensionNameKhrExternalSemaphoreFD)) {
+                    info.externalSemaphoreFD = true;
+                }
                 if (IsExtensionName(extension, kExtensionNameKhrSwapchain)) {
                     info.swapchain = true;
                 }
@@ -234,7 +277,7 @@ namespace dawn_native { namespace vulkan {
             VkResult result = vkFunctions.GetPhysicalDeviceSurfaceCapabilitiesKHR(
                 physicalDevice, surface, &info->capabilities);
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
+                return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfaceCapabilitiesKHR");
             }
         }
 
@@ -249,7 +292,7 @@ namespace dawn_native { namespace vulkan {
                     physicalDevice, i, surface, &supported);
 
                 if (result != VK_SUCCESS) {
-                    return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceSupportKHR");
+                    return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfaceSupportKHR");
                 }
 
                 info->supportedQueueFamilies[i] = (supported == VK_TRUE);
@@ -262,14 +305,14 @@ namespace dawn_native { namespace vulkan {
             VkResult result = vkFunctions.GetPhysicalDeviceSurfaceFormatsKHR(
                 physicalDevice, surface, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
+                return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
             }
 
             info->formats.resize(count);
             result = vkFunctions.GetPhysicalDeviceSurfaceFormatsKHR(physicalDevice, surface, &count,
                                                                     info->formats.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
+                return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfaceFormatsKHR");
             }
         }
 
@@ -279,14 +322,14 @@ namespace dawn_native { namespace vulkan {
             VkResult result = vkFunctions.GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice, surface, &count, nullptr);
             if (result != VK_SUCCESS && result != VK_INCOMPLETE) {
-                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
+                return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
             }
 
             info->presentModes.resize(count);
             result = vkFunctions.GetPhysicalDeviceSurfacePresentModesKHR(
                 physicalDevice, surface, &count, info->presentModes.data());
             if (result != VK_SUCCESS) {
-                return DAWN_CONTEXT_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
+                return DAWN_DEVICE_LOST_ERROR("vkGetPhysicalDeviceSurfacePresentModesKHR");
             }
         }
 

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/dom/document_parser_client.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_event_target.h"
 #include "third_party/blink/renderer/core/xmlhttprequest/xml_http_request_progress_event_throttle.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
@@ -61,7 +62,6 @@ class ExceptionState;
 class ExecutionContext;
 class FormData;
 class ScriptState;
-class SharedBuffer;
 class TextResourceDecoder;
 class ThreadableLoader;
 class URLSearchParams;
@@ -163,6 +163,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   XMLHttpRequestUpload* upload();
   bool IsAsync() { return async_; }
 
+  probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
+
   DEFINE_ATTRIBUTE_EVENT_LISTENER(readystatechange, kReadystatechange)
 
   void Trace(blink::Visitor*) override;
@@ -251,8 +253,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
 
   // Clears variables used only while the resource is being loaded.
   void ClearVariablesForLoading();
-  // Returns false iff reentry happened and a new load is started.
-  bool InternalAbort();
+  // Clears state and cancels loader.
+  void InternalAbort();
   // Clears variables holding response header and body data.
   void ClearResponse();
   void ClearRequest();
@@ -374,6 +376,8 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   bool response_text_overflow_ = false;
   bool send_flag_ = false;
   bool response_array_buffer_failure_ = false;
+
+  probe::AsyncTaskId async_task_id_;
 };
 
 std::ostream& operator<<(std::ostream&, const XMLHttpRequest*);

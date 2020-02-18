@@ -45,7 +45,8 @@ namespace blink {
 
 using namespace html_names;
 
-struct SameSizeAsLayoutTableCell : public LayoutBlockFlow {
+struct SameSizeAsLayoutTableCell : public LayoutBlockFlow,
+                                   public LayoutNGTableCellInterface {
   unsigned bitfields;
   int paddings[2];
   void* pointer1;
@@ -1112,6 +1113,11 @@ void LayoutTableCell::ScrollbarsChanged(bool horizontal_scrollbar_changed,
                                         ScrollbarChangeContext context) {
   LayoutBlock::ScrollbarsChanged(horizontal_scrollbar_changed,
                                  vertical_scrollbar_changed);
+
+  // The intrinsic-padding adjustment for scrollbars is directly handled by NG.
+  if (IsLayoutNGObject())
+    return;
+
   if (context != kLayout)
     return;
 

@@ -145,8 +145,7 @@ void DemoModeResourcesRemover::LowDiskSpace(uint64_t free_disk_space) {
   AttemptRemoval(RemovalReason::kLowDiskSpace, RemovalCallback());
 }
 
-void DemoModeResourcesRemover::ActiveUserChanged(
-    const user_manager::User* user) {
+void DemoModeResourcesRemover::ActiveUserChanged(user_manager::User* user) {
   // Ignore user activity in guest sessions.
   if (user->GetType() == user_manager::USER_TYPE_GUEST)
     return;
@@ -229,9 +228,10 @@ void DemoModeResourcesRemover::AttemptRemoval(RemovalReason reason,
     return;
   removal_in_progress_ = true;
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&RemoveDirectory, DemoResources::GetPreInstalledPath()),
       base::BindOnce(&DemoModeResourcesRemover::OnRemovalDone,
                      weak_ptr_factory_.GetWeakPtr(), reason));
@@ -252,8 +252,7 @@ DemoModeResourcesRemover::DemoModeResourcesRemover(PrefService* local_state)
     : local_state_(local_state),
       tick_clock_(base::DefaultTickClock::GetInstance()),
       cryptohome_observer_(this),
-      user_activity_observer_(this),
-      weak_ptr_factory_(this) {
+      user_activity_observer_(this) {
   CHECK(!g_instance);
   g_instance = this;
 

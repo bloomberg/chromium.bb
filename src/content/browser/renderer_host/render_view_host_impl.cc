@@ -39,7 +39,6 @@
 #include "content/browser/gpu/compositor_util.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
 #include "content/browser/gpu/gpu_process_host.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/renderer_host/input/timeout_monitor.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_view_host_delegate.h"
@@ -252,16 +251,6 @@ RenderViewHostImpl::RenderViewHostImpl(
   if (!is_active())
     GetWidget()->UpdatePriority();
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &ResourceDispatcherHostImpl::OnRenderViewHostCreated,
-            GetProcess()->GetID(), GetRoutingID(),
-            base::RetainedRef(
-                GetProcess()->GetStoragePartition()->GetURLRequestContext())));
-  }
-
   close_timeout_.reset(new TimeoutMonitor(base::Bind(
       &RenderViewHostImpl::ClosePageTimeout, weak_factory_.GetWeakPtr())));
 
@@ -277,13 +266,11 @@ RenderViewHostImpl::~RenderViewHostImpl() {
         GetWidget()->GetRoutingID());
   }
 
+  // Destroy the RenderWidgetHost.
   GetWidget()->ShutdownAndDestroyWidget(false);
-
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ResourceDispatcherHostImpl::OnRenderViewHostDeleted,
-                       GetProcess()->GetID(), GetRoutingID()));
+  if (IsRenderViewLive()) {
+    // Destroy the RenderView, which will also destroy the RenderWidget.
+    GetProcess()->GetRendererInterface()->DestroyView(GetRoutingID());
   }
 
   ui::GpuSwitchingManager::GetInstance()->RemoveObserver(this);
@@ -357,11 +344,14 @@ bool RenderViewHostImpl::CreateRenderView(
         mojom::DocumentScopedInterfaceBundle::New();
     main_rfh->BindInterfaceProviderRequest(mojo::MakeRequest(
         &params->main_frame_interface_bundle->interface_provider));
-    main_rfh->BindDocumentInterfaceBrokerRequest(
-        mojo::MakeRequest(&params->main_frame_interface_bundle
-                               ->document_interface_broker_content),
-        mojo::MakeRequest(&params->main_frame_interface_bundle
-                               ->document_interface_broker_blink));
+    main_rfh->BindDocumentInterfaceBrokerReceiver(
+        params->main_frame_interface_bundle->document_interface_broker_content
+            .InitWithNewPipeAndPassReceiver(),
+        params->main_frame_interface_bundle->document_interface_broker_blink
+            .InitWithNewPipeAndPassReceiver());
+    main_rfh->BindBrowserInterfaceBrokerReceiver(
+        params->main_frame_interface_bundle->browser_interface_broker
+            .InitWithNewPipeAndPassReceiver());
     RenderWidgetHostImpl* main_rwh = main_rfh->GetRenderWidgetHost();
     params->main_frame_widget_routing_id = main_rwh->GetRoutingID();
   }
@@ -384,10 +374,12 @@ bool RenderViewHostImpl::CreateRenderView(
       GetSiteInstance()->GetSiteURL().SchemeIs(kGuestScheme);
   params->inside_portal = delegate_->IsPortal();
 
-  bool needs_ack = false;
-  GetWidget()->GetVisualProperties(&params->visual_properties, &needs_ack);
-  GetWidget()->SetInitialVisualProperties(params->visual_properties, needs_ack);
+  params->visual_properties = GetWidget()->GetVisualProperties();
+  GetWidget()->SetInitialVisualProperties(params->visual_properties);
 
+  // The RenderView is owned by this process. This call must be accompanied by a
+  // DestroyView [see destructor] or else there will be a leak in the renderer
+  // process.
   GetProcess()->GetRendererInterface()->CreateView(std::move(params));
 
   // Let our delegate know that we created a RenderView.
@@ -460,8 +452,6 @@ const WebPreferences RenderViewHostImpl::ComputeWebPreferences() {
   prefs.remote_fonts_enabled =
       !command_line.HasSwitch(switches::kDisableRemoteFonts);
   prefs.application_cache_enabled = true;
-  prefs.xss_auditor_enabled =
-      !command_line.HasSwitch(switches::kDisableXSSAuditor);
   prefs.local_storage_enabled =
       !command_line.HasSwitch(switches::kDisableLocalStorage);
   prefs.databases_enabled =

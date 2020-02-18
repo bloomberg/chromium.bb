@@ -33,13 +33,13 @@ void PaymentAppInfoFetcher::Start(
     const GURL& context_url,
     scoped_refptr<ServiceWorkerContextWrapper> service_worker_context,
     PaymentAppInfoFetchCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   std::unique_ptr<std::vector<GlobalFrameRoutingId>> provider_hosts =
       service_worker_context->GetProviderHostIds(context_url.GetOrigin());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
       base::BindOnce(&PaymentAppInfoFetcher::StartOnUI, context_url,
                      std::move(provider_hosts), std::move(callback)));
 }
@@ -166,10 +166,9 @@ void PaymentAppInfoFetcher::SelfDeleteFetcher::Start(
 void PaymentAppInfoFetcher::SelfDeleteFetcher::RunCallbackAndDestroy() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(std::move(callback_),
-                     std::move(fetched_payment_app_info_)));
+  base::PostTask(FROM_HERE, {ServiceWorkerContext::GetCoreThreadId()},
+                 base::BindOnce(std::move(callback_),
+                                std::move(fetched_payment_app_info_)));
   delete this;
 }
 

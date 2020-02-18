@@ -4,6 +4,8 @@
 
 #include "chrome/common/url_constants.h"
 
+#include "build/branding_buildflags.h"
+
 namespace chrome {
 
 const char kAccessibilityLabelsLearnMoreURL[] =
@@ -16,11 +18,7 @@ const char kAdvancedProtectionDownloadLearnMoreURL[] =
     "https://support.google.com/accounts/?p=ap_faq";
 
 const char kBluetoothAdapterOffHelpURL[] =
-#if defined(OS_CHROMEOS)
-    "chrome://settings/?search=bluetooth";
-#else
     "https://support.google.com/chrome?p=bluetooth";
-#endif
 
 const char kCastCloudServicesHelpURL[] =
     "https://support.google.com/chromecast/?p=casting_cloud_services";
@@ -43,22 +41,22 @@ const char kChromeReleaseNotesURL[] =
 
 const char kChromeHelpViaKeyboardURL[] =
 #if defined(OS_CHROMEOS)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=keyboard";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #else
     "https://support.google.com/chrome/?p=help&ctx=keyboard";
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeHelpViaMenuURL[] =
 #if defined(OS_CHROMEOS)
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=menu";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #else
     "https://support.google.com/chrome/?p=help&ctx=menu";
 #endif  // defined(OS_CHROMEOS)
@@ -67,11 +65,11 @@ const char kChromeHelpViaWebUIURL[] =
     "https://support.google.com/chrome/?p=help&ctx=settings";
 #if defined(OS_CHROMEOS)
 const char kChromeOsHelpViaWebUIURL[] =
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     "chrome-extension://honijodknafkokifofgiaalefdiedpko/main.html";
 #else
     "https://support.google.com/chromebook/?p=help&ctx=settings";
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // defined(OS_CHROMEOS)
 
 const char kChromeNativeScheme[] = "chrome-native";
@@ -157,6 +155,17 @@ const char kGoogleAccountChooserURL[] =
     "https://accounts.google.com/AccountChooser";
 
 const char kGooglePasswordManagerURL[] = "https://passwords.google.com";
+
+const char kPasswordCheckupURL[] =
+#if defined(OS_ANDROID)
+    "https://passwords.google.com/checkup/"
+    "start?utm_source=chrome&utm_medium=android&utm_campaign=leak_dialog&crch="
+    "true";
+#else
+    "https://passwords.google.com/checkup/"
+    "start?utm_source=chrome&utm_medium=desktop&utm_campaign=leak_dialog&crch="
+    "true";
+#endif
 
 const char kLearnMoreReportingURL[] =
     "https://support.google.com/chrome/?p=ui_usagestat";
@@ -329,6 +338,9 @@ const char kLearnMoreEnterpriseURL[] =
 
 const char kLinuxAppsLearnMoreURL[] =
     "https://support.google.com/chromebook?p=chromebook_linuxapps";
+
+const char kLinuxExportImportHelpURL[] =
+    "https://support.google.com/chromebook?p=linux_backup_restore";
 
 const char kLinuxCreditsPath[] =
     "/opt/google/chrome/resources/linux_credits.html";

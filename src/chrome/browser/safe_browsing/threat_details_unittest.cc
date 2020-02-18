@@ -401,7 +401,7 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
 TEST_F(ThreatDetailsTest, ThreatSubResource) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -449,7 +449,7 @@ TEST_F(ThreatDetailsTest, ThreatSubResource) {
 TEST_F(ThreatDetailsTest, SuspiciousSiteWithReferrerChain) {
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -872,8 +872,6 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_MultipleFrames) {
 //   \- <frame src=kDataURL>
 //        \- <script src=kDOMChildURL2>
 TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
-  const char kAmbiguousDomMetric[] = "SafeBrowsing.ThreatReport.DomIsAmbiguous";
-
   // Create a child renderer inside the main frame to house the inner iframe.
   // Perform the navigation first in order to manipulate the frame tree.
   content::WebContentsTester::For(web_contents())
@@ -989,9 +987,6 @@ TEST_F(ThreatDetailsTest, ThreatDOMDetails_AmbiguousDOM) {
   ClientSafeBrowsingReportRequest actual;
   actual.ParseFromString(serialized);
   VerifyResults(actual, expected);
-
-  // This DOM should be ambiguous, expect the UMA metric to be incremented.
-  histograms.ExpectTotalCount(kAmbiguousDomMetric, 1);
 }
 
 // Tests creating a threat report when receiving data from multiple renderers
@@ -1407,7 +1402,7 @@ TEST_F(ThreatDetailsTest, ThreatOnMainPageLoadBlocked) {
   // navigation entry.
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kUnrelatedURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kUnrelatedReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 
@@ -1469,7 +1464,7 @@ TEST_F(ThreatDetailsTest, ThreatWithPendingLoad) {
   // Load and commit the landing URL with a referrer.
   auto navigation = content::NavigationSimulator::CreateBrowserInitiated(
       GURL(kLandingURL), web_contents());
-  navigation->SetReferrer(content::Referrer(
+  navigation->SetReferrer(blink::mojom::Referrer::New(
       GURL(kReferrerURL), network::mojom::ReferrerPolicy::kDefault));
   navigation->Commit();
 

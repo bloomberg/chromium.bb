@@ -212,6 +212,11 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
 
   config("apprtc_signaling_config") {
     include_dirs = [ "objc/AppRTCMobile" ]
+    cflags_objc = [
+      # TODO(bugs.webrtc.org/10837): Remove this when usage of
+      # archivedDataWithRootObject will be removed.
+      "-Wno-unguarded-availability",
+    ]
   }
 
   rtc_static_library("apprtc_signaling") {
@@ -583,6 +588,7 @@ if (is_ios || (is_mac && target_cpu != "x86")) {
 
     libs = [
       "CFNetwork.framework",
+      "Security.framework",
       "icucore",
     ]
   }
@@ -659,6 +665,7 @@ if (is_linux || is_win) {
       "../system_wrappers:field_trial",
       "../test:field_trial",
       "../test:platform_video_capturer",
+      "../test:rtp_test_utils",
       "//third_party/abseil-cpp/absl/memory",
       "//third_party/abseil-cpp/absl/types:optional",
     ]

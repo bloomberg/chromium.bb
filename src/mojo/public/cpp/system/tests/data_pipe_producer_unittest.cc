@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/file_data_source.h"
@@ -119,19 +119,20 @@ class DataPipeProducerTest : public testing::Test {
       std::unique_ptr<DataPipeProducer> producer,
       std::unique_ptr<FilteredDataSource::Filter> filter,
       base::File file,
-      size_t max_bytes) {
+      uint64_t max_bytes) {
     DataPipeProducer* raw_producer = producer.get();
+    auto data_source = std::make_unique<FileDataSource>(std::move(file));
+    data_source->SetRange(0u, max_bytes);
     raw_producer->Write(
-        std::make_unique<FilteredDataSource>(
-            std::make_unique<FileDataSource>(std::move(file), max_bytes),
-            std::move(filter)),
+        std::make_unique<FilteredDataSource>(std::move(data_source),
+                                             std::move(filter)),
         base::BindOnce([](std::unique_ptr<DataPipeProducer> producer,
                           MojoResult result) {},
                        std::move(producer)));
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   int tmp_file_id_ = 0;
 
@@ -140,7 +141,7 @@ class DataPipeProducerTest : public testing::Test {
 
 struct DataPipeObserverData {
   int num_read_errors = 0;
-  size_t bytes_read = 0;
+  uint64_t bytes_read = 0;
   int done_called = 0;
 };
 

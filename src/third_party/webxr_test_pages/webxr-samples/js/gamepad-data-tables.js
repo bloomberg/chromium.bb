@@ -129,17 +129,23 @@ class AxesTable extends GamepadTable {
 }
 
 class InfoTable extends GamepadTable {
-  constructor(gamepad, parent) {
+  constructor(gamepad, profiles, parent) {
     super("Gamepad", 2, parent);
 
     this.id = gamepad.id;
     this.mapping = gamepad.mapping;
+    this.index = gamepad.index;
+    this.profiles_string = profiles.toString();
 
     this.id_cell = this.AddRow(["id", gamepad.id])[1];
     this.mapping_cell = this.AddRow(["mapping", gamepad.mapping])[1];
+    this.index_cell = this.AddRow(["index", gamepad.index])[1];
+    this.profiles_cell = this.AddRow(["profiles", this.profiles_string])[1];
+
+    this.timestamp_cell = this.AddRow(["timestamp", gamepad.timestamp])[1];
   }
 
-  update(gamepad) {
+  update(gamepad, profiles) {
     if (this.id != gamepad.id) {
       this.id_cell.innerHTML = gamepad.id;
       this.id = gamepad.id;
@@ -148,6 +154,20 @@ class InfoTable extends GamepadTable {
       this.mapping_cell.innerHTML = gamepad.mapping;
       this.mapping = gamepad.mapping;
     }
+    if (this.index != gamepad.index) {
+      this.index_cell.innerHTML = gamepad.index;
+      this.index = gamepad.index;
+    }
+    let profiles_string = profiles.toString();
+    if (this.profiles_string != profiles_string) {
+      this.profiles_cell.innerHTML = profiles_string;
+      this.profiles_string = profiles_string;
+    }
+
+    // Most recent time that this gamepad's input state (buttons + axes) has
+    // changed. Measured as milliseconds relative to the page's navigation
+    // start.
+    this.timestamp_cell.innerHTML = gamepad.timestamp.toFixed(3);
   }
 }
 
@@ -161,10 +181,13 @@ export class GamepadTableManager {
     this.frame_number++;
   }
 
-  update(gamepad, hand) {
+  update(input_source) {
     // Construct the tables if necessary. Must check this every frame
     // because otherwise, the table doesn't get created until the gamepad
     // has an input change on a frame that's a multiple of 10.
+    let hand = input_source.handedness;
+    let gamepad = input_source.gamepad;
+    let profiles = input_source.profiles;
     if (!(hand in this.tables)) {
       let div = document.getElementById("gamepad-details");
       let header = document.createElement("header");
@@ -181,7 +204,7 @@ export class GamepadTableManager {
       div.appendChild(header);
 
       this.tables[hand] = {
-        info : new InfoTable(gamepad, details),
+        info : new InfoTable(gamepad, profiles, details),
         axes : new AxesTable(gamepad.axes, details),
         buttons : new ButtonTable(gamepad.buttons, details)
       };
@@ -189,7 +212,7 @@ export class GamepadTableManager {
 
     // Only update the gamepad tables once every 10 frames for perf reasons.
     if ((this.frame_number % 10) == 0) {
-      this.tables[hand].info.update(gamepad);
+      this.tables[hand].info.update(gamepad, profiles);
       this.tables[hand].axes.update(gamepad.axes);
       this.tables[hand].buttons.update(gamepad.buttons);
     }

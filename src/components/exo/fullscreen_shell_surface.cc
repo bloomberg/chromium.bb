@@ -18,11 +18,8 @@
 
 namespace exo {
 
-FullscreenShellSurface::FullscreenShellSurface(Surface* surface)
+FullscreenShellSurface::FullscreenShellSurface()
     : SurfaceTreeHost("FullscreenShellSurfaceHost") {
-  surface->AddSurfaceObserver(this);
-  SetRootSurface(surface);
-  host_window()->Show();
   set_owned_by_client();
   CreateFullscreenShellSurfaceWidget(ui::SHOW_STATE_FULLSCREEN);
   widget_->SetFullscreen(true);
@@ -64,6 +61,22 @@ void FullscreenShellSurface::SetStartupId(const char* startup_id) {
 
   if (widget_ && widget_->GetNativeWindow())
     SetShellStartupId(widget_->GetNativeWindow(), startup_id_);
+}
+
+void FullscreenShellSurface::SetSurface(Surface* surface) {
+  if (root_surface())
+    root_surface()->RemoveSurfaceObserver(this);
+  SetRootSurface(surface);
+  set_owned_by_client();
+  SetShellMainSurface(widget_->GetNativeWindow(), root_surface());
+  if (surface) {
+    surface->AddSurfaceObserver(this);
+    host_window()->Show();
+    widget_->Show();
+  } else {
+    host_window()->Hide();
+    widget_->Hide();
+  }
 }
 
 void FullscreenShellSurface::Maximize() {
@@ -212,7 +225,7 @@ void FullscreenShellSurface::CreateFullscreenShellSurfaceWidget(
   params.bounds = gfx::Rect(params.parent->bounds().size());
 
   widget_ = new views::Widget();
-  widget_->Init(params);
+  widget_->Init(std::move(params));
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("FullscreenShellSurface");
@@ -241,6 +254,20 @@ bool FullscreenShellSurface::OnPreWidgetCommit() {
     return false;
 
   return true;
+}
+
+void FullscreenShellSurface::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kClient;
+
+  if (child_ax_tree_id_ == ui::AXTreeIDUnknown())
+    return;
+
+  node_data->AddStringAttribute(ax::mojom::StringAttribute::kChildTreeId,
+                                child_ax_tree_id_.ToString());
+}
+
+void FullscreenShellSurface::SetChildAxTreeId(ui::AXTreeID child_ax_tree_id) {
+  child_ax_tree_id_ = child_ax_tree_id;
 }
 
 }  // namespace exo

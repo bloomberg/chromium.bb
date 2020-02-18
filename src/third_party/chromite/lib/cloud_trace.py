@@ -66,7 +66,7 @@ def _RecordSpanMetrics(span):
   """
   m = metrics.Counter(
       _SPAN_COUNT_METRIC,
-      description="A count of spans logged by a client.",
+      description='A count of spans logged by a client.',
       field_spec=[ts_mon.StringField('name')])
   m.increment(fields={'name': span.name})
 
@@ -248,7 +248,7 @@ class SpanStack(object):
     From the cloud trace doc explaining this (
     https://cloud.google.com/trace/docs/support?hl=bg)
 
-      "X-Cloud-Trace-Context: TRACE_ID/SPAN_ID;o=TRACE_TRUE"
+      'X-Cloud-Trace-Context: TRACE_ID/SPAN_ID;o=TRACE_TRUE'
       Where:
         - TRACE_ID is a 32-character hex value representing a 128-bit number.
         It should be unique between your requests, unless you intentionally
@@ -259,14 +259,14 @@ class SpanStack(object):
         information about nested traces.
         - TRACE_TRUE must be 1 to trace this request. Specify 0 to not trace
         the request. For example, to force a trace with cURL:
-          curl "http://www.example.com" --header "X-Cloud-Trace-Context:
-            105445aa7843bc8bf206b120001000/0;o=1"
+          curl 'http://www.example.com' --header 'X-Cloud-Trace-Context:
+            105445aa7843bc8bf206b120001000/0;o=1'
     """
     if not self.traceId:
       return ''
     span_postfix = '/%s' % self.spans[-1].spanId if self.spans else ''
     enabled = '1' if self.enabled else '0'
-    return "{trace_id}{span_postfix};o={enabled}".format(
+    return '{trace_id}{span_postfix};o={enabled}'.format(
         trace_id=self.traceId,
         span_postfix=span_postfix,
         enabled=enabled)

@@ -22,7 +22,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_context.h"
@@ -52,7 +52,7 @@ class TestHostResolverProc : public HostResolverProc {
   ~TestHostResolverProc() override {}
 };
 
-class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
+class HttpWithDnsOverHttpsTest : public TestWithTaskEnvironment {
  public:
   HttpWithDnsOverHttpsTest()
       : resolver_(HostResolver::CreateStandaloneContextResolver(nullptr)),
@@ -71,16 +71,26 @@ class HttpWithDnsOverHttpsTest : public TestWithScopedTaskEnvironment {
     EXPECT_TRUE(test_server_.Start());
     GURL url(doh_server_.GetURL("/dns_query"));
     std::unique_ptr<DnsClient> dns_client(DnsClient::CreateClient(nullptr));
+
     DnsConfig config;
     config.nameservers.push_back(IPEndPoint());
-    config.dns_over_https_servers.emplace_back(url.spec(), true /* use_post */);
-    config.secure_dns_mode = DnsConfig::SecureDnsMode::AUTOMATIC;
-    dns_client->SetConfig(config);
+    EXPECT_TRUE(config.IsValid());
+    dns_client->SetSystemConfig(std::move(config));
+
     resolver_->SetRequestContext(&request_context_);
     resolver_->SetProcParamsForTesting(
         ProcTaskParams(new TestHostResolverProc(), 1));
     resolver_->GetManagerForTesting()->SetDnsClientForTesting(
         std::move(dns_client));
+
+    DnsConfigOverrides overrides;
+    overrides.dns_over_https_servers.emplace(
+        {DnsConfig::DnsOverHttpsServerConfig(url.spec(), true /* use_post */)});
+    overrides.secure_dns_mode = DnsConfig::SecureDnsMode::SECURE;
+    overrides.use_local_ipv6 = true;
+    resolver_->GetManagerForTesting()->SetDnsConfigOverrides(
+        std::move(overrides));
+
     request_context_.set_host_resolver(resolver_.get());
     request_context_.Init();
   }

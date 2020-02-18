@@ -12,6 +12,7 @@ import os
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import image_lib
 from chromite.lib import osutils
 
 
@@ -34,9 +35,8 @@ def GenerateStatefulPayload(image_path, output_directory):
 
   # Mount the image to pull out the important directories.
   with osutils.TempDir() as stateful_mnt, \
-      osutils.MountImageContext(image_path, stateful_mnt,
-                                (constants.PART_STATE,)) as _:
-    stateful_dir = os.path.join(stateful_mnt, 'dir-%s' % constants.PART_STATE)
+      image_lib.LoopbackPartitions(image_path, stateful_mnt) as image:
+    rootfs_dir = image.Mount((constants.PART_STATE,))[0]
 
     try:
       logging.info('Tarring up /usr/local and /var!')
@@ -44,7 +44,7 @@ def GenerateStatefulPayload(image_path, output_directory):
           'tar',
           '-czf',
           output_gz,
-          '--directory=%s' % stateful_dir,
+          '--directory=%s' % rootfs_dir,
           '--hard-dereference',
           '--transform=s,^dev_image,dev_image_new,',
           '--transform=s,^var_overlay,var_new,',

@@ -7,7 +7,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -65,12 +65,11 @@ class TestLogUploader : public LogUploader {
 class LogUploaderTest : public testing::Test {
  public:
   LogUploaderTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
  protected:
   // Required for base::ThreadTaskRunnerHandle::Get().
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
 
  private:

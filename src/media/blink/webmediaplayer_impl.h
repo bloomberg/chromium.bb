@@ -32,6 +32,7 @@
 #include "media/base/overlay_info.h"
 #include "media/base/pipeline_impl.h"
 #include "media/base/renderer_factory_selector.h"
+#include "media/base/simple_watch_timer.h"
 #include "media/base/text_track.h"
 #include "media/blink/buffered_data_source_host_impl.h"
 #include "media/blink/media_blink_export.h"
@@ -219,11 +220,11 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool SupportsOverlayFullscreenVideo() override;
   void EnteredFullscreen() override;
   void ExitedFullscreen() override;
-  void BecameDominantVisibleContent(bool isDominant) override;
+  void BecameDominantVisibleContent(bool is_dominant) override;
   void SetIsEffectivelyFullscreen(
       blink::WebFullscreenVideoStatus fullscreen_video_status) override;
   void OnHasNativeControlsChanged(bool) override;
-  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType) override;
+  void OnDisplayTypeChanged(WebMediaPlayer::DisplayType display_type) override;
 
   // blink::WebMediaPlayerDelegate::Observer implementation.
   void OnFrameHidden() override;
@@ -350,6 +351,9 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVideoAverageKeyframeDistanceUpdate() override;
   void OnAudioDecoderChange(const PipelineDecoderInfo& info) override;
   void OnVideoDecoderChange(const PipelineDecoderInfo& info) override;
+
+  // Simplified watch time reporting.
+  void OnSimpleWatchTimerTick();
 
   // Actually seek. Avoids causing |should_notify_time_changed_| to be set when
   // |time_updated| is false.
@@ -1005,6 +1009,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool is_background_video_track_optimization_supported_ = true;
 
   base::CancelableOnceClosure have_enough_after_lazy_load_cb_;
+
+  // State for simplified watch time reporting.
+  RendererFactorySelector::FactoryType reported_renderer_type_;
+  SimpleWatchTimer simple_watch_timer_;
 
   base::WeakPtr<WebMediaPlayerImpl> weak_this_;
   base::WeakPtrFactory<WebMediaPlayerImpl> weak_factory_{this};

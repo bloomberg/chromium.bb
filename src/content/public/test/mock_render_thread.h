@@ -17,7 +17,9 @@
 #include "content/public/renderer/render_thread.h"
 #include "ipc/ipc_test_sink.h"
 #include "ipc/message_filter.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/mojom/connector.mojom.h"
+#include "third_party/blink/public/mojom/browser_interface_broker.mojom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 
 struct FrameHostMsg_CreateChildFrame_Params;
@@ -59,6 +61,7 @@ class MockRenderThread : public RenderThread {
   std::string GetLocale() override;
   IPC::SyncMessageFilter* GetSyncMessageFilter() override;
   scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner() override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
   void AddRoute(int32_t routing_id, IPC::Listener* listener) override;
   void RemoveRoute(int32_t routing_id) override;
   int GenerateRoutingID() override;
@@ -118,12 +121,19 @@ class MockRenderThread : public RenderThread {
   service_manager::mojom::InterfaceProviderRequest
   TakeInitialInterfaceProviderRequestForFrame(int32_t routing_id);
 
-  // Returns the request end of the DocumentInterfaceBroker interface whose
+  // Returns the receiver end of the DocumentInterfaceBroker interface whose
   // client end was passed in to construct RenderFrame with |routing_id|; if
   // any. The client end will be used by the RenderFrame to service interface
   // requests originating from the initial empty document.
-  blink::mojom::DocumentInterfaceBrokerRequest
-  TakeInitialDocumentInterfaceBrokerRequestForFrame(int32_t routing_id);
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+  TakeInitialDocumentInterfaceBrokerReceiverForFrame(int32_t routing_id);
+
+  // Returns the receiver end of the BrowserInterfaceBroker interface whose
+  // client end was passed in to construct RenderFrame with |routing_id|; if
+  // any. The client end will be used by the RenderFrame to service interface
+  // requests originating from the initial empty document.
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+  TakeInitialBrowserInterfaceBrokerReceiverForFrame(int32_t routing_id);
 
   // Called from the RenderViewTest harness to supply the request end of the
   // InterfaceProvider interface connection that the harness used to service the
@@ -156,8 +166,12 @@ class MockRenderThread : public RenderThread {
   std::map<int32_t, service_manager::mojom::InterfaceProviderRequest>
       frame_routing_id_to_initial_interface_provider_requests_;
 
-  std::map<int32_t, blink::mojom::DocumentInterfaceBrokerRequest>
-      frame_routing_id_to_initial_document_broker_requests_;
+  std::map<int32_t,
+           mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>>
+      frame_routing_id_to_initial_document_broker_receivers_;
+
+  std::map<int32_t, mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>>
+      frame_routing_id_to_initial_browser_broker_receivers_;
 
   // The last known good deserializer for sync messages.
   std::unique_ptr<IPC::MessageReplyDeserializer> reply_deserializer_;

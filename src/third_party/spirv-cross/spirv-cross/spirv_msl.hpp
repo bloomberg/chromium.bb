@@ -20,6 +20,7 @@
 #include "spirv_glsl.hpp"
 #include <map>
 #include <set>
+#include <stddef.h>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -141,9 +142,6 @@ struct MSLConstexprSampler
 	bool anisotropy_enable = false;
 };
 
-// Tracks the type ID and member index of a struct member
-using MSLStructMemberKey = uint64_t;
-
 // Special constant used in a MSLResourceBinding desc_set
 // element to indicate the bindings for the push constants.
 static const uint32_t kPushConstDescSet = ~(0u);
@@ -152,11 +150,21 @@ static const uint32_t kPushConstDescSet = ~(0u);
 // element to indicate the bindings for the push constants.
 static const uint32_t kPushConstBinding = 0;
 
-static const uint32_t kMaxArgumentBuffers = 8;
+// Special constant used in a MSLResourceBinding binding
+// element to indicate the buffer binding for swizzle buffers.
+static const uint32_t kSwizzleBufferBinding = ~(1u);
 
-// The current version of the aux buffer structure. It must be incremented any time a
-// new field is added to the aux buffer.
-#define SPIRV_CROSS_MSL_AUX_BUFFER_STRUCT_VERSION 1
+// Special constant used in a MSLResourceBinding binding
+// element to indicate the buffer binding for buffer size buffers to support OpArrayLength.
+static const uint32_t kBufferSizeBufferBinding = ~(2u);
+
+// Special constant used in a MSLResourceBinding binding
+// element to indicate the buffer binding used for the argument buffer itself.
+// This buffer binding should be kept as small as possible as all automatic bindings for buffers
+// will start at max(kArgumentBufferBinding) + 1.
+static const uint32_t kArgumentBufferBinding = ~(3u);
+
+static const uint32_t kMaxArgumentBuffers = 8;
 
 // Decompiles SPIR-V to Metal Shading Language
 class CompilerMSL : public CompilerGLSL
@@ -174,17 +182,23 @@ public:
 		Platform platform = macOS;
 		uint32_t msl_version = make_msl_version(1, 2);
 		uint32_t texel_buffer_texture_width = 4096; // Width of 2D Metal textures used as 1D texel buffers
-		uint32_t aux_buffer_index = 30;
+		uint32_t swizzle_buffer_index = 30;
 		uint32_t indirect_params_buffer_index = 29;
 		uint32_t shader_output_buffer_index = 28;
 		uint32_t shader_patch_output_buffer_index = 27;
 		uint32_t shader_tess_factor_buffer_index = 26;
+		uint32_t buffer_size_buffer_index = 25;
+		uint32_t view_mask_buffer_index = 24;
 		uint32_t shader_input_wg_index = 0;
+		uint32_t device_index = 0;
 		bool enable_point_size_builtin = true;
 		bool disable_rasterization = false;
 		bool capture_output_to_buffer = false;
 		bool swizzle_texture_samples = false;
 		bool tess_domain_origin_lower_left = false;
+		bool multiview = false;
+		bool view_index_from_device_index = false;
+		bool dispatch_base = false;
 
 		// Enable use of MSL 2.0 indirect argument buffers.
 		// MSL 2.0 must also be enabled.
@@ -193,6 +207,9 @@ public:
 		// Fragment output in MSL must have at least as many components as the render pass.
 		// Add support to explicit pad out components.
 		bool pad_fragment_output_components = false;
+
+		// Requires MSL 2.1, use the native support for texel buffers.
+		bool texture_buffer_native = false;
 
 		bool is_ios()
 		{
@@ -209,7 +226,7 @@ public:
 			msl_version = make_msl_version(major, minor, patch);
 		}
 
-		bool supports_msl_version(uint32_t major, uint32_t minor = 0, uint32_t patch = 0)
+		bool supports_msl_version(uint32_t major, uint32_t minor = 0, uint32_t patch = 0) const
 		{
 			return msl_version >= make_msl_version(major, minor, patch);
 		}
@@ -240,10 +257,31 @@ public:
 	}
 
 	// Provide feedback to calling API to allow it to pass an auxiliary
-	// buffer if the shader needs it.
-	bool needs_aux_buffer() const
+	// swizzle buffer if the shader needs it.
+	bool needs_swizzle_buffer() const
 	{
-		return used_aux_buffer;
+		return used_swizzle_buffer;
+	}
+
+	// Provide feedback to calling API to allow it to pass a buffer
+	// containing STORAGE_BUFFER buffer sizes to support OpArrayLength.
+	bool needs_buffer_size_buffer() const
+	{
+		return !buffers_requiring_array_length.empty();
+	}
+
+	// Provide feedback to calling API to allow it to pass a buffer
+	// containing the view mask for the current multiview subpass.
+	bool needs_view_mask_buffer() const
+	{
+		return msl_options.multiview && !msl_options.view_index_from_device_index;
+	}
+
+	// Provide feedback to calling API to allow it to pass a buffer
+	// containing the dispatch base workgroup ID.
+	bool needs_dispatch_base_buffer() const
+	{
+		return msl_options.dispatch_base && !msl_options.supports_msl_version(1, 2);
 	}
 
 	// Provide feedback to calling API to allow it to pass an output
@@ -291,7 +329,25 @@ public:
 
 	// Query after compilation is done. This allows you to check if a location or set/binding combination was used by the shader.
 	bool is_msl_vertex_attribute_used(uint32_t location);
+
+	// NOTE: Only resources which are remapped using add_msl_resource_binding will be reported here.
+	// Constexpr samplers are always assumed to be emitted.
+	// No specific MSLResourceBinding remapping is required for constexpr samplers as long as they are remapped
+	// by remap_constexpr_sampler(_by_binding).
 	bool is_msl_resource_binding_used(spv::ExecutionModel model, uint32_t set, uint32_t binding);
+
+	// This must only be called after a successful call to CompilerMSL::compile().
+	// For a variable resource ID obtained through reflection API, report the automatically assigned resource index.
+	// If the descriptor set was part of an argument buffer, report the [[id(N)]],
+	// or [[buffer/texture/sampler]] binding for other resources.
+	// If the resource was a combined image sampler, report the image binding here,
+	// use the _secondary version of this call to query the sampler half of the resource.
+	// If no binding exists, uint32_t(-1) is returned.
+	uint32_t get_automatic_msl_resource_binding(uint32_t id) const;
+
+	// Same as get_automatic_msl_resource_binding, but should only be used for combined image samplers, in which case the
+	// sampler's binding is returned instead. For any other resource type, -1 is returned.
+	uint32_t get_automatic_msl_resource_binding_secondary(uint32_t id) const;
 
 	// Compiles the SPIR-V code into Metal Shading Language.
 	std::string compile() override;
@@ -302,7 +358,12 @@ public:
 	// The sampler will not consume a binding, but be declared in the entry point as a constexpr sampler.
 	// This can be used on both combined image/samplers (sampler2D) or standalone samplers.
 	// The remapped sampler must not be an array of samplers.
+	// Prefer remap_constexpr_sampler_by_binding unless you're also doing reflection anyways.
 	void remap_constexpr_sampler(uint32_t id, const MSLConstexprSampler &sampler);
+
+	// Same as remap_constexpr_sampler, except you provide set/binding, rather than variable ID.
+	// Remaps based on ID take priority over set/binding remaps.
+	void remap_constexpr_sampler_by_binding(uint32_t desc_set, uint32_t binding, const MSLConstexprSampler &sampler);
 
 	// If using CompilerMSL::Options::pad_fragment_output_components, override the number of components we expect
 	// to use for a particular location. The default is 4 if number of components is not overridden.
@@ -334,13 +395,16 @@ protected:
 		SPVFuncImplInverse4x4,
 		SPVFuncImplInverse3x3,
 		SPVFuncImplInverse2x2,
-		SPVFuncImplRowMajor2x3,
-		SPVFuncImplRowMajor2x4,
-		SPVFuncImplRowMajor3x2,
-		SPVFuncImplRowMajor3x4,
-		SPVFuncImplRowMajor4x2,
-		SPVFuncImplRowMajor4x3,
 		SPVFuncImplTextureSwizzle,
+		SPVFuncImplSubgroupBallot,
+		SPVFuncImplSubgroupBallotBitExtract,
+		SPVFuncImplSubgroupBallotFindLSB,
+		SPVFuncImplSubgroupBallotFindMSB,
+		SPVFuncImplSubgroupBallotBitCount,
+		SPVFuncImplSubgroupAllEqual,
+		SPVFuncImplReflectScalar,
+		SPVFuncImplRefractScalar,
+		SPVFuncImplFaceForwardScalar,
 		SPVFuncImplArrayCopyMultidimMax = 6
 	};
 
@@ -348,30 +412,35 @@ protected:
 	void emit_instruction(const Instruction &instr) override;
 	void emit_glsl_op(uint32_t result_type, uint32_t result_id, uint32_t op, const uint32_t *args,
 	                  uint32_t count) override;
+	void emit_spv_amd_shader_trinary_minmax_op(uint32_t result_type, uint32_t result_id, uint32_t op,
+	                                           const uint32_t *args, uint32_t count) override;
 	void emit_header() override;
 	void emit_function_prototype(SPIRFunction &func, const Bitset &return_flags) override;
 	void emit_sampled_image_op(uint32_t result_type, uint32_t result_id, uint32_t image_id, uint32_t samp_id) override;
+	void emit_subgroup_op(const Instruction &i) override;
 	void emit_fixup() override;
 	std::string to_struct_member(const SPIRType &type, uint32_t member_type_id, uint32_t index,
 	                             const std::string &qualifier = "");
 	void emit_struct_member(const SPIRType &type, uint32_t member_type_id, uint32_t index,
 	                        const std::string &qualifier = "", uint32_t base_offset = 0) override;
+	void emit_struct_padding_target(const SPIRType &type) override;
 	std::string type_to_glsl(const SPIRType &type, uint32_t id = 0) override;
 	std::string image_type_glsl(const SPIRType &type, uint32_t id = 0) override;
 	std::string sampler_type(const SPIRType &type);
 	std::string builtin_to_glsl(spv::BuiltIn builtin, spv::StorageClass storage) override;
-	size_t get_declared_struct_member_size(const SPIRType &struct_type, uint32_t index) const override;
 	std::string to_func_call_arg(uint32_t id) override;
 	std::string to_name(uint32_t id, bool allow_alias = true) const override;
 	std::string to_function_name(uint32_t img, const SPIRType &imgtype, bool is_fetch, bool is_gather, bool is_proj,
-	                             bool has_array_offsets, bool has_offset, bool has_grad, bool has_dref,
-	                             uint32_t lod) override;
+	                             bool has_array_offsets, bool has_offset, bool has_grad, bool has_dref, uint32_t lod,
+	                             uint32_t minlod) override;
 	std::string to_function_args(uint32_t img, const SPIRType &imgtype, bool is_fetch, bool is_gather, bool is_proj,
 	                             uint32_t coord, uint32_t coord_components, uint32_t dref, uint32_t grad_x,
 	                             uint32_t grad_y, uint32_t lod, uint32_t coffset, uint32_t offset, uint32_t bias,
-	                             uint32_t comp, uint32_t sample, bool *p_forward) override;
+	                             uint32_t comp, uint32_t sample, uint32_t minlod, bool *p_forward) override;
 	std::string to_initializer_expression(const SPIRVariable &var) override;
-	std::string unpack_expression_type(std::string expr_str, const SPIRType &type, uint32_t packed_type_id) override;
+	std::string unpack_expression_type(std::string expr_str, const SPIRType &type, uint32_t physical_type_id,
+	                                   bool is_packed, bool row_major) override;
+
 	std::string bitcast_glsl_op(const SPIRType &result_type, const SPIRType &argument_type) override;
 	bool skip_argument(uint32_t id) const override;
 	std::string to_member_reference(uint32_t base, const SPIRType &type, uint32_t index, bool ptr_chain) override;
@@ -382,7 +451,8 @@ protected:
 	bool is_patch_block(const SPIRType &type);
 	bool is_non_native_row_major_matrix(uint32_t id) override;
 	bool member_is_non_native_row_major_matrix(const SPIRType &type, uint32_t index) override;
-	std::string convert_row_major_matrix(std::string exp_str, const SPIRType &exp_type, bool is_packed) override;
+	std::string convert_row_major_matrix(std::string exp_str, const SPIRType &exp_type, uint32_t physical_type_id,
+	                                     bool is_packed) override;
 
 	void preprocess_op_codes();
 	void localize_global_variables();
@@ -423,7 +493,7 @@ protected:
 	void emit_specialization_constants_and_structs();
 	void emit_interface_block(uint32_t ib_var_id);
 	bool maybe_emit_array_assignment(uint32_t id_lhs, uint32_t id_rhs);
-	void add_convert_row_major_matrix_function(uint32_t cols, uint32_t rows);
+
 	void fix_up_shader_inputs_outputs();
 
 	std::string func_type_decl(SPIRType &type);
@@ -436,21 +506,43 @@ protected:
 	std::string ensure_valid_name(std::string name, std::string pfx);
 	std::string to_sampler_expression(uint32_t id);
 	std::string to_swizzle_expression(uint32_t id);
+	std::string to_buffer_size_expression(uint32_t id);
 	std::string builtin_qualifier(spv::BuiltIn builtin);
-	std::string builtin_type_decl(spv::BuiltIn builtin);
+	std::string builtin_type_decl(spv::BuiltIn builtin, uint32_t id = 0);
 	std::string built_in_func_arg(spv::BuiltIn builtin, bool prefix_comma);
 	std::string member_attribute_qualifier(const SPIRType &type, uint32_t index);
 	std::string argument_decl(const SPIRFunction::Parameter &arg);
 	std::string round_fp_tex_coords(std::string tex_coords, bool coord_is_fp);
 	uint32_t get_metal_resource_index(SPIRVariable &var, SPIRType::BaseType basetype);
 	uint32_t get_ordered_member_location(uint32_t type_id, uint32_t index, uint32_t *comp = nullptr);
-	size_t get_declared_struct_member_alignment(const SPIRType &struct_type, uint32_t index) const;
+
+	// MSL packing rules. These compute the effective packing rules as observed by the MSL compiler in the MSL output.
+	// These values can change depending on various extended decorations which control packing rules.
+	// We need to make these rules match up with SPIR-V declared rules.
+	uint32_t get_declared_type_size_msl(const SPIRType &type, bool packed, bool row_major) const;
+	uint32_t get_declared_type_array_stride_msl(const SPIRType &type, bool packed, bool row_major) const;
+	uint32_t get_declared_type_matrix_stride_msl(const SPIRType &type, bool packed, bool row_major) const;
+	uint32_t get_declared_type_alignment_msl(const SPIRType &type, bool packed, bool row_major) const;
+
+	uint32_t get_declared_struct_member_size_msl(const SPIRType &struct_type, uint32_t index) const;
+	uint32_t get_declared_struct_member_array_stride_msl(const SPIRType &struct_type, uint32_t index) const;
+	uint32_t get_declared_struct_member_matrix_stride_msl(const SPIRType &struct_type, uint32_t index) const;
+	uint32_t get_declared_struct_member_alignment_msl(const SPIRType &struct_type, uint32_t index) const;
+
+	const SPIRType &get_physical_member_type(const SPIRType &struct_type, uint32_t index) const;
+
+	uint32_t get_declared_struct_size_msl(const SPIRType &struct_type, bool ignore_alignment = false,
+	                                      bool ignore_padding = false) const;
+
 	std::string to_component_argument(uint32_t id);
-	void align_struct(SPIRType &ib_type);
-	bool is_member_packable(SPIRType &ib_type, uint32_t index);
-	MSLStructMemberKey get_struct_member_key(uint32_t type_id, uint32_t index);
+	void align_struct(SPIRType &ib_type, std::unordered_set<uint32_t> &aligned_structs);
+	void mark_scalar_layout_structs(const SPIRType &ib_type);
+	void mark_struct_members_packed(const SPIRType &type);
+	void ensure_member_packing_rules_msl(SPIRType &ib_type, uint32_t index);
+	bool validate_member_packing_rules_msl(const SPIRType &type, uint32_t index) const;
 	std::string get_argument_address_space(const SPIRVariable &argument);
-	std::string get_type_address_space(const SPIRType &type, uint32_t id);
+	std::string get_type_address_space(const SPIRType &type, uint32_t id, bool argument = false);
+	const char *to_restrict(uint32_t id, bool space = true);
 	SPIRType &get_stage_in_struct_type();
 	SPIRType &get_stage_out_struct_type();
 	SPIRType &get_patch_stage_in_struct_type();
@@ -465,6 +557,7 @@ protected:
 	void emit_barrier(uint32_t id_exe_scope, uint32_t id_mem_scope, uint32_t id_mem_sem);
 	void emit_array_copy(const std::string &lhs, uint32_t rhs_id) override;
 	void build_implicit_builtins();
+	uint32_t build_constant_uint_array_pointer();
 	void emit_entry_point_declarations() override;
 	uint32_t builtin_frag_coord_id = 0;
 	uint32_t builtin_sample_id_id = 0;
@@ -472,9 +565,16 @@ protected:
 	uint32_t builtin_base_vertex_id = 0;
 	uint32_t builtin_instance_idx_id = 0;
 	uint32_t builtin_base_instance_id = 0;
+	uint32_t builtin_view_idx_id = 0;
+	uint32_t builtin_layer_id = 0;
 	uint32_t builtin_invocation_id_id = 0;
 	uint32_t builtin_primitive_id_id = 0;
-	uint32_t aux_buffer_id = 0;
+	uint32_t builtin_subgroup_invocation_id_id = 0;
+	uint32_t builtin_subgroup_size_id = 0;
+	uint32_t builtin_dispatch_base_id = 0;
+	uint32_t swizzle_buffer_id = 0;
+	uint32_t buffer_size_buffer_id = 0;
+	uint32_t view_mask_buffer_id = 0;
 
 	void bitcast_to_builtin_store(uint32_t target_id, std::string &expr, const SPIRType &expr_type) override;
 	void bitcast_from_builtin_load(uint32_t source_id, std::string &expr, const SPIRType &expr_type) override;
@@ -485,21 +585,48 @@ protected:
 	bool emit_tessellation_access_chain(const uint32_t *ops, uint32_t length);
 	bool is_out_of_bounds_tessellation_level(uint32_t id_lhs);
 
+	void mark_implicit_builtin(spv::StorageClass storage, spv::BuiltIn builtin, uint32_t id);
+
+	std::string convert_to_f32(const std::string &expr, uint32_t components);
+
 	Options msl_options;
 	std::set<SPVFuncImpl> spv_function_implementations;
 	std::unordered_map<uint32_t, MSLVertexAttr> vtx_attrs_by_location;
 	std::unordered_map<uint32_t, MSLVertexAttr> vtx_attrs_by_builtin;
 	std::unordered_set<uint32_t> vtx_attrs_in_use;
 	std::unordered_map<uint32_t, uint32_t> fragment_output_components;
-	std::unordered_map<MSLStructMemberKey, uint32_t> struct_member_padding;
 	std::set<std::string> pragma_lines;
 	std::set<std::string> typedef_lines;
 	SmallVector<uint32_t> vars_needing_early_declaration;
 
-	SmallVector<std::pair<MSLResourceBinding, bool>> resource_bindings;
+	struct SetBindingPair
+	{
+		uint32_t desc_set;
+		uint32_t binding;
+		bool operator==(const SetBindingPair &other) const;
+	};
+
+	struct StageSetBinding
+	{
+		spv::ExecutionModel model;
+		uint32_t desc_set;
+		uint32_t binding;
+		bool operator==(const StageSetBinding &other) const;
+	};
+
+	struct InternalHasher
+	{
+		size_t operator()(const SetBindingPair &value) const;
+		size_t operator()(const StageSetBinding &value) const;
+	};
+
+	std::unordered_map<StageSetBinding, std::pair<MSLResourceBinding, bool>, InternalHasher> resource_bindings;
+
 	uint32_t next_metal_resource_index_buffer = 0;
 	uint32_t next_metal_resource_index_texture = 0;
 	uint32_t next_metal_resource_index_sampler = 0;
+	// Intentionally uninitialized, works around MSVC 2013 bug.
+	uint32_t next_metal_resource_ids[kMaxArgumentBuffers];
 
 	uint32_t stage_in_var_id = 0;
 	uint32_t stage_out_var_id = 0;
@@ -512,9 +639,10 @@ protected:
 	bool needs_instance_idx_arg = false;
 	bool is_rasterization_disabled = false;
 	bool capture_output_to_buffer = false;
-	bool needs_aux_buffer_def = false;
-	bool used_aux_buffer = false;
+	bool needs_swizzle_buffer_def = false;
+	bool used_swizzle_buffer = false;
 	bool added_builtin_tess_level = false;
+	bool needs_subgroup_invocation_id = false;
 	std::string qual_pos_var_name;
 	std::string stage_in_var_name = "in";
 	std::string stage_out_var_name = "out";
@@ -522,13 +650,19 @@ protected:
 	std::string patch_stage_out_var_name = "patchOut";
 	std::string sampler_name_suffix = "Smplr";
 	std::string swizzle_name_suffix = "Swzl";
+	std::string buffer_size_name_suffix = "BufferSize";
 	std::string input_wg_var_name = "gl_in";
 	std::string output_buffer_var_name = "spvOut";
 	std::string patch_output_buffer_var_name = "spvPatchOut";
 	std::string tess_factor_buffer_var_name = "spvTessLevel";
 	spv::Op previous_instruction_opcode = spv::OpNop;
 
-	std::unordered_map<uint32_t, MSLConstexprSampler> constexpr_samplers;
+	// Must be ordered since declaration is in a specific order.
+	std::map<uint32_t, MSLConstexprSampler> constexpr_samplers_by_id;
+	std::unordered_map<SetBindingPair, MSLConstexprSampler, InternalHasher> constexpr_samplers_by_binding;
+	const MSLConstexprSampler *find_constexpr_sampler(uint32_t id) const;
+
+	std::unordered_set<uint32_t> buffers_requiring_array_length;
 	SmallVector<uint32_t> buffer_arrays;
 
 	uint32_t argument_buffer_ids[kMaxArgumentBuffers];
@@ -558,6 +692,7 @@ protected:
 		bool suppress_missing_prototypes = false;
 		bool uses_atomics = false;
 		bool uses_resource_write = false;
+		bool needs_subgroup_invocation_id = false;
 	};
 
 	// OpcodeHandler that scans for uses of sampled images

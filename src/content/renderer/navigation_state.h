@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/navigation_params.h"
+#include "content/common/navigation_params.mojom.h"
 #include "content/renderer/navigation_client.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -30,8 +31,8 @@ class CONTENT_EXPORT NavigationState {
   ~NavigationState();
 
   static std::unique_ptr<NavigationState> CreateBrowserInitiated(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       base::TimeTicks time_commit_requested,
       mojom::FrameNavigationControl::CommitNavigationCallback callback,
       mojom::NavigationClient::CommitNavigationCallback
@@ -50,8 +51,12 @@ class CONTENT_EXPORT NavigationState {
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   bool IsContentInitiated();
 
-  const CommonNavigationParams& common_params() const { return common_params_; }
-  const CommitNavigationParams& commit_params() const { return commit_params_; }
+  const mojom::CommonNavigationParams& common_params() const {
+    return *common_params_;
+  }
+  const mojom::CommitNavigationParams& commit_params() const {
+    return *commit_params_;
+  }
   bool request_committed() const { return request_committed_; }
   bool uses_per_navigation_mojo_interface() const {
     return navigation_client_.get();
@@ -66,7 +71,7 @@ class CONTENT_EXPORT NavigationState {
   }
 
   void set_transition_type(ui::PageTransition transition) {
-    common_params_.transition = transition;
+    common_params_->transition = transition;
   }
 
   base::TimeTicks time_commit_requested() const {
@@ -80,7 +85,7 @@ class CONTENT_EXPORT NavigationState {
   }
 
   void set_navigation_start(const base::TimeTicks& navigation_start) {
-    common_params_.navigation_start = navigation_start;
+    common_params_->navigation_start = navigation_start;
   }
 
   void RunCommitNavigationCallback(blink::mojom::CommitResult result);
@@ -91,8 +96,8 @@ class CONTENT_EXPORT NavigationState {
 
  private:
   NavigationState(
-      const CommonNavigationParams& common_params,
-      const CommitNavigationParams& commit_params,
+      mojom::CommonNavigationParamsPtr common_params,
+      mojom::CommitNavigationParamsPtr commit_params,
       base::TimeTicks time_commit_requested,
       bool is_content_initiated,
       content::mojom::FrameNavigationControl::CommitNavigationCallback callback,
@@ -115,7 +120,7 @@ class CONTENT_EXPORT NavigationState {
   // True if this navigation was not initiated via WebFrame::LoadRequest.
   const bool is_content_initiated_;
 
-  CommonNavigationParams common_params_;
+  mojom::CommonNavigationParamsPtr common_params_;
 
   // Note: if IsContentInitiated() is false, whether this navigation should
   // replace the current entry in the back/forward history list is determined by
@@ -128,7 +133,7 @@ class CONTENT_EXPORT NavigationState {
   // swaps because FrameLoader::loadWithNavigationAction treats loads before a
   // FrameLoader has committedFirstRealDocumentLoad as a replacement. (Added for
   // http://crbug.com/178380).
-  const CommitNavigationParams commit_params_;
+  mojom::CommitNavigationParamsPtr commit_params_;
 
   // Time when RenderFrameImpl::CommitNavigation() is called.
   base::TimeTicks time_commit_requested_;

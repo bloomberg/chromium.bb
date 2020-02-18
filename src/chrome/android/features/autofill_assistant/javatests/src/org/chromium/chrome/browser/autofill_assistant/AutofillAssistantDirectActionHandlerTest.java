@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 
 import static org.hamcrest.Matchers.contains;
@@ -14,6 +15,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+
+import static org.chromium.chrome.browser.autofill_assistant.AutofillAssistantUiTestUtil.waitUntilViewMatchesCondition;
 
 import android.os.Bundle;
 import android.support.test.filters.MediumTest;
@@ -29,6 +32,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -114,6 +119,8 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/991938")
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testOnboarding() throws Exception {
         mModuleEntryProvider.setInstalled();
 
@@ -135,6 +142,8 @@ public class AutofillAssistantDirectActionHandlerTest {
 
     @Test
     @MediumTest
+    @DisabledTest(message = "crbug.com/991938")
+    @DisableIf.Build(sdk_is_greater_than = 22) // TODO(crbug/990118): re-enable
     public void testInstallModuleOnDemand() throws Exception {
         mModuleEntryProvider.setNotInstalled();
 
@@ -154,6 +163,8 @@ public class AutofillAssistantDirectActionHandlerTest {
     private void acceptOnboarding() throws Exception {
         WaitingCallback<Boolean> onboardingCallback =
                 performActionAsync("onboarding", Bundle.EMPTY);
+
+        waitUntilViewMatchesCondition(withId(R.id.button_init_ok), isDisplayed());
 
         assertFalse(onboardingCallback.hasResult());
         onView(withId(R.id.button_init_ok)).perform(click());
@@ -211,7 +222,7 @@ public class AutofillAssistantDirectActionHandlerTest {
         }
 
         synchronized T waitForResult(String msg) throws Exception {
-            if (!mHasResult) mHelper.waitForCallback(msg);
+            if (!mHasResult) mHelper.waitForFirst(msg);
             assertTrue(mHasResult);
             return mResult;
         }

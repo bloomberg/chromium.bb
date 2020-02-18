@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_area_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/media/media_element_parser_helpers.h"
@@ -216,7 +217,7 @@ void LayoutImage::ImageNotifyFinished(ImageResourceContent* new_image) {
 
 void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
                                 const PhysicalOffset& paint_offset) const {
-  if (PaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }
@@ -419,12 +420,7 @@ SVGImage* LayoutImage::EmbeddedSVGImage() const {
 void LayoutImage::UpdateAfterLayout() {
   LayoutBox::UpdateAfterLayout();
   Node* node = GetNode();
-
-  // Check for oversized-images policy.
-  // TODO(loonybear): Support oversized-images policy on other image types
-  // in addition to HTMLImageElement.
   if (auto* image_element = ToHTMLImageElementOrNull(node)) {
-    // Report violation of unsized-media policy.
     media_element_parser_helpers::ReportUnsizedMediaViolation(
         this, image_element->IsDefaultIntrinsicSize());
   }

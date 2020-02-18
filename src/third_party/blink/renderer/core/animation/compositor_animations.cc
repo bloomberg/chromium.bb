@@ -74,10 +74,12 @@ bool ConsiderAnimationAsIncompatible(const Animation& animation,
   if (&animation == &animation_to_add)
     return false;
 
-  switch (animation.PlayStateInternal()) {
+  if (animation.NeedsCompositorTimeSync())
+    return true;
+
+  switch (animation.GetPlayState()) {
     case Animation::kIdle:
       return false;
-    case Animation::kPending:
     case Animation::kRunning:
       return true;
     case Animation::kPaused:
@@ -148,14 +150,11 @@ bool HasIncompatibleAnimations(const Element& target_element,
   return false;
 }
 
-CompositorElementIdNamespace CompositorElementNamespaceForProperty(
+}  // namespace
+
+CompositorElementIdNamespace
+CompositorAnimations::CompositorElementNamespaceForProperty(
     CSSPropertyID property) {
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-      !RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    // Pre-BlinkGenPropertyTrees, all animations affect the primary
-    // ElementId namespace.
-    return CompositorElementIdNamespace::kPrimary;
-  }
   switch (property) {
     case CSSPropertyID::kOpacity:
     case CSSPropertyID::kBackdropFilter:
@@ -180,8 +179,6 @@ CompositorElementIdNamespace CompositorElementNamespaceForProperty(
   return CompositorElementIdNamespace::kPrimary;
 }
 
-}  // namespace
-
 CompositorAnimations::FailureReasons
 CompositorAnimations::CheckCanStartEffectOnCompositor(
     const Timing& timing,
@@ -196,13 +193,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
 
   LayoutObject* layout_object = target_element.GetLayoutObject();
   if (paint_artifact_compositor) {
-    // If we are going to check that we can animate these below, we need
-    // to have the UniqueID to compute the target ID.  Let's check it
-    // once in common in advance.
-    if (!layout_object || !layout_object->UniqueId()) {
-      reasons |= kTargetHasInvalidCompositingState;
-    }
-
     // Elements with subtrees containing will-change: contents are not
     // composited for animations as if the contents change the tiles
     // would need to be rerastered anyways.
@@ -307,8 +297,14 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
       }
 
       if (paint_artifact_compositor) {
-        if (!layout_object || !layout_object->UniqueId())
+        // If we don't have paint properties, we won't have a UniqueId to use
+        // for checking here.
+        if (!target_element.GetLayoutObject() ||
+            !target_element.GetLayoutObject()
+                 ->FirstFragment()
+                 .PaintProperties()) {
           continue;
+        }
 
         CompositorElementId target_element_id =
             CompositorElementIdFromUniqueObjectId(
@@ -524,16 +520,12 @@ void CompositorAnimations::AttachCompositedLayers(
 
   CompositorElementIdNamespace element_id_namespace =
       CompositorElementIdNamespace::kPrimary;
-  // With BlinkGenPropertyTrees we create an animation namespace element id
-  // when an element has created all property tree nodes which may be required
-  // by the keyframe effects. The animation affects multiple element ids, and
-  // one is pushed each KeyframeModel. See |GetAnimationOnCompositor|.
-  // Currently we use the kPrimaryEffect node to know if nodes have been
-  // created for animations.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() ||
-      RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-    element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
-  }
+  // We create an animation namespace element id when an element has created all
+  // property tree nodes which may be required by the keyframe effects. The
+  // animation affects multiple element ids, and one is pushed each
+  // KeyframeModel. See |GetAnimationOnCompositor|. We use the kPrimaryEffect
+  // node to know if nodes have been created for animations.
+  element_id_namespace = CompositorElementIdNamespace::kPrimaryEffect;
   compositor_animation->AttachElement(CompositorElementIdFromUniqueObjectId(
       element.GetLayoutObject()->UniqueId(), element_id_namespace));
 }

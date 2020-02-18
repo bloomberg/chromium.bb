@@ -11,7 +11,7 @@
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/browser/autofill_driver.h"
 #include "components/autofill/core/browser/autofill_manager.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
@@ -148,7 +148,7 @@ class AutofillAssistantTest : public testing::Test {
     return static_cast<CardUnmaskDelegate*>(full_card_request);
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestAutofillClient autofill_client_;
   testing::NiceMock<TestAutofillDriver> autofill_driver_;
   TestPersonalDataManager pdm_;
@@ -315,9 +315,9 @@ TEST_F(AutofillAssistantTest, ShowAssistForCreditCard_ValidCard_SubmitCvc) {
 
   autofill_assistant_->ShowAssistForCreditCard(card);
 
-  CardUnmaskDelegate::UnmaskResponse unmask_response;
-  unmask_response.cvc = base::ASCIIToUTF16("123");
-  full_card_unmask_delegate()->OnUnmaskResponse(unmask_response);
+  CardUnmaskDelegate::UserProvidedUnmaskDetails unmask_details;
+  unmask_details.cvc = base::ASCIIToUTF16("123");
+  full_card_unmask_delegate()->OnUnmaskPromptAccepted(unmask_details);
 }
 
 }  // namespace autofill

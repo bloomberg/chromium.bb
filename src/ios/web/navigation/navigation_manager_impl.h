@@ -94,8 +94,8 @@ class NavigationManagerImpl : public NavigationManager {
   virtual void OnNavigationItemsPruned(size_t pruned_item_count) = 0;
   virtual void OnNavigationItemCommitted() = 0;
 
-  // Called when renderer-initiated navigation has started.
-  virtual void OnRendererInitiatedNavigationStarted(const GURL& url) = 0;
+  // Called when a navigation has started.
+  virtual void OnNavigationStarted(const GURL& url) = 0;
 
   // Prepares for the deletion of WKWebView such as caching necessary data.
   virtual void DetachFromWebView();
@@ -169,6 +169,10 @@ class NavigationManagerImpl : public NavigationManager {
 
   // Applies the workaround for crbug.com/887497.
   virtual void ApplyWKWebViewForwardHistoryClobberWorkaround();
+
+  // Set ShouldSkipSerialization to true for the next pending item, provided it
+  // matches |url|.  Applies the workaround for crbug.com/997182
+  virtual void SetWKWebViewNextPendingUrlNotSerializable(const GURL& url);
 
   // Resets the transient url rewriter list.
   void RemoveTransientURLRewriters();

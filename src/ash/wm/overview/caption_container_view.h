@@ -43,18 +43,8 @@ class ASH_EXPORT CaptionContainerView
 
   class EventDelegate {
    public:
-    // TODO(sammiequon): Maybe consolidate into just mouse and gesture events.
-    virtual void HandlePressEvent(const gfx::PointF& location_in_screen,
-                                  bool from_touch_gesture) = 0;
-    virtual void HandleDragEvent(const gfx::PointF& location_in_screen) = 0;
-    virtual void HandleReleaseEvent(const gfx::PointF& location_in_screen) = 0;
-    virtual void HandleFlingStartEvent(const gfx::PointF& location_in_screen,
-                                       float velocity_x,
-                                       float velocity_y) = 0;
-    virtual void HandleLongPressEvent(
-        const gfx::PointF& location_in_screen) = 0;
-    virtual void HandleTapEvent() = 0;
-    virtual void HandleGestureEndEvent() = 0;
+    virtual void HandleMouseEvent(const ui::MouseEvent& event) = 0;
+    virtual void HandleGestureEvent(ui::GestureEvent* event) = 0;
     virtual bool ShouldIgnoreGestureEvents() = 0;
     virtual void OnHighlightedViewActivated() = 0;
     virtual void OnHighlightedViewClosed() = 0;
@@ -105,6 +95,7 @@ class ASH_EXPORT CaptionContainerView
   gfx::Rect GetHighlightBoundsInScreen() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  gfx::Point GetMagnifierFocusPointInScreen() override;
 
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }
@@ -121,6 +112,7 @@ class ASH_EXPORT CaptionContainerView
   void OnMouseReleased(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   bool CanAcceptEvent(const ui::Event& event) override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
  private:
   // The delegate which all the events get forwarded to.

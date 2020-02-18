@@ -261,6 +261,10 @@ class MockFramerVisitor : public QuicFramerVisitorInterface {
   MOCK_METHOD1(OnDecryptedPacket, void(EncryptionLevel level));
   MOCK_METHOD1(OnPacketHeader, bool(const QuicPacketHeader& header));
   MOCK_METHOD1(OnCoalescedPacket, void(const QuicEncryptedPacket& packet));
+  MOCK_METHOD3(OnUndecryptablePacket,
+               void(const QuicEncryptedPacket& packet,
+                    EncryptionLevel decryption_level,
+                    bool has_decryption_key));
   MOCK_METHOD1(OnStreamFrame, bool(const QuicStreamFrame& frame));
   MOCK_METHOD1(OnCryptoFrame, bool(const QuicCryptoFrame& frame));
   MOCK_METHOD2(OnAckFrameStart, bool(QuicPacketNumber, QuicTime::Delta));
@@ -314,6 +318,9 @@ class NoOpFramerVisitor : public QuicFramerVisitorInterface {
   void OnDecryptedPacket(EncryptionLevel /*level*/) override {}
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
+  void OnUndecryptablePacket(const QuicEncryptedPacket& packet,
+                             EncryptionLevel decryption_level,
+                             bool has_decryption_key) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
@@ -375,9 +382,10 @@ class MockQuicConnectionVisitor : public QuicConnectionVisitorInterface {
   MOCK_CONST_METHOD0(ShouldKeepConnectionAlive, bool());
   MOCK_METHOD1(OnSuccessfulVersionNegotiation,
                void(const ParsedQuicVersion& version));
-  MOCK_METHOD2(OnConnectivityProbeReceived,
+  MOCK_METHOD3(OnPacketReceived,
                void(const QuicSocketAddress& self_address,
-                    const QuicSocketAddress& peer_address));
+                    const QuicSocketAddress& peer_address,
+                    bool is_connectivity_probe));
   MOCK_METHOD0(OnConfigNegotiated, void());
   MOCK_METHOD0(OnAckNeedsRetransmittableFrame, void());
   MOCK_METHOD0(SendPing, void());
@@ -624,6 +632,12 @@ class MockQuicSession : public QuicSession {
   MOCK_CONST_METHOD0(IsCryptoHandshakeConfirmed, bool());
   MOCK_CONST_METHOD0(ShouldKeepConnectionAlive, bool());
   MOCK_METHOD2(SendStopSending, void(uint16_t code, QuicStreamId stream_id));
+  MOCK_METHOD1(OnCryptoHandshakeEvent, void(QuicSession::CryptoHandshakeEvent));
+  MOCK_CONST_METHOD0(GetAlpnsToOffer, std::vector<std::string>());
+  MOCK_CONST_METHOD1(SelectAlpn,
+                     std::vector<QuicStringPiece>::const_iterator(
+                         const std::vector<QuicStringPiece>&));
+  MOCK_METHOD1(OnAlpnSelected, void(QuicStringPiece));
 
   using QuicSession::ActivateStream;
 
@@ -676,6 +690,8 @@ class MockQuicSpdySession : public QuicSpdySession {
     QuicSession::OnConnectionClosed(frame, source);
   }
 
+  using QuicSession::RegisterStaticStream;
+
   // From QuicSession.
   MOCK_METHOD2(OnConnectionClosed,
                void(const QuicConnectionCloseFrame& frame,
@@ -702,7 +718,8 @@ class MockQuicSpdySession : public QuicSpdySession {
   MOCK_METHOD2(OnStreamHeaders,
                void(QuicStreamId stream_id, QuicStringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(QuicStreamId stream_id, spdy::SpdyPriority priority));
+               void(QuicStreamId stream_id,
+                    const spdy::SpdyStreamPrecedence& precedence));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_METHOD4(OnStreamHeaderList,
@@ -723,7 +740,8 @@ class MockQuicSpdySession : public QuicSpdySession {
                     size_t frame_len,
                     const QuicHeaderList& header_list));
   MOCK_METHOD2(OnPriorityFrame,
-               void(QuicStreamId id, spdy::SpdyPriority priority));
+               void(QuicStreamId id,
+                    const spdy::SpdyStreamPrecedence& precedence));
 
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(QuicTime::Delta delta));
   MOCK_METHOD4(

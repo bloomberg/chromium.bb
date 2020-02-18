@@ -11,6 +11,8 @@
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/canonical_cookie.h"
 #include "services/network/public/mojom/cookie_manager.mojom-forward.h"
 #include "services/network/public/mojom/cookie_manager.mojom.h"
@@ -41,41 +43,74 @@ class CookieManager {
  public:
   static CookieManager* GetInstance();
 
-  // Returns the TaskRunner on which the CookieStore lives.
-  base::SingleThreadTaskRunner* GetCookieStoreTaskRunner();
-  // Returns the CookieStore, creating it if necessary. This must only be called
-  // on the CookieStore TaskRunner.
-  net::CookieStore* GetCookieStore();
-  // Passes a |cookie_manager_info|, which this will use for CookieManager APIs
-  // going forward. Only called in the Network Service path, with the intention
-  // this is called once during content initialization (when we create the
-  // only NetworkContext). Note: no other cookie tasks will be processed while
-  // this operation is running.
+  // Passes a |cookie_manager_remote|, which this will use for CookieManager
+  // APIs going forward. Only called in the Network Service path, with the
+  // intention this is called once during content initialization (when we create
+  // the only NetworkContext). Note: no other cookie tasks will be processed
+  // while this operation is running.
   void SetMojoCookieManager(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info);
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote);
 
-  void SetShouldAcceptCookies(bool accept);
-  bool GetShouldAcceptCookies();
-  void SetCookie(const GURL& host,
-                 const std::string& cookie_value,
-                 base::OnceCallback<void(bool)> callback);
-  void SetCookieSync(const GURL& host, const std::string& cookie_value);
-  std::string GetCookie(const GURL& host);
-  void RemoveSessionCookies(base::OnceCallback<void(bool)> callback);
-  void RemoveAllCookies(base::OnceCallback<void(bool)> callback);
-  void RemoveAllCookiesSync();
-  void RemoveSessionCookiesSync();
-  void RemoveExpiredCookies();
-  void FlushCookieStore();
-  bool HasCookies();
+  void SetShouldAcceptCookies(JNIEnv* env,
+                              const base::android::JavaParamRef<jobject>& obj,
+                              jboolean accept);
+  jboolean GetShouldAcceptCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetCookie(JNIEnv* env,
+                 const base::android::JavaParamRef<jobject>& obj,
+                 const base::android::JavaParamRef<jstring>& url,
+                 const base::android::JavaParamRef<jstring>& value,
+                 const base::android::JavaParamRef<jobject>& java_callback);
+  void SetCookieSync(JNIEnv* env,
+                     const base::android::JavaParamRef<jobject>& obj,
+                     const base::android::JavaParamRef<jstring>& url,
+                     const base::android::JavaParamRef<jstring>& value);
+
+  base::android::ScopedJavaLocalRef<jstring> GetCookie(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& url);
+
+  void RemoveAllCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& java_callback);
+  void RemoveSessionCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& java_callback);
+  void RemoveAllCookiesSync(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+  void RemoveSessionCookiesSync(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void RemoveExpiredCookies(JNIEnv* env,
+                            const base::android::JavaParamRef<jobject>& obj);
+  void FlushCookieStore(JNIEnv* env,
+                        const base::android::JavaParamRef<jobject>& obj);
+  jboolean HasCookies(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& obj);
   bool AllowFileSchemeCookies();
-  void SetAcceptFileSchemeCookies(bool accept);
+  jboolean AllowFileSchemeCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  void SetAcceptFileSchemeCookies(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      jboolean accept);
+
+  base::FilePath GetCookieStorePath();
 
  private:
   friend struct base::LazyInstanceTraitsBase<CookieManager>;
 
   CookieManager();
   ~CookieManager();
+
+  // Returns the CookieStore, creating it if necessary. This must only be called
+  // on the CookieStore TaskRunner.
+  net::CookieStore* GetCookieStore();
 
   // Gets the Network Service CookieManager if it's been passed via
   // |SetMojoCookieManager|. Otherwise (if Network Service is disabled or
@@ -103,7 +138,7 @@ class CookieManager {
                                 base::OnceClosure complete);
   void GetCookieListCompleted(base::OnceClosure complete,
                               net::CookieList* result,
-                              const net::CookieList& value,
+                              const net::CookieStatusList& value,
                               const net::CookieStatusList& excluded_cookies);
 
   void RemoveSessionCookiesHelper(base::OnceCallback<void(bool)> callback);
@@ -114,20 +149,16 @@ class CookieManager {
   void FlushCookieStoreAsyncHelper(base::OnceClosure complete);
 
   void SetMojoCookieManagerAsync(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
       base::OnceClosure complete);
   void SwapMojoCookieManagerAsync(
-      network::mojom::CookieManagerPtrInfo cookie_manager_info,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager_remote,
       base::OnceClosure complete);
 
   void HasCookiesAsyncHelper(bool* result, base::OnceClosure complete);
   void HasCookiesCompleted(base::OnceClosure complete,
                            bool* result,
-                           const net::CookieList& cookies,
-                           const net::CookieStatusList& excluded_cookies);
-  void HasCookiesCompleted2(base::OnceClosure complete,
-                            bool* result,
-                            const net::CookieList& cookies);
+                           const net::CookieList& cookies);
 
   // |result| indicates whether or not this call was successful, indicating
   // whether we may update |accept_file_scheme_cookies_|.
@@ -137,6 +168,9 @@ class CookieManager {
   void AllowFileSchemeCookiesCompleted(base::OnceClosure complete,
                                        bool* result,
                                        bool value);
+  void MigrateCookieStorePath();
+
+  base::FilePath cookie_store_path_;
 
   // This protects the following two bools, as they're used on multiple threads.
   base::Lock accept_file_scheme_cookies_lock_;
@@ -165,7 +199,7 @@ class CookieManager {
   base::circular_deque<base::OnceClosure> tasks_;
 
   // The CookieManager shared with the NetworkContext.
-  network::mojom::CookieManagerPtr mojo_cookie_manager_;
+  mojo::Remote<network::mojom::CookieManager> mojo_cookie_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieManager);
 };

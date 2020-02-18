@@ -22,6 +22,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
@@ -66,6 +67,22 @@ const size_t kMaxTextLength = 10000;
 // is arbitrarily chosen to be a good limit because it is unlikely for a single
 // character to belong to more scripts.
 const size_t kMaxScripts = 5;
+
+// Font fallback mechanism used to Shape runs (see ShapeRuns(...)).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused.
+enum class ShapeRunFallback {
+  FAILED = 0,
+  NO_FALLBACK = 1,
+  FALLBACK = 2,
+  FALLBACKS = 3,
+  kMaxValue = FALLBACKS
+};
+
+// Log the fallback font mechanism used for shaping to UMA (see ShapeRuns(...)).
+void RecordShapeRunsFallback(ShapeRunFallback fallback) {
+  UMA_HISTOGRAM_ENUMERATION("RenderTextHarfBuzz.ShapeRunsFallback", fallback);
+}
 
 // Returns true if characters of |block_code| may trigger font fallback.
 bool IsUnusualBlockCode(UBlockCode block_code) {
@@ -849,8 +866,7 @@ void TextRunHarfBuzz::GetClusterAt(size_t pos,
                << ", rtl: " << font_params.is_rtl << ","
                << " level: '" << font_params.level
                << "', script: " << font_params.script << ","
-               << " font: '" << font_params.font.GetActualFontNameForTesting()
-               << "',"
+               << " font: '" << font_params.font.GetActualFontName() << "',"
                << " glyph_count: " << shape.glyph_count << ", pos: " << pos
                << ","
                << " glyph_to_char: " << glyph_to_char_string;
@@ -1062,10 +1078,15 @@ struct ShapeRunWithFontInput {
                   full_range.end() - context_start);
     text = full_text.substr(context_start, context_end - context_start);
 
-    // Pre-compute the hash to avoid having to re-hash text at every comparison.
-    // Attempt to minimize collisions by including the font and text in the
-    // hash.
-    hash = (uintptr_t)skia_face.get() ^ base::Hash(text);
+    // Pre-compute the hash to avoid having to re-hash at every comparison.
+    // Attempt to minimize collisions by including the typeface, script, font
+    // size, text and the text range.
+    hash = base::HashInts(hash, skia_face->uniqueID());
+    hash = base::HashInts(hash, script);
+    hash = base::HashInts(hash, font_size);
+    hash = base::Hash(text);
+    hash = base::HashInts(hash, range.start());
+    hash = base::HashInts(hash, range.length());
   }
 
   bool operator==(const ShapeRunWithFontInput& other) const {
@@ -1485,8 +1506,8 @@ size_t RenderTextHarfBuzz::GetLineContainingCaret(const SelectionModel& caret) {
 base::i18n::BreakIterator* RenderTextHarfBuzz::GetGraphemeIterator() {
   if (update_grapheme_iterator_) {
     update_grapheme_iterator_ = false;
-    grapheme_iterator_.reset(new base::i18n::BreakIterator(
-        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER));
+    grapheme_iterator_ = std::make_unique<base::i18n::BreakIterator>(
+        GetDisplayText(), base::i18n::BreakIterator::BREAK_CHARACTER);
     if (!grapheme_iterator_->Init())
       grapheme_iterator_.reset();
   }
@@ -1655,7 +1676,7 @@ void RenderTextHarfBuzz::EnsureLayout() {
   if (update_display_run_list_) {
     DCHECK(text_elided());
     const base::string16& display_text = GetDisplayText();
-    display_run_list_.reset(new internal::TextRunList);
+    display_run_list_ = std::make_unique<internal::TextRunList>();
 
     if (!display_text.empty())
       ItemizeAndShapeText(display_text, display_run_list_.get());
@@ -1903,6 +1924,30 @@ void RenderTextHarfBuzz::ItemizeTextToRuns(
     out_run_list->Add(std::move(run));
   }
 
+  // Add trace event to track incorrect usage of fallback fonts.
+  // TODO(https://crbug.com/995789): Remove the following code when the issue
+  // is fixed.
+  bool tracing_enabled;
+  TRACE_EVENT_CATEGORY_GROUP_ENABLED("fonts", &tracing_enabled);
+  if (tracing_enabled) {
+    std::string logging_str;
+    for (const auto& iter : *out_commonized_run_map) {
+      const internal::TextRunHarfBuzz::FontParams& font_params = iter.first;
+      for (const auto* run : iter.second) {
+        base::i18n::UTF16CharIterator text_iter(
+            text.c_str() + run->range.start(), run->range.length());
+        const UChar32 first_char = text_iter.get();
+        const UBlockCode first_block = ublock_getCode(first_char);
+        const char* script_name = uscript_getShortName(font_params.script);
+        base::StringAppendF(&logging_str, "block=%d script=%s\n",
+                            static_cast<int>(first_block),
+                            script_name ? script_name : "");
+      }
+    }
+    TRACE_EVENT_INSTANT1("fonts", "RenderTextHarfBuzz::ItemizeTextToRuns::Runs",
+                         TRACE_EVENT_SCOPE_THREAD, "runs", logging_str);
+  }
+
   // Undo the temporarily applied composition underlines and selection colors.
   UndoCompositionAndSelectionStyles();
 }
@@ -1937,8 +1982,10 @@ void RenderTextHarfBuzz::ShapeRuns(
     }
   }
   runs.swap(need_shaping_runs);
-  if (runs.empty())
+  if (runs.empty()) {
+    RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
     return;
+  }
 
   const Font& primary_font = font_list().GetPrimaryFont();
 
@@ -1948,12 +1995,16 @@ void RenderTextHarfBuzz::ShapeRuns(
                                                 font.GetFontRenderParams())) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      RecordShapeRunsFallback(ShapeRunFallback::NO_FALLBACK);
       return;
+    }
   }
 
   std::string preferred_fallback_family;
 
+#if defined(OS_ANDROID) || defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_FUCHSIA)
   Font fallback_font(primary_font);
   bool fallback_found;
   {
@@ -1972,9 +2023,12 @@ void RenderTextHarfBuzz::ShapeRuns(
             fallback_font, fallback_font.GetFontRenderParams())) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
-    if (runs.empty())
+    if (runs.empty()) {
+      RecordShapeRunsFallback(ShapeRunFallback::FALLBACK);
       return;
+    }
   }
+#endif  // OS_ANDROID || OS_WIN || OS_MACOSX || OS_FUCHSIA
 
   std::vector<Font> fallback_font_list;
   {
@@ -2037,9 +2091,11 @@ void RenderTextHarfBuzz::ShapeRuns(
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
     if (runs.empty()) {
-      TRACE_EVENT_INSTANT1("ui", "RenderTextHarfBuzz::FallbackFont",
+      TRACE_EVENT_INSTANT2("ui", "RenderTextHarfBuzz::FallbackFont",
                            TRACE_EVENT_SCOPE_THREAD, "font_name",
-                           TRACE_STR_COPY(font_name.c_str()));
+                           TRACE_STR_COPY(font_name.c_str()),
+                           "primary_font_name", primary_font.GetFontName());
+      RecordShapeRunsFallback(ShapeRunFallback::FALLBACKS);
       return;
     }
   }
@@ -2050,6 +2106,8 @@ void RenderTextHarfBuzz::ShapeRuns(
       run->shape.width = 0.0f;
     }
   }
+
+  RecordShapeRunsFallback(ShapeRunFallback::FAILED);
 }
 
 void RenderTextHarfBuzz::ShapeRunsWithFont(

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/stylus_utils.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -84,8 +84,7 @@ StateController::StateController()
       app_window_observer_(this),
       session_observer_(this),
       input_devices_observer_(this),
-      power_manager_client_observer_(this),
-      weak_ptr_factory_(this) {
+      power_manager_client_observer_(this) {
   DCHECK(!g_state_controller_instance);
 
   g_state_controller_instance = this;

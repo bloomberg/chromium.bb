@@ -24,7 +24,8 @@ var OSSettingsUIBrowserTest = class extends PolymerTest {
 
   /** @override */
   get extraLibraries() {
-    return super.extraLibraries.concat(BROWSER_SETTINGS_PATH + 'test_util.js');
+    return super.extraLibraries.concat(
+        BROWSER_SETTINGS_PATH + '../test_util.js');
   }
 };
 
@@ -51,8 +52,23 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
       Polymer.dom.flush();
     });
 
+    test('top container shadow always shows for sub-pages', () => {
+      const element = ui.$$('#cr-container-shadow-top');
+      assertTrue(!!element, 'Shadow container element always exists');
+
+      assertFalse(
+          element.classList.contains('has-shadow'),
+          'Main page should not show shadow ' + element.className);
+
+      settings.navigateTo(settings.routes.POWER);
+      Polymer.dom.flush();
+      assertTrue(
+          element.classList.contains('has-shadow'),
+          'Sub-page should show shadow ' + element.className);
+    });
+
     test('showing menu in toolbar is dependent on narrow mode', () => {
-      const toolbar = assert(ui.$$('cr-toolbar'));
+      const toolbar = assert(ui.$$('os-toolbar'));
       toolbar.narrow = true;
       assertTrue(toolbar.showMenu);
 
@@ -82,7 +98,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
 
     test('app drawer closes when exiting narrow mode', async () => {
       const drawer = ui.$.drawer;
-      const toolbar = ui.$$('cr-toolbar');
+      const toolbar = ui.$$('os-toolbar');
 
       // Mimic narrow mode and open the drawer.
       toolbar.narrow = true;
@@ -151,7 +167,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('URL initiated search propagates to search box', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       assertEquals('', searchField.getSearchInput().value);
@@ -163,7 +179,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('search box initiated search propagates to URL', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
 
@@ -184,7 +200,7 @@ TEST_F('OSSettingsUIBrowserTest', 'MAYBE_AllJsTests', () => {
     });
 
     test('whitespace only search query is ignored', () => {
-      toolbar = /** @type {!CrToolbarElement} */ (ui.$$('cr-toolbar'));
+      toolbar = /** @type {!OsToolbarElement} */ (ui.$$('os-toolbar'));
       const searchField =
           /** @type {CrToolbarSearchFieldElement} */ (toolbar.getSearchField());
       searchField.setValue('    ');

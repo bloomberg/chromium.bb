@@ -11,7 +11,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -40,7 +40,7 @@ class ManageProfileHandlerTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
     profile_ = profile_manager_.CreateTestingProfile("Profile 1");
 
-    handler_.reset(new TestManageProfileHandler(profile_));
+    handler_ = std::make_unique<TestManageProfileHandler>(profile_);
     handler_->set_web_ui(&web_ui_);
     handler()->AllowJavascript();
     web_ui()->ClearTrackedCalls();
@@ -60,7 +60,7 @@ class ManageProfileHandlerTest : public testing::Test {
   TestManageProfileHandler* handler() const { return handler_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfileManager profile_manager_;
   content::TestWebUI web_ui_;
 

@@ -36,7 +36,6 @@ class TestWebClient : public web::WebClient {
   base::string16 GetPluginNotSupportedText() const override;
 
   base::RefCountedMemory* GetDataResourceBytes(int id) const override;
-  bool IsDataResourceGzipped(int resource_id) const override;
 
   NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const override;
@@ -46,6 +45,12 @@ class TestWebClient : public web::WebClient {
                              const GURL&,
                              bool overridable,
                              const base::Callback<void(bool)>&) override;
+  void PrepareErrorPage(WebState* web_state,
+                        const GURL& url,
+                        NSError* error,
+                        bool is_post,
+                        bool is_off_the_record,
+                        base::OnceCallback<void(NSString*)> callback) override;
   UIView* GetWindowedContainer() override;
 
   // Sets |plugin_not_supported_text_|.

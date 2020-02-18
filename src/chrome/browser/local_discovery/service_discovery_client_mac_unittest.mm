@@ -13,7 +13,7 @@
 #include "chrome/browser/local_discovery/service_discovery_client.h"
 #include "chrome/browser/local_discovery/service_discovery_client_mac.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/sockaddr_storage.h"
 #include "testing/gtest_mac.h"
@@ -79,7 +79,7 @@ class ServiceDiscoveryClientMacTest : public CocoaTest {
   ServiceDiscoveryClient* client() { return client_.get(); }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   scoped_refptr<ServiceDiscoveryClientMac> client_;
 

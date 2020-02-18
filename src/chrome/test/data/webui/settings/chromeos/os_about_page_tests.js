@@ -347,6 +347,9 @@ cr.define('settings_about_page', function() {
         await initNewPage();
         await checkReleaseNotesOnline(true);
         await checkReleaseNotesOffline(false);
+
+        page.$$('#releaseNotesOnline').click();
+        return aboutBrowserProxy.whenCalled('launchReleaseNotes');
       });
 
       test('RegulatoryInfo', async () => {
@@ -384,7 +387,7 @@ cr.define('settings_about_page', function() {
         aboutBrowserProxy.refreshTPMFirmwareUpdateStatus();
         assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
         page.$.aboutTPMFirmwareUpdate.click();
-        await PolymerTest.flushTasks();
+        await test_util.flushTasks();
         const dialog = page.$$('os-settings-powerwash-dialog');
         assertTrue(!!dialog);
         assertTrue(dialog.$.dialog.open);
@@ -418,7 +421,7 @@ cr.define('settings_about_page', function() {
             const icon = page.$$('iron-icon');
             assertTrue(!!icon);
             assertEquals(null, icon.src);
-            assertEquals('settings:end-of-life', icon.icon);
+            assertEquals('os-settings:end-of-life', icon.icon);
 
             const {checkForUpdates} = page.$;
             assertTrue(!!checkForUpdates);
@@ -437,6 +440,13 @@ cr.define('settings_about_page', function() {
         aboutBrowserProxy.setHasEndOfLife(false);
         await initNewPage();
         await checkHasEndOfLife(false);
+      });
+
+      test('detailed build info page', () => {
+        page.scroller = page.offsetParent;
+        assertTrue(!!page.$['detailed-build-info-trigger']);
+        page.$['detailed-build-info-trigger'].click();
+        assertTrue(!!page.$$('settings-detailed-build-info'));
       });
 
       test('GetHelp', function() {
@@ -464,7 +474,7 @@ cr.define('settings_about_page', function() {
   }
 
   return {
-    // TODO(aee): move the detailed build info and channel switch dialog tests
+    // TODO(crbug.com/950007): Move the channel switch dialog tests to here
     // from the browser about page tests when those CrOS-specific parts are
     // removed from the browser about page.
     registerTests: registerAboutPageTests,

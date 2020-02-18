@@ -17,26 +17,32 @@
 #include "dawn_native/BackendConnection.h"
 #include "dawn_native/Commands.h"
 #include "dawn_native/DynamicUploader.h"
+#include "dawn_native/Instance.h"
 
-#include <spirv-cross/spirv_cross.hpp>
+#include <spirv_cross.hpp>
 
 namespace dawn_native { namespace null {
 
     // Implementation of pre-Device objects: the null adapter, null backend connection and Connect()
 
-    class Adapter : public AdapterBase {
-      public:
-        Adapter(InstanceBase* instance) : AdapterBase(instance, BackendType::Null) {
-            mPCIInfo.name = "Null backend";
-            mDeviceType = DeviceType::CPU;
-        }
-        virtual ~Adapter() = default;
+    Adapter::Adapter(InstanceBase* instance) : AdapterBase(instance, BackendType::Null) {
+        mPCIInfo.name = "Null backend";
+        mDeviceType = DeviceType::CPU;
 
-      private:
-        ResultOrError<DeviceBase*> CreateDeviceImpl(const DeviceDescriptor* descriptor) override {
-            return {new Device(this, descriptor)};
-        }
-    };
+        // Enable all extensions by default for the convenience of tests.
+        mSupportedExtensions.extensionsBitSet.flip();
+    }
+
+    Adapter::~Adapter() = default;
+
+    // Used for the tests that intend to use an adapter without all extensions enabled.
+    void Adapter::SetSupportedExtensions(const std::vector<const char*>& requiredExtensions) {
+        mSupportedExtensions = GetInstance()->ExtensionNamesToExtensionsSet(requiredExtensions);
+    }
+
+    ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {
+        return {new Device(this, descriptor)};
+    }
 
     class Backend : public BackendConnection {
       public:
@@ -167,7 +173,7 @@ namespace dawn_native { namespace null {
     MaybeError Device::IncrementMemoryUsage(size_t bytes) {
         static_assert(kMaxMemoryUsage <= std::numeric_limits<size_t>::max() / 2, "");
         if (bytes > kMaxMemoryUsage || mMemoryUsage + bytes > kMaxMemoryUsage) {
-            return DAWN_CONTEXT_LOST_ERROR("Out of memory.");
+            return DAWN_DEVICE_LOST_ERROR("Out of memory.");
         }
         mMemoryUsage += bytes;
         return {};
@@ -233,7 +239,7 @@ namespace dawn_native { namespace null {
     bool Buffer::IsMapWritable() const {
         // Only return true for mappable buffers so we can test cases that need / don't need a
         // staging buffer.
-        return (GetUsage() & (dawn::BufferUsageBit::MapRead | dawn::BufferUsageBit::MapWrite)) != 0;
+        return (GetUsage() & (dawn::BufferUsage::MapRead | dawn::BufferUsage::MapWrite)) != 0;
     }
 
     MaybeError Buffer::MapAtCreationImpl(uint8_t** mappedPointer) {
@@ -339,7 +345,7 @@ namespace dawn_native { namespace null {
     }
 
     DawnSwapChainError NativeSwapChainImpl::Configure(DawnTextureFormat format,
-                                                      DawnTextureUsageBit,
+                                                      DawnTextureUsage,
                                                       uint32_t width,
                                                       uint32_t height) {
         return DAWN_SWAP_CHAIN_NO_ERROR;

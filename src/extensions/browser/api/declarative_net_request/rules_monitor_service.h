@@ -17,6 +17,7 @@
 #include "base/scoped_observer.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "extensions/common/extension_id.h"
 
@@ -26,7 +27,6 @@ class BrowserContext;
 
 namespace extensions {
 class ExtensionPrefs;
-class ExtensionRegistry;
 class WarningService;
 
 namespace api {
@@ -60,6 +60,10 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
   // Returns true if there is registered declarative ruleset corresponding to
   // the given |extension_id|.
   bool HasRegisteredRuleset(const ExtensionId& extension_id) const;
+
+  const std::set<ExtensionId>& extensions_with_rulesets() const {
+    return extensions_with_rulesets_;
+  }
 
   // Updates the dynamic rules for the |extension| and then invokes
   // |callback| with an optional error.
@@ -114,7 +118,7 @@ class RulesMonitorService : public BrowserContextKeyedAPI,
                      std::unique_ptr<RulesetMatcher> ruleset_matcher);
 
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver>
-      registry_observer_;
+      registry_observer_{this};
 
   std::set<ExtensionId> extensions_with_rulesets_;
 

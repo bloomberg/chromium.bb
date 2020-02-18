@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">רזולוציית תמונה</translation>
 <translation id="1943097386230153518">התקנת שירות חדש</translation>
 <translation id="1947424002851288782">מקלדת גרמנית</translation>
+<translation id="1972984168337863910">הרחבת חלוניות המשוב של קבצים</translation>
 <translation id="197560921582345123">יכול לערוך</translation>
 <translation id="1984603991036629094">מקלדת פונטית ארמנית</translation>
 <translation id="2001796770603320721">‏ניהול ב-Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">עליך להיות במצב מקוון כדי לגשת לקובץ זה.</translation>
 <translation id="4212740939091998969">כבר קיימת תיקייה בשם "<ph name="FOLDER_NAME" />". יש לבחור שם אחר.</translation>
 <translation id="4215448920900139318">מגבה <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">פתח את 'הגדרות'</translation>
 <translation id="426015154560005552">מקלדת ערבית</translation>
 <translation id="4261901459838235729">‏מצגת Google</translation>
 <translation id="4290535918735525311">‏תיקייה אחת שותפה עם Linux</translation>
-<translation id="42981349822642051">הרחבה</translation>
 <translation id="4298972503445160211">מקלדת דנית</translation>
 <translation id="4299729908419173967">פורטוגזית (ברזיל)</translation>
 <translation id="4309915981827077375">מידע כללי</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">תיקון אוטומטי</translation>
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="4886021172213954916">‏מקלדת טמילית (Typewriter)</translation>
-<translation id="4892969127351273348">לא ניתן לפתוח באמצעות <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">מוכן לגבות <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">קבוע</translation>
 <translation id="4935975195727477204">פרח גזניה</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">צרפתית שוויצרית</translation>
 <translation id="5234764350956374838">סגור</translation>
 <translation id="5241298539944515331">‏מקלדת וייטנאמית (VIQR)</translation>
-<translation id="52446585071384036">‏לפני שפותחים קבצים באמצעות <ph name="APP_NAME" />, יש להעתיק אותם לתיקיית קובצי Linux.</translation>
 <translation id="5253070652067921974">נוצר על ידי</translation>
 <translation id="5257456363153333584">שפירית</translation>
 <translation id="5262311848634918433">‏<ph name="MARKUP_1" />היכנס לקבצים מכל מקום, אפילו כשאינך מחובר לאינטרנט.<ph name="MARKUP_2" />
@@ -426,7 +423,6 @@
 <translation id="5818003990515275822">קוריאנית</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Final)‎</translation>
 <translation id="5833610766403489739">הקובץ הזה עבר למקום אחר. בדוק את הגדרות מיקום ההורדה ונסה שוב.</translation>
-<translation id="5838051104334203064">‏לאפליקציות של חנות Play אין גישה למכשיר הזה</translation>
 <translation id="5838451609423551646">הסרת את כל הפריטים מהבחירה.</translation>
 <translation id="5838825566232597749">‏US Workman בינלאומית</translation>
 <translation id="5850516540536751549">‏סוג קובץ זה אינו נתמך. בקר ב<ph name="BEGIN_LINK" />חנות האינטרנט של Chrome‏<ph name="END_LINK" /> כדי למצוא יישום שבאמצעותו ניתן לפתוח קובץ מסוג זה.
@@ -642,6 +638,7 @@
 <translation id="8223479393428528563">כדי לשמור קבצים אלה לשימוש לא מקוון, חזור למצב מקוון, לחץ לחיצה ימנית על הקבצים ובחר את האפשרות <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">בטל</translation>
 <translation id="8261506727792406068">מחיקה</translation>
+<translation id="8269755669432358899">כיווץ חלוניות המשוב של הקבצים</translation>
 <translation id="8279388322240498158">מקלדת כורדית סורנית המבוססת על אנגלית</translation>
 <translation id="8280151743281770066">ארמנית פונטית</translation>
 <translation id="8294431847097064396">מקור</translation>
@@ -672,6 +669,7 @@
 <translation id="8569764466147087991">בחר קובץ לפתיחה</translation>
 <translation id="8579285237314169903">מבצע סנכרון ל-<ph name="NUMBER_OF_FILES" /> פריטים...</translation>
 <translation id="8600173386174225982">רשימת הקבצים מוצגת עכשיו בתצוגת תמונות ממוזערות.</translation>
+<translation id="8601932370724196034">‏קובץ תמונה Crostini</translation>
 <translation id="8669949407341943408">מעביר...</translation>
 <translation id="8671210955687109937">יכול להגיב</translation>
 <translation id="8686213429977032554">‏קובץ זה של Drive עדיין לא משותף</translation>

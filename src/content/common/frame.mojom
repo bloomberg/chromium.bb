@@ -16,10 +16,11 @@ import "content/public/common/window_container_type.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 import "mojo/public/mojom/base/values.mojom";
+import "services/network/public/mojom/url_response_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
-import "services/viz/public/interfaces/compositing/surface_id.mojom";
+import "services/viz/public/mojom/compositing/surface_id.mojom";
 import "third_party/blink/public/mojom/blob/blob_url_store.mojom";
 import "third_party/blink/public/mojom/commit_result/commit_result.mojom";
 import "third_party/blink/public/mojom/devtools/console_message.mojom";
@@ -39,7 +40,7 @@ import "third_party/blink/public/mojom/window_features/window_features.mojom";
 import "ui/base/mojom/window_open_disposition.mojom";
 import "url/mojom/url.mojom";
 import "url/mojom/origin.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 
 // The name of the InterfaceProviderSpec in service manifests used by the
 // frame tree to expose frame-specific interfaces between renderer and browser.
@@ -64,12 +65,6 @@ interface Frame {
   // Set the lifecycle state.
   SetLifecycleState(blink.mojom.FrameLifecycleState state);
 
-  // Retrieves the text surrounding the current selection for the frame up to
-  // the length specified by |max_length|, along with its start and end offsets.
-  GetTextSurroundingSelection(uint32 max_length)
-      => (mojo_base.mojom.String16 content, uint32 start_offset,
-          uint32 end_offset);
-
   // Samsung Galaxy Note-specific "smart clip" stylus text getter.
   // Extracts the data at the given rect.
   [EnableIf=is_android]
@@ -77,14 +72,6 @@ interface Frame {
       => (mojo_base.mojom.String16 text, mojo_base.mojom.String16 html,
               gfx.mojom.Rect clip_rect);
 };
-
-// See src/content/common/navigation_params.h
-[Native]
-struct CommonNavigationParams;
-
-// See src/content/common/navigation_params.h
-[Native]
-struct CommitNavigationParams;
 
 // Implemented by the frame provider and currently must be associated with the
 // legacy IPC channel.
@@ -186,8 +173,9 @@ interface FrameNavigationControl {
   // Returned DevToolsAgent must be associated with navigation control,
   // due to various ordering dependencies between DevTools protocol and
   // navigation.
-  BindDevToolsAgent(associated blink.mojom.DevToolsAgentHost agent_host,
-                    associated blink.mojom.DevToolsAgent& agent);
+  BindDevToolsAgent(
+      pending_associated_remote<blink.mojom.DevToolsAgentHost> agent_host,
+      pending_associated_receiver<blink.mojom.DevToolsAgent> agent);
 
   // Request for the renderer to execute JavaScript in the frame's context.
   //
@@ -427,9 +415,9 @@ interface FrameHost {
   BeginNavigation(
       CommonNavigationParams common_params,
       BeginNavigationParams begin_params,
-      blink.mojom.BlobURLToken? blob_url_token,
+      pending_remote<blink.mojom.BlobURLToken>? blob_url_token,
       associated NavigationClient? navigation_client,
-      blink.mojom.NavigationInitiator? navigation_initiator);
+      pending_remote<blink.mojom.NavigationInitiator>? navigation_initiator);
 
   // Sent when a subresource response has started.
   // |cert_status| is the bitmask of status info of the SSL certificate. (see
@@ -554,4 +542,11 @@ interface FrameHost {
   ShowCreatedWindow(int32 pending_widget_routing_id,
                     ui.mojom.WindowOpenDisposition disposition,
                     gfx.mojom.Rect rect, bool opened_by_user_gesture);
+
+  // Sent by the renderer when the frame becomes focused.
+  FrameFocused();
+
+  // Evicts the page from the back/forward cache due to e.g., JavaScript
+  // execution.
+  EvictFromBackForwardCache();
 };

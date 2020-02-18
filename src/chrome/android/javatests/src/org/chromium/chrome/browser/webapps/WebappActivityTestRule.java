@@ -4,11 +4,8 @@
 
 package org.chromium.chrome.browser.webapps;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.content.Intent;
 import android.net.Uri;
-import android.support.customtabs.TrustedWebUtils;
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +26,8 @@ import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
+import androidx.browser.customtabs.TrustedWebUtils;
+
 /**
  * Custom {@link ChromeActivityTestRule} for tests using {@link WebappActivity}.
  */
@@ -37,7 +36,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
     public static final String WEBAPP_NAME = "webapp name";
     public static final String WEBAPP_SHORT_NAME = "webapp short name";
 
-    private static final long STARTUP_TIMEOUT = scaleTimeout(10000);
+    private static final long STARTUP_TIMEOUT = 10000L;
 
     // Empty 192x192 image generated with:
     // ShortcutHelper.encodeBitmapAsString(Bitmap.createBitmap(192, 192, Bitmap.Config.ARGB_4444));
@@ -224,7 +223,8 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // We also wait till the splash screen has finished initializing.
                 if (getActivity().getActivityTab() == null) return false;
 
-                View splashScreen = getActivity().getSplashScreenForTests();
+                View splashScreen =
+                        getActivity().getSplashControllerForTests().getSplashScreenForTests();
                 if (splashScreen == null) return false;
 
                 return (!(splashScreen instanceof ViewGroup)
@@ -233,10 +233,9 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
 
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
-        View splashScreen = getActivity().getSplashScreenForTests();
-        if (splashScreen == null) {
-            Assert.fail("No splash screen available.");
-        }
+        View splashScreen = getActivity().getSplashControllerForTests().getSplashScreenForTests();
+        Assert.assertNotNull("No splash screen available.", splashScreen);
+
         // TODO(pkotwicz): Change return type in order to accommodate new-style WebAPKs.
         // (crbug.com/958288)
         return (splashScreen instanceof ViewGroup) ? (ViewGroup) splashScreen : null;
@@ -246,15 +245,19 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Waits for the splash screen to be hidden.
      */
     public void waitUntilSplashscreenHides() {
+        waitUntilSplashHides(getActivity());
+    }
+
+    public static void waitUntilSplashHides(WebappActivity activity) {
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
-                return !isSplashScreenVisible();
+                return activity.getSplashControllerForTests().wasSplashScreenHiddenForTests();
             }
         }, STARTUP_TIMEOUT, CriteriaHelper.DEFAULT_POLLING_INTERVAL);
     }
 
     public boolean isSplashScreenVisible() {
-        return getActivity().getSplashScreenForTests() != null;
+        return getActivity().getSplashControllerForTests().getSplashScreenForTests() != null;
     }
 }

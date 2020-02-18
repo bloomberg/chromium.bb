@@ -9,6 +9,7 @@
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
+<link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -65,7 +66,7 @@
                 <cr-icon-button class$="[[getAddNetworkClass_('VPN')]]"
                     aria-label="$i18n{internetAddVPN}"></cr-icon-button>
               </div>
-              <template is="dom-repeat" items="[[thirdPartyVpnProviders_]]">
+              <template is="dom-repeat" items="[[vpnProviders_]]">
                 <div actionable class="list-item"
                     on-click="onAddThirdPartyVpnTap_">
                   <div class="start settings-box-text">
@@ -74,16 +75,6 @@
                   <cr-icon-button class="icon-external"
                      aria-label$="[[getAddThirdPartyVpnLabel_(item)]]">
                   </cr-icon-button>
-                </div>
-              </template>
-              <template is="dom-if" if="[[arcVpnProviders_.length]]">
-                <div actionable class="list-item" id="addArcVpn"
-                    on-click="onAddArcVpnTap_">
-                  <div class="setting-box-text">
-                    $i18n{internetAddArcVPN}
-                  </div>
-                  <cr-icon-button class="icon-external"
-                      aria-label$="$i18n{internetAddArcVPN}"></cr-icon-button>
                 </div>
               </template>
             </div>
@@ -129,8 +120,7 @@
               device-state="[[getDeviceState_(subpageType_, deviceStates)]]"
               tether-device-state="[[getTetherDeviceState_(deviceStates)]]"
               global-policy="[[globalPolicy_]]"
-              third-party-vpn-providers="[[thirdPartyVpnProviders_]]"
-              arc-vpn-providers="[[arcVpnProviders_]]"
+              vpn-providers="[[vpnProviders_]]"
               show-spinner="{{showSpinner_}}">
           </settings-internet-subpage>
         </settings-subpage>

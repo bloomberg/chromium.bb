@@ -14,11 +14,9 @@
 namespace skottie {
 namespace internal {
 
-EffectBuilder::EffectBuilder(const AnimationBuilder* abuilder, const SkSize& layer_size,
-                             AnimatorScope* ascope)
+EffectBuilder::EffectBuilder(const AnimationBuilder* abuilder, const SkSize& layer_size)
     : fBuilder(abuilder)
-    , fLayerSize(layer_size)
-    , fScope(ascope) {}
+    , fLayerSize(layer_size) {}
 
 EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectValue& jeffect) const {
     // First, try assigned types.
@@ -54,6 +52,7 @@ EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectVal
     // Try a name-based lookup.
 
     static constexpr char kGradientEffectMN[] = "ADBE Ramp",
+                           kHueSaturationMN[] = "ADBE HUE SATURATION",
                             kLevelsEffectMN[] = "ADBE Easy Levels2",
                         kLinearWipeEffectMN[] = "ADBE Linear Wipe",
                         kMotionTileEffectMN[] = "ADBE Tile",
@@ -63,6 +62,9 @@ EffectBuilder::EffectBuilderT EffectBuilder::findBuilder(const skjson::ObjectVal
     if (const skjson::StringValue* mn = jeffect["mn"]) {
         if (!strcmp(mn->begin(), kGradientEffectMN)) {
             return &EffectBuilder::attachGradientEffect;
+        }
+        if (!strcmp(mn->begin(), kHueSaturationMN)) {
+            return &EffectBuilder::attachHueSaturationEffect;
         }
         if (!strcmp(mn->begin(), kLevelsEffectMN)) {
             return &EffectBuilder::attachLevelsEffect;
@@ -103,6 +105,7 @@ sk_sp<sksg::RenderNode> EffectBuilder::attachEffects(const skjson::ArrayValue& j
             continue;
         }
 
+        const AnimationBuilder::AutoPropertyTracker apt(fBuilder, *jeffect);
         layer = (this->*builder)(*jprops, std::move(layer));
 
         if (!layer) {

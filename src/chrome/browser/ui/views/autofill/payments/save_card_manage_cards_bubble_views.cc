@@ -25,11 +25,9 @@ namespace autofill {
 
 SaveCardManageCardsBubbleViews::SaveCardManageCardsBubbleViews(
     views::View* anchor_view,
-    const gfx::Point& anchor_point,
     content::WebContents* web_contents,
     SaveCardBubbleController* controller)
-    : SaveCardBubbleViews(anchor_view, anchor_point, web_contents, controller) {
-}
+    : SaveCardBubbleViews(anchor_view, web_contents, controller) {}
 
 std::unique_ptr<views::View>
 SaveCardManageCardsBubbleViews::CreateFootnoteView() {
@@ -54,7 +52,7 @@ SaveCardManageCardsBubbleViews::CreateFootnoteView() {
   params.dice_accounts_promo_message_resource_id =
       IDS_AUTOFILL_SYNC_PROMO_MESSAGE;
   params.dice_signin_button_prominent = false;
-  params.dice_text_style = ChromeTextStyle::STYLE_SECONDARY;
+  params.dice_text_style = views::style::STYLE_SECONDARY;
 
   auto promo_view = CreateBubbleSyncPromoView(
       controller()->GetProfile(), sync_promo_delegate_.get(),

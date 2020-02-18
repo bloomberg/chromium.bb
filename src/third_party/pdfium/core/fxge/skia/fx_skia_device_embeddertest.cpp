@@ -10,6 +10,7 @@
 #include "core/fxge/skia/fx_skia_device.h"
 #include "core/fxge/text_char_pos.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
+#include "public/cpp/fpdf_scopers.h"
 #include "public/fpdfview.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
@@ -118,18 +119,15 @@ void OutOfSequenceClipTest(CFX_SkiaDeviceDriver* driver, const State&) {
 
 void Harness(void (*Test)(CFX_SkiaDeviceDriver*, const State&),
              const State& state) {
-  int h = 1;
-  int w = 4;
-  FPDF_BITMAP bitmap = FPDFBitmap_Create(w, h, 1);
-  EXPECT_NE(nullptr, bitmap);
-  if (!bitmap)
-    return;
-  FPDFBitmap_FillRect(bitmap, 0, 0, w, h, 0x00000000);
-  CFX_DefaultRenderDevice geDevice;
-  RetainPtr<CFX_DIBitmap> pBitmap(CFXDIBitmapFromFPDFBitmap(bitmap));
-  geDevice.Attach(pBitmap, false, nullptr, false);
-  CFX_SkiaDeviceDriver* driver =
-      static_cast<CFX_SkiaDeviceDriver*>(geDevice.GetDeviceDriver());
+  constexpr int kWidth = 4;
+  constexpr int kHeight = 1;
+  ScopedFPDFBitmap bitmap(FPDFBitmap_Create(kWidth, kHeight, 1));
+  ASSERT_TRUE(bitmap);
+  FPDFBitmap_FillRect(bitmap.get(), 0, 0, kWidth, kHeight, 0x00000000);
+  CFX_DefaultRenderDevice device;
+  RetainPtr<CFX_DIBitmap> pBitmap(CFXDIBitmapFromFPDFBitmap(bitmap.get()));
+  device.Attach(pBitmap, false, nullptr, false);
+  auto* driver = static_cast<CFX_SkiaDeviceDriver*>(device.GetDeviceDriver());
   (*Test)(driver, state);
   driver->Flush();
   uint32_t pixel = pBitmap->GetPixel(0, 0);

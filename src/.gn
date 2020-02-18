@@ -323,8 +323,7 @@ check_targets = [
   #"//third_party/*",  # May not ever want this.
   "//third_party:freetype_harfbuzz",
   "//third_party/Python-Markdown/*",
-
-  # "//third_party/SPIRV-Tools/*",  # 30ish errors
+  "//third_party/SPIRV-Tools/*",
   "//third_party/abseil-cpp/*",
   "//third_party/accessibility-audit/*",
   "//third_party/accessibility_test_framework/*",
@@ -344,8 +343,7 @@ check_targets = [
   "//third_party/android_swipe_refresh/*",
   "//third_party/android_system_sdk/*",
   "//third_party/android_testrunner/*",
-
-  # "//third_party/angle/*",  # 30ish errors
+  "//third_party/angle/*",
   "//third_party/apache-portable-runtime/*",
   "//third_party/apache_velocity/*",
   "//third_party/apache-win32/*",
@@ -386,7 +384,6 @@ check_targets = [
   # "//third_party/crashpad/*", 20ish errors
   "//third_party/crc32c/*",
   "//third_party/cros_system_api/*",
-  "//third_party/custom_tabs_client/*",
   "//third_party/cython/*",
   "//third_party/d3/*",
   "//third_party/dawn/*",

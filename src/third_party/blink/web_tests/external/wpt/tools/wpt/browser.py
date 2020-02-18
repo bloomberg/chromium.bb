@@ -36,6 +36,7 @@ def handle_remove_readonly(func, path, exc):
     else:
         raise
 
+
 class Browser(object):
     __metaclass__ = ABCMeta
 
@@ -439,17 +440,6 @@ class Chrome(Browser):
     product = "chrome"
     requirements = "requirements_chrome.txt"
 
-    @property
-    def binary(self):
-        if uname[0] == "Linux":
-            return "/usr/bin/google-chrome"
-        if uname[0] == "Darwin":
-            return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
-        if uname[0] == "Windows":
-            return os.path.expandvars("$SYSTEMDRIVE\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe")
-        self.logger.warning("Unable to find the browser binary.")
-        return None
-
     def install(self, dest=None, channel=None):
         raise NotImplementedError
 
@@ -488,7 +478,25 @@ class Chrome(Browser):
         return platform
 
     def find_binary(self, venv_path=None, channel=None):
-        raise NotImplementedError
+        if uname[0] == "Linux":
+            name = "google-chrome"
+            if channel == "stable":
+                name += "-stable"
+            elif channel == "beta":
+                name += "-beta"
+            elif channel == "dev":
+                name += "-unstable"
+            # No Canary on Linux.
+            return find_executable(name)
+        if uname[0] == "Darwin":
+            if channel == "canary":
+                return "/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary"
+            # All other channels share the same path on macOS.
+            return "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
+        if uname[0] == "Windows":
+            return os.path.expandvars(r"$SYSTEMDRIVE\Program Files (x86)\Google\Chrome\Application\chrome.exe")
+        self.logger.warning("Unable to find the browser binary.")
+        return None
 
     def find_webdriver(self, channel=None):
         return find_executable("chromedriver")
@@ -527,28 +535,37 @@ class Chrome(Browser):
                 self.chromium_platform_string(), revision, self.platform_string())
         return url
 
-    def _latest_chromedriver_url(self, browser_binary=None):
-        chrome_version = self.version(browser_binary)
-        assert chrome_version, "Cannot detect the version of Chrome"
+    def _latest_chromedriver_url(self, chrome_version):
         # Remove channel suffixes (e.g. " dev").
         chrome_version = chrome_version.split(' ')[0]
         return (self._official_chromedriver_url(chrome_version) or
                 self._chromium_chromedriver_url(chrome_version))
 
-    def install_webdriver(self, dest=None, channel=None, browser_binary=None):
+    def install_webdriver_by_version(self, version, dest=None):
+        assert version, "Cannot install ChromeDriver without Chrome version"
         if dest is None:
             dest = os.pwd
-        url = self._latest_chromedriver_url(browser_binary)
+        url = self._latest_chromedriver_url(version)
         self.logger.info("Downloading ChromeDriver from %s" % url)
         unzip(get(url).raw, dest)
-        chromedriver_dir = os.path.join(dest, 'chromedriver_%s' % self.platform_string())
+        chromedriver_dir = os.path.join(
+            dest, 'chromedriver_%s' % self.platform_string())
         if os.path.isfile(os.path.join(chromedriver_dir, "chromedriver")):
             shutil.move(os.path.join(chromedriver_dir, "chromedriver"), dest)
             shutil.rmtree(chromedriver_dir)
         return find_executable("chromedriver", dest)
 
+    def install_webdriver(self, dest=None, channel=None, browser_binary=None):
+        if browser_binary is None:
+            browser_binary = self.find_binary(channel)
+        return self.install_webdriver_by_version(
+            self.version(browser_binary), dest)
+
     def version(self, binary=None, webdriver_binary=None):
-        binary = binary or self.binary
+        if not binary:
+            self.logger.warning("No browser binary provided.")
+            return None
+
         if uname[0] == "Windows":
             return _get_fileversion(binary, self.logger)
 
@@ -564,18 +581,23 @@ class Chrome(Browser):
         return m.group(1)
 
 
-class ChromeAndroid(Browser):
-    """Chrome-specific interface for Android.
+class ChromeAndroidBase(Browser):
+    """A base class for ChromeAndroid and AndroidWebView.
 
+    On Android, WebView is based on Chromium open source project, and on some
+    versions of Android we share the library with Chrome. Therefore, we have
+    a very similar WPT runner implementation.
     Includes webdriver installation.
     """
+    __metaclass__ = ABCMeta  # This is an abstract class.
 
-    product = "chrome_android"
-    requirements = "requirements_chrome_android.txt"
+    def __init__(self, logger):
+        super(ChromeAndroidBase, self).__init__(logger)
 
     def install(self, dest=None, channel=None):
         raise NotImplementedError
 
+    @abstractmethod
     def find_binary(self, venv_path=None, channel=None):
         raise NotImplementedError
 
@@ -583,11 +605,71 @@ class ChromeAndroid(Browser):
         return find_executable("chromedriver")
 
     def install_webdriver(self, dest=None, channel=None, browser_binary=None):
-        chrome = Chrome()
-        return chrome.install_webdriver(dest, channel)
+        if browser_binary is None:
+            browser_binary = self.find_binary(channel)
+        chrome = Chrome(self.logger)
+        return chrome.install_webdriver_by_version(
+            self.version(browser_binary), dest)
 
     def version(self, binary=None, webdriver_binary=None):
-        return None
+        if not binary:
+            self.logger.warning("No package name provided.")
+            return None
+
+        command = ['adb', 'shell', 'dumpsys', 'package', binary]
+        try:
+            output = call(*command)
+        except (subprocess.CalledProcessError, OSError):
+            self.logger.warning("Failed to call %s" % " ".join(command))
+            return None
+        match = re.search(r'versionName=(.*)', output)
+        if not match:
+            self.logger.warning("Failed to find versionName")
+            return None
+        return match.group(1)
+
+
+class ChromeAndroid(ChromeAndroidBase):
+    """Chrome-specific interface for Android.
+    """
+
+    product = "chrome_android"
+    requirements = "requirements_chrome_android.txt"
+
+    def find_binary(self, venv_path=None, channel=None):
+        if channel in ("beta", "dev", "canary"):
+            return "com.chrome." + channel
+        return "com.android.chrome"
+
+
+class AndroidWebview(ChromeAndroidBase):
+    """Webview-specific interface for Android.
+
+    Design doc:
+    https://docs.google.com/document/d/19cGz31lzCBdpbtSC92svXlhlhn68hrsVwSB7cfZt54o/view
+    """
+
+    product = "android_webview"
+    requirements = "requirements_android_webview.txt"
+
+    def find_binary(self, venv_path=None, channel=None):
+        # Just get the current package name of the WebView provider.
+        # For WebView, it is not trivial to change the WebView provider, so
+        # we will just grab whatever is available.
+        # https://chromium.googlesource.com/chromium/src/+/HEAD/android_webview/docs/channels.md
+        command = ['adb', 'shell', 'dumpsys', 'webviewupdate']
+        try:
+            output = call(*command)
+        except (subprocess.CalledProcessError, OSError):
+            self.logger.warning("Failed to call %s" % " ".join(command))
+            return None
+        m = re.search(r'^\s*Current WebView package \(name, version\): \((.*), ([0-9.]*)\)$',
+                      output, re.M)
+        if m is None:
+            self.logger.warning("Unable to find current WebView package in dumpsys output")
+            return None
+        self.logger.warning("Final package name: " + m.group(1))
+        return m.group(1)
 
 
 class ChromeiOS(Browser):
@@ -687,6 +769,7 @@ class Opera(Browser):
         if m:
             return m.group(0)
 
+
 class EdgeChromium(Browser):
     """MicrosoftEdge-specific interface."""
     platform = {
@@ -713,16 +796,16 @@ class EdgeChromium(Browser):
                             os.path.expandvars("$SYSTEMDRIVE\\Program Files\\Microsoft\\Edge Dev\\Application"),
                             os.path.expandvars("$SYSTEMDRIVE\\Program Files (x86)\\Microsoft\\Edge Beta\\Application"),
                             os.path.expandvars("$SYSTEMDRIVE\\Program Files (x86)\\Microsoft\\Edge Dev\\Application"),
-                            os.path.expanduser("~\\AppData\Local\\Microsoft\\Edge SxS\\Application"),]
+                            os.path.expanduser("~\\AppData\Local\\Microsoft\\Edge SxS\\Application")]
                 return find_executable(binaryname, os.pathsep.join(winpaths))
         if self.platform == "macos":
             binaryname = "Microsoft Edge Canary"
             binary = find_executable(binaryname)
             if not binary:
                 macpaths = ["/Applications/Microsoft Edge.app/Contents/MacOS",
-                    os.path.expanduser("~/Applications/Microsoft Edge.app/Contents/MacOS"),
-                    "/Applications/Microsoft Edge Canary.app/Contents/MacOS",
-                    os.path.expanduser("~/Applications/Microsoft Edge Canary.app/Contents/MacOS")]
+                            os.path.expanduser("~/Applications/Microsoft Edge.app/Contents/MacOS"),
+                            "/Applications/Microsoft Edge Canary.app/Contents/MacOS",
+                            os.path.expanduser("~/Applications/Microsoft Edge Canary.app/Contents/MacOS")]
                 return find_executable("Microsoft Edge Canary", os.pathsep.join(macpaths))
         return binary
 
@@ -784,6 +867,7 @@ class EdgeChromium(Browser):
                 return _get_fileversion(binary, self.logger)
             self.logger.warning("Failed to find Edge binary.")
             return None
+
 
 class Edge(Browser):
     """Edge-specific interface."""

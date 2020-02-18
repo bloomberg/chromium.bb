@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "base/mac/foundation_util.h"
+#include "build/branding_buildflags.h"
 #include "components/signin/public/base/signin_metrics.h"
 #import "ios/chrome/browser/ui/authentication/cells/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
@@ -13,7 +14,6 @@
 #import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
-#include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -67,14 +67,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
   signin_metrics::AccessPoint _accessPoint;
 }
 
-@synthesize delegate = _delegate;
-@synthesize mode = _mode;
-@synthesize imageView = _imageView;
-@synthesize textLabel = _textLabel;
-@synthesize primaryButton = _primaryButton;
-@synthesize secondaryButton = _secondaryButton;
-@synthesize closeButton = _closeButton;
-
 - (instancetype)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
@@ -104,7 +96,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     UIButton* primaryButton;
     UIEdgeInsets primaryButtonInsets;
     primaryButton = [[UIButton alloc] init];
-    primaryButton.backgroundColor = [UIColor colorNamed:kTintColor];
+    primaryButton.backgroundColor = [UIColor colorNamed:kBlueColor];
     [primaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
     primaryButton.layer.cornerRadius = kButtonCornerRadius;
@@ -129,7 +121,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     secondaryButton = [[UIButton alloc] init];
     [secondaryButton.titleLabel
         setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleSubheadline]];
-    [secondaryButton setTitleColor:[UIColor colorNamed:kTintColor]
+    [secondaryButton setTitleColor:[UIColor colorNamed:kBlueColor]
                           forState:UIControlStateNormal];
     _secondaryButton = secondaryButton;
     DCHECK(_secondaryButton);
@@ -217,16 +209,13 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 - (void)activateColdMode {
   DCHECK_EQ(_mode, SigninPromoViewModeColdState);
   UIImage* logo = nil;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   logo = [UIImage imageNamed:@"signin_promo_logo_chrome_color"];
 #else
   logo = [UIImage imageNamed:@"signin_promo_logo_chromium_color"];
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   DCHECK(logo);
   _imageView.image = logo;
-  [_primaryButton
-      setTitle:l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN)
-      forState:UIControlStateNormal];
   _secondaryButton.hidden = YES;
 }
 
@@ -278,17 +267,13 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
 #pragma mark - NSObject(Accessibility)
 
+- (BOOL)accessibilityActivate {
+  [self accessibilityPrimaryAction:nil];
+  return YES;
+}
+
 - (NSArray<UIAccessibilityCustomAction*>*)accessibilityCustomActions {
   NSMutableArray* actions = [NSMutableArray array];
-
-  NSString* primaryActionName =
-      [self.primaryButton titleForState:UIControlStateNormal];
-  UIAccessibilityCustomAction* primaryCustomAction =
-      [[UIAccessibilityCustomAction alloc]
-          initWithName:primaryActionName
-                target:self
-              selector:@selector(accessibilityPrimaryAction:)];
-  [actions addObject:primaryCustomAction];
 
   if (_mode == SigninPromoViewModeWarmState) {
     NSString* secondaryActionName =
@@ -313,10 +298,6 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
   }
 
   return actions;
-}
-
-- (NSString*)accessibilityLabel {
-  return self.textLabel.text;
 }
 
 @end

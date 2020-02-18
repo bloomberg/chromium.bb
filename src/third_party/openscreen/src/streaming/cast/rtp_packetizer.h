@@ -43,7 +43,8 @@ class RtpPacketizer {
                                      absl::Span<uint8_t> buffer);
 
   // Given |frame|, compute the total number of packets over which the whole
-  // frame will be split-up.
+  // frame will be split-up. Returns -1 if the frame is too large and cannot be
+  // packetized.
   int ComputeNumberOfPackets(const EncryptedFrame& frame) const;
 
  private:

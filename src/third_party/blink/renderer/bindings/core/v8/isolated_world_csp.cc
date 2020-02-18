@@ -32,7 +32,7 @@ class IsolatedWorldCSPDelegate final
  public:
   IsolatedWorldCSPDelegate(Document& document,
                            scoped_refptr<SecurityOrigin> security_origin,
-                           int world_id,
+                           int32_t world_id,
                            bool apply_policy)
       : document_(&document),
         security_origin_(std::move(security_origin)),
@@ -60,12 +60,12 @@ class IsolatedWorldCSPDelegate final
   }
 
   // Isolated world CSPs don't support these directives: "sandbox",
-  // "treat-as-public-address", "trusted-types" and "upgrade-insecure-requests".
+  // "trusted-types" and "upgrade-insecure-requests".
+  //
   // These directives depend on ExecutionContext for their implementation and
   // since isolated worlds don't have their own ExecutionContext, these are not
   // supported.
   void SetSandboxFlags(SandboxFlags) override {}
-  void SetAddressSpace(mojom::IPAddressSpace) override {}
   void SetRequireTrustedTypes() override {}
   void AddInsecureRequestPolicy(WebInsecureRequestPolicy) override {}
 
@@ -118,7 +118,7 @@ class IsolatedWorldCSPDelegate final
  private:
   const Member<Document> document_;
   const scoped_refptr<SecurityOrigin> security_origin_;
-  const int world_id_;
+  const int32_t world_id_;
 
   // Whether the 'IsolatedWorldCSP' feature is enabled, and we are applying the
   // CSP provided by the isolated world.
@@ -135,7 +135,7 @@ IsolatedWorldCSP& IsolatedWorldCSP::Get() {
 }
 
 void IsolatedWorldCSP::SetContentSecurityPolicy(
-    int world_id,
+    int32_t world_id,
     const String& policy,
     scoped_refptr<SecurityOrigin> self_origin) {
   DCHECK(IsMainThread());
@@ -153,7 +153,7 @@ void IsolatedWorldCSP::SetContentSecurityPolicy(
   csp_map_.Set(world_id, policy_info);
 }
 
-bool IsolatedWorldCSP::HasContentSecurityPolicy(int world_id) const {
+bool IsolatedWorldCSP::HasContentSecurityPolicy(int32_t world_id) const {
   DCHECK(IsMainThread());
   DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
 
@@ -163,7 +163,7 @@ bool IsolatedWorldCSP::HasContentSecurityPolicy(int world_id) const {
 
 ContentSecurityPolicy* IsolatedWorldCSP::CreateIsolatedWorldCSP(
     Document& document,
-    int world_id) {
+    int32_t world_id) {
   DCHECK(IsMainThread());
   DCHECK(DOMWrapperWorld::IsIsolatedWorldId(world_id));
 

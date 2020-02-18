@@ -11,11 +11,12 @@
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/fallback_view_controller.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -34,7 +35,7 @@ initWithBaseViewController:(UIViewController*)viewController
   self = [super initWithBaseViewController:viewController
                               browserState:browserState];
   if (self) {
-    _manualFillInjectionHandler = injectionHandler;
+    _injectionHandler = injectionHandler;
   }
   return self;
 }
@@ -72,7 +73,7 @@ initWithBaseViewController:(UIViewController*)viewController
       UIPopoverArrowDirectionUp | UIPopoverArrowDirectionDown;
   popoverPresentationController.delegate = self;
   popoverPresentationController.backgroundColor =
-      UIColor.cr_systemBackgroundColor;
+      [UIColor colorNamed:kBackgroundColor];
 }
 
 #pragma mark - ChromeCoordinator

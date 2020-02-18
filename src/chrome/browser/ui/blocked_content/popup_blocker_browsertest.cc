@@ -23,6 +23,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
@@ -68,12 +69,15 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/keycode_converter.h"
 
-using content::WebContents;
 using content::NativeWebKeyboardEvent;
+using content::WebContents;
+using testing::_;
+using testing::Return;
 
 namespace {
 
@@ -156,11 +160,9 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
   void NavigateAndCheckPopupShown(const GURL& url,
                                   WhatToExpect what_to_expect) {
     ui_test_utils::TabAddedWaiter tab_added(browser());
-    ui_test_utils::BrowserAddedObserver browser_added;
     ui_test_utils::NavigateToURL(browser(), url);
 
     if (what_to_expect == kExpectPopup) {
-      browser_added.WaitForSingleNewBrowser();
       ASSERT_EQ(2u, chrome::GetBrowserCount(browser()->profile()));
     } else {
       tab_added.Wait();
@@ -215,7 +217,6 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
     EXPECT_EQ(0, counter.GetRenderViewHostCreatedCount());
 
     ui_test_utils::TabAddedWaiter tab_add(browser);
-    ui_test_utils::BrowserAddedObserver browser_observer;
 
     // Launch the blocked popup.
     PopupBlockerTabHelper* popup_blocker_helper =
@@ -230,10 +231,11 @@ class PopupBlockerBrowserTest : public InProcessBrowserTest {
 
     Browser* new_browser;
     if (what_to_expect == kExpectPopup || what_to_expect == kExpectNewWindow) {
-      new_browser = browser_observer.WaitForSingleNewBrowser();
+      new_browser = BrowserList::GetInstance()->GetLastActive();
+      EXPECT_NE(browser, new_browser);
       web_contents = new_browser->tab_strip_model()->GetActiveWebContents();
       if (what_to_expect == kExpectNewWindow)
-        EXPECT_TRUE(new_browser->is_type_tabbed());
+        EXPECT_TRUE(new_browser->is_type_normal());
     } else {
       tab_add.Wait();
       new_browser = browser;
@@ -429,8 +431,7 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest,
   ASSERT_EQ(1, GetBlockedContentsCount());
 }
 
-// This feature is being reverted on trunk but an easily-merged CL is needed for
-// merging back to stable. https://crbug.com/936080
+// TODO(https://crbug.com/1010509): Re-enable this in Chrome 80.
 #if 0
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, NoPopupsLaunchWhenTabIsClosed) {
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
@@ -456,6 +457,9 @@ class PopupBlockerSpecialPolicyBrowserTest : public PopupBlockerBrowserTest {
 
  protected:
   void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(policy_provider_, IsInitializationComplete(_))
+        .WillRepeatedly(Return(true));
+
     policy::PolicyMap policy_map;
 
     policy_map.Set(policy::key::kAllowPopupsDuringPageUnload,
@@ -616,13 +620,12 @@ IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, ShiftClick) {
 }
 
 IN_PROC_BROWSER_TEST_F(PopupBlockerBrowserTest, WebUI) {
-  WebContents* popup =
-      RunCheckTest(browser(), "/popup_blocker/popup-webui.html",
-                   WindowOpenDisposition::CURRENT_TAB, kExpectForegroundTab,
-                   kDontCheckTitle);
-
-  // Check that the new popup displays about:blank.
-  EXPECT_EQ(GURL(content::kBlockedURL), popup->GetURL());
+  GURL url(embedded_test_server()->GetURL("/popup_blocker/popup-webui.html"));
+  ui_test_utils::NavigateToURL(browser(), url);
+  // A popup to a webui url should be blocked without ever creating a new tab.
+  ASSERT_EQ(1u, chrome::GetBrowserCount(browser()->profile()));
+  ASSERT_EQ(1, browser()->tab_strip_model()->count());
+  ASSERT_EQ(0, GetBlockedContentsCount());
 }
 
 // Verify that the renderer can't DOS the browser by creating arbitrarily many

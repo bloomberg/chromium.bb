@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
-#include "content/public/browser/resource_request_info.h"
+#include "content/public/browser/web_contents.h"
 
 class GURL;
 
@@ -69,10 +69,9 @@ class CONTENT_EXPORT URLDataSource {
   // |wc_getter| can be called on the UI thread to return the WebContents for
   // this request if it originates from a render frame. If it originated from a
   // worker or if the frame has destructed it will return null.
-  virtual void StartDataRequest(
-      const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const GotDataCallback& callback) = 0;
+  virtual void StartDataRequest(const std::string& path,
+                                const WebContents::Getter& wc_getter,
+                                const GotDataCallback& callback) = 0;
 
   // The following methods are all called on the IO thread.
 
@@ -129,6 +128,8 @@ class CONTENT_EXPORT URLDataSource {
   virtual std::string GetContentSecurityPolicyStyleSrc();
   // By default empty. Override to change this.
   virtual std::string GetContentSecurityPolicyImgSrc();
+  // By default empty. Override to change this.
+  virtual std::string GetContentSecurityPolicyWorkerSrc();
 
   // By default, the "X-Frame-Options: DENY" header is sent. To stop this from
   // happening, return false. It is OK to return false as needed.
@@ -168,6 +169,10 @@ class CONTENT_EXPORT URLDataSource {
   // TODO (rbpotter): Remove this function when the OOBE page Polymer 2
   // migration is complete.
   virtual void DisablePolymer2ForHost(const std::string& host);
+
+  // Whether i18n template expression replacement should be allowed in HTML
+  // templates within JS files.
+  virtual bool ShouldReplaceI18nInJS();
 };
 
 }  // namespace content

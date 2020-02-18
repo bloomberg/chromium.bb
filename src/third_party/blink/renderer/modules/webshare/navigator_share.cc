@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webshare/share_data.h"
 #include "third_party/blink/renderer/platform/bindings/v8_throw_exception.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -55,7 +56,7 @@ bool HasFiles(const ShareData& share_data) {
 }
 
 // Returns a message for a TypeError if share(share_data) would reject with
-// TypeError. https://wicg.github.io/web-share/level-2/#canshare-method
+// TypeError. https://w3c.github.io/web-share/level-2/#canshare-method
 // Otherwise returns an empty string.
 // Populates full_url with the result of running the URL parser on
 // share_data.url
@@ -186,7 +187,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     return ScriptPromise::RejectWithDOMException(script_state, error);
   }
 
-  if (!service_) {
+  if (!service_remote_) {
     LocalFrame* frame = doc->GetFrame();
     if (!frame) {
       auto* error = MakeGarbageCollected<DOMException>(
@@ -197,11 +198,12 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
 
     // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(mojo::MakeRequest(
-        &service_, frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
-    service_.set_connection_error_handler(WTF::Bind(
+    frame->GetInterfaceProvider().GetInterface(
+        service_remote_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+    service_remote_.set_disconnect_handler(WTF::Bind(
         &NavigatorShare::OnConnectionError, WrapWeakPersistent(this)));
-    DCHECK(service_);
+    DCHECK(service_remote_);
   }
 
   bool has_files = HasFiles(*share_data);
@@ -229,7 +231,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
   }
 
-  service_->Share(
+  service_remote_->Share(
       share_data->hasTitle() ? share_data->title() : g_empty_string,
       share_data->hasText() ? share_data->text() : g_empty_string, full_url,
       std::move(files),
@@ -249,7 +251,7 @@ void NavigatorShare::OnConnectionError() {
     client->OnConnectionError();
   }
   clients_.clear();
-  service_.reset();
+  service_remote_.reset();
 }
 
 }  // namespace blink

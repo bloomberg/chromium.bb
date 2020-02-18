@@ -40,7 +40,7 @@
 #include "net/nqe/rtt_throughput_estimates_observer.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/socket/socket_performance_watcher_factory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -203,7 +203,7 @@ class TestThroughputObserver
 }  // namespace
 
 constexpr float kEpsilon = 0.001f;
-using NetworkQualityEstimatorTest = TestWithScopedTaskEnvironment;
+using NetworkQualityEstimatorTest = TestWithTaskEnvironment;
 
 TEST_F(NetworkQualityEstimatorTest, TestKbpsRTTUpdates) {
   base::HistogramTester histogram_tester;
@@ -1419,9 +1419,6 @@ TEST_F(NetworkQualityEstimatorTest, TestGetMetricsSince) {
       EXPECT_EQ(test.expected_transport_rtt, transport_rtt);
       EXPECT_EQ(test.expected_downstream_throughput,
                 downstream_throughput_kbps);
-      EXPECT_EQ(
-          test.expected_effective_connection_type,
-          estimator.GetRecentEffectiveConnectionType(test.start_timestamp));
     }
   }
 }
@@ -2146,7 +2143,9 @@ TEST_F(NetworkQualityEstimatorTest, TestGlobalSocketWatcherThrottle) {
 
 // TestTCPSocketRTT requires kernel support for tcp_info struct, and so it is
 // enabled only on certain platforms.
-#if defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_ANDROID)
+// ChromeOS is disabled due to crbug.com/986904
+#if (defined(TCP_INFO) || defined(OS_LINUX) || defined(OS_ANDROID)) && \
+    !defined(OS_CHROMEOS)
 #define MAYBE_TestTCPSocketRTT TestTCPSocketRTT
 #else
 #define MAYBE_TestTCPSocketRTT DISABLED_TestTCPSocketRTT

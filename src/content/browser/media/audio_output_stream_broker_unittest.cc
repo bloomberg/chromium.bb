@@ -12,11 +12,11 @@
 #include "base/macros.h"
 #include "base/sync_socket.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/unguessable_token.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/system/buffer.h"
@@ -152,7 +152,7 @@ struct TestEnvironment {
 
   void RunUntilIdle() { env.RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
   base::UnguessableToken group;
   MockDeleterCallback deleter;
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
@@ -164,7 +164,7 @@ struct TestEnvironment {
 }  // namespace
 
 TEST(AudioOutputStreamBrokerTest, StoresProcessAndFrameId) {
-  base::test::ScopedTaskEnvironment env;
+  base::test::TaskEnvironment env;
   MockDeleterCallback deleter;
   StrictMock<MockAudioOutputStreamProviderClient> provider_client;
 

@@ -6,8 +6,12 @@
 
 #include <unistd.h>
 
+#include <utility>
+
 #include "base/files/file_util.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/oom_intervention/oom_intervention_types.h"
@@ -35,14 +39,15 @@ const uint64_t kTestVmSizeThreshold = 1024 * 1024;
 
 class MockOomInterventionHost : public mojom::blink::OomInterventionHost {
  public:
-  MockOomInterventionHost(mojom::blink::OomInterventionHostRequest request)
-      : binding_(this, std::move(request)) {}
+  MockOomInterventionHost(
+      mojo::PendingReceiver<mojom::blink::OomInterventionHost> receiver)
+      : receiver_(this, std::move(receiver)) {}
   ~MockOomInterventionHost() override = default;
 
   void OnHighMemoryUsage() override {}
 
  private:
-  mojo::Binding<mojom::blink::OomInterventionHost> binding_;
+  mojo::Receiver<mojom::blink::OomInterventionHost> receiver_;
 };
 
 // Mock that allows setting mock memory usage.
@@ -99,8 +104,9 @@ class OomInterventionImplTest : public testing::Test {
   void RunDetection(bool renderer_pause_enabled,
                     bool navigate_ads_enabled,
                     bool purge_v8_memory_enabled) {
-    mojom::blink::OomInterventionHostPtr host_ptr;
-    MockOomInterventionHost mock_host(mojo::MakeRequest(&host_ptr));
+    mojo::PendingRemote<mojom::blink::OomInterventionHost> remote_host;
+    MockOomInterventionHost mock_host(
+        remote_host.InitWithNewPipeAndPassReceiver());
 
     mojom::blink::DetectionArgsPtr args(mojom::blink::DetectionArgs::New());
     args->blink_workload_threshold = kTestBlinkThreshold;
@@ -108,7 +114,7 @@ class OomInterventionImplTest : public testing::Test {
     args->swap_threshold = kTestSwapThreshold;
     args->virtual_memory_thresold = kTestVmSizeThreshold;
 
-    intervention_->StartDetection(std::move(host_ptr), std::move(args),
+    intervention_->StartDetection(std::move(remote_host), std::move(args),
                                   renderer_pause_enabled, navigate_ads_enabled,
                                   purge_v8_memory_enabled);
     test::RunDelayedTasks(base::TimeDelta::FromSeconds(1));

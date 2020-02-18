@@ -8,13 +8,14 @@
 #include <map>
 #include <memory>
 
-#include "ash/assistant/model/assistant_cache_model_observer.h"
 #include "ash/assistant/model/assistant_interaction_model_observer.h"
+#include "ash/assistant/model/assistant_suggestions_model_observer.h"
 #include "ash/assistant/model/assistant_ui_model_observer.h"
 #include "ash/assistant/ui/base/assistant_scroll_view.h"
 #include "ash/assistant/ui/main_stage/suggestion_chip_view.h"
 #include "base/component_export.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "ui/views/controls/scroll_view.h"
 
@@ -31,8 +32,8 @@ class AssistantViewDelegate;
 // suggestion events.
 class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
     : public AssistantScrollView,
-      public AssistantCacheModelObserver,
       public AssistantInteractionModelObserver,
+      public AssistantSuggestionsModelObserver,
       public AssistantUiModelObserver,
       public views::ButtonListener {
  public:
@@ -49,15 +50,15 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   int GetHeightForWidth(int width) const override;
   void OnContentsPreferredSizeChanged(views::View* content_view) override;
 
-  // AssistantCacheModelObserver:
+  // AssistantInteractionModelObserver:
+  void OnResponseChanged(
+      const scoped_refptr<AssistantResponse>& response) override;
+  void OnResponseCleared() override;
+
+  // AssistantSuggestionsModelObserver:
   void OnConversationStartersChanged(
       const std::map<int, const AssistantSuggestion*>& conversation_starters)
       override;
-
-  // AssistantInteractionModelObserver:
-  void OnResponseChanged(
-      const std::shared_ptr<AssistantResponse>& response) override;
-  void OnResponseCleared() override;
 
   // AssistantUiModelObserver:
   void OnUiVisibilityChanged(
@@ -93,7 +94,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) SuggestionContainerView
   bool has_received_response_ = false;
 
   // Weak pointer factory used for image downloading requests.
-  base::WeakPtrFactory<SuggestionContainerView> download_request_weak_factory_;
+  base::WeakPtrFactory<SuggestionContainerView> download_request_weak_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionContainerView);
 };

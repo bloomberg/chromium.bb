@@ -117,6 +117,10 @@ bool ShouldLazilyLoadFrame(const Document& document,
     return false;
   }
 
+  // Disable explicit and automatic lazyload for backgrounded pages.
+  if (!document.IsPageVisible())
+    return false;
+
   if (is_loading_attr_lazy)
     return true;
   if (!RuntimeEnabledFeatures::AutomaticLazyFrameLoadingEnabled())
@@ -424,9 +428,7 @@ bool HTMLFrameOwnerElement::LoadOrRedirectSubframe(
 
   KURL url_to_request = url.IsNull() ? BlankURL() : url;
   ResourceRequest request(url_to_request);
-  request.SetReferrerPolicy(ReferrerPolicyAttribute(),
-                            ResourceRequest::SetReferrerPolicyLocation::
-                                kFrameOwnerLoadOrRedirectSubframe);
+  request.SetReferrerPolicy(ReferrerPolicyAttribute());
 
   if (ContentFrame()) {
     // TODO(sclittle): Support lazily loading frame navigations.

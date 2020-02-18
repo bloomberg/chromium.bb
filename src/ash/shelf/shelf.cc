@@ -53,10 +53,13 @@ class Shelf::AutoHideEventHandler : public ui::EventHandler {
     if (shelf_->auto_hide_behavior() != SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
       return;
 
-    // The event target should be the shelf widget.
+    // The event target should be the shelf widget or the hotseat widget.
     aura::Window* target = static_cast<aura::Window*>(event->target());
-    if (target != Shelf::ForWindow(target)->shelf_widget()->GetNativeView())
+    const ShelfWidget* shelf_widget = Shelf::ForWindow(target)->shelf_widget();
+    if (target != shelf_widget->GetNativeView() &&
+        target != shelf_widget->hotseat_widget()->GetNativeView()) {
       return;
+    }
 
     // The touch-pressing event may hide the shelf. Lock the shelf's auto hide
     // state to give the shelf a chance to handle the touch event before it
@@ -124,12 +127,19 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   DCHECK(!shelf_widget_);
   aura::Window* shelf_container =
       root->GetChildById(kShellWindowId_ShelfContainer);
-  shelf_widget_.reset(new ShelfWidget(shelf_container, this));
-  shelf_widget_->Initialize();
+  shelf_widget_.reset(new ShelfWidget(this));
 
   DCHECK(!shelf_layout_manager_);
   shelf_layout_manager_ = shelf_widget_->shelf_layout_manager();
   shelf_layout_manager_->AddObserver(this);
+
+  DCHECK(!shelf_widget_->hotseat_widget());
+  aura::Window* control_container =
+      root->GetChildById(kShellWindowId_ShelfControlContainer);
+  shelf_widget_->CreateHotseatWidget(control_container);
+
+  DCHECK(!shelf_widget_->navigation_widget());
+  shelf_widget_->CreateNavigationWidget(control_container);
 
   // Must occur after |shelf_widget_| is constructed because the system tray
   // constructors call back into Shelf::shelf_widget().
@@ -137,6 +147,7 @@ void Shelf::CreateShelfWidget(aura::Window* root) {
   aura::Window* status_container =
       root->GetChildById(kShellWindowId_StatusContainer);
   shelf_widget_->CreateStatusAreaWidget(status_container);
+  shelf_widget_->Initialize(shelf_container);
 }
 
 void Shelf::ShutdownShelfWidget() {
@@ -281,8 +292,7 @@ void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
 }
 
 void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
-  if (Shell::Get()->app_list_controller())
-    Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
+  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {
@@ -384,6 +394,11 @@ void Shelf::OnBackgroundUpdated(ShelfBackgroundType background_type,
     return;
   for (auto& observer : observers_)
     observer.OnBackgroundTypeChanged(background_type, change_type);
+}
+
+void Shelf::OnWorkAreaInsetsChanged() {
+  for (auto& observer : observers_)
+    observer.OnShelfWorkAreaInsetsChanged();
 }
 
 WorkAreaInsets* Shelf::GetWorkAreaInsets() const {

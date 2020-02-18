@@ -23,7 +23,6 @@
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
 #include "net/proxy_resolution/dhcp_pac_file_fetcher.h"
-#include "net/proxy_resolution/dhcp_pac_file_fetcher_factory.h"
 #include "net/proxy_resolution/pac_file_fetcher.h"
 #include "net/url_request/url_request_context.h"
 
@@ -286,7 +285,7 @@ int PacFileDecider::DoQuickCheck() {
   next_state_ = STATE_QUICK_CHECK_COMPLETE;
   quick_check_timer_.Start(
       FROM_HERE, base::TimeDelta::FromMilliseconds(kQuickCheckDelayMs),
-      base::BindRepeating(callback, ERR_NAME_NOT_RESOLVED));
+      base::BindOnce(callback, ERR_NAME_NOT_RESOLVED));
 
   return resolve_request_->Start(callback);
 }
@@ -323,7 +322,7 @@ int PacFileDecider::DoFetchPacScript() {
 
     return dhcp_pac_file_fetcher_->Fetch(
         &pac_script_,
-        base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
+        base::BindOnce(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
         net_log_, NetworkTrafficAnnotationTag(traffic_annotation_));
   }
 
@@ -334,7 +333,7 @@ int PacFileDecider::DoFetchPacScript() {
 
   return pac_file_fetcher_->Fetch(
       effective_pac_url, &pac_script_,
-      base::Bind(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
+      base::BindOnce(&PacFileDecider::OnIOCompletion, base::Unretained(this)),
       NetworkTrafficAnnotationTag(traffic_annotation_));
 }
 

@@ -15,6 +15,7 @@
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_row.h"
+#include "url/gurl.h"
 
 namespace resource_coordinator {
 
@@ -24,9 +25,9 @@ constexpr char kSiteCharacteristicsDirectoryName[] =
     "Site Characteristics Database";
 
 size_t CountOriginsInURLRows(const history::URLRows& rows) {
-  std::set<url::Origin> origins;
+  std::set<GURL> origins;
   for (auto& row : rows)
-    origins.insert(url::Origin::Create(row.url()));
+    origins.insert(row.url().GetOrigin());
   return origins.size();
 }
 

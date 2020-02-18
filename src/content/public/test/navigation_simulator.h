@@ -12,6 +12,7 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "ui/base/page_transition_types.h"
 
 class GURL;
@@ -28,7 +29,6 @@ class NavigationHandle;
 class RenderFrameHost;
 class WebContents;
 struct GlobalRequestID;
-struct Referrer;
 
 // An interface for simulating a navigation in unit tests. Supports both
 // renderer and browser-initiated navigations.
@@ -252,7 +252,7 @@ class NavigationSimulator {
   // specified before calling |Start| if they need to apply to the navigation to
   // the original url. Otherwise, they should be specified before calling
   // |Redirect|.
-  virtual void SetReferrer(const Referrer& referrer) = 0;
+  virtual void SetReferrer(blink::mojom::ReferrerPtr referrer) = 0;
 
   // The following parameters can change at any point until the page fails or
   // commits. They should be specified before calling |Fail| or |Commit|.
@@ -309,6 +309,21 @@ class NavigationSimulator {
   // before the simulated navigation has completed its WillProcessResponse
   // callback.
   virtual GlobalRequestID GetGlobalRequestID() = 0;
+
+  // By default, committing a navigation will also simulate the load stopping.
+  // In the cases where the NavigationSimulator needs to navigate but still be
+  // in a loading state, use the functions below.
+
+  // If |keep_loading| is true, maintain the loading state after committing.
+  virtual void SetKeepLoading(bool keep_loading) = 0;
+
+  // Simulate the ongoing load stopping successfully.
+  virtual void StopLoading() = 0;
+
+  // Simulates the ongoing load stopping due to |error_code|.
+  virtual void FailLoading(const GURL& url,
+                           int error_code,
+                           const base::string16& error_description) = 0;
 
  private:
   // This interface should only be implemented inside content.

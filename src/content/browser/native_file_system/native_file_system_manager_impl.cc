@@ -5,10 +5,13 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
 #include "base/files/file_path.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "content/browser/native_file_system/file_system_chooser.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/native_file_system_directory_handle_impl.h"
+#include "content/browser/native_file_system/native_file_system_error.h"
 #include "content/browser/native_file_system/native_file_system_file_handle_impl.h"
 #include "content/browser/native_file_system/native_file_system_file_writer_impl.h"
 #include "content/browser/native_file_system/native_file_system_transfer_token_impl.h"
@@ -30,7 +33,7 @@
 
 namespace content {
 
-using blink::mojom::NativeFileSystemError;
+using blink::mojom::NativeFileSystemStatus;
 using PermissionStatus = NativeFileSystemPermissionGrant::PermissionStatus;
 using SensitiveDirectoryResult =
     NativeFileSystemPermissionContext::SensitiveDirectoryResult;
@@ -40,6 +43,7 @@ namespace {
 void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
                               int render_process_id,
                               int frame_id,
+                              bool require_user_gesture,
                               const FileSystemChooser::Options& options,
                               FileSystemChooser::ResultCallback callback,
                               scoped_refptr<base::TaskRunner> callback_runner) {
@@ -49,10 +53,11 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
 
   if (!web_contents) {
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ABORT),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       native_file_system_error::FromStatus(
+                           NativeFileSystemStatus::kOperationAborted),
+                       std::vector<base::FilePath>()));
     return;
   }
 
@@ -61,10 +66,13 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   if (embedding_origin != requesting_origin) {
     // Third party iframes are not allowed to show a file picker.
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ACCESS_DENIED),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            native_file_system_error::FromStatus(
+                NativeFileSystemStatus::kPermissionDenied,
+                "Third party iframes are not allowed to show a file picker."),
+            std::vector<base::FilePath>()));
     return;
   }
 
@@ -72,17 +80,36 @@ void ShowFilePickerOnUIThread(const url::Origin& requesting_origin,
   // IPC, but just to be sure double check here as well. This is not treated
   // as a BadMessage because it is possible for the transient user activation
   // to expire between the renderer side check and this check.
-  if (!rfh->HasTransientUserActivation()) {
+  if (require_user_gesture && !rfh->HasTransientUserActivation()) {
     callback_runner->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  blink::mojom::NativeFileSystemError::New(
-                                      base::File::FILE_ERROR_ACCESS_DENIED),
-                                  std::vector<base::FilePath>()));
+        FROM_HERE,
+        base::BindOnce(
+            std::move(callback),
+            native_file_system_error::FromStatus(
+                NativeFileSystemStatus::kPermissionDenied,
+                "User activation is required to show a file picker."),
+            std::vector<base::FilePath>()));
     return;
   }
 
   FileSystemChooser::CreateAndShow(web_contents, options, std::move(callback),
                                    std::move(callback_runner));
+}
+
+bool HasTransientUserActivation(int render_process_id, int frame_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderFrameHost* rfh = RenderFrameHost::FromID(render_process_id, frame_id);
+
+  if (!rfh)
+    return false;
+
+  return rfh->HasTransientUserActivation();
+}
+
+bool CreateOrTruncateFile(const base::FilePath& path) {
+  int creation_flags = base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE;
+  base::File file(path, creation_flags);
+  return file.IsValid();
 }
 
 }  // namespace
@@ -105,10 +132,12 @@ NativeFileSystemManagerImpl::SharedHandleState::~SharedHandleState() = default;
 NativeFileSystemManagerImpl::NativeFileSystemManagerImpl(
     scoped_refptr<storage::FileSystemContext> context,
     scoped_refptr<ChromeBlobStorageContext> blob_context,
-    NativeFileSystemPermissionContext* permission_context)
+    NativeFileSystemPermissionContext* permission_context,
+    bool off_the_record)
     : context_(std::move(context)),
       blob_context_(std::move(blob_context)),
-      permission_context_(permission_context) {
+      permission_context_(permission_context),
+      off_the_record_(off_the_record) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(context_);
   DCHECK(blob_context_);
@@ -118,22 +147,22 @@ NativeFileSystemManagerImpl::~NativeFileSystemManagerImpl() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
-void NativeFileSystemManagerImpl::BindRequest(
+void NativeFileSystemManagerImpl::BindReceiver(
     const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI));
 
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(network::IsOriginPotentiallyTrustworthy(binding_context.origin));
-  bindings_.AddBinding(this, std::move(request), binding_context);
+  receivers_.Add(this, std::move(receiver), binding_context);
 }
 
 // static
-void NativeFileSystemManagerImpl::BindRequestFromUIThread(
+void NativeFileSystemManagerImpl::BindReceiverFromUIThread(
     StoragePartitionImpl* storage_partition,
     const BindingContext& binding_context,
-    blink::mojom::NativeFileSystemManagerRequest request) {
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!network::IsOriginPotentiallyTrustworthy(binding_context.origin)) {
     mojo::ReportBadMessage("Native File System access from Unsecure Origin");
@@ -141,23 +170,22 @@ void NativeFileSystemManagerImpl::BindRequestFromUIThread(
   }
 
   auto* manager = storage_partition->GetNativeFileSystemManager();
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&NativeFileSystemManagerImpl::BindRequest,
-                     base::Unretained(manager), binding_context,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&NativeFileSystemManagerImpl::BindReceiver,
+                                base::Unretained(manager), binding_context,
+                                std::move(receiver)));
 }
 
 void NativeFileSystemManagerImpl::GetSandboxedFileSystem(
     GetSandboxedFileSystemCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  url::Origin origin = bindings_.dispatch_context().origin;
+  url::Origin origin = receivers_.current_context().origin;
 
   context()->OpenFileSystem(
       origin.GetURL(), storage::kFileSystemTypeTemporary,
       storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
       base::BindOnce(&NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem,
-                     weak_factory_.GetWeakPtr(), bindings_.dispatch_context(),
+                     weak_factory_.GetWeakPtr(), receivers_.current_context(),
                      std::move(callback)));
 }
 
@@ -167,26 +195,38 @@ void NativeFileSystemManagerImpl::ChooseEntries(
     bool include_accepts_all,
     ChooseEntriesCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  const BindingContext& context = bindings_.dispatch_context();
+  const BindingContext& context = receivers_.current_context();
 
   // ChooseEntries API is only available to windows, as we need a frame to
   // anchor the picker to.
   if (context.is_worker()) {
-    bindings_.ReportBadMessage("ChooseEntries called from a worker");
+    receivers_.ReportBadMessage("ChooseEntries called from a worker");
+    return;
+  }
+
+  // When site setting is block, it's better not to show file chooser for save.
+  if (type == blink::mojom::ChooseFileSystemEntryType::kSaveFile &&
+      permission_context_ &&
+      !permission_context_->CanRequestWritePermission(context.origin)) {
+    std::move(callback).Run(
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kPermissionDenied),
+        std::vector<blink::mojom::NativeFileSystemEntryPtr>());
+
     return;
   }
 
   FileSystemChooser::Options options(type, std::move(accepts),
                                      include_accepts_all);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(
           &ShowFilePickerOnUIThread, context.origin, context.process_id,
-          context.frame_id, options,
+          context.frame_id, /*require_user_gesture=*/true, options,
           base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                          weak_factory_.GetWeakPtr(), context, options,
                          std::move(callback)),
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+          base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
 }
 
 blink::mojom::NativeFileSystemEntryPtr
@@ -250,7 +290,7 @@ NativeFileSystemManagerImpl::CreateWritableFileEntryFromPath(
       NativeFileSystemPermissionContext::UserAction::kSave);
 }
 
-blink::mojom::NativeFileSystemFileHandlePtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle>
 NativeFileSystemManagerImpl::CreateFileHandle(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
@@ -261,10 +301,10 @@ NativeFileSystemManagerImpl::CreateFileHandle(
             handle_state.file_system.is_valid())
       << url.mount_type();
 
-  blink::mojom::NativeFileSystemFileHandlePtr result;
-  file_bindings_.AddBinding(std::make_unique<NativeFileSystemFileHandleImpl>(
-                                this, binding_context, url, handle_state),
-                            mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle> result;
+  file_receivers_.Add(std::make_unique<NativeFileSystemFileHandleImpl>(
+                          this, binding_context, url, handle_state),
+                      result.InitWithNewPipeAndPassReceiver());
   return result;
 }
 
@@ -287,17 +327,25 @@ NativeFileSystemManagerImpl::CreateDirectoryHandle(
   return result;
 }
 
-blink::mojom::NativeFileSystemFileWriterPtr
+mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
 NativeFileSystemManagerImpl::CreateFileWriter(
     const BindingContext& binding_context,
     const storage::FileSystemURL& url,
+    const storage::FileSystemURL& swap_url,
     const SharedHandleState& handle_state) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  blink::mojom::NativeFileSystemFileWriterPtr result;
-  writer_bindings_.AddBinding(std::make_unique<NativeFileSystemFileWriterImpl>(
-                                  this, binding_context, url, handle_state),
-                              mojo::MakeRequest(&result));
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter> result;
+  mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+      writer_receiver = result.InitWithNewPipeAndPassReceiver();
+
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&HasTransientUserActivation, binding_context.process_id,
+                     binding_context.frame_id),
+      base::BindOnce(&NativeFileSystemManagerImpl::CreateFileWriterImpl,
+                     weak_factory_.GetWeakPtr(), binding_context, url, swap_url,
+                     handle_state, std::move(writer_receiver)));
   return result;
 }
 
@@ -344,7 +392,8 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (result != base::File::FILE_OK) {
-    std::move(callback).Run(NativeFileSystemError::New(result), nullptr);
+    std::move(callback).Run(native_file_system_error::FromFileError(result),
+                            nullptr);
     return;
   }
 
@@ -353,7 +402,7 @@ void NativeFileSystemManagerImpl::DidOpenSandboxedFileSystem(
           PermissionStatus::GRANTED);
 
   std::move(callback).Run(
-      NativeFileSystemError::New(base::File::FILE_OK),
+      native_file_system_error::Ok(),
       CreateDirectoryHandle(
           binding_context, context()->CrackURL(root),
           SharedHandleState(permission_grant, permission_grant,
@@ -366,7 +415,7 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     ChooseEntriesCallback callback,
     blink::mojom::NativeFileSystemErrorPtr result,
     std::vector<base::FilePath> entries) {
-  if (result->error_code != base::File::FILE_OK) {
+  if (result->status != NativeFileSystemStatus::kOk) {
     std::move(callback).Run(
         std::move(result),
         std::vector<blink::mojom::NativeFileSystemEntryPtr>());
@@ -380,9 +429,11 @@ void NativeFileSystemManagerImpl::DidChooseEntries(
     return;
   }
   auto entries_copy = entries;
+  const bool is_directory =
+      options.type() == blink::mojom::ChooseFileSystemEntryType::kOpenDirectory;
   permission_context_->ConfirmSensitiveDirectoryAccess(
-      binding_context.origin, entries_copy, binding_context.process_id,
-      binding_context.frame_id,
+      binding_context.origin, entries_copy, is_directory,
+      binding_context.process_id, binding_context.frame_id,
       base::BindOnce(
           &NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess,
           weak_factory_.GetWeakPtr(), binding_context, options,
@@ -395,22 +446,27 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     ChooseEntriesCallback callback,
     std::vector<base::FilePath> entries,
     SensitiveDirectoryResult result) {
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.SensitiveDirectoryAccessResult", result);
+
   if (result == SensitiveDirectoryResult::kAbort) {
     std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
+        native_file_system_error::FromStatus(
+            NativeFileSystemStatus::kOperationAborted),
         std::vector<blink::mojom::NativeFileSystemEntryPtr>());
     return;
   }
   if (result == SensitiveDirectoryResult::kTryAgain) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &ShowFilePickerOnUIThread, binding_context.origin,
-            binding_context.process_id, binding_context.frame_id, options,
+            binding_context.process_id, binding_context.frame_id,
+            /*require_user_gesture=*/false, options,
             base::BindOnce(&NativeFileSystemManagerImpl::DidChooseEntries,
                            weak_factory_.GetWeakPtr(), binding_context, options,
                            std::move(callback)),
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO})));
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO})));
     return;
   }
 
@@ -431,18 +487,45 @@ void NativeFileSystemManagerImpl::DidVerifySensitiveDirectoryAccess(
     return;
   }
 
-  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
-  result_entries.reserve(entries.size());
-  for (const auto& entry : entries) {
-    if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
-      result_entries.push_back(
-          CreateWritableFileEntryFromPath(binding_context, entry));
-    } else {
-      result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
-    }
+  if (options.type() == blink::mojom::ChooseFileSystemEntryType::kSaveFile) {
+    DCHECK_EQ(entries.size(), 1u);
+    // Create file if it doesn't yet exist, and truncate file if it does exist.
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
+         base::MayBlock()},
+        base::BindOnce(&CreateOrTruncateFile, entries.front()),
+        base::BindOnce(
+            &NativeFileSystemManagerImpl::DidCreateOrTruncateSaveFile, this,
+            binding_context, entries.front(), std::move(callback)));
+    return;
   }
 
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
+  result_entries.reserve(entries.size());
+  for (const auto& entry : entries)
+    result_entries.push_back(CreateFileEntryFromPath(binding_context, entry));
+  std::move(callback).Run(native_file_system_error::Ok(),
+                          std::move(result_entries));
+}
+
+void NativeFileSystemManagerImpl::DidCreateOrTruncateSaveFile(
+    const BindingContext& binding_context,
+    const base::FilePath& path,
+    ChooseEntriesCallback callback,
+    bool success) {
+  std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
+  if (!success) {
+    std::move(callback).Run(
+        native_file_system_error::FromStatus(
+            blink::mojom::NativeFileSystemStatus::kOperationFailed,
+            "Failed to create or truncate file"),
+        std::move(result_entries));
+    return;
+  }
+  result_entries.push_back(
+      CreateWritableFileEntryFromPath(binding_context, path));
+  std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }
 
@@ -451,16 +534,19 @@ void NativeFileSystemManagerImpl::DidChooseDirectory(
     const base::FilePath& path,
     ChooseEntriesCallback callback,
     NativeFileSystemPermissionContext::PermissionStatus permission) {
+  base::UmaHistogramEnumeration(
+      "NativeFileSystemAPI.ConfirmReadDirectoryResult", permission);
+
   std::vector<blink::mojom::NativeFileSystemEntryPtr> result_entries;
   if (permission != PermissionStatus::GRANTED) {
-    std::move(callback).Run(
-        NativeFileSystemError::New(base::File::FILE_ERROR_ABORT),
-        std::move(result_entries));
+    std::move(callback).Run(native_file_system_error::FromStatus(
+                                NativeFileSystemStatus::kOperationAborted),
+                            std::move(result_entries));
     return;
   }
 
   result_entries.push_back(CreateDirectoryEntryFromPath(binding_context, path));
-  std::move(callback).Run(NativeFileSystemError::New(base::File::FILE_OK),
+  std::move(callback).Run(native_file_system_error::Ok(),
                           std::move(result_entries));
 }
 
@@ -566,13 +652,25 @@ NativeFileSystemManagerImpl::CreateFileEntryFromPathImpl(
   }
 
   return blink::mojom::NativeFileSystemEntry::New(
-      blink::mojom::NativeFileSystemHandle::NewFile(
-          CreateFileHandle(
-              binding_context, url.url,
-              SharedHandleState(std::move(read_grant), std::move(write_grant),
-                                std::move(url.file_system)))
-              .PassInterface()),
+      blink::mojom::NativeFileSystemHandle::NewFile(CreateFileHandle(
+          binding_context, url.url,
+          SharedHandleState(std::move(read_grant), std::move(write_grant),
+                            std::move(url.file_system)))),
       url.base_name);
+}
+
+void NativeFileSystemManagerImpl::CreateFileWriterImpl(
+    const BindingContext& binding_context,
+    const storage::FileSystemURL& url,
+    const storage::FileSystemURL& swap_url,
+    const SharedHandleState& handle_state,
+    mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+        writer_receiver,
+    bool has_transient_user_activation) {
+  writer_receivers_.Add(std::make_unique<NativeFileSystemFileWriterImpl>(
+                            this, binding_context, url, swap_url, handle_state,
+                            has_transient_user_activation),
+                        std::move(writer_receiver));
 }
 
 }  // namespace content

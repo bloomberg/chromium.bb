@@ -43,10 +43,12 @@
 #include "third_party/blink/renderer/core/css/media_query_list_listener.h"
 #include "third_party/blink/renderer/core/css/media_query_matcher.h"
 #include "third_party/blink/renderer/core/dom/document_fragment.h"
+#include "third_party/blink/renderer/core/dom/dom_implementation.h"
 #include "third_party/blink/renderer/core/dom/node_with_index.h"
 #include "third_party/blink/renderer/core/dom/range.h"
 #include "third_party/blink/renderer/core/dom/synchronous_mutation_observer.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/execution_context/agent.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -62,6 +64,7 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/mojo/interface_invalidator.h"
+#include "third_party/blink/renderer/platform/scheduler/public/event_loop.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/scheme_registry.h"
@@ -332,9 +335,9 @@ class MockDocumentValidationMessageClient
 
 class MockApplicationCacheHost final : public ApplicationCacheHostForFrame {
  public:
-  MockApplicationCacheHost(DocumentLoader* loader)
+  explicit MockApplicationCacheHost(DocumentLoader* loader)
       : ApplicationCacheHostForFrame(loader,
-                                     /*interface_broker=*/nullptr,
+                                     GetEmptyBrowserInterfaceBroker(),
                                      /*task_runner=*/nullptr) {}
   ~MockApplicationCacheHost() override = default;
 
@@ -821,6 +824,18 @@ TEST_F(DocumentTest, DocumentShutdownNotifier) {
   EXPECT_EQ(1, observer.CountContextDestroyedCalled());
 }
 
+TEST_F(DocumentTest, AttachExecutionContext) {
+  EXPECT_TRUE(
+      GetDocument().GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+          GetDocument().GetScheduler()));
+  Document* doc = GetDocument().implementation().createHTMLDocument("foo");
+  EXPECT_EQ(GetDocument().GetAgent(), doc->GetAgent());
+  GetDocument().Shutdown();
+  EXPECT_FALSE(doc->GetAgent()->event_loop()->IsSchedulerAttachedForTest(
+      doc->GetScheduler()));
+  doc->Shutdown();
+}
+
 // This tests that meta-theme-color can be found correctly
 TEST_F(DocumentTest, ThemeColor) {
   {
@@ -882,7 +897,7 @@ TEST_F(DocumentTest, SandboxDisablesAppCache) {
 
   GetDocument().Loader()->SetApplicationCacheHostForTesting(
       MakeGarbageCollected<MockApplicationCacheHost>(GetDocument().Loader()));
-  ApplicationCacheHost* appcache_host =
+  ApplicationCacheHostForFrame* appcache_host =
       GetDocument().Loader()->GetApplicationCacheHost();
   appcache_host->SelectCacheWithManifest(
       KURL("https://test.com/foobar/manifest"));

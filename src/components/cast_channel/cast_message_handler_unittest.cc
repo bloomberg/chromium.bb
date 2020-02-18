@@ -10,11 +10,11 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/test/values_test_util.h"
 #include "components/cast_channel/cast_test_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/testing_json_parser.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -73,8 +73,7 @@ MATCHER_P(HasPayloadUtf8, payload, "") {
 class CastMessageHandlerTest : public testing::Test {
  public:
   CastMessageHandlerTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         cast_socket_service_(new base::TestSimpleTaskRunner()),
         handler_(&cast_socket_service_,
                  /* connector */ nullptr,
@@ -146,7 +145,7 @@ class CastMessageHandlerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
   testing::NiceMock<MockCastSocketService> cast_socket_service_;
   data_decoder::TestingJsonParser::ScopedFactoryOverride parser_override_;
@@ -246,7 +245,7 @@ TEST_F(CastMessageHandlerTest, RequestAppAvailabilityTimesOut) {
                      base::Unretained(this)));
   EXPECT_CALL(*this, DoOnAppAvailability("ABCDEFAB",
                                          GetAppAvailabilityResult::kUnknown));
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(5));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(5));
 }
 
 TEST_F(CastMessageHandlerTest, AppAvailabilitySentOnlyOnceWhilePending) {
@@ -288,7 +287,7 @@ TEST_F(CastMessageHandlerTest, CloseConnectionFromReceiver) {
   })");
   OnMessage(response);
   // Wait for message to be parsed and handled.
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Re-open virtual connection should cause message to be sent.
   EXPECT_CALL(*transport_, SendMessage(_, _));
@@ -342,7 +341,7 @@ TEST_F(CastMessageHandlerTest, LaunchSessionTimedOut) {
                      base::Unretained(this),
                      LaunchSessionResponse::Result::kTimedOut));
 
-  thread_bundle_.FastForwardBy(base::TimeDelta::FromSeconds(30));
+  task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(30));
   EXPECT_EQ(1, session_launch_response_count_);
 }
 
@@ -516,7 +515,7 @@ TEST_F(CastMessageHandlerTest, SetVolumeTimedOut) {
   handler_.SendSetVolumeRequest(channel_id_, ParseJson(message_str),
                                 "theSourceId", callback.Get());
   EXPECT_CALL(callback, Run(Result::kFailed));
-  thread_bundle_.FastForwardBy(kRequestTimeout);
+  task_environment_.FastForwardBy(kRequestTimeout);
 }
 
 }  // namespace cast_channel

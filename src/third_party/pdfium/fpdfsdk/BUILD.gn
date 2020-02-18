@@ -8,10 +8,6 @@ import("../testing/test.gni")
 
 jumbo_source_set("fpdfsdk") {
   sources = [
-    "cfx_systemhandler.cpp",
-    "cfx_systemhandler.h",
-    "cpdf_annotcontext.cpp",
-    "cpdf_annotcontext.h",
     "cpdfsdk_actionhandler.cpp",
     "cpdfsdk_actionhandler.h",
     "cpdfsdk_annot.cpp",
@@ -22,6 +18,8 @@ jumbo_source_set("fpdfsdk") {
     "cpdfsdk_annotiteration.h",
     "cpdfsdk_annotiterator.cpp",
     "cpdfsdk_annotiterator.h",
+    "cpdfsdk_appstream.cpp",
+    "cpdfsdk_appstream.h",
     "cpdfsdk_baannot.cpp",
     "cpdfsdk_baannot.h",
     "cpdfsdk_baannothandler.cpp",
@@ -40,6 +38,8 @@ jumbo_source_set("fpdfsdk") {
     "cpdfsdk_interactiveform.h",
     "cpdfsdk_pageview.cpp",
     "cpdfsdk_pageview.h",
+    "cpdfsdk_pauseadapter.cpp",
+    "cpdfsdk_pauseadapter.h",
     "cpdfsdk_widget.cpp",
     "cpdfsdk_widget.h",
     "cpdfsdk_widgethandler.cpp",
@@ -56,6 +56,7 @@ jumbo_source_set("fpdfsdk") {
     "fpdf_ext.cpp",
     "fpdf_flatten.cpp",
     "fpdf_formfill.cpp",
+    "fpdf_javascript.cpp",
     "fpdf_ppo.cpp",
     "fpdf_progressive.cpp",
     "fpdf_save.cpp",
@@ -67,8 +68,6 @@ jumbo_source_set("fpdfsdk") {
     "fpdf_transformpage.cpp",
     "fpdf_view.cpp",
     "ipdfsdk_annothandler.h",
-    "ipdfsdk_pauseadapter.cpp",
-    "ipdfsdk_pauseadapter.h",
   ]
 
   configs += [ "../:pdfium_core_config" ]
@@ -76,7 +75,6 @@ jumbo_source_set("fpdfsdk") {
     "../:pdfium_public_headers",
     "../constants",
     "../core/fdrm",
-    "../core/fpdfapi",
     "../core/fpdfapi/edit",
     "../core/fpdfapi/font",
     "../core/fpdfapi/page",
@@ -84,7 +82,6 @@ jumbo_source_set("fpdfsdk") {
     "../core/fpdfapi/render",
     "../core/fpdfdoc",
     "../core/fpdftext",
-    "../core/fxcodec",
     "../core/fxcrt",
     "../core/fxge",
     "../fxjs",
@@ -94,24 +91,14 @@ jumbo_source_set("fpdfsdk") {
   allow_circular_includes_from = [
     "../fxjs",
     "formfiller",
-    "pwl",
   ]
   visibility = [ "../*" ]
 
   if (pdf_enable_xfa) {
-    sources += [
-      "cpdfsdk_xfawidget.cpp",
-      "cpdfsdk_xfawidget.h",
-      "cpdfsdk_xfawidgethandler.cpp",
-      "cpdfsdk_xfawidgethandler.h",
-    ]
-
     deps += [
       "../fxbarcode",
-      "../xfa/fwl",
       "../xfa/fxfa",
       "../xfa/fxfa/parser",
-      "../xfa/fxgraphics",
       "fpdfxfa",
     ]
     allow_circular_includes_from += [ "fpdfxfa" ]
@@ -128,7 +115,6 @@ pdfium_unittest_source_set("unittests") {
   deps = [
     ":fpdfsdk",
     "../:pdfium_public_headers",
-    "../core/fpdfapi",
     "../core/fpdfapi/page",
     "../core/fpdfapi/parser",
     "../core/fpdfapi/render",
@@ -150,6 +136,7 @@ pdfium_embeddertest_source_set("embeddertests") {
     "fpdf_ext_embeddertest.cpp",
     "fpdf_flatten_embeddertest.cpp",
     "fpdf_formfill_embeddertest.cpp",
+    "fpdf_javascript_embeddertest.cpp",
     "fpdf_ppo_embeddertest.cpp",
     "fpdf_save_embeddertest.cpp",
     "fpdf_searchex_embeddertest.cpp",

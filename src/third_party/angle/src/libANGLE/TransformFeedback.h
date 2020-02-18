@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -60,7 +60,7 @@ class TransformFeedbackState final : angle::NonCopyable
 class TransformFeedback final : public RefCountObject, public LabeledObject
 {
   public:
-    TransformFeedback(rx::GLImplFactory *implFactory, GLuint id, const Caps &caps);
+    TransformFeedback(rx::GLImplFactory *implFactory, TransformFeedbackID id, const Caps &caps);
     ~TransformFeedback() override;
     void onDestroy(const Context *context) override;
 
@@ -85,7 +85,7 @@ class TransformFeedback final : public RefCountObject, public LabeledObject
     // after the last vertex of the previous draw call.
     void onVerticesDrawn(const Context *context, GLsizei count, GLsizei primcount);
 
-    bool hasBoundProgram(GLuint program) const;
+    bool hasBoundProgram(ShaderProgramID program) const;
 
     angle::Result bindIndexedBuffer(const Context *context,
                                     size_t index,

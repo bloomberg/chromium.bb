@@ -52,7 +52,7 @@ class AnimationGallery : public View,
     box->SetFlexForView(image_view_container_, 1);
 
     auto file_chooser = std::make_unique<Textfield>();
-    file_chooser->set_placeholder_text(
+    file_chooser->SetPlaceholderText(
         base::ASCIIToUTF16("Enter path to lottie JSON file"));
     auto file_container = std::make_unique<View>();
     BoxLayout* file_box =
@@ -64,7 +64,7 @@ class AnimationGallery : public View,
     file_box->SetFlexForView(file_chooser_, 1);
     AddChildView(std::move(file_container));
 
-    size_input_->set_placeholder_text(
+    size_input_->SetPlaceholderText(
         base::ASCIIToUTF16("Size in dip (Empty for default)"));
     size_input_->set_controller(this);
   }
@@ -89,9 +89,9 @@ class AnimationGallery : public View,
     std::string json;
     base::ScopedAllowBlockingForTesting allow_blocking;
 #if defined(OS_POSIX)
-    base::FilePath path(base::UTF16ToUTF8(file_chooser_->text()));
+    base::FilePath path(base::UTF16ToUTF8(file_chooser_->GetText()));
 #else
-    base::FilePath path(file_chooser_->text());
+    base::FilePath path(file_chooser_->GetText());
 #endif  // defined(OS_POSIX)
     base::ReadFileToString(path, &json);
 

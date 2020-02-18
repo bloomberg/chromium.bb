@@ -13,7 +13,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/offline_items_collection/core/offline_content_provider.h"
 #include "content/public/browser/content_index_provider.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_storage_partition.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,6 +37,8 @@ class ContentIndexProviderImplTest : public testing::Test,
                                      public OfflineContentProvider::Observer {
  public:
   void SetUp() override {
+    ASSERT_TRUE(profile_.CreateHistoryService(/* delete_file= */ true,
+                                              /* no_db= */ false));
     provider_ = std::make_unique<ContentIndexProviderImpl>(&profile_);
     provider_->AddObserver(this);
   }
@@ -55,14 +57,14 @@ class ContentIndexProviderImplTest : public testing::Test,
   content::ContentIndexEntry CreateEntry(const std::string& id) {
     auto description = blink::mojom::ContentDescription::New(
         id, "title", "description", blink::mojom::ContentCategory::ARTICLE,
-        "icon_url", "launch_url");
+        std::vector<blink::mojom::ContentIconDefinitionPtr>(), "launch_url");
     return content::ContentIndexEntry(kServiceWorkerRegistrationId,
                                       std::move(description), kLaunchURL,
                                       base::Time::Now());
   }
 
  protected:
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   std::unique_ptr<ContentIndexProviderImpl> provider_;
 };

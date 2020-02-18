@@ -18,6 +18,7 @@
 #include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
@@ -72,6 +73,7 @@ class ImageView;
 //    in response to dragged tabs.
 class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
+                 public views::ContextMenuController,
                  public views::MouseWatcherListener,
                  public views::ViewObserver,
                  public views::ViewTargeterDelegate,
@@ -94,8 +96,8 @@ class TabStrip : public views::AccessiblePaneView,
   // Called when the colors of the frame change.
   void FrameColorsChanged();
 
-  // Set the background offset used by inactive tabs to match the frame image.
-  void SetBackgroundOffset(int offset);
+  // Sets |background_offset_| and schedules a paint.
+  void SetBackgroundOffset(int background_offset);
 
   // Returns true if the specified rect (in TabStrip coordinates) intersects
   // the window caption area of the browser window.
@@ -165,6 +167,11 @@ class TabStrip : public views::AccessiblePaneView,
                       base::Optional<TabGroupId> old_group,
                       base::Optional<TabGroupId> new_group);
 
+  // Updates the group's tabs and header when its associated TabGroupVisualData
+  // changes. This should be called when the result of
+  // |TabStripController::GetVisualDataForGroup(group)| changes.
+  void GroupVisualsChanged(TabGroupId group);
+
   // Returns true if the tab is not partly or fully clipped (due to overflow),
   // and the tab couldn't become partly clipped due to changing the selected tab
   // (for example, if currently the strip has the last tab selected, and
@@ -226,15 +233,11 @@ class TabStrip : public views::AccessiblePaneView,
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
-  bool MaySetClip() override;
   void SelectTab(Tab* tab, const ui::Event& event) override;
   void ExtendSelectionTo(Tab* tab) override;
   void ToggleSelected(Tab* tab) override;
   void AddSelectionFromAnchorTo(Tab* tab) override;
   void CloseTab(Tab* tab, CloseTabSource source) override;
-  void ShowContextMenuForTab(Tab* tab,
-                             const gfx::Point& p,
-                             ui::MenuSourceType source_type) override;
   bool IsActiveTab(const Tab* tab) const override;
   bool IsTabSelected(const Tab* tab) const override;
   bool IsTabPinned(const Tab* tab) const override;
@@ -253,7 +256,7 @@ class TabStrip : public views::AccessiblePaneView,
                          const ui::MouseEvent& event) override;
   void UpdateHoverCard(Tab* tab) override;
   bool HoverCardIsShowingForTab(Tab* tab) override;
-  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override;
+  int GetBackgroundOffset() const override;
   int GetStrokeThickness() const override;
   bool CanPaintThrobberToLayer() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -261,20 +264,20 @@ class TabStrip : public views::AccessiblePaneView,
   SkColor GetToolbarTopSeparatorColor() const override;
   SkColor GetTabSeparatorColor() const override;
   SkColor GetTabBackgroundColor(
-      TabState tab_state,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override;
-  SkColor GetTabForegroundColor(TabState tab_state,
+      TabActive active,
+      BrowserNonClientFrameView::ActiveState active_state) const override;
+  SkColor GetTabForegroundColor(TabActive active,
                                 SkColor background_color) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
-  int GetBackgroundResourceId(
-      bool* has_custom_image,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override;
+  base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const override;
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
   float GetHoverOpacityForTab(float range_parameter) const override;
   float GetHoverOpacityForRadialHighlight() const override;
-  const TabGroupData* GetDataForGroup(TabGroupId group) const override;
+  const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const override;
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -297,16 +300,12 @@ class TabStrip : public views::AccessiblePaneView,
   void HandleDragExited() override;
 
  private:
-  using Tabs = std::vector<Tab*>;
-  using TabsClosingMap = std::map<int, Tabs>;
-  using FindClosingTabResult =
-      std::pair<TabsClosingMap::iterator, Tabs::iterator>;
-
   class RemoveTabDelegate;
   class TabDragContextImpl;
 
   friend class TabDragControllerTest;
   friend class TabDragContextImpl;
+  friend class TabGroupEditorBubbleViewDialogBrowserTest;
   friend class TabHoverCardBubbleViewBrowserTest;
   friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTest;
@@ -335,6 +334,17 @@ class TabStrip : public views::AccessiblePaneView,
     DISALLOW_COPY_AND_ASSIGN(DropArrow);
   };
 
+  // Specifies how to handle tabs that are midway through closing when falling
+  // back from |layout_helper_| to |bounds_animator_|.
+  enum class ClosingTabsBehavior {
+    // Keep the tabs alive, because responsibilities for destroying them lie
+    // with |bounds_animator_|.
+    kTransferOwnership,
+    // Destroy the tabs, because responsibilities for destroying them lie with
+    // |layout_helper_|.
+    kDestroy
+  };
+
   void Init();
 
   views::ViewModelT<Tab>* tabs_view_model() { return &tabs_; }
@@ -342,9 +352,17 @@ class TabStrip : public views::AccessiblePaneView,
   std::map<TabGroupId, TabGroupHeader*> GetGroupHeaders();
 
   // Invoked from |AddTabAt| after the newly created tab has been inserted.
-  void StartInsertTabAnimation(int model_index,
-                               TabAnimationState::TabActiveness activeness,
-                               TabAnimationState::TabPinnedness pinnedness);
+  void StartInsertTabAnimation(int model_index, TabPinned pinned);
+
+  // Animates the removal of the tab at |model_index|. Defers to the old
+  // animation style when appropriate.
+  void StartRemoveTabAnimation(int model_index, bool was_active);
+
+  // Animates the removal of the tab at |model_index| using the old animation
+  // style.
+  // TODO(958173): Delete this once all animations have been migrated to the
+  // new animation style.
+  void StartFallbackRemoveTabAnimation(int model_index, bool was_active);
 
   // Invoked from |MoveTab| after |tab_data_| has been updated to animate the
   // move.
@@ -354,7 +372,10 @@ class TabStrip : public views::AccessiblePaneView,
   // NOTE: this does *not* invoke UpdateIdealBounds, it uses the bounds
   // currently set in ideal_bounds.
   // TODO(958173): The notion of ideal bounds is going away. Delete this.
-  void AnimateToIdealBounds();
+  void AnimateToIdealBounds(ClosingTabsBehavior closing_tabs_behavior =
+                                ClosingTabsBehavior::kDestroy);
+
+  void ExitTabClosingMode();
 
   // Returns whether the close button should be highlighted after a remove.
   bool ShouldHighlightCloseButtonAfterRemove();
@@ -402,8 +423,7 @@ class TabStrip : public views::AccessiblePaneView,
   // the actual last tab unless the strip is in the overflow node_data.
   const Tab* GetLastVisibleTab() const;
 
-  // Adds the tab at |index| to |tabs_closing_map_| and removes the tab from
-  // |tabs_|.
+  // Removes the tab at |index| from |tabs_|.
   void RemoveTabFromViewModel(int index);
 
   // Cleans up the Tab from the TabStrip. This is called from the tab animation
@@ -414,17 +434,9 @@ class TabStrip : public views::AccessiblePaneView,
   // from the tab animation code and is not a general-purpose method.
   void OnGroupCloseAnimationCompleted(TabGroupId group);
 
-  // Adjusts the indices of all tabs in |tabs_closing_map_| whose index is
-  // >= |index| to have a new index of |index + delta|.
-  void UpdateTabsClosingMap(int index, int delta);
-
   // Invoked from StoppedDraggingTabs to cleanup |tab|. If |tab| is known
   // |is_first_tab| is set to true.
   void StoppedDraggingTab(Tab* tab, bool* is_first_tab);
-
-  // Finds |tab| in the |tab_closing_map_| and returns a pair of iterators
-  // indicating precisely where it is.
-  FindClosingTabResult FindClosingTab(const Tab* tab);
 
   // Invoked when a mouse event occurs over |source|. Potentially switches the
   // |stacked_layout_|.
@@ -527,6 +539,11 @@ class TabStrip : public views::AccessiblePaneView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
+  // views::ContextMenuController:
+  void ShowContextMenuForViewImpl(views::View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
+
   // views::View:
   const views::View* GetViewByID(int id) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -562,12 +579,9 @@ class TabStrip : public views::AccessiblePaneView,
   // There is a one-to-one mapping between each of the tabs in the
   // TabStripController (TabStripModel) and |tabs_|. Because we animate tab
   // removal there exists a period of time where a tab is displayed but not in
-  // the model. When this occurs the tab is removed from |tabs_| and placed in
-  // |tabs_closing_map_|. When the animation completes the tab is removed from
-  // |tabs_closing_map_|. The painting code ensures both sets of tabs are
-  // painted, and the event handling code ensures only tabs in |tabs_| are used.
+  // the model. When this occurs the tab is removed from |tabs_|, but remains
+  // in |layout_helper_| until the remove animation completes.
   views::ViewModelT<Tab> tabs_;
-  TabsClosingMap tabs_closing_map_;
 
   // Map associating each group to its TabGroupHeader instance.
   std::map<TabGroupId, std::unique_ptr<TabGroupHeader>> group_headers_;
@@ -575,6 +589,7 @@ class TabStrip : public views::AccessiblePaneView,
   // The view tracker is used to keep track of if the hover card has been
   // destroyed by its widget.
   TabHoverCardBubbleView* hover_card_ = nullptr;
+  ScopedObserver<views::View, views::ViewObserver> hover_card_observer_{this};
   std::unique_ptr<ui::EventHandler> hover_card_event_sniffer_;
 
   std::unique_ptr<TabStripController> controller_;
@@ -599,6 +614,9 @@ class TabStrip : public views::AccessiblePaneView,
   // need to resize immediately, we'll resize only back to this width, thus
   // once again placing the last tab under the mouse cursor.
   int available_width_for_tabs_ = -1;
+
+  // The background offset used by inactive tabs to match the frame image.
+  int background_offset_ = 0;
 
   // True if PrepareForCloseAt has been invoked. When true remove animations
   // preserve current tab bounds.

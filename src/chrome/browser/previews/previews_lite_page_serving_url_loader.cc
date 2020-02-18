@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <utility>
 
@@ -61,10 +62,10 @@ void BlacklistBypassedHostOnUIThread(const std::string& host,
 void BlacklistBypassedHost(const std::string& host,
                            base::TimeDelta duration,
                            int frame_tree_node_id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&BlacklistBypassedHostOnUIThread, host, duration,
-                     frame_tree_node_id));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(&BlacklistBypassedHostOnUIThread, host,
+                                duration, frame_tree_node_id));
 }
 
 void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
@@ -82,10 +83,10 @@ void SetServerUnavailableForOnUIThread(base::TimeDelta duration,
 }
 
 void SetServerUnavailableFor(base::TimeDelta duration, int frame_tree_node_id) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
-                     frame_tree_node_id));
+  base::PostTask(FROM_HERE,
+                 {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
+                 base::BindOnce(&SetServerUnavailableForOnUIThread, duration,
+                                frame_tree_node_id));
 }
 
 void ReportDataSavingsOnUIThread(int64_t network_bytes,
@@ -108,7 +109,7 @@ void ReportDataSavings(int64_t network_bytes,
                        int64_t original_bytes,
                        std::string host,
                        int frame_tree_node_id) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(&ReportDataSavingsOnUIThread, network_bytes,
                      original_bytes, std::move(host), frame_tree_node_id));
@@ -250,15 +251,15 @@ void PreviewsLitePageServingURLLoader::SetUpForwardingClient(
 }
 
 void PreviewsLitePageServingURLLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
 
-  const net::HttpResponseHeaders* response_headers = head.headers.get();
+  const net::HttpResponseHeaders* response_headers = head->headers.get();
   // TODO: evaluate all the responses we allow, don't hard code 200.
   if (!response_headers) {
     UMA_HISTOGRAM_ENUMERATION(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
+        PreviewsLitePageNavigationThrottle::ServerResponse::kNoResponseHeaders);
     Fallback();
     return;
   }
@@ -318,7 +319,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveResponse(
 
 void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   DCHECK(!forwarding_client_);
 
   // Store head and pause new messages until the forwarding client is set up.
@@ -335,7 +336,7 @@ void PreviewsLitePageServingURLLoader::OnReceiveRedirect(
     UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
                               PreviewsLitePageNavigationThrottle::
                                   ServerResponse::kPreviewUnavailable);
-    const net::HttpResponseHeaders* response_headers = head.headers.get();
+    const net::HttpResponseHeaders* response_headers = head->headers.get();
 
     std::string chrome_proxy_header;
     bool blacklist_host =
@@ -391,17 +392,22 @@ void PreviewsLitePageServingURLLoader::OnStartLoadingResponseBody(
 
 void PreviewsLitePageServingURLLoader::OnComplete(
     const network::URLLoaderCompletionStatus& status) {
-  base::UmaHistogramSparse("Previews.ServerLitePage.ServerNetError",
-                           -status.error_code);
-
   if (forwarding_client_) {
+    base::UmaHistogramSparse(
+        "Previews.ServerLitePage.ServerNetError.AfterCommit",
+        -status.error_code);
+
     forwarding_client_->OnComplete(status);
     return;
   }
 
-  UMA_HISTOGRAM_ENUMERATION(
-      "Previews.ServerLitePage.ServerResponse",
-      PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
+  base::UmaHistogramSparse(
+      "Previews.ServerLitePage.ServerNetError.BeforeCommit",
+      -status.error_code);
+
+  UMA_HISTOGRAM_ENUMERATION("Previews.ServerLitePage.ServerResponse",
+                            PreviewsLitePageNavigationThrottle::ServerResponse::
+                                kOnCompleteBeforeOnResponse);
 
   // If OnComplete is called before, OnReceiveResponse, this is indicative of a
   // failure of some sort.
@@ -415,12 +421,6 @@ void PreviewsLitePageServingURLLoader::FollowRedirect(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // This should never be called for a non-network service URLLoader.
   NOTREACHED();
-}
-
-void PreviewsLitePageServingURLLoader::ProceedWithResponse() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Pass through.
-  network_url_loader_->ProceedWithResponse();
 }
 
 void PreviewsLitePageServingURLLoader::SetPriority(
@@ -449,7 +449,7 @@ void PreviewsLitePageServingURLLoader::OnConnectionError() {
   if (!result_callback_.is_null()) {
     UMA_HISTOGRAM_ENUMERATION(
         "Previews.ServerLitePage.ServerResponse",
-        PreviewsLitePageNavigationThrottle::ServerResponse::kFailed);
+        PreviewsLitePageNavigationThrottle::ServerResponse::kConnectionError);
     Fallback();
     return;
   }

@@ -9,6 +9,23 @@
   public <init>();
 }
 
+# Referenced by android.support.v7.preference.PreferenceInflater
+-keep public class android.support.v14.preference.SwitchPreference {}
+
+# Inflated via reflection
+-keep public class android.support.v7.preference.Preference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class android.support.v7.preference.PreferenceScreen {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class android.support.v7.preference.PreferenceCategory {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+-keep public class android.support.v7.preference.ListPreference {
+    public <init>(android.content.Context, android.util.AttributeSet);
+}
+
 # These classes aren't themselves referenced, but __ProcessService[0,1,2...] are
 # referenced, and we look up these services by appending a number onto the name
 # of the base class. Thus, we need to keep the base class name around so that
@@ -40,7 +57,7 @@
 # Let proguard know CastMediaOptions in CastOptions is always null, so it can
 # trim unused MediaNotificationService methods. This saves about 170 methods in
 # the dex file. https://crbug.com/855081
--assumevalues class com.google.android.gms.cast.framework.CastOptions {
+-assumenosideeffects class com.google.android.gms.cast.framework.CastOptions {
   *** getCastMediaOptions() return null;
 }
 
@@ -48,14 +65,10 @@
 # construction, we need to trim out the its builder as well, so we are truly
 # assuming there's no CastMediaOptions instances anywhere. This is to avoid
 # CastMediaOptions to reference resources upon construction.
--assumevalues class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
-  *** build() return null;
-}
-
 -assumenosideeffects class com.google.android.gms.cast.framework.media.CastMediaOptions$Builder {
   public <init>();
   public <clinit>();
-  *** build();
+  *** build() return null;
 }
 
 # Workaround for crbug/1002847. Methods of BaseGmsClient are incorrectly

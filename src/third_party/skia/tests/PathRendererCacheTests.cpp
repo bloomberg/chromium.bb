@@ -76,12 +76,12 @@ static void test_path(skiatest::Reporter* reporter,
                       GrStyle style = GrStyle(SkStrokeRec::kFill_InitStyle)) {
     sk_sp<GrContext> ctx = GrContext::MakeMock(nullptr);
     // The cache needs to be big enough that nothing gets flushed, or our expectations can be wrong
-    ctx->setResourceCacheLimits(100, 8000000);
+    ctx->setResourceCacheLimit(8000000);
     GrResourceCache* cache = ctx->priv().getResourceCache();
 
-    sk_sp<GrRenderTargetContext> rtc(ctx->priv().makeDeferredRenderTargetContext(
+    auto rtc = ctx->priv().makeDeferredRenderTargetContext(
             SkBackingFit::kApprox, 800, 800, GrColorType::kRGBA_8888, nullptr, 1, GrMipMapped::kNo,
-            kTopLeft_GrSurfaceOrigin));
+            kTopLeft_GrSurfaceOrigin);
     if (!rtc) {
         return;
     }

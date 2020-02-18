@@ -7,6 +7,8 @@
 #ifndef HELPERS_H
 #define HELPERS_H
 
+#include <stdbool.h>
+
 #include "drv.h"
 #include "helpers_array.h"
 
@@ -35,4 +37,5 @@ struct drv_array *drv_query_kms(struct driver *drv);
 int drv_modify_linear_combinations(struct driver *drv);
 uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
 			   const uint64_t *modifier_order, uint32_t order_count);
+bool drv_has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier);
 #endif

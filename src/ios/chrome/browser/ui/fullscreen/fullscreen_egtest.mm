@@ -19,13 +19,14 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/common/features.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #import "ios/web/public/test/http_server/error_page_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -35,6 +36,8 @@
 using base::test::ios::kWaitForPageLoadTimeout;
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
+
+using chrome_test_util::WebStateScrollViewMatcher;
 
 namespace {
 
@@ -97,21 +100,32 @@ void AssertURLIs(const GURL& expectedURL) {
 
   [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
+  // Waiting for the toolbar to be visible is not enough -- the PDF itself can
+  // take a little longer to load.  Instead, wait for an internal PDF class to
+  // appear in the view hierarchy.
+  ConditionBlock condition = ^{
+    NSError* error = nil;
+    [[EarlGrey selectElementWithMatcher:grey_kindOfClass(NSClassFromString(
+                                            @"PDFExtensionTopView"))]
+        assertWithMatcher:grey_notNil()
+                    error:&error];
+    return error == nil;
+  };
+
+  NSString* errorMessage = @"PDFExtensionTopView was not visible";
+  GREYAssert(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, condition),
+             errorMessage);
+
   // Initial y scroll positions are set to make room for the toolbar.
   // TODO(crbug.com/618887) Replace use of specific values when API which
   // generates these values is exposed.
   CGFloat yOffset = [ChromeEarlGrey isIPadIdiom] ? -89.0 : -48.0;
-  if (@available(iOS 12, *)) {
-    // The safe area is included in the top inset as well as the toolbar
-    // heights.  Due to crbug.com/903635, however, this only occurs on iOS 12;
-    // pdf rendering does not correctly account for the safe area on iOS 11.
-    yOffset -=
-        chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
-  }
+  // The safe area is included in the top inset as well as the toolbar
+  // heights.
+  yOffset -=
+      chrome_test_util::GetCurrentWebState()->GetView().safeAreaInsets.top;
   DCHECK_LT(yOffset, 0);
-  [[EarlGrey
-      selectElementWithMatcher:web::WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
+  [[EarlGrey selectElementWithMatcher:WebStateScrollViewMatcher()]
       assertWithMatcher:grey_scrollViewContentOffset(CGPointMake(0, yOffset))];
 }
 
@@ -123,41 +137,30 @@ void AssertURLIs(const GURL& expectedURL) {
       "http://ios/testing/data/http_server_files/single_page_wide.pdf");
   [ChromeEarlGrey loadURL:URL];
 
-  // TODO(crbug.com/852393): Investigate why synchronization isn't working.  Is
-  // an animation going on forever?
-  if (@available(iOS 12, *)) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@NO
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
+  {
+    // TODO(crbug.com/852393): Investigate why synchronization isn't working. Is
+    // an animation going on forever?
+    // Disabled synchonization needs only for iOS 12.
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
 
-  // Test that the toolbar is still visible after a user swipes down.
-  [[EarlGrey
-      selectElementWithMatcher:WebViewScrollView(
-                                   chrome_test_util::GetCurrentWebState())]
-      performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
-  [ChromeEarlGreyUI waitForToolbarVisible:YES];
+    // Test that the toolbar is still visible after a user swipes down.
+    [[EarlGrey
+        selectElementWithMatcher:WebViewScrollView(
+                                     chrome_test_util::GetCurrentWebState())]
+        performAction:grey_swipeFastInDirection(kGREYDirectionDown)];
+    [ChromeEarlGreyUI waitForToolbarVisible:YES];
 
-  // Test that the toolbar is still visible even after attempting to hide it
-  // on swipe up.
-  HideToolbarUsingUI();
-  [ChromeEarlGreyUI waitForToolbarVisible:YES];
-
-  // Reenable synchronization.
-  if (@available(iOS 12, *)) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@YES
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    // Test that the toolbar is still visible even after attempting to hide it
+    // on swipe up.
+    HideToolbarUsingUI();
+    [ChromeEarlGreyUI waitForToolbarVisible:YES];
   }
 }
 
 // Verifies that the toolbar properly appears/disappears when scrolling up/down
 // on a PDF that is long in length and wide in width.
 - (void)testLongPDFScroll {
-  // TODO(crbug.com/904694): This test is failing on iOS11.
-  if (!base::ios::IsRunningOnIOS12OrLater())
-    EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11.");
-
 // TODO(crbug.com/714329): Re-enable this test on devices.
 #if !TARGET_IPHONE_SIMULATOR
   EARL_GREY_TEST_DISABLED(@"Test disabled on device.");

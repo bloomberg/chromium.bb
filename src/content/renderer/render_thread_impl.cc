@@ -15,11 +15,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
+#include "base/debug/crash_logging.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/shared_memory.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/metrics/field_trial.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -50,11 +52,10 @@
 #include "cc/trees/layer_tree_host_common.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/discardable_memory/client/client_discardable_shared_memory_manager.h"
-#include "components/metrics/public/interfaces/single_sample_metrics.mojom.h"
+#include "components/metrics/public/mojom/single_sample_metrics.mojom.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/viz/client/hit_test_data_provider.h"
 #include "components/viz/client/hit_test_data_provider_draw_quad.h"
-#include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/switches.h"
@@ -90,8 +91,6 @@
 #include "content/renderer/media/audio/audio_renderer_mixer_manager.h"
 #include "content/renderer/media/gpu/gpu_video_accelerator_factories_impl.h"
 #include "content/renderer/media/render_media_client.h"
-#include "content/renderer/media/stream/media_stream_center.h"
-#include "content/renderer/media/video_capture/video_capture_impl_manager.h"
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/rtc_peer_connection_handler.h"
@@ -123,6 +122,7 @@
 #include "media/base/media_switches.h"
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
@@ -137,6 +137,8 @@
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
 #include "skia/ext/skia_memory_dump_provider.h"
+#include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_cache.h"
 #include "third_party/blink/public/platform/web_image_generator.h"
@@ -274,6 +276,35 @@ void AddHistogramSample(void* hist, int sample) {
   histogram->Add(sample);
 }
 
+void AddCrashKey(v8::CrashKeyId id, const std::string& value) {
+  namespace bd = base::debug;
+  switch (id) {
+    case v8::CrashKeyId::kIsolateAddress:
+      static bd::CrashKeyString* isolate_address = bd::AllocateCrashKeyString(
+          "v8_isolate_address", bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(isolate_address, value);
+      break;
+    case v8::CrashKeyId::kReadonlySpaceFirstPageAddress:
+      static bd::CrashKeyString* ro_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_ro_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(ro_space_firstpage_address, value);
+      break;
+    case v8::CrashKeyId::kMapSpaceFirstPageAddress:
+      static bd::CrashKeyString* map_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_map_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(map_space_firstpage_address, value);
+      break;
+    case v8::CrashKeyId::kCodeSpaceFirstPageAddress:
+      static bd::CrashKeyString* code_space_firstpage_address =
+          bd::AllocateCrashKeyString("v8_code_space_firstpage_address",
+                                     bd::CrashKeySize::Size32);
+      bd::SetCrashKeyString(code_space_firstpage_address, value);
+      break;
+  }
+}
+
 class FrameFactoryImpl : public mojom::FrameFactory {
  public:
   explicit FrameFactoryImpl(const service_manager::BindSourceInfo& source_info)
@@ -360,55 +391,28 @@ scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
 // Hook that allows single-sample metric code from //components/metrics to
 // connect from the renderer process to the browser process.
 void CreateSingleSampleMetricsProvider(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    service_manager::Connector* connector,
+    mojo::SharedRemote<mojom::ChildProcessHost> process_host,
     metrics::mojom::SingleSampleMetricsProviderRequest request) {
-  if (task_runner->BelongsToCurrentThread()) {
-    connector->BindInterface(mojom::kBrowserServiceName, std::move(request));
-    return;
-  }
-
-  task_runner->PostTask(
-      FROM_HERE,
-      base::BindOnce(&CreateSingleSampleMetricsProvider, std::move(task_runner),
-                     connector, std::move(request)));
+  process_host->BindHostReceiver(std::move(request));
 }
-
-class RendererLocalSurfaceIdProvider : public viz::LocalSurfaceIdProvider {
- public:
-  const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocationForFrame(
-      const viz::CompositorFrame& frame) override {
-    auto new_surface_properties =
-        RenderWidgetSurfaceProperties::FromCompositorFrame(frame);
-    if (new_surface_properties != surface_properties_) {
-      parent_local_surface_id_allocator_.GenerateId();
-      surface_properties_ = new_surface_properties;
-    }
-    return parent_local_surface_id_allocator_
-        .GetCurrentLocalSurfaceIdAllocation();
-  }
-
- private:
-  RenderWidgetSurfaceProperties surface_properties_;
-};
 
 // This factory is used to defer binding of the InterfacePtr to the compositor
 // thread.
 class UkmRecorderFactoryImpl : public cc::UkmRecorderFactory {
  public:
   explicit UkmRecorderFactoryImpl(
-      std::unique_ptr<service_manager::Connector> connector)
-      : connector_(std::move(connector)) {
-    DCHECK(connector_);
-  }
+      mojo::SharedRemote<mojom::ChildProcessHost> process_host)
+      : process_host_(std::move(process_host)) {}
   ~UkmRecorderFactoryImpl() override = default;
 
   std::unique_ptr<ukm::UkmRecorder> CreateRecorder() override {
-    return ukm::MojoUkmRecorder::Create(connector_.get());
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+    process_host_->BindHostReceiver(recorder.InitWithNewPipeAndPassReceiver());
+    return std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
  private:
-  std::unique_ptr<service_manager::Connector> connector_;
+  const mojo::SharedRemote<mojom::ChildProcessHost> process_host_;
 };
 
 static const int kWaitForWorkersStatsTimeoutMS = 20;
@@ -706,7 +710,6 @@ RenderThreadImpl::RenderThreadImpl(
 
 void RenderThreadImpl::Init() {
   TRACE_EVENT0("startup", "RenderThreadImpl::Init");
-  init_start_ = base::TimeTicks::Now();
 
   GetContentClient()->renderer()->PostIOThreadCreated(GetIOTaskRunner().get());
 
@@ -725,22 +728,19 @@ void RenderThreadImpl::Init() {
   // Register this object as the main thread.
   ChildProcess::current()->set_main_thread(this);
 
-  metrics::InitializeSingleSampleMetricsFactory(
-      base::BindRepeating(&CreateSingleSampleMetricsProvider,
-                          main_thread_runner(), GetConnector()));
+  metrics::InitializeSingleSampleMetricsFactory(base::BindRepeating(
+      &CreateSingleSampleMetricsProvider, child_process_host()));
 
-  gpu_ = viz::Gpu::Create(GetConnector(), mojom::kBrowserServiceName,
-                          GetIOTaskRunner());
+  mojo::PendingRemote<viz::mojom::Gpu> remote_gpu;
+  BindHostReceiver(remote_gpu.InitWithNewPipeAndPassReceiver());
+  gpu_ = viz::Gpu::Create(std::move(remote_gpu), GetIOTaskRunner());
 
   resource_dispatcher_.reset(new ResourceDispatcher());
-  url_loader_throttle_provider_ =
-      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
-          URLLoaderThrottleProviderType::kFrame);
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   InitializeWebKit(registry.get());
 
-  vc_manager_.reset(new VideoCaptureImplManager());
+  vc_manager_.reset(new blink::WebVideoCaptureImplManager());
 
   browser_plugin_manager_.reset(new BrowserPluginManager());
   AddObserver(browser_plugin_manager_.get());
@@ -783,6 +783,10 @@ void RenderThreadImpl::Init() {
   }
 
   GetContentClient()->renderer()->RenderThreadStarted();
+
+  url_loader_throttle_provider_ =
+      GetContentClient()->renderer()->CreateURLLoaderThrottleProvider(
+          URLLoaderThrottleProviderType::kFrame);
 
   StartServiceManagerConnection();
 
@@ -927,21 +931,21 @@ void RenderThreadImpl::Init() {
       discardable_shared_memory_manager_.get());
 
 #if defined(OS_LINUX)
-  render_message_filter()->SetThreadPriority(
-      ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
+  if (base::FeatureList::IsEnabled(
+          blink::features::kBlinkCompositorUseDisplayThreadPriority)) {
+    render_message_filter()->SetThreadPriority(
+        ChildProcess::current()->io_thread_id(), base::ThreadPriority::DISPLAY);
+  }
 #endif
 
   process_foregrounded_count_ = 0;
   needs_to_record_first_active_paint_ = false;
   was_backgrounded_time_ = base::TimeTicks::Min();
 
-  GetConnector()->BindInterface(mojom::kBrowserServiceName,
-                                mojo::MakeRequest(&frame_sink_provider_));
+  BindHostReceiver(mojo::MakeRequest(&frame_sink_provider_));
 
   if (!is_gpu_compositing_disabled_) {
-    GetConnector()->BindInterface(
-        mojom::kBrowserServiceName,
-        mojo::MakeRequest(&compositing_mode_reporter_));
+    BindHostReceiver(mojo::MakeRequest(&compositing_mode_reporter_));
 
     // Make |this| a CompositingModeWatcher for the
     // |compositing_mode_reporter_|.
@@ -950,8 +954,6 @@ void RenderThreadImpl::Init() {
     compositing_mode_reporter_->AddCompositingModeWatcher(
         std::move(watcher_ptr));
   }
-
-  init_end_ = base::TimeTicks::Now();
 }
 
 RenderThreadImpl::~RenderThreadImpl() {
@@ -1138,9 +1140,9 @@ RenderThreadImpl::CreateVideoFrameCompositorTaskRunner() {
     // be the same thread on which the rendering context was initialized. This
     // is why this must be a SingleThreadTaskRunner instead of a
     // SequencedTaskRunner.
-    video_frame_compositor_task_runner_ =
-        base::CreateSingleThreadTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+    video_frame_compositor_task_runner_ = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE});
   }
 
   return video_frame_compositor_task_runner_;
@@ -1170,6 +1172,7 @@ void RenderThreadImpl::InitializeWebKit(
   v8::Isolate* isolate = blink::MainThreadIsolate();
   isolate->SetCreateHistogramFunction(CreateHistogram);
   isolate->SetAddHistogramSampleFunction(AddHistogramSample);
+  isolate->SetAddCrashKeyCallback(AddCrashKey);
 
   main_thread_compositor_task_runner_ =
       main_thread_scheduler_->CompositorTaskRunner();
@@ -1320,7 +1323,7 @@ media::GpuVideoAcceleratorFactories* RenderThreadImpl::GetGpuFactories() {
 #endif  // defined(OS_WIN)
 
   media::mojom::InterfaceFactoryPtr interface_factory;
-  GetConnector()->BindInterface(mojom::kBrowserServiceName, &interface_factory);
+  BindHostReceiver(mojo::MakeRequest(&interface_factory));
 
   media::mojom::VideoEncodeAcceleratorProviderPtr vea_provider;
   gpu_->CreateVideoEncodeAcceleratorProvider(mojo::MakeRequest(&vea_provider));
@@ -1477,6 +1480,10 @@ RenderThreadImpl::GetIOTaskRunner() {
   return ChildProcess::current()->io_task_runner();
 }
 
+void RenderThreadImpl::OnBindReceiver(mojo::GenericPendingReceiver receiver) {
+  GetContentClient()->renderer()->BindReceiverOnMainThread(std::move(receiver));
+}
+
 bool RenderThreadImpl::IsGpuRasterizationForced() {
   return is_gpu_rasterization_forced_;
 }
@@ -1552,7 +1559,7 @@ bool RenderThreadImpl::IsScrollAnimatorEnabled() {
 
 std::unique_ptr<cc::UkmRecorderFactory>
 RenderThreadImpl::CreateUkmRecorderFactory() {
-  return std::make_unique<UkmRecorderFactoryImpl>(GetConnector()->Clone());
+  return std::make_unique<UkmRecorderFactoryImpl>(child_process_host());
 }
 
 #ifdef OS_ANDROID
@@ -1850,11 +1857,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     // Set it to be our thread's task runner instead.
     params.compositor_task_runner = main_thread_compositor_task_runner_;
   }
-  params.enable_surface_synchronization =
-      features::IsSurfaceSynchronizationEnabled();
-  params.local_surface_id_provider =
-      std::make_unique<RendererLocalSurfaceIdProvider>();
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */,
@@ -1947,14 +1950,12 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderWidget* widget = RenderWidget::FromRoutingID(widget_routing_id);
     if (widget) {
-      // TODO(ericrk): Remove this check when SurfaceSynchronization is always
-      // enabled, and collapse with non-webview registration below.
-      if (features::IsSurfaceSynchronizationEnabled()) {
-        frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-            widget_routing_id,
-            std::move(render_frame_metadata_observer_client_request),
-            std::move(render_frame_metadata_observer_ptr));
-      }
+      // TODO(ericrk): Collapse with non-webview registration below.
+      frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+          widget_routing_id,
+          std::move(render_frame_metadata_observer_client_request),
+          std::move(render_frame_metadata_observer_ptr));
+
       std::move(callback).Run(std::make_unique<SynchronousLayerTreeFrameSink>(
           std::move(context_provider), std::move(worker_context_provider),
           compositor_task_runner_, GetGpuMemoryBufferManager(),
@@ -1989,13 +1990,6 @@ RenderThreadImpl::GetAssociatedInterfaceRegistry() {
   return &associated_interfaces_;
 }
 
-std::unique_ptr<blink::WebMediaStreamCenter>
-RenderThreadImpl::CreateMediaStreamCenter() {
-  DCHECK(main_thread_runner()->BelongsToCurrentThread());
-  // TODO(hajimehoshi): Pass a per-frame task runner if possible.
-  return std::make_unique<MediaStreamCenter>(main_thread_runner());
-}
-
 PeerConnectionDependencyFactory*
 RenderThreadImpl::GetPeerConnectionDependencyFactory() {
   return peer_connection_factory_.get();
@@ -2011,12 +2005,6 @@ gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {
   return gpu_->GetGpuChannel().get();
 }
 
-void RenderThreadImpl::CreateEmbedderRendererService(
-    service_manager::mojom::ServiceRequest service_request) {
-  GetContentClient()->renderer()->CreateRendererService(
-      std::move(service_request));
-}
-
 void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   is_scroll_animator_enabled_ = params->web_preferences.enable_scroll_animator;
@@ -2026,18 +2014,38 @@ void RenderThreadImpl::CreateView(mojom::CreateViewParamsPtr params) {
                          GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
+void RenderThreadImpl::DestroyView(int32_t view_id) {
+  RenderViewImpl* view = RenderViewImpl::FromRoutingID(view_id);
+  DCHECK(view);
+
+  // This IPC can be called from re-entrant contexts. We can't destroy a
+  // RenderViewImpl while references still exist on the stack, so we dispatch a
+  // non-nestable task. This method is called exactly once by the browser
+  // process, and is used to release ownership of the corresponding
+  // RenderViewImpl instance. https://crbug.com/1000035.
+  base::ThreadTaskRunnerHandle::Get()->PostNonNestableTask(
+      FROM_HERE,
+      base::BindOnce(&RenderViewImpl::Destroy, base::Unretained(view)));
+}
+
 void RenderThreadImpl::CreateFrame(mojom::CreateFrameParamsPtr params) {
   CompositorDependencies* compositor_deps = this;
   service_manager::mojom::InterfaceProviderPtr interface_provider(
       std::move(params->interface_bundle->interface_provider));
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_content(
-      std::move(params->interface_bundle->document_interface_broker_content));
-  blink::mojom::DocumentInterfaceBrokerPtr document_interface_broker_blink(
-      std::move(params->interface_bundle->document_interface_broker_blink));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content(std::move(
+          params->interface_bundle->document_interface_broker_content));
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink(
+          std::move(params->interface_bundle->document_interface_broker_blink));
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker(
+          std::move(params->interface_bundle->browser_interface_broker));
   RenderFrameImpl::CreateFrame(
       params->routing_id, std::move(interface_provider),
       std::move(document_interface_broker_content),
-      std::move(document_interface_broker_blink), params->previous_routing_id,
+      std::move(document_interface_broker_blink),
+      std::move(browser_interface_broker), params->previous_routing_id,
       params->opener_routing_id, params->parent_routing_id,
       params->previous_sibling_routing_id, params->devtools_frame_token,
       params->replication_state, compositor_deps, *params->widget_params,
@@ -2057,27 +2065,37 @@ void RenderThreadImpl::CreateFrameProxy(
       replicated_state, devtools_frame_token);
 }
 
+void StartEmbeddedWorkerInstanceClientOnThreadPool(
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        client_receiver,
+    scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner) {
+  DCHECK(initiator_task_runner->BelongsToCurrentThread());
+  EmbeddedWorkerInstanceClientImpl::Create(std::move(client_receiver),
+                                           std::move(initiator_task_runner));
+}
+
 void RenderThreadImpl::SetUpEmbeddedWorkerChannelForServiceWorker(
-    blink::mojom::EmbeddedWorkerInstanceClientRequest client_request) {
-  // This is a hack. Process creation and initialization occurs before tracing
-  // is setup, so trace events logged at that time get dropped. We want these
-  // trace events to analyze service worker performance, so log them here.
-  //
-  // TODO(crbug.com/968424): Remove this hack when trace events that happen
-  // early on are supported.
-  if (!init_start_.is_null()) {
-    TRACE_EVENT_BEGIN_WITH_ID_TID_AND_TIMESTAMP0(
-        "ServiceWorker", "RenderThreadImpl initialization", this,
-        0 /* thread_id */, init_start_);
-    TRACE_EVENT_END_WITH_ID_TID_AND_TIMESTAMP0(
-        "ServiceWorker", "RenderThreadImpl initialization", this,
-        0 /* thread_id */, init_end_);
-    // Clear to avoid double logging.
-    init_start_ = base::TimeTicks();
-    init_end_ = base::TimeTicks();
+    mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+        client_receiver) {
+  // TODO(bashi): This is a tentative workaround to start service worker on a
+  // background thread. We should decouple EmbeddedWorkerInstanceClient from
+  // Renderer and bind EmbeddedWorkerInstanceClient on a background thread.
+  if (base::FeatureList::IsEnabled(
+          blink::features::kOffMainThreadServiceWorkerStartup)) {
+    auto task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_BLOCKING,
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&StartEmbeddedWorkerInstanceClientOnThreadPool,
+                       std::move(client_receiver), std::move(task_runner)));
+    return;
   }
 
-  EmbeddedWorkerInstanceClientImpl::Create(std::move(client_request));
+  EmbeddedWorkerInstanceClientImpl::Create(
+      std::move(client_receiver),
+      GetWebMainThreadScheduler()->DefaultTaskRunner());
 }
 
 void RenderThreadImpl::OnNetworkConnectionChanged(
@@ -2131,7 +2149,12 @@ void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
 #if defined(OS_MACOSX)
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
-      params->initial_button_delay, params->autoscroll_button_delay,
+      params->has_initial_button_delay
+          ? base::make_optional(params->initial_button_delay)
+          : base::nullopt,
+      params->has_autoscroll_button_delay
+          ? base::make_optional(params->autoscroll_button_delay)
+          : base::nullopt,
       params->preferred_scroller_style, params->redraw,
       params->jump_on_track_click);
 
@@ -2151,6 +2174,13 @@ void RenderThreadImpl::OnSystemColorsChanged(
 #else
   NOTREACHED();
 #endif
+}
+
+void RenderThreadImpl::UpdateSystemColorInfo(
+    mojom::UpdateSystemColorInfoParamsPtr params) {
+  ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
+      params->is_dark_mode, params->is_high_contrast,
+      params->preferred_color_scheme, params->colors);
 }
 
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {
@@ -2195,7 +2225,7 @@ RenderThreadImpl::GetMediaThreadTaskRunner() {
     media_thread_.reset(new base::Thread("Media"));
 #if defined(OS_FUCHSIA)
     // Start IO thread on Fuchsia to make that thread usable for FIDL.
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
 #else
     base::Thread::Options options;
 #endif

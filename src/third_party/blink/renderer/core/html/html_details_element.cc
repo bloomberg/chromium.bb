@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_div_element.h"
 #include "third_party/blink/renderer/core/html/html_slot_element.h"
 #include "third_party/blink/renderer/core/html/html_summary_element.h"
@@ -54,7 +55,7 @@ HTMLDetailsElement::~HTMLDetailsElement() = default;
 
 // static
 bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
-  DCHECK(IsHTMLDetailsElement(node.parentElement()));
+  DCHECK(IsA<HTMLDetailsElement>(node.parentElement()));
   if (!IsHTMLSummaryElement(node))
     return false;
   return node.parentElement() &&
@@ -62,8 +63,13 @@ bool HTMLDetailsElement::IsFirstSummary(const Node& node) {
              Traversal<HTMLSummaryElement>::FirstChild(*node.parentElement());
 }
 
-void HTMLDetailsElement::DispatchPendingEvent() {
+void HTMLDetailsElement::DispatchPendingEvent(
+    const AttributeModificationReason reason) {
+  if (reason == AttributeModificationReason::kByParser)
+    GetDocument().SetToggleDuringParsing(true);
   DispatchEvent(*Event::Create(event_type_names::kToggle));
+  if (reason == AttributeModificationReason::kByParser)
+    GetDocument().SetToggleDuringParsing(false);
 }
 
 LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle& style,
@@ -117,7 +123,7 @@ void HTMLDetailsElement::ParseAttribute(
     pending_event_ = PostCancellableTask(
         *GetDocument().GetTaskRunner(TaskType::kDOMManipulation), FROM_HERE,
         WTF::Bind(&HTMLDetailsElement::DispatchPendingEvent,
-                  WrapPersistent(this)));
+                  WrapPersistent(this), params.reason));
 
     Element* content = EnsureUserAgentShadowRoot().getElementById(
         shadow_element_names::DetailsContent());

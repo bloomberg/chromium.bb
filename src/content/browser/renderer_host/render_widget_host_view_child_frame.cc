@@ -66,14 +66,9 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
           base::checked_cast<uint32_t>(widget_host->GetProcess()->GetID()),
           base::checked_cast<uint32_t>(widget_host->GetRoutingID())),
       frame_connector_(nullptr),
-      enable_viz_(features::IsVizDisplayCompositorEnabled()),
-      enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()) {
+      enable_viz_(features::IsVizDisplayCompositorEnabled()) {
   GetHostFrameSinkManager()->RegisterFrameSinkId(
-      frame_sink_id_, this,
-      enable_surface_synchronization_
-          ? viz::ReportFirstSurfaceActivation::kNo
-          : viz::ReportFirstSurfaceActivation::kYes);
+      frame_sink_id_, this, viz::ReportFirstSurfaceActivation::kNo);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(
       frame_sink_id_, "RenderWidgetHostViewChildFrame");
   CreateCompositorFrameSinkSupport();
@@ -156,8 +151,6 @@ void RenderWidgetHostViewChildFrame::SetFrameConnectorDelegate(
       manager->AddObserver(this);
     }
   }
-
-  SendSurfaceInfoToEmbedder();
 }
 
 void RenderWidgetHostViewChildFrame::UpdateIntrinsicSizingInfo(
@@ -590,14 +583,6 @@ void RenderWidgetHostViewChildFrame::SetParentFrameSinkId(
   }
 }
 
-void RenderWidgetHostViewChildFrame::SendSurfaceInfoToEmbedder() {
-  if (enable_surface_synchronization_)
-    return;
-  if (!last_activated_surface_info_.is_valid())
-    return;
-  FirstSurfaceActivation(last_activated_surface_info_);
-}
-
 void RenderWidgetHostViewChildFrame::FirstSurfaceActivation(
     const viz::SurfaceInfo& surface_info) {
   if (frame_connector_)
@@ -647,9 +632,10 @@ void RenderWidgetHostViewChildFrame::DidStopFlinging() {
     selection_controller_client_->DidStopFlinging();
 }
 
-bool RenderWidgetHostViewChildFrame::LockMouse() {
+bool RenderWidgetHostViewChildFrame::LockMouse(
+    bool request_unadjusted_movement) {
   if (frame_connector_)
-    return frame_connector_->LockMouse();
+    return frame_connector_->LockMouse(request_unadjusted_movement);
   return false;
 }
 
@@ -728,10 +714,8 @@ viz::FrameSinkId RenderWidgetHostViewChildFrame::GetRootFrameSinkId() {
 }
 
 viz::SurfaceId RenderWidgetHostViewChildFrame::GetCurrentSurfaceId() const {
-  return enable_surface_synchronization_
-             ? viz::SurfaceId(frame_sink_id_,
-                              GetLocalSurfaceIdAllocation().local_surface_id())
-             : last_activated_surface_info_.id();
+  return viz::SurfaceId(frame_sink_id_,
+                        GetLocalSurfaceIdAllocation().local_surface_id());
 }
 
 bool RenderWidgetHostViewChildFrame::HasSize() const {
@@ -884,14 +868,7 @@ void RenderWidgetHostViewChildFrame::OnBeginFramePausedChanged(bool paused) {
 }
 
 void RenderWidgetHostViewChildFrame::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (enable_surface_synchronization_) {
-    NOTREACHED();
-    return;
-  }
-  last_activated_surface_info_ = surface_info;
-  FirstSurfaceActivation(surface_info);
-}
+    const viz::SurfaceInfo& surface_info) {}
 
 void RenderWidgetHostViewChildFrame::OnFrameTokenChanged(uint32_t frame_token) {
   OnFrameTokenChangedForView(frame_token);

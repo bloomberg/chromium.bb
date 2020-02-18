@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
 <translation id="1181037720776840403">删除</translation>
 <translation id="1243314992276662751">上传</translation>
+<translation id="1266864766717917324">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win 键</translation>
 <translation id="1290982764014248209">将“<ph name="DRAGGED_APP" />”移至文件夹“<ph name="FOLDER_NAME" />”内。</translation>
+<translation id="1291104554099683393">请尝试使用较小的文本块进行分享。</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">推荐的应用</translation>
 <translation id="1368832886055348810">从左向右</translation>
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1398853756734560583">最大化</translation>
 <translation id="1409544243779336081">推荐的应用</translation>
+<translation id="1450753235335490080">无法分享<ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">您以前搜索过此内容。如果您将“<ph name="QUERY" />”从历史记录中删除，该条目将会从登录您帐号的所有设备上永久移除。</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 分钟 }other{# 分钟 }}</translation>
 <translation id="1643823602425662293">通知</translation>
@@ -35,9 +38,11 @@
 <translation id="1884435127456172652"><ph name="NUMBER" /> %</translation>
 <translation id="1901303067676059328">全选(&amp;A)</translation>
 <translation id="1938451708255335766">要调整窗口显示密度，请重启该应用。</translation>
+<translation id="2006524834898217237">请确保此设备已连接到互联网。</translation>
 <translation id="208586643495776849">请重试</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="2148716181193084225">今天</translation>
+<translation id="2161656808144014275">文字</translation>
 <translation id="2168039046890040389">向上翻页</translation>
 <translation id="2190355936436201913">（空）</translation>
 <translation id="2192232475740621500">使用低密度</translation>
@@ -49,7 +54,6 @@
 <translation id="2388990488038464401">要用手机拨打此号码？</translation>
 <translation id="24452542372838207">展开通知</translation>
 <translation id="2445449901874883781">使用高密度</translation>
-<translation id="2451871130406122810">已发送到设备</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2497284189126895209">所有文件</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 天}other{# 天}}</translation>
 <translation id="3295886253693811851">通过以下方式拨打电话：</translation>
 <translation id="335581015389089642">语音</translation>
+<translation id="3389286852084373014">文本过长</translation>
 <translation id="3443810440409579745">收到标签页。</translation>
 <translation id="3479552764303398839">以后再说</translation>
 <translation id="348799646910989694">任务栏已自动隐藏</translation>
@@ -85,6 +90,7 @@
 <translation id="3618849550573277856">查询“<ph name="LOOKUP_STRING" />”</translation>
 <translation id="364720409959344976">选择要上传的文件夹</translation>
 <translation id="3660179305079774227">向上箭头</translation>
+<translation id="3670030362669914947">卡号</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">继续在移动设备“<ph name="TITLE" />”上阅读</translation>
@@ -100,7 +106,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 个月前}other{# 个月前}}</translation>
 <translation id="4289300219472526559">开始讲话</translation>
 <translation id="4316910396681052118">所有应用</translation>
-<translation id="4467014365953759647">无法发送电话号码</translation>
 <translation id="4588090240171750605">向右滚动</translation>
 <translation id="4690510401873698237">任务栏位于屏幕底部</translation>
 <translation id="4724120544754982507">通知中心，<ph name="UNREAD_NOTIFICATION_COUNT" /> 条未读通知</translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{还有 1 个月的时间}other{还有 # 个月的时间}}</translation>
 <translation id="4841881773802181781">插入</translation>
 <translation id="4881695831933465202">打开</translation>
+<translation id="4888938634149558681">致电</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>
 <translation id="4971687151119236543">媒体上一曲</translation>
 <translation id="5046499563572181734">点按此处</translation>
@@ -127,6 +133,7 @@
 <translation id="5583640892426849032">退格</translation>
 <translation id="5613020302032141669">向左箭头</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 分钟}other{# 分钟}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{今天曾有活动}=1{1 天前曾有活动}other{# 天前曾有活动}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 天 }other{# 天 }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 年后}other{# 年后}}</translation>
 <translation id="5895138241574237353">重新启动</translation>
@@ -150,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
 <translation id="6430678249303439055">屏蔽来自此应用的所有通知</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 秒前}other{# 秒前}}</translation>
+<translation id="6539092367496845964">出了点问题。请稍后重试。</translation>
 <translation id="654149438358937226">屏蔽所有通知</translation>
 <translation id="6567071839949112727">点击祖先实体</translation>
 <translation id="6578407462441924264">未命名</translation>
 <translation id="6612467943526193239">要退出校准模式，请按 Esc 键。</translation>
 <translation id="6620110761915583480">保存文件</translation>
+<translation id="6656912866303152668">请确保 <ph name="TARGET_DEVICE_NAME" /> 已在 Chrome 中开启同步，然后再次尝试发送。</translation>
 <translation id="6699343763173986273">媒体下一曲</translation>
 <translation id="673773751041746814">删除</translation>
 <translation id="6779314412797872738">要在此处向您的 Android 手机发送电话号码，请在这两台设备的设置中<ph name="TROUBLESHOOT_LINK" />。</translation>
@@ -176,7 +185,6 @@
 <translation id="7319740667687257810">启动器，局部视图</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 分钟前}other{# 分钟前}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">请检查手机的网络连接，然后重试</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{还剩 1 分钟}other{还剩 # 分钟}}</translation>
 <translation id="7430878839542012341">要将这项搜索从您的历史记录中删除吗？</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -217,9 +225,11 @@
 <translation id="8806053966018712535">文件夹“<ph name="FOLDER_NAME" />”</translation>
 <translation id="883911313571074303">为图片添加注释</translation>
 <translation id="8841375032071747811">“返回”按钮</translation>
+<translation id="8867568208303837180">正在发送...</translation>
 <translation id="8876215549894133151">格式：</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">任务栏始终处于隐藏状态</translation>
+<translation id="8996630695507351249">请确保 <ph name="TARGET_DEVICE_NAME" /> 已连接到互联网。</translation>
 <translation id="9002566407876343676">打开</translation>
 <translation id="9039076430527029379">移至第 <ph name="PAGE_NUMBER" /> 页中第 <ph name="ROW_NUMBER" /> 行与第 <ph name="COLUMN_NUMBER" /> 列的相交处。</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 秒}other{# 秒}}</translation>

@@ -318,8 +318,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
           "GET", GURL("http://example.com"), GURL("http://notexample.com"),
           base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
 
-  // |attach_same_site_cookies| = true bypasses method and initiator
-  // checks, but not the |site_for_cookies| one.
+  // |attach_same_site_cookies| = true bypasses all checks.
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
             cookie_util::ComputeSameSiteContextForRequest(
                 "GET", GURL("http://example.com"), GURL("http://example.com"),
@@ -332,7 +331,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 true /*attach_same_site_cookies*/));
 
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
             cookie_util::ComputeSameSiteContextForRequest(
                 "GET", GURL("http://example.com"), GURL("http://question.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
@@ -351,7 +350,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 false /*attach_same_site_cookies*/));
 
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE,
             cookie_util::ComputeSameSiteContextForRequest(
                 "POST", GURL("http://example.com"), GURL("http://example.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
@@ -406,44 +405,6 @@ TEST(CookieUtilTest, TestComputeSameSiteContextForSubresource) {
                 GURL("http://example.com"), GURL("http://example.com")));
 }
 
-TEST(CookieUtilTest, IgnoreCookieStatusList) {
-  CookieList cookie_list_out;
-  base::OnceCallback<void(const CookieList&)> callback =
-      base::BindLambdaForTesting(
-          [&cookie_list_out](const CookieList& cookie_list) {
-            cookie_list_out = cookie_list;
-          });
-  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-      adapted_callback =
-          cookie_util::IgnoreCookieStatusList(std::move(callback));
-
-  CookieList cookie_list_in = {CanonicalCookie()};
-  std::move(adapted_callback).Run(cookie_list_in, CookieStatusList());
-
-  EXPECT_EQ(1u, cookie_list_out.size());
-}
-
-TEST(CookieUtilTest, AddCookieStatusList) {
-  CookieList cookie_list_out;
-  CookieStatusList excluded_cookies_out = {CookieWithStatus()};
-  base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-      callback = base::BindLambdaForTesting(
-          [&cookie_list_out, &excluded_cookies_out](
-              const CookieList& cookie_list,
-              const CookieStatusList& excluded_cookies) {
-            cookie_list_out = cookie_list;
-            excluded_cookies_out = excluded_cookies;
-          });
-  base::OnceCallback<void(const CookieList&)> adapted_callback =
-      cookie_util::AddCookieStatusList(std::move(callback));
-
-  CookieList cookie_list_in = {CanonicalCookie()};
-  std::move(adapted_callback).Run(cookie_list_in);
-
-  EXPECT_EQ(1u, cookie_list_out.size());
-  EXPECT_EQ(0u, excluded_cookies_out.size());
-}
-
 TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
   bool result_out = true;
   base::OnceCallback<void(bool)> callback = base::BindLambdaForTesting(
@@ -454,7 +415,8 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
           cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
   std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR);
+      .Run(CanonicalCookie::CookieInclusionStatus(
+          CanonicalCookie::CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR));
 
   EXPECT_FALSE(result_out);
 
@@ -465,8 +427,7 @@ TEST(CookieUtilTest, AdaptCookieInclusionStatusToBool) {
   adapted_callback =
       cookie_util::AdaptCookieInclusionStatusToBool(std::move(callback));
 
-  std::move(adapted_callback)
-      .Run(CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  std::move(adapted_callback).Run(CanonicalCookie::CookieInclusionStatus());
 
   EXPECT_TRUE(result_out);
 }

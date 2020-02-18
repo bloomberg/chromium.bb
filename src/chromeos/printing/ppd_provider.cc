@@ -52,11 +52,6 @@ namespace {
 
 const char kEpsonGenericPPD[] = "epson generic escpr printer";
 
-struct UsbVendorPair {
-  int vendor_id;
-  const char* vendor_name;
-};
-
 // Holds a metadata_v2 reverse-index response
 struct ReverseIndexJSON {
   // Canonical name of printer
@@ -414,12 +409,11 @@ class PpdProviderImpl : public PpdProvider {
       : browser_locale_(browser_locale),
         loader_factory_(loader_factory),
         ppd_cache_(ppd_cache),
-        disk_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
+        disk_task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+             base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
         version_(current_version),
-        options_(options),
-        weak_factory_(this) {}
+        options_(options) {}
 
   // Resolving manufacturers requires a couple of steps, because of
   // localization.  First we have to figure out what locale to use, which
@@ -775,7 +769,8 @@ class PpdProviderImpl : public PpdProvider {
       resource_request->url = url;
       resource_request->load_flags =
           net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-      resource_request->allow_credentials = false;
+      resource_request->credentials_mode =
+          network::mojom::CredentialsMode::kOmit;
 
       // TODO(luum): confirm correct traffic annotation
       fetcher_ = network::SimpleURLLoader::Create(std::move(resource_request),
@@ -1322,6 +1317,28 @@ class PpdProviderImpl : public PpdProvider {
     return PpdProvider::SUCCESS;
   }
 
+  // Convenience function which logs the error message associated with the value
+  // of |result|. The given |type| is used to indicate which type of JSON
+  // metadata file the validation error occurred on.
+  void LogJSONValidationError(const std::string& type,
+                              PpdProvider::CallbackResultCode result) {
+    DCHECK(result != PpdProvider::SUCCESS);
+    switch (result) {
+      case PpdProvider::NOT_FOUND:
+        LOG(ERROR) << "Could not find the " << type << " metadata file";
+        break;
+      case PpdProvider::SERVER_ERROR:
+        LOG(ERROR) << "Failed to retrieve the " << type
+                   << " metadata from the server";
+        break;
+      case PpdProvider::INTERNAL_ERROR:
+        LOG(ERROR) << "Failed to parse the " << type << " metadata";
+        break;
+      default:
+        break;
+    }
+  }
+
   // Attempts to parse a ReverseIndexJSON reply to |fetcher| into the passed
   // contents. Returns PpdProvider::SUCCESS on valid JSON formatting and filled
   // |contents|, clears |contents| otherwise.
@@ -1333,7 +1350,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 3);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse ReverseIndex metadata";
+      LogJSONValidationError("ReverseIndex", ret);
       return ret;
     }
 
@@ -1368,7 +1385,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to process Manufacturers metadata";
+      LogJSONValidationError("Manufacturers", ret);
       return ret;
     }
 
@@ -1402,7 +1419,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse Printers metadata";
+      LogJSONValidationError("Printers", ret);
       return ret;
     }
 
@@ -1436,7 +1453,7 @@ class PpdProviderImpl : public PpdProvider {
     base::Value::ListStorage top_list;
     auto ret = ParseAndValidateJSONFormat(&top_list, 2);
     if (ret != PpdProvider::SUCCESS) {
-      LOG(ERROR) << "Failed to parse PpdIndex metadata";
+      LogJSONValidationError("PpdIndex", ret);
       return ret;
     }
 
@@ -1619,7 +1636,7 @@ class PpdProviderImpl : public PpdProvider {
   // Construction-time options, immutable.
   const PpdProvider::Options options_;
 
-  base::WeakPtrFactory<PpdProviderImpl> weak_factory_;
+  base::WeakPtrFactory<PpdProviderImpl> weak_factory_{this};
 
  protected:
   ~PpdProviderImpl() override = default;

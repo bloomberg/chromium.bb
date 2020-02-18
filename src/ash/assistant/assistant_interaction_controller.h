@@ -36,11 +36,17 @@ class AssistantInteractionController
       public AssistantViewDelegateObserver,
       public HighlighterController::Observer {
  public:
+  using AssistantInteractionMetadata =
+      chromeos::assistant::mojom::AssistantInteractionMetadata;
+  using AssistantInteractionMetadataPtr =
+      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
+  using AssistantInteractionResolution =
+      chromeos::assistant::mojom::AssistantInteractionResolution;
+  using AssistantInteractionType =
+      chromeos::assistant::mojom::AssistantInteractionType;
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
   using AssistantSuggestionPtr =
       chromeos::assistant::mojom::AssistantSuggestionPtr;
-  using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
 
   explicit AssistantInteractionController(
       AssistantController* assistant_controller);
@@ -83,7 +89,7 @@ class AssistantInteractionController
   void OnHighlighterSelectionRecognized(const gfx::Rect& rect) override;
 
   // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnInteractionStarted(bool is_voice_interaction) override;
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override;
   void OnInteractionFinished(
       AssistantInteractionResolution resolution) override;
   void OnHtmlResponse(const std::string& response,
@@ -116,6 +122,8 @@ class AssistantInteractionController
   void OnUiVisible(AssistantEntryPoint entry_point);
 
   void StartMetalayerInteraction(const gfx::Rect& region);
+  void StartProactiveSuggestionsInteraction(
+      scoped_refptr<const ProactiveSuggestions> proactive_suggestions);
   void StartScreenContextInteraction(AssistantQuerySource query_source);
   void StartTextInteraction(const std::string text,
                             bool allow_tts,
@@ -137,7 +145,7 @@ class AssistantInteractionController
 
   bool should_attempt_warmer_welcome_ = true;
 
-  base::WeakPtrFactory<AssistantInteractionController> weak_factory_;
+  base::WeakPtrFactory<AssistantInteractionController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantInteractionController);
 };

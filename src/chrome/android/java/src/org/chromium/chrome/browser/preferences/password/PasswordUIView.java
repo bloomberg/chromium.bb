@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.preferences.password;
 
+import android.content.Context;
+
 import org.chromium.base.Callback;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.annotations.CalledByNative;
@@ -28,6 +30,7 @@ public final class PasswordUIView implements PasswordManagerHandler {
 
     /**
      * Constructor creates the native object as well. Callers should call destroy() after usage.
+     *
      * @param PasswordListObserver The only observer.
      */
     public PasswordUIView(PasswordListObserver observer) {
@@ -68,6 +71,12 @@ public final class PasswordUIView implements PasswordManagerHandler {
     }
 
     @Override
+    public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
+        nativeHandleChangeSavedPasswordEntry(
+                mNativePasswordUIViewAndroid, index, newUsername, newPassword);
+    }
+
+    @Override
     public void removeSavedPasswordException(int index) {
         nativeHandleRemoveSavedPasswordException(mNativePasswordUIViewAndroid, index);
     }
@@ -79,13 +88,23 @@ public final class PasswordUIView implements PasswordManagerHandler {
                 mNativePasswordUIViewAndroid, targetPath, successCallback, errorCallback);
     }
 
+    @Override
+    public void showPasswordEntryEditingView(Context context, int index) {
+        nativeHandleShowPasswordEntryEditingView(mNativePasswordUIViewAndroid, context, index);
+    }
+
     /**
      * Returns the URL for the website for managing one's passwords without the need to use Chrome
      * with the user's profile signed in.
+     *
      * @return The string with the URL.
      */
     public static String getAccountDashboardURL() {
         return nativeGetAccountDashboardURL();
+    }
+
+    public static boolean hasAccountForLeakCheckRequest() {
+        return nativeHasAccountForLeakCheckRequest();
     }
 
     /**
@@ -111,13 +130,21 @@ public final class PasswordUIView implements PasswordManagerHandler {
     private native void nativeHandleRemoveSavedPasswordEntry(
             long nativePasswordUIViewAndroid, int index);
 
+    private native void nativeHandleChangeSavedPasswordEntry(
+            long nativePasswordUIViewAndroid, int index, String newUsername, String newPassword);
+
     private native void nativeHandleRemoveSavedPasswordException(
             long nativePasswordUIViewAndroid, int index);
 
     private static native String nativeGetAccountDashboardURL();
 
+    private static native boolean nativeHasAccountForLeakCheckRequest();
+
     private native void nativeDestroy(long nativePasswordUIViewAndroid);
 
     private native void nativeHandleSerializePasswords(long nativePasswordUIViewAndroid,
             String targetPath, IntStringCallback successCallback, Callback<String> errorCallback);
+
+    private native void nativeHandleShowPasswordEntryEditingView(
+            long nativePasswordUIViewAndroid, Context context, int index);
 }

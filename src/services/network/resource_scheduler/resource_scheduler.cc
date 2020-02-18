@@ -537,6 +537,21 @@ class ResourceScheduler::Client
     return (!pending_requests_.IsEmpty() || !in_flight_requests_.empty());
   }
 
+  size_t CountInflightDelayableRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return in_flight_delayable_count_;
+  }
+
+  size_t CountInflightNonDelayableRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return in_flight_requests_.size() - in_flight_delayable_count_;
+  }
+
+  size_t CountInflightLayoutBlockingRequests() const {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+    return total_layout_blocking_count_;
+  }
+
  private:
   enum ShouldStartReqResult {
     DO_NOT_START_REQUEST_AND_STOP_SEARCHING,
@@ -566,6 +581,19 @@ class ResourceScheduler::Client
     if (p2p_connections_count_ == count)
       return;
 
+    if (p2p_connections_count_ > 0 && count == 0) {
+      // If the count of P2P connections went down to 0, start a timer. When the
+      // timer fires, the queued browser-initiated requests would be dispatched.
+      p2p_connections_count_end_timestamp_ = tick_clock_->NowTicks();
+      p2p_connections_count_ended_timer_.Stop();
+      p2p_connections_count_ended_timer_.Start(
+          FROM_HERE,
+          resource_scheduler_->resource_scheduler_params_manager_
+              .TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections(),
+          this,
+          &ResourceScheduler::Client::OnP2PConnectionsCountEndedTimerFired);
+    }
+
     p2p_connections_count_ = count;
 
     if (p2p_connections_count_ > 0 &&
@@ -577,6 +605,13 @@ class ResourceScheduler::Client
         p2p_connections_count_active_timestamp_.has_value()) {
       p2p_connections_count_active_timestamp_ = base::nullopt;
     }
+
+    LoadAnyStartablePendingRequests(
+        RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED);
+  }
+
+  void OnP2PConnectionsCountEndedTimerFired() {
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
     LoadAnyStartablePendingRequests(
         RequestStartTrigger::PEER_TO_PEER_CONNECTIONS_COUNT_CHANGED);
@@ -594,6 +629,8 @@ class ResourceScheduler::Client
     UMA_HISTOGRAM_COUNTS_100(
         "ResourceScheduler.RequestsCount.TotalLayoutBlocking",
         total_layout_blocking_count_);
+
+    resource_scheduler_->RecordGlobalRequestCountMetrics();
   }
 
   void InsertInFlightRequest(ScheduledResourceRequestImpl* request) {
@@ -720,8 +757,11 @@ class ResourceScheduler::Client
         url::SchemeHostPort scheme_host_port(request->url_request()->url());
         net::HttpServerProperties& http_server_properties =
             *request->url_request()->context()->http_server_properties();
-        if (!http_server_properties.SupportsRequestPriority(scheme_host_port))
+        if (!http_server_properties.SupportsRequestPriority(
+                scheme_host_port,
+                request->url_request()->network_isolation_key())) {
           attributes |= kAttributeDelayable;
+        }
       }
     }
 
@@ -867,8 +907,29 @@ class ResourceScheduler::Client
       return false;
     }
 
-    if (p2p_connections_count_ == 0)
-      return false;
+    if (p2p_connections_count_ == 0) {
+      // If the current count of P2P connections is 0, then check when was the
+      // last time when there was an active P2P connection. If that timestamp is
+      // recent, it's a heuristic indication that a new P2P connection may
+      // start soon. To avoid network contention for that connection, keep
+      // throttling browser-initiated requests.
+      if (!p2p_connections_count_end_timestamp_.has_value())
+        return false;
+
+      bool p2p_connections_ended_long_back =
+          (tick_clock_->NowTicks() -
+           p2p_connections_count_end_timestamp_.value()) >=
+          resource_scheduler_->resource_scheduler_params_manager_
+              .TimeToPauseHeavyBrowserInitiatedRequestsAfterEndOfP2PConnections();
+      if (p2p_connections_ended_long_back)
+        return false;
+
+      // If there are no currently active P2P connections, and the last
+      // connection ended recently, then |p2p_connections_count_ended_timer_|
+      // must be running. When |p2p_connections_count_ended_timer_| fires,
+      // queued browser-initiated requests would be dispatched.
+      DCHECK(p2p_connections_count_ended_timer_.IsRunning());
+    }
 
     // Only throttle when effective connection type is between Slow2G and 3G.
     if (effective_connection_type_ <= net::EFFECTIVE_CONNECTION_TYPE_OFFLINE ||
@@ -879,17 +940,19 @@ class ResourceScheduler::Client
     if (request.url_request()->priority() == net::HIGHEST)
       return false;
 
-    base::TimeDelta time_since_p2p_connections_active =
-        tick_clock_->NowTicks() -
-        p2p_connections_count_active_timestamp_.value();
+    if (p2p_connections_count_ > 0) {
+      base::TimeDelta time_since_p2p_connections_active =
+          tick_clock_->NowTicks() -
+          p2p_connections_count_active_timestamp_.value();
 
-    base::Optional<base::TimeDelta> max_wait_time_p2p_connections =
-        resource_scheduler_->resource_scheduler_params_manager_
-            .max_wait_time_p2p_connections();
+      base::Optional<base::TimeDelta> max_wait_time_p2p_connections =
+          resource_scheduler_->resource_scheduler_params_manager_
+              .max_wait_time_p2p_connections();
 
-    if (time_since_p2p_connections_active >
-        max_wait_time_p2p_connections.value()) {
-      return false;
+      if (time_since_p2p_connections_active >
+          max_wait_time_p2p_connections.value()) {
+        return false;
+      }
     }
 
     // Check other request specific constraints.
@@ -999,9 +1062,11 @@ class ResourceScheduler::Client
         params_for_network_quality_.delay_requests_on_multiplexed_connections;
 
     url::SchemeHostPort scheme_host_port(url_request.url());
-    bool supports_priority = url_request.context()
-                                 ->http_server_properties()
-                                 ->SupportsRequestPriority(scheme_host_port);
+    bool supports_priority =
+        url_request.context()
+            ->http_server_properties()
+            ->SupportsRequestPriority(scheme_host_port,
+                                      url_request.network_isolation_key());
 
     if (!priority_delayable) {
       // TODO(willchan): We should really improve this algorithm as described in
@@ -1256,6 +1321,13 @@ class ResourceScheduler::Client
   // |p2p_connections_count_| becomes 0.
   base::Optional<base::TimeTicks> p2p_connections_count_active_timestamp_;
 
+  // Earliest timestamp since when the count of active peer to peer
+  // connection counts dropped from a non-zero value to zero. Set to current
+  // timestamp when |p2p_connections_count_| changes from a non-zero value to 0.
+  base::Optional<base::TimeTicks> p2p_connections_count_end_timestamp_;
+
+  base::OneShotTimer p2p_connections_count_ended_timer_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<ResourceScheduler::Client> weak_ptr_factory_{this};
@@ -1370,6 +1442,8 @@ void ResourceScheduler::OnClientDeleted(int child_id, int route_id) {
 }
 
 size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   size_t active_scheduler_clients_count = 0;
   for (const auto& client : client_map_) {
     if (client.second->IsActiveResourceSchedulerClient()) {
@@ -1377,6 +1451,34 @@ size_t ResourceScheduler::ActiveSchedulerClientsCounter() const {
     }
   }
   return active_scheduler_clients_count;
+}
+
+// Records the metrics related to number of requests in flight that are observed
+// by the global resource scheduler.
+void ResourceScheduler::RecordGlobalRequestCountMetrics() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  size_t global_delayable_count = 0;
+  size_t global_non_delayable_count = 0;
+  size_t global_layout_blocking_count = 0;
+
+  for (const auto& client : client_map_) {
+    global_delayable_count += client.second->CountInflightDelayableRequests();
+    global_non_delayable_count +=
+        client.second->CountInflightNonDelayableRequests();
+    global_layout_blocking_count +=
+        client.second->CountInflightLayoutBlockingRequests();
+  }
+
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalAll",
+                           global_delayable_count + global_non_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalDelayable",
+                           global_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100("ResourceScheduler.RequestsCount.GlobalNonDelayable",
+                           global_non_delayable_count);
+  UMA_HISTOGRAM_COUNTS_100(
+      "ResourceScheduler.RequestsCount.GlobalLayoutBlocking",
+      global_layout_blocking_count);
 }
 
 ResourceScheduler::Client* ResourceScheduler::GetClient(int child_id,

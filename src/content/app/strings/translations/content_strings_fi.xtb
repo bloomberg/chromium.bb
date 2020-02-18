@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Arvon on oltava <ph name="MINIMUM_DATE_OR_TIME" /> tai myöhempi.</translation>
 <translation id="2759744352195237655">ponnahduspainike</translation>
 <translation id="2761667185364618470">Valitse tämä ruutu jatkaaksesi.</translation>
+<translation id="2844350028562914727">tiedot</translation>
 <translation id="2896972712917208084">valintapainikeryhmä</translation>
 <translation id="2908441821576996758">Anna pilkuilla erotettu sähköpostiosoitteiden luettelo.</translation>
 <translation id="2940813599313844715">kohde</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Arvon tulee olla pienempi tai yhtä suuri kuin <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">määritelmä</translation>
 <translation id="3557673793733683882">otsikko <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">viikon valitsin</translation>
 <translation id="3685101356851116974">Tunnisteeton kuva</translation>
 <translation id="3706100364254443312">vaihto</translation>
 <translation id="3732799496749320381">kk</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">vierityspalkki</translation>
 <translation id="4103419683916926126">Millisekuntia</translation>
 <translation id="4151657705144244502">kuva</translation>
+<translation id="4160057747563657758">puhelin</translation>
 <translation id="4193965531860883258">esipuhe</translation>
 <translation id="4201051445878709314">Näytä edellinen kuukausi</translation>
 <translation id="421884353938374759">värinvalitsin</translation>
 <translation id="4248100235867064564">valikkopalkki</translation>
-<translation id="4254339807215791271">sisällön tiedot</translation>
 <translation id="4360991593054037559">Syötä kelvollinen arvo. Kaksi lähintä kelvollista arvoa ovat <ph name="VALID_VALUE_LOW" /> ja <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">K &amp; V</translation>
 <translation id="4413860115965805769">valikkopainike</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Pois käytöstä</translation>
 <translation id="588258955323874662">Koko ruutu</translation>
 <translation id="5888666972993069672">Katsotaan TV:stä <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">hakukenttä</translation>
 <translation id="5939518447894949180">Tyhjennä</translation>
 <translation id="5966707198760109579">Viikko</translation>
 <translation id="5987525920412732405">pyöräytyspainike</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">jälkipuhe</translation>
 <translation id="6209276755895393898">Näkyy olevan: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">sanasto</translation>
+<translation id="6281763101136022427">url-osoite</translation>
 <translation id="6310801910862476708">Sulje kuva kuvassa ‑tila</translation>
 <translation id="6398862346408813489">Näytä kuukaudenvalintapaneeli</translation>
 <translation id="6404546809543547843">äänen ajan liukusäädin</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Käytä pyydettyä muotoilua.</translation>
 <translation id="7118469954320184356">Ei kuvausta saatavilla</translation>
 <translation id="7139483182332611405">johdanto</translation>
+<translation id="7214187073215825913">sisältötiedot</translation>
 <translation id="7263440858009898357">Valitse kohde luettelosta.</translation>
 <translation id="727747134524199931">sarakkeen otsikko</translation>
 <translation id="7320576522385648310">puskuroidaan</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Haetaan kuvausta…</translation>
 <translation id="8117451130807776954">Tällä viikolla</translation>
 <translation id="8199524924445686405">vvvv</translation>
+<translation id="8208673686607688524">paikallisen päivämäärän ja ajan valitsin</translation>
 <translation id="8261464734335370856">Kirjoitusvirhe</translation>
 <translation id="8284326494547611709">Tekstitykset</translation>
 <translation id="835897206747267392">Virheellinen arvo.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">sisällysluettelo</translation>
 <translation id="8613126697340063924">hallinnoi etätoistoa</translation>
 <translation id="862370744433916922">alaotsikko</translation>
+<translation id="8711688047404765493">syöte</translation>
 <translation id="8750798805984357768">Valitse yksi vaihtoehdoista.</translation>
 <translation id="8808573423886751634">luku</translation>
 <translation id="8845239796550121995">Suoratoistetaan televisioosi</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kt</translation>
 <translation id="8987927404178983737">Kuukausi</translation>
 <translation id="901493112792887934">nykyinen toistoaika sekunteina</translation>
+<translation id="901834265349196618">sähköposti</translation>
 <translation id="9048119486235211610">navigointi</translation>
 <translation id="9062295712474918030">dokumentti</translation>
 <translation id="9062307380734144336">valitse, jos haluat toistaa tai keskeyttää toiston</translation>

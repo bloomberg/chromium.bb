@@ -8,13 +8,14 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/synchronization/lock.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_checker.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
+#include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 #if defined(WAYLAND_GBM)
 #include "ui/ozone/common/linux/gbm_device.h"  // nogncheck
@@ -66,12 +67,12 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   void RegisterSurface(gfx::AcceleratedWidget widget,
                        WaylandSurfaceGpu* surface);
   void UnregisterSurface(gfx::AcceleratedWidget widget);
-  WaylandSurfaceGpu* GetSurface(gfx::AcceleratedWidget widget) const;
+  WaylandSurfaceGpu* GetSurface(gfx::AcceleratedWidget widget);
 
   // Methods, which can be used when in both in-process-gpu and out of process
   // modes. These calls are forwarded to the browser process through the
   // WaylandConnection mojo interface. See more in
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   //
   // Asks Wayland to create generic dmabuf-based wl_buffer.
   void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
@@ -142,6 +143,16 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
 
   void BindHostInterface(BufferManagerHostPtr buffer_manager_host_ptr);
 
+  // Provides the WaylandSurfaceGpu, which backs the |widget|, with swap and
+  // presentation results.
+  void SubmitSwapResultOnOriginThread(gfx::AcceleratedWidget widget,
+                                      uint32_t buffer_id,
+                                      gfx::SwapResult swap_result);
+  void SubmitPresentationtOnOriginThread(
+      gfx::AcceleratedWidget widget,
+      uint32_t buffer_id,
+      const gfx::PresentationFeedback& feedback);
+
 #if defined(WAYLAND_GBM)
   // A DRM render node based gbm device.
   std::unique_ptr<GbmDevice> gbm_device_;
@@ -156,7 +167,8 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   mojo::AssociatedBinding<ozone::mojom::WaylandBufferManagerGpu>
       associated_binding_;
 
-  std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*> widget_to_surface_map_;
+  std::map<gfx::AcceleratedWidget, WaylandSurfaceGpu*>
+      widget_to_surface_map_;  // Guarded by |lock_|.
 
   // This task runner can be used to pass messages back to the same thread,
   // where the commit buffer request came from. For example, swap requests come
@@ -170,6 +182,9 @@ class WaylandBufferManagerGpu : public ozone::mojom::WaylandBufferManagerGpu {
   // ensure all the methods of this class are run on IOChildThread. This is
   // needed to ensure mojo calls happen on a right sequence.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
+
+  // Protects access to |widget_to_surface_map_|.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(WaylandBufferManagerGpu);
 };

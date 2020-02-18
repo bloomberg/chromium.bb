@@ -61,8 +61,22 @@ void GetStackRegions(
         << "stack range is unexpectedly marked executable, continuing anyway";
   }
 
+  // The stack covers [range_with_sp.base, range_with_sp.base +
+  // range_with_sp.size). The stack pointer (sp) can be anywhere in that range.
+  // It starts at the end of the range (range_with_sp.base + range_with_sp.size)
+  // and goes downwards until range_with_sp.base. Capture the part of the stack
+  // that is currently used: [sp, range_with_sp.base + range_with_sp.size).
+
+  // Capture up to kExtraCaptureSize additional bytes of stack, but only if
+  // present in the region that was already found.
+  constexpr uint64_t kExtraCaptureSize = 128;
+  const uint64_t start_address =
+      std::max(sp >= kExtraCaptureSize ? sp - kExtraCaptureSize : sp,
+               range_with_sp.base);
+  const size_t region_size =
+      range_with_sp.size - (start_address - range_with_sp.base);
   stack_regions->push_back(
-      CheckedRange<zx_vaddr_t, size_t>(range_with_sp.base, range_with_sp.size));
+      CheckedRange<zx_vaddr_t, size_t>(start_address, region_size));
 
   // TODO(scottmg): https://crashpad.chromium.org/bug/196, once the retrievable
   // registers include FS and similar for ARM, retrieve the region for the
@@ -91,8 +105,6 @@ bool ProcessReaderFuchsia::Initialize(const zx::process& process) {
   process_memory_.reset(new ProcessMemoryFuchsia());
   process_memory_->Initialize(*process_);
 
-  memory_map_.Initialize(*process_);
-
   INITIALIZATION_STATE_SET_VALID(initialized_);
   return true;
 }
@@ -117,6 +129,16 @@ ProcessReaderFuchsia::Threads() {
   }
 
   return threads_;
+}
+
+const MemoryMapFuchsia* ProcessReaderFuchsia::MemoryMap() {
+  INITIALIZATION_STATE_DCHECK_VALID(initialized_);
+
+  if (!initialized_memory_map_) {
+    InitializeMemoryMap();
+  }
+
+  return memory_map_.get();
 }
 
 void ProcessReaderFuchsia::InitializeModules() {
@@ -241,13 +263,15 @@ void ProcessReaderFuchsia::InitializeModules() {
     std::unique_ptr<ProcessMemoryRange> process_memory_range(
         new ProcessMemoryRange());
     // TODO(scottmg): Could this be limited range?
-    process_memory_range->Initialize(process_memory_.get(), true);
-    process_memory_ranges_.push_back(std::move(process_memory_range));
+    if (process_memory_range->Initialize(process_memory_.get(), true)) {
+      process_memory_ranges_.push_back(std::move(process_memory_range));
 
-    reader->Initialize(*process_memory_ranges_.back(), base);
-    module.reader = reader.get();
-    module_readers_.push_back(std::move(reader));
-    modules_.push_back(module);
+      if (reader->Initialize(*process_memory_ranges_.back(), base)) {
+        module.reader = reader.get();
+        module_readers_.push_back(std::move(reader));
+        modules_.push_back(module);
+      }
+    }
 
     map = next;
   }
@@ -297,7 +321,13 @@ void ProcessReaderFuchsia::InitializeThreads() {
       } else {
         thread.general_registers = general_regs;
 
-        GetStackRegions(general_regs, memory_map_, &thread.stack_regions);
+        const MemoryMapFuchsia* memory_map = MemoryMap();
+        if (memory_map) {
+          // Attempt to retrive stack regions if a memory map was retrieved. In
+          // particular, this may be null when operating on the current process
+          // where the memory map will not be able to be retrieved.
+          GetStackRegions(general_regs, *memory_map, &thread.stack_regions);
+        }
       }
 
       zx_thread_state_vector_regs_t vector_regs;
@@ -312,6 +342,17 @@ void ProcessReaderFuchsia::InitializeThreads() {
     }
 
     threads_.push_back(thread);
+  }
+}
+
+void ProcessReaderFuchsia::InitializeMemoryMap() {
+  DCHECK(!initialized_memory_map_);
+
+  initialized_memory_map_ = true;
+
+  memory_map_.reset(new MemoryMapFuchsia);
+  if (!memory_map_->Initialize(*process_)) {
+    memory_map_.reset();
   }
 }
 

@@ -93,10 +93,9 @@ class JsepTransport : public sigslot::has_slots<>,
       std::unique_ptr<webrtc::RtpTransport> unencrypted_rtp_transport,
       std::unique_ptr<webrtc::SrtpTransport> sdes_transport,
       std::unique_ptr<webrtc::DtlsSrtpTransport> dtls_srtp_transport,
-      std::unique_ptr<webrtc::RtpTransport> datagram_rtp_transport,
+      std::unique_ptr<webrtc::RtpTransportInternal> datagram_rtp_transport,
       std::unique_ptr<DtlsTransportInternal> rtp_dtls_transport,
       std::unique_ptr<DtlsTransportInternal> rtcp_dtls_transport,
-      std::unique_ptr<DtlsTransportInternal> datagram_dtls_transport,
       std::unique_ptr<webrtc::MediaTransportInterface> media_transport,
       std::unique_ptr<webrtc::DatagramTransportInterface> datagram_transport);
 
@@ -244,6 +243,15 @@ class JsepTransport : public sigslot::has_slots<>,
   // This is signaled for changes in |media_transport_| state.
   sigslot::signal<> SignalMediaTransportStateChanged;
 
+  // Signals that a data channel transport was negotiated and may be used to
+  // send data.  The first parameter is |this|.  The second parameter is the
+  // transport that was negotiated, or null if negotiation rejected the data
+  // channel transport.  The third parameter (bool) indicates whether the
+  // negotiation was provisional or final.  If true, it is provisional, if
+  // false, it is final.
+  sigslot::signal3<JsepTransport*, webrtc::DataChannelTransportInterface*, bool>
+      SignalDataChannelTransportNegotiated;
+
   // TODO(deadbeef): The methods below are only public for testing. Should make
   // them utility functions or objects so they can be tested independently from
   // this class.
@@ -304,8 +312,9 @@ class JsepTransport : public sigslot::has_slots<>,
 
   // Deactivates, signals removal, and deletes |composite_rtp_transport_| if the
   // current state of negotiation is sufficient to determine which rtp_transport
-  // to use.
-  void NegotiateRtpTransport(webrtc::SdpType type) RTC_RUN_ON(network_thread_);
+  // and data channel transport to use.
+  void NegotiateDatagramTransport(webrtc::SdpType type)
+      RTC_RUN_ON(network_thread_);
 
   // Returns the default (non-datagram) rtp transport, if any.
   webrtc::RtpTransportInternal* default_rtp_transport() const
@@ -349,7 +358,7 @@ class JsepTransport : public sigslot::has_slots<>,
       RTC_GUARDED_BY(accessor_lock_);
   std::unique_ptr<webrtc::DtlsSrtpTransport> dtls_srtp_transport_
       RTC_GUARDED_BY(accessor_lock_);
-  std::unique_ptr<webrtc::RtpTransport> datagram_rtp_transport_
+  std::unique_ptr<webrtc::RtpTransportInternal> datagram_rtp_transport_
       RTC_GUARDED_BY(accessor_lock_);
 
   // If multiple RTP transports are in use, |composite_rtp_transport_| will be

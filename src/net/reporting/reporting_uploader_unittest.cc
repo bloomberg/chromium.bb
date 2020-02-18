@@ -17,14 +17,14 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace {
 
-class ReportingUploaderTest : public TestWithScopedTaskEnvironment {
+class ReportingUploaderTest : public TestWithTaskEnvironment {
  protected:
   ReportingUploaderTest()
       : server_(test_server::EmbeddedTestServer::TYPE_HTTPS),
@@ -442,14 +442,14 @@ TEST_F(ReportingUploaderTest, DontSendCookies) {
 
   ResultSavingCookieCallback<CanonicalCookie::CookieInclusionStatus>
       cookie_callback;
-  context_.cookie_store()->SetCookieWithOptionsAsync(
-      server_.GetURL("/"), "foo=bar", CookieOptions(),
-      base::BindRepeating(&ResultSavingCookieCallback<
-                              CanonicalCookie::CookieInclusionStatus>::Run,
-                          base::Unretained(&cookie_callback)));
+  GURL url = server_.GetURL("/");
+  auto cookie = CanonicalCookie::Create(url, "foo=bar", base::Time::Now(),
+                                        base::nullopt /* server_time */);
+  context_.cookie_store()->SetCanonicalCookieAsync(
+      std::move(cookie), url.scheme(), CookieOptions(),
+      cookie_callback.MakeCallback());
   cookie_callback.WaitUntilDone();
-  ASSERT_EQ(CanonicalCookie::CookieInclusionStatus::INCLUDE,
-            cookie_callback.result());
+  ASSERT_TRUE(cookie_callback.result().IsInclude());
 
   TestUploadCallback upload_callback;
   uploader_->StartUpload(kOrigin, server_.GetURL("/"), kUploadBody, 0,
@@ -480,8 +480,8 @@ TEST_F(ReportingUploaderTest, DontSaveCookies) {
   GetCookieListCallback cookie_callback;
   context_.cookie_store()->GetCookieListWithOptionsAsync(
       server_.GetURL("/"), CookieOptions(),
-      base::BindRepeating(&GetCookieListCallback::Run,
-                          base::Unretained(&cookie_callback)));
+      base::BindOnce(&GetCookieListCallback::Run,
+                     base::Unretained(&cookie_callback)));
   cookie_callback.WaitUntilDone();
 
   EXPECT_TRUE(cookie_callback.cookies().empty());

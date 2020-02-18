@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.cros_bisect import simple_chrome_builder
 from chromite.cbuildbot import commands

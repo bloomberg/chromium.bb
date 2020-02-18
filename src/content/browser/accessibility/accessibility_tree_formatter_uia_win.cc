@@ -357,10 +357,10 @@ AccessibilityTreeFormatterUia::BuildAccessibilityTree(
   // Find the root element's first child, which should be provided by
   // BrowserAccessibility. We'll use that element's RuntimeId as a template for
   // the RuntimeId of the element we're looking for.
-  Microsoft::WRL::ComPtr<IUIAutomationCondition> true_condition;
-  uia_->CreateTrueCondition(&true_condition);
+  Microsoft::WRL::ComPtr<IUIAutomationTreeWalker> tree_walker;
+  uia_->get_RawViewWalker(&tree_walker);
   Microsoft::WRL::ComPtr<IUIAutomationElement> first_child;
-  root->FindFirst(TreeScope_Children, true_condition.Get(), &first_child);
+  tree_walker->GetFirstChildElement(root.Get(), &first_child);
   CHECK(first_child.Get());
 
   // Get first_child's RuntimeId and swap out the last element in its SAFEARRAY
@@ -1003,7 +1003,7 @@ base::string16 AccessibilityTreeFormatterUia::ProcessTreeForOutput(
   base::string16 role_value;
   dict.GetString(UiaIdentifierToCondensedString(UIA_AriaRolePropertyId),
                  &role_value);
-  WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
+  WriteAttribute(true, role_value, &line);
   if (filtered_result) {
     filtered_result->SetString(
         UiaIdentifierToStringUTF8(UIA_AriaRolePropertyId), role_value);
@@ -1139,12 +1139,12 @@ void AccessibilityTreeFormatterUia::ProcessValueForOutput(
   }
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterUia::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-uia-win.txt");
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterUia::GetVersionSpecificExpectedFileSuffix() {
   if (base::win::GetVersion() == base::win::Version::WIN7) {
     return FILE_PATH_LITERAL("-expected-uia-win7.txt");

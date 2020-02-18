@@ -11,9 +11,7 @@ mojom("mojom") {
   ]
 
   deps = [
+    "//mojo/public/mojom/base",
     "//services/network/public/mojom:mojom_ip_address",
   ]
-
-  # TODO(https://crbug.com/968369): Change to use new names.
-  use_old_js_lite_bindings_names = true
 }

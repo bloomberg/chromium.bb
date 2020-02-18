@@ -23,6 +23,7 @@
 <if expr="chromeos">
 <link rel="import" href="detailed_build_info.html">
 <link rel="import" href="update_warning_dialog.html">
+<link rel="import" href="../chromeos/os_icons.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
 <link rel="import" href="../reset_page/powerwash_dialog.html">
 </if>
@@ -150,14 +151,19 @@
               </span>
 </if>
 <if expr="chromeos">
-             <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
-               $i18n{endOfLifeMessage}
-               <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
-                 $i18n{learnMore}
-               </a>
-             </div>
+              <div id="endOfLifeMessageContainer" hidden="[[!hasEndOfLife_]]">
+                $i18n{endOfLifeMessage}
+                <a href="$i18n{endOfLifeLearnMoreURL}" target="_blank">
+                  $i18n{learnMore}
+                </a>
+              </div>
 </if>
               <div class="secondary">$i18n{aboutBrowserVersion}</div>
+<if expr="chromeos">
+              <div class="secondary"
+                  inner-h-t-m-l="[[getUpdateOsSettingsLink_()]]">
+              </div>
+</if>
             </div>
             <div class="separator" hidden="[[!showButtonContainer_]]"></div>
             <span id="buttonContainer" hidden="[[!showButtonContainer_]]">
@@ -233,7 +239,7 @@
 <if expr="_google_chrome">
           <cr-link-row class="hr" id="reportIssue" on-click="onReportIssueTap_"
               hidden="[[!prefs.feedback_allowed.value]]"
-              label="$i18n{aboutReportAnIssue}"></cr-link-row>
+              label="$i18n{aboutReportAnIssue}" external></cr-link-row>
 </if>
 <if expr="chromeos">
           <cr-link-row class="hr" id="detailed-build-info-trigger"

@@ -45,7 +45,7 @@ void URLDataSource::GetSourceForURL(
     BrowserContext* browser_context,
     const GURL& url,
     base::OnceCallback<void(URLDataSource*)> callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&GetSourceForURLHelper,
                      browser_context->GetResourceContext(), url),
@@ -54,7 +54,7 @@ void URLDataSource::GetSourceForURL(
 
 scoped_refptr<base::SingleThreadTaskRunner>
 URLDataSource::TaskRunnerForRequestPath(const std::string& path) {
-  return base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI});
+  return base::CreateSingleThreadTaskRunner({BrowserThread::UI});
 }
 
 bool URLDataSource::ShouldReplaceExistingSource() {
@@ -91,6 +91,10 @@ std::string URLDataSource::GetContentSecurityPolicyImgSrc() {
   return std::string();
 }
 
+std::string URLDataSource::GetContentSecurityPolicyWorkerSrc() {
+  return std::string();
+}
+
 bool URLDataSource::ShouldDenyXFrameOptions() {
   return true;
 }
@@ -115,5 +119,9 @@ bool URLDataSource::IsGzipped(const std::string& path) {
 }
 
 void URLDataSource::DisablePolymer2ForHost(const std::string& host) {}
+
+bool URLDataSource::ShouldReplaceI18nInJS() {
+  return false;
+}
 
 }  // namespace content

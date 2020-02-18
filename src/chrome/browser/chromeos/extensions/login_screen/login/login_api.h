@@ -17,8 +17,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
 }
 
-class LoginLaunchManagedGuestSessionFunction
-    : public UIThreadExtensionFunction {
+class LoginLaunchManagedGuestSessionFunction : public ExtensionFunction {
  public:
   LoginLaunchManagedGuestSessionFunction();
 
@@ -35,7 +34,7 @@ class LoginLaunchManagedGuestSessionFunction
   DISALLOW_COPY_AND_ASSIGN(LoginLaunchManagedGuestSessionFunction);
 };
 
-class LoginExitCurrentSessionFunction : public UIThreadExtensionFunction {
+class LoginExitCurrentSessionFunction : public ExtensionFunction {
  public:
   LoginExitCurrentSessionFunction();
 
@@ -52,25 +51,7 @@ class LoginExitCurrentSessionFunction : public UIThreadExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(LoginExitCurrentSessionFunction);
 };
 
-class LoginIsRunningInLoginProfileFunction : public UIThreadExtensionFunction {
- public:
-  LoginIsRunningInLoginProfileFunction();
-
-  DECLARE_EXTENSION_FUNCTION("login.isRunningInLoginProfile",
-                             LOGIN_ISRUNNINGINLOGINPROFILE)
-
- protected:
-  ~LoginIsRunningInLoginProfileFunction() override;
-
-  // ExtensionFunction:
-  ResponseAction Run() override;
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(LoginIsRunningInLoginProfileFunction);
-};
-
-class LoginFetchDataForNextLoginAttemptFunction
-    : public UIThreadExtensionFunction {
+class LoginFetchDataForNextLoginAttemptFunction : public ExtensionFunction {
  public:
   LoginFetchDataForNextLoginAttemptFunction();
 

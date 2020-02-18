@@ -10,8 +10,13 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/default_clock.h"
+#include "components/optimization_guide/hints_processing_util.h"
 #include "components/optimization_guide/optimization_guide_features.h"
+#include "components/optimization_guide/optimization_guide_prefs.h"
 #include "components/optimization_guide/proto/hints.pb.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/network_service_instance.h"
 #include "net/base/load_flags.h"
 #include "net/base/url_util.h"
@@ -24,19 +29,61 @@
 
 namespace optimization_guide {
 
+namespace {
+
+// The duration that hosts placed in the HintsFetcherHostsSuccessfullyFetched
+// dictionary pref are considered valid.
+constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
+    base::TimeDelta::FromDays(7);
+
+}  // namespace
+
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GURL optimization_guide_service_url)
+    GURL optimization_guide_service_url,
+    PrefService* pref_service)
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
           "key",
-          features::GetOptimizationGuideServiceAPIKey())) {
+          features::GetOptimizationGuideServiceAPIKey())),
+      pref_service_(pref_service),
+      time_clock_(base::DefaultClock::GetInstance()) {
   url_loader_factory_ = std::move(url_loader_factory);
   CHECK(optimization_guide_service_url_.SchemeIs(url::kHttpsScheme));
   CHECK(features::IsHintsFetchingEnabled());
 }
 
 HintsFetcher::~HintsFetcher() {}
+
+// static
+void HintsFetcher::ClearHostsSuccessfullyFetched(PrefService* pref_service) {
+  DictionaryPrefUpdate hosts_fetched_list(
+      pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
+  hosts_fetched_list->Clear();
+}
+
+void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {
+  time_clock_ = time_clock;
+}
+
+// static
+void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
+                                              const std::string& host) {
+  DictionaryPrefUpdate hosts_fetched(
+      pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
+  base::Optional<double> value =
+      hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
+  if (!value) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "OptimizationGuide.HintsFetcher.WasHostCoveredByFetch", false);
+    return;
+  }
+
+  base::Time host_valid_time = base::Time::FromDeltaSinceWindowsEpoch(
+      base::TimeDelta::FromSecondsD(*value));
+  UMA_HISTOGRAM_BOOLEAN("OptimizationGuide.HintsFetcher.WasHostCoveredByFetch",
+                        host_valid_time > base::Time::Now());
+}
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
@@ -100,7 +147,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
 
   resource_request->method = "POST";
   resource_request->load_flags = net::LOAD_BYPASS_PROXY;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   url_loader_ = network::SimpleURLLoader::Create(std::move(resource_request),
                                                  traffic_annotation);
@@ -123,6 +170,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
       base::BindOnce(&HintsFetcher::OnURLLoadComplete, base::Unretained(this)));
 
   hints_fetched_callback_ = std::move(hints_fetched_callback);
+  hosts_fetched_ = hosts;
   return true;
 }
 
@@ -143,10 +191,64 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
 
   if (net_status == net::OK && response_code == net::HTTP_OK &&
       get_hints_response->ParseFromString(get_hints_response_data)) {
+    UMA_HISTOGRAM_COUNTS_100(
+        "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
+        get_hints_response->hints_size());
+    UpdateHostsSuccessfullyFetched();
     std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
   } else {
     std::move(hints_fetched_callback_).Run(base::nullopt);
   }
+}
+
+void HintsFetcher::UpdateHostsSuccessfullyFetched() {
+  DictionaryPrefUpdate hosts_fetched_list(
+      pref_service_, prefs::kHintsFetcherHostsSuccessfullyFetched);
+
+  // Remove any expired hosts.
+  std::vector<std::string> entries_to_remove;
+  for (const auto& it : hosts_fetched_list->DictItems()) {
+    if (base::Time::FromDeltaSinceWindowsEpoch(base::TimeDelta::FromSecondsD(
+            it.second.GetDouble())) < time_clock_->Now()) {
+      entries_to_remove.emplace_back(it.first);
+    }
+  }
+  for (const auto& host : entries_to_remove) {
+    hosts_fetched_list->Remove(host, nullptr);
+  }
+
+  if (hosts_fetched_.empty())
+    return;
+
+  // Ensure there is enough space in the dictionary pref for the
+  // most recent set of hosts to be stored.
+  if (hosts_fetched_list->size() + hosts_fetched_.size() >
+      features::MaxHostsForRecordingSuccessfullyCovered()) {
+    entries_to_remove.clear();
+    size_t num_entries_to_remove =
+        hosts_fetched_list->size() + hosts_fetched_.size() -
+        features::MaxHostsForRecordingSuccessfullyCovered();
+    for (const auto& it : hosts_fetched_list->DictItems()) {
+      if (entries_to_remove.size() >= num_entries_to_remove)
+        break;
+      entries_to_remove.emplace_back(it.first);
+    }
+    for (const auto& host : entries_to_remove) {
+      hosts_fetched_list->Remove(host, nullptr);
+    }
+  }
+
+  // Add the covered hosts in |hosts_fetched_| to the dictionary pref.
+  base::Time host_invalid_time =
+      time_clock_->Now() + kHintsFetcherHostFetchedValidDuration;
+  for (const std::string& host : hosts_fetched_) {
+    hosts_fetched_list->SetDoubleKey(
+        HashHostForDictionary(host),
+        host_invalid_time.ToDeltaSinceWindowsEpoch().InSecondsF());
+  }
+  DCHECK_LE(hosts_fetched_list->size(),
+            features::MaxHostsForRecordingSuccessfullyCovered());
+  hosts_fetched_.clear();
 }
 
 void HintsFetcher::OnURLLoadComplete(

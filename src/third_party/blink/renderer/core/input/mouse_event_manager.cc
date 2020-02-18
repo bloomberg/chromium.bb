@@ -68,6 +68,7 @@ void UpdateMouseMovementXY(const WebMouseEvent& mouse_event,
                            LocalDOMWindow* dom_window,
                            MouseEventInit* initializer) {
   if (RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled() &&
+      !mouse_event.is_raw_movement_event &&
       mouse_event.GetType() == WebInputEvent::kMouseMove && last_position) {
     // TODO(crbug.com/907309): Current movementX/Y is in physical pixel when
     // zoom-for-dsf is enabled. Here we apply the device-scale-factor to align
@@ -338,8 +339,10 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     return WebInputEventResult::kNotHandled;
 
   Node* click_target_node = nullptr;
+  Node* old_click_target_node = nullptr;
   if (mouse_down_element_ == mouse_release_target) {
     click_target_node = mouse_down_element_;
+    old_click_target_node = click_target_node;
   } else if (mouse_down_element_->GetDocument() ==
              mouse_release_target->GetDocument()) {
     // Updates distribution because a 'mouseup' event listener can make the
@@ -349,9 +352,17 @@ WebInputEventResult MouseEventManager::DispatchMouseClickIfNeeded(
     mouse_release_target->UpdateDistributionForFlatTreeTraversal();
     click_target_node = mouse_release_target->CommonAncestor(
         *mouse_down_element_, event_handling_util::ParentForClickEvent);
+
+    // Record how often interactive element might change the click target.
+    old_click_target_node = mouse_release_target->CommonAncestor(
+        *mouse_down_element_,
+        event_handling_util::ParentForClickEventInteractiveElementSensitive);
   }
   if (!click_target_node)
     return WebInputEventResult::kNotHandled;
+
+  UMA_HISTOGRAM_BOOLEAN("Event.ClickTargetChangedDueToInteractiveElement",
+                        click_target_node != old_click_target_node);
 
   DEFINE_STATIC_LOCAL(BooleanHistogram, histogram,
                       ("Event.ClickNotFiredDueToDomManipulation"));
@@ -725,6 +736,12 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
                                !IsExtendingSelection(event);
 
   mouse_down_ = event.Event();
+
+  if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
+          frame_->GetDocument())) {
+    if (frame_->View())
+      frame_->View()->DismissFragmentAnchor();
+  }
 
   if (frame_->GetDocument()->IsSVGDocument() &&
       frame_->GetDocument()->AccessSVGExtensions().ZoomAndPanEnabled()) {

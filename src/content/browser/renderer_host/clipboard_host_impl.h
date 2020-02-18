@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -29,30 +29,32 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
  public:
   ~ClipboardHostImpl() override;
 
-  static void Create(blink::mojom::ClipboardHostRequest request);
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
  private:
   friend class ClipboardHostImplTest;
 
-  explicit ClipboardHostImpl(blink::mojom::ClipboardHostRequest request);
+  explicit ClipboardHostImpl(
+      mojo::PendingReceiver<blink::mojom::ClipboardHost> receiver);
 
   // content::mojom::ClipboardHost
-  void GetSequenceNumber(ui::ClipboardType clipboard_type,
+  void GetSequenceNumber(ui::ClipboardBuffer clipboard_buffer,
                          GetSequenceNumberCallback callback) override;
   void IsFormatAvailable(blink::mojom::ClipboardFormat format,
-                         ui::ClipboardType clipboard_type,
+                         ui::ClipboardBuffer clipboard_buffer,
                          IsFormatAvailableCallback callback) override;
-  void ReadAvailableTypes(ui::ClipboardType clipboard_type,
+  void ReadAvailableTypes(ui::ClipboardBuffer clipboard_buffer,
                           ReadAvailableTypesCallback callback) override;
-  void ReadText(ui::ClipboardType clipboard_type,
+  void ReadText(ui::ClipboardBuffer clipboard_buffer,
                 ReadTextCallback callback) override;
-  void ReadHtml(ui::ClipboardType clipboard_type,
+  void ReadHtml(ui::ClipboardBuffer clipboard_buffer,
                 ReadHtmlCallback callback) override;
-  void ReadRtf(ui::ClipboardType clipboard_type,
+  void ReadRtf(ui::ClipboardBuffer clipboard_buffer,
                ReadRtfCallback callback) override;
-  void ReadImage(ui::ClipboardType clipboard_type,
+  void ReadImage(ui::ClipboardBuffer clipboard_buffer,
                  ReadImageCallback callback) override;
-  void ReadCustomData(ui::ClipboardType clipboard_type,
+  void ReadCustomData(ui::ClipboardBuffer clipboard_buffer,
                       const base::string16& type,
                       ReadCustomDataCallback callback) override;
   void WriteText(const base::string16& text) override;
@@ -68,7 +70,7 @@ class CONTENT_EXPORT ClipboardHostImpl : public blink::mojom::ClipboardHost {
   void WriteStringToFindPboard(const base::string16& text) override;
 #endif
 
-  mojo::Binding<blink::mojom::ClipboardHost> binding_;
+  mojo::Receiver<blink::mojom::ClipboardHost> receiver_;
   ui::Clipboard* const clipboard_;  // Not owned
   std::unique_ptr<ui::ScopedClipboardWriter> clipboard_writer_;
 };

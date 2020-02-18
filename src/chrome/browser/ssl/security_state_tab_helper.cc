@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
@@ -21,6 +22,7 @@
 #include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/security_state/content/content_utils.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_entry.h"
@@ -42,7 +44,7 @@
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #endif  // defined(OS_CHROMEOS)
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 #endif
 
@@ -87,6 +89,14 @@ SecurityStateTabHelper::GetVisibleSecurityState() const {
   // information is still being initialized, thus no need to check for that.
   state->malicious_content_status = GetMaliciousContentStatus();
 
+  safety_tips::ReputationWebContentsObserver* reputation_web_contents_observer =
+      safety_tips::ReputationWebContentsObserver::FromWebContents(
+          web_contents());
+  state->safety_tip_status =
+      reputation_web_contents_observer
+          ? reputation_web_contents_observer
+                ->GetSafetyTipStatusForVisibleNavigation()
+          : security_state::SafetyTipStatus::kUnknown;
   return state;
 }
 
@@ -96,6 +106,8 @@ void SecurityStateTabHelper::DidStartNavigation(
     UMA_HISTOGRAM_ENUMERATION("Security.SecurityLevel.FormSubmission",
                               GetSecurityLevel(),
                               security_state::SECURITY_LEVEL_COUNT);
+    UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.FormSubmission",
+                              GetVisibleSecurityState()->safety_tip_status);
   }
 }
 
@@ -121,7 +133,6 @@ void SecurityStateTabHelper::DidFinishNavigation(
   std::unique_ptr<security_state::VisibleSecurityState> visible_security_state =
       GetVisibleSecurityState();
   if (net::IsCertStatusError(visible_security_state->cert_status) &&
-      !net::IsCertStatusMinorError(visible_security_state->cert_status) &&
       !navigation_handle->IsErrorPage()) {
     // Record each time a user visits a site after having clicked through a
     // certificate warning interstitial. This is used as a baseline for
@@ -172,20 +183,32 @@ SecurityStateTabHelper::GetMaliciousContentStatus() const {
         return security_state::MALICIOUS_CONTENT_STATUS_MALWARE;
       case safe_browsing::SB_THREAT_TYPE_URL_UNWANTED:
         return security_state::MALICIOUS_CONTENT_STATUS_UNWANTED_SOFTWARE;
-      case safe_browsing::SB_THREAT_TYPE_SIGN_IN_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+      case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_SYNC_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(), PasswordType::PRIMARY_ACCOUNT_PASSWORD)) {
           return security_state::
-              MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE;
+              MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
+        }
+        // If user has already changed Gaia password, returns the regular
+        // social engineering content status.
+        return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
+#endif
+      case safe_browsing::SB_THREAT_TYPE_SIGNED_IN_NON_SYNC_PASSWORD_REUSE:
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+        if (safe_browsing::ChromePasswordProtectionService::
+                ShouldShowPasswordReusePageInfoBubble(
+                    web_contents(), PasswordType::OTHER_GAIA_PASSWORD)) {
+          return security_state::
+              MALICIOUS_CONTENT_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
         }
         // If user has already changed Gaia password, returns the regular
         // social engineering content status.
         return security_state::MALICIOUS_CONTENT_STATUS_SOCIAL_ENGINEERING;
 #endif
       case safe_browsing::SB_THREAT_TYPE_ENTERPRISE_PASSWORD_REUSE:
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
         if (safe_browsing::ChromePasswordProtectionService::
                 ShouldShowPasswordReusePageInfoBubble(
                     web_contents(), PasswordType::ENTERPRISE_PASSWORD)) {

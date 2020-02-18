@@ -5,14 +5,14 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/numerics/safe_conversions.h"
 
 #include "media/base/decrypt_config.h"
 #include "media/base/subsample_entry.h"
 #include "media/filters/ivf_parser.h"
 #include "media/filters/vp9_parser.h"
-
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 struct Environment {
   Environment() {
@@ -57,7 +57,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   while (ivf_parser.ParseNextFrame(&ivf_frame_header, &ivf_payload)) {
     media::Vp9FrameHeader vp9_frame_header;
     vp9_parser.SetStream(
-        ivf_payload, ivf_frame_header.frame_size, {},
+        ivf_payload, ivf_frame_header.frame_size,
         media::DecryptConfig::CreateCencConfig(key_id, iv, subsamples));
     // TODO(kcwu): further fuzzing the case of Vp9Parser::kAwaitingRefresh.
     std::unique_ptr<media::DecryptConfig> null_config;

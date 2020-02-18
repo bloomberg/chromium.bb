@@ -31,7 +31,6 @@ namespace ui {
 
 class BitmapCursorOzone;
 class OSExchangeData;
-class PlatformWindowDelegate;
 class WaylandConnection;
 class XDGPopupWrapper;
 class XDGSurfaceWrapper;
@@ -78,11 +77,12 @@ class WaylandWindow : public PlatformWindow,
 
   // Set whether this window has keyboard focus and should dispatch key events.
   void set_keyboard_focus(bool focus) { has_keyboard_focus_ = focus; }
-
   bool has_keyboard_focus() const { return has_keyboard_focus_; }
 
-  // Set whether this window has touch focus and should dispatch touch events.
+  // The methods set or return whether this window has touch focus and should
+  // dispatch touch events.
   void set_touch_focus(bool focus) { has_touch_focus_ = focus; }
+  bool has_touch_focus() const { return has_touch_focus_; }
 
   // Set a child of this window. It is very important in case of nested
   // xdg_popups as long as they must be destroyed in the back order.
@@ -104,7 +104,7 @@ class WaylandWindow : public PlatformWindow,
   // WmMoveResizeHandler
   void DispatchHostWindowDragMovement(
       int hittest,
-      const gfx::Point& pointer_location) override;
+      const gfx::Point& pointer_location_in_px) override;
 
   // WmDragHandler
   void StartDrag(const ui::OSExchangeData& data,
@@ -130,6 +130,7 @@ class WaylandWindow : public PlatformWindow,
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
   void Deactivate() override;
+  void SetUseNativeFrame(bool use_native_frame) override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;
   void ConfineCursorToBounds(const gfx::Rect& bounds) override;

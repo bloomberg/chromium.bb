@@ -55,8 +55,6 @@ class Extension;
 class ExtensionCache;
 class ExtensionError;
 class ExtensionHostDelegate;
-class ExtensionApiFrameIdMap;
-class ExtensionApiFrameIdMapHelper;
 class ExtensionSet;
 class ExtensionSystem;
 class ExtensionSystemProvider;
@@ -249,7 +247,8 @@ class ExtensionsBrowserClient {
   virtual void BroadcastEventToRenderers(
       events::HistogramValue histogram_value,
       const std::string& event_name,
-      std::unique_ptr<base::ListValue> args) = 0;
+      std::unique_ptr<base::ListValue> args,
+      bool dispatch_to_off_the_record_profiles) = 0;
 
   // Gets the single ExtensionCache instance shared across the browser process.
   virtual ExtensionCache* GetExtensionCache() = 0;
@@ -286,9 +285,6 @@ class ExtensionsBrowserClient {
   // Returns a new UpdateClient.
   virtual scoped_refptr<update_client::UpdateClient> CreateUpdateClient(
       content::BrowserContext* context);
-
-  virtual std::unique_ptr<ExtensionApiFrameIdMapHelper>
-  CreateExtensionApiFrameIdMapHelper(ExtensionApiFrameIdMap* map);
 
   virtual std::unique_ptr<content::BluetoothChooser> CreateBluetoothChooser(
       content::RenderFrameHost* frame,

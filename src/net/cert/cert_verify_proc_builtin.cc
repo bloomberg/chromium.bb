@@ -50,7 +50,7 @@ RevocationPolicy NoRevocationChecking() {
   policy.check_revocation = false;
   policy.networking_allowed = false;
   policy.allow_missing_info = true;
-  policy.allow_network_failure = true;
+  policy.allow_unable_to_check = true;
   return policy;
 }
 
@@ -85,6 +85,25 @@ bool IsEVCandidate(const EVRootCAMetadata* ev_metadata,
 enum class VerificationType {
   kEV,  // Extended Validation
   kDV,  // Domain Validation
+};
+
+class PathBuilderDelegateDataImpl : public CertPathBuilderDelegateData {
+ public:
+  ~PathBuilderDelegateDataImpl() override = default;
+
+  static const PathBuilderDelegateDataImpl* Get(
+      const CertPathBuilderResultPath& path) {
+    return static_cast<PathBuilderDelegateDataImpl*>(path.delegate_data.get());
+  }
+
+  static PathBuilderDelegateDataImpl* GetOrCreate(
+      CertPathBuilderResultPath* path) {
+    if (!path->delegate_data)
+      path->delegate_data = std::make_unique<PathBuilderDelegateDataImpl>();
+    return static_cast<PathBuilderDelegateDataImpl*>(path->delegate_data.get());
+  }
+
+  OCSPVerifyResult stapled_ocsp_verify_result;
 };
 
 // TODO(eroman): The path building code in this file enforces its idea of weak
@@ -171,9 +190,11 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // to |policy|. Depending on the policy, errors will be added to the
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
-    CheckValidatedChainRevocation(path->certs, policy,
-                                  stapled_leaf_ocsp_response_, net_fetcher_,
-                                  &path->errors);
+    CheckValidatedChainRevocation(
+        path->certs, policy, stapled_leaf_ocsp_response_, net_fetcher_,
+        &path->errors,
+        &PathBuilderDelegateDataImpl::GetOrCreate(path)
+             ->stapled_ocsp_verify_result);
   }
 
  private:
@@ -192,15 +213,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       RevocationPolicy policy;
       policy.check_revocation = true;
       policy.networking_allowed = true;
-      policy.allow_missing_info = true;
-      policy.allow_network_failure = false;
-
-      // In practice EV verification won't succeed for local anchors. For
-      // completeness though use all the strictness of EV if this is an EV
-      // attempt.
-      if (verification_type_ == VerificationType::kEV)
-        policy.allow_missing_info = false;
-
+      policy.allow_missing_info = false;
+      policy.allow_unable_to_check = false;
       return policy;
     }
 
@@ -213,7 +227,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       policy.check_revocation = true;
       policy.networking_allowed = true;
       policy.allow_missing_info = false;
-      policy.allow_network_failure = false;
+      policy.allow_unable_to_check = false;
       return policy;
     }
 
@@ -223,7 +237,7 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
       policy.check_revocation = true;
       policy.networking_allowed = true;
       policy.allow_missing_info = true;
-      policy.allow_network_failure = true;
+      policy.allow_unable_to_check = true;
       return policy;
     }
 
@@ -421,26 +435,25 @@ struct BuildPathAttempt {
   SimplePathBuilderDelegate::DigestPolicy digest_policy;
 };
 
-void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
-                  CertIssuerSourceStatic* intermediates,
-                  SystemTrustStore* ssl_trust_store,
-                  base::Time verification_time,
-                  base::TimeTicks deadline,
-                  VerificationType verification_type,
-                  SimplePathBuilderDelegate::DigestPolicy digest_policy,
-                  int flags,
-                  const std::string& ocsp_response,
-                  const CRLSet* crl_set,
-                  CertNetFetcher* net_fetcher,
-                  const EVRootCAMetadata* ev_metadata,
-                  CertPathBuilder::Result* result,
-                  bool* checked_revocation) {
+CertPathBuilder::Result TryBuildPath(
+    const scoped_refptr<ParsedCertificate>& target,
+    CertIssuerSourceStatic* intermediates,
+    SystemTrustStore* ssl_trust_store,
+    base::Time verification_time,
+    base::TimeTicks deadline,
+    VerificationType verification_type,
+    SimplePathBuilderDelegate::DigestPolicy digest_policy,
+    int flags,
+    const std::string& ocsp_response,
+    const CRLSet* crl_set,
+    CertNetFetcher* net_fetcher,
+    const EVRootCAMetadata* ev_metadata,
+    bool* checked_revocation) {
   der::GeneralizedTime der_verification_time;
   if (!der::EncodeTimeAsGeneralizedTime(verification_time,
                                         &der_verification_time)) {
     // This shouldn't be possible.
-    result->Clear();
-    return;
+    return CertPathBuilder::Result();
   }
 
   // Path building will require candidate paths to conform to at least one of
@@ -462,8 +475,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
       target, ssl_trust_store->GetTrustStore(), &path_builder_delegate,
       der_verification_time, KeyPurpose::SERVER_AUTH,
       InitialExplicitPolicy::kFalse, user_initial_policy_set,
-      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse,
-      result);
+      InitialPolicyMappingInhibit::kFalse, InitialAnyPolicyInhibit::kFalse);
 
   // Allow the path builder to discover the explicitly provided intermediates in
   // |input_cert|.
@@ -481,7 +493,7 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   path_builder.SetIterationLimit(kPathBuilderIterationLimit);
   path_builder.SetDeadline(deadline);
 
-  path_builder.Run();
+  return path_builder.Run();
 }
 
 int AssignVerifyResult(X509Certificate* input_cert,
@@ -491,6 +503,9 @@ int AssignVerifyResult(X509Certificate* input_cert,
                        bool checked_revocation_for_some_path,
                        SystemTrustStore* ssl_trust_store,
                        CertVerifyResult* verify_result) {
+  // Clone debug data from the CertPathBuilder::Result into CertVerifyResult.
+  verify_result->CloneDataFrom(result);
+
   const CertPathBuilderResultPath* best_path_possibly_invalid =
       result.GetBestPathPossiblyInvalid();
 
@@ -553,6 +568,11 @@ int AssignVerifyResult(X509Certificate* input_cert,
     LOG(ERROR) << "CertVerifyProcBuiltin for " << hostname << " failed:\n"
                << partial_path.errors.ToDebugString(partial_path.certs);
   }
+
+  const PathBuilderDelegateDataImpl* delegate_data =
+      PathBuilderDelegateDataImpl::Get(partial_path);
+  if (delegate_data)
+    verify_result->ocsp_result = delegate_data->stapled_ocsp_verify_result;
 
   return IsCertStatusError(verify_result->cert_status)
              ? MapCertStatusToNetError(verify_result->cert_status)
@@ -652,11 +672,11 @@ int CertVerifyProcBuiltin::VerifyInternal(
     verification_type = cur_attempt.verification_type;
 
     // Run the attempt through the path builder.
-    TryBuildPath(target, &intermediates, ssl_trust_store.get(),
-                 verification_time, deadline, cur_attempt.verification_type,
-                 cur_attempt.digest_policy, flags, ocsp_response, crl_set,
-                 net_fetcher_.get(), ev_metadata, &result,
-                 &checked_revocation_for_some_path);
+    result = TryBuildPath(
+        target, &intermediates, ssl_trust_store.get(), verification_time,
+        deadline, cur_attempt.verification_type, cur_attempt.digest_policy,
+        flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
+        &checked_revocation_for_some_path);
 
     if (result.HasValidPath() || result.exceeded_deadline)
       break;

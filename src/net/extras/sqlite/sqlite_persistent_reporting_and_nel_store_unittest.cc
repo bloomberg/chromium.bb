@@ -20,7 +20,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/network_error_logging/network_error_logging_service.h"
 #include "net/reporting/reporting_test_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
@@ -85,7 +85,7 @@ const std::vector<TestCase> kCoalescingTestcasesForUpdateDetails = {
 }  // namespace
 
 class SQLitePersistentReportingAndNelStoreTest
-    : public TestWithScopedTaskEnvironment {
+    : public TestWithTaskEnvironment {
  public:
   SQLitePersistentReportingAndNelStoreTest() {}
 
@@ -98,7 +98,7 @@ class SQLitePersistentReportingAndNelStoreTest
   void DestroyStore() {
     store_.reset();
     // Make sure we wait until the destructor has run by running all
-    // ScopedTaskEnvironment tasks.
+    // TaskEnvironment tasks.
     RunUntilIdle();
   }
 
@@ -120,7 +120,7 @@ class SQLitePersistentReportingAndNelStoreTest
   void LoadNelPolicies(
       std::vector<NetworkErrorLoggingService::NelPolicy>* policies_out) {
     base::RunLoop run_loop;
-    store_->LoadNelPolicies(base::BindRepeating(
+    store_->LoadNelPolicies(base::BindOnce(
         &SQLitePersistentReportingAndNelStoreTest::OnNelPoliciesLoaded,
         base::Unretained(this), &run_loop, policies_out));
     run_loop.Run();
@@ -138,7 +138,7 @@ class SQLitePersistentReportingAndNelStoreTest
       std::vector<ReportingEndpoint>* endpoints_out,
       std::vector<CachedReportingEndpointGroup>* groups_out) {
     base::RunLoop run_loop;
-    store_->LoadReportingClients(base::BindRepeating(
+    store_->LoadReportingClients(base::BindOnce(
         &SQLitePersistentReportingAndNelStoreTest::OnReportingClientsLoaded,
         base::Unretained(this), &run_loop, endpoints_out, groups_out));
     run_loop.Run();
@@ -223,7 +223,7 @@ class SQLitePersistentReportingAndNelStoreTest
   const scoped_refptr<base::SequencedTaskRunner> client_task_runner_ =
       base::ThreadTaskRunnerHandle::Get();
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 };
 
 TEST_F(SQLitePersistentReportingAndNelStoreTest, CreateDBAndTables) {

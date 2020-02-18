@@ -5,7 +5,7 @@
 #include "chromeos/dbus/fake_gnubby_client.h"
 
 #include "base/scoped_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "chromeos/dbus/gnubby_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +33,7 @@ class FakeGnubbyClientTest : public testing::Test {
   FakeGnubbyClientTest() = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeGnubbyClient fake_gnubby_client_;
 
  private:
@@ -42,7 +42,8 @@ class FakeGnubbyClientTest : public testing::Test {
 
 TEST_F(FakeGnubbyClientTest, NotificationSent) {
   TestObserver observer;
-  ScopedObserver<GnubbyClient, TestObserver> scoped_observer(&observer);
+  ScopedObserver<GnubbyClient, GnubbyClient::Observer> scoped_observer(
+      &observer);
   scoped_observer.Add(&fake_gnubby_client_);
 
   EXPECT_EQ(fake_gnubby_client_.calls(), 0);

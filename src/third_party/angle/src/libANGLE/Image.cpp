@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2015 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -173,7 +173,7 @@ gl::Format ExternalImageSibling::getAttachmentFormat(GLenum binding,
 
 GLsizei ExternalImageSibling::getAttachmentSamples(const gl::ImageIndex &imageIndex) const
 {
-    return mImplementation->getSamples();
+    return static_cast<GLsizei>(mImplementation->getSamples());
 }
 
 bool ExternalImageSibling::isRenderable(const gl::Context *context,

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
-#include "chrome/browser/web_applications/components/web_app_tab_helper_base.h"
+#include "chrome/browser/web_applications/components/web_app_tab_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
@@ -53,7 +53,6 @@ content::WebContents* ShowWebApplicationWindow(
   NavigateParams nav_params(browser, launch_url,
                             ui::PAGE_TRANSITION_AUTO_BOOKMARK);
   nav_params.disposition = disposition;
-  nav_params.opener = params.opener;
   Navigate(&nav_params);
 
   content::WebContents* web_contents =
@@ -61,10 +60,13 @@ content::WebContents* ShowWebApplicationWindow(
 
   SetWebAppPrefsForWebContents(web_contents);
 
-  web_app::WebAppTabHelperBase* tab_helper =
-      web_app::WebAppTabHelperBase::FromWebContents(web_contents);
+  web_app::WebAppTabHelper* tab_helper =
+      web_app::WebAppTabHelper::FromWebContents(web_contents);
   DCHECK(tab_helper);
   tab_helper->SetAppId(app_id);
+
+  // TODO(https://crbug.com/988928): Update SiteEngagementService
+  // and AppBannerSettingsHelper.
 
   browser->window()->Show();
   web_contents->SetInitialFocus();
@@ -78,6 +80,21 @@ WebAppLaunchManager::WebAppLaunchManager(Profile* profile)
       provider_(web_app::WebAppProvider::Get(profile)) {}
 
 WebAppLaunchManager::~WebAppLaunchManager() = default;
+
+content::WebContents* WebAppLaunchManager::OpenApplication(
+    const AppLaunchParams& params) {
+  if (!provider_->registrar().IsInstalled(params.app_id))
+    return nullptr;
+
+  Browser* browser = CreateWebApplicationWindow(params.profile, params.app_id);
+
+  return ShowWebApplicationWindow(
+      params, params.app_id,
+      params.override_url.is_empty()
+          ? provider_->registrar().GetAppLaunchURL(params.app_id)
+          : params.override_url,
+      browser, WindowOpenDisposition::NEW_FOREGROUND_TAB);
+}
 
 bool WebAppLaunchManager::OpenApplicationWindow(
     const std::string& app_id,
@@ -119,15 +136,7 @@ bool WebAppLaunchManager::OpenApplicationTab(const std::string& app_id) {
 }
 
 void WebAppLaunchManager::OpenWebApplication(const ::AppLaunchParams& params) {
-  if (!provider_->registrar().IsInstalled(params.app_id))
-    return;
-
-  Browser* browser = CreateWebApplicationWindow(params.profile, params.app_id);
-
-  ShowWebApplicationWindow(
-      params, params.app_id,
-      provider_->registrar().GetAppLaunchURL(params.app_id), browser,
-      WindowOpenDisposition::NEW_FOREGROUND_TAB);
+  OpenApplication(params);
 }
 
 }  // namespace web_app

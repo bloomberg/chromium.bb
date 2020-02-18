@@ -6,11 +6,34 @@
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_AD_METRICS_FRAME_DATA_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "ui/gfx/geometry/size.h"
 #include "url/origin.h"
+
+// Resource usage thresholds for the Heavy Ad Intervention feature. These
+// numbers are platform specific and are intended to target 1 in 1000 ad iframes
+// on each platform, for network and CPU use respectively.
+namespace heavy_ad_thresholds {
+
+// Maximum number of network bytes allowed to be loaded by a frame. These
+// numbers reflect the 99.9th percentile of the
+// PageLoad.Clients.Ads.Bytes.AdFrames.PerFrame.Network histogram on mobile and
+// desktop.
+const int kMaxNetworkBytes = 4.0 * 1024 * 1024;
+
+// CPU thresholds are selected from AdFrameLoad UKM, and are intended to target
+// 1 in 1000 ad iframes combined, with each threshold responsible for roughly
+// half of those intervention. Maximum number of milliseconds of CPU use allowed
+// to be used by a frame.
+const int kMaxCpuTime = 60 * 1000;
+
+// Maximum percentage of CPU utilization over a 30 second window allowed.
+const int kMaxPeakWindowedPercent = 50;
+
+}  // namespace heavy_ad_thresholds
 
 // Store information received for a frame on the page. FrameData is meant
 // to represent a frame along with it's entire subtree.
@@ -32,6 +55,16 @@ class FrameData {
     kVisible = 1,
     kAnyVisibility = 2,
     kMaxValue = kAnyVisibility,
+  };
+
+  // The type of heavy ad this frame is classified as per the Heavy Ad
+  // Intervention.
+  enum class HeavyAdStatus {
+    kNone = 0,
+    kNetwork = 1,
+    kTotalCpu = 2,
+    kPeakCpu = 3,
+    kMaxValue = kPeakCpu,
   };
 
   // These values are persisted to logs. Entries should not be renumbered and
@@ -113,6 +146,12 @@ class FrameData {
                       base::TimeDelta update,
                       InteractiveStatus interactive);
 
+  // Returns whether the heavy ad intervention was triggered on this frame.
+  // This intervention is triggered when the frame is considered heavy, has not
+  // received user gesture, and the intervention feature is enabled. This
+  // returns true the first time the criteria is met, and false afterwards.
+  bool MaybeTriggerHeavyAdIntervention();
+
   // Get the cpu usage for the appropriate interactive period.
   base::TimeDelta GetInteractiveCpuUsage(InteractiveStatus status) const;
 
@@ -140,6 +179,10 @@ class FrameData {
   void RecordAdFrameLoadUkmEvent(ukm::SourceId source_id) const;
 
   int peak_windowed_cpu_percent() const { return peak_windowed_cpu_percent_; }
+
+  base::Optional<base::TimeTicks> peak_window_start_time() const {
+    return peak_window_start_time_;
+  }
 
   FrameTreeNodeId frame_tree_node_id() const { return frame_tree_node_id_; }
 
@@ -177,6 +220,8 @@ class FrameData {
     timing_ = std::move(timing);
   }
 
+  HeavyAdStatus heavy_ad_status() const { return heavy_ad_status_; }
+
  private:
   // Time updates for the frame with a timestamp indicating when they arrived.
   // Used for windowed cpu load reporting.
@@ -189,6 +234,10 @@ class FrameData {
 
   // Updates whether or not this frame meets the criteria for visibility.
   void UpdateFrameVisibility();
+
+  // Computes whether this frame meets the criteria for being a heavy frame for
+  // the heavy ad intervention and returns the type of threshold hit if any.
+  HeavyAdStatus ComputeHeavyAdStatus() const;
 
   // The most recently updated timing received for this frame.
   page_load_metrics::mojom::PageLoadTimingPtr timing_;
@@ -210,20 +259,28 @@ class FrameData {
                                                  InteractiveStatus::kMaxValue) +
                                              1] = {base::TimeDelta(),
                                                    base::TimeDelta()};
+
   // Time spent by the frame in the cpu before and after activation.
   base::TimeDelta cpu_by_activation_period_
       [static_cast<size_t>(UserActivationStatus::kMaxValue) + 1] = {
           base::TimeDelta(), base::TimeDelta()};
+
   // Duration of time the page spent in the foreground before activation.
   base::TimeDelta pre_activation_foreground_duration_;
+
   // The cpu time spent in the current window.
   base::TimeDelta cpu_total_for_current_window_;
+
   // The cpu updates themselves that are still relevant for the time window.
   // Note: Since the window is 30 seconds and PageLoadMetrics updates arrive at
   // most every half second, this can never have more than 60 elements.
   base::queue<CpuUpdateData> cpu_updates_for_current_window_;
+
   // The peak windowed cpu load during the unactivated period.
   int peak_windowed_cpu_percent_ = 0;
+
+  // The time that the peak cpu usage window started at.
+  base::Optional<base::TimeTicks> peak_window_start_time_;
 
   // The depth of this FrameData's root frame.
   unsigned int root_frame_depth_ = 0;
@@ -248,6 +305,11 @@ class FrameData {
   gfx::Size frame_size_;
   url::Origin origin_;
   MediaStatus media_status_ = MediaStatus::kNotPlayed;
+
+  // Indicates whether or not this frame met the criteria for the heavy ad
+  // intervention. This should be not be set if the Heavy Ad Intervention is
+  // not enabled.
+  HeavyAdStatus heavy_ad_status_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameData);
 };

@@ -65,6 +65,27 @@ enum class TransformedWritingMode {
 
 typedef Vector<FlexItem, 8> FlexItemVector;
 
+class AutoClearOverrideHeight {
+ public:
+  explicit AutoClearOverrideHeight(LayoutBlock* block)
+      : block_(block), old_override_height_(-1) {
+    if (block_ && block_->HasOverrideLogicalHeight()) {
+      old_override_height_ = block_->OverrideLogicalHeight();
+      block_->ClearOverrideLogicalHeight();
+    }
+  }
+  ~AutoClearOverrideHeight() {
+    if (old_override_height_ != LayoutUnit(-1)) {
+      DCHECK(block_);
+      block_->SetOverrideLogicalHeight(old_override_height_);
+    }
+  }
+
+ private:
+  LayoutBlock* block_;
+  LayoutUnit old_override_height_;
+};
+
 class FlexItem {
   DISALLOW_NEW();
 
@@ -76,27 +97,27 @@ class FlexItem {
   //   border/scrollbar/padding.
   FlexItem(LayoutBox*,
            LayoutUnit flex_base_content_size,
-           MinMaxSize min_max_sizes,
-           LayoutUnit main_axis_border_and_padding,
+           MinMaxSize min_max_main_axis_sizes,
+           // Ignored for legacy, required for NG:
+           base::Optional<MinMaxSize> min_max_cross_axis_sizes,
+           LayoutUnit main_axis_border_padding,
            LayoutUnit main_axis_margin);
 
   LayoutUnit HypotheticalMainAxisMarginBoxSize() const {
-    return hypothetical_main_content_size + main_axis_border_and_padding +
+    return hypothetical_main_content_size + main_axis_border_padding +
            main_axis_margin;
   }
 
   LayoutUnit FlexBaseMarginBoxSize() const {
-    return flex_base_content_size + main_axis_border_and_padding +
-           main_axis_margin;
+    return flex_base_content_size + main_axis_border_padding + main_axis_margin;
   }
 
   LayoutUnit FlexedBorderBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding;
+    return flexed_content_size + main_axis_border_padding;
   }
 
   LayoutUnit FlexedMarginBoxSize() const {
-    return flexed_content_size + main_axis_border_and_padding +
-           main_axis_margin;
+    return flexed_content_size + main_axis_border_padding + main_axis_margin;
   }
 
   LayoutUnit ClampSizeToMinAndMax(LayoutUnit size) const {
@@ -124,6 +145,9 @@ class FlexItem {
   // it in cross_axis_size. DCHECKs if the item is not stretch aligned.
   void ComputeStretchedSize();
 
+  // Returns true if the margins were adjusted due to auto margin resolution.
+  bool UpdateAutoMarginsInCrossAxis(LayoutUnit available_alignment_space);
+
   inline const FlexLine* Line() const;
 
   FlexLayoutAlgorithm* algorithm;
@@ -131,13 +155,15 @@ class FlexItem {
   LayoutBox* box;
   const LayoutUnit flex_base_content_size;
   const MinMaxSize min_max_sizes;
+  const base::Optional<MinMaxSize> min_max_cross_sizes;
   const LayoutUnit hypothetical_main_content_size;
-  const LayoutUnit main_axis_border_and_padding;
+  const LayoutUnit main_axis_border_padding;
   const LayoutUnit main_axis_margin;
   LayoutUnit flexed_content_size;
 
   // When set by the caller, this should be the size pre-stretching.
   LayoutUnit cross_axis_size;
+  // The algorithm stores the main axis offset in X and cross axis offset in Y.
   LayoutPoint desired_location;
 
   bool frozen;

@@ -14,6 +14,10 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
+#include "ui/ozone/platform/wayland/test/mock_surface.h"
+#include "ui/ozone/platform/wayland/test/mock_zwp_linux_buffer_params.h"
+#include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 
 using testing::_;
@@ -36,6 +40,28 @@ struct InputData {
   std::vector<uint64_t> modifiers;
   uint32_t format = 0;
   uint32_t buffer_id = 0;
+};
+
+class MockSurfaceGpu : public WaylandSurfaceGpu {
+ public:
+  MockSurfaceGpu(WaylandBufferManagerGpu* buffer_manager,
+                 gfx::AcceleratedWidget widget)
+      : buffer_manager_(buffer_manager), widget_(widget) {
+    buffer_manager_->RegisterSurface(widget_, this);
+  }
+  ~MockSurfaceGpu() { buffer_manager_->UnregisterSurface(widget_); }
+
+  MOCK_METHOD2(OnSubmission,
+               void(uint32_t buffer_id, const gfx::SwapResult& swap_result));
+  MOCK_METHOD2(OnPresentation,
+               void(uint32_t buffer_id,
+                    const gfx::PresentationFeedback& feedback));
+
+ private:
+  WaylandBufferManagerGpu* const buffer_manager_;
+  const gfx::AcceleratedWidget widget_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockSurfaceGpu);
 };
 
 }  // namespace
@@ -138,6 +164,22 @@ class WaylandBufferManagerTest : public WaylandTest {
     buffer_manager_gpu_->DestroyBuffer(widget, buffer_id);
 
     Sync();
+  }
+
+  void ProcessCreatedBufferResourcesWithExpectation(size_t expected_size,
+                                                    bool fail) {
+    auto params_vector = server_.zwp_linux_dmabuf_v1()->buffer_params();
+    // To ensure, no other buffers are created, test the size of the vector.
+    EXPECT_EQ(params_vector.size(), expected_size);
+
+    for (auto* mock_params : params_vector) {
+      if (!fail) {
+        zwp_linux_buffer_params_v1_send_created(mock_params->resource(),
+                                                mock_params->buffer_resource());
+      } else {
+        zwp_linux_buffer_params_v1_send_failed(mock_params->resource());
+      }
+    }
   }
 
   MockTerminateGpuCallback callback_;
@@ -259,6 +301,180 @@ TEST_P(WaylandBufferManagerTest, CreateAndDestroyBuffer) {
     // Can't destroy the same buffer twice (non-existing id).
     DestroyBufferAndSetTerminateExpectation(widget, kBufferId2, true /*fail*/);
   }
+}
+
+TEST_P(WaylandBufferManagerTest, EnsureCorrectOrderOfCallbacks) {
+  constexpr uint32_t kBufferId1 = 1;
+  constexpr uint32_t kBufferId2 = 2;
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  const gfx::Rect bounds = gfx::Rect({0, 0}, kDefaultSize);
+  window_->SetBounds(bounds);
+
+  MockSurfaceGpu mock_surface_gpu(buffer_manager_gpu_.get(), widget_);
+
+  auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(2);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, widget,
+                                                   kBufferId1);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, widget,
+                                                   kBufferId2);
+
+  Sync();
+
+  ProcessCreatedBufferResourcesWithExpectation(2u /* expected size */,
+                                               false /* fail */);
+
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+
+  constexpr uint32_t kNumberOfCommits = 3;
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(kNumberOfCommits);
+  EXPECT_CALL(*mock_surface, Commit()).Times(kNumberOfCommits);
+
+  // All the other expectations must come in order.
+  ::testing::InSequence sequence;
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  // wp_presentation must not exist now. This means that the buffer
+  // manager must send synthetized presentation feedbacks.
+  ASSERT_TRUE(!connection_->presentation());
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
+
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
+
+  Sync();
+
+  // As long as there hasn't any previous buffer attached (nothing to release
+  // yet), it must be enough to just send a frame callback back.
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  // Commit second buffer now.
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId2, bounds);
+
+  Sync();
+
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId2, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId2, _)).Times(1);
+
+  mock_surface->ReleasePrevAttachedBuffer();
+  mock_surface->SendFrameCallback();
+
+  Sync();
+
+  // wp_presentation is available now.
+  auto* mock_wp_presentation = server_.EnsureWpPresentation();
+  ASSERT_TRUE(mock_wp_presentation);
+
+  Sync();
+
+  // Now, the wp_presentation object exists and there must be a real feedback
+  // sent. Ensure the order now.
+  ASSERT_TRUE(connection_->presentation());
+
+  EXPECT_CALL(*mock_wp_presentation,
+              Feedback(_, _, mock_surface->resource(), _))
+      .Times(1);
+
+  // Commit second buffer now.
+  buffer_manager_gpu_->CommitBuffer(widget, kBufferId1, bounds);
+
+  Sync();
+
+  // Even though, the server send the presentation feeedback, the host manager
+  // must make sure the order of the submission and presentation callbacks is
+  // correct. Thus, no callbacks must be received by the MockSurfaceGpu.
+  EXPECT_CALL(mock_surface_gpu, OnSubmission(_, _)).Times(0);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(_, _)).Times(0);
+
+  mock_wp_presentation->SendPresentationCallback();
+
+  Sync();
+
+  EXPECT_CALL(mock_surface_gpu,
+              OnSubmission(kBufferId1, gfx::SwapResult::SWAP_ACK))
+      .Times(1);
+  EXPECT_CALL(mock_surface_gpu, OnPresentation(kBufferId1, _)).Times(1);
+
+  // Now, send the release callback. The host manager must send the submission
+  // and presentation callbacks in correct order.
+  mock_surface->ReleasePrevAttachedBuffer();
+
+  Sync();
+}
+
+TEST_P(WaylandBufferManagerTest, TestCommitBufferConditions) {
+  constexpr uint32_t kDmabufBufferId = 1;
+  constexpr uint32_t kDmabufBufferId2 = 2;
+
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+  auto* mock_surface = server_.GetObject<wl::MockSurface>(widget);
+
+  auto* linux_dmabuf = server_.zwp_linux_dmabuf_v1();
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(1);
+
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, widget,
+                                                   kDmabufBufferId);
+
+  // Part 1: the surface mustn't have a buffer attached until
+  // zwp_linux_buffer_params_v1_send_created is called. Instead, the buffer must
+  // be set as pending buffer.
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
+  EXPECT_CALL(*mock_surface, Commit()).Times(0);
+
+  buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId,
+                                    window_->GetBounds());
+  Sync();
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
+                                               false /* fail */);
+
+  Sync();
+
+  // Once the client receives a "...send_created" call, it must destroy the
+  // params resource.
+  EXPECT_TRUE(linux_dmabuf->buffer_params().empty());
+
+  // Part 2: the surface mustn't have a buffer attached until frame callback is
+  // sent by the server.
+
+  EXPECT_CALL(*linux_dmabuf, CreateParams(_, _, _)).Times(1);
+  CreateDmabufBasedBufferAndSetTerminateExpecation(false /*fail*/, widget,
+                                                   kDmabufBufferId2);
+
+  ProcessCreatedBufferResourcesWithExpectation(1u /* expected size */,
+                                               false /* fail */);
+
+  Sync();
+
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(0);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(0);
+  EXPECT_CALL(*mock_surface, Commit()).Times(0);
+
+  buffer_manager_gpu_->CommitBuffer(widget, kDmabufBufferId2,
+                                    window_->GetBounds());
+
+  Sync();
+
+  // After the frame callback is sent, the pending buffer will be committed.
+  EXPECT_CALL(*mock_surface, Attach(_, _, _)).Times(1);
+  EXPECT_CALL(*mock_surface, Frame(_)).Times(1);
+  EXPECT_CALL(*mock_surface, Commit()).Times(1);
+
+  mock_surface->SendFrameCallback();
+
+  Sync();
 }
 
 INSTANTIATE_TEST_SUITE_P(XdgVersionV5Test,

@@ -8,7 +8,7 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/prefs/value_map_pref_store.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -102,7 +102,7 @@ class PrefStoreImplTest : public testing::Test {
   PrefStore* pref_store() { return pref_store_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   std::unique_ptr<PrefStoreImpl> impl_;
 

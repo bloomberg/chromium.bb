@@ -12,7 +12,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_quota_client.h"
 #include "storage/browser/fileapi/file_system_usage_cache.h"
@@ -47,8 +47,7 @@ class FileSystemQuotaClientTest : public testing::Test {
  public:
   FileSystemQuotaClientTest()
       : additional_callback_count_(0),
-        deletion_status_(blink::mojom::QuotaStatusCode::kUnknown),
-        weak_factory_(this) {}
+        deletion_status_(blink::mojom::QuotaStatusCode::kUnknown) {}
 
   void SetUp() override {
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
@@ -233,13 +232,13 @@ class FileSystemQuotaClientTest : public testing::Test {
   }
 
   base::ScopedTempDir data_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
   int64_t usage_;
   int additional_callback_count_;
   std::set<url::Origin> origins_;
   blink::mojom::QuotaStatusCode deletion_status_;
-  base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_;
+  base::WeakPtrFactory<FileSystemQuotaClientTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemQuotaClientTest);
 };

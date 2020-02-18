@@ -19,6 +19,7 @@
 #include "base/syslog_logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/install_verifier.h"
@@ -65,7 +66,7 @@ ChromeContentVerifierDelegate::GetDefaultMode() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   Mode experiment_value;
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   experiment_value = ENFORCE_STRICT;
 #else
   experiment_value = NONE;
@@ -135,9 +136,16 @@ ChromeContentVerifierDelegate::ChromeContentVerifierDelegate(
 ChromeContentVerifierDelegate::~ChromeContentVerifierDelegate() {
 }
 
-bool ChromeContentVerifierDelegate::ShouldBeVerified(
+ContentVerifierDelegate::VerifierSourceType
+ChromeContentVerifierDelegate::GetVerifierSourceType(
     const Extension& extension) {
-  return GetVerifyMode(extension) != NONE;
+  if (GetVerifyMode(extension) != NONE)
+    return VerifierSourceType::SIGNED_HASHES;
+  // TODO(crbug.com/958794): After all preparations enable content checking for
+  // all policy-based extension (even for self-hosted ones):
+  // if (Manifest::IsPolicyLocation(extension.location()))
+  //   return VerifierSourceType::UNSIGNED_HASHES;
+  return VerifierSourceType::NONE;
 }
 
 ContentVerifierKey ChromeContentVerifierDelegate::GetPublicKey() {

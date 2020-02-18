@@ -42,11 +42,13 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
-#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
@@ -54,7 +56,6 @@
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_keyboard_event.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -245,22 +246,22 @@ class WebViewTest : public testing::Test {
 
   void TearDown() override {
     EventTiming::SetTickClockForTesting(nullptr);
-    Platform::Current()
-        ->GetURLLoaderMockFactory()
-        ->UnregisterAllURLsAndClearMemoryCache();
+    url_test_helpers::UnregisterAllURLsAndClearMemoryCache();
   }
 
  protected:
   void SetViewportSize(const WebSize& size) {
     content::LayerTreeView* layer_tree_view =
         web_view_helper_.GetLayerTreeView();
-    layer_tree_view->SetViewportSizeAndScale(
-        static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
+    layer_tree_view->SetViewportRectAndScale(
+        gfx::Rect(static_cast<gfx::Size>(size)), /*device_scale_factor=*/1.f,
         layer_tree_view->layer_tree_host()
             ->local_surface_id_allocation_from_parent());
   }
 
   std::string RegisterMockedHttpURLLoad(const std::string& file_name) {
+    // TODO(crbug.com/751425): We should use the mock functionality
+    // via |web_view_helper_|.
     return url_test_helpers::RegisterMockedURLLoadFromBase(
                WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
                WebString::FromUTF8(file_name))
@@ -504,20 +505,20 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
 
   frame_test_helpers::TestWebFrameClient web_frame_client;
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   WebLocalFrame* frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
+      nullptr);
   web_frame_client.Bind(frame);
 
   {
     // Copy the steps done from WebViewHelper::InitializeWithOpener() to set up
     // the appropriate pointers!
-    web_view->MainFrameWidget()->SetLayerTreeView(
-        web_widget_client.layer_tree_view(),
-        web_widget_client.animation_host());
+    web_view->SetAnimationHost(web_widget_client.animation_host());
     blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, frame);
-    web_view->DidAttachLocalMainFrame(&web_widget_client);
+    web_view->DidAttachLocalMainFrame();
   }
 
   // The color should be passed to the compositor.
@@ -525,8 +526,7 @@ TEST_F(WebViewTest, SetBaseBackgroundColorBeforeMainFrame) {
   EXPECT_EQ(SK_ColorBLUE, web_view->BackgroundColor());
   EXPECT_EQ(SK_ColorBLUE, host->background_color());
 
-  // This closes the WebView also.
-  web_view->MainFrameWidget()->Close();
+  web_view->Close();
 }
 
 TEST_F(WebViewTest, SetBaseBackgroundColorAndBlendWithExistingContent) {
@@ -2646,10 +2646,12 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
                       /*compositing_enabled=*/false, nullptr));
   frame_test_helpers::TestWebFrameClient web_frame_client;
   frame_test_helpers::TestWebWidgetClient web_widget_client;
-  mojom::blink::DocumentInterfaceBrokerPtrInfo document_interface_broker;
   WebLocalFrame* local_frame = WebLocalFrame::CreateMainFrame(
       web_view, &web_frame_client, nullptr,
-      mojo::MakeRequest(&document_interface_broker).PassMessagePipe(), nullptr);
+      mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver()
+          .PassPipe(),
+      nullptr);
   web_frame_client.Bind(local_frame);
   blink::WebFrameWidget::CreateForMainFrame(&web_widget_client, local_frame);
 
@@ -2660,8 +2662,7 @@ TEST_F(WebViewTest, ClientTapHandlingNullWebViewClient) {
   EXPECT_EQ(WebInputEventResult::kNotHandled,
             web_view->MainFrameWidget()->HandleInputEvent(
                 WebCoalescedInputEvent(event)));
-  // This also closes the WebView.
-  web_view->MainFrameWidget()->Close();
+  web_view->Close();
 }
 
 TEST_F(WebViewTest, LongPressEmptyDiv) {
@@ -3364,12 +3365,12 @@ class MockAutofillClient : public WebAutofillClient {
   }
   void UserGestureObserved() override { ++user_gesture_notifications_count_; }
 
-  bool TryToShowTouchToFill(const WebFormControlElement&) override {
-    return can_show_touch_to_fill_;
+  bool ShouldSuppressKeyboard(const WebFormControlElement&) override {
+    return should_suppress_keyboard_;
   }
 
-  void SetCanShowTouchToFill(bool can_show_touch_to_fill) {
-    can_show_touch_to_fill_ = can_show_touch_to_fill;
+  void SetShouldSuppressKeyboard(bool should_suppress_keyboard) {
+    should_suppress_keyboard_ = should_suppress_keyboard;
   }
 
   void ClearChangeCounts() { text_changes_ = 0; }
@@ -3384,7 +3385,7 @@ class MockAutofillClient : public WebAutofillClient {
   int text_changes_ = 0;
   int text_changes_from_user_gesture_ = 0;
   int user_gesture_notifications_count_ = 0;
-  bool can_show_touch_to_fill_ = false;
+  bool should_suppress_keyboard_ = false;
 };
 
 TEST_F(WebViewTest, LosingFocusDoesNotTriggerAutofillTextChange) {
@@ -3994,7 +3995,7 @@ TEST_F(WebViewTest, SetHasTouchEventHandlers) {
   Element* child_frame = document->getElementById("childframe");
   DCHECK(child_frame);
   Document* child_document =
-      ToHTMLIFrameElement(child_frame)->contentDocument();
+      To<HTMLIFrameElement>(child_frame)->contentDocument();
   Element* child_div = child_document->getElementById("childdiv");
   DCHECK(child_div);
   registry->DidAddEventHandler(*child_div, kTouchEvent);
@@ -4392,11 +4393,12 @@ class MojoTestHelper {
 // the ShowUnhandledTapUIIfNeeded notification.
 class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
  public:
-  MockUnhandledTapNotifierImpl() : binding_(this) {}
+  MockUnhandledTapNotifierImpl() = default;
   ~MockUnhandledTapNotifierImpl() override = default;
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.Bind(mojom::blink::UnhandledTapNotifierRequest(std::move(handle)));
+    receiver_.Bind(mojo::PendingReceiver<mojom::blink::UnhandledTapNotifier>(
+        std::move(handle)));
   }
 
   void ShowUnhandledTapUIIfNeeded(
@@ -4416,7 +4418,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
     tapped_position_ = IntPoint();
     element_text_run_length_ = 0;
     font_size_ = 0;
-    binding_.Close();
+    receiver_.reset();
   }
 
  private:
@@ -4425,7 +4427,7 @@ class MockUnhandledTapNotifierImpl : public mojom::blink::UnhandledTapNotifier {
   int element_text_run_length_ = 0;
   int font_size_ = 0;
 
-  mojo::Binding<mojom::blink::UnhandledTapNotifier> binding_;
+  mojo::Receiver<mojom::blink::UnhandledTapNotifier> receiver_{this};
 };
 
 // A Test Fixture for testing ShowUnhandledTapUIIfNeeded usages.
@@ -4682,25 +4684,25 @@ TEST_F(WebViewTest, WebSubstringUtilIframe) {
 
 #endif
 
-TEST_F(WebViewTest, PasswordFieldCanBeAutofilled) {
+TEST_F(WebViewTest, ShouldSuppressKeyboardForPasswordField) {
   RegisterMockedHttpURLLoad("input_field_password.html");
   // Pretend client has fill data for all fields it's queried.
   MockAutofillClient client;
-  client.SetCanShowTouchToFill(true);
+  client.SetShouldSuppressKeyboard(true);
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(
       base_url_ + "input_field_password.html");
   WebLocalFrameImpl* frame = web_view->MainFrameImpl();
   frame->SetAutofillClient(&client);
   // No field is focused.
-  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
+  EXPECT_FALSE(frame->ShouldSuppressKeyboardForFocusedElement());
 
   // Focusing a field should result in treating it autofillable.
   web_view->SetInitialFocus(false);
-  EXPECT_TRUE(frame->TryToShowTouchToFillForFocusedElement());
+  EXPECT_TRUE(frame->ShouldSuppressKeyboardForFocusedElement());
 
   // Pretend that |client| no longer has autofill data available.
-  client.SetCanShowTouchToFill(false);
-  EXPECT_FALSE(frame->TryToShowTouchToFillForFocusedElement());
+  client.SetShouldSuppressKeyboard(false);
+  EXPECT_FALSE(frame->ShouldSuppressKeyboardForFocusedElement());
   frame->SetAutofillClient(nullptr);
 }
 
@@ -5725,8 +5727,8 @@ TEST_F(WebViewTest, RootLayerAttachment) {
       WebFrameWidget::LifecycleUpdate::kPrePaint,
       WebWidget::LifecycleUpdateReason::kTest);
 
-  // With BlinkGenPropertyTrees, layers (including the root layer) should not be
-  // attached until the paint lifecycle phase.
+  // Layers (including the root layer) should not be attached until the paint
+  // lifecycle phase.
   auto* layer_tree_view = web_view_helper_.GetLayerTreeView();
   EXPECT_FALSE(layer_tree_view->GetRootLayer());
 

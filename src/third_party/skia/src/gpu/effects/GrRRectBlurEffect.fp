@@ -51,13 +51,13 @@ uniform half blurRadius;
         GrProxyProvider* proxyProvider = context->priv().proxyProvider();
 
         sk_sp<GrTextureProxy> mask(proxyProvider->findOrCreateProxyByUniqueKey(
-                                                                 key, kBottomLeft_GrSurfaceOrigin));
+                key, GrColorType::kAlpha_8, kBottomLeft_GrSurfaceOrigin));
         if (!mask) {
             // TODO: this could be approx but the texture coords will need to be updated
-            sk_sp<GrRenderTargetContext> rtc(
+            auto rtc =
                     context->priv().makeDeferredRenderTargetContextWithFallback(
                                                 SkBackingFit::kExact, size.fWidth,
-                                                size.fHeight, GrColorType::kAlpha_8, nullptr));
+                                                size.fHeight, GrColorType::kAlpha_8, nullptr);
             if (!rtc) {
                 return nullptr;
             }
@@ -73,7 +73,7 @@ uniform half blurRadius;
             if (!srcProxy) {
                 return nullptr;
             }
-            sk_sp<GrRenderTargetContext> rtc2(
+            auto rtc2 =
                       SkGpuBlurUtils::GaussianBlur(context,
                                                    std::move(srcProxy),
                                                    SkIPoint::Make(0, 0),
@@ -84,7 +84,7 @@ uniform half blurRadius;
                                                    xformedSigma,
                                                    GrTextureDomain::kIgnore_Mode,
                                                    kPremul_SkAlphaType,
-                                                   SkBackingFit::kExact));
+                                                   SkBackingFit::kExact);
             if (!rtc2) {
                 return nullptr;
             }
@@ -192,7 +192,7 @@ void main() {
     half2 proxyDims = half2(2.0 * threshold + 1.0);
     half2 texCoord = translatedFragPos / proxyDims;
 
-    sk_OutColor = sk_InColor * texture(ninePatchSampler, texCoord);
+    sk_OutColor = sk_InColor * sample(ninePatchSampler, texCoord);
 }
 
 @setData(pdman) {

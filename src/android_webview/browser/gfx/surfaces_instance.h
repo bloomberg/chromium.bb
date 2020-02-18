@@ -17,7 +17,7 @@
 #include "components/viz/common/surfaces/surface_id.h"
 #include "components/viz/service/display/display_client.h"
 #include "gpu/command_buffer/service/shared_context_state.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/gfx/color_space.h"
 
 namespace gfx {
@@ -93,11 +93,17 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
 
   std::vector<viz::SurfaceRange> GetChildIdsRanges();
 
+  bool BackdropFiltersPreventMerge(const viz::SurfaceId& surface_id);
+
   viz::FrameSinkIdAllocator frame_sink_id_allocator_;
 
   viz::FrameSinkId frame_sink_id_;
 
+  // These need to outlive viz objects such as |display_| below.
   scoped_refptr<AwGLSurface> gl_surface_;
+  scoped_refptr<gl::GLShareGroup> share_group_;
+  scoped_refptr<gpu::SharedContextState> shared_context_state_;
+
   std::unique_ptr<viz::FrameSinkManagerImpl> frame_sink_manager_;
   std::unique_ptr<viz::BeginFrameSource> begin_frame_source_;
   std::unique_ptr<viz::Display> display_;
@@ -111,9 +117,6 @@ class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
   viz::FrameTokenGenerator next_frame_token_;
 
   gfx::Size surface_size_;
-
-  scoped_refptr<gl::GLShareGroup> share_group_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfacesInstance);
 };

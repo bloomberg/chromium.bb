@@ -7,7 +7,7 @@ module blink.mojom;
 import "services/device/public/mojom/screen_orientation_lock_types.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "third_party/blink/public/mojom/manifest/display_mode.mojom";
-import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/geometry/mojom/geometry.mojom";
 import "url/mojom/url.mojom";
 
 
@@ -28,10 +28,6 @@ struct Manifest {
 
   array<ManifestImageResource> icons;
 
-  // TODO(constantina): This field is non-standard and part of a Chrome
-  // experiment. See:
-  // https://github.com/WICG/web-share-target/blob/master/docs/interface.md
-  // As such, this field should not be exposed to the drive-by web.
   ManifestShareTarget? share_target;
 
   // TODO(harrisjay): This field is non-standard and part of a Chrome

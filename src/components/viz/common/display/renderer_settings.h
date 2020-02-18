@@ -31,6 +31,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool release_overlay_resources_after_gpu_query = false;
   bool tint_gl_composited_content = false;
   bool show_overdraw_feedback = false;
+  bool show_aggregated_damage = false;
   bool use_skia_renderer = false;
   bool allow_overlays = true;
   bool dont_round_texture_sizes_for_pixel_tests = false;
@@ -38,6 +39,7 @@ class VIZ_COMMON_EXPORT RendererSettings {
   bool auto_resize_output_surface = true;
   bool requires_alpha_channel = false;
   bool record_sk_picture = false;
+  bool show_dc_layer_debug_borders = false;
 
   int slow_down_compositing_scale_factor = 1;
 

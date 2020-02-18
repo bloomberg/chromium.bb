@@ -17,9 +17,11 @@
 #include "cpp-build/generate_geocoding_data.h"
 
 #include <dirent.h>
+#include <errno.h>
 #include <locale>
 #include <sys/stat.h>
 #include <algorithm>
+#include <cctype>
 #include <cmath>
 #include <cstdio>
 #include <cstring>
@@ -101,20 +103,24 @@ bool ListDirectory(const string& path, vector<DirEntry>* entries) {
     return false;
   }
   AutoCloser<DIR> dir_closer(&dir, closedir);
-  struct dirent entry, *dir_result;
+  struct dirent *entry;
   struct stat entry_stat;
   while (true) {
-    const int res = readdir_r(dir, &entry, &dir_result);
-    if (res) {
-      return false;
+    // Set errno to 0 to be able to check if an error occurs during the
+    // readdir() call. NULL is the return value when the end of the directory
+    // stream is reached or when an error occurs, and the errno check is the
+    // only thing that helps us distinguish between the two cases. See
+    // documentation at
+    // http://pubs.opengroup.org/onlinepubs/9699919799/functions/readdir.html
+    errno = 0;
+    entry = readdir(dir);
+    if (entry == NULL) {
+      return errno == 0;
     }
-    if (dir_result == NULL) {
-      return true;
-    }
-    if (strcmp(entry.d_name, ".") == 0 || strcmp(entry.d_name, "..") == 0) {
+    if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
        continue;
     }
-    const string entry_path = path + "/" + entry.d_name;
+    const string entry_path = path + "/" + entry->d_name;
     if (stat(entry_path.c_str(), &entry_stat)) {
       return false;
     }
@@ -124,7 +130,7 @@ bool ListDirectory(const string& path, vector<DirEntry>* entries) {
     } else if (!S_ISREG(entry_stat.st_mode)) {
       continue;
     }
-    entries->push_back(DirEntry(entry.d_name, kind));
+    entries->push_back(DirEntry(entry->d_name, kind));
   }
 }
 
@@ -141,7 +147,7 @@ bool StrToInt(const string& s, int32* n) {
   std::stringstream stream;
   stream << s;
   stream >> *n;
-  return stream;
+  return !stream.fail();
 }
 
 // Converts integer to string, returns true on success.
@@ -149,7 +155,7 @@ bool IntToStr(int32 n, string* s) {
   std::stringstream stream;
   stream << n;
   stream >> *s;
-  return stream;
+  return !stream.fail();
 }
 
 // Parses the prefix descriptions file at path, clears and fills the output

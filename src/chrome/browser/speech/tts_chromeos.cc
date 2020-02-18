@@ -6,12 +6,12 @@
 
 #include "base/macros.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/tts.mojom.h"
+#include "components/arc/mojom/tts.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/tts_platform.h"
 
-TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() : weak_factory_(this) {}
+TtsPlatformImplChromeOs::TtsPlatformImplChromeOs() {}
 TtsPlatformImplChromeOs::~TtsPlatformImplChromeOs() {}
 
 bool TtsPlatformImplChromeOs::PlatformImplAvailable() {

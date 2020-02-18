@@ -18,6 +18,7 @@
 #include "third_party/blink/renderer/core/frame/frame.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -320,10 +321,10 @@ void Abort(ScriptState* script_state) {
   authenticator->Cancel();
 }
 
-void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver,
-                     RequiredOriginType required_origin_type) {
+void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver) {
   auto* resolver = scoped_resolver->Release();
-  AssertSecurityRequirementsBeforeResponse(resolver, required_origin_type);
+  AssertSecurityRequirementsBeforeResponse(
+      resolver, RequiredOriginType::kSecureAndSameWithAncestors);
   resolver->Resolve();
 }
 
@@ -405,14 +406,6 @@ void OnMakePublicKeyCredentialComplete(
     if (credential->echo_hmac_create_secret) {
       extension_outputs->setHmacCreateSecret(credential->hmac_create_secret);
     }
-#if defined(OS_ANDROID)
-    if (credential->echo_user_verification_methods) {
-      extension_outputs->setUvm(
-          UvmEntryToArray(std::move(*credential->user_verification_methods)));
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kCredentialManagerCreateSuccessWithUVM);
-    }
-#endif
     resolver->Resolve(MakeGarbageCollected<PublicKeyCredential>(
         credential->info->id, raw_id, authenticator_response,
         extension_outputs));
@@ -624,13 +617,6 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  auto required_origin_type =
-      credential->IsFederatedCredential() || credential->IsPasswordCredential()
-          ? RequiredOriginType::kSecureAndSameWithAncestors
-          : RequiredOriginType::kSecure;
-  if (!CheckSecurityRequirementsBeforeRequest(resolver, required_origin_type))
-    return promise;
-
   if (!(credential->IsFederatedCredential() ||
         credential->IsPasswordCredential())) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
@@ -639,8 +625,11 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
     return promise;
   }
 
-  DCHECK(credential->IsFederatedCredential() ||
-         credential->IsPasswordCredential());
+  if (!CheckSecurityRequirementsBeforeRequest(
+          resolver, RequiredOriginType::kSecureAndSameWithAncestors)) {
+    return promise;
+  }
+
   const KURL& url =
       credential->IsFederatedCredential()
           ? static_cast<const FederatedCredential*>(credential)->iconURL()
@@ -655,9 +644,9 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
       CredentialManagerProxy::From(script_state)->CredentialManager();
   credential_manager->Store(
       CredentialInfo::From(credential),
-      WTF::Bind(&OnStoreComplete,
-                WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver)),
-                required_origin_type));
+      WTF::Bind(
+          &OnStoreComplete,
+          WTF::Passed(std::make_unique<ScopedPromiseResolver>(resolver))));
 
   return promise;
 }
@@ -708,13 +697,6 @@ ScriptPromise CredentialsContainer::create(
           resolver->GetExecutionContext(),
           WebFeature::kCredentialManagerCreatePublicKeyCredential);
     }
-#if defined(OS_ANDROID)
-    if (options->publicKey()->hasExtensions() &&
-        options->publicKey()->extensions()->hasUvm()) {
-      UseCounter::Count(resolver->GetExecutionContext(),
-                        WebFeature::kCredentialManagerCreateWithUVM);
-    }
-#endif
 
     const String& relying_party_id = options->publicKey()->rp()->id();
     if (!CheckPublicKeySecurityRequirements(resolver, relying_party_id))
@@ -728,6 +710,20 @@ ScriptPromise CredentialsContainer::create(
             "for a pre-existing credential that was registered using the "
             "legacy FIDO U2F API."));
         return promise;
+      }
+      if (options->publicKey()->extensions()->hasAppidExclude()) {
+        const auto& appid_exclude =
+            options->publicKey()->extensions()->appidExclude();
+        if (!appid_exclude.IsEmpty()) {
+          KURL appid_exclude_url(appid_exclude);
+          if (!appid_exclude_url.IsValid()) {
+            resolver->Reject(MakeGarbageCollected<DOMException>(
+                DOMExceptionCode::kSyntaxError,
+                "The `appidExclude` extension value is neither "
+                "empty/null nor a valid URL."));
+            return promise;
+          }
+        }
       }
       if (options->publicKey()->extensions()->hasCableAuthentication()) {
         resolver->Reject(MakeGarbageCollected<DOMException>(

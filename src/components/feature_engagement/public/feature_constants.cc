@@ -16,9 +16,11 @@ const base::Feature kIPHDummyFeature{"IPH_Dummy",
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
     defined(OS_CHROMEOS)
-const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHFocusModeFeature{"IPH_FocusMode",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHGlobalMediaControlsFeature{
+    "IPH_GlobalMediaControls", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kIPHReopenTabFeature{"IPH_ReopenTab",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 #if BUILDFLAG(ENABLE_LEGACY_DESKTOP_IN_PRODUCT_HELP)
@@ -107,7 +109,7 @@ const base::Feature kIPHNewTabTipFeature{"IPH_NewTabTip",
 const base::Feature kIPHNewIncognitoTabTipFeature{
     "IPH_NewIncognitoTabTip", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHBadgedReadingListFeature{
-    "IPH_BadgedReadingList", base::FEATURE_ENABLED_BY_DEFAULT};
+    "IPH_BadgedReadingList", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kIPHBadgedTranslateManualTriggerFeature{
     "IPH_BadgedTranslateManualTrigger", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_IOS)

@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/task/post_task.h"
@@ -21,12 +21,13 @@
 #include "chrome/browser/chromeos/arc/bluetooth/arc_bluetooth_bridge.h"
 #include "chrome/browser/chromeos/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
 #include "chrome/browser/chromeos/arc/cast_receiver/arc_cast_receiver_service.h"
-#include "chrome/browser/chromeos/arc/enterprise/arc_cert_store_bridge.h"
 #include "chrome/browser/chromeos/arc/enterprise/arc_enterprise_reporting_service.h"
+#include "chrome/browser/chromeos/arc/enterprise/cert_store/arc_cert_store_bridge.h"
 #include "chrome/browser/chromeos/arc/file_system_watcher/arc_file_system_watcher_service.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_mounter.h"
 #include "chrome/browser/chromeos/arc/input_method_manager/arc_input_method_manager_service.h"
+#include "chrome/browser/chromeos/arc/instance_throttle/arc_instance_throttle.h"
 #include "chrome/browser/chromeos/arc/intent_helper/arc_settings_service.h"
 #include "chrome/browser/chromeos/arc/kiosk/arc_kiosk_bridge.h"
 #include "chrome/browser/chromeos/arc/metrics/arc_metrics_service_proxy.h"
@@ -106,8 +107,8 @@ ArcServiceLauncher::ArcServiceLauncher()
   g_arc_service_launcher = this;
 
   // Write kIsArcVm file to be 1 or 0.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
+  base::PostTask(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
       base::BindOnce([](const base::FilePath& filename, const char* data,
                         int size) { base::WriteFile(filename, data, size); },
                      base::FilePath(kIsArcVm),
@@ -184,6 +185,7 @@ void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
   ArcFileSystemWatcherService::GetForBrowserContext(profile);
   ArcImeService::GetForBrowserContext(profile);
   ArcInputMethodManagerService::GetForBrowserContext(profile);
+  ArcInstanceThrottle::GetForBrowserContext(profile);
   ArcIntentHelperBridge::GetForBrowserContext(profile);
   ArcKeymasterBridge::GetForBrowserContext(profile);
   ArcKioskBridge::GetForBrowserContext(profile);

@@ -16,6 +16,7 @@
 #include "content/browser/service_worker/fake_service_worker.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/url_loader_factory_getter.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/http/http_response_info.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
@@ -103,16 +104,16 @@ class EmbeddedWorkerTestHelper {
   void SetNetworkFactory(network::mojom::URLLoaderFactory* factory);
 
   // Adds the given client to the pending queue. The next time this helper
-  // receives a blink::mojom::EmbeddedWorkerInstanceClientRequest request (i.e.,
-  // on the next start worker attempt), it uses the first client from this
-  // queue.
+  // receives a
+  // mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient> (i.e., on
+  // the next start worker attempt), it uses the first client from this queue.
   void AddPendingInstanceClient(
       std::unique_ptr<FakeEmbeddedWorkerInstanceClient> instance_client);
 
   // Adds the given service worker to the pending queue. The next time this
-  // helper receives a blink::mojom::ServiceWorkerRequest request (i.e., on the
-  // next start worker attempt), it uses the first service worker from this
-  // queue.
+  // helper receives a mojo::PendingReceiver<blink::mojom::ServiceWorker>
+  // receiver (i.e., on the next start worker attempt), it uses the first
+  // service worker from this queue.
   void AddPendingServiceWorker(
       std::unique_ptr<FakeServiceWorker> service_worker);
 
@@ -131,11 +132,13 @@ class EmbeddedWorkerTestHelper {
   // The following are exposed to public so the fake embedded worker and service
   // worker implementations and their subclasses can call them.
 
-  // Called when |request| is received. It takes the object from a previous
+  // Called when |receiver| is received. It takes the object from a previous
   // AddPending*() call if any and calls Create*() otherwise.
-  void OnInstanceClientRequest(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
-  void OnServiceWorkerRequest(blink::mojom::ServiceWorkerRequest request);
+  void OnInstanceClientReceiver(
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver);
+  void OnServiceWorkerReceiver(
+      mojo::PendingReceiver<blink::mojom::ServiceWorker> receiver);
 
   // Called by the fakes to destroy themselves.
   void RemoveInstanceClient(FakeEmbeddedWorkerInstanceClient* instance_client);

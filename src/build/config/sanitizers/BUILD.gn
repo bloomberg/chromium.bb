@@ -435,6 +435,7 @@ config("coverage_flags") {
 
 config("hwasan_flags") {
   if (is_hwasan) {
+    asmflags = [ "-fsanitize=hwaddress" ]
     cflags = [ "-fsanitize=hwaddress" ]
     if (hwasan_platform) {
       cflags += [ "-fsanitize-hwaddress-abi=platform" ]
@@ -499,6 +500,7 @@ config("ubsan_flags") {
       "-fsanitize=signed-integer-overflow",
       "-fsanitize=unreachable",
       "-fsanitize=vla-bound",
+      "-fsanitize=bool",
       "-fsanitize-blacklist=$ubsan_blacklist_path",
     ]
 

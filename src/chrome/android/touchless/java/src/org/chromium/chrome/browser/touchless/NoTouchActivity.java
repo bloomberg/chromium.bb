@@ -15,7 +15,6 @@ import android.view.ViewGroup;
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeInactivityTracker;
 import org.chromium.chrome.browser.IntentHandler;
@@ -25,6 +24,7 @@ import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
 import org.chromium.chrome.browser.tab.TabRedirectHandler;
@@ -46,8 +46,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
     // Time at which an intent was received and handled.
     private long mIntentHandlingTimeMs;
-
-    private TouchlessUiCoordinator mUiCoordinator;
 
     /** The class that finishes this activity after a timeout. */
     private ChromeInactivityTracker mInactivityTracker;
@@ -76,9 +74,13 @@ public class NoTouchActivity extends SingleTabActivity {
                 case TabOpenType.REUSE_URL_MATCHING_TAB_ELSE_NEW_TAB:
                     if (getActivityTab().getUrl().contentEquals(url)) break;
                     // fall through
-                case TabOpenType.BRING_TAB_TO_FRONT: // fall through
                 case TabOpenType.REUSE_APP_ID_MATCHING_TAB_ELSE_NEW_TAB: // fall through
                 case TabOpenType.OPEN_NEW_TAB: // fall through
+                    InterceptNavigationDelegateImpl delegate =
+                            InterceptNavigationDelegateImpl.get(getActivityTab());
+                    if (delegate != null && delegate.shouldIgnoreNewTab(url, false)) return;
+                    // fall through
+                case TabOpenType.BRING_TAB_TO_FRONT: // fall through
                 case TabOpenType.CLOBBER_CURRENT_TAB:
                     // TODO(mthiesse): For now, let's just clobber current tab always. Are the other
                     // tab open types meaningful when we only have a single tab?
@@ -144,8 +146,6 @@ public class NoTouchActivity extends SingleTabActivity {
 
         ((TouchlessTabCreator) getTabCreator(false))
                 .setTabModel(getTabModelSelector().getModel(false));
-        ((TouchlessTabCreator) getTabCreator(true))
-                .setTabModel(getTabModelSelector().getModel(true));
 
         super.initializeState();
 
@@ -185,7 +185,8 @@ public class NoTouchActivity extends SingleTabActivity {
     public void onNewIntent(Intent intent) {
         mIntentHandlingTimeMs = SystemClock.uptimeMillis();
 
-        if (DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
+        if (intent.getComponent() != null
+                && DINOSAUR_GAME_INTENT.equals(intent.getComponent().getClassName())) {
             intent.setData(Uri.parse(UrlConstants.CHROME_DINO_URL));
         }
 
@@ -245,12 +246,9 @@ public class NoTouchActivity extends SingleTabActivity {
     private void saveTabState(Bundle outState) {
         Tab tab = getActivityTab();
         if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
-        long time = SystemClock.elapsedRealtime();
         if (TabState.saveState(outState, TabState.from(tab))) {
             outState.putInt(BUNDLE_TAB_ID, tab.getId());
         }
-        RecordHistogram.recordTimesHistogram("Android.StrictMode.NoTouchActivitySaveState",
-                SystemClock.elapsedRealtime() - time);
     }
 
     @Override
@@ -285,7 +283,7 @@ public class NoTouchActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new TouchlessTabCreator(this, getWindowAndroid(), incognito);
+    protected TabCreator createNormalTabCreator() {
+        return new TouchlessTabCreator(this, getWindowAndroid(), false /* incognito */);
     }
 }

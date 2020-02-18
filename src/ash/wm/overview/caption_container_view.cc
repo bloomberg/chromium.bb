@@ -6,10 +6,14 @@
 
 #include <memory>
 
+#include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/window_preview_view.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -40,9 +44,6 @@ constexpr int kLabelFontDelta = 2;
 constexpr int kBackdropRoundingDp = 4;
 constexpr SkColor kBackdropColor = SkColorSetA(SK_ColorWHITE, 0x24);
 
-constexpr int kHeaderPreferredHeightDp = 40;
-constexpr int kMarginDp = 10;
-
 // Duration of the show/hide animation of the header.
 constexpr base::TimeDelta kHeaderFadeDuration =
     base::TimeDelta::FromMilliseconds(167);
@@ -63,12 +64,6 @@ void AddChildWithLayer(views::View* parent, views::View* child) {
   child->SetPaintToLayer();
   child->layer()->SetFillsBoundsOpaquely(false);
   parent->AddChildView(child);
-}
-
-gfx::PointF ConvertToScreen(views::View* view, const gfx::Point& location) {
-  gfx::Point location_copy(location);
-  views::View::ConvertPointToScreen(view, &location_copy);
-  return gfx::PointF(location_copy);
 }
 
 // Animates |layer| from 0 -> 1 opacity if |visible| and 1 -> 0 opacity
@@ -264,6 +259,7 @@ gfx::Rect CaptionContainerView::GetHighlightBoundsInScreen() {
   auto* window = GetWidget()->GetNativeWindow();
   gfx::Rect target_bounds = window->GetTargetBounds();
   target_bounds.set_origin(window->GetBoundsInScreen().origin());
+  target_bounds.Inset(kWindowMargin, kWindowMargin);
   return target_bounds;
 }
 
@@ -277,27 +273,35 @@ void CaptionContainerView::MaybeCloseHighlightedView() {
     event_delegate_->OnHighlightedViewClosed();
 }
 
+gfx::Point CaptionContainerView::GetMagnifierFocusPointInScreen() {
+  // When this item is tabbed into, put the magnifier focus on the front of the
+  // title, so that users can read the title first thing.
+  const gfx::Rect title_bounds = title_label_->GetBoundsInScreen();
+  return gfx::Point(GetMirroredXInView(title_bounds.x()),
+                    title_bounds.CenterPoint().y());
+}
+
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
-  bounds.Inset(kMarginDp, kMarginDp);
+  bounds.Inset(kOverviewMargin, kOverviewMargin);
 
   if (backdrop_view_) {
     gfx::Rect backdrop_bounds = bounds;
-    backdrop_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    backdrop_bounds.Inset(0, kHeaderHeightDp, 0, 0);
     backdrop_view_->SetBoundsRect(backdrop_bounds);
   }
 
   if (preview_view_) {
     gfx::Rect preview_bounds = bounds;
-    preview_bounds.Inset(0, kHeaderPreferredHeightDp, 0, 0);
+    preview_bounds.Inset(0, kHeaderHeightDp, 0, 0);
     preview_bounds.ClampToCenteredSize(preview_view_->CalculatePreferredSize());
     preview_view_->SetBoundsRect(preview_bounds);
   }
 
   // Position the header at the top.
-  const gfx::Rect header_bounds(kMarginDp, kMarginDp,
-                                GetLocalBounds().width() - kMarginDp,
-                                kHeaderPreferredHeightDp);
+  const gfx::Rect header_bounds(kOverviewMargin, kOverviewMargin,
+                                GetLocalBounds().width() - kOverviewMargin,
+                                kHeaderHeightDp);
   header_view_->SetBoundsRect(header_bounds);
 }
 
@@ -308,15 +312,14 @@ const char* CaptionContainerView::GetClassName() const {
 bool CaptionContainerView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMousePressed(event);
-  event_delegate_->HandlePressEvent(ConvertToScreen(this, event.location()),
-                                    /*from_touch_gesture=*/false);
+  event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
 bool CaptionContainerView::OnMouseDragged(const ui::MouseEvent& event) {
   if (!event_delegate_)
     return Button::OnMouseDragged(event);
-  event_delegate_->HandleDragEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandleMouseEvent(event);
   return true;
 }
 
@@ -325,7 +328,7 @@ void CaptionContainerView::OnMouseReleased(const ui::MouseEvent& event) {
     Button::OnMouseReleased(event);
     return;
   }
-  event_delegate_->HandleReleaseEvent(ConvertToScreen(this, event.location()));
+  event_delegate_->HandleMouseEvent(event);
 }
 
 void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
@@ -337,34 +340,7 @@ void CaptionContainerView::OnGestureEvent(ui::GestureEvent* event) {
     return;
   }
 
-  const gfx::PointF location = event->details().bounding_box_f().CenterPoint();
-  switch (event->type()) {
-    case ui::ET_GESTURE_TAP_DOWN:
-      event_delegate_->HandlePressEvent(location, /*from_touch_gesture=*/true);
-      break;
-    case ui::ET_GESTURE_SCROLL_UPDATE:
-      event_delegate_->HandleDragEvent(location);
-      break;
-    case ui::ET_SCROLL_FLING_START:
-      event_delegate_->HandleFlingStartEvent(location,
-                                             event->details().velocity_x(),
-                                             event->details().velocity_y());
-      break;
-    case ui::ET_GESTURE_SCROLL_END:
-      event_delegate_->HandleReleaseEvent(location);
-      break;
-    case ui::ET_GESTURE_LONG_PRESS:
-      event_delegate_->HandleLongPressEvent(location);
-      break;
-    case ui::ET_GESTURE_TAP:
-      event_delegate_->HandleTapEvent();
-      break;
-    case ui::ET_GESTURE_END:
-      event_delegate_->HandleGestureEndEvent();
-      break;
-    default:
-      break;
-  }
+  event_delegate_->HandleGestureEvent(event);
   event->SetHandled();
 }
 
@@ -375,12 +351,20 @@ bool CaptionContainerView::CanAcceptEvent(const ui::Event& event) {
                                         ui::ET_MOUSE_PRESSED};
   if (event.IsLocatedEvent() && base::Contains(press_types, event.type())) {
     gfx::Rect inset_bounds = GetLocalBounds();
-    inset_bounds.Inset(gfx::Insets(kMarginDp));
+    inset_bounds.Inset(gfx::Insets(kOverviewMargin));
     if (!inset_bounds.Contains(event.AsLocatedEvent()->location()))
       accept_events = false;
   }
 
   return accept_events && Button::CanAcceptEvent(event);
+}
+
+void CaptionContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+  node_data->AddStringAttribute(
+      ax::mojom::StringAttribute::kDescription,
+      l10n_util::GetStringUTF8(
+          IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
 }
 
 }  // namespace ash

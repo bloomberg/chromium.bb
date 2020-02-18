@@ -49,7 +49,7 @@
 #include "ios/public/provider/chrome/browser/test_chrome_browser_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
@@ -331,7 +331,7 @@ class AppStateTest : public BlockCleanupTest {
   }
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   AppState* app_state_;
   id browser_launcher_mock_;
   id startup_information_mock_;
@@ -352,11 +352,10 @@ class AppStateTest : public BlockCleanupTest {
 class AppStateWithThreadTest : public PlatformTest {
  protected:
   AppStateWithThreadTest()
-      : thread_bundle_(web::TestWebThreadBundle::REAL_IO_THREAD) {
-  }
+      : task_environment_(web::WebTaskEnvironment::REAL_IO_THREAD) {}
 
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 };
 
 #pragma mark - Tests.

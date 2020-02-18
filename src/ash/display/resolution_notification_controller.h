@@ -9,7 +9,7 @@
 
 #include "ash/ash_export.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -111,7 +111,7 @@ class ASH_EXPORT ResolutionNotificationController
 
   std::unique_ptr<ResolutionChangeInfo> change_info_;
 
-  base::WeakPtrFactory<ResolutionNotificationController> weak_factory_;
+  base::WeakPtrFactory<ResolutionNotificationController> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ResolutionNotificationController);
 };

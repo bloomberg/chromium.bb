@@ -36,11 +36,11 @@
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_double.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css_default_interpolation_type.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/animation/invalidatable_interpolation.h"
 #include "third_party/blink/renderer/core/animation/string_keyframe.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
-#include "third_party/blink/renderer/core/css/property_descriptor.h"
-#include "third_party/blink/renderer/core/css/property_registration.h"
+#include "third_party/blink/renderer/core/css/css_test_helpers.h"
 #include "third_party/blink/renderer/core/css/property_registry.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -68,13 +68,15 @@ class AnimationKeyframeEffectModel : public PageTestBase {
     const TypedInterpolationValue* typed_value =
         ToInvalidatableInterpolation(interpolation_value)
             ->GetCachedValueForTesting();
-    // Length values are stored as a list of values; here we assume pixels.
-    EXPECT_TRUE(typed_value->GetInterpolableValue().IsList());
-    const InterpolableList* list =
-        ToInterpolableList(&typed_value->GetInterpolableValue());
+    // Length values are stored as an |InterpolableLength|; here we assume
+    // pixels.
+    EXPECT_TRUE(typed_value->GetInterpolableValue().IsLength());
+    const InterpolableLength& length =
+        To<InterpolableLength>(typed_value->GetInterpolableValue());
     // Lengths are computed in logical units, which are quantized to 64ths of
     // a pixel.
-    EXPECT_NEAR(expected_value, ToInterpolableNumber(list->Get(0))->Value(),
+    EXPECT_NEAR(expected_value,
+                length.CreateCSSValue(kValueRangeAll)->GetDoubleValue(),
                 /*abs_error=*/0.02);
   }
 
@@ -140,13 +142,8 @@ const PropertySpecificKeyframeVector& ConstructEffectAndGetKeyframes(
     const String& zero_value,
     const String& one_value,
     ExceptionState& exception_state) {
-  PropertyDescriptor* property_descriptor = PropertyDescriptor::Create();
-  property_descriptor->setName(property_name);
-  property_descriptor->setSyntax(type);
-  property_descriptor->setInitialValue(zero_value);
-  property_descriptor->setInherits(false);
-  PropertyRegistration::registerProperty(document, property_descriptor,
-                                         exception_state);
+  css_test_helpers::RegisterProperty(*document, property_name, type, zero_value,
+                                     false);
 
   StringKeyframeVector keyframes =
       KeyframesAtZeroAndOne(property_name, zero_value, one_value);

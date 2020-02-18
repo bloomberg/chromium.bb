@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -103,10 +104,10 @@ class MockCredentialManagerDocumentInterfaceBroker
  public:
   MockCredentialManagerDocumentInterfaceBroker(
       mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojom::blink::DocumentInterfaceBrokerRequest request,
+      mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker> receiver,
       MockCredentialManager* mock_credential_manager)
       : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(request)),
+                                    std::move(receiver)),
         mock_credential_manager_(mock_credential_manager) {}
 
   void GetCredentialManager(
@@ -131,12 +132,12 @@ class CredentialManagerTestingContext {
       : dummy_context_(KURL("https://example.test")) {
     dummy_context_.GetDocument().SetSecureContextStateForTesting(
         SecureContextState::kSecure);
-    mojom::blink::DocumentInterfaceBrokerPtr doc;
+    mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker> doc;
     broker_ = std::make_unique<MockCredentialManagerDocumentInterfaceBroker>(
         &dummy_context_.GetFrame().GetDocumentInterfaceBroker(),
-        mojo::MakeRequest(&doc), mock_credential_manager);
+        doc.InitWithNewPipeAndPassReceiver(), mock_credential_manager);
     dummy_context_.GetFrame().SetDocumentInterfaceBrokerForTesting(
-        doc.PassInterface().PassHandle());
+        doc.PassPipe());
   }
 
   Document* GetDocument() { return &dummy_context_.GetDocument(); }

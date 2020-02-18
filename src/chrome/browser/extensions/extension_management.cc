@@ -506,6 +506,17 @@ void ExtensionManagement::OnExtensionPrefChanged() {
 }
 
 void ExtensionManagement::NotifyExtensionManagementPrefChanged() {
+  for (const auto& entry : settings_by_id_) {
+    if (entry.second->installation_mode == INSTALLATION_FORCED) {
+      InstallationReporter::ReportInstallationStage(
+          profile_, entry.first,
+          InstallationReporter::Stage::NOTIFIED_FROM_MANAGEMENT);
+    } else {
+      InstallationReporter::ReportInstallationStage(
+          profile_, entry.first,
+          InstallationReporter::Stage::NOTIFIED_FROM_MANAGEMENT_NOT_FORCED);
+    }
+  }
   for (auto& observer : observer_list_)
     observer.OnExtensionManagementSettingsChanged();
 }
@@ -602,12 +613,14 @@ internal::IndividualSettings* ExtensionManagement::AccessByUpdateUrl(
   return settings.get();
 }
 
+// static
 ExtensionManagement* ExtensionManagementFactory::GetForBrowserContext(
     content::BrowserContext* context) {
   return static_cast<ExtensionManagement*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
+// static
 ExtensionManagementFactory* ExtensionManagementFactory::GetInstance() {
   return base::Singleton<ExtensionManagementFactory>::get();
 }

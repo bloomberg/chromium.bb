@@ -11,12 +11,12 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_tick_clock.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -107,9 +107,9 @@ class RemotingSenderTest : public ::testing::Test {
   RemotingSenderTest()
       : cast_environment_(new media::cast::CastEnvironment(
             base::DefaultTickClock::GetInstance(),
-            scoped_task_environment_.GetMainThreadTaskRunner(),
-            scoped_task_environment_.GetMainThreadTaskRunner(),
-            scoped_task_environment_.GetMainThreadTaskRunner())),
+            task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner())),
         expecting_error_callback_run_(false),
         receiver_ssrc_(-1) {
     const MojoCreateDataPipeOptions data_pipe_options{
@@ -150,7 +150,7 @@ class RemotingSenderTest : public ::testing::Test {
   }
 
   // Allow pending tasks, such as Mojo method calls, to execute.
-  void RunPendingTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunPendingTasks() { task_environment_.RunUntilIdle(); }
 
  protected:
   media::cast::FrameId latest_acked_frame_id() const {
@@ -250,7 +250,7 @@ class RemotingSenderTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<media::cast::CastEnvironment> cast_environment_;
   FakeTransport transport_;
   std::unique_ptr<RemotingSender> remoting_sender_;

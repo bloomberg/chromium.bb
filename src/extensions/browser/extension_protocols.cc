@@ -43,7 +43,6 @@
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
@@ -76,11 +75,11 @@
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_response_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "url/url_util.h"
 
 using content::BrowserContext;
-using content::ResourceRequestInfo;
 using extensions::Extension;
 using extensions::SharedModuleInfo;
 
@@ -537,8 +536,8 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
 
     scoped_refptr<ContentVerifier> content_verifier =
         extension_info_map_->content_verifier();
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ReadResourceFilePathAndLastModifiedTime, resource,
                        directory_path, base::Unretained(read_file_path),
                        base::Unretained(last_modified_time)),
@@ -561,7 +560,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
       bool send_cors_header) {
     request.url = net::FilePathToFileURL(*read_file_path);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(
             &StartVerifyJob, std::move(request), std::move(loader),

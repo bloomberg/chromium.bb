@@ -55,7 +55,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
 #include "content/common/browser_plugin/browser_plugin_messages.h"
-#include "content/common/fileapi/webblob_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_visual_properties.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
@@ -96,6 +95,7 @@
 #include "net/base/filename_util.h"
 #include "net/base/io_buffer.h"
 #include "net/cookies/canonical_cookie.h"
+#include "net/cookies/cookie_util.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
 #include "net/filter/mock_source_stream.h"
@@ -178,7 +178,7 @@ class InterstitialObserver : public content::WebContentsObserver {
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
                          bool user_gesture,
-                         int world_id,
+                         int32_t world_id,
                          std::unique_ptr<base::Value>* result)
     WARN_UNUSED_RESULT;
 
@@ -188,7 +188,7 @@ bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
 bool ExecuteScriptHelper(RenderFrameHost* render_frame_host,
                          const std::string& script,
                          bool user_gesture,
-                         int world_id,
+                         int32_t world_id,
                          std::unique_ptr<base::Value>* result) {
   // TODO(lukasza): Only get messages from the specific |render_frame_host|.
   DOMMessageQueue dom_message_queue(render_frame_host);
@@ -474,14 +474,14 @@ class TestNavigationManagerThrottle : public NavigationThrottle {
  private:
   // NavigationThrottle:
   NavigationThrottle::ThrottleCheckResult WillStartRequest() override {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             on_will_start_request_closure_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   on_will_start_request_closure_);
     return NavigationThrottle::DEFER;
   }
 
   NavigationThrottle::ThrottleCheckResult WillProcessResponse() override {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             on_will_process_response_closure_);
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   on_will_process_response_closure_);
     return NavigationThrottle::DEFER;
   }
 
@@ -589,6 +589,12 @@ class CommitOriginInterceptor : public DidCommitNavigationInterceptor {
 }  // namespace
 
 bool NavigateToURL(WebContents* web_contents, const GURL& url) {
+  return NavigateToURL(web_contents, url, url);
+}
+
+bool NavigateToURL(WebContents* web_contents,
+                   const GURL& url,
+                   const GURL& expected_commit_url) {
   NavigateToURLBlockUntilNavigationsComplete(web_contents, url, 1);
   if (!IsLastCommittedEntryOfPageType(web_contents, PAGE_TYPE_NORMAL)) {
     // TODO(crbug.com/882545) remove the following debug information:
@@ -605,14 +611,12 @@ bool NavigateToURL(WebContents* web_contents, const GURL& url) {
     return false;
   }
 
-  // TODO(crbug.com/882545) revert this to the return statement below.
-  bool same_url = web_contents->GetLastCommittedURL() == url;
-  if (!same_url) {
-    DLOG(WARNING) << "Expected URL " << url << " but observed "
+  bool is_same_url = web_contents->GetLastCommittedURL() == expected_commit_url;
+  if (!is_same_url) {
+    DLOG(WARNING) << "Expected URL " << expected_commit_url << " but observed "
                   << web_contents->GetLastCommittedURL();
   }
-  return same_url;
-  // return web_contents->GetLastCommittedURL() == url;
+  return is_same_url;
 }
 
 bool NavigateIframeToURL(WebContents* web_contents,
@@ -1504,7 +1508,7 @@ std::string AnnotateAndAdjustJsStackTraces(const std::string& js_error,
 testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
                                 const std::string& script,
                                 int options,
-                                int world_id) {
+                                int32_t world_id) {
   CHECK(!(options & EXECUTE_SCRIPT_USE_MANUAL_REPLY))
       << "USE_MANUAL_REPLY does not make sense with ExecJs.";
 
@@ -1528,7 +1532,7 @@ testing::AssertionResult ExecJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
                     const std::string& script,
                     int options,
-                    int world_id) {
+                    int32_t world_id) {
   // The sourceURL= parameter provides a string that replaces <anonymous> in
   // stack traces, if an Error is thrown. 'std::string' is meant to communicate
   // that this is a dynamic argument originating from C++ code.
@@ -1665,7 +1669,7 @@ EvalJsResult EvalJs(const ToRenderFrameHost& execution_target,
 EvalJsResult EvalJsWithManualReply(const ToRenderFrameHost& execution_target,
                                    const std::string& script,
                                    int options,
-                                   int world_id) {
+                                   int32_t world_id) {
   return EvalJs(execution_target, script,
                 options | EXECUTE_SCRIPT_USE_MANUAL_REPLY, world_id);
 }
@@ -1759,15 +1763,19 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents,
 std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
   std::string cookies;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
+  // Allow access to SameSite cookies in tests.
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->GetCookieList(
-      url, net::CookieOptions(),
+      url, options,
       base::BindOnce(
           [](std::string* cookies_out, base::RunLoop* run_loop,
-             const std::vector<net::CanonicalCookie>& cookies,
+             const net::CookieStatusList& cookies,
              const net::CookieStatusList& excluded_cookies) {
             *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
             run_loop->Quit();
@@ -1782,18 +1790,22 @@ std::vector<net::CanonicalCookie> GetCanonicalCookies(
     const GURL& url) {
   std::vector<net::CanonicalCookie> cookies;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
+  // Allow access to SameSite cookies in tests.
+  net::CookieOptions options;
+  options.set_same_site_cookie_context(
+      net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
   cookie_manager->GetCookieList(
-      url, net::CookieOptions(),
+      url, options,
       base::BindOnce(
           [](base::RunLoop* run_loop,
              std::vector<net::CanonicalCookie>* cookies_out,
-             const std::vector<net::CanonicalCookie>& cookies,
+             const net::CookieStatusList& cookies,
              const net::CookieStatusList& excluded_cookies) {
-            *cookies_out = cookies;
+            *cookies_out = net::cookie_util::StripStatuses(cookies);
             run_loop->Quit();
           },
           &run_loop, &cookies));
@@ -1806,25 +1818,24 @@ bool SetCookie(BrowserContext* browser_context,
                const std::string& value) {
   bool result = false;
   base::RunLoop run_loop;
-  network::mojom::CookieManagerPtr cookie_manager;
+  mojo::Remote<network::mojom::CookieManager> cookie_manager;
   BrowserContext::GetDefaultStoragePartition(browser_context)
       ->GetNetworkContext()
-      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+      ->GetCookieManager(cookie_manager.BindNewPipeAndPassReceiver());
+  std::unique_ptr<net::CanonicalCookie> cc(net::CanonicalCookie::Create(
+      url, value, base::Time::Now(), base::nullopt /* server_time */));
+  DCHECK(cc.get());
+
   net::CookieOptions options;
   options.set_include_httponly();
   options.set_same_site_cookie_context(
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT);
-  std::unique_ptr<net::CanonicalCookie> cc(
-      net::CanonicalCookie::Create(url, value, base::Time::Now(), options));
-  DCHECK(cc.get());
-
   cookie_manager->SetCanonicalCookie(
       *cc.get(), url.scheme(), options,
       base::BindOnce(
           [](bool* result, base::RunLoop* run_loop,
-             net::CanonicalCookie::CookieInclusionStatus success) {
-            *result = (success ==
-                       net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+             net::CanonicalCookie::CookieInclusionStatus set_cookie_status) {
+            *result = set_cookie_status.IsInclude();
             run_loop->Quit();
           },
           &result, &run_loop));
@@ -2598,7 +2609,7 @@ void MainThreadFrameObserver::Quit() {
 bool MainThreadFrameObserver::OnMessageReceived(const IPC::Message& msg) {
   if (msg.type() == WidgetHostMsg_WaitForNextFrameForTests_ACK::ID &&
       msg.routing_id() == routing_id_) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&MainThreadFrameObserver::Quit, base::Unretained(this)));
   }
@@ -2711,18 +2722,18 @@ BrowserTestClipboardScope::~BrowserTestClipboardScope() {
 }
 
 void BrowserTestClipboardScope::SetRtf(const std::string& rtf) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
   clipboard_writer.WriteRTF(rtf);
 }
 
 void BrowserTestClipboardScope::SetText(const std::string& text) {
-  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardType::kCopyPaste);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
   clipboard_writer.WriteText(base::ASCIIToUTF16(text));
 }
 
 void BrowserTestClipboardScope::GetText(std::string* result) {
   ui::Clipboard::GetForCurrentThread()->ReadAsciiText(
-      ui::ClipboardType::kCopyPaste, result);
+      ui::ClipboardBuffer::kCopyPaste, result);
 }
 
 class FrameFocusedObserver::FrameTreeNodeObserverImpl
@@ -2801,10 +2812,10 @@ TestNavigationManager::~TestNavigationManager() {
 }
 
 bool TestNavigationManager::WaitForRequestStart() {
-  // This is the default desired state. In PlzNavigate, a browser-initiated
-  // navigation can reach this state synchronously, so the TestNavigationManager
-  // is set to always pause navigations at WillStartRequest. This ensures the
-  // user can always call WaitForWillStartRequest.
+  // This is the default desired state. A browser-initiated navigation can reach
+  // this state synchronously, so the TestNavigationManager is set to always
+  // pause navigations at WillStartRequest. This ensures the user can always
+  // call WaitForWillStartRequest.
   DCHECK(desired_state_ == NavigationState::STARTED);
   return WaitForDesiredState();
 }
@@ -2968,25 +2979,16 @@ std::string ConsoleObserverDelegate::message() {
   return messages_.back();
 }
 
-// static
-void PwnMessageHelper::RegisterBlobURL(RenderProcessHost* process,
-                                       GURL url,
-                                       std::string uuid) {
-  IPC::IpcSecurityTestUtil::PwnMessageReceived(
-      process->GetChannel(), BlobHostMsg_RegisterPublicURL(url, uuid));
-}
-
 namespace {
 blink::mojom::FileSystemManagerPtr GetFileSystemManager(
     RenderProcessHost* rph) {
   FileSystemManagerImpl* file_system = static_cast<RenderProcessHostImpl*>(rph)
                                            ->GetFileSystemManagerForTesting();
   blink::mojom::FileSystemManagerPtr file_system_manager_ptr;
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&FileSystemManagerImpl::BindRequest,
-                     base::Unretained(file_system),
-                     mojo::MakeRequest(&file_system_manager_ptr)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&FileSystemManagerImpl::BindRequest,
+                                base::Unretained(file_system),
+                                mojo::MakeRequest(&file_system_manager_ptr)));
   return file_system_manager_ptr;
 }
 }  // namespace
@@ -3031,10 +3033,12 @@ void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
 void PwnMessageHelper::LockMouse(RenderProcessHost* process,
                                  int routing_id,
                                  bool user_gesture,
-                                 bool privileged) {
+                                 bool privileged,
+                                 bool request_unadjusted_movement) {
   IPC::IpcSecurityTestUtil::PwnMessageReceived(
       process->GetChannel(),
-      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged));
+      WidgetHostMsg_LockMouse(routing_id, user_gesture, privileged,
+                              request_unadjusted_movement));
 }
 
 #if defined(USE_AURA)
@@ -3105,7 +3109,7 @@ bool ContextMenuFilter::OnMessageReceived(const IPC::Message& message) {
     FrameHostMsg_ContextMenu::Param params;
     FrameHostMsg_ContextMenu::Read(&message, &params);
     content::ContextMenuParams menu_params = std::get<0>(params);
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ContextMenuFilter::OnContextMenu, this, menu_params));
   }
@@ -3142,6 +3146,9 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
       network::mojom::URLLoaderFactoryParams::New();
   url_loader_factory_params->process_id = process_id;
   url_loader_factory_params->is_corb_enabled = false;
+  url::Origin origin = url::Origin::Create(url);
+  url_loader_factory_params->network_isolation_key =
+      net::NetworkIsolationKey(origin, origin);
   network_context->CreateURLLoaderFactory(MakeRequest(&url_loader_factory),
                                           std::move(url_loader_factory_params));
   // |url_loader_factory| will receive error notification asynchronously if
@@ -3153,6 +3160,8 @@ int LoadBasicRequest(network::mojom::NetworkContext* network_context,
   request->url = url;
   request->render_frame_id = render_frame_id;
   request->load_flags = load_flags;
+  // Allow access to SameSite cookies in tests.
+  request->site_for_cookies = url;
 
   content::SimpleURLLoaderTestHelper simple_loader_helper;
   std::unique_ptr<network::SimpleURLLoader> simple_loader =
@@ -3323,14 +3332,14 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
                       1.f / visual_properties.screen_info.device_scale_factor));
   }
   // Track each rect updates.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedFrameRectOnUI,
           this, screen_space_rect_in_dip));
 
   // Track each surface id update.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &SynchronizeVisualPropertiesMessageFilter::OnUpdatedSurfaceIdOnUI,
@@ -3349,7 +3358,7 @@ void SynchronizeVisualPropertiesMessageFilter::OnSynchronizeVisualProperties(
 
   // We can't nest on the IO thread. So tests will wait on the UI thread, so
   // post there to exit the nesting.
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::UI})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::UI})
       ->PostTask(FROM_HERE,
                  base::BindOnce(&SynchronizeVisualPropertiesMessageFilter::
                                     OnUpdatedFrameSinkIdOnUI,

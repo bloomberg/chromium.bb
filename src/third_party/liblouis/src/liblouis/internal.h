@@ -57,41 +57,11 @@ extern "C" {
 #define SEQPATTERNSIZE 128
 #define CHARSIZE sizeof(widechar)
 #define DEFAULTRULESIZE 50
-#define ENDSEGMENT 0xffff
-
-/**
- * Definitions of braille dots
- */
-#define B1 0X01
-#define B2 0X02
-#define B3 0X04
-#define B4 0X08
-#define B5 0X10
-#define B6 0X20
-#define B7 0X40
-#define B8 0X80
-#define B9 0X100
-#define B10 0X200
-#define B11 0X400
-#define B12 0X800
-#define B13 0X1000
-#define B14 0X2000
-#define B15 0X4000
-#define B16 0X8000
 
 typedef struct intCharTupple {
 	int key;
 	char value;
 } intCharTupple;
-
-/**
- * Mapping between braille dot and textual representation as used in dots operands
- */
-static const intCharTupple dotMapping[] = {
-	{ B1, '1' }, { B2, '2' }, { B3, '3' }, { B4, '4' }, { B5, '5' }, { B6, '6' },
-	{ B7, '7' }, { B8, '8' }, { B9, '9' }, { B10, 'A' }, { B11, 'B' }, { B12, 'C' },
-	{ B13, 'D' }, { B14, 'E' }, { B15, 'F' }, { 0, 0 },
-};
 
 /* HASHNUM must be prime */
 #define HASHNUM 1123
@@ -121,21 +91,25 @@ typedef enum {
 	CTC_SeqDelimiter = 0x2000,
 	CTC_SeqBefore = 0x4000,
 	CTC_SeqAfter = 0x8000,
-	CTC_UserDefined0 = 0x10000,
+	CTC_UserDefined0 = 0x10000,  // class 5
 	CTC_UserDefined1 = 0x20000,
 	CTC_UserDefined2 = 0x40000,
 	CTC_UserDefined3 = 0x80000,
 	CTC_UserDefined4 = 0x100000,
 	CTC_UserDefined5 = 0x200000,
 	CTC_UserDefined6 = 0x400000,
-	CTC_UserDefined7 = 0x800000,
+	CTC_UserDefined7 = 0x800000,  // class 12
 	CTC_CapsMode = 0x1000000,
-	CTC_NumericMode = 0x2000000,
-	CTC_NumericNoContract = 0x4000000,
-	CTC_EndOfInput = 0x8000000,  // only used by pattern matcher
-	CTC_EmpMatch = 0x10000000,   // only used in TranslationTableRule->before and
-								 // TranslationTableRule->after
-	CTC_MidEndNumericMode = 0x20000000,
+	CTC_EmphMode = 0x2000000,
+	CTC_NumericMode = 0x4000000,
+	CTC_NumericNoContract = 0x8000000,
+	CTC_EndOfInput = 0x10000000,  // only used by pattern matcher
+	CTC_EmpMatch = 0x20000000,	// only used in TranslationTableRule->before and
+								  // TranslationTableRule->after
+	CTC_MidEndNumericMode = 0x40000000,
+	// 33 more bits available in a unsigned long long (at least 64 bits)
+	// currently used for classes 13 to 45
+	CTC_Class13 = 0x80000000,
 } TranslationTableCharacterAttribute;
 
 typedef enum {
@@ -205,7 +179,7 @@ typedef enum {
 	pass_all = 255
 } pass_Codes;
 
-typedef unsigned int TranslationTableCharacterAttributes;
+typedef unsigned long long TranslationTableCharacterAttributes;
 
 typedef struct {
 	TranslationTableOffset next;
@@ -264,7 +238,7 @@ typedef enum { /* Op codes */
 	/* End of ordered opcodes */
 
 	CTO_CapsModeChars,
-	// CTO_EmphModeChars,
+	CTO_EmphModeChars,
 	CTO_BegComp,
 	CTO_CompBegEmph1,
 	CTO_CompEndEmph1,
@@ -491,6 +465,14 @@ typedef struct /* one state */
 	widechar numTrans;
 } HyphenationState;
 
+typedef struct {
+	TranslationTableOffset tableSize;
+	TranslationTableOffset bytesUsed;
+	TranslationTableOffset charToDots[HASHNUM];
+	TranslationTableOffset dotsToChar[HASHNUM];
+	TranslationTableOffset ruleArea[1]; /** Space for storing all rules and values */
+} DisplayTableHeader;
+
 /**
  * Translation table header
  */
@@ -501,6 +483,7 @@ typedef struct { /* translation table */
 	int syllables;
 	int usesSequences;
 	int usesNumericMode;
+	int usesEmphMode;
 	TranslationTableOffset tableSize;
 	TranslationTableOffset bytesUsed;
 	TranslationTableOffset undefined;
@@ -536,8 +519,6 @@ typedef struct { /* translation table */
 	int noLetsignAfterCount;
 	TranslationTableOffset characters[HASHNUM]; /** Character definitions */
 	TranslationTableOffset dots[HASHNUM];		/** Dot definitions */
-	TranslationTableOffset charToDots[HASHNUM];
-	TranslationTableOffset dotsToChar[HASHNUM];
 	TranslationTableOffset compdotsPattern[256];
 	TranslationTableOffset swapDefinitions[NUMSWAPS];
 	TranslationTableOffset forPassRules[MAXPASS + 1];
@@ -636,9 +617,6 @@ _lou_resolveTable(const char *tableList, const char *base);
 char **EXPORT_CALL
 _lou_defaultTableResolver(const char *tableList, const char *base);
 
-char *EXPORT_CALL
-_lou_getLastTableList(void);
-
 /**
  * Return single-cell dot pattern corresponding to a character.
  * TODO: move to commonTranslationFunctions.c
@@ -653,6 +631,9 @@ _lou_getDotsForChar(widechar c);
 widechar EXPORT_CALL
 _lou_getCharFromDots(widechar d);
 
+DisplayTableHeader *EXPORT_CALL
+_lou_getCurrentDisplayTable();
+
 /**
  * Allocate memory for internal buffers
  *
@@ -665,34 +646,43 @@ _lou_allocMem(AllocBuf buffer, int index, int srcmax, int destmax);
 
 /**
  * Hash function for character strings
+ *
+ * @param lowercase Whether to convert the string to lowercase because
+ *                  making the hash of it.
  */
-int EXPORT_CALL
-_lou_stringHash(const widechar *c);
+unsigned long int EXPORT_CALL
+_lou_stringHash(const widechar *c, int lowercase, const TranslationTableHeader *table);
 
 /**
  * Hash function for single characters
  */
-int EXPORT_CALL
+unsigned long int EXPORT_CALL
 _lou_charHash(widechar c);
 
 /**
  * Return a string in the same format as the characters operand in opcodes
- * TODO: move to utils.c
  */
-char *EXPORT_CALL
-_lou_showString(widechar const *chars, int length);
+const char *EXPORT_CALL
+_lou_showString(widechar const *chars, int length, int forceHex);
+
+/**
+ * Print out dot numbers
+ *
+ * @return a string containing the dot numbers. The longest possible
+ * output is "\123456789ABCDEF0/"
+ */
+const char *EXPORT_CALL
+_lou_unknownDots(widechar dots);
 
 /**
  * Return a character string in the format of the dots operand
- * TODO: move to utils.c
  */
-char *EXPORT_CALL
+const char *EXPORT_CALL
 _lou_showDots(widechar const *dots, int length);
 
 /**
  * Return a character string where the attributes are indicated
  * by the attribute letters used in multipass opcodes
- * TODO: move to utils.c
  */
 char *EXPORT_CALL
 _lou_showAttributes(TranslationTableCharacterAttributes a);
@@ -798,6 +788,23 @@ void EXPORT_CALL
 _lou_logMessage(logLevels level, const char *format, ...);
 
 extern int translation_direction;
+
+/**
+ * Return 1 if given translation mode is valid. Return 0 otherwise.
+ */
+int EXPORT_CALL
+_lou_isValidMode(int mode);
+
+/**
+ * Return the default braille representation for a character.
+ */
+widechar EXPORT_CALL
+_lou_charToFallbackDots(widechar c);
+
+static inline int
+isASCII(widechar c) {
+	return (c >= 0X20) && (c < 0X7F);
+}
 
 #ifdef __cplusplus
 }

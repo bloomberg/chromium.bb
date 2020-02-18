@@ -13,13 +13,13 @@
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_error.h"
 #include "third_party/blink/renderer/modules/cache_storage/cache_storage_trace_utils.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
@@ -74,9 +74,12 @@ bool IsCacheStorageAllowed(ScriptState* script_state) {
     return true;
   }
 
-  WorkerGlobalScope& worker_global = *To<WorkerGlobalScope>(context);
+  WebContentSettingsClient* content_settings_client =
+      To<WorkerGlobalScope>(context)->ContentSettingsClient();
+  if (!content_settings_client)
+    return true;
   // This triggers a sync IPC.
-  return WorkerContentSettingsClient::From(worker_global)->AllowCacheStorage();
+  return content_settings_client->AllowCacheStorage(WebSecurityOrigin());
 }
 
 }  // namespace

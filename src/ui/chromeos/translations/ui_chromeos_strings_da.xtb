@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Billedopløsning</translation>
 <translation id="1943097386230153518">Installer ny tjeneste</translation>
 <translation id="1947424002851288782">Tysk tastatur</translation>
+<translation id="1972984168337863910">Udvid paneler med feedback til filer</translation>
 <translation id="197560921582345123">Kan redigere</translation>
 <translation id="1984603991036629094">Armensk fonetisk tastatur</translation>
 <translation id="2001796770603320721">Administrer i Drev</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Du skal være online for at få adgang til denne fil.</translation>
 <translation id="4212740939091998969">Der findes allerede en mappe med navnet "<ph name="FOLDER_NAME" />". Vælg et andet navn.</translation>
 <translation id="4215448920900139318">Sikkerhedskopierer <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Åbn Indstillinger</translation>
 <translation id="426015154560005552">Arabisk tastatur</translation>
 <translation id="4261901459838235729">Google-præsentation</translation>
 <translation id="4290535918735525311">1 mappe er delt med Linux</translation>
-<translation id="42981349822642051">Udvid</translation>
 <translation id="4298972503445160211">Dansk tastatur</translation>
 <translation id="4299729908419173967">Brasiliansk</translation>
 <translation id="4309915981827077375">Generelle oplysninger</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Automatisk justering</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4886021172213954916">Tamilsk tastatur (skrivemaskine)</translation>
-<translation id="4892969127351273348">Det er ikke muligt at åbne filen med <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> er klar til at blive sikkerhedskopieret</translation>
 <translation id="4924638091161556692">Justeret</translation>
 <translation id="4935975195727477204">Blomst</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Schweizisk (fransk)</translation>
 <translation id="5234764350956374838">Luk</translation>
 <translation id="5241298539944515331">Vietnamesisk tastatur (VIQR)</translation>
-<translation id="52446585071384036">Hvis du vil åbne filer med <ph name="APP_NAME" />, skal de først kopieres til mappen med Linux-filer.</translation>
 <translation id="5253070652067921974">Oprettet af</translation>
 <translation id="5257456363153333584">Guldsmed</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Få adgang til filer overalt, også offline.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Koreansk</translation>
 <translation id="5819442873484330149">Hangul 3-sæt (endelig)</translation>
 <translation id="5833610766403489739">Denne fil er blevet væk. Kontrollér indstillingerne for din downloadplacering, og prøv igen.</translation>
-<translation id="5838051104334203064">Apps fra Play Butik kan ikke få adgang til denne enhed</translation>
 <translation id="5838451609423551646">Markeringen af alle elementer blev fjernet.</translation>
 <translation id="5838825566232597749">Internationalt amerikansk Workman</translation>
 <translation id="5850516540536751549">Denne filtype understøttes ikke. Gå til <ph name="BEGIN_LINK" />Chrome Webshop<ph name="END_LINK" /> for at finde en app, der kan åbne denne filtype.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Hvis du vil gemme disse filer til offlinebrug, skal du gå online igen, højreklikke på filerne og vælge indstillingen <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Annuller</translation>
 <translation id="8261506727792406068">Slet</translation>
+<translation id="8269755669432358899">Skjul paneler med feedback til filer</translation>
 <translation id="8279388322240498158">Sorani-kurdisk tastatur (engelskbaseret)</translation>
 <translation id="8280151743281770066">Armensk (fonetisk)</translation>
 <translation id="8294431847097064396">Kilde</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Vælg den fil, der skal åbnes</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> elementer synkroniseres...</translation>
 <translation id="8600173386174225982">Der blev skiftet til miniaturevisning for listen med filer.</translation>
+<translation id="8601932370724196034">Crostini-billedfil</translation>
 <translation id="8669949407341943408">Flytter…</translation>
 <translation id="8671210955687109937">Kan kommentere</translation>
 <translation id="8686213429977032554">Denne Drev-fil deles ikke endnu</translation>

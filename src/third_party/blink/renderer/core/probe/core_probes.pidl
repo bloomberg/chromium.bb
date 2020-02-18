@@ -58,6 +58,7 @@ interface CoreProbes {
   class FontFace;
   class HTMLDocumentParser;
   class XMLHttpRequest;
+  class HTMLPortalElement;
 
   void DidClearDocumentOfWindowObject([Keep] LocalFrame*);
   void WillInsertDOMNode([Keep] Node* parent);
@@ -83,8 +84,6 @@ interface CoreProbes {
   void DidFireWebGLWarning(Element*);
   void DidFireWebGLErrorOrWarning(Element*, const String& message);
   void DidResizeMainFrame(LocalFrame*);
-  /* This is for pre-BlinkGenPropertyTrees. TODO(wangxianzhu): Remove this function for BlinkGenPropertyTrees. */
-  void DidPaint(LocalFrame*, const cc::Layer*, const LayoutRect&);
   void ApplyAcceptLanguageOverride(ExecutionContext*, String* accept_language);
   void ApplyUserAgentOverride(CoreProbeSink*, String* user_agent);
   void DidBlockRequest(CoreProbeSink*, const ResourceRequest&, DocumentLoader*, const KURL& fetch_context_url, const FetchInitiatorInfo&, ResourceRequestBlockedReason, ResourceType);
@@ -121,7 +120,7 @@ interface CoreProbes {
   void FrameStartedLoading([Keep] LocalFrame*);
   void FrameStoppedLoading([Keep] LocalFrame*);
   void FrameRequestedNavigation(LocalFrame*, Frame* target_frame, const KURL& url, ClientNavigationReason reason);
-  void FrameScheduledNavigation([Keep] LocalFrame*, const KURL& url, double delay, ClientNavigationReason reason);
+  void FrameScheduledNavigation([Keep] LocalFrame*, const KURL& url, base::TimeDelta delay, ClientNavigationReason reason);
   void FrameClearedScheduledNavigation([Keep] LocalFrame*);
   void DidCreateWebSocket([Keep] ExecutionContext*, uint64_t identifier, const KURL& request_url, const String& protocol);
   void WillSendWebSocketHandshakeRequest([Keep] ExecutionContext*, uint64_t identifier, network::mojom::blink::WebSocketHandshakeRequest* request);
@@ -167,4 +166,10 @@ interface CoreProbes {
   void DidSuspendAudioContext(Document*);
   void ProduceCompilationCache(LocalFrame*, const ScriptSourceCode& source, v8::Local<v8::Script> script);
   void ConsumeCompilationCache(ExecutionContext*, const ScriptSourceCode& source, v8::ScriptCompiler::CachedData** cached_data);
+  void NodeCreated([Keep] Node* node);
+  void PortalRemoteFrameCreated(Document*, HTMLPortalElement* portal_element);
+
+  void PlayerEventsAdded(LocalFrame* frame, String player_id, const Vector<InspectorPlayerEvent>& events);
+  void PlayerPropertiesChanged(LocalFrame* frame, String player_id, const Vector<InspectorPlayerProperty>& properties);
+  void PlayersCreated(LocalFrame* frame, const Vector<WebString>& players);
 }

@@ -137,8 +137,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_javascript_dialog_manager.h",
     "browser/shell_javascript_dialog_win.cc",
     "browser/shell_mac.mm",
-    "browser/shell_network_delegate.cc",
-    "browser/shell_network_delegate.h",
     "browser/shell_permission_manager.cc",
     "browser/shell_permission_manager.h",
     "browser/shell_platform_data_aura.cc",
@@ -149,8 +147,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/shell_quota_permission_context.h",
     "browser/shell_speech_recognition_manager_delegate.cc",
     "browser/shell_speech_recognition_manager_delegate.h",
-    "browser/shell_url_request_context_getter.cc",
-    "browser/shell_url_request_context_getter.h",
     "browser/shell_web_contents_view_delegate.h",
     "browser/shell_web_contents_view_delegate_android.cc",
     "browser/shell_web_contents_view_delegate_creator.h",
@@ -205,8 +201,6 @@ jumbo_static_library("content_shell_lib") {
     "browser/web_test/web_test_permission_manager.h",
     "browser/web_test/web_test_push_messaging_service.cc",
     "browser/web_test/web_test_push_messaging_service.h",
-    "browser/web_test/web_test_url_request_context_getter.cc",
-    "browser/web_test/web_test_url_request_context_getter.h",
     "common/power_monitor_test_impl.cc",
     "common/power_monitor_test_impl.h",
     "common/shell_content_client.cc",
@@ -386,7 +380,7 @@ jumbo_static_library("content_shell_lib") {
   }
   if (mojo_media_host == "browser") {
     deps += [
-      "//media/mojo/interfaces:constants",
+      "//media/mojo/mojom:constants",
       "//media/mojo/services",
     ]
   }
@@ -666,7 +660,6 @@ if (is_mac) {
     testonly = true
     sources = [
       "$root_out_dir/content_shell.pak",
-      "resources/missingImage.png",
     ]
 
     public_deps = [
@@ -941,8 +934,8 @@ mojom("mojo_bindings") {
   ]
   public_deps = [
     "//mojo/public/mojom/base",
-    "//skia/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+    "//skia/public/mojom",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]

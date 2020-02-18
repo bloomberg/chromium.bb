@@ -21,12 +21,14 @@ source_set("base") {
     "event_fd.h",
     "file_utils.h",
     "hash.h",
+    "lookup_set.h",
     "metatrace.h",
     "metatrace_events.h",
     "no_destructor.h",
     "optional.h",
     "paged_memory.h",
     "pipe.h",
+    "proc_utils.h",
     "scoped_file.h",
     "small_set.h",
     "string_splitter.h",
@@ -38,19 +40,16 @@ source_set("base") {
     "thread_checker.h",
     "thread_task_runner.h",
     "thread_utils.h",
-    "time.h",
     "unix_task_runner.h",
     "utils.h",
+    "uuid.h",
     "waitable_event.h",
     "watchdog.h",
     "watchdog_noop.h",
     "watchdog_posix.h",
     "weak_ptr.h",
   ]
-  if (is_android) {
-    sources += [ "android_task_runner.h" ]
-  }
-  if (perfetto_build_with_ipc_layer) {
+  if (enable_perfetto_ipc) {
     sources += [ "unix_socket.h" ]
   }
   public_configs = [ "../../../../gn:asan_instrumentation" ]

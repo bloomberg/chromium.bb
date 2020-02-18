@@ -16,11 +16,12 @@
 #include "hb.h"
 #include "hb-subset.h"
 
-template <class T, void(*P)(T*)> using resource = std::unique_ptr<T, SkFunctionWrapper<void, T, P>>;
-using HBBlob = resource<hb_blob_t, hb_blob_destroy>;
-using HBFace = resource<hb_face_t, hb_face_destroy>;
-using HBSubsetInput = resource<hb_subset_input_t, hb_subset_input_destroy>;
-using HBSet = resource<hb_set_t, hb_set_destroy>;
+template <class T, void(*P)(T*)> using resource =
+    std::unique_ptr<T, SkFunctionWrapper<skstd::remove_pointer_t<decltype(P)>, P>>;
+using HBBlob = resource<hb_blob_t, &hb_blob_destroy>;
+using HBFace = resource<hb_face_t, &hb_face_destroy>;
+using HBSubsetInput = resource<hb_subset_input_t, &hb_subset_input_destroy>;
+using HBSet = resource<hb_set_t, &hb_set_destroy>;
 
 static HBBlob to_blob(sk_sp<SkData> data) {
     using blob_size_t = SkCallableTraits<decltype(hb_blob_create)>::argument<1>::type;
@@ -71,7 +72,9 @@ static sk_sp<SkData> subset_harfbuzz(sk_sp<SkData> fontData,
     glyphUsage.getSetValues([&glyphs](unsigned gid) { hb_set_add(glyphs, gid);});
 
     hb_subset_input_set_retain_gids(input.get(), true);
-    hb_subset_input_set_drop_hints(input.get(), true);
+    // TODO: When possible, check if a font is 'tricky' with FT_IS_TRICKY.
+    // If it isn't known if a font is 'tricky', retain the hints.
+    hb_subset_input_set_drop_hints(input.get(), false);
     HBFace subset(hb_subset(face.get(), input.get()));
     HBBlob result(hb_face_reference_blob(subset.get()));
     return to_data(std::move(result));

@@ -526,7 +526,8 @@ error::Error GLES2DecoderPassthroughImpl::DoBindTexture(GLenum target,
   if (service_id != 0) {
     // Create a new texture object to track this texture
     if (!resources_->texture_object_map.GetServiceID(texture,
-                                                     &texture_passthrough)) {
+                                                     &texture_passthrough) ||
+        texture_passthrough == nullptr) {
       texture_passthrough = new TexturePassthrough(service_id, target);
       resources_->texture_object_map.SetIDMapping(texture, texture_passthrough);
     } else {
@@ -2264,6 +2265,11 @@ error::Error GLES2DecoderPassthroughImpl::DoMemoryBarrierByRegion(
 
 error::Error GLES2DecoderPassthroughImpl::DoMultiDrawBeginCHROMIUM(
     GLsizei drawcount) {
+  if (drawcount < 0) {
+    InsertError(GL_INVALID_VALUE, "drawcount cannot be negative.");
+    return error::kNoError;
+  }
+
   if (!multi_draw_manager_->Begin(drawcount)) {
     return error::kInvalidArguments;
   }
@@ -3222,9 +3228,9 @@ error::Error GLES2DecoderPassthroughImpl::DoRenderbufferStorageMultisampleEXT(
     GLenum internalformat,
     GLsizei width,
     GLsizei height) {
-  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
-  // supported by ANGLE.
-  NOTREACHED();
+  DCHECK(feature_info_->feature_flags().multisampled_render_to_texture);
+  api()->glRenderbufferStorageMultisampleEXTFn(target, samples, internalformat,
+                                               width, height);
   return error::kNoError;
 }
 
@@ -3235,9 +3241,16 @@ error::Error GLES2DecoderPassthroughImpl::DoFramebufferTexture2DMultisampleEXT(
     GLuint texture,
     GLint level,
     GLsizei samples) {
-  // This is for GL_EXT_multisampled_render_to_texture, which is not currently
-  // supported by ANGLE.
-  NOTREACHED();
+  DCHECK(feature_info_->feature_flags().multisampled_render_to_texture);
+  if (IsEmulatedFramebufferBound(target)) {
+    InsertError(GL_INVALID_OPERATION,
+                "Cannot change the attachments of the default framebuffer.");
+    return error::kNoError;
+  }
+  BindPendingImageForClientIDIfNeeded(texture);
+  api()->glFramebufferTexture2DMultisampleEXTFn(
+      target, attachment, textarget,
+      GetTextureServiceID(api(), texture, resources_, false), level, samples);
   return error::kNoError;
 }
 
@@ -3397,6 +3410,8 @@ error::Error GLES2DecoderPassthroughImpl::DoQueryCounterEXT(
   pending_query.shm = std::move(buffer);
   pending_query.sync = sync;
   pending_query.submit_count = submit_count;
+  if (target == GL_COMMANDS_ISSUED_TIMESTAMP_CHROMIUM)
+    pending_query.commands_issued_timestamp = base::TimeTicks::Now();
   pending_queries_.push_back(std::move(pending_query));
 
   return ProcessQueries(false);
@@ -4667,8 +4682,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
   if (contents_texture_id) {
     scoped_refptr<TexturePassthrough> passthrough_texture;
     if (!resources_->texture_object_map.GetServiceID(contents_texture_id,
-                                                     &passthrough_texture) &&
-        passthrough_texture) {
+                                                     &passthrough_texture) ||
+        passthrough_texture == nullptr) {
       InsertError(GL_INVALID_VALUE, "unknown texture");
       return error::kNoError;
     }
@@ -4702,6 +4717,12 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerCHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
     GLuint n,
     const volatile GLuint* textures) {
+  // Validate that count is non-negative before allocating a vector
+  if (n < 0) {
+    InsertError(GL_INVALID_VALUE, "count cannot be negative.");
+    return error::kNoError;
+  }
+
   std::vector<gl::GLSurface::CALayerInUseQuery> queries;
   queries.reserve(n);
   for (GLuint i = 0; i < n; ++i) {
@@ -4710,8 +4731,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
     if (texture_id) {
       scoped_refptr<TexturePassthrough> passthrough_texture;
       if (!resources_->texture_object_map.GetServiceID(texture_id,
-                                                       &passthrough_texture) &&
-          passthrough_texture) {
+                                                       &passthrough_texture) ||
+          passthrough_texture == nullptr) {
         InsertError(GL_INVALID_VALUE, "unknown texture");
         return error::kNoError;
       }
@@ -4729,8 +4750,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleCALayerInUseQueryCHROMIUM(
 }
 
 error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
-    GLuint y_texture_id,
-    GLuint uv_texture_id,
+    GLuint texture_0,
+    GLuint texture_1,
     GLint z_order,
     GLint content_x,
     GLint content_y,
@@ -4758,18 +4779,21 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
     return error::kNoError;
   }
 
-  GLuint texture_ids[] = {y_texture_id, uv_texture_id};
-  scoped_refptr<gl::GLImage> images[2];
+  if (!texture_0) {
+    InsertError(GL_INVALID_VALUE, "invalid texture");
+    return error::kNoError;
+  }
+
+  ui::DCRendererLayerParams params;
+  GLuint texture_ids[] = {texture_0, texture_1};
   size_t i = 0;
   for (GLuint texture_id : texture_ids) {
-    if (!texture_id) {
-      InsertError(GL_INVALID_VALUE, "invalid texture");
-      return error::kNoError;
-    }
-
+    if (!texture_id)
+      break;
     scoped_refptr<TexturePassthrough> passthrough_texture;
     if (!resources_->texture_object_map.GetServiceID(texture_id,
-                                                     &passthrough_texture)) {
+                                                     &passthrough_texture) ||
+        passthrough_texture == nullptr) {
       InsertError(GL_INVALID_VALUE, "unknown texture");
       return error::kNoError;
     }
@@ -4780,12 +4804,8 @@ error::Error GLES2DecoderPassthroughImpl::DoScheduleDCLayerCHROMIUM(
       InsertError(GL_INVALID_VALUE, "unsupported texture format");
       return error::kNoError;
     }
-    images[i++] = scoped_refptr<gl::GLImage>(image);
+    params.images[i++] = scoped_refptr<gl::GLImage>(image);
   }
-
-  ui::DCRendererLayerParams params;
-  params.y_image = std::move(images[0]);
-  params.uv_image = std::move(images[1]);
   params.z_order = z_order;
   params.content_rect =
       gfx::Rect(content_x, content_y, content_width, content_height);
@@ -5484,7 +5504,7 @@ GLES2DecoderPassthroughImpl::DoCreateAndTexStorage2DSharedImageINTERNAL(
   resources_->texture_object_map.RemoveClientID(texture_client_id);
   resources_->texture_object_map.SetIDMapping(texture_client_id, texture);
   resources_->texture_shared_image_map[texture_client_id] =
-      std::move(shared_image);
+      PassthroughResources::SharedImageData(std::move(shared_image));
 
   return error::kNoError;
 }
@@ -5505,9 +5525,12 @@ GLES2DecoderPassthroughImpl::DoBeginSharedImageAccessDirectCHROMIUM(
     return error::kNoError;
   }
 
-  SharedImageRepresentationGLTexturePassthrough* shared_image =
-      found->second.get();
-  if (!shared_image->BeginAccess(mode)) {
+  if (found->second.is_being_accessed()) {
+    InsertError(GL_INVALID_OPERATION, "shared image is being accessed.");
+    return error::kNoError;
+  }
+
+  if (!found->second.BeginAccess(mode)) {
     InsertError(GL_INVALID_OPERATION, "unable to begin access");
     return error::kNoError;
   }
@@ -5522,10 +5545,11 @@ error::Error GLES2DecoderPassthroughImpl::DoEndSharedImageAccessDirectCHROMIUM(
     InsertError(GL_INVALID_OPERATION, "texture is not a shared image");
     return error::kNoError;
   }
-
-  SharedImageRepresentationGLTexturePassthrough* shared_image =
-      found->second.get();
-  shared_image->EndAccess();
+  if (!found->second.is_being_accessed()) {
+    InsertError(GL_INVALID_OPERATION, "shared image is not being accessed.");
+    return error::kNoError;
+  }
+  found->second.EndAccess();
   return error::kNoError;
 }
 

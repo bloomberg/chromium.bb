@@ -18,10 +18,14 @@
 
 #include <string>
 
+#include <zlib.h>
+
 #include "perfetto/base/logging.h"
+#include "perfetto/ext/base/optional.h"
 #include "perfetto/ext/base/utils.h"
 #include "perfetto/protozero/proto_decoder.h"
 #include "perfetto/protozero/proto_utils.h"
+#include "src/trace_processor/clock_tracker.h"
 #include "src/trace_processor/event_tracker.h"
 #include "src/trace_processor/process_tracker.h"
 #include "src/trace_processor/stats.h"
@@ -29,16 +33,17 @@
 #include "src/trace_processor/trace_sorter.h"
 #include "src/trace_processor/trace_storage.h"
 
-#include "perfetto/config/trace_config.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
-#include "perfetto/trace/interned_data/interned_data.pbzero.h"
-#include "perfetto/trace/profiling/profile_common.pbzero.h"
-#include "perfetto/trace/trace.pbzero.h"
-#include "perfetto/trace/track_event/source_location.pbzero.h"
-#include "perfetto/trace/track_event/task_execution.pbzero.h"
-#include "perfetto/trace/track_event/thread_descriptor.pbzero.h"
-#include "perfetto/trace/track_event/track_event.pbzero.h"
+#include "protos/perfetto/config/trace_config.pbzero.h"
+#include "protos/perfetto/trace/clock_snapshot.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "protos/perfetto/trace/interned_data/interned_data.pbzero.h"
+#include "protos/perfetto/trace/profiling/profile_common.pbzero.h"
+#include "protos/perfetto/trace/trace.pbzero.h"
+#include "protos/perfetto/trace/track_event/source_location.pbzero.h"
+#include "protos/perfetto/trace/track_event/task_execution.pbzero.h"
+#include "protos/perfetto/trace/track_event/thread_descriptor.pbzero.h"
+#include "protos/perfetto/trace/track_event/track_event.pbzero.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -49,6 +54,9 @@ using protozero::proto_utils::MakeTagVarInt;
 using protozero::proto_utils::ParseVarInt;
 
 namespace {
+
+constexpr uint8_t kTracePacketTag =
+    MakeTagLengthDelimited(protos::pbzero::Trace::kPacketFieldNumber);
 
 template <typename MessageType>
 void InternMessage(TraceProcessorContext* context,
@@ -82,6 +90,33 @@ void InternMessage(TraceProcessorContext* context,
                           message_size) == 0));
 }
 
+TraceBlobView Decompress(TraceBlobView input) {
+  uint8_t out[4096];
+  std::string s;
+
+  z_stream stream{};
+  stream.next_in = const_cast<uint8_t*>(input.data());
+  stream.avail_in = static_cast<unsigned int>(input.length());
+
+  if (inflateInit(&stream) != Z_OK)
+    return TraceBlobView(nullptr, 0, 0);
+
+  int ret;
+  do {
+    stream.next_out = out;
+    stream.avail_out = sizeof(out);
+    ret = inflate(&stream, Z_NO_FLUSH);
+    if (ret != Z_STREAM_END && ret != Z_OK)
+      return TraceBlobView(nullptr, 0, 0);
+    s.append(reinterpret_cast<char*>(out), sizeof(out) - stream.avail_out);
+  } while (ret != Z_STREAM_END);
+  inflateEnd(&stream);
+
+  std::unique_ptr<uint8_t[]> output(new uint8_t[s.size()]);
+  memcpy(output.get(), s.data(), s.size());
+  return TraceBlobView(std::move(output), 0, s.size());
+}
+
 }  // namespace
 
 ProtoTraceTokenizer::ProtoTraceTokenizer(TraceProcessorContext* ctx)
@@ -105,8 +140,6 @@ util::Status ProtoTraceTokenizer::Parse(std::unique_ptr<uint8_t[]> owned_buf,
 
     // At this point we have enough data in |partial_buf_| to read at least the
     // field header and know the size of the next TracePacket.
-    constexpr uint8_t kTracePacketTag =
-        MakeTagLengthDelimited(protos::pbzero::Trace::kPacketFieldNumber);
     const uint8_t* pos = &partial_buf_[0];
     uint8_t proto_field_tag = *pos;
     uint64_t field_size = 0;
@@ -190,12 +223,52 @@ util::Status ProtoTraceTokenizer::ParsePacket(TraceBlobView packet) {
   auto timestamp = decoder.has_timestamp()
                        ? static_cast<int64_t>(decoder.timestamp())
                        : latest_timestamp_;
+
+  // If the TracePacket specifies a non-zero clock-id, translate the timestamp
+  // into the trace-time clock domain.
+  if (decoder.timestamp_clock_id()) {
+    PERFETTO_DCHECK(decoder.has_timestamp());
+    ClockTracker::ClockId clock_id = decoder.timestamp_clock_id();
+    const uint32_t seq_id = decoder.trusted_packet_sequence_id();
+    bool is_seq_scoped = ClockTracker::IsReservedSeqScopedClockId(clock_id);
+    if (is_seq_scoped) {
+      if (!seq_id) {
+        return util::ErrStatus(
+            "TracePacket specified a sequence-local clock id (%" PRIu32
+            ") but the TraceWriter's sequence_id is zero (the service is "
+            "probably too old)",
+            seq_id);
+      }
+      clock_id = ClockTracker::SeqScopedClockIdToGlobal(
+          seq_id, decoder.timestamp_clock_id());
+    }
+    auto trace_ts = context_->clock_tracker->ToTraceTime(clock_id, timestamp);
+    if (!trace_ts.has_value()) {
+      // ToTraceTime() will increase the |clock_sync_failure| stat on failure.
+      static const char seq_extra_err[] =
+          " Because the clock id is sequence-scoped, the ClockSnapshot must be "
+          "emitted on the same TraceWriter sequence of the packet that refers "
+          "to that clock id.";
+      return util::ErrStatus(
+          "Failed to convert TracePacket's timestamp from clock_id=%" PRIu32
+          " seq_id=%" PRIu32
+          ". This is usually due to the lack of a prior ClockSnapshot proto.%s",
+          decoder.timestamp_clock_id(), seq_id,
+          is_seq_scoped ? seq_extra_err : "");
+    }
+    timestamp = trace_ts.value();
+  }
   latest_timestamp_ = std::max(timestamp, latest_timestamp_);
 
   if (decoder.incremental_state_cleared()) {
     HandleIncrementalStateCleared(decoder);
   } else if (decoder.previous_packet_dropped()) {
     HandlePreviousPacketDropped(decoder);
+  }
+
+  if (decoder.has_clock_snapshot()) {
+    return ParseClockSnapshot(decoder.clock_snapshot(),
+                              decoder.trusted_packet_sequence_id());
   }
 
   if (decoder.has_interned_data()) {
@@ -218,6 +291,34 @@ util::Status ProtoTraceTokenizer::ParsePacket(TraceBlobView packet) {
 
   if (decoder.has_thread_descriptor()) {
     ParseThreadDescriptorPacket(decoder);
+    return util::OkStatus();
+  }
+
+  if (decoder.has_compressed_packets()) {
+    protozero::ConstBytes field = decoder.compressed_packets();
+    const size_t field_off = packet.offset_of(field.data);
+    TraceBlobView compressed_packets = packet.slice(field_off, field.size);
+    TraceBlobView packets = Decompress(std::move(compressed_packets));
+
+    const uint8_t* start = packets.data();
+    const uint8_t* end = packets.data() + packets.length();
+    const uint8_t* ptr = start;
+    while ((end - ptr) > 2) {
+      const uint8_t* packet_start = ptr;
+      if (PERFETTO_UNLIKELY(*ptr != kTracePacketTag))
+        return util::ErrStatus("Expected TracePacket tag");
+      uint64_t packet_size = 0;
+      ptr = ParseVarInt(++ptr, end, &packet_size);
+      size_t packet_offset = static_cast<size_t>(ptr - start);
+      ptr += packet_size;
+      if (PERFETTO_UNLIKELY((ptr - packet_start) < 2 || ptr > end))
+        return util::ErrStatus("Invalid packet size");
+      util::Status status = ParsePacket(
+          packets.slice(packet_offset, static_cast<size_t>(packet_size)));
+      if (PERFETTO_UNLIKELY(!status.ok()))
+        return status;
+    }
+
     return util::OkStatus();
   }
 
@@ -303,9 +404,9 @@ void ProtoTraceTokenizer::ParseInternedData(
         context_, state, interned_data.slice(offset, it->size()));
   }
 
-  for (auto it = interned_data_decoder.legacy_event_names(); it; ++it) {
+  for (auto it = interned_data_decoder.event_names(); it; ++it) {
     size_t offset = interned_data.offset_of(it->data());
-    InternMessage<protos::pbzero::LegacyEventName>(
+    InternMessage<protos::pbzero::EventName>(
         context_, state, interned_data.slice(offset, it->size()));
   }
 
@@ -350,6 +451,12 @@ void ProtoTraceTokenizer::ParseInternedData(
   for (auto it = interned_data_decoder.callstacks(); it; ++it) {
     size_t offset = interned_data.offset_of(it->data());
     InternMessage<protos::pbzero::Callstack>(
+        context_, state, interned_data.slice(offset, it->size()));
+  }
+
+  for (auto it = interned_data_decoder.log_message_body(); it; ++it) {
+    size_t offset = interned_data.offset_of(it->data());
+    InternMessage<protos::pbzero::LogMessageBody>(
         context_, state, interned_data.slice(offset, it->size()));
   }
 }
@@ -443,6 +550,28 @@ void ProtoTraceTokenizer::ParseThreadDescriptorPacket(
     procs->UpdateThreadName(
         static_cast<uint32_t>(thread_descriptor_decoder.tid()), thread_name_id);
   }
+}
+
+util::Status ProtoTraceTokenizer::ParseClockSnapshot(ConstBytes blob,
+                                                     uint32_t seq_id) {
+  std::map<ClockTracker::ClockId, int64_t> clock_map;
+  protos::pbzero::ClockSnapshot::Decoder evt(blob.data, blob.size);
+  for (auto it = evt.clocks(); it; ++it) {
+    protos::pbzero::ClockSnapshot::Clock::Decoder clk(it->data(), it->size());
+    ClockTracker::ClockId clock_id = clk.clock_id();
+    if (ClockTracker::IsReservedSeqScopedClockId(clk.clock_id())) {
+      if (!seq_id) {
+        return util::ErrStatus(
+            "ClockSnapshot packet is specifying a sequence-scoped clock id "
+            "(%" PRIu64 ") but the TracePacket sequence_id is zero",
+            clock_id);
+      }
+      clock_id = ClockTracker::SeqScopedClockIdToGlobal(seq_id, clk.clock_id());
+    }
+    clock_map[clock_id] = static_cast<int64_t>(clk.timestamp());
+  }
+  context_->clock_tracker->AddSnapshot(clock_map);
+  return util::OkStatus();
 }
 
 void ProtoTraceTokenizer::ParseTrackEventPacket(

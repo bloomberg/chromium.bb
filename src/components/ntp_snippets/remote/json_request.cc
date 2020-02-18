@@ -229,9 +229,7 @@ std::unique_ptr<JsonRequest> JsonRequest::Builder::Build() const {
 }
 
 JsonRequest::Builder& JsonRequest::Builder::SetAuthentication(
-    const std::string& account_id,
     const std::string& auth_header) {
-  obfuscated_gaia_id_ = account_id;
   auth_header_ = auth_header;
   return *this;
 }
@@ -290,7 +288,7 @@ std::unique_ptr<network::ResourceRequest>
 JsonRequest::Builder::BuildResourceRequest() const {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url_;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
   resource_request->headers.SetHeader("Content-Type",
                                       "application/json; charset=UTF-8");

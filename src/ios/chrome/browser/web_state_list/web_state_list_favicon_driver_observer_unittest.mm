@@ -10,8 +10,7 @@
 #import "ios/chrome/browser/web_state_list/fake_web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #include "ui/gfx/image/image.h"
@@ -55,7 +54,7 @@ class WebStateListFaviconDriverObserverTest : public PlatformTest {
   }
 
  private:
-  web::TestWebThreadBundle test_web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   FakeWebStateListDelegate web_state_list_delegate_;
   WebStateList web_state_list_;

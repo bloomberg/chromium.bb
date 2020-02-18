@@ -90,7 +90,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   // 1) Browser windows.
   aura::Window* window = browser()->window()->GetNativeWindow();
   views::Widget* widget = views::Widget::GetWidgetForNativeWindow(window);
-  ASSERT_TRUE(browser()->is_type_tabbed());
+  ASSERT_TRUE(browser()->is_type_normal());
   ASSERT_TRUE(widget->IsActive());
   SetToInitialShowState(widget);
   EXPECT_TRUE(IsInitialShowState(widget));
@@ -116,7 +116,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
                                           true));
 
   Browser* app_host_browser = new Browser(browser_create_params);
-  ASSERT_TRUE(app_host_browser->is_app());
+  ASSERT_FALSE(app_host_browser->is_type_popup());
+  ASSERT_TRUE(app_host_browser->is_type_app());
   AddBlankTabAndShow(app_host_browser);
   window = app_host_browser->window()->GetNativeWindow();
   widget = views::Widget::GetWidgetForNativeWindow(window);
@@ -136,7 +137,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
       Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true);
   Browser* popup_browser = new Browser(browser_create_params);
   ASSERT_TRUE(popup_browser->is_type_popup());
-  ASSERT_FALSE(popup_browser->is_app());
+  ASSERT_FALSE(popup_browser->is_type_app());
   AddBlankTabAndShow(popup_browser);
   window = popup_browser->window()->GetNativeWindow();
   widget = views::Widget::GetWidgetForNativeWindow(window);
@@ -157,7 +158,7 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   views::Widget misc_widget;
   widget = &misc_widget;
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   window = widget->GetNativeWindow();
 

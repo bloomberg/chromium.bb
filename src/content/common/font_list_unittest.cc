@@ -10,7 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -38,7 +38,7 @@ bool HasFontWithName(const base::ListValue& list,
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 // GetFontList is not implemented on Android and Fuchsia.
 TEST(FontList, GetFontList) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   content::GetFontListTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce([] {
@@ -56,7 +56,7 @@ TEST(FontList, GetFontList) {
         EXPECT_TRUE(HasFontWithName(*fonts, "Arial", "Arial"));
 #endif
       }));
-  scoped_task_environment.RunUntilIdle();
+  task_environment.RunUntilIdle();
 }
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
 

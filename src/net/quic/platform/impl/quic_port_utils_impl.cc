@@ -8,8 +8,8 @@
 
 namespace quic {
 
-int QuicPickUnusedPortOrDieImpl() {
-  return 12345 + (QuicRandom::GetInstance()->RandUint64() % 20000);
+int QuicPickServerPortForTestsOrDieImpl() {
+  return 0;  // Let the OS find an unused port.
 }
 
 void QuicRecyclePortImpl(int port) {}

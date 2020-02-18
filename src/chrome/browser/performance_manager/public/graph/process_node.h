@@ -19,6 +19,7 @@ namespace performance_manager {
 
 class FrameNode;
 class ProcessNodeObserver;
+class RenderProcessHostProxy;
 
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -88,9 +89,18 @@ class ProcessNode : public Node {
   // lifetime, expressed as CPU seconds.
   virtual base::TimeDelta GetCumulativeCpuUsage() const = 0;
 
-  // Returns the most recently measured private memory footprint of the render
-  // process, in kilobytes.
+  // Returns the most recently measured private memory footprint of the process.
+  // This is roughly private, anonymous, non-discardable, resident or swapped
+  // memory in kilobytes. For more details, see https://goo.gl/3kPb9S.
   virtual uint64_t GetPrivateFootprintKb() const = 0;
+
+  // Returns the most recently measured resident set of the process, in
+  // kilobytes.
+  virtual uint64_t GetResidentSetKb() const = 0;
+
+  // Returns a proxy to the RenderProcessHost associated with this node. The
+  // proxy may only be dereferenced on the UI thread.
+  virtual const RenderProcessHostProxy& GetRenderProcessHostProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProcessNode);
@@ -107,6 +117,11 @@ class ProcessNodeObserver {
 
   // Called when a |process_node| is added to the graph.
   virtual void OnProcessNodeAdded(const ProcessNode* process_node) = 0;
+
+  // The process associated with |process_node| has been started or has exited.
+  // This implies some or all of the process, process_id, launch time and/or
+  // exit status properties have changed.
+  virtual void OnProcessLifetimeChange(const ProcessNode* process_node) = 0;
 
   // Called before a |process_node| is removed from the graph.
   virtual void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) = 0;
@@ -139,6 +154,7 @@ class ProcessNode::ObserverDefaultImpl : public ProcessNodeObserver {
 
   // ProcessNodeObserver implementation:
   void OnProcessNodeAdded(const ProcessNode* process_node) override {}
+  void OnProcessLifetimeChange(const ProcessNode* process_node) override {}
   void OnBeforeProcessNodeRemoved(const ProcessNode* process_node) override {}
   void OnExpectedTaskQueueingDurationSample(
       const ProcessNode* process_node) override {}

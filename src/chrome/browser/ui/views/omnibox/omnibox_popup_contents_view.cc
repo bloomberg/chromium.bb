@@ -49,7 +49,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
 
     RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params, this);
 
-    Init(params);
+    Init(std::move(params));
   }
 
   void SetPopupContentsView(OmniboxPopupContentsView* contents) {
@@ -365,7 +365,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_SCROLL_END:
       if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-            model_->result().match_at(index).ShouldShowTabMatch())) {
+            model_->result().match_at(index).ShouldShowTabMatchButton())) {
         OpenMatch(index, WindowOpenDisposition::CURRENT_TAB,
                   event->time_stamp());
       } else {
@@ -393,16 +393,6 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   popup_height += RoundedOmniboxResultsFrame::GetNonResultSectionHeight();
-
-  base::Optional<int> vertical_margin_override =
-      OmniboxFieldTrial::GetSuggestionVerticalMarginFieldTrialOverride();
-  if (vertical_margin_override) {
-    // If the vertical margin experiment uses a very small value (like a value
-    // similar to pre-Refresh), we need to pad up the popup height at the
-    // bottom (just like pre-Refresh) to prevent it from looking very bad.
-    if (vertical_margin_override.value() < 4)
-      popup_height += 4;
-  }
 
   // The rounded popup is always offset the same amount from the omnibox.
   gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();

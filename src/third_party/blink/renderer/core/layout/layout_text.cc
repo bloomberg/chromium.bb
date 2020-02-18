@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/layout_ng_text.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_abstract_inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_offset_mapping.h"
@@ -114,9 +115,8 @@ class SecureTextTimer final : public TimerBase {
  private:
   void Fired() override {
     DCHECK(g_secure_text_timers->Contains(layout_text_));
-    layout_text_->SetText(
-        layout_text_->GetText().Impl(),
-        true /* forcing setting text as it may be masked later */);
+    // Forcing setting text as it may be masked later
+    layout_text_->ForceSetText(layout_text_->GetText().Impl());
   }
 
   LayoutText* layout_text_;
@@ -742,7 +742,7 @@ CreatePositionWithAffinityForBoxAfterAdjustingOffsetForBiDi(
 PositionWithAffinity LayoutText::PositionForPoint(
     const PhysicalOffset& point) const {
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(point);
+    return ng_block_flow->PositionForPoint(*this, point);
 
   DCHECK(CanUseInlineBox(*this));
   if (!FirstTextBox() || TextLength() == 0)
@@ -1653,13 +1653,23 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
       FirstTextBox()->ManuallySetStartLenAndLogicalWidth(
           offset, text->length(), LayoutUnit(text_width));
       SetFirstTextBoxLogicalLeft(text_width);
-      const bool force = false;
-      const bool avoid_layout_and_only_paint = true;
-      SetText(std::move(text), force, avoid_layout_and_only_paint);
+      SetTextInternal(std::move(text));
+      SetShouldDoFullPaintInvalidation();
+      TextDidChangeWithoutInvalidation();
       lines_dirty_ = false;
       valid_ng_items_ = false;
       return;
     }
+  }
+
+  if (NGInlineNode::SetTextWithOffset(this, text, offset, len)) {
+    DCHECK(!NeedsCollectInlines());
+    // Prevent |TextDidChange()| to propagate |NeedsCollectInlines|
+    SetNeedsCollectInlines(true);
+    TextDidChange();
+    valid_ng_items_ = true;
+    ClearNeedsCollectInlines();
+    return;
   }
 
   unsigned old_len = TextLength();
@@ -1735,7 +1745,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
   }
 
   lines_dirty_ = dirtied_lines;
-  SetText(std::move(text), dirtied_lines);
+  ForceSetText(std::move(text));
 
   // TODO(layout-dev): Invalidation is currently all or nothing in LayoutNG,
   // this is probably fine for NGInlineItem reuse as recreating the individual
@@ -1746,7 +1756,7 @@ void LayoutText::SetTextWithOffset(scoped_refptr<StringImpl> text,
 
 void LayoutText::TransformText() {
   if (scoped_refptr<StringImpl> text_to_transform = OriginalText())
-    SetText(std::move(text_to_transform), true);
+    ForceSetText(std::move(text_to_transform));
 }
 
 static inline bool IsInlineFlowOrEmptyText(const LayoutObject* o) {
@@ -1782,7 +1792,11 @@ UChar LayoutText::PreviousCharacter() const {
 void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
   DCHECK(text);
   text_ = String(std::move(text));
+  DCHECK(text_);
+  DCHECK(!IsBR() || (TextLength() == 1 && text_[0] == kNewlineCharacter));
+}
 
+void LayoutText::ApplyTextTransform() {
   if (const ComputedStyle* style = Style()) {
     style->ApplyTextTransform(&text_, PreviousCharacter());
 
@@ -1801,9 +1815,6 @@ void LayoutText::SetTextInternal(scoped_refptr<StringImpl> text) {
         SecureText(kBlackSquareCharacter);
     }
   }
-
-  DCHECK(text_);
-  DCHECK(!IsBR() || (TextLength() == 1 && text_[0] == kNewlineCharacter));
 }
 
 void LayoutText::SecureText(UChar mask) {
@@ -1831,27 +1842,34 @@ void LayoutText::SecureText(UChar mask) {
   }
 }
 
-void LayoutText::SetText(scoped_refptr<StringImpl> text,
-                         bool force,
-                         bool avoid_layout_and_only_paint) {
+void LayoutText::SetTextIfNeeded(scoped_refptr<StringImpl> text) {
   DCHECK(text);
 
-  if (!force && Equal(text_.Impl(), text.get()))
+  if (Equal(text_.Impl(), text.get()))
     return;
+  ForceSetText(std::move(text));
+}
 
+void LayoutText::ForceSetText(scoped_refptr<StringImpl> text) {
+  DCHECK(text);
   SetTextInternal(std::move(text));
+  TextDidChange();
+}
+
+void LayoutText::TextDidChange() {
   // If preferredLogicalWidthsDirty() of an orphan child is true,
   // LayoutObjectChildList::insertChildNode() fails to set true to owner.
   // To avoid that, we call setNeedsLayoutAndPrefWidthsRecalc() only if this
   // LayoutText has parent.
   if (Parent()) {
-    if (avoid_layout_and_only_paint) {
-      SetShouldDoFullPaintInvalidation();
-    } else {
-      SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
-          layout_invalidation_reason::kTextChanged);
-    }
+    SetNeedsLayoutAndPrefWidthsRecalcAndFullPaintInvalidation(
+        layout_invalidation_reason::kTextChanged);
   }
+  TextDidChangeWithoutInvalidation();
+}
+
+void LayoutText::TextDidChangeWithoutInvalidation() {
+  ApplyTextTransform();
   known_to_have_no_overflow_and_no_fallback_fonts_ = false;
 
   if (AXObjectCache* cache = GetDocument().ExistingAXObjectCache())
@@ -1993,9 +2011,15 @@ PhysicalRect LayoutText::PhysicalLinesBoundingBox() const {
 }
 
 PhysicalRect LayoutText::PhysicalVisualOverflowRect() const {
-  if (base::Optional<PhysicalRect> rect =
-          NGPaintFragment::LocalVisualRectFor(*this))
-    return *rect;
+  if (IsInLayoutNGInlineFormattingContext()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+      return NGFragmentItem::LocalVisualRectFor(*this);
+
+    if (base::Optional<PhysicalRect> rect =
+            NGPaintFragment::LocalVisualRectFor(*this))
+      return *rect;
+  }
 
   if (!FirstTextBox())
     return PhysicalRect();

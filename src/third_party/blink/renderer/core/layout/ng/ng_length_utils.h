@@ -59,7 +59,7 @@ CORE_EXPORT bool NeedMinMaxSizeForContentContribution(WritingMode mode,
                                                       const ComputedStyle&);
 
 // Returns if the given |Length| is unresolvable, e.g. the length is %-based
-// during the intrinsic phase.
+// during the intrinsic phase. Considers 'auto' as resolvable.
 CORE_EXPORT bool InlineLengthUnresolvable(const Length&, LengthResolvePhase);
 CORE_EXPORT bool BlockLengthUnresolvable(
     const NGConstraintSpace&,
@@ -253,7 +253,7 @@ CORE_EXPORT LayoutUnit ComputeInlineSizeForFragment(
 // Same as ComputeInlineSizeForFragment, but uses height instead of width.
 CORE_EXPORT LayoutUnit
 ComputeBlockSizeForFragment(const NGConstraintSpace&,
-                            const NGBlockNode&,
+                            const ComputedStyle&,
                             const NGBoxStrut& border_padding,
                             LayoutUnit content_size);
 
@@ -368,7 +368,8 @@ inline NGLineBoxStrut ComputeLineBorders(
 CORE_EXPORT NGBoxStrut ComputeBordersForTest(const ComputedStyle& style);
 
 CORE_EXPORT NGBoxStrut ComputeIntrinsicPadding(const NGConstraintSpace&,
-                                               const NGLayoutInputNode);
+                                               const ComputedStyle&,
+                                               const NGBoxStrut& scrollbar);
 
 CORE_EXPORT NGBoxStrut ComputePadding(const NGConstraintSpace&,
                                       const ComputedStyle&);
@@ -439,14 +440,14 @@ LogicalSize ShrinkAvailableSize(LogicalSize size, const NGBoxStrut& inset);
 LogicalSize CalculateChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    const LogicalSize& child_available_size);
+    const LogicalSize child_available_size);
 
 // Calculates the percentage resolution size that replaced children of the node
 // should use.
 LogicalSize CalculateReplacedChildPercentageSize(
     const NGConstraintSpace&,
     const NGBlockNode node,
-    LogicalSize border_box_size,
+    const LogicalSize child_available_size,
     const NGBoxStrut& border_scrollbar_padding,
     const NGBoxStrut& border_padding);
 

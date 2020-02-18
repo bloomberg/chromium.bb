@@ -5,12 +5,14 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERIAL_SERIAL_PORT_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/serial.mojom-blink.h"
 #include "third_party/blink/public/mojom/serial/serial.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/heap/heap_allocator.h"
 
 namespace base {
 class UnguessableToken;
@@ -23,6 +25,7 @@ class ScriptPromiseResolver;
 class ScriptState;
 class Serial;
 class SerialOptions;
+class SerialOutputSignals;
 class SerialPortUnderlyingSink;
 class SerialPortUnderlyingSource;
 class WritableStream;
@@ -37,11 +40,11 @@ class SerialPort final : public ScriptWrappable,
   ~SerialPort() override;
 
   // Web-exposed functions
-  ReadableStream* readable() const { return readable_; }
-  WritableStream* writable() const { return writable_; }
-
   ScriptPromise open(ScriptState*, const SerialOptions* options);
-  void clearReadError(ScriptState*, ExceptionState&);
+  ReadableStream* readable(ScriptState*, ExceptionState&);
+  WritableStream* writable(ScriptState*, ExceptionState&);
+  ScriptPromise getSignals(ScriptState*);
+  ScriptPromise setSignals(ScriptState*, const SerialOutputSignals*);
   void close();
 
   const base::UnguessableToken& token() const { return info_->token; }
@@ -69,13 +72,16 @@ class SerialPort final : public ScriptWrappable,
                                 mojo::ScopedDataPipeConsumerHandle);
   void InitializeWritableStream(ScriptState*,
                                 mojo::ScopedDataPipeProducerHandle);
+  void OnGetSignals(ScriptPromiseResolver*,
+                    device::mojom::blink::SerialPortControlSignalsPtr);
+  void OnSetSignals(ScriptPromiseResolver*, bool success);
 
   mojom::blink::SerialPortInfoPtr info_;
   Member<Serial> parent_;
 
   uint32_t buffer_size_ = 0;
-  device::mojom::blink::SerialPortPtr port_;
-  mojo::Binding<device::mojom::blink::SerialPortClient> client_binding_{this};
+  mojo::Remote<device::mojom::blink::SerialPort> port_;
+  mojo::Receiver<device::mojom::blink::SerialPortClient> client_receiver_{this};
 
   Member<ReadableStream> readable_;
   Member<SerialPortUnderlyingSource> underlying_source_;
@@ -84,6 +90,9 @@ class SerialPort final : public ScriptWrappable,
 
   // Resolver for the Promise returned by open().
   Member<ScriptPromiseResolver> open_resolver_;
+  // Resolvers for the Promises returned by getSignals() and setSignals() to
+  // reject them on Mojo connection failure.
+  HeapHashSet<Member<ScriptPromiseResolver>> signal_resolvers_;
 };
 
 }  // namespace blink

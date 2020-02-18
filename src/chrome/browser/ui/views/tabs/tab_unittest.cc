@@ -12,9 +12,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/ui/layout_constants.h"
-#include "chrome/browser/ui/tabs/tab_group_data.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
+#include "chrome/browser/ui/tabs/tab_group_visual_data.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/tabs/tab_utils.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/tabs/alert_indicator.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_close_button.h"
@@ -23,7 +25,6 @@
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_style_views.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/grit/theme_resources.h"
 #include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/models/list_selection_model.h"
@@ -50,15 +51,11 @@ class FakeTabController : public TabController {
   }
   bool SupportsMultipleSelection() override { return false; }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
-  bool MaySetClip() override { return false; }
   void SelectTab(Tab* tab, const ui::Event& event) override {}
   void ExtendSelectionTo(Tab* tab) override {}
   void ToggleSelected(Tab* tab) override {}
   void AddSelectionFromAnchorTo(Tab* tab) override {}
   void CloseTab(Tab* tab, CloseTabSource source) override {}
-  void ShowContextMenuForTab(Tab* tab,
-                             const gfx::Point& p,
-                             ui::MenuSourceType source_type) override {}
   bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
   bool IsTabSelected(const Tab* tab) const override { return false; }
   bool IsTabPinned(const Tab* tab) const override { return false; }
@@ -80,9 +77,7 @@ class FakeTabController : public TabController {
                          const ui::MouseEvent& event) override {}
   void UpdateHoverCard(Tab* tab) override {}
   bool HoverCardIsShowingForTab(Tab* tab) override { return false; }
-  bool ShouldPaintTab(const Tab* tab, float scale, SkPath* clip) override {
-    return true;
-  }
+  int GetBackgroundOffset() const override { return 0; }
   bool ShouldPaintAsActiveFrame() const override { return true; }
   int GetStrokeThickness() const override { return 0; }
   bool CanPaintThrobberToLayer() const override {
@@ -92,22 +87,19 @@ class FakeTabController : public TabController {
   SkColor GetToolbarTopSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabSeparatorColor() const override { return SK_ColorBLACK; }
   SkColor GetTabBackgroundColor(
-      TabState tab_state,
-      BrowserNonClientFrameView::ActiveState active_state =
-          BrowserNonClientFrameView::kUseCurrent) const override {
-    return tab_state == TAB_ACTIVE ? tab_bg_color_active_
-                                   : tab_bg_color_inactive_;
-  }
-  SkColor GetTabForegroundColor(TabState tab_state,
-                                SkColor background_color) const override {
-    return tab_state == TAB_ACTIVE ? tab_fg_color_active_
-                                   : tab_fg_color_inactive_;
-  }
-  int GetBackgroundResourceId(
-      bool* has_custom_image,
+      TabActive active,
       BrowserNonClientFrameView::ActiveState active_state) const override {
-    *has_custom_image = false;
-    return IDR_THEME_TAB_BACKGROUND;
+    return active == TabActive::kActive ? tab_bg_color_active_
+                                        : tab_bg_color_inactive_;
+  }
+  SkColor GetTabForegroundColor(TabActive active,
+                                SkColor background_color) const override {
+    return active == TabActive::kActive ? tab_fg_color_active_
+                                        : tab_fg_color_inactive_;
+  }
+  base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const override {
+    return base::nullopt;
   }
   gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override {
     return tab->bounds();
@@ -119,9 +111,14 @@ class FakeTabController : public TabController {
     return 1.0f;
   }
   float GetHoverOpacityForRadialHighlight() const override { return 1.0f; }
-  const TabGroupData* GetDataForGroup(TabGroupId group) const override {
+
+  const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const override {
     return nullptr;
   }
+
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override {}
 
   void SetTabColors(SkColor bg_color_active,
                     SkColor fg_color_active,
@@ -321,7 +318,7 @@ class TabTest : public ChromeViewsTestBase {
     Widget::InitParams params(CreateParams(Widget::InitParams::TYPE_WINDOW));
     params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     params.bounds.SetRect(10, 20, 300, 400);
-    widget->Init(params);
+    widget->Init(std::move(params));
   }
 
  private:
@@ -353,13 +350,13 @@ class AlertIndicatorTest : public ChromeViewsTestBase {
     parent_.AddChildView(tab_strip_);
     parent_.set_owned_by_client();
 
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.bounds = gfx::Rect(0, 0, 400, 400);
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(&parent_);
   }
 
@@ -482,6 +479,10 @@ TEST_F(TabTest, LayoutAndVisibilityOfElements) {
 // Regression test for http://crbug.com/420313: Confirms that any child Views of
 // Tab do not attempt to provide their own tooltip behavior/text.
 TEST_F(TabTest, TooltipProvidedByTab) {
+  // This test isn't relevant when tab hover cards are enabled since tab
+  // tooltips are then disabled.
+  if (base::FeatureList::IsEnabled(features::kTabHoverCards))
+    return;
   Widget widget;
   InitWidget(&widget);
 
@@ -496,9 +497,9 @@ TEST_F(TabTest, TooltipProvidedByTab) {
   data.favicon = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
 
   data.title = base::UTF8ToUTF16(
-      "This is a really long tab title that would case views::Label to provide "
-      "its own tooltip; but Tab should disable that feature so it can provide "
-      "the tooltip instead.");
+      "This is a really long tab title that would cause views::Label to "
+      "provide its own tooltip; but Tab should disable that feature so it can "
+      "provide the tooltip instead.");
 
   // Test both with and without an indicator showing since the tab tooltip text
   // should include a description of the alert state when the indicator is
@@ -822,11 +823,12 @@ TEST_F(TabTest, TitleTextHasSufficientContrast) {
   for (const auto& colors : color_schemes) {
     controller.SetTabColors(colors.bg_active, colors.fg_active,
                             colors.bg_inactive, colors.fg_inactive);
-    for (TabState state : {TAB_INACTIVE, TAB_ACTIVE}) {
-      controller.set_active_tab(state == TAB_ACTIVE);
+    for (TabActive active : {TabActive::kInactive, TabActive::kActive}) {
+      controller.set_active_tab(active == TabActive::kActive);
       tab.UpdateForegroundColors();
       const SkColor fg_color = tab.title_->GetEnabledColor();
-      const SkColor bg_color = controller.GetTabBackgroundColor(state);
+      const SkColor bg_color = controller.GetTabBackgroundColor(
+          active, BrowserNonClientFrameView::kUseCurrent);
       const float contrast = color_utils::GetContrastRatio(fg_color, bg_color);
       EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
     }

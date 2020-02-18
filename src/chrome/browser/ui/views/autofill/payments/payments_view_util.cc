@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/views/autofill/payments/payments_view_util.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -31,7 +32,7 @@ namespace autofill {
 namespace {
 
 // Dimensions of the Google Pay logo.
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr int kGooglePayLogoWidth = 40;
 #endif
 constexpr int kGooglePayLogoHeight = 16;
@@ -61,12 +62,12 @@ TitleWithIconAndSeparatorView::TitleWithIconAndSeparatorView(
   layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   auto icon_view = std::make_unique<views::ImageView>();
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // kGooglePayLogoIcon is square, and CreateTiledImage() will clip it whereas
   // setting the icon size would rescale it incorrectly.
   gfx::ImageSkia image = gfx::ImageSkiaOperations::CreateTiledImage(
       gfx::CreateVectorIcon(kGooglePayLogoIcon,
-                            GetNativeTheme()->SystemDarkModeEnabled()
+                            GetNativeTheme()->ShouldUseDarkColors()
                                 ? gfx::kGoogleGrey200
                                 : gfx::kGoogleGrey700),
       /*x=*/0, /*y=*/0, kGooglePayLogoWidth, kGooglePayLogoHeight);
@@ -120,7 +121,7 @@ gfx::Size TitleWithIconAndSeparatorView::GetMinimumSize() const {
 
 std::unique_ptr<views::Textfield> CreateCvcTextfield() {
   auto textfield = std::make_unique<views::Textfield>();
-  textfield->set_placeholder_text(
+  textfield->SetPlaceholderText(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_DIALOG_PLACEHOLDER_CVC));
   textfield->SetDefaultWidthInChars(8);
   textfield->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_NUMBER);
@@ -146,7 +147,7 @@ LegalMessageView::CreateLegalMessageLineLabel(
   std::unique_ptr<views::StyledLabel> label =
       std::make_unique<views::StyledLabel>(line.text(), listener);
   label->SetTextContext(CONTEXT_BODY_TEXT_LARGE);
-  label->SetDefaultTextStyle(ChromeTextStyle::STYLE_SECONDARY);
+  label->SetDefaultTextStyle(views::style::STYLE_SECONDARY);
   for (const LegalMessageLine::Link& link : line.links()) {
     label->AddStyleRange(link.range,
                          views::StyledLabel::RangeStyleInfo::CreateForLink());

@@ -838,8 +838,8 @@ bool Window::HitTest(const gfx::Point& local_point) {
   delegate_->GetHitTestMask(&mask);
 
   SkRegion clip_region;
-  clip_region.setRect(local_bounds.x(), local_bounds.y(),
-                      local_bounds.width(), local_bounds.height());
+  clip_region.setRect({local_bounds.x(), local_bounds.y(), local_bounds.width(),
+                       local_bounds.height()});
   SkRegion mask_region;
   return mask_region.setPath(mask, clip_region) &&
       mask_region.contains(local_point.x(), local_point.y());
@@ -1167,12 +1167,11 @@ std::unique_ptr<cc::LayerTreeFrameSink> Window::CreateLayerTreeFrameSink() {
       Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager();
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
-  params.enable_surface_synchronization = true;
   params.client_name = kExo;
   bool root_accepts_events =
       (event_targeting_policy_ == EventTargetingPolicy::kTargetOnly) ||
       (event_targeting_policy_ == EventTargetingPolicy::kTargetAndDescendants);
-  if (features::IsVizHitTestingDrawQuadEnabled()) {
+  if (!features::IsVizHitTestingSurfaceLayerEnabled()) {
     params.hit_test_data_provider =
         std::make_unique<viz::HitTestDataProviderDrawQuad>(
             true /* should_ask_for_child_region */, root_accepts_events);

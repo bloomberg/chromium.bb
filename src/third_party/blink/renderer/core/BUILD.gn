@@ -29,9 +29,6 @@ rel_blink_core_gen_dir = rebase_path(blink_core_output_dir, root_build_dir)
 # Config for code that builds as part of core.
 config("config") {
   defines = [ "BLINK_CORE_IMPLEMENTATION=1" ]
-  if (blink_animation_use_time_delta) {
-    defines += [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
-  }
   if (is_android && notouch_build) {
     defines += [ "ENABLE_TOUCHLESS_UASTYLE_THEME" ]
   }
@@ -105,6 +102,7 @@ source_set("prerequisites") {
     "//skia",
     "//third_party/angle:translator",
     "//third_party/blink/public/mojom:mojom_broadcastchannel_bindings_blink",
+    "//third_party/blink/renderer/core/animation:buildflags",
     "//third_party/blink/renderer/core/inspector:generated",
     "//third_party/blink/renderer/core/probe:generated",
     "//third_party/blink/renderer/platform",
@@ -117,7 +115,7 @@ source_set("prerequisites") {
     "//third_party/ots",
     "//third_party/snappy",
     "//third_party/zlib",
-    "//ui/base/ime/mojo",
+    "//ui/base/ime/mojom",
     "//ui/events:dom_keycode_converter",
     "//ui/gfx/geometry",
     "//ui/native_theme",
@@ -125,6 +123,7 @@ source_set("prerequisites") {
     "//v8",
   ]
   deps = [
+    "//third_party/blink/public:scaled_resources",
     "//third_party/blink/renderer/bindings/core/v8:bindings_core_v8_generated",
 
     # FIXME: don't depend on bindings_modules http://crbug.com/358074
@@ -868,6 +867,7 @@ blink_python_runner("make_core_generated_feature_policy_helper") {
   inputs = scripts_for_json5_files + [
              "../build/scripts/make_feature_policy_helper.py",
              "./feature_policy/feature_policy_features.json5",
+             "../platform/runtime_enabled_features.json5",
              "../build/scripts/templates/feature_policy_helper.cc.tmpl",
            ]
   outputs = [
@@ -1165,7 +1165,6 @@ jumbo_source_set("unit_tests") {
     "exported/web_scoped_window_focus_allowed_indicator_test.cc",
     "exported/web_searchable_form_data_test.cc",
     "exported/web_selector_test.cc",
-    "exported/web_surrounding_text_test.cc",
     "exported/web_user_gesture_token_test.cc",
     "exported/web_view_test.cc",
     "feature_policy/feature_policy_test.cc",
@@ -1201,6 +1200,7 @@ jumbo_source_set("unit_tests") {
     "frame/frame_test_helpers.cc",
     "frame/frame_test_helpers.h",
     "frame/history_test.cc",
+    "frame/local_frame_back_forward_cache_test.cc",
     "frame/local_frame_test.cc",
     "frame/local_frame_ukm_aggregator_test.cc",
     "frame/local_frame_view_test.cc",
@@ -1208,6 +1208,7 @@ jumbo_source_set("unit_tests") {
     "frame/mhtml_loading_test.cc",
     "frame/origins_using_features_test.cc",
     "frame/performance_monitor_test.cc",
+    "frame/reporting_context_test.cc",
     "frame/root_frame_viewport_test.cc",
     "frame/rotation_viewport_anchor_test.cc",
     "frame/use_counter_helper_test.cc",
@@ -1235,6 +1236,7 @@ jumbo_source_set("unit_tests") {
     "html/forms/file_input_type_test.cc",
     "html/forms/form_controller_test.cc",
     "html/forms/form_data_test.cc",
+    "html/forms/html_data_list_element_test.cc",
     "html/forms/html_form_control_element_test.cc",
     "html/forms/html_form_element_test.cc",
     "html/forms/html_input_element_test.cc",
@@ -1258,6 +1260,7 @@ jumbo_source_set("unit_tests") {
     "html/html_link_element_test.cc",
     "html/html_meta_element_test.cc",
     "html/html_object_element_test.cc",
+    "html/html_plugin_element_test.cc",
     "html/html_slot_element_test.cc",
     "html/html_table_row_element_test.cc",
     "html/image_document_test.cc",
@@ -1266,7 +1269,6 @@ jumbo_source_set("unit_tests") {
     "html/lazy_load_image_observer_test.cc",
     "html/link_element_loading_test.cc",
     "html/link_rel_attribute_test.cc",
-    "html/list_item_ordinal_test.cc",
     "html/media/autoplay_uma_helper_test.cc",
     "html/media/html_media_element_event_listeners_test.cc",
     "html/media/html_media_element_test.cc",
@@ -1313,7 +1315,6 @@ jumbo_source_set("unit_tests") {
     "intersection_observer/intersection_observer_test.cc",
     "layout/api/selection_state_test.cc",
     "layout/collapsed_border_value_test.cc",
-    "layout/custom/layout_worklet_test.cc",
     "layout/force_legacy_layout_test.cc",
     "layout/geometry/logical_offset_test.cc",
     "layout/geometry/logical_rect_test.cc",
@@ -1321,6 +1322,7 @@ jumbo_source_set("unit_tests") {
     "layout/geometry/physical_rect_test.cc",
     "layout/geometry/physical_size_test.cc",
     "layout/grid_test.cc",
+    "layout/hit_testing_test.cc",
     "layout/layout_block_test.cc",
     "layout/layout_box_model_object_test.cc",
     "layout/layout_box_test.cc",
@@ -1354,11 +1356,15 @@ jumbo_source_set("unit_tests") {
     "layout/map_coordinates_test.cc",
     "layout/min_max_size_test.cc",
     "layout/multi_column_fragmentainer_group_test.cc",
+    "layout/ng/custom/layout_worklet_test.cc",
     "layout/ng/exclusions/ng_exclusion_space_test.cc",
     "layout/ng/geometry/ng_box_strut_test.cc",
     "layout/ng/geometry/ng_static_position_test.cc",
+    "layout/ng/inline/layout_ng_text_test.cc",
     "layout/ng/inline/ng_baseline_test.cc",
     "layout/ng/inline/ng_caret_position_test.cc",
+    "layout/ng/inline/ng_fragment_item_test.cc",
+    "layout/ng/inline/ng_inline_cursor_test.cc",
     "layout/ng/inline/ng_inline_fragment_traversal_test.cc",
     "layout/ng/inline/ng_inline_items_builder_test.cc",
     "layout/ng/inline/ng_inline_layout_algorithm_test.cc",
@@ -1427,7 +1433,8 @@ jumbo_source_set("unit_tests") {
     "loader/threadable_loader_test.cc",
     "loader/threaded_icon_loader_test.cc",
     "loader/web_associated_url_loader_impl_test.cc",
-    "messaging/blink_transferable_message_struct_traits_test.cc",
+    "messaging/blink_transferable_message_mojom_traits_test.cc",
+    "messaging/message_port_descriptor_mojom_traits_test.cc",
     "origin_trials/origin_trial_context_test.cc",
     "page/autoscroll_controller_test.cc",
     "page/chrome_client_impl_test.cc",
@@ -1477,6 +1484,7 @@ jumbo_source_set("unit_tests") {
     "paint/inline_text_box_painter_test.cc",
     "paint/largest_contentful_paint_calculator_test.cc",
     "paint/link_highlight_impl_test.cc",
+    "paint/ng/ng_box_fragment_painter_test.cc",
     "paint/ng/ng_paint_fragment_test.cc",
     "paint/ng/ng_paint_fragment_traversal_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
@@ -1503,11 +1511,11 @@ jumbo_source_set("unit_tests") {
     "paint/video_painter_test.cc",
     "paint/view_painter_test.cc",
     "resize_observer/resize_observer_test.cc",
-    "scheduler/frame_scheduler_test.cc",
-    "scheduler/frame_throttling_test.cc",
-    "scheduler/scheduler_affecting_features_test.cc",
-    "scheduler/throttling_test.cc",
-    "scheduler/virtual_time_test.cc",
+    "scheduler_integration_tests/frame_scheduler_test.cc",
+    "scheduler_integration_tests/frame_throttling_test.cc",
+    "scheduler_integration_tests/scheduler_affecting_features_test.cc",
+    "scheduler_integration_tests/throttling_test.cc",
+    "scheduler_integration_tests/virtual_time_test.cc",
     "script/document_modulator_impl_test.cc",
     "script/dynamic_module_resolver_test.cc",
     "script/layered_api_test.cc",
@@ -1534,9 +1542,9 @@ jumbo_source_set("unit_tests") {
     "style/style_variables_test.cc",
     "style/svg_computed_style_test.cc",
     "svg/graphics/svg_image_test.cc",
-    "svg/svg_element_test.cc",
     "svg/svg_path_parser_test.cc",
     "svg/svg_text_content_element_test.cc",
+    "svg/svg_use_element_test.cc",
     "svg/unsafe_svg_attribute_sanitization_test.cc",
     "testing/fake_web_plugin.cc",
     "testing/fake_web_plugin.h",
@@ -1595,6 +1603,10 @@ jumbo_source_set("unit_tests") {
     "//third_party/blink/renderer/core/fileapi:unit_tests",
   ]
 
+  data_deps = [
+    ":unit_tests_data",
+  ]
+
   # FIXME: Enable mojo unittests on Android after fixing data dependency.
   # crbug.com/741925
   if (!is_android) {
@@ -1611,10 +1623,15 @@ jumbo_source_set("unit_tests") {
   if (use_aura) {
     sources += [ "scroll/scrollbar_theme_aura_test.cc" ]
   }
+}
 
-  if (blink_animation_use_time_delta) {
-    defines = [ "BLINK_ANIMATION_USE_TIME_DELTA" ]
-  }
+group("unit_tests_data") {
+  data = [
+    "//third_party/blink/web_tests/svg/animations/path-animation.svg",
+    "//third_party/blink/web_tests/svg/stroke/zero-length-path-linecap-rendering.svg",
+    "//third_party/blink/web_tests/svg/foreignObject/fixed-position.svg",
+    "//third_party/blink/web_tests/svg/clip-path/clip-in-mask.svg",
+  ]
 }
 
 jumbo_source_set("perf_tests") {
@@ -1715,30 +1732,25 @@ fuzzer_test("content_security_policy_fuzzer") {
   seed_corpus = "//testing/libfuzzer/fuzzers/content_security_policy_corpus"
 }
 
-# Since libFuzzer isn't working on Windows, and the proto_library cannot build
-# on Windows because of a build error, prevent it from being built on Windows.
-# TODO(metzman): Figure out how to get this building on Windows.
-if (!is_win) {
-  fuzzer_test("css_parser_proto_fuzzer") {
-    sources = [
-      "css/parser/css_parser_proto_fuzzer.cc",
-      "css/parser/css_proto_converter.cc",
-      "css/parser/css_proto_converter.h",
-    ]
-    deps = [
-      ":core",
-      ":css_proto",
-      "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
-      "//third_party/libprotobuf-mutator",
-    ]
-    dict = "//third_party/blink/renderer/core/css/css.dict"
-  }
+fuzzer_test("css_parser_proto_fuzzer") {
+  sources = [
+    "css/parser/css_parser_proto_fuzzer.cc",
+    "css/parser/css_proto_converter.cc",
+    "css/parser/css_proto_converter.h",
+  ]
+  deps = [
+    ":core",
+    ":css_proto",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+    "//third_party/libprotobuf-mutator",
+  ]
+  dict = "//third_party/blink/renderer/core/css/css.dict"
+}
 
-  proto_library("css_proto") {
-    sources = [
-      "css/parser/css.proto",
-    ]
-  }
+proto_library("css_proto") {
+  sources = [
+    "css/parser/css.proto",
+  ]
 }
 
 # Fuzzers for blink::FeaturePolicy.

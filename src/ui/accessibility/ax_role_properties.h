@@ -5,7 +5,7 @@
 #ifndef UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_
 #define UI_ACCESSIBILITY_AX_ROLE_PROPERTIES_H_
 
-#include "ui/accessibility/ax_enums.mojom.h"
+#include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/accessibility/ax_node_data.h"
 
@@ -36,6 +36,9 @@ AX_EXPORT bool IsControl(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a document.
 AX_EXPORT bool IsDocument(const ax::mojom::Role role);
+
+// Returns true if the provided role represents a dialog.
+AX_EXPORT bool IsDialog(const ax::mojom::Role role);
 
 // Returns true if the provided role belongs to a heading.
 AX_EXPORT bool IsHeading(const ax::mojom::Role role);

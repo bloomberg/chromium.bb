@@ -155,9 +155,7 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
             String query_lower = query.toLowerCase(Locale.getDefault());
             for (ContactDetails contact : mContactDetails) {
                 if (contact.getDisplayName().toLowerCase(Locale.getDefault()).contains(query_lower)
-                        || contact.getContactDetailsAsString(
-                                          /*longVersion=*/true, includesEmails(),
-                                          includesTelephones(), /*resources=*/null)
+                        || contact.getContactDetailsAsString(includesEmails(), includesTelephones())
                                    .toLowerCase(Locale.getDefault())
                                    .contains(query_lower)) {
                     mSearchResults.add(count);
@@ -242,6 +240,10 @@ public class PickerAdapter extends Adapter<RecyclerView.ViewHolder>
     }
 
     @Override
+    // This will return how many items the RecyclerView should show, which can be a subset of
+    // contacts when in search mode. This function also includes the Select All checkbox (which is
+    // not a contact, obviously). To get the total number of contacts use getAllContacts().size()
+    // instead.
     public int getItemCount() {
         if (mSearchResults != null) return mSearchResults.size();
         if (mContactDetails == null || mContactDetails.size() == 0) return 0;

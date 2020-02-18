@@ -49,7 +49,7 @@ function setUp() {
 
   // Create and initialize Crostini.
   crostini = createCrostiniForTest();
-  crostini.init(volumeManager);
+  crostini.initVolumeManager(volumeManager);
 }
 
 /**
@@ -58,6 +58,36 @@ function setUp() {
  */
 function setDriveFsEnabled(enabled) {
   window.loadTimeData.data['DRIVE_FS_ENABLED'] = enabled;
+}
+
+/**
+ * Tests init sets crostini and PluginVm enabled status.
+ */
+function testInitCrostiniPluginVmEnabled() {
+  window.loadTimeData.data['CROSTINI_ENABLED'] = true;
+  window.loadTimeData.data['PLUGIN_VM_ENABLED'] = true;
+  crostini.initEnabled();
+  assertTrue(crostini.isEnabled('termina'));
+  assertTrue(crostini.isEnabled('PvmDefault'));
+
+  window.loadTimeData.data['CROSTINI_ENABLED'] = false;
+  window.loadTimeData.data['PLUGIN_VM_ENABLED'] = false;
+  crostini.initEnabled();
+  assertFalse(crostini.isEnabled('termina'));
+  assertFalse(crostini.isEnabled('PvmDefault'));
+}
+
+/**
+ * Tests init sets crostini root access allowed status.
+ */
+function testInitCrostiniRootAccessAllowed() {
+  window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = true;
+  crostini.initEnabled();
+  assertTrue(crostini.isRootAccessAllowed('termina'));
+
+  window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = false;
+  crostini.initEnabled();
+  assertFalse(crostini.isRootAccessAllowed('termina'));
 }
 
 /**

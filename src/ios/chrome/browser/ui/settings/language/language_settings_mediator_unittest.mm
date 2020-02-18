@@ -8,7 +8,7 @@
 
 #include "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -89,8 +89,7 @@ std::vector<std::string> ExtractLanguageCodesFromLanguageItems(
 class LanguageSettingsMediatorTest : public PlatformTest {
  protected:
   LanguageSettingsMediatorTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {
     // Create BrowserState.
     TestChromeBrowserState::Builder test_cbs_builder;
     test_cbs_builder.SetPrefService(CreatePrefService());
@@ -135,7 +134,7 @@ class LanguageSettingsMediatorTest : public PlatformTest {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   std::unique_ptr<translate::TranslatePrefs> translate_prefs_;
   FakeLanguageSettingsConsumer* consumer_;

@@ -9,11 +9,14 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversion_utils.h"
 #include "components/pdf/renderer/pdf_accessibility_tree.h"
+#include "components/pdf/renderer/pdf_ax_action_target.h"
 #include "components/strings/grit/components_strings.h"
+#include "content/public/renderer/pepper_plugin_instance.h"
 #include "content/public/renderer/render_accessibility.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
+#include "ui/accessibility/null_ax_action_target.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/transform.h"
@@ -26,8 +29,8 @@ namespace {
 // if the median font size is not at least this many points.
 const double kMinimumFontSize = 5;
 
-// Don't try to apply line break thresholds to automatically identify
-// line breaks if the median line break is not at least this many points.
+// Don't try to apply paragraph break thresholds to automatically identify
+// paragraph breaks if the median line break is not at least this many points.
 const double kMinimumLineSpacing = 5;
 
 // Ratio between the font size of one text run and the median on the page
@@ -42,7 +45,160 @@ gfx::RectF ToGfxRectF(const PP_FloatRect& r) {
   return gfx::RectF(r.point.x, r.point.y, r.size.width, r.size.height);
 }
 
+// This class is used as part of our heuristic to determine which text runs live
+// on the same "line".  As we process runs, we keep a weighted average of the
+// top and bottom coordinates of the line, and if a new run falls within that
+// range (within a threshold) it is considered part of the line.
+class LineHelper {
+ public:
+  explicit LineHelper(
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs)
+      : text_runs_(text_runs) {
+    StartNewLine(0);
+  }
+
+  void StartNewLine(size_t current_index) {
+    DCHECK(current_index == 0 || current_index < text_runs_.size());
+    start_index_ = current_index;
+    accumulated_weight_top_ = 0.0f;
+    accumulated_weight_bottom_ = 0.0f;
+    accumulated_width_ = 0.0f;
+  }
+
+  void ProcessNextRun(size_t run_index) {
+    DCHECK_LT(run_index, text_runs_.size());
+    RemoveOldRunsUpTo(run_index);
+    AddRun(text_runs_[run_index].bounds);
+  }
+
+  bool IsRunOnSameLine(size_t run_index) const {
+    DCHECK_LT(run_index, text_runs_.size());
+
+    // Calculate new top/bottom bounds for our line.
+    if (accumulated_width_ == 0.0f)
+      return false;
+
+    float line_top = accumulated_weight_top_ / accumulated_width_;
+    float line_bottom = accumulated_weight_bottom_ / accumulated_width_;
+
+    // Look at the next run, and determine how much it overlaps the line.
+    const auto& run_bounds = text_runs_[run_index].bounds;
+    if (run_bounds.size.height == 0.0f)
+      return false;
+
+    float clamped_top = std::max(line_top, run_bounds.point.y);
+    float clamped_bottom =
+        std::min(line_bottom, run_bounds.point.y + run_bounds.size.height);
+    if (clamped_bottom < clamped_top)
+      return false;
+
+    float coverage = (clamped_bottom - clamped_top) / (run_bounds.size.height);
+
+    // See if it falls within the line (within our threshold).
+    constexpr float kLineCoverageThreshold = 0.25f;
+    return coverage > kLineCoverageThreshold;
+  }
+
+ private:
+  void AddRun(const PP_FloatRect& run_bounds) {
+    float run_width = fabs(run_bounds.size.width);
+    accumulated_width_ += run_width;
+    accumulated_weight_top_ += run_bounds.point.y * run_width;
+    accumulated_weight_bottom_ +=
+        (run_bounds.point.y + run_bounds.size.height) * run_width;
+  }
+
+  void RemoveRun(const PP_FloatRect& run_bounds) {
+    float run_width = fabs(run_bounds.size.width);
+    accumulated_width_ -= run_width;
+    accumulated_weight_top_ -= run_bounds.point.y * run_width;
+    accumulated_weight_bottom_ -=
+        (run_bounds.point.y + run_bounds.size.height) * run_width;
+  }
+
+  void RemoveOldRunsUpTo(size_t stop_index) {
+    // Remove older runs from the weighted average if we've exceeded the
+    // threshold distance from them. We remove them to prevent e.g. drop-caps
+    // from unduly influencing future lines.
+    constexpr float kBoxRemoveWidthThreshold = 3.0f;
+    while (start_index_ < stop_index &&
+           accumulated_width_ > text_runs_[start_index_].bounds.size.width *
+                                    kBoxRemoveWidthThreshold) {
+      const auto& old_bounds = text_runs_[start_index_].bounds;
+      RemoveRun(old_bounds);
+      start_index_++;
+    }
+  }
+
+  const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs_;
+  size_t start_index_;
+  float accumulated_weight_top_;
+  float accumulated_weight_bottom_;
+  float accumulated_width_;
+
+  DISALLOW_COPY_AND_ASSIGN(LineHelper);
+};
+
+void FinishStaticNode(ui::AXNodeData** static_text_node,
+                      std::string* static_text,
+                      ui::AXNodeData** previous_on_line_node) {
+  // If we're in the middle of building a static text node, finish it before
+  // moving on to the next object.
+  if (*static_text_node) {
+    (*static_text_node)
+        ->AddStringAttribute(ax::mojom::StringAttribute::kName, (*static_text));
+    static_text->clear();
+  }
+  *static_text_node = nullptr;
+  *previous_on_line_node = nullptr;
 }
+
+bool BreakParagraph(
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    uint32_t text_run_index,
+    double paragraph_spacing_threshold) {
+  // Check to see if its also a new paragraph, i.e., if the distance between
+  // lines is greater than the threshold.  If there's no threshold, that
+  // means there weren't enough lines to compute an accurate median, so
+  // we compare against the line size instead.
+  double line_spacing = fabs(text_runs[text_run_index + 1].bounds.point.y -
+                             text_runs[text_run_index].bounds.point.y);
+  return ((paragraph_spacing_threshold > 0 &&
+           line_spacing > paragraph_spacing_threshold) ||
+          (paragraph_spacing_threshold == 0 &&
+           line_spacing > kParagraphLineSpacingRatio *
+                              text_runs[text_run_index].bounds.size.height));
+}
+
+ui::AXNode* GetStaticTextNodeFromNode(ui::AXNode* node) {
+  // Returns the appropriate static text node given |node|'s type.
+  // Returns nullptr if there is no appropriate static text node.
+  ui::AXNode* static_node = node;
+  // Get the static text from the link node.
+  if (node && node->data().role == ax::mojom::Role::kLink &&
+      node->children().size() == 1) {
+    static_node = node->children()[0];
+  }
+  // If it's static text node, then it holds text.
+  if (static_node && static_node->data().role == ax::mojom::Role::kStaticText)
+    return static_node;
+  return nullptr;
+}
+
+template <typename T>
+bool CompareTextRuns(const T& a, const T& b) {
+  return a.text_run_index < b.text_run_index;
+}
+
+template <typename T>
+bool IsObjectInTextRun(const std::vector<T>& objects,
+                       uint32_t object_index,
+                       size_t text_run_index) {
+  return (object_index < objects.size() &&
+          objects[object_index].text_run_index <= text_run_index);
+}
+
+}  // namespace
 
 PdfAccessibilityTree::PdfAccessibilityTree(
     content::RendererPpapiHost* host,
@@ -56,6 +212,47 @@ PdfAccessibilityTree::~PdfAccessibilityTree() {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (render_accessibility)
     render_accessibility->SetPluginTreeSource(nullptr);
+}
+
+// static
+bool PdfAccessibilityTree::IsDataFromPluginValid(
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+  base::CheckedNumeric<uint32_t> char_length = 0;
+  for (const PP_PrivateAccessibilityTextRunInfo& text_run : text_runs)
+    char_length += text_run.len;
+  if (!char_length.IsValid() || char_length.ValueOrDie() != chars.size())
+    return false;
+
+  if (!std::is_sorted(links.begin(), links.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityLinkInfo>)) {
+    return false;
+  }
+  // Text run index of a |link| is out of bounds if it exceeds the size of
+  // |text_runs|. The index denotes the position of the link relative to the
+  // text runs. The index value equal to the size of |text_runs| indicates that
+  // the link should be after the last text run.
+  for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
+    base::CheckedNumeric<uint32_t> index = link.text_run_index;
+    index += link.text_run_count;
+    if (!index.IsValid() || index.ValueOrDie() > text_runs.size())
+      return false;
+  }
+
+  if (!std::is_sorted(images.begin(), images.end(),
+                      CompareTextRuns<ppapi::PdfAccessibilityImageInfo>)) {
+    return false;
+  }
+  // Text run index of an |image| works on the same logic as the text run index
+  // of a |link| as mentioned above.
+  for (const ppapi::PdfAccessibilityImageInfo& image : images) {
+    if (image.text_run_index > text_runs.size())
+      return false;
+  }
+
+  return true;
 }
 
 void PdfAccessibilityTree::SetAccessibilityViewportInfo(
@@ -90,7 +287,7 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
     return;
 
   doc_info_ = doc_info;
-  doc_node_ = CreateNode(ax::mojom::Role::kGroup);
+  doc_node_ = CreateNode(ax::mojom::Role::kDocument);
 
   // Because all of the coordinates are expressed relative to the
   // doc's coordinates, the origin of the doc must be (0, 0). Its
@@ -102,9 +299,20 @@ void PdfAccessibilityTree::SetAccessibilityDocInfo(
 void PdfAccessibilityTree::SetAccessibilityPageInfo(
     const PP_PrivateAccessibilityPageInfo& page_info,
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-    const std::vector<PP_PrivateAccessibilityCharInfo>& chars) {
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
   content::RenderAccessibility* render_accessibility = GetRenderAccessibility();
   if (!render_accessibility)
+    return;
+
+  // If unsanitized data is found, don't trust the PPAPI process sending it and
+  // stop creation of the accessibility tree.
+  if (!invalid_plugin_message_received_) {
+    invalid_plugin_message_received_ =
+        !IsDataFromPluginValid(text_runs, chars, links, images);
+  }
+  if (invalid_plugin_message_received_)
     return;
 
   uint32_t page_index = page_info.page_index;
@@ -115,93 +323,191 @@ void PdfAccessibilityTree::SetAccessibilityPageInfo(
   page_node->AddStringAttribute(
       ax::mojom::StringAttribute::kName,
       l10n_util::GetPluralStringFUTF8(IDS_PDF_PAGE_INDEX, page_index + 1));
+  page_node->AddBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject,
+                              true);
 
   gfx::RectF page_bounds = ToRectF(page_info.bounds);
   page_node->relative_bounds.bounds = page_bounds;
   doc_node_->relative_bounds.bounds.Union(page_node->relative_bounds.bounds);
   doc_node_->child_ids.push_back(page_node->id);
 
-  double heading_font_size_threshold = 0;
-  double line_spacing_threshold = 0;
-  ComputeParagraphAndHeadingThresholds(text_runs,
-                                       &heading_font_size_threshold,
-                                       &line_spacing_threshold);
-
-  ui::AXNodeData* para_node = nullptr;
-  ui::AXNodeData* static_text_node = nullptr;
-  std::string static_text;
-  uint32_t char_index = 0;
-  for (size_t i = 0; i < text_runs.size(); ++i) {
-    // Get the text of the next text run
-    const auto& text_run = text_runs[i];
-    std::string chars_utf8 = GetTextRunCharsAsUTF8(text_run, chars, char_index);
-    std::vector<int32_t> char_offsets = GetTextRunCharOffsets(
-        text_run, chars, char_index);
-    static_text += chars_utf8;
-    uint32_t initial_char_index = char_index;
-    char_index += text_run.len;
-
-    // If we don't have a paragraph, create one.
-    if (!para_node) {
-      para_node = CreateNode(ax::mojom::Role::kParagraph);
-      page_node->child_ids.push_back(para_node->id);
-
-      if (heading_font_size_threshold > 0 &&
-          text_run.font_size > heading_font_size_threshold) {
-        para_node->role = ax::mojom::Role::kHeading;
-        para_node->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel,
-                                   2);
-        para_node->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
-                                      "h2");
-      }
-
-      // This node is for the text inside the paragraph, it includes
-      // the text of all of the text runs.
-      static_text_node = CreateNode(ax::mojom::Role::kStaticText);
-      para_node->child_ids.push_back(static_text_node->id);
-      node_id_to_char_index_in_page_[static_text_node->id] = initial_char_index;
-    }
-
-    // Add this text run to the current static text node.
-    ui::AXNodeData* inline_text_box_node =
-        CreateNode(ax::mojom::Role::kInlineTextBox);
-    static_text_node->child_ids.push_back(inline_text_box_node->id);
-
-    inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                             chars_utf8);
-    gfx::RectF text_run_bounds = ToGfxRectF(text_run.bounds);
-    text_run_bounds += page_bounds.OffsetFromOrigin();
-    inline_text_box_node->relative_bounds.bounds = text_run_bounds;
-    inline_text_box_node->AddIntListAttribute(
-        ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
-    AddWordStartsAndEnds(inline_text_box_node);
-
-    para_node->relative_bounds.bounds.Union(
-        inline_text_box_node->relative_bounds.bounds);
-    static_text_node->relative_bounds.bounds.Union(
-        inline_text_box_node->relative_bounds.bounds);
-
-    if (i == text_runs.size() - 1) {
-      static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           static_text);
-      break;
-    }
-
-    double line_spacing =
-        text_runs[i + 1].bounds.point.y - text_run.bounds.point.y;
-    if (text_run.font_size != text_runs[i + 1].font_size ||
-        (line_spacing_threshold > 0 &&
-         line_spacing > line_spacing_threshold)) {
-      static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
-                                           static_text);
-      para_node = nullptr;
-      static_text_node = nullptr;
-      static_text.clear();
-    }
-  }
+  AddPageContent(page_node, page_bounds, page_index, text_runs, chars, links,
+                 images);
 
   if (page_index == doc_info_.page_count - 1)
     Finish();
+}
+
+void PdfAccessibilityTree::AddPageContent(
+    ui::AXNodeData* page_node,
+    const gfx::RectF& page_bounds,
+    uint32_t page_index,
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+    const std::vector<ppapi::PdfAccessibilityImageInfo>& images) {
+  DCHECK(page_node);
+  double heading_font_size_threshold = 0;
+  double paragraph_spacing_threshold = 0;
+  ComputeParagraphAndHeadingThresholds(text_runs, &heading_font_size_threshold,
+                                       &paragraph_spacing_threshold);
+
+  ui::AXNodeData* para_node = nullptr;
+  ui::AXNodeData* static_text_node = nullptr;
+  ui::AXNodeData* previous_on_line_node = nullptr;
+  std::string static_text;
+  uint32_t char_index = 0;
+  uint32_t current_link_index = 0;
+  uint32_t current_image_index = 0;
+  bool is_run_on_same_line = false;
+  LineHelper line_helper(text_runs);
+
+  for (size_t text_run_index = 0; text_run_index < text_runs.size();
+       ++text_run_index) {
+    // If we don't have a paragraph, create one.
+    if (!para_node) {
+      para_node = CreateParagraphNode(text_runs[text_run_index].font_size,
+                                      heading_font_size_threshold);
+      page_node->child_ids.push_back(para_node->id);
+    }
+
+    // If the |text_run_index| is less than or equal to the link's
+    // text_run_index, then push the link node in the paragraph.
+    if (IsObjectInTextRun(links, current_link_index, text_run_index)) {
+      FinishStaticNode(&static_text_node, &static_text, &previous_on_line_node);
+      is_run_on_same_line = false;
+      const ppapi::PdfAccessibilityLinkInfo& link = links[current_link_index++];
+      ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds);
+      para_node->child_ids.push_back(link_node->id);
+
+      // If |link.text_run_count| == 0, then the link is not part of the page
+      // text. Push it ahead of the current text run.
+      if (link.text_run_count == 0) {
+        --text_run_index;
+        continue;
+      }
+      // If |link.text_run_count| > 0, then the link is part of the page text.
+      // Make the text runs contained by the link children of the link node.
+      uint32_t link_end_text_run_index =
+          std::min(text_run_index + link.text_run_count, text_runs.size()) - 1;
+
+      AddTextToLinkNode(text_run_index, link_end_text_run_index, text_runs,
+                        chars, page_bounds, &char_index, link_node);
+
+      para_node->relative_bounds.bounds.Union(
+          link_node->relative_bounds.bounds);
+
+      text_run_index = link_end_text_run_index;
+    } else if (IsObjectInTextRun(images, current_image_index, text_run_index)) {
+      FinishStaticNode(&static_text_node, &static_text, &previous_on_line_node);
+      is_run_on_same_line = false;
+      // If the |text_run_index| is less than or equal to the image's text run
+      // index, then push the image ahead of the current text run.
+      ui::AXNodeData* image_node =
+          CreateImageNode(images[current_image_index], page_bounds);
+      para_node->child_ids.push_back(image_node->id);
+      ++current_image_index;
+      --text_run_index;
+      continue;
+    } else {
+      // This node is for the text inside the paragraph, it includes
+      // the text of all of the text runs.
+      if (!static_text_node) {
+        static_text_node = CreateStaticTextNode(char_index);
+        para_node->child_ids.push_back(static_text_node->id);
+      }
+
+      const PP_PrivateAccessibilityTextRunInfo& text_run =
+          text_runs[text_run_index];
+      // Add this text run to the current static text node.
+      ui::AXNodeData* inline_text_box_node =
+          CreateInlineTextBoxNode(text_run, chars, char_index, page_bounds);
+      static_text_node->child_ids.push_back(inline_text_box_node->id);
+
+      static_text += inline_text_box_node->GetStringAttribute(
+          ax::mojom::StringAttribute::kName);
+      char_index += text_run.len;
+
+      para_node->relative_bounds.bounds.Union(
+          inline_text_box_node->relative_bounds.bounds);
+      static_text_node->relative_bounds.bounds.Union(
+          inline_text_box_node->relative_bounds.bounds);
+
+      if (previous_on_line_node) {
+        previous_on_line_node->AddIntAttribute(
+            ax::mojom::IntAttribute::kNextOnLineId, inline_text_box_node->id);
+        inline_text_box_node->AddIntAttribute(
+            ax::mojom::IntAttribute::kPreviousOnLineId,
+            previous_on_line_node->id);
+      }
+
+      if (!previous_on_line_node)
+        line_helper.StartNewLine(text_run_index);
+      line_helper.ProcessNextRun(text_run_index);
+
+      if (text_run_index < text_runs.size() - 1)
+        is_run_on_same_line = line_helper.IsRunOnSameLine(text_run_index + 1);
+      if (is_run_on_same_line) {
+        // The next run is on the same line.
+        previous_on_line_node = inline_text_box_node;
+      }
+    }
+
+    if (text_run_index == text_runs.size() - 1) {
+      if (static_text_node) {
+        static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                             static_text);
+      }
+      break;
+    }
+
+    if (!is_run_on_same_line) {
+      // The next run is on a new line.
+      previous_on_line_node = nullptr;
+
+      if (BreakParagraph(text_runs, text_run_index,
+                         paragraph_spacing_threshold)) {
+        if (static_text_node) {
+          static_text_node->AddStringAttribute(
+              ax::mojom::StringAttribute::kName, static_text);
+        }
+        para_node = nullptr;
+        static_text_node = nullptr;
+        static_text.clear();
+      }
+    }
+  }
+
+  base::span<const ppapi::PdfAccessibilityLinkInfo> remaining_links =
+      base::make_span(links).subspan(current_link_index);
+  base::span<const ppapi::PdfAccessibilityImageInfo> remaining_images =
+      base::make_span(images).subspan(current_image_index);
+  AddRemainingAnnotations(page_node, page_bounds, remaining_links,
+                          remaining_images, para_node);
+}
+
+void PdfAccessibilityTree::AddRemainingAnnotations(
+    ui::AXNodeData* page_node,
+    const gfx::RectF& page_bounds,
+    base::span<const ppapi::PdfAccessibilityLinkInfo> links,
+    base::span<const ppapi::PdfAccessibilityImageInfo> images,
+    ui::AXNodeData* para_node) {
+  // If we have additional links or images to insert in the tree, and we don't
+  // have a paragraph node, create a new one.
+  if (!para_node && (!links.empty() || !images.empty())) {
+    para_node = CreateNode(ax::mojom::Role::kParagraph);
+    page_node->child_ids.push_back(para_node->id);
+  }
+  // Push all the links not anchored to any text run to the last paragraph.
+  for (const ppapi::PdfAccessibilityLinkInfo& link : links) {
+    ui::AXNodeData* link_node = CreateLinkNode(link, page_bounds);
+    para_node->child_ids.push_back(link_node->id);
+  }
+  // Push all the images not anchored to any text run to the last paragraph.
+  for (const ppapi::PdfAccessibilityImageInfo& image : images) {
+    ui::AXNodeData* image_node = CreateImageNode(image, page_bounds);
+    para_node->child_ids.push_back(image_node->id);
+  }
 }
 
 void PdfAccessibilityTree::Finish() {
@@ -253,8 +559,11 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
   // Iterate over all paragraphs within this given page, and static text nodes
   // within each paragraph.
   for (ui::AXNode* para : page->children()) {
-    for (ui::AXNode* static_text : para->children()) {
-      // Look up the page-relative character index for this node from a map
+    for (ui::AXNode* child_node : para->children()) {
+      ui::AXNode* static_text = GetStaticTextNodeFromNode(child_node);
+      if (!static_text)
+        continue;
+      // Look up the page-relative character index for static nodes from a map
       // we built while the document was initially built.
       DCHECK(base::Contains(node_id_to_char_index_in_page_, static_text->id()));
       uint32_t char_index = node_id_to_char_index_in_page_[static_text->id()];
@@ -276,7 +585,7 @@ void PdfAccessibilityTree::FindNodeOffset(uint32_t page_index,
 void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
     const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
     double* out_heading_font_size_threshold,
-    double* out_line_spacing_threshold) {
+    double* out_paragraph_spacing_threshold) {
   // Scan over the font sizes and line spacing within this page and
   // set heuristic thresholds so that text larger than the median font
   // size can be marked as a heading, and spacing larger than the median
@@ -304,7 +613,7 @@ void PdfAccessibilityTree::ComputeParagraphAndHeadingThresholds(
     std::sort(line_spacings.begin(), line_spacings.end());
     double median_line_spacing = line_spacings[line_spacings.size() / 2];
     if (median_line_spacing > kMinimumLineSpacing) {
-      *out_line_spacing_threshold =
+      *out_paragraph_spacing_threshold =
           median_line_spacing * kParagraphLineSpacingRatio;
     }
   }
@@ -360,6 +669,132 @@ ui::AXNodeData* PdfAccessibilityTree::CreateNode(ax::mojom::Role role) {
   nodes_.push_back(base::WrapUnique(node));
 
   return node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateParagraphNode(
+    double font_size,
+    double heading_font_size_threshold) {
+  ui::AXNodeData* para_node = CreateNode(ax::mojom::Role::kParagraph);
+
+  // If font size exceeds the |heading_font_size_threshold|, then classify
+  // it as a Heading.
+  if (heading_font_size_threshold > 0 &&
+      font_size > heading_font_size_threshold) {
+    para_node->role = ax::mojom::Role::kHeading;
+    para_node->AddIntAttribute(ax::mojom::IntAttribute::kHierarchicalLevel, 2);
+    para_node->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag, "h2");
+  }
+
+  return para_node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateStaticTextNode(
+    uint32_t char_index) {
+  ui::AXNodeData* static_text_node = CreateNode(ax::mojom::Role::kStaticText);
+  node_id_to_char_index_in_page_[static_text_node->id] = char_index;
+  return static_text_node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateInlineTextBoxNode(
+    const PP_PrivateAccessibilityTextRunInfo& text_run,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    uint32_t char_index,
+    const gfx::RectF& page_bounds) {
+  ui::AXNodeData* inline_text_box_node =
+      CreateNode(ax::mojom::Role::kInlineTextBox);
+
+  std::string chars_utf8 = GetTextRunCharsAsUTF8(text_run, chars, char_index);
+  inline_text_box_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                           chars_utf8);
+  inline_text_box_node->AddIntAttribute(ax::mojom::IntAttribute::kTextDirection,
+                                        text_run.direction);
+  inline_text_box_node->relative_bounds.bounds =
+      ToGfxRectF(text_run.bounds) + page_bounds.OffsetFromOrigin();
+  std::vector<int32_t> char_offsets =
+      GetTextRunCharOffsets(text_run, chars, char_index);
+  inline_text_box_node->AddIntListAttribute(
+      ax::mojom::IntListAttribute::kCharacterOffsets, char_offsets);
+  AddWordStartsAndEnds(inline_text_box_node);
+  return inline_text_box_node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateLinkNode(
+    const ppapi::PdfAccessibilityLinkInfo& link,
+    const gfx::RectF& page_bounds) {
+  ui::AXNodeData* link_node = CreateNode(ax::mojom::Role::kLink);
+
+  link_node->AddStringAttribute(ax::mojom::StringAttribute::kUrl, link.url);
+  link_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                std::string());
+  link_node->relative_bounds.bounds =
+      ToGfxRectF(link.bounds) + page_bounds.OffsetFromOrigin();
+  return link_node;
+}
+
+ui::AXNodeData* PdfAccessibilityTree::CreateImageNode(
+    const ppapi::PdfAccessibilityImageInfo& image,
+    const gfx::RectF& page_bounds) {
+  ui::AXNodeData* image_node = CreateNode(ax::mojom::Role::kImage);
+
+  image_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                 image.alt_text);
+  image_node->relative_bounds.bounds =
+      ToGfxRectF(image.bounds) + page_bounds.OffsetFromOrigin();
+  return image_node;
+}
+
+void PdfAccessibilityTree::AddTextToLinkNode(
+    uint32_t start_text_run_index,
+    uint32_t end_text_run_index,
+    const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+    const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+    const gfx::RectF& page_bounds,
+    uint32_t* char_index,
+    ui::AXNodeData* link_node) {
+  ui::AXNodeData* link_static_text_node = CreateStaticTextNode(*char_index);
+  link_node->child_ids.push_back(link_static_text_node->id);
+  // Accumulate the text of the link.
+  std::string link_name;
+  ui::AXNodeData* previous_on_line_node = nullptr;
+  LineHelper line_helper(text_runs);
+
+  for (size_t text_run_index = start_text_run_index;
+       text_run_index <= end_text_run_index; ++text_run_index) {
+    const PP_PrivateAccessibilityTextRunInfo& text_run =
+        text_runs[text_run_index];
+    // Add this text run to the current static text node.
+    ui::AXNodeData* inline_text_box_node =
+        CreateInlineTextBoxNode(text_run, chars, *char_index, page_bounds);
+    link_static_text_node->child_ids.push_back(inline_text_box_node->id);
+
+    link_static_text_node->relative_bounds.bounds.Union(
+        inline_text_box_node->relative_bounds.bounds);
+    link_name += inline_text_box_node->GetStringAttribute(
+        ax::mojom::StringAttribute::kName);
+
+    *char_index += text_run.len;
+
+    if (previous_on_line_node) {
+      previous_on_line_node->AddIntAttribute(
+          ax::mojom::IntAttribute::kNextOnLineId, inline_text_box_node->id);
+      inline_text_box_node->AddIntAttribute(
+          ax::mojom::IntAttribute::kPreviousOnLineId,
+          previous_on_line_node->id);
+    }
+    if (!previous_on_line_node)
+      line_helper.StartNewLine(text_run_index);
+    line_helper.ProcessNextRun(text_run_index);
+
+    if (text_run_index < text_runs.size() - 1 &&
+        line_helper.IsRunOnSameLine(text_run_index + 1)) {
+      // The next run is on the same line.
+      previous_on_line_node = inline_text_box_node;
+    }
+  }
+
+  link_node->AddStringAttribute(ax::mojom::StringAttribute::kName, link_name);
+  link_static_text_node->AddStringAttribute(ax::mojom::StringAttribute::kName,
+                                            link_name);
 }
 
 float PdfAccessibilityTree::GetDeviceScaleFactor() const {
@@ -456,7 +891,7 @@ ui::AXNode* PdfAccessibilityTree::GetParent(const ui::AXNode* node) const {
 }
 
 bool PdfAccessibilityTree::IsIgnored(const ui::AXNode* node) const {
-  return node->data().HasState(ax::mojom::State::kIgnored);
+  return node->IsIgnored();
 }
 
 bool PdfAccessibilityTree::IsValid(const ui::AXNode* node) const {
@@ -475,6 +910,20 @@ const ui::AXNode* PdfAccessibilityTree::GetNull() const {
 void PdfAccessibilityTree::SerializeNode(
     const ui::AXNode* node, ui::AXNodeData* out_data) const {
   *out_data = node->data();
+}
+
+std::unique_ptr<ui::AXActionTarget> PdfAccessibilityTree::CreateActionTarget(
+    const ui::AXNode& target_node) {
+  return std::make_unique<pdf::PdfAXActionTarget>(target_node, this);
+}
+
+void PdfAccessibilityTree::HandleAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  content::PepperPluginInstance* plugin_instance =
+      host_->GetPluginInstance(instance_);
+  if (plugin_instance) {
+    plugin_instance->HandleAccessibilityAction(action_data);
+  }
 }
 
 }  // namespace pdf

@@ -26,8 +26,8 @@
 #include <unistd.h>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/pipe.h"
-#include "perfetto/ext/base/time.h"
 #include "perfetto/ext/base/utils.h"
 
 namespace perfetto {
@@ -131,7 +131,7 @@ bool ExecvAtrace(const std::vector<std::string>& args) {
     // Wait for the value of the timeout.
     auto ret = poll(fds, kFdCount, timeout_ms);
     if (ret == 0 || (ret < 0 && errno == EINTR)) {
-      // Either timeout occured in poll (in which case continue so that this
+      // Either timeout occurred in poll (in which case continue so that this
       // will be picked up by our own timeout logic) or we received an EINTR and
       // we should try again.
       continue;

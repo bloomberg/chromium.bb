@@ -43,13 +43,13 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
  public:
   static constexpr int kInvalidId = -1;
 
-  // Provides a duplicate handle to the buffer. Destruction of this scoped Mojo
-  // handle does not result in releasing the shared memory held by the pool.
-  virtual mojo::ScopedSharedBufferHandle GetHandleForInterProcessTransit(
-      int buffer_id,
-      bool read_only) = 0;
-
-  virtual base::SharedMemoryHandle GetNonOwnedSharedMemoryHandleForLegacyIPC(
+  // Provides a duplicate region referring to the buffer. Destruction of this
+  // duplicate does not result in releasing the shared memory held by the
+  // pool. The buffer will be writable. This may be called as necessary to
+  // create regions.
+  virtual base::UnsafeSharedMemoryRegion DuplicateAsUnsafeRegion(
+      int buffer_id) = 0;
+  virtual mojo::ScopedSharedBufferHandle DuplicateAsMojoBuffer(
       int buffer_id) = 0;
 
   virtual mojom::SharedMemoryViaRawFileDescriptorPtr
@@ -59,10 +59,8 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess(
       int buffer_id) = 0;
 
-#if defined(OS_CHROMEOS)
   virtual gfx::GpuMemoryBufferHandle GetGpuMemoryBufferHandle(
       int buffer_id) = 0;
-#endif
 
   // Reserve or allocate a buffer to support a packed frame of |dimensions| of
   // pixel |format| and return its id. If the pool is already at maximum

@@ -1385,46 +1385,6 @@ class InstalledPackageTest(cros_test_lib.TempDirTestCase):
     self.assertEquals('package-1', pkg.pf)
 
 
-class ParseParallelEmergeStatusFileTest(cros_test_lib.TempDirTestCase):
-  """ParseParallelEmergeStatusFile tests."""
-
-  def setUp(self):
-    self.dne_file = os.path.join(self.tempdir, 'does_not_exist')
-    self.empty_file = os.path.join(self.tempdir, 'empty_status_file')
-    self.single_file = os.path.join(self.tempdir, 'single_entry_status_file')
-    self.multi_file = os.path.join(self.tempdir, 'multiple_entry_status_file')
-
-    self.pkgs = ['cat/pkg', 'foo/bar']
-    self.pkg = self.pkgs[0]
-
-    self.cpvs = [portage_util.SplitCPV(p, strict=False) for p in self.pkgs]
-    self.cpv = portage_util.SplitCPV(self.pkg, strict=False)
-
-    osutils.Touch(self.empty_file)
-    osutils.WriteFile(self.single_file, self.pkg)
-    osutils.WriteFile(self.multi_file, '\n'.join(self.pkgs))
-
-  def testNoFile(self):
-    """Test parsing when file does not exist."""
-    result = portage_util.ParseParallelEmergeStatusFile(self.dne_file)
-    self.assertEqual([], result)
-
-  def testParseEmpty(self):
-    """Parse an empty file."""
-    result = portage_util.ParseParallelEmergeStatusFile(self.empty_file)
-    self.assertEqual([], result)
-
-  def testSingleEntry(self):
-    """Parse file with single entry."""
-    result = portage_util.ParseParallelEmergeStatusFile(self.single_file)
-    self.assertEqual([self.cpv], result)
-
-  def testMultipleEntries(self):
-    """Parse file with multiple entries."""
-    result = portage_util.ParseParallelEmergeStatusFile(self.multi_file)
-    self.assertEqual(self.cpvs, result)
-
-
 class PortageqBestVisibleTest(cros_test_lib.MockTestCase):
   """PortageqBestVisible tests."""
 
@@ -1533,7 +1493,7 @@ class PortageqMatchTest(cros_test_lib.MockTestCase):
     It is instead interpreted as a cpv format error by SplitCPV. This isn't
     a hard requirement, just the current expected behavior.
     """
-    output_str = "cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n"
+    output_str = 'cat-1/pkg-one-1.0\ncat-2/pkg-two-2.1.3-r45\n'
     result = cros_build_lib.CommandResult(returncode=0,
                                           output=output_str)
     self.PatchObject(portage_util, '_Portageq', return_value=result)

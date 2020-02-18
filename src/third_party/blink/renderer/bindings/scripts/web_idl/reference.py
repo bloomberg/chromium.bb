@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from .common import DebugInfo
-from .common import WithIdentifier
+from .composition_parts import DebugInfo
+from .composition_parts import WithIdentifier
 
 
 class Proxy(object):
@@ -35,17 +35,29 @@ class Proxy(object):
         self._target_attrs_with_priority = target_attrs_with_priority
 
     def __getattr__(self, attribute):
-        target_object = object.__getattribute__(self, '_target_object')
-        target_attrs = object.__getattribute__(self, '_target_attrs')
+        try:
+            target_object = object.__getattribute__(self, '_target_object')
+            target_attrs = object.__getattribute__(self, '_target_attrs')
+        except AttributeError:
+            # When unpickling, __init__ does not get called.  _target_object is
+            # not defined yet during unpickling.  Then, just fallback to the
+            # default access.
+            return object.__getattribute__(self, attribute)
         assert target_object is not None
         if target_attrs is None or attribute in target_attrs:
             return getattr(target_object, attribute)
         raise AttributeError
 
     def __getattribute__(self, attribute):
-        target_object = object.__getattribute__(self, '_target_object')
-        target_attrs = object.__getattribute__(self,
-                                               '_target_attrs_with_priority')
+        try:
+            target_object = object.__getattribute__(self, '_target_object')
+            target_attrs = object.__getattribute__(
+                self, '_target_attrs_with_priority')
+        except AttributeError:
+            # When unpickling, __init__ does not get called.  _target_object is
+            # not defined yet during unpickling.  Then, just fallback to the
+            # default access.
+            return object.__getattribute__(self, attribute)
         # It's okay to access own attributes, such as 'identifier', even when
         # the target object is not yet resolved.
         if target_object is None:
@@ -73,6 +85,9 @@ class Proxy(object):
             attr for attr in collect_attrs_recursively(target_class)
             if not attr.startswith('_')
         ])
+
+    def make_copy(self, memo):
+        return self
 
     def set_target_object(self, target_object):
         assert self._target_object is None
@@ -129,7 +144,7 @@ class RefByIdFactory(object):
     """
 
     def __init__(self, target_attrs=None, target_attrs_with_priority=None):
-        self._references = set()
+        self._references = []
         # |_is_frozen| is initially False and you can create new references.
         # The first invocation of |for_each| freezes the factory and you can no
         # longer create a new reference
@@ -151,7 +166,7 @@ class RefByIdFactory(object):
             target_attrs=self._target_attrs,
             target_attrs_with_priority=self._target_attrs_with_priority,
             pass_key=_REF_BY_ID_PASS_KEY)
-        self._references.add(ref)
+        self._references.append(ref)
         return ref
 
     def for_each(self, callback):

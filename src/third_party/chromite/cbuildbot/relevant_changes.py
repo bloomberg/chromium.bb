@@ -532,7 +532,7 @@ class TriageRelevantChanges(object):
 
           if will_not_submit_changes:
             self._UpdateWillNotSubmitChanges(will_not_submit_changes)
-            logging.info('Build %s didn\'t pass any stage in %s. Will not'
+            logging.info("Build %s didn't pass any stage in %s. Will not"
                          ' submit changes: %s', build_config, self.STAGE_SYNC,
                          cros_patch.GetChangesAsString(will_not_submit_changes))
         else:

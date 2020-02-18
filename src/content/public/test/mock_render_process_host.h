@@ -26,6 +26,7 @@
 #include "ipc/ipc_test_sink.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/network_isolation_key.h"
 #include "services/service_manager/public/cpp/identity.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
@@ -131,6 +132,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void DisableWebRtcEventLogOutput(int lid) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   const service_manager::Identity& GetChildIdentity() override;
   std::unique_ptr<base::PersistentMemoryAllocator> TakeMetricsAllocator()
       override;
@@ -145,9 +147,11 @@ class MockRenderProcessHost : public RenderProcessHost {
   mojom::Renderer* GetRendererInterface() override;
   void CreateURLLoaderFactory(
       const base::Optional<url::Origin>& origin,
+      network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
       const net::NetworkIsolationKey& network_isolation_key,
-      network::mojom::TrustedURLLoaderHeaderClientPtrInfo header_client,
+      mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
+          header_client,
       network::mojom::URLLoaderFactoryRequest request) override;
 
   void SetIsNeverSuitableForReuse() override;
@@ -158,8 +162,13 @@ class MockRenderProcessHost : public RenderProcessHost {
   bool HostHasNotBeenUsed() override;
   void LockToOrigin(const IsolationContext& isolation_context,
                     const GURL& lock_url) override;
-  void BindCacheStorage(blink::mojom::CacheStorageRequest request,
-                        const url::Origin& origin) override;
+  void BindCacheStorage(
+      mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+      const url::Origin& origin) override;
+  void BindFileSystemManager(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver)
+      override {}
   void BindIndexedDB(blink::mojom::IDBFactoryRequest request,
                      const url::Origin& origin) override;
   void CleanupCorbExceptionForPluginUponDestruction() override;
@@ -234,7 +243,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   service_manager::Identity child_identity_;
   bool is_renderer_locked_to_site_ = false;
   network::mojom::URLLoaderFactory* url_loader_factory_;
-  blink::mojom::CacheStorageRequest cache_storage_request_;
+  mojo::PendingReceiver<blink::mojom::CacheStorage> cache_storage_receiver_;
   blink::mojom::IDBFactoryRequest idb_factory_request_;
   base::WeakPtrFactory<MockRenderProcessHost> weak_ptr_factory_{this};
 

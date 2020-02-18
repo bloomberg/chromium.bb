@@ -44,9 +44,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
   using ExcludeListIterator =
       std::vector<PublicKeyCredentialDescriptor>::const_iterator;
 
+  void WinkAndTrySign();
   void TrySign();
   void OnCheckForExcludedKeyHandle(
       base::Optional<std::vector<uint8_t>> device_response);
+  void WinkAndTryRegistration();
   void TryRegistration();
   void OnRegisterResponseReceived(
       base::Optional<std::vector<uint8_t>> device_response);
@@ -54,7 +56,11 @@ class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegisterOperation
 
   size_t current_key_handle_index_ = 0;
   bool canceled_ = false;
-  base::WeakPtrFactory<U2fRegisterOperation> weak_factory_;
+  // probing_alternative_rp_id_ is true if |app_id| is set in |request()| and
+  // thus the exclude list is being probed a second time with the alternative RP
+  // ID.
+  bool probing_alternative_rp_id_ = false;
+  base::WeakPtrFactory<U2fRegisterOperation> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(U2fRegisterOperation);
 };

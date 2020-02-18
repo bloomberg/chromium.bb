@@ -399,28 +399,27 @@ device::mojom::WakeLock* CastTransportHostFilter::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
-
   service_manager::mojom::ConnectorRequest connector_request;
   auto connector = service_manager::Connector::Create(&connector_request);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&CastBindConnectorRequest, std::move(connector_request)));
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  connector->BindInterface(device::mojom::kServiceName,
-                           mojo::MakeRequest(&wake_lock_provider));
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  connector->Connect(device::mojom::kServiceName,
+                     wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,
-      "Cast is streaming content to a remote receiver", std::move(request));
+      "Cast is streaming content to a remote receiver",
+      wake_lock_.BindNewPipeAndPassReceiver());
   return wake_lock_.get();
 }
 
 void CastTransportHostFilter::InitializeNoOpWakeLockForTesting() {
   // Initializes |wake_lock_| to make GetWakeLock() short-circuit out of its
   // own lazy initialization process.
-  mojo::MakeRequest(&wake_lock_);
+  ignore_result(wake_lock_.BindNewPipeAndPassReceiver());
 }
 
 }  // namespace cast

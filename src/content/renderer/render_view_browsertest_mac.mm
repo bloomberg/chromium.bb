@@ -155,8 +155,9 @@ TEST_F(RenderViewTest, MacTestCmdUp) {
 TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
   LoadHTML("<input/>");
 
-  // Normally, we have a WebFrameWidget.
-  EXPECT_TRUE(GetWebWidget()->IsWebFrameWidget());
+  // We have a WebFrameWidget on the root RenderWidget while a local main frame
+  // is attached.
+  EXPECT_TRUE(GetWebWidget());
 
   // Swap out the main frame so that the frame widget is destroyed.
   auto* view = static_cast<RenderViewImpl*>(view_);
@@ -165,7 +166,7 @@ TEST_F(RenderViewTest, HandleIPCsInSwappedOutState) {
       main_frame->GetRoutingID(), 123, true, FrameReplicationState()));
 
   // We no longer have a frame widget.
-  EXPECT_FALSE(GetWebWidget()->IsWebFrameWidget());
+  EXPECT_FALSE(GetWebWidget());
 
   int routing_id = view->GetRoutingID();
   // Now simulate some TextInputClientMac IPCs. These will be handled by

@@ -72,6 +72,10 @@ class RendererVk : angle::NonCopyable
     {
         return mPhysicalDeviceProperties;
     }
+    const VkPhysicalDeviceSubgroupProperties &getPhysicalDeviceSubgroupProperties() const
+    {
+        return mPhysicalDeviceSubgroupProperties;
+    }
     const VkPhysicalDeviceFeatures &getPhysicalDeviceFeatures() const
     {
         return mPhysicalDeviceFeatures;
@@ -122,9 +126,7 @@ class RendererVk : angle::NonCopyable
         return mFeatures;
     }
 
-    bool isMockICDEnabled() const { return mEnableMockICD; }
-
-    const vk::PipelineCache &getPipelineCache() const { return mPipelineCache; }
+    bool isMockICDEnabled() const { return mEnabledICD == vk::ICD::Mock; }
 
     // Query the format properties for select bits (linearTilingFeatures, optimalTilingFeatures and
     // bufferFeatures).  Looks through mandatory features first, and falls back to querying the
@@ -156,13 +158,21 @@ class RendererVk : angle::NonCopyable
     static constexpr size_t kMaxExtensionNames = 200;
     using ExtensionNameList = angle::FixedVector<const char *, kMaxExtensionNames>;
 
+    angle::Result getPipelineCache(vk::PipelineCache **pipelineCache);
+    void onNewGraphicsPipeline() { mPipelineCacheDirty = true; }
+
+    void onNewValidationMessage(const std::string &message);
+    std::string getAndClearLastValidationMessage(uint32_t *countSinceLastClear);
+
   private:
     angle::Result initializeDevice(DisplayVk *displayVk, uint32_t queueFamilyIndex);
     void ensureCapsInitialized() const;
 
     void initFeatures(const ExtensionNameList &extensions);
     void initPipelineCacheVkKey();
-    angle::Result initPipelineCache(DisplayVk *display);
+    angle::Result initPipelineCache(DisplayVk *display,
+                                    vk::PipelineCache *pipelineCache,
+                                    bool *success);
 
     template <VkFormatFeatureFlags VkFormatProperties::*features>
     VkFormatFeatureFlags getFormatFeatureBits(VkFormat format,
@@ -185,11 +195,12 @@ class RendererVk : angle::NonCopyable
 
     VkInstance mInstance;
     bool mEnableValidationLayers;
-    bool mEnableMockICD;
+    vk::ICD mEnabledICD;
     VkDebugUtilsMessengerEXT mDebugUtilsMessenger;
     VkDebugReportCallbackEXT mDebugReportCallback;
     VkPhysicalDevice mPhysicalDevice;
     VkPhysicalDeviceProperties mPhysicalDeviceProperties;
+    VkPhysicalDeviceSubgroupProperties mPhysicalDeviceSubgroupProperties;
     VkPhysicalDeviceFeatures mPhysicalDeviceFeatures;
     std::vector<VkQueueFamilyProperties> mQueueFamilyProperties;
     std::mutex mQueueMutex;
@@ -218,6 +229,8 @@ class RendererVk : angle::NonCopyable
     vk::PipelineCache mPipelineCache;
     egl::BlobCache::Key mPipelineCacheVkBlobKey;
     uint32_t mPipelineCacheVkUpdateTimeout;
+    bool mPipelineCacheDirty;
+    bool mPipelineCacheInitialized;
 
     // A cache of VkFormatProperties as queried from the device over time.
     std::array<VkFormatProperties, vk::kNumVkFormats> mFormatProperties;
@@ -229,6 +242,10 @@ class RendererVk : angle::NonCopyable
     // DescriptorSetLayouts are also managed in a cache.
     std::mutex mDescriptorSetLayoutCacheMutex;
     DescriptorSetLayoutCache mDescriptorSetLayoutCache;
+
+    // Latest validation data for debug overlay.
+    std::string mLastValidationMessage;
+    uint32_t mValidationMessageCount;
 };
 
 }  // namespace rx

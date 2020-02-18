@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/geometry/rect.h"
@@ -27,7 +27,7 @@ class InstallableInkDropTest : public ::testing::Test {
   View* root_view() { return &root_view_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   View root_view_;
 };

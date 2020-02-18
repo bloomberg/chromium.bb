@@ -67,6 +67,7 @@ class ASH_EXPORT DeskMiniView
   const char* GetClassName() const override;
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -80,6 +81,8 @@ class ASH_EXPORT DeskMiniView
   gfx::Rect GetHighlightBoundsInScreen() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  bool OnViewHighlighted() override;
+  void OnViewUnhighlighted() override;
 
   bool IsPointOnMiniView(const gfx::Point& screen_location) const;
 

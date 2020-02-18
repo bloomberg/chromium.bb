@@ -182,8 +182,7 @@ class AXRange {
       if (current_start_->GetAnchor() == iterator_end_->GetAnchor()) {
         current_start_ = AXPositionType::CreateNullPosition();
       } else {
-        current_start_ =
-            current_start_->CreateNextAnchorPosition()->AsLeafTextPosition();
+        current_start_ = current_start_->CreateNextLeafTreePosition();
         DCHECK_LE(*current_start_, *iterator_end_);
       }
       return *this;
@@ -197,8 +196,8 @@ class AXRange {
               : iterator_end_->Clone();
       DCHECK_LE(*current_end, *iterator_end_);
 
-      AXRange current_leaf_text_range(current_start_->Clone(),
-                                      std::move(current_end));
+      AXRange current_leaf_text_range(current_start_->AsTextPosition(),
+                                      current_end->AsTextPosition());
       DCHECK(current_leaf_text_range.IsLeafTextRange());
       return std::move(current_leaf_text_range);
     }
@@ -221,11 +220,13 @@ class AXRange {
 
   // Returns the concatenation of the accessible names of all text nodes
   // contained between this AXRange's endpoints.
-  base::string16 GetText(
-      AXTextConcatenationBehavior concatenation_behavior =
-          AXTextConcatenationBehavior::kAsTextContent) const {
+  // Pass -1 for max_count to retrieve all text.
+  base::string16 GetText(AXTextConcatenationBehavior concatenation_behavior =
+                             AXTextConcatenationBehavior::kAsTextContent,
+                         int max_count = -1) const {
     base::string16 range_text;
     bool should_append_newline = false;
+    bool found_trailing_newline = false;
     for (const AXRange& leaf_text_range : *this) {
       AXPositionType* start = leaf_text_range.anchor();
       AXPositionType* end = leaf_text_range.focus();
@@ -236,22 +237,34 @@ class AXRange {
       if (should_append_newline)
         range_text += base::ASCIIToUTF16("\n");
 
-      bool current_leaf_is_line_break = false;
       base::string16 current_anchor_text = start->GetText();
       int current_leaf_text_length = end->text_offset() - start->text_offset();
 
       if (current_leaf_text_length > 0) {
-        current_leaf_is_line_break = start->IsInLineBreak();
+        int characters_to_append =
+            (max_count >= 0) ? std::min(max_count - int{range_text.length()},
+                                        current_leaf_text_length)
+                             : current_leaf_text_length;
+
+        // Collapse all whitespace following any line break.
+        found_trailing_newline =
+            start->IsInLineBreak() ||
+            (found_trailing_newline && start->IsInWhiteSpace());
+
         range_text += current_anchor_text.substr(start->text_offset(),
-                                                 current_leaf_text_length);
+                                                 characters_to_append);
       }
+
+      DCHECK(max_count < 0 || int{range_text.length()} <= max_count);
+      if (int{range_text.length()} == max_count)
+        break;
 
       // When preserving layout line breaks, don't append a newline next if the
       // current leaf range is a <br> (already ending with a '\n' character) or
       // its respective anchor is invisible to the text representation.
       if (concatenation_behavior == AXTextConcatenationBehavior::kAsInnerText)
         should_append_newline = current_anchor_text.length() > 0 &&
-                                !current_leaf_is_line_break &&
+                                !found_trailing_newline &&
                                 end->AtEndOfParagraph();
     }
     return range_text;
@@ -264,61 +277,44 @@ class AXRange {
 
     for (const AXRange& leaf_text_range : *this) {
       DCHECK(!leaf_text_range.IsNull());
-      AXPositionInstance current_end =
+      AXPositionInstance current_line_end =
           leaf_text_range.focus()->AsLeafTextPosition();
       AXPositionInstance current_line_start =
           leaf_text_range.anchor()->AsLeafTextPosition();
 
-      while (current_line_start->GetAnchor() == current_end->GetAnchor() &&
-             *current_line_start <= *current_end) {
-        AXPositionInstance current_line_end =
-            current_line_start->CreateNextLineEndPosition(
-                ui::AXBoundaryBehavior::CrossBoundary);
-
-        if (current_line_end->GetAnchor() != current_end->GetAnchor() ||
-            *current_line_end > *current_end)
-          current_line_end = current_end->Clone();
-
-        DCHECK_LE(*current_line_start, *current_line_end);
-        DCHECK_LE(*current_line_end, *current_end);
-
-        if (current_line_start->GetAnchor()->data().role ==
-            ax::mojom::Role::kInlineTextBox) {
-          current_line_start = current_line_start->CreateParentPosition();
-          current_line_end = current_line_end->CreateParentPosition();
-        }
-
-        AXTreeID current_tree_id = current_line_start->tree_id();
-        AXTreeManager* manager =
-            AXTreeManagerMap::GetInstance().GetManager(current_tree_id);
-        AXPlatformNodeDelegate* current_anchor_delegate = manager->GetDelegate(
-            current_tree_id, current_line_start->anchor_id());
-
-        // For text anchors, we retrieve the bounding rectangles of its text
-        // content. For non-text anchors (such as checkboxes, images, etc.), we
-        // want to directly retrieve their bounding rectangles.
-        gfx::Rect current_rect =
-            (current_line_start->IsInLineBreak() ||
-             current_line_start->IsInTextObject())
-                ? current_anchor_delegate->GetInnerTextRangeBoundsRect(
-                      current_line_start->text_offset(),
-                      current_line_end->text_offset(),
-                      ui::AXCoordinateSystem::kScreen,
-                      ui::AXClippingBehavior::kClipped)
-                : current_anchor_delegate->GetBoundsRect(
-                      ui::AXCoordinateSystem::kScreen,
-                      ui::AXClippingBehavior::kClipped);
-
-        // We only add rects that are visible within the current viewport.
-        // If the bounding rectangle is outside the viewport, the kClipped
-        // parameter from the bounds APIs will result in returning an empty
-        // rect, which we should omit from the final result.
-        if (!current_rect.IsEmpty())
-          rects.push_back(current_rect);
-
-        current_line_start = current_line_end->CreateNextLineStartPosition(
-            ui::AXBoundaryBehavior::CrossBoundary);
+      if (current_line_start->GetAnchor()->data().role ==
+          ax::mojom::Role::kInlineTextBox) {
+        current_line_start = current_line_start->CreateParentPosition();
+        current_line_end = current_line_end->CreateParentPosition();
       }
+
+      AXTreeID current_tree_id = current_line_start->tree_id();
+      AXTreeManager* manager =
+          AXTreeManagerMap::GetInstance().GetManager(current_tree_id);
+      AXPlatformNodeDelegate* current_anchor_delegate = manager->GetDelegate(
+          current_tree_id, current_line_start->anchor_id());
+
+      // For text anchors, we retrieve the bounding rectangles of its text
+      // content. For non-text anchors (such as checkboxes, images, etc.), we
+      // want to directly retrieve their bounding rectangles.
+      gfx::Rect current_rect =
+          (current_line_start->IsInLineBreak() ||
+           current_line_start->IsInTextObject())
+              ? current_anchor_delegate->GetInnerTextRangeBoundsRect(
+                    current_line_start->text_offset(),
+                    current_line_end->text_offset(),
+                    ui::AXCoordinateSystem::kScreen,
+                    ui::AXClippingBehavior::kClipped)
+              : current_anchor_delegate->GetBoundsRect(
+                    ui::AXCoordinateSystem::kScreen,
+                    ui::AXClippingBehavior::kClipped);
+
+      // We only add rects that are visible within the current viewport.
+      // If the bounding rectangle is outside the viewport, the kClipped
+      // parameter from the bounds APIs will result in returning an empty
+      // rect, which we should omit from the final result.
+      if (!current_rect.IsEmpty())
+        rects.push_back(current_rect);
     }
     return rects;
   }

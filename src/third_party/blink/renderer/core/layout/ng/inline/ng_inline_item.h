@@ -124,6 +124,10 @@ class CORE_EXPORT NGInlineItem {
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
+  bool IsImage() const {
+    return GetLayoutObject() && GetLayoutObject()->IsLayoutImage();
+  }
+
   void SetOffset(unsigned start, unsigned end) {
     DCHECK_GE(end, start);
     start_offset_ = start;
@@ -250,6 +254,7 @@ class CORE_EXPORT NGInlineItem {
   unsigned is_symbol_marker_ : 1;
   unsigned is_generated_for_line_break_ : 1;
   friend class NGInlineNode;
+  friend class NGInlineNodeDataEditor;
 };
 
 inline void NGInlineItem::AssertOffset(unsigned offset) const {

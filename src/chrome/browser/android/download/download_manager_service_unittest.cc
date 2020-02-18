@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/mock_download_item.h"
@@ -69,7 +69,7 @@ class DownloadManagerServiceTest : public testing::Test {
     return download_.get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DownloadManagerService* service_;
   download::SimpleDownloadManagerCoordinator coordinator_;
   std::unique_ptr<download::MockDownloadItem> download_;

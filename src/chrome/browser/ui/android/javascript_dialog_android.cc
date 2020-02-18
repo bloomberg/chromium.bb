@@ -6,6 +6,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/android/chrome_jni_headers/JavascriptTabModalDialog_jni.h"
@@ -32,7 +33,8 @@ JavaScriptDialogAndroid::~JavaScriptDialogAndroid() {
   }
 }
 
-base::WeakPtr<JavaScriptDialogAndroid> JavaScriptDialogAndroid::Create(
+// static
+base::WeakPtr<JavaScriptDialog> JavaScriptDialog::CreateNewDialog(
     content::WebContents* parent_web_contents,
     content::WebContents* alerting_web_contents,
     const base::string16& title,
@@ -96,8 +98,7 @@ JavaScriptDialogAndroid::JavaScriptDialogAndroid(
         callback_on_button_clicked,
     base::OnceClosure callback_on_cancelled)
     : callback_on_button_clicked_(std::move(callback_on_button_clicked)),
-      callback_on_cancelled_(std::move(callback_on_cancelled)),
-      weak_factory_(this) {
+      callback_on_cancelled_(std::move(callback_on_cancelled)) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   JNIEnv* env = AttachCurrentThread();

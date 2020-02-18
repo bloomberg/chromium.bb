@@ -20,15 +20,15 @@
 #include "api/audio_codecs/audio_decoder_factory.h"
 #include "api/call/transport.h"
 #include "api/crypto/crypto_options.h"
+#include "api/crypto/frame_decryptor_interface.h"
 #include "api/media_transport_config.h"
 #include "api/rtp_parameters.h"
-#include "api/rtp_receiver_interface.h"
 #include "api/scoped_refptr.h"
+#include "api/transport/rtp/rtp_source.h"
 #include "call/rtp_config.h"
 
 namespace webrtc {
 class AudioSinkInterface;
-class FrameDecryptorInterface;
 
 class AudioReceiveStream {
  public:
@@ -43,7 +43,6 @@ class AudioReceiveStream {
     uint32_t packets_lost = 0;
     std::string codec_name;
     absl::optional<int> codec_payload_type;
-    uint32_t ext_seqnum = 0;
     uint32_t jitter_ms = 0;
     uint32_t jitter_buffer_ms = 0;
     uint32_t jitter_buffer_preferred_ms = 0;
@@ -72,7 +71,9 @@ class AudioReceiveStream {
     int32_t decoding_calls_to_silence_generator = 0;
     int32_t decoding_calls_to_neteq = 0;
     int32_t decoding_normal = 0;
+    // TODO(alexnarest): Consider decoding_neteq_plc for consistency
     int32_t decoding_plc = 0;
+    int32_t decoding_codec_plc = 0;
     int32_t decoding_cng = 0;
     int32_t decoding_plc_cng = 0;
     int32_t decoding_muted_output = 0;

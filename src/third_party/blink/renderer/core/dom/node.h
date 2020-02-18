@@ -34,7 +34,6 @@
 #include "third_party/blink/renderer/core/dom/mutation_observer_options.h"
 #include "third_party/blink/renderer/core/dom/node_rare_data.h"
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
-#include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 
@@ -78,6 +77,7 @@ class StringOrTrustedScript;
 class StyleChangeReasonForTracing;
 class V8ScrollStateCallback;
 class WebPluginContainerImpl;
+struct PhysicalRect;
 
 const int kNodeStyleChangeShift = 18;
 const int kNodeCustomElementShift = 20;
@@ -564,7 +564,7 @@ class CORE_EXPORT Node : public EventTarget {
   }
 
   virtual void SetFocused(bool flag, WebFocusType);
-  virtual void SetHasFocusWithin(bool flag);
+  void SetHasFocusWithin(bool flag);
   virtual void SetDragged(bool flag);
 
   virtual int tabIndex() const;
@@ -581,9 +581,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsInert() const;
 
   virtual PhysicalRect BoundingBox() const;
-  IntRect PixelSnappedBoundingBox() const {
-    return PixelSnappedIntRect(BoundingBox());
-  }
+  IntRect PixelSnappedBoundingBox() const;
 
   // BoundingBoxForScrollIntoView() is the node's scroll snap area.
   // It is expanded from the BoundingBox() by scroll-margin.
@@ -629,7 +627,7 @@ class CORE_EXPORT Node : public EventTarget {
   bool IsChildOfV1ShadowHost() const;
   bool IsChildOfV0ShadowHost() const;
   ShadowRoot* V1ShadowRootOfParent() const;
-  ContainerNode* GetReattachParent() const;
+  Element* GetReattachParent() const;
 
   bool IsDocumentTypeNode() const { return getNodeType() == kDocumentTypeNode; }
   virtual bool ChildTypeAllowed(NodeType) const { return false; }
@@ -832,7 +830,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   // Perform the default action for an event.
   virtual void DefaultEventHandler(Event&);
-  virtual void WillCallDefaultEventHandler(const Event&);
+  void WillCallDefaultEventHandler(const Event&);
   // Should return true if this Node has activation behavior.
   // https://dom.spec.whatwg.org/#eventtarget-activation-behavior
   virtual bool HasActivationBehavior() const;
@@ -983,8 +981,7 @@ class CORE_EXPORT Node : public EventTarget {
 
   Node(TreeScope*, ConstructionType);
 
-  virtual void WillMoveToNewDocument(Document& old_document,
-                                     Document& new_document);
+  void WillMoveToNewDocument(Document& old_document, Document& new_document);
   virtual void DidMoveToNewDocument(Document& old_document);
 
   void AddedEventListener(const AtomicString& event_type,

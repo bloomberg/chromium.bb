@@ -41,12 +41,6 @@
     <!-- Infobar colors -->
     <color name="infobar_icon_drawable_color">@color/default_icon_color_blue</color>
 
-    <!-- Snackbar colors -->
-    <color name="snackbar_background_color">#282C32</color>
-
-    <!-- Bottom sheet colors -->
-    <color name="sheet_bg_color">@color/default_bg_color_elev_2</color>
-
     <!-- Tab Switcher Colors -->
     <color name="tab_switcher_background">#14181C</color>
     <color name="accessibility_tab_switcher_list_item">#252525</color>
@@ -85,9 +79,9 @@
 
     <!-- Compositor Tab Colors -->
     <color name="compositor_background_tab_bg">@color/modern_grey_300</color>
-    <color name="compositor_background_tab_bg_incognito">#2A2D2F</color>
+    <color name="compositor_background_tab_bg_incognito">@color/modern_grey_900</color>
     <color name="compositor_background_tab_outline">#ACB1B6</color>
-    <color name="compositor_background_tab_outline_incognito">#0E0F10</color>
+    <color name="compositor_background_tab_outline_incognito">@android:color/black</color>
 
     <!-- Compositor Tab Title Colors -->
     <color name="compositor_tab_title_bar_text">@color/default_text_color</color>
@@ -103,7 +97,7 @@
     <color name="signin_header_animation_laptop_screen">#F4F4F4</color>
 
     <!-- NTP and Home sheet colors. Also used on the bookmarks and recent tabs pages. -->
-    <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
+    <color name="ntp_bg_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="suggestions_modern_bg">@color/modern_primary_color</color>
     <color name="google_logo_tint">@android:color/transparent</color>
 
@@ -111,7 +105,8 @@
     <color name="incognito_emphasis">@android:color/white</color>
 
     <!-- Overlay Panel colors -->
-    <color name="overlay_panel_bar_background_color">@color/default_bg_color_elev_2</color>
+    <color name="overlay_panel_bar_background_color">@color/default_bg_color_elev_4</color>
+    <color name="overlay_panel_separator_line_color">@color/modern_secondary_color</color>
 
     <!-- Contextual Search colors -->
     <color name="contextual_search_promo_background_color">@color/default_bg_color_elev_0</color>
@@ -125,11 +120,11 @@
     <color name="progress_bar_background">#3D4386F7</color>
 
     <!-- Incognito background and branding colors -->
-    <color name="incognito_modern_primary_color">@color/modern_grey_800</color>
+    <color name="incognito_modern_primary_color">@color/modern_grey_900</color>
 
     <!-- Toolbar colors -->
     <color name="toolbar_background_primary">@color/default_bg_color_elev_3</color>
-    <color name="toolbar_background_primary_incognito">@color/modern_grey_800</color>
+    <color name="toolbar_background_primary_incognito">@color/default_bg_color_dark_elev_3</color>
     <color name="toolbar_text_box_background">@color/modern_grey_100</color>
     <color name="toolbar_text_box_background_incognito">@color/black_alpha_38</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
@@ -170,7 +165,7 @@
 
     <!-- Bookmark widget colors -->
     <color name="bookmark_widget_pressed_highlight">@color/black_alpha_11</color>
-    <color name="bookmark_widget_background">#DDFFFFFF</color>
+    <color name="bookmark_widget_background">@color/modern_primary_color</color>
 
     <!-- Payments UI colors -->
     <color name="payment_request_bg">@color/sheet_bg_color</color>
@@ -178,9 +173,14 @@
     <color name="payments_section_chevron">#B2B2B2</color>
 
     <!-- History Navigation UI colors -->
-    <color name="navigation_bubble_stroke_color">@color/hairline_stroke_color</color>
-    <color name="navigation_bubble_background_color">@color/default_bg_color_elev_4</color>
-    <color name="navigation_bubble_ripple_color">@color/modern_grey_800</color>
+    <color name="navigation_bubble_background_color">@color/default_bg_color_elev_2</color>
+    <color name="navigation_bubble_arrow">@android:color/black</color>
+
+    <!-- Scrollbar colors -->
+    <color name="default_scroll_thumb">@color/modern_grey_800_alpha_38</color>
+
+    <!-- Explore Sites colors -->
+    <color name="explore_sites_dense_tile_background_color">#00000000</color>
 
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
@@ -192,5 +192,6 @@
     <color name="thumbnail_placeholder_on_primary_bg" tools:ignore="UnusedResources">@color/modern_secondary_color</color>
     <color name="tab_layout_selected_tab_color">@color/default_text_color_blue</color>
     <color name="drag_handlebar_color">#D9DBDF</color>
+    <color name="web_notification_text">#CCCCCC</color>
 
 </resources>

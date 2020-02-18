@@ -12,6 +12,7 @@
 #include "components/exo/pointer_delegate.h"
 #include "components/exo/pointer_gesture_pinch_delegate.h"
 #include "components/exo/relative_pointer_delegate.h"
+#include "components/exo/seat.h"
 #include "components/exo/shell_surface_util.h"
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
@@ -95,14 +96,14 @@ int GetContainerIdForMouseCursor() {
 ////////////////////////////////////////////////////////////////////////////////
 // Pointer, public:
 
-Pointer::Pointer(PointerDelegate* delegate)
+Pointer::Pointer(PointerDelegate* delegate, Seat* seat)
     : SurfaceTreeHost("ExoPointer"),
       delegate_(delegate),
+      seat_(seat),
       cursor_(ui::CursorType::kNull),
       capture_scale_(GetCaptureDisplayInfo().device_scale_factor()),
       capture_ratio_(GetCaptureDisplayInfo().GetDensityRatio()),
-      cursor_capture_source_id_(base::UnguessableToken::Create()),
-      cursor_capture_weak_ptr_factory_(this) {
+      cursor_capture_source_id_(base::UnguessableToken::Create()) {
   WMHelper* helper = WMHelper::GetInstance();
   helper->AddPreTargetHandler(this);
   // TODO(sky): CursorClient does not exist in mash
@@ -365,10 +366,11 @@ void Pointer::OnMouseEvent(ui::MouseEvent* event) {
       delegate_->OnPointerFrame();
     }
   }
-
   switch (event->type()) {
-    case ui::ET_MOUSE_PRESSED:
-    case ui::ET_MOUSE_RELEASED: {
+    case ui::ET_MOUSE_RELEASED:
+      seat_->AbortPendingDragOperation();
+      FALLTHROUGH;
+    case ui::ET_MOUSE_PRESSED: {
       delegate_->OnPointerButton(event->time_stamp(),
                                  event->changed_button_flags(),
                                  event->type() == ui::ET_MOUSE_PRESSED);

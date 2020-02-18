@@ -39,13 +39,13 @@ class ShapedAppWindowTargeterTest : public views::ViewsTestBase {
   void SetUp() override {
     views::ViewsTestBase::SetUp();
     new wm::DefaultActivationClient(root_window());
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.remove_standard_frame = true;
     params.bounds = gfx::Rect(30, 30, 100, 100);
     params.context = root_window();
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
-    widget_->Init(params);
+    widget_->Init(std::move(params));
 
     app_window_.set_web_view_for_testing(&web_view_);
     app_window_.set_window_for_testing(widget_.get());

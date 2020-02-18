@@ -7,21 +7,20 @@
 
 #include <memory>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 namespace arc {
 
+// TODO(b/138679823): Remove the class and use AssistantState instead.
 // The client of VoiceInteractionController. It monitors various user session
 // states and notifies Ash side.  It can also be used to notify some specific
 // state changes that does not have an observer interface.
 class VoiceInteractionControllerClient
-    : public content::NotificationObserver,
-      public user_manager::UserManager::UserSessionStateObserver,
+    : public user_manager::UserManager::UserSessionStateObserver,
       public ArcSessionManager::Observer {
  public:
   class Observer {
@@ -50,31 +49,19 @@ class VoiceInteractionControllerClient
   friend class VoiceInteractionControllerClientTest;
 
   // Notify the controller about state changes.
-  void NotifySettingsEnabled();
-  void NotifyContextEnabled();
-  void NotifyHotwordEnabled();
   void NotifyFeatureAllowed();
-  void NotifyNotificationEnabled();
   void NotifyLocaleChanged();
-  void NotifyLaunchWithMicOpen();
 
   // user_manager::UserManager::UserSessionStateObserver overrides:
-  void ActiveUserChanged(const user_manager::User* active_user) override;
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   // Override ArcSessionManager::Observer
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
 
+  void SetProfileByUser(const user_manager::User* user);
   void SetProfile(Profile* profile);
 
-  content::NotificationRegistrar notification_registrar_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
-  std::unique_ptr<user_manager::ScopedUserSessionStateObserver>
-      session_state_observer_;
 
   Profile* profile_ = nullptr;
 
@@ -82,6 +69,9 @@ class VoiceInteractionControllerClient
       ash::mojom::VoiceInteractionState::STOPPED;
 
   base::ObserverList<Observer>::Unchecked observers_;
+
+  base::WeakPtrFactory<VoiceInteractionControllerClient> weak_ptr_factory_{
+      this};
 
   DISALLOW_COPY_AND_ASSIGN(VoiceInteractionControllerClient);
 };

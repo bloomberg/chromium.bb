@@ -70,6 +70,9 @@ class RetainPtr {
     return *this;
   }
 
+  // Assigment from raw pointers is intentially not provided to make
+  // reference count churn more visible where possible.
+
   bool operator==(const RetainPtr& that) const { return Get() == that.Get(); }
   bool operator!=(const RetainPtr& that) const { return !(*this == that); }
 
@@ -124,6 +127,16 @@ class Retainable {
 
   mutable intptr_t m_nRefCount = 0;
 };
+
+template <typename T, typename U>
+inline bool operator==(const U* lhs, const RetainPtr<T>& rhs) {
+  return rhs == lhs;
+}
+
+template <typename T, typename U>
+inline bool operator!=(const U* lhs, const RetainPtr<T>& rhs) {
+  return rhs != lhs;
+}
 
 }  // namespace fxcrt
 

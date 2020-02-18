@@ -41,7 +41,8 @@ ContentAutofillDriver::ContentAutofillDriver(
     AutofillProvider* provider)
     : render_frame_host_(render_frame_host),
       autofill_manager_(nullptr),
-      key_press_handler_manager_(this) {
+      key_press_handler_manager_(this),
+      log_manager_(client->GetLogManager()) {
   // AutofillManager isn't used if provider is valid, Autofill provider is
   // currently used by Android WebView only.
   if (provider) {
@@ -86,12 +87,6 @@ ui::AXTreeID ContentAutofillDriver::GetAxTreeId() const {
   return render_frame_host_->GetAXTreeID();
 }
 
-net::URLRequestContextGetter* ContentAutofillDriver::GetURLRequestContext() {
-  return content::BrowserContext::GetDefaultStoragePartition(
-      render_frame_host_->GetSiteInstance()->GetBrowserContext())->
-          GetURLRequestContext();
-}
-
 scoped_refptr<network::SharedURLLoaderFactory>
 ContentAutofillDriver::GetURLLoaderFactory() {
   return content::BrowserContext::GetDefaultStoragePartition(
@@ -104,13 +99,13 @@ bool ContentAutofillDriver::RendererIsAvailable() {
 }
 
 void ContentAutofillDriver::ConnectToAuthenticator(
-    blink::mojom::InternalAuthenticatorRequest request) {
+    mojo::PendingReceiver<blink::mojom::InternalAuthenticator> receiver) {
 #if defined(OS_ANDROID)
-  render_frame_host_->GetJavaInterfaces()->GetInterface(std::move(request));
+  render_frame_host_->GetJavaInterfaces()->GetInterface(std::move(receiver));
 #else
   authenticator_impl_ = std::make_unique<content::InternalAuthenticatorImpl>(
       render_frame_host_, url::Origin::Create(payments::GetBaseSecureUrl()));
-  authenticator_impl_->Bind(std::move(request));
+  authenticator_impl_->Bind(std::move(receiver));
 #endif
 }
 
@@ -338,7 +333,8 @@ void ContentAutofillDriver::RemoveHandler(
 }
 
 void ContentAutofillDriver::SetAutofillProvider(AutofillProvider* provider) {
-  autofill_handler_ = std::make_unique<AutofillHandlerProxy>(this, provider);
+  autofill_handler_ =
+      std::make_unique<AutofillHandlerProxy>(this, log_manager_, provider);
   GetAutofillAgent()->SetUserGestureRequired(false);
   GetAutofillAgent()->SetSecureContextRequired(true);
   GetAutofillAgent()->SetFocusRequiresScroll(false);

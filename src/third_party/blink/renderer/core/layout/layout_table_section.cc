@@ -28,6 +28,7 @@
 
 #include <algorithm>
 #include <limits>
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_table_cell.h"
@@ -187,7 +188,7 @@ void LayoutTableSection::AddChild(LayoutObject* child,
 
   EnsureRows(c_row_);
 
-  LayoutTableRow* row = ToLayoutTableRow(child);
+  LayoutTableRow* row = To<LayoutTableRow>(child);
   grid_[insertion_row].row = row;
   row->SetRowIndex(insertion_row);
 
@@ -1417,6 +1418,18 @@ void LayoutTableSection::ComputeLayoutOverflowFromDescendants() {
     AddLayoutOverflowFromChild(*row);
 }
 
+LayoutNGTableRowInterface* LayoutTableSection::FirstRowInterface() const {
+  return FirstRow();
+}
+LayoutNGTableRowInterface* LayoutTableSection::LastRowInterface() const {
+  return LastRow();
+}
+const LayoutNGTableCellInterface* LayoutTableSection::PrimaryCellInterfaceAt(
+    unsigned row,
+    unsigned effective_column) const {
+  return PrimaryCellAt(row, effective_column);
+}
+
 bool LayoutTableSection::RecalcLayoutOverflow() {
   if (!ChildNeedsLayoutOverflowRecalc())
     return false;
@@ -1908,7 +1921,7 @@ void LayoutTableSection::RelayoutCellIfFlexed(LayoutTableCell& cell,
       if (!child->IsText() &&
           child->StyleRef().LogicalHeight().IsPercentOrCalc() &&
           (!child->IsTable() || (!child->IsOutOfFlowPositioned() &&
-                                 ToLayoutTable(child)->HasSections()))) {
+                                 To<LayoutTable>(child)->HasSections()))) {
         any_child_needs_relayout = true;
         break;
       }

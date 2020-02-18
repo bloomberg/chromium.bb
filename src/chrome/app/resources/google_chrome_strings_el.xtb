@@ -45,12 +45,15 @@
 <translation id="1873233029667955273">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
+<translation id="1900795423379050516">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, αναζητήστε την στις <ph name="LINK_BEGIN" />
+      ρυθμίσεις του προγράμματος περιήγησης Chrome<ph name="LINK_END" /></translation>
 <translation id="1915828456209461693">Υπάρχει νέα διαθέσιμη ενημέρωση για το Chrome και θα εφαρμοστεί μόλις κάνετε επανεκκίνηση.</translation>
 <translation id="1919130412786645364">Να επιτρέπεται η σύνδεση στο Chrome</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
 <translation id="2120620239521071941">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Συμβάλετε στη βελτίωση του Chrome, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
+<translation id="2151406531797534936">Επανεκκινήστε το Chrome τώρα</translation>
 <translation id="216054706567564023">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
 <translation id="2246246234298806438">Το Google Chrome δεν είναι δυνατό να εμφανίσει την προεπισκόπηση εκτύπωσης όταν λείπει το ενσωματωμένο πρόγραμμα προβολής PDF.</translation>
 <translation id="2252923619938421629">Συμβάλετε στη βελτίωση του Google Chrome αναφέροντας τις τρέχουσες ρυθμίσεις</translation>
@@ -87,12 +90,6 @@
 <translation id="3080151273017101988">Να συνεχίζεται η εκτέλεση εφαρμογών παρασκηνίου όταν το Google Chrome είναι κλειστό</translation>
 <translation id="3089968997497233615">Υπάρχει μια νέα, ασφαλέστερη έκδοση του Google Chrome.</translation>
 <translation id="3149510190863420837">Εφαρμογές Chrome</translation>
-<translation id="3251381707915721925">Για να ορίσετε ποιους ιστότοπους μπορεί να δει ο χρήστης <ph name="NEW_PROFILE_NAME" />, μπορείτε να διαμορφώσετε περιορισμούς και ρυθμίσεις μεταβαίνοντας στη διεύθυνση <ph name="BEGIN_LINK_1" /><ph name="DISPLAY_LINK" /><ph name="END_LINK_1" />. Εάν δεν αλλάξετε τις προεπιλεγμένες ρυθμίσεις, ο χρήστης <ph name="NEW_PROFILE_NAME" /> μπορεί να περιηγηθεί παντού στον ιστό.
-
-Για να παρεμποδίσετε την πρόσβαση του χρήστη <ph name="NEW_PROFILE_NAME" /> στον λογαριασμό σας, βεβαιωθείτε ότι έχετε κλειδώσει το προφίλ σας, όταν δεν χρησιμοποιείτε το Chrome. Για να το κάνετε αυτό, κάντε κλικ στο όνομα του προφίλ σας στην επάνω δεξιά γωνία του προγράμματος περιήγησης και επιλέξτε "Έξοδος και κλείδωμα για παιδιά"/
-<ph name="BEGIN_LINK_2" />Μάθετε περισσότερα<ph name="END_LINK_2" />
-
-Ελέγξτε το ηλεκτρονικό ταχυδρομείο σας στη διεύθυνση <ph name="ACCOUNT_EMAIL" /> για περαιτέρω οδηγίες.</translation>
 <translation id="3282568296779691940">Σύνδεση στο Chrome</translation>
 <translation id="3340978935015468852">ρυθμίσεις</translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
@@ -152,7 +149,6 @@
 <translation id="4990567037958725628">Google Chrome Canary</translation>
 <translation id="5028489144783860647">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας. Ενημερώστε τη φράση πρόσβασης συγχρονισμού.</translation>
 <translation id="5062123544085870375">Επανεκκίνηση Chrome OS</translation>
-<translation id="5090044601776247154">Τα προφίλ εποπτευόμενων χρηστών δεν θα είναι πλέον διαθέσιμα από το Google Chrome 70 και μετά.</translation>
 <translation id="5132929315877954718">Ανακαλύψτε υπέροχες εφαρμογές, παιχνίδια, επεκτάσεις και θέματα για το Google Chrome.</translation>
 <translation id="5170938038195470297">Το προφίλ σας δεν μπορεί να χρησιμοποιηθεί επειδή προέρχεται από μια νεότερη έκδοση του Google Chrome.
 
@@ -167,6 +163,8 @@
 <translation id="5543953544073077331">Εκτελούνται άλλα αντίγραφα του Chrome. Για να τα ενημερώσετε, κλείστε τα.</translation>
 <translation id="556024056938947818">Το Google Chrome επιχειρεί να εμφανίσει κωδικούς πρόσβασης.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
+<translation id="5657226924540934362">Εάν μια ρύθμιση δεν εμφανίζεται σε αυτήν τη σελίδα, αναζητήστε την στις <ph name="LINK_BEGIN" />
+      ρυθμίσεις του Chrome OS<ph name="LINK_END" /></translation>
 <translation id="565744775970812598">Το αρχείο <ph name="FILE_NAME" /> μπορεί να είναι επικίνδυνο, επομένως έχει αποκλειστεί από το Chrome.</translation>
 <translation id="5686916850681061684">Προσαρμογή και έλεγχος του Google Chrome. Θα πρέπει να ελέγξετε μια ειδοποίηση, κάντε κλικ για λεπτομέρειες.</translation>
 <translation id="5690427481109656848">Google LLC</translation>
@@ -223,10 +221,11 @@
 <translation id="7486227612705979895">Το Chrome θα αποκτήσει πρόσβαση στο Drive, για να κάνει προτάσεις στη γραμμή διευθύνσεων</translation>
 <translation id="7531671357096394523">Κλείστε όλα τα αντίγραφα του Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
-<translation id="7552219221109926349">Να εμφανίζεται το Chrome OS σε αυτήν τη γλώσσα</translation>
+<translation id="7573289029918943991">Για να διαπιστώσετε εάν η συσκευή σας είναι ενημερωμένη, μεταβείτε στις <ph name="LINK_BEGIN" />Ρυθμίσεις του Chrome OS<ph name="LINK_END" /></translation>
 <translation id="7589360514048265910">Αυτός ο υπολογιστής δεν θα λαμβάνει πλέον ενημερώσεις του Google Chrome επειδή το Mac OS X 10.9 δεν υποστηρίζεται πλέον.</translation>
 <translation id="7592736734348559088">Το Google Chrome δεν κατάφερε να συγχρονίσει τα δεδομένα σας επειδή τα στοιχεία σύνδεσης στο λογαριασμό σας δεν έχουν ενημερωθεί.</translation>
 <translation id="7626032353295482388">Καλώς ήρθατε στο Chrome</translation>
+<translation id="7629695634924605473">Το Chrome σας ενημερώνει σε περίπτωση παραβίασης των κωδικών πρόσβασής σας.</translation>
 <translation id="7641148173327520642">Ο διαχειριστής συστήματος έχει διαμορφώσει το Google Chrome έτσι ώστε να ανοίγει <ph name="ALTERNATIVE_BROWSER_NAME" /> για πρόσβαση σε <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Λογότυπο Chrome Enterprise</translation>
 <translation id="7747138024166251722">Δεν ήταν δυνατή η δημιουργία ενός προσωρινού καταλόγου από το πρόγραμμα εγκατάστασης. Ελέγξτε τον κενό χώρο του δίσκου και το δικαίωμα εγκατάστασης του λογισμικού.</translation>
@@ -241,7 +240,6 @@
 <translation id="7896673875602241923">Κάποιο άτομο συνδέθηκε προηγουμένως στο Chrome σε αυτόν τον υπολογιστή ως <ph name="ACCOUNT_EMAIL_LAST" />. Δημιουργήστε έναν νέο χρήστη Chrome, για να διατηρείτε τις πληροφορίες σας ξεχωριστά.</translation>
 <translation id="7908168227788431038">Η ενημέρωση σχεδόν ολοκληρώθηκε! Εκτελέστε ξανά το Google Chrome για να ολοκληρωθεί η ενημέρωση.</translation>
 <translation id="7962410387636238736">Αυτός ο υπολογιστής δεν θα λαμβάνει πια ενημερώσεις Google Chrome, επειδή δεν υποστηρίζονται πλέον τα Windows XP και Windows Vista</translation>
-<translation id="8005540215158006229">Το Chrome είναι σχεδόν έτοιμο.</translation>
 <translation id="8008534537613507642">Επανεγκατάσταση του Chrome</translation>
 <translation id="8013993649590906847">Εάν μια εικόνα δεν έχει κάποια χρήσιμη περιγραφή, το Chrome θα προσπαθήσει να σας προσφέρει μια περιγραφή. Για τη δημιουργία περιγραφών, αποστέλλονται εικόνες στην Google.</translation>
 <translation id="8030318113982266900">Ενημέρωση της συσκευής σας στο κανάλι <ph name="CHANNEL_NAME" />…</translation>
@@ -256,7 +254,6 @@
 <translation id="8370517070665726704">Πνευματικά δικαιώματα <ph name="YEAR" /> Google LLC. Με την επιφύλαξη παντός δικαιώματος.</translation>
 <translation id="840084489713044809">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας.</translation>
 <translation id="8406086379114794905">Βοηθήστε μας να κάνουμε καλύτερο το Chrome</translation>
-<translation id="8432724323949790809">Τώρα θα πρέπει να επανεκκινήσετε το Google Chrome</translation>
 <translation id="8455999171311319804">Προαιρετικό: Συμβάλετε στη βελτίωση του Chrome OS στέλνοντας αυτόματα στην Google διαγνωστικά και δεδομένα χρήσης.</translation>
 <translation id="8478823064122749032">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας: <ph name="PHONE_NUMBER" />.</translation>
 <translation id="8498858610309223613">Μόλις εφαρμόστηκε μια ειδική ενημέρωση ασφαλείας για το Google Chrome. Επανεκκινήστε τώρα και θα γίνει επαναφορά των καρτελών σας.</translation>
@@ -274,7 +271,6 @@
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="873133009373065397">Το Google Chrome δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="8736674169840206667">Ο διαχειριστής σας απαιτεί να επανεκκινήσετε το Chrome, προκειμένου να εφαρμοστεί μια ενημέρωση</translation>
-<translation id="8788264404293392165">Αυτή η γλώσσα χρησιμοποιείται για την προβολή της διεπαφής Chrome OS</translation>
 <translation id="8823341990149967727">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="884296878221830158">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>
 <translation id="8862326446509486874">Δεν έχετε τα απαραίτητα δικαιώματα για εγκατάσταση σε επίπεδο συστήματος. Δοκιμάστε να εκτελέσετε ξανά το πρόγραμμα εγκατάστασης ως Διαχειριστής.</translation>

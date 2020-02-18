@@ -6,12 +6,12 @@
 
 #include "base/callback_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 TEST(InProcessJsonParserTest, TestSuccess) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   base::RunLoop run_loop;
   InProcessJsonParser::Parse(
@@ -34,7 +34,7 @@ TEST(InProcessJsonParserTest, TestSuccess) {
 }
 
 TEST(InProcessJsonParserTest, TestFailure) {
-  base::test::ScopedTaskEnvironment environment;
+  base::test::TaskEnvironment environment;
 
   base::RunLoop run_loop;
   InProcessJsonParser::Parse(

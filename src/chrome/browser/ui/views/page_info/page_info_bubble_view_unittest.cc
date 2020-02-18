@@ -10,7 +10,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
-#include "chrome/browser/lookalikes/safety_tips/safety_tip_ui.h"
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
@@ -28,9 +27,10 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/test/browser_side_navigation_test_utils.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/navigation_simulator.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_contents_factory.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
@@ -169,7 +169,7 @@ class ScopedWebContentsTestHelper {
   content::WebContents* web_contents() { return web_contents_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   content::TestWebContentsFactory factory_;
   content::WebContents* web_contents_;  // Weak. Owned by factory_.
@@ -188,13 +188,13 @@ class PageInfoBubbleViewTest : public testing::Test {
     views::Widget::InitParams parent_params;
     parent_params.context = views_helper_.GetContext();
     parent_window_ = new views::Widget();
-    parent_window_->Init(parent_params);
+    parent_window_->Init(std::move(parent_params));
 
     content::WebContents* web_contents = web_contents_helper_.web_contents();
     TabSpecificContentSettings::CreateForWebContents(web_contents);
-    api_.reset(new test::PageInfoBubbleViewTestApi(
+    api_ = std::make_unique<test::PageInfoBubbleViewTestApi>(
         parent_window_->GetNativeView(), web_contents_helper_.profile(),
-        web_contents));
+        web_contents);
   }
 
   void TearDown() override { parent_window_->CloseNow(); }
@@ -208,41 +208,6 @@ class PageInfoBubbleViewTest : public testing::Test {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageInfoBubbleViewTest);
-};
-
-class SafetyTipPageInfoBubbleViewTest : public testing::Test {
- public:
-  SafetyTipPageInfoBubbleViewTest() {}
-
-  // testing::Test:
-  void SetUp() override {
-    views_helper_.test_views_delegate()->set_layout_provider(
-        ChromeLayoutProvider::CreateLayoutProvider());
-    views::Widget::InitParams parent_params;
-    parent_params.context = views_helper_.GetContext();
-    parent_window_ = new views::Widget();
-    parent_window_->Init(parent_params);
-
-    content::WebContents* web_contents = web_contents_helper_.web_contents();
-    TabSpecificContentSettings::CreateForWebContents(web_contents);
-
-    bubble_ = CreateSafetyTipBubbleForTesting(
-        parent_window_->GetNativeView(), web_contents,
-        safety_tips::SafetyTipType::kBadReputation,
-        GURL("https://www.fakegoogle.tld"), GURL("https://www.google.com"));
-  }
-
-  void TearDown() override { parent_window_->CloseNow(); }
-
- protected:
-  ScopedWebContentsTestHelper web_contents_helper_;
-  views::ScopedViewsTestHelper views_helper_;
-
-  PageInfoBubbleViewBase* bubble_ = nullptr;
-  views::Widget* parent_window_ = nullptr;  // Weak. Owned by the NativeWidget.
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SafetyTipPageInfoBubbleViewTest);
 };
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -401,11 +366,11 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUsbDevice) {
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> usb_manager;
+  usb_device_manager.AddReceiver(usb_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store =
       UsbChooserContextFactory::GetForProfile(web_contents_helper_.profile());
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(usb_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
@@ -506,10 +471,11 @@ TEST_F(PageInfoBubbleViewTest, SetPermissionInfoWithUserAndPolicyUsbDevices) {
 
   // Connect the UsbChooserContext with FakeUsbDeviceManager.
   device::FakeUsbDeviceManager usb_device_manager;
-  device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-  usb_device_manager.AddBinding(mojo::MakeRequest(&device_manager_ptr));
+  mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+  usb_device_manager.AddReceiver(
+      device_manager.InitWithNewPipeAndPassReceiver());
   UsbChooserContext* store = UsbChooserContextFactory::GetForProfile(profile);
-  store->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+  store->SetDeviceManagerForTesting(std::move(device_manager));
 
   auto device_info = usb_device_manager.CreateAndAddDevice(
       0, 0, "Google", "Gizmo", "1234567890");
@@ -661,8 +627,7 @@ TEST_F(PageInfoBubbleViewTest, UpdatingSiteDataRetainsLayout) {
 #if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(PageInfoBubbleViewTest, ChangingFlashSettingForSiteIsRemembered) {
   Profile* profile = web_contents_helper_.profile();
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      profile, profile->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(profile);
   FlashContentSettingsChangeWaiter waiter(profile);
 
   const GURL url(kUrl);
@@ -745,6 +710,3 @@ TEST_F(PageInfoBubbleViewTest, EnsureCloseCallback) {
             api_->closed_reason());
 }
 
-TEST_F(SafetyTipPageInfoBubbleViewTest, OpenAndClose) {
-  // This test just opens and closes the bubble.
-}

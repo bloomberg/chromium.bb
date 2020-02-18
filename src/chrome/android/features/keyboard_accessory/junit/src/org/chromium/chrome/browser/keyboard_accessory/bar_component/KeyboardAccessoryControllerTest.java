@@ -20,11 +20,13 @@ import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.AUT
 import static org.chromium.chrome.browser.keyboard_accessory.AccessoryAction.GENERATE_PASSWORD_AUTOMATIC;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
 import android.support.design.widget.TabLayout;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -32,9 +34,11 @@ import org.mockito.MockitoAnnotations;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryBarContents;
@@ -64,6 +68,9 @@ import java.util.HashMap;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class KeyboardAccessoryControllerTest {
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
     @Mock
     private PropertyObserver<PropertyKey> mMockPropertyObserver;
     @Mock
@@ -78,6 +85,8 @@ public class KeyboardAccessoryControllerTest {
     private KeyboardAccessoryCoordinator.TabSwitchingDelegate mMockTabSwitchingDelegate;
     @Mock
     private AutofillDelegate mMockAutofillDelegate;
+    @Mock
+    private RecordHistogram.Natives mMockRecordHistogram;
 
     private final KeyboardAccessoryData.Tab mTestTab =
             new KeyboardAccessoryData.Tab("Passwords", null, null, 0, 0, null);
@@ -91,7 +100,7 @@ public class KeyboardAccessoryControllerTest {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
         setAutofillFeature(false);
-
+        mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogram);
         when(mMockView.getTabLayout()).thenReturn(mock(TabLayout.class));
         when(mMockTabLayout.getTabSwitchingDelegate()).thenReturn(mMockTabSwitchingDelegate);
         mCoordinator = new KeyboardAccessoryCoordinator(
@@ -396,6 +405,15 @@ public class KeyboardAccessoryControllerTest {
         assertThat(getAutofillItemAt(1).getFeatureForIPH(),
                 is(FeatureConstants.KEYBOARD_ACCESSORY_PASSWORD_FILLING_FEATURE));
         assertThat(getAutofillItemAt(2).getFeatureForIPH(), is(nullValue()));
+    }
+
+    @Test
+    public void testSkipAnimationsOnlyUntilNextShow() {
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(false));
+        mCoordinator.skipClosingAnimationOnce();
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(true));
+        mCoordinator.show();
+        assertThat(mModel.get(SKIP_CLOSING_ANIMATION), is(false));
     }
 
     @Test

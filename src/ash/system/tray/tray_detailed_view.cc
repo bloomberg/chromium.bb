@@ -8,6 +8,7 @@
 
 #include "ash/public/cpp/ash_view_ids.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/tray/detailed_view_delegate.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
@@ -29,7 +30,6 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/gfx/vector_icon_types.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
@@ -242,7 +242,9 @@ class ScrollContentsView : public views::View {
     cc::PaintFlags flags;
     gfx::ShadowValues shadow;
     shadow.emplace_back(gfx::Vector2d(0, kShadowOffsetY), kShadowBlur,
-                        kMenuSeparatorColor);
+                        AshColorProvider::Get()->GetContentLayerColor(
+                            AshColorProvider::ContentLayerType::kSeparator,
+                            AshColorProvider::AshColorMode::kDark));
     flags.setLooper(gfx::CreateShadowDrawLooper(shadow));
     flags.setAntiAlias(true);
     canvas->ClipRect(shadowed_area, SkClipOp::kDifference);
@@ -274,8 +276,7 @@ TrayDetailedView::TrayDetailedView(DetailedViewDelegate* delegate)
       back_button_(nullptr) {
   box_layout_ = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
-  SetBackground(views::CreateSolidBackground(
-      delegate_->GetBackgroundColor(GetNativeTheme())));
+  SetBackground(views::CreateSolidBackground(delegate_->GetBackgroundColor()));
 }
 
 TrayDetailedView::~TrayDetailedView() = default;
@@ -316,8 +317,7 @@ void TrayDetailedView::CreateScrollableList() {
   scroller_->SetDrawOverflowIndicator(delegate_->IsOverflowIndicatorEnabled());
   scroll_content_ = scroller_->SetContents(std::move(scroll_content));
   // TODO(varkha): Make the sticky rows work with EnableViewPortLayer().
-  scroller_->SetBackgroundColor(
-      delegate_->GetBackgroundColor(GetNativeTheme()));
+  scroller_->SetBackgroundColor(delegate_->GetBackgroundColor());
 
   AddChildView(scroller_);
   box_layout_->SetFlexForView(scroller_, 1);
@@ -334,16 +334,19 @@ HoverHighlightView* TrayDetailedView::AddScrollListItem(
 HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const gfx::VectorIcon& icon,
     const base::string16& text,
-    bool checked) {
+    bool checked,
+    bool enterprise_managed) {
   HoverHighlightView* item = AddScrollListItem(icon, text);
-  TrayPopupUtils::InitializeAsCheckableRow(item, checked);
+  TrayPopupUtils::InitializeAsCheckableRow(item, checked, enterprise_managed);
   return item;
 }
 
 HoverHighlightView* TrayDetailedView::AddScrollListCheckableItem(
     const base::string16& text,
-    bool checked) {
-  return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked);
+    bool checked,
+    bool enterprise_managed) {
+  return AddScrollListCheckableItem(gfx::kNoneIcon, text, checked,
+                                    enterprise_managed);
 }
 
 void TrayDetailedView::SetupConnectedScrollListItem(HoverHighlightView* view) {

@@ -12,11 +12,15 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/scheduler/common/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/process_state.h"
@@ -101,10 +105,12 @@ WorkerThreadScheduler::WorkerThreadScheduler(
       worker_metrics_helper_(thread_type, helper()->HasCPUTimingForEachTask()),
       initial_frame_status_(proxy ? proxy->initial_frame_status()
                                   : FrameStatus::kNone),
-      ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId),
-      connector_(proxy ? proxy->TakeConnector() : nullptr) {
-  if (connector_) {
-    ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector_.get());
+      ukm_source_id_(proxy ? proxy->ukm_source_id() : ukm::kInvalidSourceId) {
+  if (base::SequencedTaskRunnerHandle::IsSet()) {
+    mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> recorder;
+    Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+        recorder.InitWithNewPipeAndPassReceiver());
+    ukm_recorder_ = std::make_unique<ukm::MojoUkmRecorder>(std::move(recorder));
   }
 
   if (proxy && proxy->parent_frame_type())
@@ -160,14 +166,13 @@ bool WorkerThreadScheduler::ShouldYieldForHighPriorityWork() {
   return false;
 }
 
-void WorkerThreadScheduler::AddTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+void WorkerThreadScheduler::AddTaskObserver(base::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper()->AddTaskObserver(task_observer);
 }
 
 void WorkerThreadScheduler::RemoveTaskObserver(
-    base::MessageLoop::TaskObserver* task_observer) {
+    base::TaskObserver* task_observer) {
   DCHECK(initialized_);
   helper()->RemoveTaskObserver(task_observer);
 }

@@ -46,6 +46,7 @@
 
 #include <limits>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/animation/scroll_timeline.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -327,13 +328,11 @@ void PaintLayer::UpdateLayerPositionsAfterLayout() {
 }
 
 void PaintLayer::UpdateLayerPositionRecursive() {
-  auto old_location = location_;
-  auto old_offset_for_in_flow_rel_position =
-      rare_data_ ? rare_data_->offset_for_in_flow_rel_position
-                 : PhysicalOffset();
+  auto old_location = location_without_position_offset_;
+  auto old_offset_for_in_flow_rel_position = OffsetForInFlowRelPosition();
   UpdateLayerPosition();
 
-  if (location_ != old_location) {
+  if (location_without_position_offset_ != old_location) {
     SetNeedsCompositingInputsUpdate();
   } else {
     // TODO(chrishtr): compute this invalidation in layout instead of here.
@@ -602,6 +601,31 @@ void PaintLayer::MapPointInPaintInvalidationContainerToBacking(
   point -= PhysicalOffset(squashing_layer->GetOffsetFromTransformNode());
 }
 
+void PaintLayer::MapQuadInPaintInvalidationContainerToBacking(
+    const LayoutBoxModelObject& paint_invalidation_container,
+    FloatQuad& quad) {
+  PaintLayer* paint_invalidation_layer = paint_invalidation_container.Layer();
+  if (!paint_invalidation_layer->GroupedMapping())
+    return;
+
+  GraphicsLayer* squashing_layer =
+      paint_invalidation_layer->GroupedMapping()->SquashingLayer();
+
+  PropertyTreeState source_state =
+      paint_invalidation_container.FirstFragment().LocalBorderBoxProperties();
+  PropertyTreeState dest_state = squashing_layer->GetPropertyTreeState();
+
+  // Move the rect into the source_state transform space, map to dest_state
+  // transform space, then move into squashing layer state.
+  quad.Move(
+      FloatSize(paint_invalidation_container.FirstFragment().PaintOffset()));
+  GeometryMapper::SourceToDestinationProjection(source_state.Transform(),
+                                                dest_state.Transform())
+      .MapQuad(quad);
+  quad.Move(
+      -ToFloatSize(FloatPoint(squashing_layer->GetOffsetFromTransformNode())));
+}
+
 void PaintLayer::DirtyVisibleContentStatus() {
   MarkAncestorChainForFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part
@@ -826,7 +850,7 @@ void PaintLayer::UpdateLayerPosition() {
   } else if (rare_data_) {
     rare_data_->offset_for_in_flow_rel_position = PhysicalOffset();
   }
-  location_ = local_point;
+  location_without_position_offset_ = local_point;
 
 #if DCHECK_IS_ON()
   needs_position_update_ = false;
@@ -951,8 +975,11 @@ PhysicalOffset PaintLayer::ComputeOffsetFromAncestor(
 PaintLayer* PaintLayer::CompositingContainer() const {
   if (IsReplacedNormalFlowStacking())
     return Parent();
-  if (!GetLayoutObject().StyleRef().IsStacked())
-    return IsSelfPaintingLayer() ? Parent() : ContainingLayer();
+  if (!GetLayoutObject().StyleRef().IsStacked()) {
+    if (IsSelfPaintingLayer() || GetLayoutObject().IsColumnSpanAll())
+      return Parent();
+    return ContainingLayer();
+  }
   return AncestorStackingContext();
 }
 
@@ -1261,15 +1288,6 @@ PhysicalRect PaintLayer::TransparencyClipBox(
   return clip_rect;
 }
 
-PhysicalRect PaintLayer::PaintingExtent(
-    const PaintLayer* root_layer,
-    const PhysicalOffset& sub_pixel_accumulation,
-    GlobalPaintFlags global_paint_flags) {
-  return TransparencyClipBox(this, root_layer, kPaintingTransparencyClipBox,
-                             kRootOfTransparencyClipBox, sub_pixel_accumulation,
-                             global_paint_flags);
-}
-
 void* PaintLayer::operator new(size_t sz) {
   return WTF::Partitions::LayoutPartition()->Alloc(
       sz, WTF_HEAP_PROFILER_TYPE_NAME(PaintLayer));
@@ -1511,9 +1529,11 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
     return ancestor_layer;
   }
 
-  bool found_ancestor_first;
+  bool found_ancestor_first = false;
   PaintLayer* containing_layer =
-      layer->ContainingLayer(ancestor_layer, &found_ancestor_first);
+      ancestor_layer
+          ? layer->ContainingLayer(ancestor_layer, &found_ancestor_first)
+          : layer->ContainingLayer(ancestor_layer, nullptr);
 
   if (found_ancestor_first) {
     // Found ancestorLayer before the containing layer, so compute offset of
@@ -1531,7 +1551,7 @@ static inline const PaintLayer* AccumulateOffsetTowardsAncestor(
   if (!containing_layer)
     return nullptr;
 
-  location += layer->Location();
+  location += layer->LocationWithoutPositionOffset();
   if (layer->GetLayoutObject().IsRelPositioned()) {
     location += layer->OffsetForInFlowRelPosition();
   } else if (layer->GetLayoutObject().IsInFlowPositioned()) {
@@ -1645,10 +1665,9 @@ void PaintLayer::UpdateScrollableArea() {
 }
 
 bool PaintLayer::HasOverflowControls() const {
-  return scrollable_area_ &&
-         (scrollable_area_->HasScrollbar() ||
-          scrollable_area_->ScrollCorner() ||
-          GetLayoutObject().StyleRef().Resize() != EResize::kNone);
+  return scrollable_area_ && (scrollable_area_->HasScrollbar() ||
+                              scrollable_area_->ScrollCorner() ||
+                              GetLayoutObject().StyleRef().HasResize());
 }
 
 void PaintLayer::AppendSingleFragmentIgnoringPagination(
@@ -2021,9 +2040,16 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
                                            z_offset);
   }
 
-  if (layout_object.HasClipPath() &&
-      HitTestClippedOutByClipPath(root_layer, recursion_data.location))
+  // Don't hit test the clip-path area when checking for occlusion. This is
+  // necessary because SVG doesn't support rect-based hit testing, so
+  // HitTestClippedOutByClipPath may erroneously return true for a rect-based
+  // hit test).
+  bool is_occlusion_test = result.GetHitTestRequest().GetType() &
+                           HitTestRequest::kHitTestVisualOverflow;
+  if (!is_occlusion_test && layout_object.HasClipPath() &&
+      HitTestClippedOutByClipPath(root_layer, recursion_data.location)) {
     return nullptr;
+  }
 
   // The natural thing would be to keep HitTestingTransformState on the stack,
   // but it's big, so we heap-allocate.
@@ -2139,7 +2165,7 @@ PaintLayer* PaintLayer::HitTestLayer(PaintLayer* root_layer,
     // Next we want to see if the mouse pos is inside the child LayoutObjects of
     // the layer. Check every fragment in reverse order.
     if (IsSelfPaintingLayer() && !layout_object.PaintBlockedByDisplayLock(
-                                     DisplayLockContext::kChildren)) {
+                                     DisplayLockLifecycleTarget::kChildren)) {
       // Hit test with a temporary HitTestResult, because we only want to commit
       // to 'result' if we know we're frontmost.
       HitTestResult temp_result(result.GetHitTestRequest(),
@@ -2394,7 +2420,7 @@ PaintLayer* PaintLayer::HitTestChildren(
     return nullptr;
 
   if (GetLayoutObject().PaintBlockedByDisplayLock(
-          DisplayLockContext::kChildren))
+          DisplayLockLifecycleTarget::kChildren))
     return nullptr;
 
   const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();

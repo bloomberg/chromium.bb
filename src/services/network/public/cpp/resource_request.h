@@ -29,6 +29,23 @@ namespace network {
 // Note: Please revise EqualsForTesting accordingly on any updates to this
 // struct.
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
+  // Typemapped to network.mojom::TrustedUrlRequestParams, see comments there
+  // for details of each field.
+  //
+  // TODO(mmenke):  There are likely other fields that should be moved into this
+  // class.
+  struct COMPONENT_EXPORT(NETWORK_CPP_BASE) TrustedParams {
+    TrustedParams();
+    ~TrustedParams();
+
+    bool operator==(const TrustedParams& other) const;
+
+    net::NetworkIsolationKey network_isolation_key;
+    mojom::UpdateNetworkIsolationKeyOnRedirect
+        update_network_isolation_key_on_redirect =
+            network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
+  };
+
   ResourceRequest();
   ResourceRequest(const ResourceRequest& request);
   ~ResourceRequest();
@@ -41,25 +58,17 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   GURL url;
   GURL site_for_cookies;
   base::Optional<url::Origin> top_frame_origin;
-  net::NetworkIsolationKey trusted_network_isolation_key;
-  mojom::UpdateNetworkIsolationKeyOnRedirect
-      update_network_isolation_key_on_redirect =
-          network::mojom::UpdateNetworkIsolationKeyOnRedirect::kDoNotUpdate;
   bool attach_same_site_cookies = false;
   bool update_first_party_url_on_redirect = false;
   base::Optional<url::Origin> request_initiator;
   GURL referrer;
   net::URLRequest::ReferrerPolicy referrer_policy =
       net::URLRequest::NEVER_CLEAR_REFERRER;
-  bool is_prerendering = false;
   net::HttpRequestHeaders headers;
   net::HttpRequestHeaders cors_exempt_headers;
   int load_flags = 0;
-  bool allow_credentials = true;
-  int plugin_child_id = -1;
   int resource_type = 0;
   net::RequestPriority priority = net::IDLE;
-  base::Optional<base::UnguessableToken> appcache_host_id;
   bool should_reset_appcache = false;
   bool is_external_request = false;
   mojom::CorsPreflightPolicy cors_preflight_policy =
@@ -82,10 +91,8 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   int render_frame_id = MSG_ROUTING_NONE;
   bool is_main_frame = false;
   int transition_type = 0;
-  bool allow_download = false;
   bool report_raw_headers = false;
   int previews_state = 0;
-  bool initiated_in_secure_context = false;
   bool upgrade_if_insecure = false;
   bool is_revalidating = false;
   bool should_also_use_factory_bound_origin_for_cors = false;
@@ -96,6 +103,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   base::Optional<base::UnguessableToken> fetch_window_id;
   base::Optional<std::string> devtools_request_id;
   bool is_signed_exchange_prefetch_cache_enabled = false;
+  bool obey_origin_policy = false;
+
+  base::Optional<TrustedParams> trusted_params;
 };
 
 }  // namespace network

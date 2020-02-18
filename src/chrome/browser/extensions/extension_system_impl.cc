@@ -105,7 +105,8 @@ ExtensionSystemImpl::Shared::~Shared() {
 }
 
 void ExtensionSystemImpl::Shared::InitPrefs() {
-  store_factory_ = new ValueStoreFactoryImpl(profile_->GetPath());
+  store_factory_ =
+      base::MakeRefCounted<ValueStoreFactoryImpl>(profile_->GetPath());
 
   // Two state stores. The latter, which contains declarative rules, must be
   // loaded immediately so that the rules are ready before we issue network
@@ -326,7 +327,7 @@ ExtensionSystemImpl::Shared::shared_user_script_master() {
 
 InfoMap* ExtensionSystemImpl::Shared::info_map() {
   if (!extension_info_map_.get())
-    extension_info_map_ = new InfoMap();
+    extension_info_map_ = base::MakeRefCounted<InfoMap>();
   return extension_info_map_.get();
 }
 
@@ -476,7 +477,7 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
   notifications_disabled =
       !notifier_state_tracker->IsNotifierEnabled(notifier_id);
 
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&InfoMap::AddExtension, info_map(),
                      base::RetainedRef(extension), install_time,
@@ -487,9 +488,9 @@ void ExtensionSystemImpl::RegisterExtensionWithRequestContexts(
 void ExtensionSystemImpl::UnregisterExtensionWithRequestContexts(
     const std::string& extension_id,
     const UnloadedExtensionReason reason) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&InfoMap::RemoveExtension, info_map(),
-                                          extension_id, reason));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&InfoMap::RemoveExtension, info_map(),
+                                extension_id, reason));
 }
 
 }  // namespace extensions

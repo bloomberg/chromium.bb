@@ -200,12 +200,27 @@ class AssociatedReceiver {
   // stimulus.
   void FlushForTesting() { binding_.FlushForTesting(); }
 
+  // Allows test code to swap the interface implementation.
+  ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+    return binding_.SwapImplForTesting(new_impl);
+  }
+
  private:
   // TODO(https://crbug.com/875030): Move AssociatedBinding details into this
   // class.
   AssociatedBinding<Interface, ImplRefTraits> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(AssociatedReceiver);
+};
+
+// Constructs an invalid PendingAssociatedReceiver of any arbitrary interface
+// type. Useful as short-hand for a default constructed value.
+class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) NullAssociatedReceiver {
+ public:
+  template <typename Interface>
+  operator PendingAssociatedReceiver<Interface>() const {
+    return PendingAssociatedReceiver<Interface>();
+  }
 };
 
 }  // namespace mojo

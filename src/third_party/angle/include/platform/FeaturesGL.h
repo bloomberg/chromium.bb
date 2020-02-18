@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2015 The ANGLE Project Authors. All rights reserved.
+// Copyright 2015 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -57,6 +57,14 @@ struct FeaturesGL : FeatureSetBase
     Feature doWhileGLSLCausesGPUHang = {
         "do_while_glsl_causes_gpu_hang", FeatureCategory::OpenGLWorkarounds,
         "On Mac, some GLSL constructs involving do-while loops cause GPU hangs", &members};
+
+    // On Mac AMD GPU gl_VertexID in GLSL vertex shader doesn't include base vertex value,
+    // Work aronud this by replace gl_VertexID with (gl_VertexID - angle_BaseVertex) when
+    // angle_BaseVertex is present.
+    Feature addBaseVertexToVertexID = {
+        "vertex_id_does_not_include_base_vertex", FeatureCategory::OpenGLWorkarounds,
+        "On Mac AMD GPU gl_VertexID in GLSL vertex shader doesn't include base vertex value",
+        &members};
 
     // Calling glFinish doesn't cause all queries to report that the result is available on some
     // (NVIDIA) drivers.  It was found that enabling GL_DEBUG_OUTPUT_SYNCHRONOUS before the finish
@@ -331,6 +339,19 @@ struct FeaturesGL : FeatureSetBase
         "adjust_src_dst_region_for_blitframebuffer", FeatureCategory::OpenGLWorkarounds,
         "Many platforms have issues with blitFramebuffer when the parameters are large.", &members,
         "http://crbug.com/830046"};
+
+    // BlitFramebuffer has issues on Mac when the source bounds aren't enclosed by the framebuffer.
+    // This workaround clips the source region and adjust the dest region proportionally.
+    Feature clipSrcRegionBlitFramebuffer = {
+        "clip_src_region_for_blitframebuffer", FeatureCategory::OpenGLWorkarounds,
+        "Mac has issues with blitFramebuffer when the parameters don't match the framebuffer size.",
+        &members, "http://crbug.com/830046"};
+
+    // Calling glTexImage2D with zero size generates GL errors
+    Feature resettingTexturesGeneratesErrors = {
+        "reset_texture_generates_errors", FeatureCategory::OpenGLWorkarounds,
+        "Calling glTexImage2D with zero size generates errors.", &members,
+        "http://anglebug.com/3859"};
 };
 
 inline FeaturesGL::FeaturesGL()  = default;

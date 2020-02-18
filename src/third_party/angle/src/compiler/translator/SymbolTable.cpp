@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2013 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -69,6 +69,7 @@ TSymbolTable::TSymbolTable()
     : mGlobalInvariant(false),
       mUniqueIdCounter(0),
       mShaderType(GL_FRAGMENT_SHADER),
+      mShaderSpec(SH_GLES2_SPEC),
       mGlInVariableWithArraySize(nullptr)
 {}
 
@@ -132,7 +133,7 @@ bool TSymbolTable::setGlInArraySize(unsigned int inputArraySize)
     {
         return mGlInVariableWithArraySize->getType().getOutermostArraySize() == inputArraySize;
     }
-    const TInterfaceBlock *glPerVertex = mVar_gl_PerVertex;
+    const TInterfaceBlock *glPerVertex = static_cast<const TInterfaceBlock *>(mVar_gl_PerVertex);
     TType *glInType = new TType(glPerVertex, EvqPerVertexIn, TLayoutQualifier::Create());
     glInType->makeArray(inputArraySize);
     mGlInVariableWithArraySize =
@@ -148,12 +149,12 @@ TVariable *TSymbolTable::getGlInVariableWithArraySize() const
 
 const TVariable *TSymbolTable::gl_FragData() const
 {
-    return mVar_gl_FragData;
+    return static_cast<const TVariable *>(mVar_gl_FragData);
 }
 
 const TVariable *TSymbolTable::gl_SecondaryFragDataEXT() const
 {
-    return mVar_gl_SecondaryFragDataEXT;
+    return static_cast<const TVariable *>(mVar_gl_SecondaryFragDataEXT);
 }
 
 TSymbolTable::VariableMetadata *TSymbolTable::getOrCreateVariableMetadata(const TVariable &variable)
@@ -359,6 +360,7 @@ void TSymbolTable::initializeBuiltIns(sh::GLenum type,
                                       const ShBuiltInResources &resources)
 {
     mShaderType = type;
+    mShaderSpec = spec;
     mResources  = resources;
 
     // We need just one precision stack level for predefined precisions.

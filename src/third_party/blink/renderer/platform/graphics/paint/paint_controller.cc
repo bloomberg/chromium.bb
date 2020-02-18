@@ -541,8 +541,8 @@ void PaintController::FinishCycle() {
   }
 
   if (VLOG_IS_ON(1)) {
-    // Only log for non-transient paint controllers. There is an additional
-    // paint controller used by BlinkGenPropertyTrees to collect foreign layers,
+    // Only log for non-transient paint controllers. Before CompositeAfterPaint,
+    // there is an additional paint controller used to collect foreign layers,
     // and this can be logged by removing the "usage_ != kTransient" condition.
     if (usage_ != kTransient) {
       LOG(ERROR) << "PaintController::FinishCycle() completed";
@@ -560,8 +560,6 @@ void PaintController::FinishCycle() {
 
 void PaintController::ClearPropertyTreeChangedStateTo(
     const PropertyTreeState& to) {
-  DCHECK(RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-
   // Calling |ClearChangedTo| for every chunk is O(|property nodes|^2) and
   // could be optimized by caching which nodes that have already been cleared.
   for (const auto& chunk : current_paint_artifact_->PaintChunks()) {

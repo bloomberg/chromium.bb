@@ -12,7 +12,7 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
 #include "components/sync/protocol/entity_metadata.pb.h"
@@ -176,7 +176,7 @@ class ModelTypeStoreImplTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ModelTypeStore> store_;
 };
 
@@ -322,7 +322,7 @@ TEST_F(ModelTypeStoreImplTest, ReadMissingDataRecords) {
 // Test that stores for different types that share the same backend don't
 // interfere with each other's records.
 TEST(ModelTypeStoreImplWithTwoStoreTest, TwoStoresWithSharedBackend) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<ModelTypeStore> store_1 =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(AUTOFILL);
@@ -361,7 +361,7 @@ TEST(ModelTypeStoreImplWithTwoStoreTest, TwoStoresWithSharedBackend) {
 // Test that records that DeleteAllDataAndMetadata() does not delete data from
 // another store when the backend is shared.
 TEST(ModelTypeStoreImplWithTwoStoreTest, DeleteAllWithSharedBackend) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<ModelTypeStore> store_1 =
       ModelTypeStoreTestUtil::CreateInMemoryStoreForTest(AUTOFILL);

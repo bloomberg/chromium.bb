@@ -33,7 +33,7 @@ extern "C" {
 /* Bumped if ABI or API breaks backwards compatibility. */
 #define SPVC_C_API_VERSION_MAJOR 0
 /* Bumped if APIs or enumerations are added in a backwards compatible way. */
-#define SPVC_C_API_VERSION_MINOR 5
+#define SPVC_C_API_VERSION_MINOR 16
 /* Bumped if internal implementation details change. */
 #define SPVC_C_API_VERSION_PATCH 0
 
@@ -57,6 +57,9 @@ extern "C" {
  * Can be used to check for ABI mismatch if so-versioning did not catch it.
  */
 SPVC_PUBLIC_API void spvc_get_version(unsigned *major, unsigned *minor, unsigned *patch);
+
+/* Gets a human readable version string to identify which commit a particular binary was created from. */
+SPVC_PUBLIC_API const char *spvc_get_commit_revision_and_timestamp(void);
 
 /* These types are opaque to the user. */
 typedef struct spvc_context_s *spvc_context;
@@ -110,6 +113,14 @@ typedef struct spvc_specialization_constant
 	spvc_constant_id id;
 	unsigned constant_id;
 } spvc_specialization_constant;
+
+/* See C++ API. */
+typedef struct spvc_buffer_range
+{
+	unsigned index;
+	size_t offset;
+	size_t range;
+} spvc_buffer_range;
 
 /* See C++ API. */
 typedef struct spvc_hlsl_root_constants
@@ -290,9 +301,14 @@ SPVC_PUBLIC_API void spvc_msl_resource_binding_init(spvc_msl_resource_binding *b
 
 #define SPVC_MSL_PUSH_CONSTANT_DESC_SET (~(0u))
 #define SPVC_MSL_PUSH_CONSTANT_BINDING (0)
+#define SPVC_MSL_SWIZZLE_BUFFER_BINDING (~(1u))
+#define SPVC_MSL_BUFFER_SIZE_BUFFER_BINDING (~(2u))
+#define SPVC_MSL_ARGUMENT_BUFFER_BINDING (~(3u))
+
+/* Obsolete. Sticks around for backwards compatibility. */
 #define SPVC_MSL_AUX_BUFFER_STRUCT_VERSION 1
 
-/* Runtime check for incompatibility. */
+/* Runtime check for incompatibility. Obsolete. */
 SPVC_PUBLIC_API unsigned spvc_msl_get_aux_buffer_struct_version(void);
 
 /* Maps to C++ API. */
@@ -407,7 +423,11 @@ typedef enum spvc_compiler_option
 
 	SPVC_COMPILER_OPTION_MSL_VERSION = 17 | SPVC_COMPILER_OPTION_MSL_BIT,
 	SPVC_COMPILER_OPTION_MSL_TEXEL_BUFFER_TEXTURE_WIDTH = 18 | SPVC_COMPILER_OPTION_MSL_BIT,
+
+	/* Obsolete, use SWIZZLE_BUFFER_INDEX instead. */
 	SPVC_COMPILER_OPTION_MSL_AUX_BUFFER_INDEX = 19 | SPVC_COMPILER_OPTION_MSL_BIT,
+	SPVC_COMPILER_OPTION_MSL_SWIZZLE_BUFFER_INDEX = 19 | SPVC_COMPILER_OPTION_MSL_BIT,
+
 	SPVC_COMPILER_OPTION_MSL_INDIRECT_PARAMS_BUFFER_INDEX = 20 | SPVC_COMPILER_OPTION_MSL_BIT,
 	SPVC_COMPILER_OPTION_MSL_SHADER_OUTPUT_BUFFER_INDEX = 21 | SPVC_COMPILER_OPTION_MSL_BIT,
 	SPVC_COMPILER_OPTION_MSL_SHADER_PATCH_OUTPUT_BUFFER_INDEX = 22 | SPVC_COMPILER_OPTION_MSL_BIT,
@@ -423,6 +443,14 @@ typedef enum spvc_compiler_option
 	SPVC_COMPILER_OPTION_MSL_ARGUMENT_BUFFERS = 32 | SPVC_COMPILER_OPTION_MSL_BIT,
 
 	SPVC_COMPILER_OPTION_GLSL_EMIT_PUSH_CONSTANT_AS_UNIFORM_BUFFER = 33 | SPVC_COMPILER_OPTION_GLSL_BIT,
+
+	SPVC_COMPILER_OPTION_MSL_TEXTURE_BUFFER_NATIVE = 34 | SPVC_COMPILER_OPTION_MSL_BIT,
+
+	SPVC_COMPILER_OPTION_GLSL_EMIT_UNIFORM_BUFFER_AS_PLAIN_UNIFORMS = 35 | SPVC_COMPILER_OPTION_GLSL_BIT,
+
+	SPVC_COMPILER_OPTION_MSL_BUFFER_SIZE_BUFFER_INDEX = 36 | SPVC_COMPILER_OPTION_MSL_BIT,
+
+	SPVC_COMPILER_OPTION_EMIT_LINE_DIRECTIVES = 37 | SPVC_COMPILER_OPTION_COMMON_BIT,
 
 	SPVC_COMPILER_OPTION_INT_MAX = 0x7fffffff
 } spvc_compiler_option;
@@ -501,7 +529,12 @@ SPVC_PUBLIC_API spvc_variable_id spvc_compiler_hlsl_remap_num_workgroups_builtin
  * Maps to C++ API.
  */
 SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_is_rasterization_disabled(spvc_compiler compiler);
+
+/* Obsolete. Renamed to needs_swizzle_buffer. */
 SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_aux_buffer(spvc_compiler compiler);
+SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_swizzle_buffer(spvc_compiler compiler);
+SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_buffer_size_buffer(spvc_compiler compiler);
+
 SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_output_buffer(spvc_compiler compiler);
 SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_patch_output_buffer(spvc_compiler compiler);
 SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_needs_input_threadgroup_mem(spvc_compiler compiler);
@@ -516,7 +549,11 @@ SPVC_PUBLIC_API spvc_bool spvc_compiler_msl_is_resource_used(spvc_compiler compi
                                                              unsigned set,
                                                              unsigned binding);
 SPVC_PUBLIC_API spvc_result spvc_compiler_msl_remap_constexpr_sampler(spvc_compiler compiler, spvc_variable_id id, const spvc_msl_constexpr_sampler *sampler);
+SPVC_PUBLIC_API spvc_result spvc_compiler_msl_remap_constexpr_sampler_by_binding(spvc_compiler compiler, unsigned desc_set, unsigned binding, const spvc_msl_constexpr_sampler *sampler);
 SPVC_PUBLIC_API spvc_result spvc_compiler_msl_set_fragment_output_components(spvc_compiler compiler, unsigned location, unsigned components);
+
+SPVC_PUBLIC_API unsigned spvc_compiler_msl_get_automatic_resource_binding(spvc_compiler compiler, spvc_variable_id id);
+SPVC_PUBLIC_API unsigned spvc_compiler_msl_get_automatic_resource_binding_secondary(spvc_compiler compiler, spvc_variable_id id);
 
 /*
  * Reflect resources.
@@ -563,6 +600,7 @@ SPVC_PUBLIC_API unsigned spvc_compiler_get_member_decoration(spvc_compiler compi
                                                              unsigned member_index, SpvDecoration decoration);
 SPVC_PUBLIC_API const char *spvc_compiler_get_member_decoration_string(spvc_compiler compiler, spvc_type_id id,
                                                                        unsigned member_index, SpvDecoration decoration);
+SPVC_PUBLIC_API const char *spvc_compiler_get_member_name(spvc_compiler compiler, spvc_type_id id, unsigned member_index);
 
 /*
  * Entry points.
@@ -622,6 +660,7 @@ SPVC_PUBLIC_API SpvAccessQualifier spvc_type_get_image_access_qualifier(spvc_typ
 SPVC_PUBLIC_API spvc_result spvc_compiler_get_declared_struct_size(spvc_compiler compiler, spvc_type struct_type, size_t *size);
 SPVC_PUBLIC_API spvc_result spvc_compiler_get_declared_struct_size_runtime_array(spvc_compiler compiler,
                                                                                  spvc_type struct_type, size_t array_size, size_t *size);
+SPVC_PUBLIC_API spvc_result spvc_compiler_get_declared_struct_member_size(spvc_compiler compiler, spvc_type type, unsigned index, size_t *size);
 
 SPVC_PUBLIC_API spvc_result spvc_compiler_type_struct_member_offset(spvc_compiler compiler,
                                                                     spvc_type type, unsigned index, unsigned *offset);
@@ -654,6 +693,15 @@ SPVC_PUBLIC_API spvc_constant_id spvc_compiler_get_work_group_size_specializatio
                                                                                             spvc_specialization_constant *x,
                                                                                             spvc_specialization_constant *y,
                                                                                             spvc_specialization_constant *z);
+
+/*
+ * Buffer ranges
+ * Maps to C++ API.
+ */
+SPVC_PUBLIC_API spvc_result spvc_compiler_get_active_buffer_ranges(spvc_compiler compiler,
+                                                                   spvc_variable_id id,
+                                                                   const spvc_buffer_range **ranges,
+                                                                   size_t *num_ranges);
 
 /*
  * No stdint.h until C99, sigh :(

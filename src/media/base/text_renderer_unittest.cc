@@ -13,7 +13,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/demuxer_stream.h"
@@ -55,7 +55,7 @@ class TextRendererTest : public testing::Test {
     DCHECK(!text_renderer_);
 
     text_renderer_.reset(new TextRenderer(
-        scoped_task_environment_.GetMainThreadTaskRunner(),
+        task_environment_.GetMainThreadTaskRunner(),
         base::Bind(&TextRendererTest::OnAddTextTrack, base::Unretained(this))));
     text_renderer_->Initialize(
         base::Bind(&TextRendererTest::OnEnd, base::Unretained(this)));
@@ -190,7 +190,7 @@ class TextRendererTest : public testing::Test {
   MOCK_METHOD0(OnPause, void());
   MOCK_METHOD0(OnFlush, void());
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   typedef std::vector<std::unique_ptr<FakeTextTrackStream>> TextTrackStreams;
   TextTrackStreams text_track_streams_;
@@ -206,7 +206,7 @@ class TextRendererTest : public testing::Test {
 
 TEST_F(TextRendererTest, CreateTextRendererNoInit) {
   text_renderer_.reset(new TextRenderer(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
+      task_environment_.GetMainThreadTaskRunner(),
       base::Bind(&TextRendererTest::OnAddTextTrack, base::Unretained(this))));
   text_renderer_.reset();
 }

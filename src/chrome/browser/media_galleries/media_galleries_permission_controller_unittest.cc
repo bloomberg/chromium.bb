@@ -21,7 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/storage_monitor/storage_info.h"
 #include "components/storage_monitor/test_storage_monitor.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)
@@ -139,7 +139,7 @@ class MediaGalleriesPermissionControllerTest : public ::testing::Test {
   }
 
   // Needed for extension service & friends to work.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // The dialog is owned by the controller, but this pointer should only be
   // valid while the dialog is live within the controller.

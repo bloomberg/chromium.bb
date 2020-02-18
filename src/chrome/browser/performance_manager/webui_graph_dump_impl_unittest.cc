@@ -14,7 +14,7 @@
 #include "chrome/browser/performance_manager/graph/mock_graphs.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -110,13 +110,20 @@ class TestChangeStream : public mojom::WebUIGraphChangeStream {
   mojo::Binding<mojom::WebUIGraphChangeStream> binding_;
 };
 
+class WebUIGraphDumpImplTest : public testing::Test {
+ public:
+  void TearDown() override { graph_.TearDown(); }
+
+ protected:
+  GraphImpl graph_;
+};
+
 }  // namespace
 
-TEST(WebUIGraphDumpImplTest, ChangeStream) {
-  content::TestBrowserThreadBundle browser_thread_bundle;
+TEST_F(WebUIGraphDumpImplTest, ChangeStream) {
+  content::BrowserTaskEnvironment task_environment;
 
-  GraphImpl graph;
-  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph);
+  MockMultiplePagesWithMultipleProcessesGraph mock_graph(&graph_);
 
   base::TimeTicks now = PerformanceManagerClock::NowTicks();
 
@@ -127,15 +134,18 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   auto* main_frame = mock_graph.page->GetMainFrameNodeImpl();
   main_frame->OnNavigationCommitted(kExampleUrl, /* same_document */ false);
 
-  WebUIGraphDumpImpl impl(&graph);
+  std::unique_ptr<WebUIGraphDumpImpl> impl =
+      std::make_unique<WebUIGraphDumpImpl>();
+  WebUIGraphDumpImpl* impl_raw = impl.get();
   // Create a mojo proxy to the impl.
   mojom::WebUIGraphDumpPtr impl_proxy;
-  impl.Bind(mojo::MakeRequest(&impl_proxy), base::OnceClosure());
+  impl->BindWithGraph(&graph_, mojo::MakeRequest(&impl_proxy));
+  graph_.PassToGraph(std::move(impl));
 
   TestChangeStream change_stream;
   impl_proxy->SubscribeToChanges(change_stream.GetProxy());
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   // Validate that the initial graph state dump is complete.
   EXPECT_EQ(0u, change_stream.num_changes());
@@ -184,7 +194,7 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
       NodeBase::GetSerializationId(mock_graph.child_frame.get());
   mock_graph.child_frame.reset();
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
 
   EXPECT_EQ(1u, change_stream.num_changes());
   EXPECT_FALSE(base::Contains(change_stream.id_set(), child_frame_id));
@@ -194,7 +204,13 @@ TEST(WebUIGraphDumpImplTest, ChangeStream) {
   ASSERT_TRUE(main_page_it != change_stream.page_map().end());
   EXPECT_EQ(kAnotherURL, main_page_it->second->main_frame_url);
 
-  browser_thread_bundle.RunUntilIdle();
+  task_environment.RunUntilIdle();
+
+  // Make sure the Dump impl is torn down when the proxy closes.
+  impl_proxy.reset();
+  task_environment.RunUntilIdle();
+
+  EXPECT_EQ(nullptr, graph_.TakeFromGraph(impl_raw));
 }
 
 }  // namespace performance_manager

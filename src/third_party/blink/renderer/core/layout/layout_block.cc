@@ -57,7 +57,6 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
-#include "third_party/blink/renderer/core/layout/logical_values.h"
 #include "third_party/blink/renderer/core/layout/ng/legacy_layout_tree_walking.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
@@ -589,7 +588,7 @@ void LayoutBlock::AddLayoutOverflowFromPositionedObjects() {
 }
 
 void LayoutBlock::AddVisualOverflowFromTheme() {
-  if (!StyleRef().HasAppearance())
+  if (!StyleRef().HasEffectiveAppearance())
     return;
 
   IntRect inflated_rect = PixelSnappedBorderBoxRect();
@@ -686,7 +685,7 @@ bool LayoutBlock::SimplifiedLayout() {
         return false;
     }
 
-    if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+    if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
       return false;
 
     TextAutosizer::LayoutScope text_autosizer_layout_scope(this);
@@ -822,7 +821,7 @@ static bool NeedsLayoutDueToStaticPosition(LayoutBox* child) {
 
 void LayoutBlock::LayoutPositionedObjects(bool relayout_children,
                                           PositionedLayoutBehavior info) {
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   TrackedLayoutBoxListHashSet* positioned_descendants = PositionedObjects();
@@ -1442,8 +1441,8 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
     // the flow thread, which will take care of that.
     const auto* block_flow = DynamicTo<LayoutBlockFlow>(this);
     if (!block_flow || !block_flow->MultiColumnFlowThread()) {
-      max_logical_width = LayoutUnit(scrollbar_width);
-      min_logical_width = LayoutUnit(scrollbar_width);
+      max_logical_width = min_logical_width =
+          ContentLogicalWidthForSizeContainment() + LayoutUnit(scrollbar_width);
       return;
     }
   } else if (DisplayLockInducesSizeContainment()) {
@@ -1464,12 +1463,13 @@ void LayoutBlock::ComputeIntrinsicLogicalWidths(
 
   max_logical_width = std::max(min_logical_width, max_logical_width);
 
-  if (IsHTMLMarqueeElement(GetNode()) &&
-      ToHTMLMarqueeElement(GetNode())->IsHorizontal())
+  auto* html_marquee_element = DynamicTo<HTMLMarqueeElement>(GetNode());
+  if (html_marquee_element && html_marquee_element->IsHorizontal())
     min_logical_width = LayoutUnit();
 
   if (IsTableCell()) {
-    Length table_cell_width = ToLayoutTableCell(this)->StyleOrColLogicalWidth();
+    Length table_cell_width =
+        ToInterface<LayoutNGTableCellInterface>(this)->StyleOrColLogicalWidth();
     if (table_cell_width.IsFixed() && table_cell_width.Value() > 0)
       max_logical_width = std::max(min_logical_width,
                                    AdjustContentBoxLogicalWidthForBoxSizing(
@@ -1570,7 +1570,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     if (child->IsFloating() ||
         (child->IsBox() && ToLayoutBox(child)->CreatesNewFormattingContext())) {
       LayoutUnit float_total_width = float_left_width + float_right_width;
-      EClear c = ResolvedClear(*child_style, style_to_use);
+      EClear c = child_style->Clear(style_to_use);
       if (c == EClear::kBoth || c == EClear::kLeft) {
         max_logical_width = std::max(float_total_width, max_logical_width);
         float_left_width = LayoutUnit();
@@ -1641,7 +1641,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     }
 
     if (child->IsFloating()) {
-      if (ResolvedFloating(*child_style, style_to_use) == EFloat::kLeft)
+      if (child_style->Floating(style_to_use) == EFloat::kLeft)
         float_left_width += w;
       else
         float_right_width += w;
@@ -1747,8 +1747,9 @@ LayoutUnit LayoutBlock::BaselinePosition(
     //        the theme is turned off, checkboxes/radios will still have decent
     //        baselines.
     // FIXME: Need to patch form controls to deal with vertical lines.
-    if (StyleRef().HasAppearance() &&
-        !LayoutTheme::GetTheme().IsControlContainer(StyleRef().Appearance())) {
+    if (StyleRef().HasEffectiveAppearance() &&
+        !LayoutTheme::GetTheme().IsControlContainer(
+            StyleRef().EffectiveAppearance())) {
       return Size().Height() + MarginTop() +
              LayoutTheme::GetTheme().BaselinePositionAdjustment(StyleRef());
     }
@@ -1965,8 +1966,15 @@ LayoutRect LayoutBlock::LocalCaretRect(
 void LayoutBlock::AddOutlineRects(Vector<PhysicalRect>& rects,
                                   const PhysicalOffset& additional_offset,
                                   NGOutlineType include_block_overflows) const {
-  DCHECK_GE(GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kAfterPerformLayout);
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/987836): enable this DCHECK universally.
+  Page* page = GetDocument().GetPage();
+  if (page && !page->GetSettings().GetSpatialNavigationEnabled()) {
+    DCHECK_GE(GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kAfterPerformLayout);
+  }
+#endif  // DCHECK_IS_ON()
+
   if (!IsAnonymous())  // For anonymous blocks, the children add outline rects.
     rects.emplace_back(additional_offset, Size());
 
@@ -2153,6 +2161,9 @@ bool LayoutBlock::RecalcChildLayoutOverflow() {
 void LayoutBlock::RecalcChildVisualOverflow() {
   DCHECK(!IsTable());
 
+  if (PaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+    return;
+
   if (ChildrenInline()) {
     SECURITY_DCHECK(IsLayoutBlockFlow());
     To<LayoutBlockFlow>(this)->RecalcInlineChildrenVisualOverflow();
@@ -2269,7 +2280,7 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
   if (!g_positioned_descendants_map)
     return;
 
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
 
   if (TrackedLayoutBoxListHashSet* positioned_descendant_set =
@@ -2281,9 +2292,9 @@ void LayoutBlock::CheckPositionedObjectsNeedLayout() {
          it != end; ++it) {
       LayoutBox* curr_box = *it;
       DCHECK(!curr_box->SelfNeedsLayout());
-      DCHECK(
-          curr_box->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren) ||
-          !curr_box->NeedsLayout());
+      DCHECK(curr_box->LayoutBlockedByDisplayLock(
+                 DisplayLockLifecycleTarget::kChildren) ||
+             !curr_box->NeedsLayout());
     }
   }
 }

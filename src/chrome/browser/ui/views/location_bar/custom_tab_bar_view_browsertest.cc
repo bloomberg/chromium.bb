@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
+#include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
@@ -23,6 +25,7 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/base/clipboard/clipboard.h"
 
 namespace {
 
@@ -33,11 +36,9 @@ class TestTitleObserver : public TabStripModelObserver {
   // Create a new TitleObserver for the browser of |contents|, waiting for
   // |target_title|.
   TestTitleObserver(content::WebContents* contents, base::string16 target_title)
-      : contents_(contents),
-        target_title_(target_title),
-        tab_strip_model_observer_(this) {
+      : contents_(contents), target_title_(target_title) {
     browser_ = chrome::FindBrowserWithWebContents(contents_);
-    tab_strip_model_observer_.Add(browser_->tab_strip_model());
+    browser_->tab_strip_model()->AddObserver(this);
   }
 
   // Run a loop, blocking until a tab has the title |target_title|.
@@ -70,7 +71,6 @@ class TestTitleObserver : public TabStripModelObserver {
   Browser* browser_;
   base::string16 target_title_;
   base::RunLoop awaiter_;
-  ScopedObserver<TabStripModel, TestTitleObserver> tab_strip_model_observer_;
 };
 
 // Opens a new popup window from |web_contents| on |target_url| and returns
@@ -287,7 +287,7 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
       OpenPopup(app_view->GetActiveWebContents(), out_of_scope_url);
 
   // Out of scope, so custom tab bar should be shown.
-  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowToolbar());
+  EXPECT_TRUE(popup_browser->app_controller()->ShouldShowCustomTabBar());
 
   // As the popup was opened out of scope the close button should not be shown.
   EXPECT_FALSE(BrowserView::GetBrowserViewForBrowser(popup_browser)
@@ -385,11 +385,11 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowCustomTabBar());
 
   // Navigate out of scope.
   NavigateAndWait(web_contents, GURL("http://example.test/"));
-  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -398,6 +398,44 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
 
   // The app should be on the last in scope url we visited.
   EXPECT_EQ(other_app_url, web_contents->GetLastCommittedURL());
+}
+
+// Right-click menu on CustomTabBar should have Copy URL option.
+// TODO(crbug.com/988323): Times out on Mac.
+#if defined(OS_MACOSX)
+#define MAYBE_RightClickMenuShowsCopyUrl DISABLED_RightClickMenuShowsCopyUrl
+#else
+#define MAYBE_RightClickMenuShowsCopyUrl RightClickMenuShowsCopyUrl
+#endif
+IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
+                       MAYBE_RightClickMenuShowsCopyUrl) {
+  ASSERT_TRUE(https_server()->Start());
+
+  const GURL& app_url = https_server()->GetURL("app.com", "/ssl/google.html");
+  InstallPWA(app_url);
+
+  BrowserView* app_view = BrowserView::GetBrowserViewForBrowser(app_browser_);
+  auto* web_contents = app_view->GetActiveWebContents();
+
+  // Navigate out of scope.
+  NavigateAndWait(web_contents, GURL("http://example.test/"));
+  EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
+
+  // Show the right-click context menu.
+  app_view->toolbar()->custom_tab_bar()->ShowContextMenu(gfx::Point(),
+                                                         ui::MENU_SOURCE_MOUSE);
+
+  content::BrowserTestClipboardScope test_clipboard_scope;
+  // Activate the first and only context menu item: IDC_COPY_URL.
+  app_view->toolbar()
+      ->custom_tab_bar()
+      ->context_menu_for_testing()
+      ->ActivatedAt(0);
+
+  ui::Clipboard* clipboard = ui::Clipboard::GetForCurrentThread();
+  base::string16 result;
+  clipboard->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
+  EXPECT_EQ(result, base::UTF8ToUTF16("http://example.test/"));
 }
 
 // Paths above the launch url should be out of scope and should be closable from
@@ -420,12 +458,12 @@ IN_PROC_BROWSER_TEST_F(CustomTabBarViewBrowserTest,
   const GURL& other_app_url =
       https_server()->GetURL("app.com", "/ssl/blank_page.html");
   NavigateAndWait(web_contents, other_app_url);
-  EXPECT_FALSE(app_controller_->ShouldShowToolbar());
+  EXPECT_FALSE(app_controller_->ShouldShowCustomTabBar());
 
   // Navigate above the scope of the app, on the same origin.
   NavigateAndWait(web_contents, https_server()->GetURL(
                                     "app.com", "/accessibility_fail.html"));
-  EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+  EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
 
   // Simulate clicking the close button and wait for navigation to finish.
   content::TestNavigationObserver nav_observer(web_contents);
@@ -459,7 +497,7 @@ IN_PROC_BROWSER_TEST_F(
     EXPECT_TRUE(content::ExecuteScript(
         web_contents, "window.location.replace('http://example.com');"));
     nav_observer.Wait();
-    EXPECT_TRUE(app_controller_->ShouldShowToolbar());
+    EXPECT_TRUE(app_controller_->ShouldShowCustomTabBar());
   }
   {
     // Simulate clicking the close button and wait for navigation to finish.

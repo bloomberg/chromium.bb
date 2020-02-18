@@ -15,8 +15,6 @@
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 
 class Profile;
 
@@ -31,23 +29,21 @@ class PrefRegistrySyncable;
 namespace web_app {
 
 // Forward declarations of generalized interfaces.
-class PendingAppManager;
-class InstallManager;
+class AppIconManager;
+class ExternalWebAppManager;
+class FileHandlerManager;
 class InstallFinalizer;
-class WebAppAudioFocusIdMap;
-class WebAppTabHelperBase;
+class ManifestUpdateManager;
 class SystemWebAppManager;
-class AppRegistrar;
+class WebAppAudioFocusIdMap;
+class WebAppInstallManager;
+class WebAppPolicyManager;
 class WebAppUiManager;
 
 // Forward declarations for new extension-independent subsystems.
-class WebAppDatabase;
 class WebAppDatabaseFactory;
-class WebAppIconManager;
+class WebAppDatabase;
 class WebAppSyncManager;
-
-// Forward declarations for legacy extension-based subsystems.
-class WebAppPolicyManager;
 
 // Connects Web App features, such as the installation of default and
 // policy-managed web apps, with Profiles (as WebAppProvider is a
@@ -59,8 +55,7 @@ class WebAppPolicyManager;
 // Subsystem construction should have no side effects and start no tasks.
 // Tests can replace any of the subsystems before Start() is called.
 // Similarly, in destruction, subsystems should not refer to each other.
-class WebAppProvider : public WebAppProviderBase,
-                       public content::NotificationObserver {
+class WebAppProvider : public WebAppProviderBase {
  public:
   static WebAppProvider* Get(Profile* profile);
   static WebAppProvider* GetForWebContents(content::WebContents* web_contents);
@@ -74,26 +69,23 @@ class WebAppProvider : public WebAppProviderBase,
   // WebAppProviderBase:
   AppRegistrar& registrar() override;
   InstallManager& install_manager() override;
+  InstallFinalizer& install_finalizer() override;
+  ManifestUpdateManager& manifest_update_manager() override;
   PendingAppManager& pending_app_manager() override;
-  WebAppPolicyManager* policy_manager() override;
+  WebAppPolicyManager& policy_manager() override;
   WebAppUiManager& ui_manager() override;
+  WebAppAudioFocusIdMap& audio_focus_id_map() override;
+  FileHandlerManager& file_handler_manager() override;
+  AppIconManager& icon_manager() override;
 
   WebAppDatabaseFactory& database_factory() { return *database_factory_; }
   WebAppSyncManager& sync_manager() { return *sync_manager_; }
+  SystemWebAppManager& system_web_app_manager();
 
   // KeyedService:
   void Shutdown() override;
 
-  SystemWebAppManager& system_web_app_manager();
-
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
-  static WebAppTabHelperBase* CreateTabHelper(
-      content::WebContents* web_contents);
-
-  // content::NotificationObserver
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // Signals when app registry becomes ready.
   const base::OneShotEvent& on_registry_ready() const {
@@ -103,6 +95,8 @@ class WebAppProvider : public WebAppProviderBase,
  protected:
   virtual void StartImpl();
 
+  // Create subsystems that work with either BMO and Extension backends.
+  void CreateCommonSubsystems(Profile* profile);
   // Create extension-independent subsystems.
   void CreateWebAppsSubsystems(Profile* profile);
   // ... or create legacy extension-based subsystems.
@@ -115,31 +109,26 @@ class WebAppProvider : public WebAppProviderBase,
   void StartRegistry();
   void OnRegistryReady();
 
-  void OnScanForExternalWebApps(std::vector<ExternalInstallOptions>);
-
-  // Called just before profile destruction. All WebContents must be destroyed
-  // by the end of this method.
-  void ProfileDestroyed();
+  void CheckIsConnected() const;
 
   // New extension-independent subsystems:
-  std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
   std::unique_ptr<WebAppDatabaseFactory> database_factory_;
   std::unique_ptr<WebAppDatabase> database_;
-  std::unique_ptr<WebAppIconManager> icon_manager_;
   std::unique_ptr<WebAppSyncManager> sync_manager_;
-  std::unique_ptr<WebAppUiManager> ui_manager_;
 
-  // New generalized subsystems:
+  // Generalized subsystems:
   std::unique_ptr<AppRegistrar> registrar_;
+  std::unique_ptr<ExternalWebAppManager> external_web_app_manager_;
+  std::unique_ptr<FileHandlerManager> file_handler_manager_;
+  std::unique_ptr<AppIconManager> icon_manager_;
   std::unique_ptr<InstallFinalizer> install_finalizer_;
-  std::unique_ptr<InstallManager> install_manager_;
+  std::unique_ptr<ManifestUpdateManager> manifest_update_manager_;
   std::unique_ptr<PendingAppManager> pending_app_manager_;
   std::unique_ptr<SystemWebAppManager> system_web_app_manager_;
-
-  // Legacy extension-based subsystems:
+  std::unique_ptr<WebAppAudioFocusIdMap> audio_focus_id_map_;
+  std::unique_ptr<WebAppInstallManager> install_manager_;
   std::unique_ptr<WebAppPolicyManager> web_app_policy_manager_;
-
-  content::NotificationRegistrar notification_registrar_;
+  std::unique_ptr<WebAppUiManager> ui_manager_;
 
   base::OneShotEvent on_registry_ready_;
 

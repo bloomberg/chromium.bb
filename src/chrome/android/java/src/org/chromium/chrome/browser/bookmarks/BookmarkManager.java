@@ -88,8 +88,8 @@ public class BookmarkManager
 
         void moveUpOne(BookmarkId bookmarkId);
         void moveDownOne(BookmarkId bookmarkId);
-        void moveToTop(BookmarkId bookmarkId);
-        void moveToBottom(BookmarkId bookmarkId);
+
+        void highlightBookmark(BookmarkId bookmarkId);
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
@@ -249,6 +249,10 @@ public class BookmarkManager
                 mAdapter.onBookmarkDelegateInitialized(BookmarkManager.this);
                 mToolbar.onBookmarkDelegateInitialized(BookmarkManager.this);
 
+                if (reorderBookmarksEnabled) {
+                    ((ReorderBookmarkItemsAdapter) mAdapter).addDragListener(mToolbar);
+                }
+
                 if (!TextUtils.isEmpty(mInitialUrl)) {
                     setState(BookmarkUIState.createStateFromUrl(mInitialUrl, mBookmarkModel));
                 }
@@ -293,7 +297,7 @@ public class BookmarkManager
      */
     public void onDestroyed() {
         mIsDestroyed = true;
-
+        RecordUserAction.record("MobileBookmarkManagerClose");
         mSelectableListLayout.onDestroyed();
 
         for (BookmarkUIObserver observer : mUIObservers) {
@@ -450,16 +454,6 @@ public class BookmarkManager
     }
 
     @Override
-    public void moveToBottom(BookmarkId bookmarkId) {
-        mAdapter.moveToBottom(bookmarkId);
-    }
-
-    @Override
-    public void moveToTop(BookmarkId bookmarkId) {
-        mAdapter.moveToTop(bookmarkId);
-    }
-
-    @Override
     public void moveDownOne(BookmarkId bookmarkId) {
         mAdapter.moveDownOne(bookmarkId);
     }
@@ -467,6 +461,11 @@ public class BookmarkManager
     @Override
     public void moveUpOne(BookmarkId bookmarkId) {
         mAdapter.moveUpOne(bookmarkId);
+    }
+
+    @Override
+    public void onBookmarkItemMenuOpened() {
+        mToolbar.hideKeyboard();
     }
 
     // BookmarkDelegate implementations.
@@ -478,6 +477,7 @@ public class BookmarkManager
 
     @Override
     public void openFolder(BookmarkId folder) {
+        RecordUserAction.record("MobileBookmarkManagerOpenFolder");
         if (mToolbar.isSearching()) mToolbar.hideSearchView();
         setState(BookmarkUIState.createFolderState(folder, mBookmarkModel));
         mRecyclerView.scrollToPosition(0);
@@ -583,6 +583,11 @@ public class BookmarkManager
         // the BookmarkItemsAdapter, will be notified of the change and the list of bookmarks will
         // be updated.
         setState(mStateStack.pop());
+    }
+
+    @Override
+    public void highlightBookmark(BookmarkId bookmarkId) {
+        mAdapter.highlightBookmark(bookmarkId);
     }
 
     // Testing methods

@@ -267,7 +267,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         if (navigator.xr) {
           // Set up "magic window" mode.
           if (appSettings.magicWindow) {
-            navigator.xr.requestSession('inline').then(onSessionStarted);
+            navigator.xr.requestSession('inline', {optionalFeatures: ['local']}).then(onSessionStarted);
           }
         } else {
           initFallback();
@@ -320,7 +320,6 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         let webglLayer = new XRWebGLLayer(session, gl, {
-          compositionDisabled: session.mode == 'inline',
           framebufferScaleFactor: appSettings.framebufferScale,
           antialias: appSettings.antialias});
         session.updateRenderState({ baseLayer: webglLayer });

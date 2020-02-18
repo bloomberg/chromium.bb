@@ -86,7 +86,7 @@ struct FeaturesVk : FeatureSetBase
     // Whether texture copies on cube map targets should be done on GPU.  This is a workaround for
     // Intel drivers on windows that have an issue with creating single-layer views on cube map
     // textures.
-    Feature forceCpuPathForCubeMapCopy = {
+    Feature forceCPUPathForCubeMapCopy = {
         "force_cpu_path_for_cube_map_copy", FeatureCategory::VulkanWorkarounds,
         "Some Intel Windows drivers have an issue with creating single-layer "
         "views on cube map textures",
@@ -184,6 +184,30 @@ struct FeaturesVk : FeatureSetBase
         "On platform with Intel or AMD gpu, vulkan swapchain is not returning VK_ERROR_OUT_OF_DATE"
         "when window resizing",
         &members, "http://anglebug.com/3623, http://anglebug.com/3624, http://anglebug.com/3625"};
+
+    // On Pixel1XL and Pixel2, reset a vkCommandBuffer seems to have side effects on binding
+    // descriptor sets to it afterwards, Work-around by keep using transient vkCommandBuffer on
+    // those devices.
+    // http://b/135763283
+    Feature transientCommandBuffer = {
+        "transient_command_buffer", FeatureCategory::VulkanWorkarounds,
+        "On Pixel2, keep using transient vkCommandBuffer to work around driver issue in reseting"
+        "vkCommandBuffer",
+        &members, "http://b/135763283"};
+
+    // Seamful cube map emulation misbehaves on the AMD windows driver, so it's disallowed.
+    Feature disallowSeamfulCubeMapEmulation = {
+        "disallow_seamful_cube_map_emulation", FeatureCategory::VulkanWorkarounds,
+        "Seamful cube map emulation misbehaves on the AMD windows driver, so it's disallowed",
+        &members, "http://anglebug.com/3243"};
+
+    // Qualcomm shader compiler doesn't support sampler arrays as parameters, so
+    // revert to old RewriteStructSamplers behavior, which produces fewer.
+    Feature forceOldRewriteStructSamplers = {
+        "force_old_rewrite_struct_samplers", FeatureCategory::VulkanWorkarounds,
+        "Qualcomm shader compiler doesn't support sampler arrays as parameters, so "
+        "revert to old RewriteStructSamplers behavior, which produces fewer.",
+        &members, "http://anglebug.com/2703"};
 };
 
 inline FeaturesVk::FeaturesVk()  = default;

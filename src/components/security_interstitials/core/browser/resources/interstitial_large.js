@@ -186,8 +186,9 @@ function setupEvents() {
     });
   }
 
+  var details_id = null;
   if (captivePortal || billing || lookalike) {
-    // Captive portal, billing and lookalike pages don't have details button.
+    // Captive portal, billing and lookalike pages don't have details buttons.
     $('details-button').classList.add('hidden');
   } else {
     $('details-button').addEventListener('click', function(event) {

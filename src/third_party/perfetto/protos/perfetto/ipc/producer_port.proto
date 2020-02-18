@@ -17,9 +17,9 @@
 syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
-import "perfetto/common/commit_data_request.proto";
-import "perfetto/config/data_source_config.proto";
-import "perfetto/common/data_source_descriptor.proto";
+import "protos/perfetto/common/commit_data_request.proto";
+import "protos/perfetto/config/data_source_config.proto";
+import "protos/perfetto/common/data_source_descriptor.proto";
 
 package perfetto.protos;
 
@@ -114,6 +114,17 @@ message InitializeConnectionRequest {
 
   // If provided, overrides the service's SMB scraping setting for the producer.
   optional ProducerSMBScrapingMode smb_scraping_mode = 4;
+
+  enum ProducerBuildFlags {
+    BUILD_FLAGS_UNSPECIFIED = 0;
+    BUILD_FLAGS_DCHECKS_ON = 1;
+    BUILD_FLAGS_DCHECKS_OFF = 2;
+  }
+
+  // If provided, reports the build flags of the producer. It's used merely for
+  // error reporting, to print a log message when a producer connects to a
+  // service that has mismatching build flags.
+  optional ProducerBuildFlags build_flags = 5;
 }
 
 message InitializeConnectionResponse {

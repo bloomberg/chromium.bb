@@ -9,17 +9,9 @@
 
 namespace gpu {
 
-// It takes longer to initialize GPU process in Windows. See
-// https://crbug.com/949839 for details.
-#if defined(OS_WIN)
-constexpr int kGpuWatchdogInitFactor = 2;
-#else
-constexpr int kGpuWatchdogInitFactor = 1;
-#endif
-
 class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
     : public GpuWatchdogThread,
-      public base::MessageLoopCurrent::TaskObserver {
+      public base::TaskObserver {
  public:
   static std::unique_ptr<GpuWatchdogThreadImplV2> Create(
       bool start_backgrounded);
@@ -34,6 +26,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   void OnBackgrounded() override;
   void OnForegrounded() override;
   void OnInitComplete() override;
+  void OnGpuProcessTearDown() override;
   void GpuWatchdogHistogram(GpuWatchdogThreadEvent thread_event) override;
   bool IsGpuHangDetectedForTesting() override;
   void WaitForPowerObserverAddedForTesting() override;
@@ -45,7 +38,7 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Implements gl::ProgressReporter.
   void ReportProgress() override;
 
-  // Implements MessageLoopCurrent::TaskObserver.
+  // Implements TaskObserver.
   void WillProcessTask(const base::PendingTask& pending_task) override;
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
@@ -99,6 +92,9 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // The system has entered the power suspension mode.
   bool in_power_suspension_ = false;
 
+  // OnWatchdogTimeout() is called for the first time after power resume.
+  bool is_first_timeout_after_power_resume = false;
+
   // Chrome is running on the background on Android. Gpu is probably very slow
   // or stalled.
   bool is_backgrounded_ = false;
@@ -113,7 +109,8 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV2
   // Set by the watchdog thread and Read by the test thread.
   base::AtomicFlag test_result_timeout_and_gpu_hang_;
 
-  scoped_refptr<base::SingleThreadTaskRunner> watched_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> watched_gpu_task_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> watchdog_thread_task_runner_;
 
   base::WeakPtr<GpuWatchdogThreadImplV2> weak_ptr_;
   base::WeakPtrFactory<GpuWatchdogThreadImplV2> weak_factory_{this};

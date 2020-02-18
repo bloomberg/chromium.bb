@@ -10,6 +10,43 @@ include "components/url_pattern_index/flat/url_pattern_index.fbs";
 
 namespace extensions.declarative_net_request.flat;
 
+table QueryKeyValue {
+  key : string (required);
+  value : string (required);
+}
+
+table UrlTransform {
+   scheme : string;
+   host : string;
+
+   clear_port : bool = false;
+   port : string;
+
+   clear_path : bool = false;
+   path : string;
+
+   clear_query : bool = false;
+
+   /// If valid, doesn't include the '?' separator.
+   query : string;
+
+   /// Query params to be removed. These are already sorted and escaped using
+   /// net::EscapeQueryParamValue.
+   remove_query_params : [string];
+
+   /// Query params to be added/replaced. These are already escaped using
+   /// net::EscapeQueryParamValue.
+   add_or_replace_query_params : [QueryKeyValue];
+
+   clear_fragment : bool = false;
+
+   /// If valid, doesn't include the '#' separator.
+   fragment : string;
+
+   username : string;
+   password : string;
+}
+
 /// Additional extension related metadata for a url_pattern_index UrlRule.
 table UrlRuleMetadata {
   /// ID of the UrlRule for which this metadata is stored.
@@ -17,6 +54,10 @@ table UrlRuleMetadata {
 
   /// Redirect url for this rule. Should represent a valid GURL.
   redirect_url : string;
+
+  /// UrlTransform for this rule. Exactly one of |redirect_url| or |transform|
+  /// should be specified for redirect rules.
+  transform : UrlTransform;
 }
 
 /// This provides a mapping from an action to its index within the |index_list|

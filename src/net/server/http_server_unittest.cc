@@ -42,7 +42,7 @@
 #include "net/socket/tcp_client_socket.h"
 #include "net/socket/tcp_server_socket.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -125,7 +125,7 @@ class TestHttpClient {
   void Write() {
     int result = socket_->Write(
         write_buffer_.get(), write_buffer_->BytesRemaining(),
-        base::Bind(&TestHttpClient::OnWrite, base::Unretained(this)),
+        base::BindOnce(&TestHttpClient::OnWrite, base::Unretained(this)),
         TRAFFIC_ANNOTATION_FOR_TESTS);
     if (result != ERR_IO_PENDING)
       OnWrite(result);
@@ -170,7 +170,7 @@ class TestHttpClient {
 
 }  // namespace
 
-class HttpServerTest : public TestWithScopedTaskEnvironment,
+class HttpServerTest : public TestWithTaskEnvironment,
                        public HttpServer::Delegate {
  public:
   HttpServerTest()

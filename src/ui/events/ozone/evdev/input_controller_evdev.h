@@ -58,6 +58,8 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   void SetMouseSensitivity(int value) override;
   void SetPrimaryButtonRight(bool right) override;
   void SetMouseReverseScroll(bool enabled) override;
+  void SetMouseAcceleration(bool enabled) override;
+  void SetTouchpadAcceleration(bool enabled) override;
   void SetTapToClickPaused(bool state) override;
   void GetTouchDeviceStatus(GetTouchDeviceStatusReply reply) override;
   void GetTouchEventLog(const base::FilePath& out_dir,
@@ -102,7 +104,7 @@ class EVENTS_OZONE_EVDEV_EXPORT InputControllerEvdev : public InputController {
   // LED state.
   bool caps_lock_led_state_ = false;
 
-  base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_;
+  base::WeakPtrFactory<InputControllerEvdev> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InputControllerEvdev);
 };

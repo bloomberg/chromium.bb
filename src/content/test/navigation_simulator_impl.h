@@ -15,13 +15,14 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "content/public/common/referrer.h"
 #include "content/public/test/navigation_simulator.h"
 #include "mojo/public/cpp/bindings/associated_interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_endpoint.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
 
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
@@ -85,7 +86,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   void SetMethod(const std::string& method) override;
   void SetIsFormSubmission(bool is_form_submission) override;
   void SetWasInitiatedByLinkClick(bool was_initiated_by_link_click) override;
-  void SetReferrer(const Referrer& referrer) override;
+  void SetReferrer(blink::mojom::ReferrerPtr referrer) override;
   void SetSocketAddress(const net::IPEndPoint& remote_endpoint) override;
   void SetWasFetchedViaCache(bool was_fetched_via_cache) override;
   void SetIsSignedExchangeInnerResponse(
@@ -99,6 +100,12 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   NavigationThrottle::ThrottleCheckResult GetLastThrottleCheckResult() override;
   NavigationHandleImpl* GetNavigationHandle() override;
   content::GlobalRequestID GetGlobalRequestID() override;
+
+  void SetKeepLoading(bool keep_loading) override;
+  void StopLoading() override;
+  void FailLoading(const GURL& url,
+                   int error_code,
+                   const base::string16& error_description) override;
 
   // Additional utilites usable only inside content/.
 
@@ -268,16 +275,18 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool was_initiated_by_link_click_ = false;
   bool browser_initiated_;
   bool same_document_ = false;
-  Referrer referrer_;
+  blink::mojom::ReferrerPtr referrer_;
   ui::PageTransition transition_;
   ReloadType reload_type_ = ReloadType::NONE;
   int session_history_offset_ = 0;
   bool has_user_gesture_ = true;
   service_manager::mojom::InterfaceProviderRequest interface_provider_request_;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_content_request_;
-  blink::mojom::DocumentInterfaceBrokerRequest
-      document_interface_broker_blink_request_;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_content_receiver_;
+  mojo::PendingReceiver<blink::mojom::DocumentInterfaceBroker>
+      document_interface_broker_blink_receiver_;
+  mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>
+      browser_interface_broker_receiver_;
   std::string contents_mime_type_;
   CSPDisposition should_check_main_world_csp_ = CSPDisposition::CHECK;
   net::HttpResponseInfo::ConnectionInfo http_connection_info_ =
@@ -290,6 +299,7 @@ class NavigationSimulatorImpl : public NavigationSimulator,
   bool auto_advance_ = true;
   bool drop_swap_out_ack_ = false;
   bool block_on_before_unload_ack_ = false;
+  bool keep_loading_ = false;
 
   // Generic params structure used for fully customized browser initiated
   // navigation requests. Only valid if explicitely provided.

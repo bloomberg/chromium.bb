@@ -12,7 +12,7 @@
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -46,7 +46,7 @@ class BlobBytesProviderTest : public testing::Test {
   }
 
   void TearDown() override {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     Platform::UnsetMainThreadTaskRunnerForTesting();
   }
 
@@ -60,7 +60,7 @@ class BlobBytesProviderTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<RawData> test_data1_;
   Vector<uint8_t> test_bytes1_;

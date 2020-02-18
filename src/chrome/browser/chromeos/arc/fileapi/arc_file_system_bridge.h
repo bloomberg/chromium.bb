@@ -17,7 +17,7 @@
 #include "base/observer_list.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_select_files_handler.h"
 #include "chrome/browser/chromeos/arc/fileapi/file_stream_forwarder.h"
-#include "components/arc/common/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "components/arc/session/connection_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "storage/browser/fileapi/watcher_manager.h"
@@ -130,7 +130,7 @@ class ArcFileSystemBridge
 
   std::unique_ptr<ArcSelectFilesHandlersManager> select_files_handlers_manager_;
 
-  base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_;
+  base::WeakPtrFactory<ArcFileSystemBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcFileSystemBridge);
 };

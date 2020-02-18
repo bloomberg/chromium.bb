@@ -24,7 +24,6 @@ import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Log;
-import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -37,9 +36,9 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SingleTabActivity;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.customtabs.CustomTabAppMenuPropertiesDelegate;
-import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.document.DocumentUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
@@ -50,6 +49,7 @@ import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.tab.TabObserverRegistrar;
 import org.chromium.chrome.browser.tab.TabState;
 import org.chromium.chrome.browser.toolbar.top.ToolbarControlContainer;
+import org.chromium.chrome.browser.usage_stats.UsageStatsService;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.content_public.browser.LoadUrlParams;
@@ -60,7 +60,6 @@ import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.ui.base.PageTransition;
 
-import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -85,8 +84,6 @@ public class WebappActivity extends SingleTabActivity {
             | View.SYSTEM_UI_FLAG_LOW_PROFILE
             | View.SYSTEM_UI_FLAG_IMMERSIVE;
 
-    private final WebappDirectoryManager mDirectoryManager;
-
     private WebappInfo mWebappInfo;
 
     private TabObserverRegistrar mTabObserverRegistrar;
@@ -101,6 +98,8 @@ public class WebappActivity extends SingleTabActivity {
     private Bitmap mLargestFavicon;
 
     private Runnable mSetImmersiveRunnable;
+
+    private static Integer sOverrideCoreCountForTesting;
 
     /** Initialization-on-demand holder. This exists for thread-safe lazy initialization. */
     private static class Holder {
@@ -148,7 +147,6 @@ public class WebappActivity extends SingleTabActivity {
      */
     public WebappActivity() {
         mWebappInfo = createWebappInfo(null);
-        mDirectoryManager = new WebappDirectoryManager();
         mTabObserverRegistrar = new TabObserverRegistrar(getLifecycleDispatcher());
         mSplashController =
                 new SplashController(this, getLifecycleDispatcher(), mTabObserverRegistrar);
@@ -163,7 +161,7 @@ public class WebappActivity extends SingleTabActivity {
 
         super.onNewIntent(intent);
 
-        WebappInfo newWebappInfo = popWebappInfo(WebappInfo.idFromIntent(intent));
+        WebappInfo newWebappInfo = popWebappInfo(WebappIntentDataProvider.idFromIntent(intent));
         if (newWebappInfo == null) newWebappInfo = createWebappInfo(intent);
 
         if (newWebappInfo == null) {
@@ -188,8 +186,7 @@ public class WebappActivity extends SingleTabActivity {
             // Web Share Target Post was successful, so don't load anything.
             return;
         }
-        LoadUrlParams params =
-                new LoadUrlParams(webappInfo.uri().toString(), PageTransition.AUTO_TOPLEVEL);
+        LoadUrlParams params = new LoadUrlParams(webappInfo.url(), PageTransition.AUTO_TOPLEVEL);
         params.setShouldClearHistoryList(true);
         tab.loadUrl(params);
     }
@@ -209,6 +206,16 @@ public class WebappActivity extends SingleTabActivity {
         initializeUI(getSavedInstanceState());
     }
 
+    @VisibleForTesting
+    public static void setOverrideCoreCount(int coreCount) {
+        sOverrideCoreCountForTesting = coreCount;
+    }
+
+    private static int getCoreCount() {
+        if (sOverrideCoreCountForTesting != null) return sOverrideCoreCountForTesting;
+        return Runtime.getRuntime().availableProcessors();
+    }
+
     @Override
     protected void doLayoutInflation() {
         // Because we delay the layout inflation, the CompositorSurfaceManager and its
@@ -221,25 +228,33 @@ public class WebappActivity extends SingleTabActivity {
         // transparency hint need not change and no flickering occurs.
         getWindow().setFormat(PixelFormat.TRANSLUCENT);
         // No need to inflate layout synchronously since splash screen is displayed.
-        new Thread() {
-            @Override
-            public void run() {
-                ViewGroup mainView = WarmupManager.inflateViewHierarchy(
-                        WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
-                if (isActivityFinishingOrDestroyed()) return;
-                if (mainView != null) {
-                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-                        if (isActivityFinishingOrDestroyed()) return;
-                        onLayoutInflated(mainView);
-                    });
-                } else {
+        Runnable inflateTask = () -> {
+            ViewGroup mainView = WarmupManager.inflateViewHierarchy(
+                    WebappActivity.this, getControlContainerLayoutId(), getToolbarLayoutId());
+            if (isActivityFinishingOrDestroyed()) return;
+            if (mainView != null) {
+                PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
                     if (isActivityFinishingOrDestroyed()) return;
-                    PostTask.postTask(UiThreadTaskTraits.DEFAULT,
-                            () -> WebappActivity.super.doLayoutInflation());
-                }
+                    onLayoutInflated(mainView);
+                });
+            } else {
+                if (isActivityFinishingOrDestroyed()) return;
+                PostTask.postTask(
+                        UiThreadTaskTraits.DEFAULT, () -> WebappActivity.super.doLayoutInflation());
             }
+        };
+
+        // Conditionally do layout inflation synchronously if device has low core count.
+        // When layout inflation is done asynchronously, it blocks UI thread startup. While
+        // blocked, the UI thread will draw unnecessary frames - causing the lower priority
+        // layout inflation thread to be de-scheduled significantly more often, especially on
+        // devices with low core count. Thus for low core count devices, there is a startup
+        // performance improvement incurred by doing layout inflation synchronously.
+        if (getCoreCount() > 2) {
+            new Thread(inflateTask).start();
+        } else {
+            inflateTask.run();
         }
-                .start();
     }
 
     private void onLayoutInflated(ViewGroup mainView) {
@@ -268,7 +283,7 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     public void performPreInflationStartup() {
         Intent intent = getIntent();
-        String id = WebappInfo.idFromIntent(intent);
+        String id = WebappIntentDataProvider.idFromIntent(intent);
         WebappInfo info = popWebappInfo(id);
         // When WebappActivity is killed by the Android OS, and an entry stays in "Android Recents"
         // (The user does not swipe it away), when WebappActivity is relaunched it is relaunched
@@ -336,6 +351,10 @@ public class WebappActivity extends SingleTabActivity {
         getToolbarManager().setShowTitle(true);
         getToolbarManager().setCloseButtonDrawable(null); // Hides close button.
 
+        if (UsageStatsService.isEnabled() && !mWebappInfo.isSplashProvidedByWebApk()) {
+            UsageStatsService.getInstance().createPageViewObserver(getTabModelSelector(), this);
+        }
+
         getFullscreenManager().setTab(getActivityTab());
         super.finishNativeInitialization();
         mIsInitialized = true;
@@ -344,14 +363,13 @@ public class WebappActivity extends SingleTabActivity {
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        mDirectoryManager.cancelCleanup();
-        saveState(outState);
+        saveTabState(outState);
     }
 
     @Override
     public void onStartWithNative() {
         super.onStartWithNative();
-        mDirectoryManager.cleanUpDirectories(this, getActivityId());
+        WebappDirectoryManager.cleanUpDirectories();
     }
 
     @Override
@@ -363,26 +381,17 @@ public class WebappActivity extends SingleTabActivity {
     /**
      * Saves the tab data out to a file.
      */
-    private void saveState(Bundle outState) {
-        if (getActivityTab() == null || getActivityTab().getUrl() == null
-                || getActivityTab().getUrl().isEmpty()) {
-            return;
-        }
-
-        outState.putInt(BUNDLE_TAB_ID, getActivityTab().getId());
-
-        String tabFileName = TabState.getTabStateFilename(getActivityTab().getId(), false);
-        File tabFile = new File(getActivityDirectory(), tabFileName);
-
-        // TODO(crbug.com/525785): Temporarily allowing disk access until more permanent fix is in.
-        try (StrictModeContext ignored = StrictModeContext.allowDiskWrites()) {
-            TabState.saveState(tabFile, TabState.from(getActivityTab()), false);
+    private void saveTabState(Bundle outState) {
+        Tab tab = getActivityTab();
+        if (tab == null || tab.getUrl() == null || tab.getUrl().isEmpty()) return;
+        if (TabState.saveState(outState, TabState.from(tab))) {
+            outState.putInt(BUNDLE_TAB_ID, tab.getId());
         }
     }
 
     @Override
     protected TabState restoreTabState(Bundle savedInstanceState, int tabId) {
-        return TabState.restoreTabState(getActivityDirectory(), tabId);
+        return TabState.restoreTabState(savedInstanceState);
     }
 
     @Override
@@ -481,7 +490,7 @@ public class WebappActivity extends SingleTabActivity {
         if (storage != null) {
             onDeferredStartupWithStorage(storage);
         } else {
-            onDeferredStartupWithNullStorage();
+            onDeferredStartupWithNullStorage(mDisclosureSnackbarController);
         }
     }
 
@@ -496,27 +505,9 @@ public class WebappActivity extends SingleTabActivity {
         updateStorage(storage);
     }
 
-    protected void onDeferredStartupWithNullStorage() {
-        if (!mWebappInfo.isForWebApk()) return;
-
-        // WebappDataStorage objects are cleared if a user clears Chrome's data. Recreate them
-        // for WebAPKs since we need to store metadata for updates and disclosure notifications.
-        WebappRegistry.getInstance().register(
-                mWebappInfo.id(), new WebappRegistry.FetchWebappDataStorageCallback() {
-                    @Override
-                    public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                        if (isActivityFinishingOrDestroyed()) return;
-
-                        onDeferredStartupWithStorage(storage);
-                        // Set force == true to indicate that we need to show a privacy
-                        // disclosure for the newly installed unbound WebAPKs which
-                        // have no storage yet. We can't simply default to a showing if the
-                        // storage has a default value as we don't want to show this disclosure
-                        // for pre-existing unbound WebAPKs.
-                        mDisclosureSnackbarController.maybeShowDisclosure(
-                                WebappActivity.this, storage, true /* force */);
-                    }
-                });
+    protected void onDeferredStartupWithNullStorage(
+            WebappDisclosureSnackbarController disclosureSnackbarController) {
+        // Overridden in WebApkActivity
     }
 
     @Override
@@ -533,8 +524,7 @@ public class WebappActivity extends SingleTabActivity {
     public AppMenuPropertiesDelegate createAppMenuPropertiesDelegate() {
         return new CustomTabAppMenuPropertiesDelegate(this, getActivityTabProvider(),
                 getMultiWindowModeStateDispatcher(), getTabModelSelector(), getToolbarManager(),
-                getWindow().getDecorView(),
-                CustomTabIntentDataProvider.CustomTabsUiType.MINIMAL_UI_WEBAPP,
+                getWindow().getDecorView(), CustomTabsUiType.MINIMAL_UI_WEBAPP,
                 new ArrayList<String>(), true /* is opened by Chrome */,
                 true /* should show share */, false /* should show star (bookmarking) */,
                 false /* should show download */, false /* is incognito */);
@@ -552,7 +542,7 @@ public class WebappActivity extends SingleTabActivity {
      * @return A string containing the scope of the webapp opened in this activity.
      */
     public String getWebappScope() {
-        return mWebappInfo.scopeUri().toString();
+        return mWebappInfo.scopeUrl();
     }
 
     public static void addWebappInfo(String id, WebappInfo info) {
@@ -734,7 +724,7 @@ public class WebappActivity extends SingleTabActivity {
 
         Bitmap icon = null;
         if (mWebappInfo.icon() != null) {
-            icon = mWebappInfo.icon();
+            icon = mWebappInfo.icon().bitmap();
         } else if (getActivityTab() != null) {
             icon = mLargestFavicon;
         }
@@ -821,18 +811,9 @@ public class WebappActivity extends SingleTabActivity {
         return mWebappInfo.id();
     }
 
-    /**
-     * Get the active directory by this web app.
-     *
-     * @return The directory used for the current web app.
-     */
-    private File getActivityDirectory() {
-        return mDirectoryManager.getWebappDirectory(this, getActivityId());
-    }
-
     @VisibleForTesting
-    View getSplashScreenForTests() {
-        return mSplashController.getSplashScreenForTests();
+    SplashController getSplashControllerForTests() {
+        return mSplashController;
     }
 
     @Override
@@ -851,8 +832,8 @@ public class WebappActivity extends SingleTabActivity {
     }
 
     @Override
-    protected TabCreator createTabCreator(boolean incognito) {
-        return new WebappTabDelegate(incognito, mWebappInfo);
+    protected TabCreator createNormalTabCreator() {
+        return new WebappTabDelegate(false /* incognito */, mWebappInfo);
     }
 
     // We're temporarily disable CS on webapp since there are some issues. (http://crbug.com/471950)
@@ -866,8 +847,8 @@ public class WebappActivity extends SingleTabActivity {
     protected void initSplash() {
         // Splash screen is shown after preInflationStartup() is run and the delegate is set.
         boolean isWindowInitiallyTranslucent = mWebappInfo.isSplashProvidedByWebApk();
-        mSplashController.setConfig(new WebappSplashDelegate(this, getLifecycleDispatcher(),
-                                            mTabObserverRegistrar, mWebappInfo),
+        mSplashController.setConfig(
+                new WebappSplashDelegate(this, mTabObserverRegistrar, mWebappInfo),
                 isWindowInitiallyTranslucent, WebappSplashDelegate.HIDE_ANIMATION_DURATION_MS);
     }
 
@@ -896,6 +877,10 @@ public class WebappActivity extends SingleTabActivity {
         }
         ScreenOrientationProvider.getInstance().lockOrientation(
                 getWindowAndroid(), (byte) mWebappInfo.orientation());
+    }
+
+    protected boolean isSplashShowing() {
+        return mSplashController.isSplashShowing();
     }
 
     /**

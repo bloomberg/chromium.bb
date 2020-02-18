@@ -5,17 +5,21 @@
 
 """Deploy packages onto a target device."""
 
+from __future__ import division
 from __future__ import print_function
 
+import bz2
 import fnmatch
 import functools
 import json
 import os
+import tempfile
 
 from chromite.cli import command
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import operation
+from chromite.lib import osutils
 from chromite.lib import portage_util
 from chromite.lib import remote_access
 try:
@@ -35,6 +39,11 @@ _MAX_UPDATES_WARNING = (
     'might take a long time, fail midway, or leave the target in an '
     'inconsistent state. It is highly recommended that you flash a new image '
     'instead.')
+
+_DLC_ID = 'DLC_ID'
+_DLC_PACKAGE = 'DLC_PACKAGE'
+_ENVIRONMENT_FILENAME = 'environment.bz2'
+_DLC_INSTALL_ROOT = '/var/cache/dlc'
 
 
 class DeployError(Exception):
@@ -69,7 +78,7 @@ class BrilloDeployOperation(operation.ProgressBarOperation):
     output = stdout + stderr
     for event in self._events:
       self._completed += output.count(event)
-    self.ProgressBar(float(self._completed) / self._total)
+    self.ProgressBar(self._completed / self._total)
 
 
 class _InstallPackageScanner(object):
@@ -675,11 +684,13 @@ print(json.dumps(pkg_info))
       process_rev_rdeps: Whether to trace backward dependencies as well.
 
     Returns:
-      A tuple (sorted, listed, num_updates) where |sorted| is a list of package
-      CPVs (string) to install on the target in an order that satisfies their
-      inter-dependencies, |listed| the subset that was requested by the user,
-      and |num_updates| the number of packages being installed over preexisting
-      versions. Note that installation order should be reversed for removal.
+      A tuple (sorted, listed, num_updates, install_attrs) where |sorted| is a
+      list of package CPVs (string) to install on the target in an order that
+      satisfies their inter-dependencies, |listed| the subset that was
+      requested by the user, and |num_updates| the number of packages being
+      installed over preexisting versions. Note that installation order should
+      be reversed for removal, |install_attrs| is a dictionary mapping a package
+      CPV (string) to some of its extracted environment attributes.
     """
     if process_rev_rdeps and not process_rdeps:
       raise ValueError('Must processing forward deps when processing rev deps')
@@ -720,7 +731,16 @@ print(json.dumps(pkg_info))
                  len(self.seen), len(installs), num_updates)
 
     sorted_installs = self._SortInstalls(installs)
-    return sorted_installs, listed_installs, num_updates
+
+    install_attrs = {}
+    for pkg in sorted_installs:
+      pkg_path = os.path.join(root, portage.VDB_PATH, pkg)
+      dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=True)
+      install_attrs[pkg] = {}
+      if dlc_id and dlc_package:
+        install_attrs[pkg][_DLC_ID] = dlc_id
+
+    return sorted_installs, listed_installs, num_updates, install_attrs
 
 
 def _Emerge(device, pkg_path, root, extra_args=None):
@@ -796,29 +816,7 @@ def _Emerge(device, pkg_path, root, extra_args=None):
     logging.notice('%s has been installed.', pkg_name)
 
 
-def _HasSELinux(device):
-  """Check whether the device has SELinux-enabled.
-
-  Args:
-    device: A ChromiumOSDevice object.
-  """
-  try:
-    device.CatFile('/sys/fs/selinux/enforce', max_size=None)
-    return True
-  except remote_access.CatFileError:
-    return False
-
-
-def _IsSELinuxEnforced(device):
-  """Check whether the device has SELinux-enforced.
-
-  Args:
-    device: A ChromiumOSDevice object
-  """
-  return device.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
-
-
-def _RestoreSELinuxContext(device, pkgpath):
+def _RestoreSELinuxContext(device, pkgpath, root):
   """Restore SELinux context for files in a given pacakge.
 
   This reads the tarball from pkgpath, and calls restorecon on device to
@@ -828,8 +826,9 @@ def _RestoreSELinuxContext(device, pkgpath):
   Args:
     device: a ChromiumOSDevice object
     pkgpath: path to tarball
+    root: Package installation root path.
   """
-  enforced = _IsSELinuxEnforced(device)
+  enforced = device.IsSELinuxEnforced()
   if enforced:
     device.RunCommand(['setenforce', '0'])
   pkgroot = os.path.join(device.work_dir, 'packages')
@@ -837,8 +836,9 @@ def _RestoreSELinuxContext(device, pkgpath):
   pkgpath_device = os.path.join(pkgroot, pkg_dirname, os.path.basename(pkgpath))
   # Testing shows restorecon splits on newlines instead of spaces.
   device.RunCommand(
-      ['cd', '/', '&&',
-       'tar', 'tf', pkgpath_device, '|', 'restorecon', '-i', '-f', '-'],
+      ['cd', root, '&&',
+       'tar', 'tf', pkgpath_device, '|',
+       'restorecon', '-i', '-f', '-'],
       remote_sudo=True)
   if enforced:
     device.RunCommand(['setenforce', '1'])
@@ -937,16 +937,113 @@ def _ConfirmDeploy(num_updates):
 
 def _EmergePackages(pkgs, device, strip, sysroot, root, emerge_args):
   """Call _Emerge for each packge in pkgs."""
+  dlc_deployed = False
   for pkg_path in _GetPackagesPaths(pkgs, strip, sysroot):
     _Emerge(device, pkg_path, root, extra_args=emerge_args)
-    if _HasSELinux(device):
-      _RestoreSELinuxContext(device, pkg_path)
+    if device.IsSELinuxAvailable():
+      _RestoreSELinuxContext(device, pkg_path, root)
+    if _DeployDLCImage(device, pkg_path):
+      dlc_deployed = True
+
+  # Restart dlcservice so it picks up the newly installed DLC modules (in case
+  # we installed new DLC images).
+  if dlc_deployed:
+    device.RunCommand(['restart', 'dlcservice'])
 
 
-def _UnmergePackages(pkgs, device, root):
+def _UnmergePackages(pkgs, device, root, pkgs_attrs):
   """Call _Unmege for each package in pkgs."""
+  dlc_uninstalled = False
   for pkg in pkgs:
     _Unmerge(device, pkg, root)
+    if _UninstallDLCImage(device, pkgs_attrs[pkg]):
+      dlc_uninstalled = True
+
+  # Restart dlcservice so it picks up the uninstalled DLC modules (in case we
+  # uninstalled DLC images).
+  if dlc_uninstalled:
+    device.RunCommand(['restart', 'dlcservice'])
+
+
+def _UninstallDLCImage(device, pkg_attrs):
+  """Uninstall a DLC image."""
+  if _DLC_ID in pkg_attrs:
+    dlc_id = pkg_attrs[_DLC_ID]
+    logging.notice('Uninstalling DLC image for %s', dlc_id)
+
+    device.RunCommand(['sudo', '-u', 'chronos', 'dlcservice_util',
+                       '--uninstall', '--dlc_ids=%s' % dlc_id])
+    return True
+  else:
+    logging.debug('DLC_ID not found in package')
+    return False
+
+
+def _DeployDLCImage(device, pkg_path):
+  """Deploy (install and mount) a DLC image."""
+  dlc_id, dlc_package = _GetDLCInfo(device, pkg_path, from_dut=False)
+  if dlc_id and dlc_package:
+    logging.notice('Deploy a DLC image for %s', dlc_id)
+
+    dlc_path_src = os.path.join('/build/rootfs/dlc', dlc_id, dlc_package,
+                                'dlc.img')
+    dlc_path = os.path.join(_DLC_INSTALL_ROOT, dlc_id, dlc_package)
+    dlc_path_a = os.path.join(dlc_path, 'dlc_a')
+    dlc_path_b = os.path.join(dlc_path, 'dlc_b')
+    # Create folders for DLC images.
+    device.RunCommand(['mkdir', '-p', dlc_path_a, dlc_path_b])
+    # Copy images to the destination folders.
+    device.RunCommand(['cp', dlc_path_src,
+                       os.path.join(dlc_path_a, 'dlc.img')])
+    device.RunCommand(['cp', dlc_path_src,
+                       os.path.join(dlc_path_b, 'dlc.img')])
+
+    # Set the proper perms and ownership so dlcservice can access the image.
+    device.RunCommand(['chmod', '-R', '0755', _DLC_INSTALL_ROOT])
+    device.RunCommand(['chown', '-R', 'dlcservice:dlcservice',
+                       _DLC_INSTALL_ROOT])
+    return True
+  else:
+    logging.debug('DLC_ID not found in package')
+    return False
+
+
+def _GetDLCInfo(device, pkg_path, from_dut):
+  """Returns information of a DLC given its package path.
+
+  Args:
+    device: commandline.Device object; None to use the default device.
+    pkg_path: path to the package.
+    from_dut: True if extracting DLC info from DUT, False if extracting DLC
+              info from host.
+
+  Returns:
+    A tuple (dlc_id, dlc_package).
+  """
+  environment_content = ''
+  if from_dut:
+    # On DUT, |pkg_path| is the directory which contains environment file.
+    environment_path = os.path.join(pkg_path, _ENVIRONMENT_FILENAME)
+    result = device.RunCommand(['test', '-f', environment_path],
+                               error_code_ok=True)
+    if result.returncode == 1:
+      # The package is not installed on DUT yet. Skip extracting info.
+      return None, None
+    result = device.RunCommand(['bzip2', '-d', '-c', environment_path])
+    environment_content = result.output
+  else:
+    # On host, pkg_path is tbz2 file which contains environment file.
+    # Extract the metadata of the package file.
+    data = portage.xpak.tbz2(pkg_path).get_data()
+    # Extract the environment metadata.
+    environment_content = bz2.decompress(data[_ENVIRONMENT_FILENAME])
+
+  with tempfile.NamedTemporaryFile() as f:
+    # Dumps content into a file so we can use osutils.SourceEnvironment.
+    path = os.path.realpath(f.name)
+    osutils.WriteFile(path, environment_content)
+    content = osutils.SourceEnvironment(path, (_DLC_ID, _DLC_PACKAGE))
+    return content.get(_DLC_ID), content.get(_DLC_PACKAGE)
 
 
 def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
@@ -1018,7 +1115,7 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
 
       # Obtain list of packages to upgrade/remove.
       pkg_scanner = _InstallPackageScanner(sysroot)
-      pkgs, listed, num_updates = pkg_scanner.Run(
+      pkgs, listed, num_updates, pkgs_attrs = pkg_scanner.Run(
           device, root, packages, update, deep, deep_rev)
       if emerge:
         action_str = 'emerge'
@@ -1042,7 +1139,8 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
         func = functools.partial(_EmergePackages, pkgs, device, strip,
                                  sysroot, root, emerge_args)
       else:
-        func = functools.partial(_UnmergePackages, pkgs, device, root)
+        func = functools.partial(_UnmergePackages, pkgs, device, root,
+                                 pkgs_attrs)
 
       # Call the function with the progress bar or with normal output.
       if command.UseProgressBar():
@@ -1051,7 +1149,7 @@ def Deploy(device, packages, board=None, emerge=True, update=False, deep=False,
       else:
         func()
 
-      if _HasSELinux(device):
+      if device.IsSELinuxAvailable():
         if sum(x.count('selinux-policy') for x in pkgs):
           logging.warning(
               'Deploying SELinux policy will not take effect until reboot. '

@@ -32,8 +32,21 @@ class BrowserTestBase : public testing::Test {
   BrowserTestBase();
   ~BrowserTestBase() override;
 
-  // Configures everything for an in process browser test, then invokes
-  // BrowserMain. BrowserMain ends up invoking RunTestOnMainThreadLoop.
+  // Configures everything for an in process browser test (i.e. feature list,
+  // thread pool, etc.) by invoking ContentMain (or manually on OS_ANDROID). As
+  // such all single-threaded initialization (such as
+  // base::test::ScopedFeatureList) must be done before this step, i.e.:
+  //   class MyFixture : public content::BrowserTestBase {
+  //    public:
+  //     void SetUp() override {
+  //       scoped_feature_list_.InitWithFeatures(features::kMyFeature);
+  //       content::BrowserTestBase::SetUp();
+  //     }
+  //
+  //    private:
+  //     base::test::ScopedFeatureList scoped_feature_list_;
+  //   };
+  // ContentMain then ends up invoking RunTestOnMainThreadLoop.
   void SetUp() override;
 
   // Restores state configured in SetUp.
@@ -97,6 +110,13 @@ class BrowserTestBase : public testing::Test {
   // harness a chance for post-test cleanup.
   // This is meant to be inherited only by the test harness.
   virtual void PostRunTestOnMainThread() = 0;
+
+  // Returns true if this test should be skipped. Tests starting with 'MANUAL_'
+  // are skipped unless the command line flag "--run-manual" is supplied.
+  // In case overriding SetUp() breaks, add:
+  // if (ShouldSkipManualTest())
+  //    GTEST_SKIP();
+  bool ShouldSkipManualTests();
 
   // Sets expected browser exit code, in case it's different than 0 (success).
   void set_expected_exit_code(int code) { expected_exit_code_ = code; }

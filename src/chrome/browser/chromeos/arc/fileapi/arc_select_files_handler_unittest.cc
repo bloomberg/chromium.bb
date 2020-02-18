@@ -14,8 +14,8 @@
 #include "chrome/browser/ui/chrome_select_file_policy.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "components/arc/common/file_system.mojom.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "components/arc/mojom/file_system.mojom.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
@@ -160,7 +160,7 @@ class ArcSelectFilesHandlerTest : public testing::Test {
                                                    callback.Get());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   std::unique_ptr<ArcSelectFilesHandler> arc_select_files_handler_;
   MockSelectFileDialogHolder* mock_dialog_holder_;

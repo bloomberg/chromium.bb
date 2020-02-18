@@ -72,7 +72,10 @@ class BrowserTabStripController : public TabStripController,
   void StackedLayoutMaybeChanged() override;
   void OnStartedDraggingTabs() override;
   void OnStoppedDraggingTabs() override;
-  const TabGroupData* GetDataForGroup(TabGroupId group_id) const override;
+  const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group_id) const override;
+  void SetVisualDataForGroup(TabGroupId group,
+                             TabGroupVisualData visual_data) override;
   std::vector<int> ListTabsInGroup(TabGroupId group_id) const override;
   bool IsFrameCondensed() const override;
   bool HasVisibleBackgroundTabShapes() const override;
@@ -83,9 +86,8 @@ class BrowserTabStripController : public TabStripController,
       BrowserNonClientFrameView::ActiveState active_state =
           BrowserNonClientFrameView::kUseCurrent) const override;
   SkColor GetToolbarTopSeparatorColor() const override;
-  int GetTabBackgroundResourceId(
-      BrowserNonClientFrameView::ActiveState active_state,
-      bool* has_custom_image) const override;
+  base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   Profile* GetProfile() const override;
 
@@ -94,6 +96,10 @@ class BrowserTabStripController : public TabStripController,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
+  void OnTabGroupVisualDataChanged(
+      TabStripModel* tab_strip_model,
+      TabGroupId group,
+      const TabGroupVisualData* visual_data) override;
   void TabChangedAt(content::WebContents* contents,
                     int model_index,
                     TabChangeType change_type) override;

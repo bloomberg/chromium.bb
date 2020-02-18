@@ -28,6 +28,16 @@ namespace webrtc {
 static size_t kMaxQueuedReceivedDataBytes = 16 * 1024 * 1024;
 static size_t kMaxQueuedSendDataBytes = 16 * 1024 * 1024;
 
+namespace {
+
+static std::atomic<int> g_unique_id{0};
+
+int GenerateUniqueId() {
+  return ++g_unique_id;
+}
+
+}  // namespace
+
 InternalDataChannelInit::InternalDataChannelInit(const DataChannelInit& base)
     : DataChannelInit(base), open_handshake_role(kOpener) {
   // If the channel is externally negotiated, do not send the OPEN message.
@@ -138,13 +148,16 @@ rtc::scoped_refptr<DataChannel> DataChannel::Create(
 }
 
 bool DataChannel::IsSctpLike(cricket::DataChannelType type) {
-  return type == cricket::DCT_SCTP || type == cricket::DCT_MEDIA_TRANSPORT;
+  return type == cricket::DCT_SCTP || type == cricket::DCT_MEDIA_TRANSPORT ||
+         type == cricket::DCT_DATA_CHANNEL_TRANSPORT ||
+         type == cricket::DCT_DATA_CHANNEL_TRANSPORT_SCTP;
 }
 
 DataChannel::DataChannel(DataChannelProviderInterface* provider,
                          cricket::DataChannelType dct,
                          const std::string& label)
-    : label_(label),
+    : internal_id_(GenerateUniqueId()),
+      label_(label),
       observer_(nullptr),
       state_(kConnecting),
       messages_sent_(0),
@@ -703,6 +716,11 @@ bool DataChannel::SendControlMessage(const rtc::CopyOnWriteBuffer& buffer) {
     CloseAbruptly();
   }
   return retval;
+}
+
+// static
+void DataChannel::ResetInternalIdAllocatorForTesting(int new_value) {
+  g_unique_id = new_value;
 }
 
 }  // namespace webrtc

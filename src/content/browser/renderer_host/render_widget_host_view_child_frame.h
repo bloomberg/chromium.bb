@@ -27,7 +27,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/touch_selection_controller_client_manager.h"
 #include "content/public/common/input_event_ack_state.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -129,13 +129,12 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
   // Since the URL of content rendered by this class is not displayed in
   // the URL bar, this method does not need an implementation.
-  void ClearCompositorFrame() override {}
   void ResetFallbackToFirstNavigationSurface() override {}
 
   void TransformPointToRootSurface(gfx::PointF* point) override;
   gfx::Rect GetBoundsInRootWindow() override;
   void DidStopFlinging() override;
-  bool LockMouse() override;
+  bool LockMouse(bool request_unadjusted_movement) override;
   void UnlockMouse() override;
   const viz::FrameSinkId& GetFrameSinkId() const override;
   const viz::LocalSurfaceIdAllocation& GetLocalSurfaceIdAllocation()
@@ -241,8 +240,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   // parent was already set then it also unregisters hierarchy.
   void SetParentFrameSinkId(const viz::FrameSinkId& parent_frame_sink_id);
 
-  void SendSurfaceInfoToEmbedder();
-
   // Clears current compositor surface, if one is in use.
   void ClearCompositorSurfaceIfNecessary();
 
@@ -305,7 +302,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   viz::FrameSinkId parent_frame_sink_id_;
 
   const bool enable_viz_;
-  const bool enable_surface_synchronization_;
   viz::mojom::CompositorFrameSinkClient* renderer_compositor_frame_sink_ =
       nullptr;
 

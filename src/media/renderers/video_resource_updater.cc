@@ -70,7 +70,13 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_UYVY:
     case PIXEL_FORMAT_ABGR:
       DCHECK_EQ(num_textures, 1);
-      buffer_formats[0] = gfx::BufferFormat::RGBA_8888;
+      // This maps VideoPixelFormat back to GMB BufferFormat
+      // NOTE: ABGR == RGBA and ARGB == BGRA, they differ only byte order
+      // See: VideoFormat function in gpu_memory_buffer_video_frame_pool
+      // https://cs.chromium.org/chromium/src/media/video/gpu_memory_buffer_video_frame_pool.cc?type=cs&g=0&l=281
+      buffer_formats[0] = (format == PIXEL_FORMAT_ABGR)
+                              ? gfx::BufferFormat::RGBA_8888
+                              : gfx::BufferFormat::BGRA_8888;
       switch (target) {
         case GL_TEXTURE_EXTERNAL_OES:
           if (use_stream_video_draw_quad)
@@ -87,26 +93,28 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
       }
       break;
     case PIXEL_FORMAT_I420:
-      DCHECK(num_textures == 3);
+      DCHECK_EQ(num_textures, 3);
       buffer_formats[0] = gfx::BufferFormat::R_8;
       buffer_formats[1] = gfx::BufferFormat::R_8;
       buffer_formats[2] = gfx::BufferFormat::R_8;
       return VideoFrameResourceType::YUV;
-    case PIXEL_FORMAT_NV12:
-      DCHECK(target == GL_TEXTURE_EXTERNAL_OES || target == GL_TEXTURE_2D ||
-             target == GL_TEXTURE_RECTANGLE_ARB)
-          << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
-      DCHECK(num_textures <= 2);
 
-      // Single plane textures can be sampled as RGB.
-      if (num_textures == 2) {
-        buffer_formats[0] = gfx::BufferFormat::R_8;
-        buffer_formats[1] = gfx::BufferFormat::RG_88;
-        return VideoFrameResourceType::YUV;
+    case PIXEL_FORMAT_NV12:
+      // |target| is set to 0 for Vulkan textures.
+      DCHECK(target == 0 || target == GL_TEXTURE_EXTERNAL_OES ||
+             target == GL_TEXTURE_2D || target == GL_TEXTURE_RECTANGLE_ARB)
+          << "Unsupported target " << gl::GLEnums::GetStringEnum(target);
+
+      if (num_textures == 1) {
+        // Single-texture multi-planar frames can be sampled as RGB.
+        buffer_formats[0] = gfx::BufferFormat::YUV_420_BIPLANAR;
+        return VideoFrameResourceType::RGB;
       }
 
-      buffer_formats[0] = gfx::BufferFormat::YUV_420_BIPLANAR;
-      return VideoFrameResourceType::RGB;
+      buffer_formats[0] = gfx::BufferFormat::R_8;
+      buffer_formats[1] = gfx::BufferFormat::RG_88;
+      return VideoFrameResourceType::YUV;
+
     case PIXEL_FORMAT_YV12:
     case PIXEL_FORMAT_I422:
     case PIXEL_FORMAT_I444:
@@ -115,7 +123,6 @@ VideoFrameResourceType ExternalResourceTypeForHardwarePlanes(
     case PIXEL_FORMAT_YUY2:
     case PIXEL_FORMAT_RGB24:
     case PIXEL_FORMAT_MJPEG:
-    case PIXEL_FORMAT_MT21:
     case PIXEL_FORMAT_YUV420P9:
     case PIXEL_FORMAT_YUV422P9:
     case PIXEL_FORMAT_YUV444P9:

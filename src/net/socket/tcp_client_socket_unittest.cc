@@ -13,7 +13,7 @@
 #include "base/power_monitor/power_monitor.h"
 #include "base/power_monitor/power_monitor_source.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "net/base/ip_address.h"
 #include "net/base/ip_endpoint.h"
@@ -68,8 +68,7 @@ class TestPowerMonitorSource : public base::PowerMonitorSource {
 class TCPClientSocketTest : public testing::Test {
  public:
   TCPClientSocketTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     std::unique_ptr<TestPowerMonitorSource> power_monitor_source =
         std::make_unique<TestPowerMonitorSource>();
     power_monitor_source_ = power_monitor_source.get();
@@ -121,7 +120,7 @@ class TCPClientSocketTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   TestPowerMonitorSource* power_monitor_source_;
 };

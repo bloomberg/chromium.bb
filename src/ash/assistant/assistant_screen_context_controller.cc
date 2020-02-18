@@ -51,9 +51,10 @@ void EncodeScreenshotAndRunCallback(
     mojom::AssistantScreenContextController::RequestScreenshotCallback callback,
     std::unique_ptr<ui::LayerTreeOwner> layer_owner,
     gfx::Image image) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      base::TaskTraits{base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::TaskTraits{base::ThreadPool(), base::MayBlock(),
+                       base::TaskPriority::USER_BLOCKING},
       base::BindOnce(&DownsampleAndEncodeImage, std::move(image)),
       std::move(callback));
 }
@@ -159,9 +160,7 @@ std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
 
 AssistantScreenContextController::AssistantScreenContextController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller),
-      binding_(this),
-      screen_context_request_factory_(this) {
+    : assistant_controller_(assistant_controller), binding_(this) {
   assistant_controller_->AddObserver(this);
 }
 

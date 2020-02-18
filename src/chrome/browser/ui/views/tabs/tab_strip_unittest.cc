@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/test/task_environment.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/new_tab_button.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
+#include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
@@ -139,13 +141,13 @@ class TabStripTest : public ChromeViewsTestBase,
     auto* parent = new views::View;
     parent->AddChildView(tab_strip_);
 
-    widget_.reset(new views::Widget);
+    widget_ = std::make_unique<views::Widget>();
     views::Widget::InitParams init_params =
         CreateParams(views::Widget::InitParams::TYPE_POPUP);
     init_params.ownership =
         views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     init_params.bounds = gfx::Rect(0, 0, 200, 200);
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->SetContentsView(parent);
   }
 
@@ -831,6 +833,7 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
               TabStyleViews::GetMinimumActiveWidth());
     tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
                          CLOSE_TAB_FROM_MOUSE);
+    CompleteAnimationAndLayout();
   }
 }
 
@@ -973,6 +976,29 @@ TEST_P(TabStripTest, EventsOnClosingTab) {
   EXPECT_EQ(first_tab, tab_strip_->GetEventHandlerForPoint(tab_center));
 }
 
+TEST_P(TabStripTest, AnimationOnTabAdd) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+  // Show widget to enable animations.
+  widget_->Show();
+
+  // First tab does not animate.
+  controller_->AddTab(0, true);
+  controller_->AddTab(1, false);
+
+  const int initial_width = tab_strip_->tab_at(1)->width();
+  EXPECT_LT(initial_width, tab_strip_->tab_at(0)->width());
+
+  task_environment_.FastForwardBy(TabAnimation::kAnimationDuration / 2);
+
+  EXPECT_GT(tab_strip_->tab_at(1)->width(), initial_width);
+  EXPECT_LT(tab_strip_->tab_at(1)->width(), tab_strip_->tab_at(0)->width());
+
+  // Fast-forward by more than enough to ensure the animation finishes.
+  task_environment_.FastForwardBy(TabAnimation::kAnimationDuration);
+
+  EXPECT_EQ(tab_strip_->tab_at(0)->width(), tab_strip_->tab_at(1)->width());
+}
+
 TEST_P(TabStripTest, GroupHeaderBasics) {
   tab_strip_->SetBounds(0, 0, 1000, 100);
   bounds_animator()->SetAnimationDuration(0);
@@ -989,7 +1015,8 @@ TEST_P(TabStripTest, GroupHeaderBasics) {
   EXPECT_EQ(1u, headers.size());
   TabGroupHeader* header = headers[0];
   EXPECT_EQ(first_slot_x, header->x());
-  EXPECT_EQ(tab->width(), header->width());
+  EXPECT_GT(header->width(), 0);
+  EXPECT_EQ(header->bounds().right() - TabStyle::GetTabOverlap(), tab->x());
   EXPECT_EQ(tab->height(), header->height());
 }
 
@@ -1017,15 +1044,13 @@ TEST_P(TabStripTest, GroupHeaderMovesRightWithTab) {
   controller_->MoveTabIntoGroup(1, group);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
-  const int initial_header_x = header->x();
-  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
-
   controller_->MoveTab(1, 2);
   CompleteAnimationAndLayout();
 
-  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
-  EXPECT_EQ(initial_tab_1_x, header->x());
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  // Header is now left of tab 2.
+  EXPECT_LT(tab_strip_->tab_at(1)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(2)->x());
 }
 
 TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
@@ -1036,15 +1061,13 @@ TEST_P(TabStripTest, GroupHeaderMovesLeftWithTab) {
   controller_->MoveTabIntoGroup(2, group);
   CompleteAnimationAndLayout();
 
-  TabGroupHeader* header = ListGroupHeaders()[0];
-  const int initial_header_x = header->x();
-  const int initial_tab_1_x = tab_strip_->tab_at(1)->x();
-
   controller_->MoveTab(2, 1);
   CompleteAnimationAndLayout();
 
-  EXPECT_EQ(initial_header_x, tab_strip_->tab_at(1)->x());
-  EXPECT_EQ(initial_tab_1_x, header->x());
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  // Header is now left of tab 1.
+  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
 }
 
 TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
@@ -1070,6 +1093,50 @@ TEST_P(TabStripTest, GroupHeaderDoesntMoveReorderingTabsInGroup) {
   EXPECT_EQ(initial_header_x, header->x());
   EXPECT_EQ(initial_tab_1_x, tab2->x());
   EXPECT_EQ(initial_tab_2_x, tab1->x());
+}
+
+TEST_P(TabStripTest, GroupHeaderMovesOnRegrouping) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 3; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  TabGroupId group0 = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group0);
+  TabGroupId group1 = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(1, group1);
+  controller_->MoveTabIntoGroup(2, group1);
+  CompleteAnimationAndLayout();
+
+  std::vector<TabGroupHeader*> headers = ListGroupHeaders();
+  auto header1_it = std::find_if(
+      headers.begin(), headers.end(),
+      [&group1](TabGroupHeader* header) { return header->group() == group1; });
+  ASSERT_TRUE(header1_it != headers.end());
+  TabGroupHeader* header1 = *header1_it;
+
+  // Change groups in a way so that the header should swap with the tab, without
+  // an explicit MoveTab call.
+  controller_->MoveTabIntoGroup(1, group0);
+
+  // Header is now right of tab 1.
+  EXPECT_LT(tab_strip_->tab_at(1)->x(), header1->x());
+  EXPECT_LT(header1->x(), tab_strip_->tab_at(2)->x());
+}
+
+TEST_P(TabStripTest, UngroupedTabMovesLeftOfHeader) {
+  tab_strip_->SetBounds(0, 0, 2000, 100);
+  for (int i = 0; i < 2; i++)
+    tab_strip_->AddTabAt(i, TabRendererData(), false);
+  TabGroupId group = TabGroupId::GenerateNew();
+  controller_->MoveTabIntoGroup(0, group);
+  CompleteAnimationAndLayout();
+
+  controller_->MoveTab(1, 0);
+  CompleteAnimationAndLayout();
+
+  // Header is right of tab 0.
+  TabGroupHeader* header = ListGroupHeaders()[0];
+  EXPECT_LT(tab_strip_->tab_at(0)->x(), header->x());
+  EXPECT_LT(header->x(), tab_strip_->tab_at(1)->x());
 }
 
 // This can happen when a tab in the middle of a group starts to close.
@@ -1103,6 +1170,25 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   EXPECT_EQ(1u, ListGroupHeaders().size());
   controller_->MoveTabIntoGroup(1, base::nullopt);
   EXPECT_EQ(0u, ListGroupHeaders().size());
+}
+
+TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {
+  tab_strip_->SetBounds(0, 0, 1000, 100);
+
+  tab_strip_->AddTabAt(0, TabRendererData(), false);
+  Tab* tab = tab_strip_->tab_at(0);
+  const int initial_height = tab->height();
+
+  ui::test::MaterialDesignControllerTestAPI other_layout(!GetParam());
+
+  CompleteAnimationAndLayout();
+  if (GetParam()) {
+    // Touch -> normal.
+    EXPECT_LT(tab->height(), initial_height);
+  } else {
+    // Normal -> touch.
+    EXPECT_GT(tab->height(), initial_height);
+  }
 }
 
 INSTANTIATE_TEST_SUITE_P(, TabStripTest, ::testing::Values(false, true));

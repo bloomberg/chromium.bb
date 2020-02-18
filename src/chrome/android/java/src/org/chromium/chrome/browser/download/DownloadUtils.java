@@ -30,6 +30,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
@@ -148,22 +149,26 @@ public class DownloadUtils {
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
      * @param activity The current activity is available.
      * @param tab The current tab if it exists.
+     * @param source The source where the user action is coming from.
      * @return Whether the UI was shown.
      */
-    public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab) {
-        return showDownloadManager(activity, tab, false);
+    public static boolean showDownloadManager(
+            @Nullable Activity activity, @Nullable Tab tab, @DownloadOpenSource int source) {
+        return showDownloadManager(activity, tab, source, false);
     }
 
     /**
      * Displays the download manager UI. Note the UI is different on tablets and on phones.
      * @param activity The current activity is available.
      * @param tab The current tab if it exists.
+     * @param source The source where the user action is coming from.
      * @param showPrefetchedContent Whether the manager should start with prefetched content section
      * expanded.
      * @return Whether the UI was shown.
      */
-    public static boolean showDownloadManager(
-            @Nullable Activity activity, @Nullable Tab tab, boolean showPrefetchedContent) {
+    @CalledByNative
+    public static boolean showDownloadManager(@Nullable Activity activity, @Nullable Tab tab,
+            @DownloadOpenSource int source, boolean showPrefetchedContent) {
         if (FeatureUtilities.isNoTouchModeEnabled()) return false;
         // Figure out what tab was last being viewed by the user.
         if (activity == null) activity = ApplicationStatus.getLastTrackedFocusedActivity();
@@ -223,7 +228,7 @@ public class DownloadUtils {
             Tracker tracker = TrackerFactory.getTrackerForProfile(profile);
             tracker.notifyEvent(EventConstants.DOWNLOAD_HOME_OPENED);
         }
-
+        DownloadMetrics.recordDownloadPageOpen(source);
         return true;
     }
 
@@ -674,8 +679,8 @@ public class DownloadUtils {
      * Falls back to open download home.
      * @param contentId The {@link ContentId} of the associated offline item.
      */
-    public static void openItem(ContentId contentId, boolean isOffTheRecord,
-            @DownloadMetrics.DownloadOpenSource int source) {
+    public static void openItem(
+            ContentId contentId, boolean isOffTheRecord, @DownloadOpenSource int source) {
         if (LegacyHelpers.isLegacyOfflinePage(contentId)) {
             OfflineContentAggregatorFactory.get().openItem(LaunchLocation.PROGRESS_BAR, contentId);
         } else {
@@ -697,7 +702,7 @@ public class DownloadUtils {
      */
     public static boolean openFile(String filePath, String mimeType, String downloadGuid,
             boolean isOffTheRecord, String originalUrl, String referrer,
-            @DownloadMetrics.DownloadOpenSource int source) {
+            @DownloadOpenSource int source) {
         DownloadMetrics.recordDownloadOpen(source, mimeType);
         Context context = ContextUtils.getApplicationContext();
         DownloadManagerService service = DownloadManagerService.getDownloadManagerService();
@@ -736,7 +741,7 @@ public class DownloadUtils {
             return true;
         } catch (Exception e) {
             // Can't launch the Intent.
-            if (source != DownloadMetrics.DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
+            if (source != DownloadOpenSource.DOWNLOAD_PROGRESS_INFO_BAR) {
                 Toast.makeText(context, context.getString(R.string.download_cant_open_file),
                              Toast.LENGTH_SHORT)
                         .show();
@@ -748,11 +753,11 @@ public class DownloadUtils {
     @CalledByNative
     private static void openDownload(String filePath, String mimeType, String downloadGuid,
             boolean isOffTheRecord, String originalUrl, String referer,
-            @DownloadMetrics.DownloadOpenSource int source) {
+            @DownloadOpenSource int source) {
         boolean canOpen = DownloadUtils.openFile(
                 filePath, mimeType, downloadGuid, isOffTheRecord, originalUrl, referer, source);
         if (!canOpen) {
-            DownloadUtils.showDownloadManager(null, null);
+            DownloadUtils.showDownloadManager(null, null, source);
         }
     }
 
@@ -999,7 +1004,7 @@ public class DownloadUtils {
     public static String getFailStatusString(@FailState int failState) {
         if (BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                         .isFullBrowserStarted()) {
-            return nativeGetFailStateMessage(failState);
+            return DownloadUtilsJni.get().getFailStateMessage(failState);
         }
         Context context = ContextUtils.getApplicationContext();
         return context.getString(R.string.download_notification_failed);
@@ -1041,7 +1046,7 @@ public class DownloadUtils {
      * @return The resume mode for the current fail state.
      */
     public static @ResumeMode int getResumeMode(String url, @FailState int failState) {
-        return nativeGetResumeMode(url, failState);
+        return DownloadUtilsJni.get().getResumeMode(url, failState);
     }
 
     /**
@@ -1294,6 +1299,9 @@ public class DownloadUtils {
         return originalUri;
     }
 
-    private static native String nativeGetFailStateMessage(@FailState int failState);
-    private static native int nativeGetResumeMode(String url, @FailState int failState);
+    @NativeMethods
+    interface Natives {
+        String getFailStateMessage(@FailState int failState);
+        int getResumeMode(String url, @FailState int failState);
+    }
 }

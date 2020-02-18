@@ -27,7 +27,7 @@ class DrawIndirectTest : public DawnTest {
         renderPass = utils::CreateBasicRenderPass(device, kRTSize, kRTSize);
 
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout(location = 0) in vec4 pos;
                 void main() {
@@ -35,7 +35,7 @@ class DrawIndirectTest : public DawnTest {
                 })");
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -43,7 +43,7 @@ class DrawIndirectTest : public DawnTest {
                 })");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.cVertexStage.module = vsModule;
+        descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
         descriptor.cVertexInput.bufferCount = 1;
@@ -55,7 +55,7 @@ class DrawIndirectTest : public DawnTest {
         pipeline = device.CreateRenderPipeline(&descriptor);
 
         vertexBuffer = utils::CreateBufferFromData<float>(
-            device, dawn::BufferUsageBit::Vertex,
+            device, dawn::BufferUsage::Vertex,
             {// The bottom left triangle
              -1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, -1.0f, 1.0f, 0.0f, 1.0f,
 
@@ -71,8 +71,8 @@ class DrawIndirectTest : public DawnTest {
               uint64_t indirectOffset,
               RGBA8 bottomLeftExpected,
               RGBA8 topRightExpected) {
-        dawn::Buffer indirectBuffer = utils::CreateBufferFromData<uint32_t>(
-            device, dawn::BufferUsageBit::Indirect, bufferList);
+        dawn::Buffer indirectBuffer =
+            utils::CreateBufferFromData<uint32_t>(device, dawn::BufferUsage::Indirect, bufferList);
 
         uint64_t zeroOffset = 0;
         dawn::CommandEncoder encoder = device.CreateCommandEncoder();

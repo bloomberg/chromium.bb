@@ -253,7 +253,7 @@ class CalculateRootfsHash(object):
       return
     vroot_dev = dm_config.devices['vroot']
     # Get the verity args from the existing DmConfig.
-    rootfs_blocks = int(vroot_dev.GetVerityArg('hashstart').value) / 8
+    rootfs_blocks = int(vroot_dev.GetVerityArg('hashstart').value) // 8
     alg = vroot_dev.GetVerityArg('alg').value
     root_dev = vroot_dev.GetVerityArg('payload').value
     hash_dev = vroot_dev.GetVerityArg('hashtree').value
@@ -265,7 +265,7 @@ class CalculateRootfsHash(object):
            'payload_blocks=%d' % rootfs_blocks,
            'hashtree=%s' % self._file.name]
     if salt:
-      cmd.append("salt=%s" % salt.value)
+      cmd.append('salt=%s' % salt.value)
     verity = cros_build_lib.SudoRunCommand(
         cmd, print_cmd=False, capture_output=True).output
     # verity is a templated DmLine string.
@@ -409,11 +409,13 @@ def UpdateRecoveryKernelHash(image, keyset):
 
   # Update the KERN-B hash in the KERN-A command line.
   kernA_cmd = _GetKernelCmdLine(loop_kernA)
-  kernB_hash = cros_build_lib.SudoRunCommand([
-      'sha1sum', loop_kernB], redirect_stdout=True).output.split()[0]
+  old_kernB_hash = kernA_cmd.GetKernelParameter('kern_b_hash')
 
-  if kernA_cmd.GetKernelParameter('kern_b_hash'):
-    kernA_cmd.SetKernelParameter('kern_b_hash', kernB_hash)
+  if old_kernB_hash:
+    cmd = 'sha256sum' if len(old_kernB_hash.value) >= 64 else 'sha1sum'
+    new_kernB_hash = cros_build_lib.SudoRunCommand([
+        cmd, loop_kernB], redirect_stdout=True).output.split()[0]
+    kernA_cmd.SetKernelParameter('kern_b_hash', new_kernB_hash)
   logging.info('New cmdline for kernel A is %s', str(kernA_cmd))
   recovery_key = keyset.keys['recovery']
   _UpdateKernelConfig(loop_kernA, kernA_cmd, recovery_key)

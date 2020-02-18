@@ -8,13 +8,22 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
+#include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/extensions/api/safe_browsing_private.h"
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
+#include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
+#include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/proto/webprotect.pb.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/browser/event_router.h"
@@ -24,7 +33,7 @@
 namespace extensions {
 
 const base::Feature SafeBrowsingPrivateEventRouter::kRealtimeReportingFeature{
-    "SafeBrowsingRealtimeReporting", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SafeBrowsingRealtimeReporting", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Key names used with when building the dictionary to pass to the real-time
 // reporting API.
@@ -41,6 +50,9 @@ const char SafeBrowsingPrivateEventRouter::kKeyReason[] = "reason";
 const char SafeBrowsingPrivateEventRouter::kKeyNetErrorCode[] = "netErrorCode";
 const char SafeBrowsingPrivateEventRouter::kKeyClickedThrough[] =
     "clickedThrough";
+const char SafeBrowsingPrivateEventRouter::kKeyTriggeredRules[] =
+    "triggeredRules";
+const char SafeBrowsingPrivateEventRouter::kKeyThreatType[] = "threatType";
 
 const char SafeBrowsingPrivateEventRouter::kKeyPasswordReuseEvent[] =
     "passwordReuseEvent";
@@ -50,12 +62,51 @@ const char SafeBrowsingPrivateEventRouter::kKeyDangerousDownloadEvent[] =
     "dangerousDownloadEvent";
 const char SafeBrowsingPrivateEventRouter::kKeyInterstitialEvent[] =
     "interstitialEvent";
+const char SafeBrowsingPrivateEventRouter::kKeySensitiveDataEvent[] =
+    "sensitiveDataEvent";
+const char SafeBrowsingPrivateEventRouter::kKeyLargeUnscannedFileEvent[] =
+    "largeUnscannedFileEvent";
 
 SafeBrowsingPrivateEventRouter::SafeBrowsingPrivateEventRouter(
     content::BrowserContext* context)
     : context_(context) {
   event_router_ = EventRouter::Get(context_);
-  InitRealtimeReportingClient();
+
+  // g_browser_process and/or g_browser_process->local_state() may be null
+  // in tests.
+  if (g_browser_process && g_browser_process->local_state()) {
+    RealtimeReportingPrefChanged(std::string());
+    registrar_.Init(g_browser_process->local_state());
+    registrar_.Add(
+        prefs::kUnsafeEventsReportingEnabled,
+        base::BindRepeating(
+            &SafeBrowsingPrivateEventRouter::RealtimeReportingPrefChanged,
+            base::Unretained(this)));
+  }
+}
+
+// TODO(rogerta): once new event types are implemented, will likely want to
+// move this to a more common place.
+base::Value BuildRealtimeReport(Profile* profile, base::Value event) {
+  base::Value context(base::Value::Type::DICTIONARY);
+
+  ProfileAttributesStorage& storage =
+      g_browser_process->profile_manager()->GetProfileAttributesStorage();
+  ProfileAttributesEntry* entry = nullptr;
+  if (storage.GetProfileAttributesWithPath(profile->GetPath(), &entry)) {
+    context.SetStringPath("profile.profileName", entry->GetName());
+    context.SetStringPath("profile.gaiaEmail", entry->GetUserName());
+  }
+
+  context.SetStringPath("profile.profilePath", profile->GetPath().value());
+  context.SetStringPath("browser.userAgent", GetUserAgent());
+
+  base::Value report(base::Value::Type::DICTIONARY);
+  report.SetKey(policy::RealtimeReportingJobConfiguration::kContextKey,
+                std::move(context));
+  report.SetKey(policy::RealtimeReportingJobConfiguration::kEventKey,
+                std::move(event));
+  return report;
 }
 
 SafeBrowsingPrivateEventRouter::~SafeBrowsingPrivateEventRouter() {}
@@ -83,7 +134,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordReuseDetected(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (client_) {
+  if (IsRealtimeReportingEnabled()) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -108,7 +159,7 @@ void SafeBrowsingPrivateEventRouter::OnPolicySpecifiedPasswordChanged(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (client_) {
+  if (IsRealtimeReportingEnabled()) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUserName, user_name);
@@ -139,7 +190,7 @@ void SafeBrowsingPrivateEventRouter::OnDangerousDownloadOpened(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (client_) {
+  if (IsRealtimeReportingEnabled()) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -175,7 +226,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialShown(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (client_) {
+  if (IsRealtimeReportingEnabled()) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -212,7 +263,7 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
     event_router_->BroadcastEvent(std::move(extension_event));
   }
 
-  if (client_) {
+  if (IsRealtimeReportingEnabled()) {
     // Convert |params| to a real-time event dictionary and report it.
     base::Value event(base::Value::Type::DICTIONARY);
     event.SetStringKey(kKeyUrl, params.url);
@@ -224,6 +275,60 @@ void SafeBrowsingPrivateEventRouter::OnSecurityInterstitialProceeded(
   }
 }
 
+void SafeBrowsingPrivateEventRouter::OnDangerousDeepScanningResult(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256,
+    const std::string& threat_type) {
+  if (IsRealtimeReportingEnabled()) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    event.SetStringKey(kKeyThreatType, threat_type);
+    ReportRealtimeEvent(kKeyDangerousDownloadEvent, std::move(event));
+  }
+}
+
+void SafeBrowsingPrivateEventRouter::OnSensitiveDataEvent(
+    const safe_browsing::DlpDeepScanningVerdict& verdict,
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256) {
+  if (IsRealtimeReportingEnabled()) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+
+    base::ListValue triggered_rules;
+    for (auto rule : verdict.triggered_rules()) {
+      triggered_rules.AppendString(rule.rule_name());
+    }
+    event.SetKey(kKeyTriggeredRules, std::move(triggered_rules));
+    ReportRealtimeEvent(kKeySensitiveDataEvent, std::move(event));
+  }
+}
+
+void SafeBrowsingPrivateEventRouter::OnLargeUnscannedFileEvent(
+    const GURL& url,
+    const std::string& file_name,
+    const std::string& download_digest_sha256) {
+  if (IsRealtimeReportingEnabled()) {
+    // Create a real-time event dictionary from the arguments and report it.
+    base::Value event(base::Value::Type::DICTIONARY);
+    event.SetStringKey(kKeyUrl, url.spec());
+    event.SetStringKey(kKeyFileName, file_name);
+    event.SetStringKey(kKeyDownloadDigestSha256, download_digest_sha256);
+    event.SetStringKey(kKeyProfileUserName, GetProfileUserName());
+    ReportRealtimeEvent(kKeyLargeUnscannedFileEvent, std::move(event));
+  }
+}
+
 void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
     std::unique_ptr<policy::CloudPolicyClient> client) {
   DCHECK_EQ(nullptr, client_.get());
@@ -231,6 +336,20 @@ void SafeBrowsingPrivateEventRouter::SetCloudPolicyClientForTesting(
 }
 
 void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
+#if !defined(OS_CHROMEOS)
+  // This method is not compiled on chromeos because
+  // MachineLevelUserCloudPolicyController does not exist.  Also,
+  // policy::BrowserDMTokenStorage::Get()->RetrieveDMToken() does return a
+  // valid token either.  Once these are fixed the #if !define can be removed.
+  // If already initialized, do nothing.
+  if (client_)
+    return;
+
+  if (!policy::MachineLevelUserCloudPolicyController::
+          IsMachineLevelUserCloudPolicyEnabled()) {
+    return;
+  }
+
   if (!base::FeatureList::IsEnabled(kRealtimeReportingFeature))
     return;
 
@@ -242,7 +361,7 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
   if (!identity_manager_)
     return;
 
-  // |device_management_service| may be null in tests.    If there is no device
+  // |device_management_service| may be null in tests.  If there is no device
   // management service don't enable the real-time reporting API since the
   // router won't be able to create the reporting server client below.
   policy::DeviceManagementService* device_management_service =
@@ -284,6 +403,22 @@ void SafeBrowsingPrivateEventRouter::InitRealtimeReportingClient() {
         dm_token, client_id,
         /*user_affiliation_ids=*/std::vector<std::string>());
   }
+#endif
+}
+
+bool SafeBrowsingPrivateEventRouter::IsRealtimeReportingEnabled() {
+  // g_browser_process and/or g_browser_process->local_state() may be null
+  // in tests.
+  return g_browser_process && g_browser_process->local_state() &&
+         g_browser_process->local_state()->GetBoolean(
+             prefs::kUnsafeEventsReportingEnabled);
+}
+
+void SafeBrowsingPrivateEventRouter::RealtimeReportingPrefChanged(
+    const std::string& pref) {
+  // If the reporting policy has been turned on, try to initialized now.
+  if (IsRealtimeReportingEnabled())
+    InitRealtimeReportingClient();
 }
 
 void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
@@ -300,7 +435,10 @@ void SafeBrowsingPrivateEventRouter::ReportRealtimeEvent(const char* name,
   wrapper.SetStringKey("time", now_str);
   wrapper.SetKey(name, std::move(event));
 
-  client_->UploadRealtimeReport(std::move(wrapper), base::DoNothing());
+  client_->UploadRealtimeReport(
+      BuildRealtimeReport(Profile::FromBrowserContext(context_),
+                          std::move(wrapper)),
+      base::DoNothing());
 }
 
 std::string SafeBrowsingPrivateEventRouter::GetProfileUserName() {

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/unguessable_token.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -40,7 +41,7 @@ class SharedImageInterface;
 }
 
 namespace viz {
-class ContextProviderCommandBuffer;
+class ContextProvider;
 }  // namespace viz
 
 namespace media {
@@ -60,7 +61,6 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   enum class OutputFormat {
     UNDEFINED = 0,    // Unset state
     I420,             // 3 x R8 GMBs
-    UYVY,             // One 422 GMB
     NV12_SINGLE_GMB,  // One NV12 GMB
     NV12_DUAL_GMB,    // One R8, one RG88 GMB
     XR30,             // 10:10:10:2 BGRX in one GMB (Usually Mac)
@@ -129,6 +129,10 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual std::unique_ptr<base::SharedMemory> CreateSharedMemory(
       size_t size) = 0;
 
+  // Allocate & return an unsafe shared memory region
+  virtual base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(
+      size_t size) = 0;
+
   // Returns the task runner the video accelerator runs on.
   virtual scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() = 0;
 
@@ -136,8 +140,7 @@ class MEDIA_EXPORT GpuVideoAcceleratorFactories {
   virtual VideoEncodeAccelerator::SupportedProfiles
   GetVideoEncodeAcceleratorSupportedProfiles() = 0;
 
-  virtual scoped_refptr<viz::ContextProviderCommandBuffer>
-  GetMediaContextProvider() = 0;
+  virtual scoped_refptr<viz::ContextProvider> GetMediaContextProvider() = 0;
 
   // Sets the current pipeline rendering color space.
   virtual void SetRenderingColorSpace(const gfx::ColorSpace& color_space) = 0;

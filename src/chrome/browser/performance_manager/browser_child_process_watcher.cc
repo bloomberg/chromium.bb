@@ -13,33 +13,46 @@
 #include "build/build_config.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/child_process_termination_info.h"
 #include "content/public/common/process_type.h"
 
 namespace performance_manager {
 
-BrowserChildProcessWatcher::BrowserChildProcessWatcher()
-    : browser_process_node_(
-          PerformanceManager::GetInstance()->CreateProcessNode()) {
+BrowserChildProcessWatcher::BrowserChildProcessWatcher() = default;
+
+BrowserChildProcessWatcher::~BrowserChildProcessWatcher() {
+  DCHECK(!browser_process_node_);
+  DCHECK(gpu_process_nodes_.empty());
+}
+
+void BrowserChildProcessWatcher::Initialize() {
+  DCHECK(!browser_process_node_);
+  DCHECK(gpu_process_nodes_.empty());
+
+  browser_process_node_ = PerformanceManager::GetInstance()->CreateProcessNode(
+      RenderProcessHostProxy());
   OnProcessLaunched(base::Process::Current(), browser_process_node_.get());
   BrowserChildProcessObserver::Add(this);
 }
 
-BrowserChildProcessWatcher::~BrowserChildProcessWatcher() {
+void BrowserChildProcessWatcher::TearDown() {
   BrowserChildProcessObserver::Remove(this);
 
   PerformanceManager* performance_manager = PerformanceManager::GetInstance();
   performance_manager->DeleteNode(std::move(browser_process_node_));
   for (auto& node : gpu_process_nodes_)
     performance_manager->DeleteNode(std::move(node.second));
+  gpu_process_nodes_.clear();
 }
 
 void BrowserChildProcessWatcher::BrowserChildProcessLaunchedAndConnected(
     const content::ChildProcessData& data) {
   if (data.process_type == content::PROCESS_TYPE_GPU) {
     std::unique_ptr<ProcessNodeImpl> gpu_node =
-        PerformanceManager::GetInstance()->CreateProcessNode();
+        PerformanceManager::GetInstance()->CreateProcessNode(
+            RenderProcessHostProxy());
     OnProcessLaunched(data.GetProcess(), gpu_node.get());
     gpu_process_nodes_[data.id] = std::move(gpu_node);
   }

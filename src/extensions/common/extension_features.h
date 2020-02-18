@@ -9,9 +9,8 @@
 
 namespace extensions_features {
 
-extern const base::Feature kBypassCorbOnlyForExtensionsAllowlist;
-extern const char kBypassCorbAllowlistParamName[];
 extern const base::Feature kNewExtensionUpdaterService;
+extern const base::Feature kForceWebRequestExtraHeaders;
 extern const base::Feature kForceWebRequestProxyForTest;
 
 }  // namespace extensions_features

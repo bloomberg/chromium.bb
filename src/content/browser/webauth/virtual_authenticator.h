@@ -14,7 +14,8 @@
 #include "content/common/content_export.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/virtual_fido_device.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 namespace content {
@@ -34,7 +35,8 @@ class CONTENT_EXPORT VirtualAuthenticator
                        bool has_user_verification);
   ~VirtualAuthenticator() override;
 
-  void AddBinding(blink::test::mojom::VirtualAuthenticatorRequest request);
+  void AddReceiver(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticator> receiver);
 
   const device::VirtualFidoDevice::State::RegistrationsMap& registrations()
       const {
@@ -43,13 +45,26 @@ class CONTENT_EXPORT VirtualAuthenticator
 
   // Register a new credential. Returns true if the registration was successful,
   // false otherwise.
-  bool AddRegistration(std::vector<uint8_t> key_handle,
-                       const std::vector<uint8_t>& rp_id_hash,
-                       const std::vector<uint8_t>& private_key,
-                       int32_t counter);
+  bool AddRegistration(
+      std::vector<uint8_t> key_handle,
+      base::span<const uint8_t, device::kRpIdHashLength> rp_id_hash,
+      const std::vector<uint8_t>& private_key,
+      int32_t counter);
+
+  // Register a new resident credential. Returns true if the registration was
+  // successful, false otherwise.
+  bool AddResidentRegistration(std::vector<uint8_t> key_handle,
+                               std::string rp_id,
+                               const std::vector<uint8_t>& private_key,
+                               int32_t counter,
+                               std::vector<uint8_t> user_handle);
 
   // Removes all the credentials.
   void ClearRegistrations();
+
+  // Remove a credential identified by |key_handle|. Returns true if the
+  // credential was found and removed, false otherwise.
+  bool RemoveRegistration(const std::vector<uint8_t>& key_handle);
 
   // Sets whether tests of user presence succeed or not for new requests sent to
   // this authenticator. The default is true.
@@ -61,10 +76,17 @@ class CONTENT_EXPORT VirtualAuthenticator
     is_user_verified_ = is_user_verified;
   }
 
+  bool has_resident_key() const { return has_resident_key_; }
+
   ::device::FidoTransportProtocol transport() const {
     return state_->transport;
   }
   const std::string& unique_id() const { return unique_id_; }
+
+  bool is_user_verifying_platform_authenticator() const {
+    return attachment_ == device::AuthenticatorAttachment::kPlatform &&
+           has_user_verification_;
+  }
 
   // Constructs a VirtualFidoDevice instance that will perform cryptographic
   // operations on behalf of, and using the state stored in this virtual
@@ -95,7 +117,7 @@ class CONTENT_EXPORT VirtualAuthenticator
   const std::string unique_id_;
   bool is_user_present_;
   scoped_refptr<::device::VirtualFidoDevice::State> state_;
-  mojo::BindingSet<blink::test::mojom::VirtualAuthenticator> binding_set_;
+  mojo::ReceiverSet<blink::test::mojom::VirtualAuthenticator> receiver_set_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualAuthenticator);
 };

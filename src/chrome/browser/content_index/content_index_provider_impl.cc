@@ -11,6 +11,7 @@
 #include "base/strings/string_split.h"
 #include "base/task/post_task.h"
 #include "build/build_config.h"
+#include "chrome/browser/metrics/ukm_background_recorder_service.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
@@ -128,6 +129,7 @@ void DidGetAllEntries(base::OnceClosure done_closure,
 void DidGetAllEntriesAcrossStorageParitions(
     std::unique_ptr<ContentIndexProviderImpl::OfflineItemList> item_list,
     ContentIndexProviderImpl::MultipleItemCallback callback) {
+  ContentIndexMetrics::RecordContentIndexEntries(item_list->size());
   std::move(callback).Run(*item_list);
 }
 
@@ -135,9 +137,9 @@ void DidGetAllEntriesAcrossStorageParitions(
 
 ContentIndexProviderImpl::ContentIndexProviderImpl(Profile* profile)
     : profile_(profile),
+      metrics_(ukm::UkmBackgroundRecorderFactory::GetForProfile(profile)),
       aggregator_(OfflineContentAggregatorFactory::GetForKey(
-          profile_->GetProfileKey())),
-      weak_ptr_factory_(this) {
+          profile->GetProfileKey())) {
   aggregator_->RegisterProvider(kProviderNamespace, this);
 }
 
@@ -149,6 +151,21 @@ ContentIndexProviderImpl::~ContentIndexProviderImpl() {
 void ContentIndexProviderImpl::Shutdown() {
   aggregator_->UnregisterProvider(kProviderNamespace);
   aggregator_ = nullptr;
+}
+
+std::vector<gfx::Size> ContentIndexProviderImpl::GetIconSizes(
+    blink::mojom::ContentCategory category) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  if (icon_sizes_for_testing_)
+    return *icon_sizes_for_testing_;
+
+#if defined(OS_ANDROID)
+  // Recommended notification icon size for Android.
+  return {{192, 192}};
+#else
+  return {};
+#endif
 }
 
 void ContentIndexProviderImpl::OnContentAdded(
@@ -163,6 +180,9 @@ void ContentIndexProviderImpl::OnContentAdded(
 
   for (auto& observer : observers_)
     observer.OnItemsAdded(items);
+
+  metrics_.RecordContentAdded(url::Origin::Create(entry.launch_url.GetOrigin()),
+                              entry.description->category);
 }
 
 void ContentIndexProviderImpl::OnContentDeleted(
@@ -204,13 +224,21 @@ void ContentIndexProviderImpl::DidGetEntryToOpen(
                                 WindowOpenDisposition::NEW_FOREGROUND_TAB,
                                 ui::PAGE_TRANSITION_LINK,
                                 /* is_renderer_initiated= */ false);
-  ServiceTabLauncher::GetInstance()->LaunchTab(profile_, params,
-                                               base::DoNothing());
+  ServiceTabLauncher::GetInstance()->LaunchTab(
+      profile_, params,
+      base::BindOnce(&ContentIndexProviderImpl::DidOpenTab,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(*entry)));
 #else
   NavigateParams nav_params(profile_, entry->launch_url,
                             ui::PAGE_TRANSITION_LINK);
   Navigate(&nav_params);
+  DidOpenTab(std::move(*entry), nav_params.navigated_or_inserted_contents);
 #endif
+}
+
+void ContentIndexProviderImpl::DidOpenTab(content::ContentIndexEntry entry,
+                                          content::WebContents* web_contents) {
+  metrics_.RecordContentOpened(web_contents, entry.description->category);
 }
 
 void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
@@ -221,6 +249,8 @@ void ContentIndexProviderImpl::RemoveItem(const ContentId& id) {
 
   if (!storage_partition || !storage_partition->GetContentIndexContext())
     return;
+
+  metrics_.RecordContentDeletedByUser(components.origin);
 
   storage_partition->GetContentIndexContext()->OnUserDeletedItem(
       components.service_worker_registration_id, components.origin,
@@ -315,18 +345,21 @@ void ContentIndexProviderImpl::GetVisualsForItem(const ContentId& id,
     return;
   }
 
-  storage_partition->GetContentIndexContext()->GetIcon(
+  storage_partition->GetContentIndexContext()->GetIcons(
       components.service_worker_registration_id, components.description_id,
-      base::BindOnce(&ContentIndexProviderImpl::DidGetIcon,
+      base::BindOnce(&ContentIndexProviderImpl::DidGetIcons,
                      weak_ptr_factory_.GetWeakPtr(), id, std::move(callback)));
 }
 
-void ContentIndexProviderImpl::DidGetIcon(const ContentId& id,
-                                          VisualsCallback callback,
-                                          SkBitmap icon) {
+void ContentIndexProviderImpl::DidGetIcons(const ContentId& id,
+                                           VisualsCallback callback,
+                                           std::vector<SkBitmap> icons) {
   auto visuals =
       std::make_unique<offline_items_collection::OfflineItemVisuals>();
-  visuals->icon = gfx::Image::CreateFrom1xBitmap(icon);
+  if (!icons.empty()) {
+    DCHECK_EQ(icons.size(), 1u);
+    visuals->icon = gfx::Image::CreateFrom1xBitmap(std::move(icons.front()));
+  }
   std::move(callback).Run(id, std::move(visuals));
 }
 

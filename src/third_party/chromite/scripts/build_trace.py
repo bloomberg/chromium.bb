@@ -20,39 +20,39 @@ import sys
 
 
 def get_name(event):
-  name = ""
-  def append(event, name, key, sep="/"):
+  name = ''
+  def append(event, name, key, sep='/'):
     if key in event:
-      if name != "":
+      if name != '':
         name += sep
       name += event[key]
     return name
 
-  name = append(event, name, "task_name")
-  name = append(event, name, "category")
-  name = append(event, name, "name")
-  name = append(event, name, "version", "-")
+  name = append(event, name, 'task_name')
+  name = append(event, name, 'category')
+  name = append(event, name, 'name')
+  name = append(event, name, 'version', '-')
 
   return name
 
 
 def main(argv):
   parser = argparse.ArgumentParser()
-  parser.add_argument("eventlogfile")
+  parser.add_argument('eventlogfile')
   args = parser.parse_args(argv)
 
   with open(args.eventlogfile) as f:
     events = [json.loads(x) for x in f]
 
-  events.sort(key=lambda event: -event["finish_time"])
+  events.sort(key=lambda event: -event['finish_time'])
   threads_starttime = []
 
   trace_events = []
 
   for event in events:
     name = get_name(event)
-    start_time = int(event["start_time"] * 1e6)
-    finish_time = int(event["finish_time"] * 1e6)
+    start_time = int(event['start_time'] * 1e6)
+    finish_time = int(event['finish_time'] * 1e6)
     dur = finish_time - start_time
 
     candidate = [x for x in list(enumerate(threads_starttime))
@@ -66,16 +66,16 @@ def main(argv):
       threads_starttime[tid] = start_time
 
     trace_events.append({
-        "name": name,
-        "ph": "X",
-        "ts": str(start_time),
-        "dur": str(dur),
-        "pid": "0",
-        "tid": str(tid),
+        'name': name,
+        'ph': 'X',
+        'ts': str(start_time),
+        'dur': str(dur),
+        'pid': '0',
+        'tid': str(tid),
     })
 
   json.dump(trace_events, sys.stdout)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
   main(sys.argv[1:])

@@ -86,6 +86,7 @@ junit_binary("keyboard_accessory_junit_tests") {
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/ManualFillingControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/bar_component/KeyboardAccessoryControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/AddressAccessorySheetControllerTest.java",
+    "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/CreditCardAccessorySheetControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/sheet_tabs/PasswordAccessorySheetControllerTest.java",
     "junit/src/org/chromium/chrome/browser/keyboard_accessory/tab_layout_component/KeyboardAccessoryTabLayoutControllerTest.java",
   ]
@@ -96,8 +97,11 @@ junit_binary("keyboard_accessory_junit_tests") {
     "//base:base_junit_test_support",
     "//chrome/android:chrome_junit_test_support",
     "//chrome/android:chrome_test_util_java",
-    "//components/module_installer/android:module_installer_stub_java",
+    "//components/module_installer/android:module_installer_java",
     "//third_party/junit",
     "//third_party/mockito:mockito_java",
   ]
+
+  srcjar_deps =
+      [ "//components/module_installer/android:module_installer_build_config" ]
 }

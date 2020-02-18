@@ -19,13 +19,13 @@
 #include "base/component_export.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/files/file.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
@@ -91,7 +91,6 @@ class P2PSocketManager;
 class ProxyLookupRequest;
 class ResourceScheduler;
 class ResourceSchedulerClient;
-class URLRequestContextBuilderMojo;
 class WebSocketFactory;
 
 namespace cors {
@@ -104,13 +103,6 @@ class CorsURLLoaderFactory;
 // NetworkService's mojo interface and are owned jointly by the NetworkService
 // and the NetworkContextPtr used to talk to them, and the NetworkContext is
 // destroyed when either one is torn down.
-//
-// When the network service is disabled, NetworkContexts may be created through
-// NetworkService::CreateNetworkContextWithBuilder, and take in a
-// URLRequestContextBuilderMojo to seed construction of the NetworkContext's
-// URLRequestContext. When that happens, the consumer takes ownership of the
-// NetworkContext directly, has direct access to its URLRequestContext, and is
-// responsible for destroying it before the NetworkService.
 class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
     : public mojom::NetworkContext {
  public:
@@ -118,25 +110,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       base::OnceCallback<void(NetworkContext* network_context)>;
 
   NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
+                 mojo::PendingReceiver<mojom::NetworkContext> receiver,
                  mojom::NetworkContextParamsPtr params,
                  OnConnectionCloseCallback on_connection_close_callback =
                      OnConnectionCloseCallback());
-
-  // DEPRECATED: Creates an in-process NetworkContext with a partially
-  // pre-populated URLRequestContextBuilderMojo. This API should not be used
-  // in new code, as some |params| configuration may be ignored, in favor of
-  // the pre-configured URLRequestContextBuilderMojo configuration.
-  NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
-                 mojom::NetworkContextParamsPtr params,
-                 std::unique_ptr<URLRequestContextBuilderMojo> builder);
 
   // DEPRECATED: Creates a NetworkContext that simply wraps a consumer-provided
   // URLRequestContext that is not owned by the NetworkContext.
   // TODO(mmenke):  Remove this constructor when the network service ships.
   NetworkContext(NetworkService* network_service,
-                 mojom::NetworkContextRequest request,
+                 mojo::PendingReceiver<mojom::NetworkContext> receiver,
                  net::URLRequestContext* url_request_context,
                  const std::vector<std::string>& cors_exempt_header_list);
 
@@ -156,7 +139,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* network_service() { return network_service_; }
 
-  mojom::NetworkContextClient* client() { return client_.get(); }
+  mojom::NetworkContextClient* client() {
+    return client_.is_bound() ? client_.get() : nullptr;
+  }
 
   ResourceScheduler* resource_scheduler() { return resource_scheduler_.get(); }
 
@@ -181,17 +166,20 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client);
 
   // mojom::NetworkContext implementation:
-  void SetClient(mojom::NetworkContextClientPtr client) override;
+  void SetClient(
+      mojo::PendingRemote<mojom::NetworkContextClient> client) override;
   void CreateURLLoaderFactory(mojom::URLLoaderFactoryRequest request,
                               mojom::URLLoaderFactoryParamsPtr params) override;
   void ResetURLLoaderFactories() override;
-  void GetCookieManager(mojom::CookieManagerRequest request) override;
-  void GetRestrictedCookieManager(mojom::RestrictedCookieManagerRequest request,
-                                  mojom::RestrictedCookieManagerRole role,
-                                  const url::Origin& origin,
-                                  bool is_service_worker,
-                                  int32_t process_id,
-                                  int32_t routing_id) override;
+  void GetCookieManager(
+      mojo::PendingReceiver<mojom::CookieManager> receiver) override;
+  void GetRestrictedCookieManager(
+      mojo::PendingReceiver<mojom::RestrictedCookieManager> receiver,
+      mojom::RestrictedCookieManagerRole role,
+      const url::Origin& origin,
+      bool is_service_worker,
+      int32_t process_id,
+      int32_t routing_id) override;
   void ClearNetworkingHistorySince(
       base::Time time,
       base::OnceClosure completion_callback) override;
@@ -202,11 +190,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void ComputeHttpCacheSize(base::Time start_time,
                             base::Time end_time,
                             ComputeHttpCacheSizeCallback callback) override;
-  void NotifyExternalCacheHit(
-      const GURL& url,
-      const std::string& http_method,
-      const base::Optional<url::Origin>& top_frame_origin,
-      const url::Origin& frame_origin) override;
+  void NotifyExternalCacheHit(const GURL& url,
+                              const std::string& http_method,
+                              const net::NetworkIsolationKey& key) override;
   void ClearHostCache(mojom::ClearDataFilterPtr filter,
                       ClearHostCacheCallback callback) override;
   void ClearHttpAuthCache(base::Time start_time,
@@ -252,7 +238,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
                         GetExpectCTStateCallback callback) override;
 #endif  // BUILDFLAG(IS_CT_SUPPORTED)
   void CreateUDPSocket(mojom::UDPSocketRequest request,
-                       mojom::UDPSocketReceiverPtr receiver) override;
+                       mojom::UDPSocketListenerPtr listener) override;
   void CreateTCPServerSocket(
       const net::IPEndPoint& local_addr,
       uint32_t backlog,
@@ -279,18 +265,18 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::ProxyLookupClientPtr proxy_lookup_client) override;
   void ForceReloadProxyConfig(ForceReloadProxyConfigCallback callback) override;
   void ClearBadProxiesCache(ClearBadProxiesCacheCallback callback) override;
-  void CreateWebSocket(const GURL& url,
-                       const std::vector<std::string>& requested_protocols,
-                       const GURL& site_for_cookies,
-                       std::vector<mojom::HttpHeaderPtr> additional_headers,
-                       int32_t process_id,
-                       int32_t render_frame_id,
-                       const url::Origin& origin,
-                       uint32_t options,
-                       mojom::WebSocketHandshakeClientPtr handshake_client,
-                       mojom::WebSocketClientPtr client,
-                       mojom::AuthenticationHandlerPtr auth_handler,
-                       mojom::TrustedHeaderClientPtr header_client) override;
+  void CreateWebSocket(
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      std::vector<mojom::HttpHeaderPtr> additional_headers,
+      int32_t process_id,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      uint32_t options,
+      mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+      mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;
   void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
@@ -334,8 +320,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   void PreconnectSockets(
       uint32_t num_streams,
       const GURL& url,
-      int32_t load_flags,
-      bool privacy_mode_enabled,
+      bool allow_credentials,
       const net::NetworkIsolationKey& network_isolation_key) override;
   void CreateP2PSocketManager(
       mojom::P2PTrustedSocketManagerClientPtr client,
@@ -419,13 +404,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   // inside the network service.
   mojom::URLLoaderFactoryPtr CreateUrlLoaderFactoryForNetworkService();
 
+  mojom::OriginPolicyManager* origin_policy_manager() const {
+    return origin_policy_manager_.get();
+  }
+
  private:
   class ContextNetworkDelegate;
 
-  // Applies the values in |params_| to |builder|, and builds the
-  // URLRequestContext.
-  URLRequestContextOwner ApplyContextParamsToBuilder(
-      URLRequestContextBuilderMojo* builder);
+  URLRequestContextOwner MakeURLRequestContext();
 
   // Invoked when the HTTP cache was cleared. Invokes |callback|.
   void OnHttpCacheCleared(ClearHttpCacheCallback callback,
@@ -442,8 +428,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   // On connection errors the NetworkContext destroys itself.
   void OnConnectionError();
-
-  URLRequestContextOwner MakeURLRequestContext();
 
   GURL GetHSTSRedirect(const GURL& original_url);
 
@@ -477,7 +461,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
 
   NetworkService* const network_service_;
 
-  mojom::NetworkContextClientPtr client_;
+  mojo::Remote<mojom::NetworkContextClient> client_;
 
   std::unique_ptr<ResourceScheduler> resource_scheduler_;
 
@@ -501,7 +485,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       app_status_listener_;
 #endif
 
-  mojo::Binding<mojom::NetworkContext> binding_;
+  mojo::Receiver<mojom::NetworkContext> receiver_;
 
   std::unique_ptr<CookieManager> cookie_manager_;
 

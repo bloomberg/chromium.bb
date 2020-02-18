@@ -26,13 +26,12 @@ class ContactsProviderAndroid : public ContactsProvider {
               bool include_names,
               bool include_emails,
               bool include_tel,
-              blink::mojom::ContactsManager::SelectCallback callback) override;
+              ContactsSelectedCallback callback) override;
 
   // Adds one contact to the list of contacts selected. Note, EndContactsList
   // (or EndWithPermissionDenied) must be called to signal the end of the
   // construction of the contacts list.
   void AddContact(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& obj,
                   jboolean includeNames,
                   jboolean includeEmails,
                   jboolean includeTel,
@@ -41,18 +40,18 @@ class ContactsProviderAndroid : public ContactsProvider {
                   const base::android::JavaParamRef<jobjectArray>& tel_java);
 
   // Signals the end of adding contacts to the list. The contact list is
-  // returned to the web page.
+  // returned to the web page, the other params are logged via UKM.
   void EndContactsList(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& obj);
+                       jint percentage_shared,
+                       jint properties_requested);
 
   // Signals the end (due to a permission error).
-  void EndWithPermissionDenied(JNIEnv* env,
-                               const base::android::JavaParamRef<jobject>& obj);
+  void EndWithPermissionDenied(JNIEnv* env);
 
  private:
   base::android::ScopedJavaGlobalRef<jobject> dialog_;
 
-  blink::mojom::ContactsManager::SelectCallback callback_;
+  ContactsSelectedCallback callback_;
 
   // The list of contacts to return.
   std::vector<blink::mojom::ContactInfoPtr> contacts_;

@@ -15,6 +15,7 @@
 #include <memory>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "call/rtp_packet_sink_interface.h"
 #include "modules/include/module.h"
 #include "modules/include/module_common_types.h"
@@ -40,13 +41,18 @@ class StreamStatistician {
  public:
   virtual ~StreamStatistician();
 
-  virtual bool GetStatistics(RtcpStatistics* statistics, bool reset) = 0;
-  virtual void GetDataCounters(size_t* bytes_received,
-                               uint32_t* packets_received) const = 0;
+  virtual RtpReceiveStats GetStats() const = 0;
 
+  // TODO(nisse): Delete, migrate users to the above the GetStats method.
+  RTC_DEPRECATED
+  virtual bool GetStatistics(RtcpStatistics* statistics, bool reset) = 0;
+
+  // Returns average over the stream life time.
+  virtual absl::optional<int> GetFractionLostInPercent() const = 0;
+
+  // TODO(nisse): Delete, migrate users to the above the GetStats method.
   // Gets received stream data counters (includes reset counter values).
-  virtual void GetReceiveStreamDataCounters(
-      StreamDataCounters* data_counters) const = 0;
+  virtual StreamDataCounters GetReceiveStreamDataCounters() const = 0;
 
   virtual uint32_t BitrateReceived() const = 0;
 };
@@ -56,17 +62,7 @@ class ReceiveStatistics : public ReceiveStatisticsProvider,
  public:
   ~ReceiveStatistics() override = default;
 
-  static ReceiveStatistics* Create(Clock* clock) {
-    return Create(clock, nullptr, nullptr).release();
-  }
-
-  static std::unique_ptr<ReceiveStatistics> Create(
-      Clock* clock,
-      RtcpStatisticsCallback* rtcp_callback,
-      StreamDataCountersCallback* rtp_callback);
-
-  // Increment counter for number of FEC packets received.
-  virtual void FecPacketReceived(const RtpPacketReceived& packet) = 0;
+  static std::unique_ptr<ReceiveStatistics> Create(Clock* clock);
 
   // Returns a pointer to the statistician of an ssrc.
   virtual StreamStatistician* GetStatistician(uint32_t ssrc) const = 0;

@@ -33,6 +33,8 @@ extern const base::FilePath::CharType kFrameworkExecutableName[];
 #endif  // OS_MACOSX
 #if defined(OS_WIN)
 extern const base::FilePath::CharType kBrowserResourcesDll[];
+extern const base::FilePath::CharType kChildDll[];
+extern const base::FilePath::CharType kElfDll[];
 extern const base::FilePath::CharType kStatusTrayWindowClass[];
 #endif  // defined(OS_WIN)
 
@@ -52,6 +54,7 @@ extern const base::FilePath::CharType kExtensionsCookieFilename[];
 extern const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[];
 extern const base::FilePath::CharType kFirstRunSentinel[];
 extern const base::FilePath::CharType kGCMStoreDirname[];
+extern const base::FilePath::CharType kHeavyAdInterventionOptOutDBFilename[];
 extern const base::FilePath::CharType kLocalStateFilename[];
 extern const base::FilePath::CharType kMediaCacheDirname[];
 extern const base::FilePath::CharType kNetworkPersistentStateFilename[];
@@ -110,6 +113,8 @@ extern const char kLegacyProfileDir[];
 
 // This must be kept in sync with TestingProfile::kTestUserProfileDir.
 extern const char kTestUserProfileDir[];
+
+extern const char kLockScreenAppProfile[];
 #endif
 
 // Used to identify the application to the system AV function in Windows.

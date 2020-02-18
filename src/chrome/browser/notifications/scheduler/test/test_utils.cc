@@ -7,7 +7,7 @@
 #include <sstream>
 #include <utility>
 
-#include "base/format_macros.h"
+#include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_entry.h"
 #include "chrome/browser/notifications/scheduler/public/notification_data.h"
@@ -105,10 +105,12 @@ std::string DebugString(const NotificationEntry* entry) {
            << " : " << static_cast<int>(mapping.second);
   }
 
-  stream << " \n icons_id:";
-  for (const auto& icon_id : entry->icons_uuid)
-    stream << icon_id << "  ";
-
+  if (base::Contains(entry->icons_uuid, IconType::kSmallIcon))
+    stream << " \n small_icons_id:"
+           << entry->icons_uuid.at(IconType::kSmallIcon);
+  if (base::Contains(entry->icons_uuid, IconType::kLargeIcon))
+    stream << " \n large_icons_id:"
+           << entry->icons_uuid.at(IconType::kLargeIcon);
   return stream.str();
 }
 
@@ -123,7 +125,8 @@ std::string DebugString(const ClientState* client_state) {
 
   for (const auto& impression : client_state->impressions) {
     std::ostringstream stream;
-    stream << "Impression, create_time:" << impression.create_time << "\n"
+    stream << "\n"
+           << "Impression, create_time:" << impression.create_time << "\n"
            << " create_time in microseconds:"
            << impression.create_time.ToDeltaSinceWindowsEpoch().InMicroseconds()
            << "\n"
@@ -139,6 +142,11 @@ std::string DebugString(const ClientState* client_state) {
     for (const auto& mapping : impression.impression_mapping) {
       stream << " \n impression mapping: " << static_cast<int>(mapping.first)
              << " : " << static_cast<int>(mapping.second);
+    }
+
+    for (const auto& pair : impression.custom_data) {
+      stream << " \n custom data, key: " << pair.first
+             << " value: " << pair.second;
     }
 
     log += stream.str();

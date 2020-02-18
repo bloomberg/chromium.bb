@@ -199,6 +199,8 @@ CFX_BreakType CFX_RTFBreak::AppendChar_Control(CFX_Char* pCurChar) {
 }
 
 CFX_BreakType CFX_RTFBreak::AppendChar_Arabic(CFX_Char* pCurChar) {
+  m_pCurLine->IncrementArabicCharCount();
+
   CFX_Char* pLastChar = nullptr;
   wchar_t wForm;
   bool bAlef = false;
@@ -264,7 +266,6 @@ CFX_BreakType CFX_RTFBreak::AppendChar_Arabic(CFX_Char* pCurChar) {
     return CFX_BreakType::None;
 
   m_pCurLine->m_iWidth = checked_width.ValueOrDie();
-  m_pCurLine->m_iArabicChars++;
 
   if (IsGreaterThanLineWidth(m_pCurLine->GetLineEnd()))
     return EndBreak(CFX_BreakType::Line);
@@ -313,12 +314,12 @@ CFX_BreakType CFX_RTFBreak::EndBreak(CFX_BreakType dwStatus) {
   }
 
   if (HasLine()) {
-    if (!m_Line[m_iReadyLineIndex].m_LinePieces.empty()) {
-      if (dwStatus != CFX_BreakType::Piece)
-        m_Line[m_iReadyLineIndex].m_LinePieces.back().m_dwStatus = dwStatus;
-      return m_Line[m_iReadyLineIndex].m_LinePieces.back().m_dwStatus;
-    }
-    return CFX_BreakType::None;
+    if (m_Lines[m_iReadyLineIndex].m_LinePieces.empty())
+      return CFX_BreakType::None;
+
+    if (dwStatus != CFX_BreakType::Piece)
+      m_Lines[m_iReadyLineIndex].m_LinePieces.back().m_dwStatus = dwStatus;
+    return m_Lines[m_iReadyLineIndex].m_LinePieces.back().m_dwStatus;
   }
 
   if (m_pCurLine->m_LineChars.empty())
@@ -329,8 +330,8 @@ CFX_BreakType CFX_RTFBreak::EndBreak(CFX_BreakType dwStatus) {
   if (dwStatus == CFX_BreakType::Piece)
     return dwStatus;
 
-  m_iReadyLineIndex = m_pCurLine == &m_Line[0] ? 0 : 1;
-  CFX_BreakLine* pNextLine = &m_Line[1 - m_iReadyLineIndex];
+  m_iReadyLineIndex = m_pCurLine == &m_Lines[0] ? 0 : 1;
+  CFX_BreakLine* pNextLine = &m_Lines[1 - m_iReadyLineIndex];
   bool bAllChars = m_iAlignment == CFX_RTFLineAlignment::Justified ||
                    m_iAlignment == CFX_RTFLineAlignment::Distributed;
 
@@ -422,7 +423,7 @@ void CFX_RTFBreak::EndBreak_BidiLine(std::deque<FX_TPO>* tpos,
                                      CFX_BreakType dwStatus) {
   CFX_Char* pTC;
   std::vector<CFX_Char>& chars = m_pCurLine->m_LineChars;
-  if (!m_bPagination && m_pCurLine->m_iArabicChars > 0) {
+  if (!m_bPagination && m_pCurLine->HasArabicChar()) {
     size_t iBidiNum = 0;
     for (size_t i = 0; i < m_pCurLine->m_LineChars.size(); ++i) {
       pTC = &chars[i];
@@ -713,8 +714,8 @@ void CFX_RTFBreak::SplitTextLine(CFX_BreakLine* pCurLine,
 
   for (size_t i = 0; i < pNextLine->m_LineChars.size(); ++i) {
     if (pNextLine->m_LineChars[i].GetCharType() >= FX_CHARTYPE::kArabicAlef) {
-      pCurLine->m_iArabicChars--;
-      pNextLine->m_iArabicChars++;
+      pCurLine->DecrementArabicCharCount();
+      pNextLine->IncrementArabicCharCount();
     }
     pNextLine->m_LineChars[i].m_dwStatus = CFX_BreakType::None;
   }

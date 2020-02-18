@@ -14,7 +14,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/ipc/ipc_test_util.h"
 #include "chrome/chrome_cleaner/logging/scoped_logging.h"
@@ -273,7 +273,7 @@ constexpr int kSuccessExitCode = 0;
 MULTIPROCESS_TEST_MAIN(ChromePromptIPCClientMain) {
   static constexpr int kInternalTestFailureExitCode = -1;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   scoped_refptr<MojoTaskRunner> mojo_task_runner = MojoTaskRunner::Create();
   auto child_process =

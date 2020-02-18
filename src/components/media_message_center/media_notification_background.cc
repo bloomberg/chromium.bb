@@ -12,6 +12,7 @@
 #include "ui/gfx/color_analysis.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/scoped_canvas.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/view.h"
 
@@ -20,8 +21,6 @@ namespace media_message_center {
 namespace {
 
 constexpr int kMediaImageGradientWidth = 40;
-
-constexpr SkColor kMediaNotificationDefaultBackgroundColor = SK_ColorWHITE;
 
 // The ratio for a background color option to be considered very popular.
 constexpr double kMediaNotificationBackgroundColorVeryPopularRatio = 2.5;
@@ -233,16 +232,12 @@ base::Optional<SkColor> GetNotificationForegroundColor(
 }  // namespace
 
 MediaNotificationBackground::MediaNotificationBackground(
-    views::View* owner,
     int top_radius,
     int bottom_radius,
     double artwork_max_width_pct)
-    : owner_(owner),
-      top_radius_(top_radius),
+    : top_radius_(top_radius),
       bottom_radius_(bottom_radius),
-      artwork_max_width_pct_(artwork_max_width_pct) {
-  DCHECK(owner);
-}
+      artwork_max_width_pct_(artwork_max_width_pct) {}
 
 MediaNotificationBackground::~MediaNotificationBackground() = default;
 
@@ -274,7 +269,7 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
     // maintaining the aspect ratio.
     gfx::Rect source_bounds =
         gfx::Rect(0, 0, artwork_.width(), artwork_.height());
-    gfx::Rect artwork_bounds = GetArtworkBounds(bounds);
+    gfx::Rect artwork_bounds = GetArtworkBounds(*view);
 
     canvas->DrawImageInt(
         artwork_, source_bounds.x(), source_bounds.y(), source_bounds.width(),
@@ -285,12 +280,12 @@ void MediaNotificationBackground::Paint(gfx::Canvas* canvas,
   // Draw a filled rectangle which will act as the main background of the
   // notification. This may cover up some of the artwork.
   const SkColor background_color =
-      background_color_.value_or(kMediaNotificationDefaultBackgroundColor);
-  canvas->FillRect(GetFilledBackgroundBounds(bounds), background_color);
+      background_color_.value_or(GetDefaultBackgroundColor(*view));
+  canvas->FillRect(GetFilledBackgroundBounds(*view), background_color);
 
   {
     // Draw a gradient to fade the color background and the image together.
-    gfx::Rect draw_bounds = GetGradientBounds(bounds);
+    gfx::Rect draw_bounds = GetGradientBounds(*view);
 
     const SkColor colors[2] = {
         background_color, SkColorSetA(background_color, SK_AlphaTRANSPARENT)};
@@ -315,42 +310,42 @@ void MediaNotificationBackground::UpdateArtwork(const gfx::ImageSkia& image) {
   background_color_ = GetNotificationBackgroundColor(artwork_.bitmap());
   foreground_color_ =
       GetNotificationForegroundColor(background_color_, artwork_.bitmap());
-  owner_->SchedulePaint();
 }
 
-void MediaNotificationBackground::UpdateCornerRadius(int top_radius,
+bool MediaNotificationBackground::UpdateCornerRadius(int top_radius,
                                                      int bottom_radius) {
   if (top_radius_ == top_radius && bottom_radius_ == bottom_radius)
-    return;
+    return false;
 
   top_radius_ = top_radius;
   bottom_radius_ = bottom_radius;
-
-  owner_->SchedulePaint();
+  return true;
 }
 
-void MediaNotificationBackground::UpdateArtworkMaxWidthPct(
+bool MediaNotificationBackground::UpdateArtworkMaxWidthPct(
     double max_width_pct) {
   if (artwork_max_width_pct_ == max_width_pct)
-    return;
+    return false;
 
   artwork_max_width_pct_ = max_width_pct;
-  owner_->SchedulePaint();
+  return true;
 }
 
-SkColor MediaNotificationBackground::GetBackgroundColor() const {
+SkColor MediaNotificationBackground::GetBackgroundColor(
+    const views::View& owner) const {
   if (background_color_.has_value())
     return *background_color_;
-  return kMediaNotificationDefaultBackgroundColor;
+  return GetDefaultBackgroundColor(owner);
 }
 
-SkColor MediaNotificationBackground::GetForegroundColor() const {
+SkColor MediaNotificationBackground::GetForegroundColor(
+    const views::View& owner) const {
   const SkColor foreground =
       foreground_color_.has_value()
           ? *foreground_color_
-          : views::style::GetColor(*owner_, views::style::CONTEXT_LABEL,
+          : views::style::GetColor(owner, views::style::CONTEXT_LABEL,
                                    views::style::STYLE_PRIMARY);
-  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor())
+  return color_utils::BlendForMinContrast(foreground, GetBackgroundColor(owner))
       .color;
 }
 
@@ -373,31 +368,34 @@ int MediaNotificationBackground::GetArtworkVisibleWidth(
 }
 
 gfx::Rect MediaNotificationBackground::GetArtworkBounds(
-    const gfx::Rect& view_bounds) const {
+    const views::View& owner) const {
+  const gfx::Rect& view_bounds = owner.GetContentsBounds();
   int width = GetArtworkWidth(view_bounds.size());
 
   // The artwork should be positioned on the far right hand side of the
   // notification and be the same height.
-  return owner_->GetMirroredRect(
+  return owner.GetMirroredRect(
       gfx::Rect(view_bounds.right() - width, 0, width, view_bounds.height()));
 }
 
 gfx::Rect MediaNotificationBackground::GetFilledBackgroundBounds(
-    const gfx::Rect& view_bounds) const {
+    const views::View& owner) const {
   // The filled background should take up the full notification except the area
   // taken up by the artwork.
+  const gfx::Rect& view_bounds = owner.GetContentsBounds();
   gfx::Rect bounds = gfx::Rect(view_bounds);
   bounds.Inset(0, 0, GetArtworkVisibleWidth(view_bounds.size()), 0);
-  return owner_->GetMirroredRect(bounds);
+  return owner.GetMirroredRect(bounds);
 }
 
 gfx::Rect MediaNotificationBackground::GetGradientBounds(
-    const gfx::Rect& view_bounds) const {
+    const views::View& owner) const {
   if (artwork_.isNull())
     return gfx::Rect(0, 0, 0, 0);
 
   // The gradient should appear above the artwork on the left.
-  return owner_->GetMirroredRect(gfx::Rect(
+  const gfx::Rect& view_bounds = owner.GetContentsBounds();
+  return owner.GetMirroredRect(gfx::Rect(
       view_bounds.width() - GetArtworkVisibleWidth(view_bounds.size()),
       view_bounds.y(), kMediaImageGradientWidth, view_bounds.height()));
 }
@@ -412,6 +410,12 @@ SkPoint MediaNotificationBackground::GetGradientEndPoint(
     const gfx::Rect& draw_bounds) const {
   return gfx::PointToSkPoint(base::i18n::IsRTL() ? draw_bounds.left_center()
                                                  : draw_bounds.right_center());
+}
+
+SkColor MediaNotificationBackground::GetDefaultBackgroundColor(
+    const views::View& owner) const {
+  return owner.GetNativeTheme()->GetSystemColor(
+      ui::NativeTheme::kColorId_BubbleBackground);
 }
 
 }  // namespace media_message_center

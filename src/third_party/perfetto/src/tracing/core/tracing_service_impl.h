@@ -25,8 +25,8 @@
 #include <vector>
 
 #include "perfetto/base/logging.h"
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/optional.h"
-#include "perfetto/ext/base/time.h"
 #include "perfetto/ext/base/weak_ptr.h"
 #include "perfetto/ext/tracing/core/basic_types.h"
 #include "perfetto/ext/tracing/core/commit_data_request.h"
@@ -89,7 +89,9 @@ class TracingServiceImpl : public TracingService {
     void UnregisterTraceWriter(uint32_t writer_id) override;
     void CommitData(const CommitDataRequest&, CommitDataCallback) override;
     void SetSharedMemory(std::unique_ptr<SharedMemory>);
-    std::unique_ptr<TraceWriter> CreateTraceWriter(BufferID) override;
+    std::unique_ptr<TraceWriter> CreateTraceWriter(
+        BufferID,
+        BufferExhaustedPolicy) override;
     SharedMemoryArbiter* GetInProcessShmemArbiter() override;
     void NotifyFlushComplete(FlushRequestID) override;
     void NotifyDataSourceStarted(DataSourceInstanceID) override;
@@ -259,7 +261,7 @@ class TracingServiceImpl : public TracingService {
              uint32_t timeout_ms,
              ConsumerEndpoint::FlushCallback);
   void FlushAndDisableTracing(TracingSessionID);
-  void ReadBuffers(TracingSessionID, ConsumerEndpointImpl*);
+  bool ReadBuffers(TracingSessionID, ConsumerEndpointImpl*);
   void FreeBuffers(TracingSessionID);
 
   // Service implementation.
@@ -469,6 +471,9 @@ class TracingServiceImpl : public TracingService {
     // The number of received triggers we've emitted into the trace output.
     size_t num_triggers_emitted_into_trace = 0;
 
+    // Packets that failed validation of the TrustedPacket.
+    uint64_t invalid_packets = 0;
+
     // Initial clock snapshot, captured at trace start time (when state goes
     // to TracingSession::STARTED). Emitted into the trace when the consumer
     // first begins reading the trace.
@@ -516,6 +521,10 @@ class TracingServiceImpl : public TracingService {
   void StartDataSourceInstance(ProducerEndpointImpl* producer,
                                TracingSession* tracing_session,
                                DataSourceInstance* instance);
+  void StopDataSourceInstance(ProducerEndpointImpl* producer,
+                              TracingSession* tracing_session,
+                              DataSourceInstance* instance,
+                              bool disable_immediately);
   void SnapshotSyncMarker(std::vector<TracePacket>*);
   void SnapshotClocks(std::vector<TracePacket>*, bool set_root_timestamp);
   void SnapshotStats(TracingSession*, std::vector<TracePacket>*);

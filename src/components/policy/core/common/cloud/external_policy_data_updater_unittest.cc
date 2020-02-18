@@ -14,7 +14,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_pending_task.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
@@ -73,7 +73,7 @@ class ExternalPolicyDataUpdaterTest : public testing::Test {
   void RequestExternalDataFetch(int key_index, int url_index);
   void RequestExternalDataFetch(int index);
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   MockFetchSuccessCallbackListener callback_listener_;
   scoped_refptr<base::TestSimpleTaskRunner> backend_task_runner_;

@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/unguessable_token.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/frame_node.h"
 #include "url/gurl.h"
 
@@ -20,6 +19,7 @@ namespace performance_manager {
 class FrameNodeImpl;
 class PageNodeImpl;
 class ProcessNodeImpl;
+class WorkerNodeImpl;
 
 // Frame nodes form a tree structure, each FrameNode at most has one parent that
 // is a FrameNode. Conceptually, a frame corresponds to a
@@ -45,10 +45,7 @@ class ProcessNodeImpl;
 // active frame.
 class FrameNodeImpl
     : public PublicNodeImpl<FrameNodeImpl, FrameNode>,
-      public TypedNodeBase<FrameNodeImpl,
-                           GraphImplObserver,
-                           FrameNode,
-                           FrameNodeObserver>,
+      public TypedNodeBase<FrameNodeImpl, FrameNode, FrameNodeObserver>,
       public resource_coordinator::mojom::DocumentCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kFrame; }
@@ -73,15 +70,13 @@ class FrameNodeImpl
   void SetNetworkAlmostIdle() override;
   void SetLifecycleState(LifecycleState state) override;
   void SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) override;
-  void SetInterventionPolicy(
-      resource_coordinator::mojom::PolicyControlledIntervention intervention,
+  void SetOriginTrialFreezePolicy(
       resource_coordinator::mojom::InterventionPolicy policy) override;
   void SetIsAdFrame() override;
   void OnNonPersistentNotificationCreated() override;
 
   // Partial FrameNode implementation:
   bool IsMainFrame() const override;
-  bool AreAllInterventionPoliciesSet() const override;
 
   // Getters for const properties. These can be called from any thread.
   FrameNodeImpl* parent_frame_node() const;
@@ -95,11 +90,14 @@ class FrameNodeImpl
   // Getters for non-const properties. These are not thread safe.
   const base::flat_set<FrameNodeImpl*>& child_frame_nodes() const;
   LifecycleState lifecycle_state() const;
+  InterventionPolicy origin_trial_freeze_policy() const;
   bool has_nonempty_beforeunload() const;
   const GURL& url() const;
   bool is_current() const;
   bool network_almost_idle() const;
   bool is_ad_frame() const;
+  const base::flat_set<WorkerNodeImpl*>& child_worker_nodes() const;
+  const PriorityAndReason& priority_and_reason() const;
 
   // Setters are not thread safe.
   void SetIsCurrent(bool is_current);
@@ -107,10 +105,12 @@ class FrameNodeImpl
   // Invoked when a navigation is committed in the frame.
   void OnNavigationCommitted(const GURL& url, bool same_document);
 
-  // Sets the same policy for all intervention types in this frame. Causes
-  // Page::OnFrameInterventionPolicyChanged to be invoked.
-  void SetAllInterventionPoliciesForTesting(
-      resource_coordinator::mojom::InterventionPolicy policy);
+  // Invoked by |worker_node| when it starts/stops being a child of this frame.
+  void AddChildWorker(WorkerNodeImpl* worker_node);
+  void RemoveChildWorker(WorkerNodeImpl* worker_node);
+
+  // Invoked to set the frame priority, and the reason behind it.
+  void SetPriorityAndReason(const PriorityAndReason& priority_and_reason);
 
  private:
   friend class PageNodeImpl;
@@ -127,11 +127,14 @@ class FrameNodeImpl
   int32_t GetSiteInstanceId() const override;
   const base::flat_set<const FrameNode*> GetChildFrameNodes() const override;
   LifecycleState GetLifecycleState() const override;
+  InterventionPolicy GetOriginTrialFreezePolicy() const override;
   bool HasNonemptyBeforeUnload() const override;
   const GURL& GetURL() const override;
   bool IsCurrent() const override;
   bool GetNetworkAlmostIdle() const override;
   bool IsAdFrame() const override;
+  const base::flat_set<const WorkerNode*> GetChildWorkerNodes() const override;
+  const PriorityAndReason& GetPriorityAndReason() const override;
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -142,7 +145,6 @@ class FrameNodeImpl
     void Reset(FrameNodeImpl* frame_node, const GURL& url_in);
 
     ObservedProperty::NotifiesOnlyOnChanges<GURL,
-                                            &GraphImplObserver::OnURLChanged,
                                             &FrameNodeObserver::OnURLChanged>
         url;
     bool has_nonempty_beforeunload = false;
@@ -151,9 +153,15 @@ class FrameNodeImpl
     // connections.
     ObservedProperty::NotifiesOnlyOnChanges<
         bool,
-        &GraphImplObserver::OnNetworkAlmostIdleChanged,
         &FrameNodeObserver::OnNetworkAlmostIdleChanged>
         network_almost_idle{false};
+
+    // Opt-in or opt-out of freezing via origin trial.
+    ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
+        resource_coordinator::mojom::InterventionPolicy,
+        &FrameNodeObserver::OnOriginTrialFreezePolicyChanged>
+        origin_trial_freeze_policy{
+            resource_coordinator::mojom::InterventionPolicy::kUnknown};
   };
 
   // Invoked by subframes on joining/leaving the graph.
@@ -194,29 +202,17 @@ class FrameNodeImpl
   // Does *not* change when a navigation is committed.
   ObservedProperty::NotifiesOnlyOnChanges<
       LifecycleState,
-      &GraphImplObserver::OnLifecycleStateChanged,
       &FrameNodeObserver::OnFrameLifecycleStateChanged>
       lifecycle_state_{LifecycleState::kRunning};
 
   // This is a one way switch. Once marked an ad-frame, always an ad-frame.
-  bool is_ad_frame_ = false;
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsAdFrameChanged>
+          is_ad_frame_{false};
 
-  ObservedProperty::NotifiesOnlyOnChanges<
-      bool,
-      &GraphImplObserver::OnIsCurrentChanged,
-      &FrameNodeObserver::OnIsCurrentChanged>
-      is_current_{false};
-
-  // Intervention policy for this frame. These are communicated from the
-  // renderer process and are controlled by origin trials.
-  //
-  // TODO(fdoray): Adapt aggregation logic in PageNodeImpl to allow moving this
-  // to DocumentProperties.
-  resource_coordinator::mojom::InterventionPolicy
-      intervention_policy_[static_cast<size_t>(
-                               resource_coordinator::mojom::
-                                   PolicyControlledIntervention::kMaxValue) +
-                           1];
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &FrameNodeObserver::OnIsCurrentChanged>
+          is_current_{false};
 
   // Properties associated with a Document, which are reset when a
   // different-document navigation is committed in the frame.
@@ -224,6 +220,15 @@ class FrameNodeImpl
   // TODO(fdoray): Cleanup this once there is a 1:1 mapping between
   // RenderFrameHost and Document https://crbug.com/936696.
   DocumentProperties document_;
+
+  // The child workers of this frame.
+  base::flat_set<WorkerNodeImpl*> child_worker_nodes_;
+
+  // Frame priority information.
+  ObservedProperty::NotifiesOnlyOnChanges<
+      PriorityAndReason,
+      &FrameNodeObserver::OnPriorityAndReasonChanged>
+      priority_and_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameNodeImpl);
 };

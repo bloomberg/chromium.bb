@@ -16,6 +16,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/gfx/geometry/size.h"
+#include "ui/gfx/range/range.h"
+#include "ui/gfx/shadow_value.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/views_export.h"
 
@@ -114,6 +116,8 @@ DECLARE_CONVERSIONS(bool)
 DECLARE_CONVERSIONS(gfx::Size)
 DECLARE_CONVERSIONS(base::string16)
 DECLARE_CONVERSIONS(const char*)
+DECLARE_CONVERSIONS(gfx::ShadowValues)
+DECLARE_CONVERSIONS(gfx::Range)
 
 #undef DECLARE_CONVERSIONS
 

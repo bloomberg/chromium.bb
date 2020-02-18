@@ -42,8 +42,7 @@ HeadlessBrowserImpl::HeadlessBrowserImpl(
       options_(std::move(options)),
       browser_main_parts_(nullptr),
       default_browser_context_(nullptr),
-      agent_host_(nullptr),
-      weak_ptr_factory_(this) {}
+      agent_host_(nullptr) {}
 
 HeadlessBrowserImpl::~HeadlessBrowserImpl() = default;
 
@@ -55,8 +54,7 @@ HeadlessBrowserImpl::CreateBrowserContextBuilder() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 HeadlessBrowserImpl::BrowserMainThread() const {
-  return base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+  return base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
 }
 
 void HeadlessBrowserImpl::Shutdown() {

@@ -50,6 +50,7 @@ struct FlexChildData {
   NormalizedSize preferred_size;
   NormalizedSize current_size;
   NormalizedInsets margins;
+  bool using_default_margins = true;
   NormalizedInsets internal_padding;
   NormalizedRect actual_bounds;
   FlexSpecification flex;
@@ -63,10 +64,16 @@ struct FlexChildData {
 template <typename T>
 T GetViewProperty(const View* view,
                   const ui::PropertyHandler& defaults,
-                  const ui::ClassProperty<T*>* property) {
+                  const ui::ClassProperty<T*>* property,
+                  bool* is_default = nullptr) {
   T* found_value = view->GetProperty(property);
-  if (found_value)
+  if (found_value) {
+    if (is_default)
+      *is_default = false;
     return *found_value;
+  }
+  if (is_default)
+    *is_default = true;
   found_value = defaults.GetProperty(property);
   if (found_value)
     return *found_value;
@@ -240,7 +247,7 @@ FlexLayout::PropertyHandler::PropertyHandler(FlexLayout* layout)
 
 void FlexLayout::PropertyHandler::AfterPropertyChange(const void* key,
                                                       int64_t old_value) {
-  layout_->InvalidateLayout();
+  layout_->InvalidateHost(true);
 }
 
 // FlexLayout
@@ -252,7 +259,16 @@ FlexLayout::~FlexLayout() = default;
 FlexLayout& FlexLayout::SetOrientation(LayoutOrientation orientation) {
   if (orientation != orientation_) {
     orientation_ = orientation;
-    InvalidateLayout();
+    InvalidateHost(true);
+  }
+  return *this;
+}
+
+FlexLayout& FlexLayout::SetIncludeHostInsetsInLayout(
+    bool include_host_insets_in_layout) {
+  if (include_host_insets_in_layout != include_host_insets_in_layout_) {
+    include_host_insets_in_layout_ = include_host_insets_in_layout;
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -260,7 +276,7 @@ FlexLayout& FlexLayout::SetOrientation(LayoutOrientation orientation) {
 FlexLayout& FlexLayout::SetCollapseMargins(bool collapse_margins) {
   if (collapse_margins != collapse_margins_) {
     collapse_margins_ = collapse_margins;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -271,7 +287,7 @@ FlexLayout& FlexLayout::SetMainAxisAlignment(
       << "Main axis stretch/justify is not yet supported.";
   if (main_axis_alignment_ != main_axis_alignment) {
     main_axis_alignment_ = main_axis_alignment;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -280,7 +296,7 @@ FlexLayout& FlexLayout::SetCrossAxisAlignment(
     LayoutAlignment cross_axis_alignment) {
   if (cross_axis_alignment_ != cross_axis_alignment) {
     cross_axis_alignment_ = cross_axis_alignment;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -288,7 +304,16 @@ FlexLayout& FlexLayout::SetCrossAxisAlignment(
 FlexLayout& FlexLayout::SetInteriorMargin(const gfx::Insets& interior_margin) {
   if (interior_margin_ != interior_margin) {
     interior_margin_ = interior_margin;
-    InvalidateLayout();
+    InvalidateHost(true);
+  }
+  return *this;
+}
+
+FlexLayout& FlexLayout::SetIgnoreDefaultMainAxisMargins(
+    bool ignore_default_main_axis_margins) {
+  if (ignore_default_main_axis_margins_ != ignore_default_main_axis_margins) {
+    ignore_default_main_axis_margins_ = ignore_default_main_axis_margins;
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -296,7 +321,7 @@ FlexLayout& FlexLayout::SetInteriorMargin(const gfx::Insets& interior_margin) {
 FlexLayout& FlexLayout::SetMinimumCrossAxisSize(int size) {
   if (minimum_cross_axis_size_ != size) {
     minimum_cross_axis_size_ = size;
-    InvalidateLayout();
+    InvalidateHost(true);
   }
   return *this;
 }
@@ -305,8 +330,15 @@ LayoutManagerBase::ProposedLayout FlexLayout::CalculateProposedLayout(
     const SizeBounds& size_bounds) const {
   FlexLayoutData data;
 
-  data.host_insets = Normalize(orientation(), host_view()->GetInsets());
-  data.interior_margin = Normalize(orientation(), interior_margin());
+  if (include_host_insets_in_layout()) {
+    // Combining the interior margin and host insets means we only have to set
+    // the margin value; we'll leave the insets at zero.
+    data.interior_margin =
+        Normalize(orientation(), interior_margin() + host_view()->GetInsets());
+  } else {
+    data.host_insets = Normalize(orientation(), host_view()->GetInsets());
+    data.interior_margin = Normalize(orientation(), interior_margin());
+  }
   NormalizedSizeBounds bounds = Normalize(orientation(), size_bounds);
   bounds.Inset(data.host_insets);
   if (bounds.cross() && *bounds.cross() < minimum_cross_axis_size())
@@ -366,7 +398,8 @@ void FlexLayout::InitializeChildData(
 
     flex_child.margins =
         Normalize(orientation(),
-                  GetViewProperty(child, layout_defaults_, views::kMarginsKey));
+                  GetViewProperty(child, layout_defaults_, views::kMarginsKey,
+                                  &flex_child.using_default_margins));
     flex_child.internal_padding = Normalize(
         orientation(),
         GetViewProperty(child, layout_defaults_, views::kInternalPaddingKey));
@@ -443,6 +476,20 @@ void FlexLayout::CalculateChildBounds(const SizeBounds& size_bounds,
   }
 }
 
+Inset1D FlexLayout::GetCrossAxisMargins(const FlexLayoutData& layout,
+                                        size_t child_index) const {
+  const FlexChildData& child_data = layout.child_data[child_index];
+  const int leading_margin =
+      CalculateMargin(layout.interior_margin.cross_leading(),
+                      child_data.margins.cross_leading(),
+                      child_data.internal_padding.cross_leading());
+  const int trailing_margin =
+      CalculateMargin(layout.interior_margin.cross_trailing(),
+                      child_data.margins.cross_trailing(),
+                      child_data.internal_padding.cross_trailing());
+  return Inset1D(leading_margin, trailing_margin);
+}
+
 int FlexLayout::CalculateMargin(int margin1,
                                 int margin2,
                                 int internal_padding) const {
@@ -457,37 +504,39 @@ base::Optional<int> FlexLayout::GetAvailableCrossAxisSize(
     const NormalizedSizeBounds& bounds) const {
   if (!bounds.cross())
     return base::nullopt;
-
-  const FlexChildData& child_layout = layout.child_data[child_index];
-  const int leading_margin =
-      CalculateMargin(layout.interior_margin.cross_leading(),
-                      child_layout.margins.cross_leading(),
-                      child_layout.internal_padding.cross_leading());
-  const int trailing_margin =
-      CalculateMargin(layout.interior_margin.cross_trailing(),
-                      child_layout.margins.cross_trailing(),
-                      child_layout.internal_padding.cross_trailing());
-  return std::max(0, *bounds.cross() - (leading_margin + trailing_margin));
+  const Inset1D cross_margins = GetCrossAxisMargins(layout, child_index);
+  return std::max(0, *bounds.cross() - cross_margins.size());
 }
 
 int FlexLayout::CalculateChildSpacing(
     const FlexLayoutData& layout,
     base::Optional<size_t> child1_index,
     base::Optional<size_t> child2_index) const {
+  const FlexChildData* const child1 =
+      child1_index ? &layout.child_data[*child1_index] : nullptr;
+  const FlexChildData* const child2 =
+      child2_index ? &layout.child_data[*child2_index] : nullptr;
+
+  const int child1_trailing =
+      child1 && (child2 || !ignore_default_main_axis_margins() ||
+                 !child1->using_default_margins)
+          ? child1->margins.main_trailing()
+          : 0;
+  const int child2_leading =
+      child2 && (child1 || !ignore_default_main_axis_margins() ||
+                 !child2->using_default_margins)
+          ? child2->margins.main_leading()
+          : 0;
+
   const int left_margin =
-      child1_index ? layout.child_data[*child1_index].margins.main_trailing()
-                   : layout.interior_margin.main_leading();
+      child1 ? child1_trailing : layout.interior_margin.main_leading();
   const int right_margin =
-      child2_index ? layout.child_data[*child2_index].margins.main_leading()
-                   : layout.interior_margin.main_trailing();
+      child2 ? child2_leading : layout.interior_margin.main_trailing();
+
   const int left_padding =
-      child1_index
-          ? layout.child_data[*child1_index].internal_padding.main_trailing()
-          : 0;
+      child1 ? child1->internal_padding.main_trailing() : 0;
   const int right_padding =
-      child2_index
-          ? layout.child_data[*child2_index].internal_padding.main_leading()
-          : 0;
+      child2 ? child2->internal_padding.main_leading() : 0;
 
   return CalculateMargin(left_margin, right_margin,
                          left_padding + right_padding);
@@ -521,20 +570,12 @@ void FlexLayout::UpdateLayoutFromChildren(
       continue;
 
     // Update the cross-axis margins and if necessary, the size.
-    Inset1D& cross_spacing = cross_spacings[i];
-    cross_spacing.set_leading(
-        CalculateMargin(data->interior_margin.cross_leading(),
-                        flex_child.margins.cross_leading(),
-                        flex_child.internal_padding.cross_leading()));
-    cross_spacing.set_trailing(
-        CalculateMargin(data->interior_margin.cross_trailing(),
-                        flex_child.margins.cross_trailing(),
-                        flex_child.internal_padding.cross_trailing()));
+    cross_spacings[i] = GetCrossAxisMargins(*data, i);
 
     if (!force_cross_size) {
       const int cross_size = std::min(flex_child.current_size.cross(),
                                       flex_child.preferred_size.cross());
-      data->total_size.SetToMax(0, cross_spacing.size() + cross_size);
+      data->total_size.SetToMax(0, cross_spacings[i].size() + cross_size);
     }
 
     // Calculate main-axis size and upper-left main axis coordinate.
@@ -683,7 +724,7 @@ void FlexLayout::AllocateFlexSpace(
       // them to |expandable_views| so that the remaining space can be allocated
       // later.
       if (expandable_views &&
-          new_size.main() >= flex_child.preferred_size.main()) {
+          new_size.main() > flex_child.preferred_size.main()) {
         (*expandable_views)[flex_order].push_back(view_index);
         new_size.set_main(flex_child.preferred_size.main());
       }

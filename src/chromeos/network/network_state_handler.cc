@@ -235,6 +235,13 @@ NetworkStateHandler::TechnologyState NetworkStateHandler::GetTechnologyState(
   if (shill_property_handler_->IsTechnologyProhibited(technology))
     return TECHNOLOGY_PROHIBITED;
 
+  // Disabling is a pseudostate used by the UI and takes precedence over
+  // enabled.
+  if (shill_property_handler_->IsTechnologyDisabling(technology)) {
+    DCHECK(shill_property_handler_->IsTechnologyEnabled(technology));
+    return TECHNOLOGY_DISABLING;
+  }
+
   // Enabled and Uninitialized should be mutually exclusive. 'Enabling', which
   // is a pseudo state used by the UI, takes precedence over 'Uninitialized',
   // but not 'Enabled'.
@@ -1181,6 +1188,13 @@ void NetworkStateHandler::SetErrorForTest(const std::string& service_path,
   network_state->last_error_ = error;
 }
 
+void NetworkStateHandler::SetDeviceStateUpdatedForTest(
+    const std::string& device_path) {
+  DeviceState* device = GetModifiableDeviceState(device_path);
+  DCHECK(device);
+  device->set_update_received();
+}
+
 //------------------------------------------------------------------------------
 // ShillPropertyHandler::Delegate overrides
 
@@ -1934,6 +1948,9 @@ void NetworkStateHandler::NotifyIfActiveNetworksChanged() {
 
 void NetworkStateHandler::NotifyNetworkPropertiesUpdated(
     const NetworkState* network) {
+  // Skip property updates before NetworkState::InitialPropertiesReceived.
+  if (network->type().empty())
+    return;
   SCOPED_NET_LOG_IF_SLOW();
   NET_LOG_EVENT("NOTIFY:NetworkPropertiesUpdated", GetLogName(network));
   notifying_network_observers_ = true;
@@ -1989,22 +2006,13 @@ std::string NetworkStateHandler::GetTechnologyForType(
   if (type.MatchesType(shill::kTypeWifi))
     return shill::kTypeWifi;
 
-  if (type.Equals(NetworkTypePattern::Wimax()))
-    return shill::kTypeWimax;
-
-  // Prefer WiMAX over Cellular only if it's available.
-  if (type.MatchesType(shill::kTypeWimax) &&
-      shill_property_handler_->IsTechnologyAvailable(shill::kTypeWimax)) {
-    return shill::kTypeWimax;
-  }
-
   if (type.MatchesType(shill::kTypeCellular))
     return shill::kTypeCellular;
 
   if (type.MatchesType(kTypeTether))
     return kTypeTether;
 
-  NOTREACHED();
+  NOTREACHED() << "Unexpected Type: " << type.ToDebugString();
   return std::string();
 }
 
@@ -2015,8 +2023,6 @@ std::vector<std::string> NetworkStateHandler::GetTechnologiesForType(
     technologies.emplace_back(shill::kTypeEthernet);
   if (type.MatchesType(shill::kTypeWifi))
     technologies.emplace_back(shill::kTypeWifi);
-  if (type.MatchesType(shill::kTypeWimax))
-    technologies.emplace_back(shill::kTypeWimax);
   if (type.MatchesType(shill::kTypeCellular))
     technologies.emplace_back(shill::kTypeCellular);
   if (type.MatchesType(shill::kTypeBluetooth))

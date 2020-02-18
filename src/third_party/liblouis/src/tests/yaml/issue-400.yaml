@@ -4,6 +4,7 @@ table: |
   display ; 56
   display - 36
   punctuation - 36
+  include tables/spaces.uti
   include tables/latinLetterDef6Dots.uti
   include tables/digits6Dots.uti
   include tables/litdigits6Dots.uti
@@ -66,6 +67,7 @@ table: |
   display - 36
   sign % 123456
   punctuation - 36
+  include tables/spaces.uti
   include tables/latinLetterDef6Dots.uti
   include tables/digits6Dots.uti
   include tables/litdigits6Dots.uti
@@ -114,6 +116,7 @@ table: |
   display - 36
   sign % 123456
   punctuation - 36
+  include tables/spaces.uti
   include tables/latinLetterDef6Dots.uti
   include tables/digits6Dots.uti
   include tables/litdigits6Dots.uti
@@ -139,7 +142,7 @@ tests:
   # number does not cancel a block in capitals
   - - "ABC123ABC"
     - ",abc#abc;abc."
-    - {xfail: missing nocontractsign after number}
+    - {xfail: "missing nocontractsign after number (see issue #631)"}
   # capsmodechars should have no effect on begcaps and endcaps
   - - "ABC-abc"
     - ",abc-.abc"
@@ -166,6 +169,7 @@ table: |
   punctuation , 6
   punctuation - 36
   punctuation . 46
+  include tables/spaces.uti
   include tables/latinLetterDef6Dots.uti
   include tables/digits6Dots.uti
   include tables/litdigits6Dots.uti

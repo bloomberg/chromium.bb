@@ -145,7 +145,6 @@ static inline MTLVertexFormat attribute_type_to_mtlformat(GrVertexAttribType typ
             return MTLVertexFormatUShort4Normalized;
     }
     SK_ABORT("Unknown vertex attribute type");
-    return MTLVertexFormatInvalid;
 }
 
 static MTLVertexDescriptor* create_vertex_descriptor(const GrPrimitiveProcessor& primProc) {
@@ -402,17 +401,14 @@ GrMtlPipelineState* GrMtlPipelineStateBuilder::finalize(GrRenderTarget* renderTa
     }
 #endif
 
-    uint32_t geomBufferSize = buffer_size(fUniformHandler.fCurrentGeometryUBOOffset,
-                                          fUniformHandler.fCurrentGeometryUBOMaxAlignment);
-    uint32_t fragBufferSize = buffer_size(fUniformHandler.fCurrentFragmentUBOOffset,
-                                          fUniformHandler.fCurrentFragmentUBOMaxAlignment);
+    uint32_t bufferSize = buffer_size(fUniformHandler.fCurrentUBOOffset,
+                                      fUniformHandler.fCurrentUBOMaxAlignment);
     return new GrMtlPipelineState(fGpu,
                                   pipelineState,
                                   pipelineDescriptor.colorAttachments[0].pixelFormat,
                                   fUniformHandles,
                                   fUniformHandler.fUniforms,
-                                  geomBufferSize,
-                                  fragBufferSize,
+                                  bufferSize,
                                   (uint32_t)fUniformHandler.numSamplers(),
                                   std::move(fGeometryProcessor),
                                   std::move(fXferProcessor),

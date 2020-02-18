@@ -117,9 +117,9 @@ class VertexInputTest : public DawnTest {
         vs << "}\n";
 
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs.str().c_str());
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs.str().c_str());
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) in vec4 color;
                 layout(location = 0) out vec4 fragColor;
@@ -128,7 +128,7 @@ class VertexInputTest : public DawnTest {
                 })");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.cVertexStage.module = vsModule;
+        descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.vertexInput = &vertexInput;
         descriptor.cColorStates[0]->format = renderPass.colorFormat;
@@ -179,7 +179,7 @@ class VertexInputTest : public DawnTest {
     dawn::Buffer MakeVertexBuffer(std::vector<T> data) {
         return utils::CreateBufferFromData(device, data.data(),
                                            static_cast<uint32_t>(data.size() * sizeof(T)),
-                                           dawn::BufferUsageBit::Vertex);
+                                           dawn::BufferUsage::Vertex);
     }
 
     struct DrawVertexBuffer {
@@ -487,6 +487,28 @@ TEST_P(VertexInputTest, MultiplePipelinesMixedVertexInput) {
     CheckResult(1, 4);
 }
 
+// Checks that using the last vertex buffer doesn't overflow the vertex buffer table in Metal.
+TEST_P(VertexInputTest, LastAllowedVertexBuffer) {
+    constexpr uint32_t kBufferIndex = kMaxVertexBuffers - 1;
+
+    utils::ComboVertexInputDescriptor vertexInput;
+    // All the other vertex buffers default to no attributes
+    vertexInput.bufferCount = kMaxVertexBuffers;
+    vertexInput.cBuffers[kBufferIndex].stride = 4 * sizeof(float);
+    vertexInput.cBuffers[kBufferIndex].stepMode = InputStepMode::Vertex;
+    vertexInput.cBuffers[kBufferIndex].attributeCount = 1;
+    vertexInput.cBuffers[kBufferIndex].attributes = &vertexInput.cAttributes[0];
+    vertexInput.cAttributes[0].shaderLocation = 0;
+    vertexInput.cAttributes[0].offset = 0;
+    vertexInput.cAttributes[0].format = VertexFormat::Float4;
+
+    dawn::RenderPipeline pipeline =
+        MakeTestPipeline(vertexInput, 1, {{0, VertexFormat::Float4, InputStepMode::Vertex}});
+
+    dawn::Buffer buffer0 = MakeVertexBuffer<float>({0, 1, 2, 3, 1, 2, 3, 4, 2, 3, 4, 5});
+    DoTestDraw(pipeline, 1, 1, {DrawVertexBuffer{kMaxVertexBuffers - 1, &buffer0}});
+}
+
 DAWN_INSTANTIATE_TEST(VertexInputTest, D3D12Backend, MetalBackend, OpenGLBackend, VulkanBackend);
 
 // TODO for the input state:
@@ -496,3 +518,52 @@ DAWN_INSTANTIATE_TEST(VertexInputTest, D3D12Backend, MetalBackend, OpenGLBackend
 //  - Add checks for alignement of vertex buffers and attributes if needed
 //  - Check for attribute narrowing
 //  - Check that the input state and the pipeline vertex input types match
+
+class OptionalVertexInputTest : public DawnTest {};
+
+// Test that vertex input is not required in render pipeline descriptor.
+TEST_P(OptionalVertexInputTest, Basic) {
+    utils::BasicRenderPass renderPass = utils::CreateBasicRenderPass(device, 3, 3);
+
+    dawn::ShaderModule vsModule =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
+            #version 450
+            void main() {
+                gl_Position = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            })");
+
+    dawn::ShaderModule fsModule =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
+            #version 450
+            layout(location = 0) out vec4 fragColor;
+            void main() {
+                fragColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+            })");
+
+    utils::ComboRenderPipelineDescriptor descriptor(device);
+    descriptor.vertexStage.module = vsModule;
+    descriptor.cFragmentStage.module = fsModule;
+    descriptor.primitiveTopology = dawn::PrimitiveTopology::PointList;
+    descriptor.vertexInput = nullptr;
+
+    dawn::RenderPipeline pipeline = device.CreateRenderPipeline(&descriptor);
+
+    dawn::CommandEncoder encoder = device.CreateCommandEncoder();
+    {
+        dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass.renderPassInfo);
+        pass.SetPipeline(pipeline);
+        pass.Draw(1, 1, 0, 0);
+        pass.EndPass();
+    }
+
+    dawn::CommandBuffer commands = encoder.Finish();
+    queue.Submit(1, &commands);
+
+    EXPECT_PIXEL_RGBA8_EQ(RGBA8(0, 255, 0, 255), renderPass.color, 1, 1);
+}
+
+DAWN_INSTANTIATE_TEST(OptionalVertexInputTest,
+                      D3D12Backend,
+                      MetalBackend,
+                      OpenGLBackend,
+                      VulkanBackend);

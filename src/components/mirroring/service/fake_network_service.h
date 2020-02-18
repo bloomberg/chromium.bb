@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "media/cast/net/cast_transport_defines.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/test/test_network_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -18,7 +19,7 @@ namespace mirroring {
 class MockUdpSocket final : public network::mojom::UDPSocket {
  public:
   MockUdpSocket(network::mojom::UDPSocketRequest request,
-                network::mojom::UDPSocketReceiverPtr receiver);
+                network::mojom::UDPSocketListenerPtr listener);
   ~MockUdpSocket() override;
 
   MOCK_METHOD0(OnSend, void());
@@ -58,7 +59,7 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
 
  private:
   mojo::Binding<network::mojom::UDPSocket> binding_;
-  network::mojom::UDPSocketReceiverPtr receiver_;
+  network::mojom::UDPSocketListenerPtr listener_;
   std::unique_ptr<media::cast::Packet> sending_packet_;
   int num_ask_for_receive_ = 0;
 
@@ -67,14 +68,15 @@ class MockUdpSocket final : public network::mojom::UDPSocket {
 
 class MockNetworkContext final : public network::TestNetworkContext {
  public:
-  explicit MockNetworkContext(network::mojom::NetworkContextRequest request);
+  explicit MockNetworkContext(
+      mojo::PendingReceiver<network::mojom::NetworkContext> receiver);
   ~MockNetworkContext() override;
 
   MOCK_METHOD0(OnUDPSocketCreated, void());
 
   // network::mojom::NetworkContext implementation:
   void CreateUDPSocket(network::mojom::UDPSocketRequest request,
-                       network::mojom::UDPSocketReceiverPtr receiver) override;
+                       network::mojom::UDPSocketListenerPtr listener) override;
   void CreateURLLoaderFactory(
       network::mojom::URLLoaderFactoryRequest request,
       network::mojom::URLLoaderFactoryParamsPtr params) override;
@@ -82,7 +84,7 @@ class MockNetworkContext final : public network::TestNetworkContext {
   MockUdpSocket* udp_socket() const { return udp_socket_.get(); }
 
  private:
-  mojo::Binding<network::mojom::NetworkContext> binding_;
+  mojo::Receiver<network::mojom::NetworkContext> receiver_;
   std::unique_ptr<MockUdpSocket> udp_socket_;
   DISALLOW_COPY_AND_ASSIGN(MockNetworkContext);
 };

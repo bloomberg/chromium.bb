@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "chrome/browser/ui/tabs/tab_group_id.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
+#include "chrome/browser/ui/views/tabs/tab_slot_view.h"
 #include "ui/base/layout.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -24,12 +25,13 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/masked_targeter_delegate.h"
-#include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 
 class AlertIndicator;
 class TabCloseButton;
 class TabController;
 class TabIcon;
+struct TabSizeInfo;
 class TabStyleViews;
 
 namespace gfx {
@@ -38,6 +40,7 @@ class LinearAnimation;
 }  // namespace gfx
 namespace views {
 class Label;
+class View;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -47,10 +50,9 @@ class Label;
 ///////////////////////////////////////////////////////////////////////////////
 class Tab : public gfx::AnimationDelegate,
             public views::ButtonListener,
-            public views::ContextMenuController,
             public views::MaskedTargeterDelegate,
-            public views::View,
-            public views::ViewObserver {
+            public views::ViewObserver,
+            public TabSlotView {
  public:
   // The Tab's class name.
   static const char kViewClassName[];
@@ -71,15 +73,10 @@ class Tab : public gfx::AnimationDelegate,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
   // views::MaskedTargeterDelegate:
   bool GetHitTestMask(SkPath* mask) const override;
 
-  // views::View:
+  // TabSlotView:
   void Layout() override;
   const char* GetClassName() const override;
   void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
@@ -101,6 +98,7 @@ class Tab : public gfx::AnimationDelegate,
   void OnFocus() override;
   void OnBlur() override;
   void OnThemeChanged() override;
+  TabSizeInfo GetTabSizeInfo() const override;
 
   TabController* controller() const { return controller_; }
 
@@ -122,6 +120,10 @@ class Tab : public gfx::AnimationDelegate,
 
   // Returns the color for the tab's group, if any.
   base::Optional<SkColor> GetGroupColor() const;
+
+  // Should be called when the result of
+  // |TabController::GetVisualDataForGroup()| changes.
+  void GroupColorChanged();
 
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
@@ -160,11 +162,6 @@ class Tab : public gfx::AnimationDelegate,
   // Sets the visibility of the indicator shown when the tab needs to indicate
   // to the user that it needs their attention.
   void SetTabNeedsAttention(bool attention);
-
-  // Gets/sets the background X offset used to match the image in the inactive
-  // tab to the frame image.
-  int background_offset() const { return background_offset_; }
-  void set_background_offset(int offset) { background_offset_ = offset; }
 
   // Returns true if this tab became the active tab selected in
   // response to the last ui::ET_TAP_DOWN gesture dispatched to
@@ -256,9 +253,6 @@ class Tab : public gfx::AnimationDelegate,
 
   bool tab_activated_with_last_tap_down_ = false;
 
-  // The offset used to paint the inactive background image.
-  int background_offset_;
-
   // For narrow tabs, we show the alert icon or, if there is no alert icon, the
   // favicon even if it won't completely fit. In this case, we need to center
   // the icon within the tab; it will be clipped to fit.
@@ -287,8 +281,8 @@ class Tab : public gfx::AnimationDelegate,
   // padding between them to space them out visually.
   bool extra_alert_indicator_padding_ = false;
 
-  // The current color of the alert indicator and close button icons.
-  SkColor button_color_ = SK_ColorTRANSPARENT;
+  // The tab foreground color (title, buttons).
+  SkColor foreground_color_ = SK_ColorTRANSPARENT;
 
   // Indicates whether the mouse is currently hovered over the tab. This is
   // different from View::IsMouseHovered() which does a naive intersection with

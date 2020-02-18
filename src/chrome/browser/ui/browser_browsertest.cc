@@ -27,6 +27,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
@@ -52,8 +54,6 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/javascript_dialogs/javascript_dialog_tab_helper.h"
 #include "chrome/browser/ui/search/local_ntp_test_utils.h"
 #include "chrome/browser/ui/search/search_tab_helper.h"
@@ -549,9 +549,9 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ThirtyFourTabs) {
   // for the algorithm to decide how many processes to create.
   const int kExpectedProcessCount =
 #if defined(ARCH_CPU_64_BITS)
-      17;
+      12;
 #else
-      25;
+      17;
 #endif
   if (base::SysInfo::AmountOfPhysicalMemoryMB() >= 2048) {
     EXPECT_GE(CountRenderProcessHosts(), kExpectedProcessCount);
@@ -1300,7 +1300,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, AppIdSwitch) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, OverscrollEnabledInRegularWindows) {
-  ASSERT_TRUE(browser()->is_type_tabbed());
+  ASSERT_TRUE(browser()->is_type_normal());
   EXPECT_TRUE(browser()->CanOverscrollContent());
 }
 
@@ -1328,11 +1328,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, ShouldShowLocationBar) {
   const Extension* extension_app = GetExtension();
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(
-      AppLaunchParams(browser()->profile(), extension_app->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  WebContents* app_window =
+      apps::LaunchService::Get(browser()->profile())
+          ->OpenApplication(AppLaunchParams(
+              browser()->profile(), extension_app->id(),
+              apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   DevToolsWindow* devtools_window =
@@ -1498,11 +1500,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(extension_app);
 
   // Launch it in a window, as AppLauncherHandler::HandleLaunchApp() would.
-  WebContents* app_window = OpenApplication(
-      AppLaunchParams(browser()->profile(), extension_app->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
-                      WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+  WebContents* app_window =
+      apps::LaunchService::Get(browser()->profile())
+          ->OpenApplication(AppLaunchParams(
+              browser()->profile(), extension_app->id(),
+              apps::mojom::LaunchContainer::kLaunchContainerWindow,
+              WindowOpenDisposition::NEW_WINDOW,
+              apps::mojom::AppLaunchSource::kSourceTest));
   ASSERT_TRUE(app_window);
 
   // Apps launched in a window from the NTP have an extensions tab helper with
@@ -1524,7 +1528,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
   ASSERT_TRUE(new_browser);
   ASSERT_TRUE(new_browser != browser());
 
-  EXPECT_TRUE(new_browser->is_app());
+  EXPECT_TRUE(new_browser->is_type_app());
 
   // The browser's app name should include the extension's id.
   std::string app_name = new_browser->app_name_;
@@ -1536,22 +1540,30 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, OpenAppWindowLikeNtp) {
 // Makes sure the browser doesn't crash when
 // set_show_state(ui::SHOW_STATE_MAXIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMaximized) {
-  Browser::Type types[] = {Browser::TYPE_TABBED, Browser::TYPE_POPUP};
-  for (size_t i = 0; i < base::size(types); ++i) {
-    Browser::CreateParams params(types[i], browser()->profile(), true);
-    params.initial_show_state = ui::SHOW_STATE_MAXIMIZED;
-    AddBlankTabAndShow(new Browser(params));
+  Browser::CreateParams params[] = {
+      Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
+      Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
+                                          browser()->profile(), true),
+      Browser::CreateParams::CreateForDevTools(browser()->profile())};
+  for (size_t i = 0; i < base::size(params); ++i) {
+    params[i].initial_show_state = ui::SHOW_STATE_MAXIMIZED;
+    AddBlankTabAndShow(new Browser(params[i]));
   }
 }
 
 // Makes sure the browser doesn't crash when
 // set_show_state(ui::SHOW_STATE_MINIMIZED) has been invoked.
 IN_PROC_BROWSER_TEST_F(BrowserTest, StartMinimized) {
-  Browser::Type types[] = {Browser::TYPE_TABBED, Browser::TYPE_POPUP};
-  for (size_t i = 0; i < base::size(types); ++i) {
-    Browser::CreateParams params(types[i], browser()->profile(), true);
-    params.initial_show_state = ui::SHOW_STATE_MINIMIZED;
-    AddBlankTabAndShow(new Browser(params));
+  Browser::CreateParams params[] = {
+      Browser::CreateParams(Browser::TYPE_NORMAL, browser()->profile(), true),
+      Browser::CreateParams(Browser::TYPE_POPUP, browser()->profile(), true),
+      Browser::CreateParams::CreateForApp("app_name", true, gfx::Rect(),
+                                          browser()->profile(), true),
+      Browser::CreateParams::CreateForDevTools(browser()->profile())};
+  for (size_t i = 0; i < base::size(params); ++i) {
+    params[i].initial_show_state = ui::SHOW_STATE_MINIMIZED;
+    AddBlankTabAndShow(new Browser(params[i]));
   }
 }
 
@@ -2234,7 +2246,7 @@ IN_PROC_BROWSER_TEST_F(AppModeTest, EnableAppModeTest) {
   // Test that an application browser window loads correctly.
 
   // Verify the browser is in application mode.
-  EXPECT_TRUE(browser()->is_app());
+  EXPECT_TRUE(browser()->is_type_app());
 }
 
 // Confirm chrome://version contains some expected content.

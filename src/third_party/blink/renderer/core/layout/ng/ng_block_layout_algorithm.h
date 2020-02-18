@@ -39,6 +39,7 @@ struct NGInflowChildData {
   NGMarginStrut margin_strut;
   NGBoxStrut margins;
   bool margins_fully_resolved;
+  bool is_resuming_after_break;
 };
 
 // A class for general block layout (e.g. a <div> with no special style).
@@ -62,6 +63,8 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
  private:
   NOINLINE scoped_refptr<const NGLayoutResult>
   LayoutWithInlineChildLayoutContext();
+  NOINLINE scoped_refptr<const NGLayoutResult> LayoutWithItemsBuilder(
+      NGInlineChildLayoutContext* context);
 
   inline scoped_refptr<const NGLayoutResult> Layout(
       NGInlineChildLayoutContext* inline_child_layout_context);
@@ -88,8 +91,12 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   NGBoxStrut CalculateMargins(NGLayoutInputNode child,
                               bool is_new_fc,
-                              const NGBreakToken* child_break_token,
                               bool* margins_fully_resolved);
+
+  void StopMarginCollapsing(EMarginCollapse collapse_value,
+                            LayoutUnit this_margin,
+                            LayoutUnit* logical_block_offset,
+                            NGMarginStrut* margin_strut);
 
   // Creates a new constraint space for the current child.
   NGConstraintSpace CreateConstraintSpaceForChild(
@@ -280,6 +287,18 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
                                  NextBorderEdge(*previous_inflow_position));
   }
 
+  // Mark this fragment as modifying its incoming margin-strut if it hasn't
+  // resolved its BFC block-offset yet.
+  void SetSubtreeModifiedMarginStrutIfNeeded(const Length* margin = nullptr) {
+    if (container_builder_.BfcBlockOffset())
+      return;
+
+    if (margin && margin->IsZero())
+      return;
+
+    container_builder_.SetSubtreeModifiedMarginStrut();
+  }
+
   // Return true if the BFC block offset has changed and this means that we
   // need to abort layout.
   bool NeedsAbortOnBfcBlockOffsetChange() const;
@@ -338,6 +357,9 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // set, and abort layout if it is.
   bool abort_when_bfc_block_offset_updated_ = false;
 
+  // This will be set during block fragmentation once we've processed the first
+  // in-flow child of a container. It is used to check if we're at a valid class
+  // A or B breakpoint (between block-level siblings or line box siblings).
   bool has_processed_first_child_ = false;
 
   NGExclusionSpace exclusion_space_;

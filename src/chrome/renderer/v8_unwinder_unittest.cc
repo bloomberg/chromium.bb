@@ -16,7 +16,7 @@
 #include "base/stl_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "gin/public/isolate_holder.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,7 +51,7 @@ T* GetPointerFromHolder(v8::Local<v8::Object> holder) {
 class ScopedV8Environment {
  public:
   ScopedV8Environment()
-      : isolate_holder_(scoped_task_environment_.GetMainThreadTaskRunner(),
+      : isolate_holder_(task_environment_.GetMainThreadTaskRunner(),
                         gin::IsolateHolder::IsolateType::kBlinkMainThread) {
     isolate()->Enter();
     v8::HandleScope handle_scope(isolate());
@@ -71,7 +71,7 @@ class ScopedV8Environment {
   v8::Isolate* isolate() { return isolate_holder_.isolate(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   gin::IsolateHolder isolate_holder_;
   v8::Persistent<v8::Context> context_;
 };

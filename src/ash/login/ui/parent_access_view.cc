@@ -16,11 +16,13 @@
 #include "ash/public/cpp/login_types.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
+#include "ash/shelf/shelf_constants.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string16.h"
@@ -28,6 +30,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/session_manager/session_manager_types.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -41,6 +44,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/focus_ring.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -88,7 +92,7 @@ constexpr int kArrowSizeDp = 20;
 
 constexpr SkColor kTextColor = SK_ColorWHITE;
 constexpr SkColor kErrorColor = SkColorSetARGB(0xFF, 0xF2, 0x8B, 0x82);
-constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x57, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kArrowButtonColor = SkColorSetARGB(0x2B, 0xFF, 0xFF, 0xFF);
 
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
@@ -160,8 +164,9 @@ class AccessibleInputField : public views::Textfield {
     // {number of fields}"
     node_data->RemoveState(ax::mojom::State::kEditable);
     node_data->role = ax::mojom::Role::kListItem;
-    base::string16 description =
-        text().empty() ? accessible_description_ : text();
+    base::string16 description = views::Textfield::GetText().empty()
+                                     ? accessible_description_
+                                     : GetText();
     node_data->AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
                                   base::UTF16ToUTF8(description));
   }
@@ -172,13 +177,67 @@ class AccessibleInputField : public views::Textfield {
     return parent() ? parent()->GetSelectedViewForGroup(group) : nullptr;
   }
 
+  void OnGestureEvent(ui::GestureEvent* event) override {
+    if (event->type() == ui::ET_GESTURE_TAP_DOWN) {
+      RequestFocusWithPointer(event->details().primary_pointer_type());
+      return;
+    }
+
+    views::Textfield::OnGestureEvent(event);
+  }
+
  private:
   base::string16 accessible_description_;
 
   DISALLOW_COPY_AND_ASSIGN(AccessibleInputField);
 };
 
+void RecordAction(ParentAccessView::UMAAction action) {
+  UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeAction,
+                            action);
+}
+
+void RecordUsage(ParentAccessRequestReason reason) {
+  switch (reason) {
+    case ParentAccessRequestReason::kUnlockTimeLimits: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimeLimits);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTime: {
+      bool is_login = Shell::Get()->session_controller()->GetSessionState() ==
+                      session_manager::SessionState::LOGIN_PRIMARY;
+      UMA_HISTOGRAM_ENUMERATION(
+          ParentAccessView::kUMAParentAccessCodeUsage,
+          is_login ? ParentAccessView::UMAUsage::kTimeChangeLoginScreen
+                   : ParentAccessView::UMAUsage::kTimeChangeInSession);
+      return;
+    }
+    case ParentAccessRequestReason::kChangeTimezone: {
+      UMA_HISTOGRAM_ENUMERATION(ParentAccessView::kUMAParentAccessCodeUsage,
+                                ParentAccessView::UMAUsage::kTimezoneChange);
+      return;
+    }
+  }
+  NOTREACHED() << "Unknown ParentAccessRequestReason";
+}
+
 }  // namespace
+
+// Label button that displays focus ring.
+class ParentAccessView::FocusableLabelButton : public views::LabelButton {
+ public:
+  FocusableLabelButton(views::ButtonListener* listener,
+                       const base::string16& text)
+      : views::LabelButton(listener, text) {
+    SetInstallFocusRingOnFocus(true);
+    focus_ring()->SetColor(kShelfFocusBorderColor);
+  }
+  ~FocusableLabelButton() override = default;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(FocusableLabelButton);
+};
 
 // Digital access code input view for variable length of input codes.
 // Displays a separate underscored field for every input code digit.
@@ -188,6 +247,22 @@ class ParentAccessView::AccessCodeInput : public views::View,
   using OnInputChange =
       base::RepeatingCallback<void(bool complete, bool last_field_active)>;
   using OnEnter = base::RepeatingClosure;
+
+  class TestApi {
+   public:
+    explicit TestApi(ParentAccessView::AccessCodeInput* access_code_input)
+        : access_code_input_(access_code_input) {}
+    ~TestApi() = default;
+
+    views::Textfield* GetInputTextField(int index) {
+      DCHECK_LT(static_cast<size_t>(index),
+                access_code_input_->input_fields_.size());
+      return access_code_input_->input_fields_[index];
+    }
+
+   private:
+    ParentAccessView::AccessCodeInput* access_code_input_;
+  };
 
   // Builds the view for an access code that consists out of |length| digits.
   // |on_input_change| will be called upon access code digit insertion, deletion
@@ -265,12 +340,12 @@ class ParentAccessView::AccessCodeInput : public views::View,
     std::string result;
     size_t length;
     for (auto* field : input_fields_) {
-      length = field->text().length();
+      length = field->GetText().length();
       if (!length)
         return base::nullopt;
 
       DCHECK_EQ(1u, length);
-      base::StrAppend(&result, {base::UTF16ToUTF8(field->text())});
+      base::StrAppend(&result, {base::UTF16ToUTF8(field->GetText())});
     }
     return result;
   }
@@ -328,8 +403,10 @@ class ParentAccessView::AccessCodeInput : public views::View,
 
   bool HandleMouseEvent(views::Textfield* sender,
                         const ui::MouseEvent& mouse_event) override {
-    if (!mouse_event.IsOnlyLeftMouseButton())
+    if (!(mouse_event.IsOnlyLeftMouseButton() ||
+          mouse_event.IsOnlyRightMouseButton())) {
       return false;
+    }
 
     // Move focus to the field that was selected with mouse input.
     for (size_t i = 0; i < input_fields_.size(); ++i) {
@@ -390,7 +467,7 @@ class ParentAccessView::AccessCodeInput : public views::View,
   }
 
   // Returns text in the active input field.
-  const base::string16& ActiveInput() const { return ActiveField()->text(); }
+  const base::string16& ActiveInput() const { return ActiveField()->GetText(); }
 
   // To be called when access input code changes (digit is inserted, deleted or
   // updated). Passes true when code is complete (all digits have input value)
@@ -417,32 +494,37 @@ ParentAccessView::TestApi::TestApi(ParentAccessView* view) : view_(view) {
 
 ParentAccessView::TestApi::~TestApi() = default;
 
-LoginButton* ParentAccessView::TestApi::back_button() const {
+LoginButton* ParentAccessView::TestApi::back_button() {
   return view_->back_button_;
 }
 
-views::Label* ParentAccessView::TestApi::title_label() const {
+views::Label* ParentAccessView::TestApi::title_label() {
   return view_->title_label_;
 }
 
-views::Label* ParentAccessView::TestApi::description_label() const {
+views::Label* ParentAccessView::TestApi::description_label() {
   return view_->description_label_;
 }
 
-views::View* ParentAccessView::TestApi::access_code_view() const {
+views::View* ParentAccessView::TestApi::access_code_view() {
   return view_->access_code_view_;
 }
 
-views::LabelButton* ParentAccessView::TestApi::help_button() const {
+views::LabelButton* ParentAccessView::TestApi::help_button() {
   return view_->help_button_;
 }
 
-ArrowButtonView* ParentAccessView::TestApi::submit_button() const {
+ArrowButtonView* ParentAccessView::TestApi::submit_button() {
   return view_->submit_button_;
 }
 
-LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() const {
+LoginPinView* ParentAccessView::TestApi::pin_keyboard_view() {
   return view_->pin_keyboard_view_;
+}
+
+views::Textfield* ParentAccessView::TestApi::GetInputTextField(int index) {
+  return ParentAccessView::AccessCodeInput::TestApi(view_->access_code_view_)
+      .GetInputTextField(index);
 }
 
 ParentAccessView::State ParentAccessView::TestApi::state() const {
@@ -455,12 +537,21 @@ ParentAccessView::Callbacks::Callbacks(const Callbacks& other) = default;
 
 ParentAccessView::Callbacks::~Callbacks() = default;
 
+// static
+constexpr char ParentAccessView::kUMAParentAccessCodeAction[];
+
+// static
+constexpr char ParentAccessView::kUMAParentAccessCodeUsage[];
+
 ParentAccessView::ParentAccessView(const AccountId& account_id,
                                    const Callbacks& callbacks,
-                                   ParentAccessRequestReason reason)
-    : callbacks_(callbacks), account_id_(account_id), request_reason_(reason) {
+                                   ParentAccessRequestReason reason,
+                                   base::Time validation_time)
+    : callbacks_(callbacks),
+      account_id_(account_id),
+      request_reason_(reason),
+      validation_time_(validation_time) {
   DCHECK(callbacks.on_finished);
-
   // Main view contains all other views aligned vertically and centered.
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
@@ -537,7 +628,6 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   add_spacer(kTitleToDescriptionDistanceDp);
 
   // Main view description.
-  // TODO(crbug.com/970223): Add learn more link after description.
   description_label_ = new views::Label(GetDescription(request_reason_),
                                         views::style::CONTEXT_LABEL,
                                         views::style::STYLE_PRIMARY);
@@ -564,12 +654,13 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
   add_spacer(kAccessCodeToPinKeyboardDistanceDp);
 
   // Pin keyboard.
-  pin_keyboard_view_ = new LoginPinView(
-      LoginPinView::Style::kNumeric,
-      base::BindRepeating(&AccessCodeInput::InsertDigit,
-                          base::Unretained(access_code_view_)),
-      base::BindRepeating(&AccessCodeInput::Backspace,
-                          base::Unretained(access_code_view_)));
+  pin_keyboard_view_ =
+      new LoginPinView(LoginPinView::Style::kNumeric,
+                       base::BindRepeating(&AccessCodeInput::InsertDigit,
+                                           base::Unretained(access_code_view_)),
+                       base::BindRepeating(&AccessCodeInput::Backspace,
+                                           base::Unretained(access_code_view_)),
+                       LoginPinView::OnPinBack());
   // Backspace key is always enabled and |access_code_| field handles it.
   pin_keyboard_view_->OnPasswordTextChanged(false);
   AddChildView(pin_keyboard_view_);
@@ -591,7 +682,7 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
           views::BoxLayout::Orientation::kHorizontal, gfx::Insets(), 0));
   AddChildView(footer);
 
-  help_button_ = new views::LabelButton(
+  help_button_ = new FocusableLabelButton(
       this, l10n_util::GetStringUTF16(IDS_ASH_LOGIN_PARENT_ACCESS_HELP));
   help_button_->SetPaintToLayer();
   help_button_->layer()->SetFillsBoundsOpaquely(false);
@@ -616,13 +707,14 @@ ParentAccessView::ParentAccessView(const AccountId& account_id,
       l10n_util::GetStringUTF16(IDS_ASH_LOGIN_SUBMIT_BUTTON_ACCESSIBLE_NAME));
   submit_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
   footer->AddChildView(submit_button_);
-
   add_spacer(kSubmitButtonBottomMarginDp);
 
   // Pin keyboard is only shown in tablet mode.
   pin_keyboard_view_->SetVisible(IsTabletMode());
 
   tablet_mode_observer_.Add(Shell::Get()->tablet_mode_controller());
+
+  RecordUsage(request_reason_);
 }
 
 ParentAccessView::~ParentAccessView() = default;
@@ -635,7 +727,7 @@ void ParentAccessView::OnPaint(gfx::Canvas* canvas) {
       session_manager::SessionState::ACTIVE) {
     SkColor extracted_color =
         Shell::Get()->wallpaper_controller()->GetProminentColor(
-            color_utils::ColorProfile(color_utils::LumaRange::DARK,
+            color_utils::ColorProfile(color_utils::LumaRange::NORMAL,
                                       color_utils::SaturationRange::MUTED));
     if (extracted_color != kInvalidWallpaperColor &&
         extracted_color != SK_ColorTRANSPARENT) {
@@ -677,10 +769,16 @@ base::string16 ParentAccessView::GetAccessibleWindowTitle() const {
 void ParentAccessView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == back_button_) {
+    RecordAction(ParentAccessView::UMAAction::kCanceledByUser);
     callbacks_.on_finished.Run(false);
   } else if (sender == help_button_) {
-    // TODO(agawronska): Implement help view.
-    NOTIMPLEMENTED();
+    RecordAction(ParentAccessView::UMAAction::kGetHelp);
+    // TODO(https://crbug.com/999387): Remove this when handling touch
+    // cancellation is fixed for system modal windows.
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce([]() {
+          Shell::Get()->login_screen_controller()->ShowParentAccessHelpApp();
+        }));
   } else if (sender == submit_button_) {
     SubmitCode();
   }
@@ -713,15 +811,18 @@ void ParentAccessView::SubmitCode() {
 
   bool result =
       Shell::Get()->login_screen_controller()->ValidateParentAccessCode(
-          account_id_, *code);
+          account_id_, *code,
+          validation_time_.is_null() ? base::Time::Now() : validation_time_);
 
   if (result) {
     VLOG(1) << "Parent access code successfully validated";
+    RecordAction(ParentAccessView::UMAAction::kValidationSuccess);
     callbacks_.on_finished.Run(true);
     return;
   }
 
   VLOG(1) << "Invalid parent access code entered";
+  RecordAction(ParentAccessView::UMAAction::kValidationError);
   UpdateState(State::kError);
 }
 
@@ -751,6 +852,8 @@ void ParentAccessView::UpdatePreferredSize() {
   pin_keyboard_to_footer_spacer_->SetPreferredSize(
       GetPinKeyboardToFooterSpacerSize());
   SetPreferredSize(CalculatePreferredSize());
+  if (GetWidget())
+    GetWidget()->CenterWindow(GetPreferredSize());
 }
 
 void ParentAccessView::FocusSubmitButton() {
@@ -764,6 +867,12 @@ void ParentAccessView::OnInputChange(bool complete, bool last_field_active) {
   submit_button_->SetEnabled(complete);
 
   if (complete && last_field_active) {
+    if (auto_submit_enabled_) {
+      auto_submit_enabled_ = false;
+      SubmitCode();
+      return;
+    }
+
     // Moving focus is delayed by using PostTask to allow for proper
     // a11y announcements.
     base::ThreadTaskRunnerHandle::Get()->PostTask(

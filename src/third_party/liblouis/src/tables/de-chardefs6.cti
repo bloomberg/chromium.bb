@@ -1,6 +1,6 @@
 # liblouis: Character definitions for german tables
 #
-#  Copyright (C) 2009 SBS Schweizerische Bibliothek für Blinde und Sehbehinderte
+#  Copyright (C) 2018 SBS Schweizerische Bibliothek für Blinde, Seh- und Lesebehinderte
 #
 #  This file is part of liblouis.
 #
@@ -19,23 +19,12 @@
 #  <http://www.gnu.org/licenses/>.
 #
 #-------------------------------------------------------------------------------
-#
-#  Character definitions for german tables
-#
-#  Version 2009-11-19
-#  christian.waldvogel@sbszh.ch
-#
-#-------------------------------------------------------------------------------
 
+space \x00a0 a
+include spaces.uti
 
 # ===== BASIC LATIN - 0000-007F ================================================
 
-space         \x0009 0               #9     [CHARACTER TABULATION]
-space         \x000A 0               #10    [LINE FEED (LF)]
-space         \x000C 0               #12    [FORM FEED (FF)]
-space         \x000D 0               #13    [CARRIAGE RETURN (CR)]
-
-space         \x0020 0               #32    SPACE
 punctuation   \x0021 5               #33    ! EXCLAMATION MARK
 punctuation   \x0022 4               #34    " QUOTATION MARK
 sign          \x0023 3456            #35    # NUMBER SIGN
@@ -43,15 +32,18 @@ sign          \x0024 46              #36    $ DOLLAR SIGN
 sign          \x0025 123456          #37    % PERCENT SIGN
 sign          \x0026 12346           #38    & AMPERSAND
 punctuation   \x0027 6               #39    ' APOSTROPHE APOSTROPHE-QUOTE
+lowercase     \x0027 6               #39    ' APOSTROPHE APOSTROPHE-QUOTE        # doesn't work with letter!
 punctuation   \x0028 236             #40    ( LEFT PARENTHESIS
 punctuation   \x0029 356             #41    ) RIGHT PARENTHESIS
-sign          \x002A 35              #42    * ASTERISK
+punctuation   \x002A 35              #42    * ASTERISK
 math          \x002B 235             #43    + PLUS SIGN
 punctuation   \x002C 2               #44    , COMMA
 punctuation   \x002D 36              #45    - HYPHEN-MINUS
 punctuation   \x002E 3               #46    . FULL STOP PERIOD
-sign          \x002F 256             #47    / SOLIDUS SLASH
+punctuation   \x002F 256             #47    / SOLIDUS SLASH
+
 include digits6DotsPlusDot6.uti
+
 punctuation   \x003A 25              #58    : COLON
 punctuation   \x003B 23              #59    ; SEMICOLON
 math          \x003C 56              #60    < LESS-THAN SIGN
@@ -77,26 +69,25 @@ sign          \x005F 4-456           #95    _  LOW LINE
 
 # ===== LATIN-1 SUPPLEMENT: 0080-00FF ==========================================
 
-space         \x00A0 0               #160   NO-BREAK SPACE
-punctuation   \x00A1 0               #161   ¡ INVERTED EXCLAMATION MARK
+punctuation   \x00A1 6-235           #161   ¡ INVERTED EXCLAMATION MARK
 sign          \x00A2 4-14            #162   ¢ CENT SIGN
 sign          \x00A3 4-123           #163   £ POUND SIGN
 sign          \x00A4 0               #164   ¤ CURRENCY SIGN
 sign          \x00A5 4-13456         #165   ¥ YEN SIGN
-sign          \x00A6 0-456-123-0     #166   ¦ BROKEN BAR
-sign          \x00A7 4-346           #167   § SECTION SIGN
+sign          \x00A6 5-36            #166   ¦ BROKEN BAR
+sign          \x00A7 346             #167   § SECTION SIGN
 sign          \x00A8 0               #168   ¨ DIAERESIS
 sign          \x00A9 2356-45-14-2356 #169   © COPYRIGHT SIGN
 lowercase     \x00AA 1               #170   ª FEMININE ORDINAL INDICATOR
 punctuation   \x00AB 236             #171   « LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
 sign          \x00AC 0               #172   ¬ NOT SIGN
 sign          \x00AD 0               #173   ­ SOFT HYPHEN
-sign          \x00AE 2356-45-1235-2356   #174 ® REGISTERED SIGN
+sign          \x00AE 6-2356-45-1235-2356   #174 ® REGISTERED SIGN
 sign          \x00AF 0               #175   ¯ MACRON
 sign          \x00B0 4-356           #176   ° DEGREE SIGN
 math          \x00B1 235-36          #177   ± PLUS-MINUS SIGN
-sign          \x00B2 0               #178   ² SUPERSCRIPT TWO
-sign          \x00B3 0               #179   ³ SUPERSCRIPT THREE
+sign          \x00B2 34-23           #178   ² SUPERSCRIPT TWO
+sign          \x00B3 34-25           #179   ³ SUPERSCRIPT THREE
 sign          \x00B4 0               #180   ´ ACUTE ACCENT
 sign          \x00B5 56-134          #181   µ MICRO SIGN
 sign          \x00B6 0               #182   ¶ PILCROW SIGN
@@ -108,12 +99,12 @@ punctuation   \x00BB 356             #187   » RIGHT-POINTING DOUBLE ANGLE QUOTA
 math          \x00BC 3456-1-256      #188   ¼ VULGAR FRACTION ONE QUARTER
 math          \x00BD 3456-1-23       #189   ½ VULGAR FRACTION ONE HALF
 math          \x00BE 3456-14-256     #190   ¾ VULGAR FRACTION THREE QUARTERS
-punctuation   \x00BF 0               #191   ¿ INVERTED QUESTION MARK
+punctuation   \x00BF 6-26            #191   ¿ INVERTED QUESTION MARK
 uplow         \x00C4\x00E4  345      #196 #228  Ää LATIN CAPITAL LETTER A WITH DIAERESIS
 uplow         \x00D6\x00F6  246      #214 #246  Öö LATIN CAPITAL LETTER O WITH DIAERESIS
 math          \x00D7 236             #215   × MULTIPLICATION SIGN
 uplow         \x00DC\x00FC  1256     #220 #252   Üü LATIN CAPITAL LETTER U WITH DIAERESIS
-lowercase     \x00DF 2346            #223   ß LATIN SMALL LETTER SHARP S
+uplow         \x1e9e\x00DF 2346           #223   ß LATIN SMALL LETTER SHARP S
 math          \x00F7 0               #247   ÷ DIVISION SIGN
 
 # ===== GENERAL PUNCTUATION: 2000-206F =========================================
@@ -128,6 +119,7 @@ punctuation   \x201C 236             #8220          LEFT DOUBLE QUOTATION MARK
 punctuation   \x201D 356             #8221          RIGHT DOUBLE QUOTATION MARK
 punctuation   \x201E 236             #8222          DOUBLE LOW-9 QUOTATION MARK
 punctuation   \x201F 356             #8223          DOUBLE HIGH-REVERSED-9 QUOTATION MARK
+sign          \x2020 4-235           #8224          DAGGER
 sign          \x2030 3456-245-356-356      #8240    PER MILLE SIGN
 sign          \x2031 3456-245-356-356-356  #8241    PER TEN THOUSAND SIGN
 sign          \x2032 4-35            #8242          PRIME
@@ -137,12 +129,17 @@ punctuation   \x203a 6-356                          SINGLE RIGHT-POINTING ANGLE 
 
 # ===== CURRENCY SYMBOLS: 20A0-20CF ============================================
 
-sign          \x20A0 4-15                           EURO-CURRENCY SIGN
+sign          \x20A0 4-15            #8352          EURO-CURRENCY SIGN
+sign          \x20AC 4-15            #8364          EURO SIGN
+
+# ===== LETTERLIKE SYMBOLS 2100-214F ===========================================
+
+sign          \x2122 6-2356-45-2345-134-2356 #8482   TRADE MARK SIGN
 
 # ===== NUMBER FORMS: 2150-218F ================================================
 
 math          \x2153 3456-1-25               VULGAR FRACTION ONE THIRD
-math          \x2154 3456-12-23              VULGAR FRACTION TWO THIRDS
+math          \x2154 3456-12-25              VULGAR FRACTION TWO THIRDS
 math          \x2155 3456-1-26               VULGAR FRACTION ONE FIFTH
 math          \x2156 3456-12-26              VULGAR FRACTION TWO FIFTHS
 math          \x2157 3456-14-26              VULGAR FRACTION THREE FIFTHS
@@ -162,7 +159,7 @@ sign          \x2194 0-246-25-25-135-0       LEFT RIGHT ARROW
 
 # ===== MATHEMATICAL OPERATORS: 2200-22FF ======================================
 
-math          \x2212 36              #8722   MINUS SIGN
+math          \x2212 36a             #8722   MINUS SIGN
 math          \x2215 25              #8725   DIVISION SLASH
 math          \x2217 35              #8727   ASTERISK OPERATOR
 math          \x223C 25-25           #8764   TILDE OPERATOR
@@ -176,6 +173,43 @@ math          \x2266 246-2356        #8806   LESS-THAN OVER EQUAL TO
 math          \x2267 135-2356        #8807   GREATER-THAN OVER EQUAL TO
 math          \x22c5 3               #8901   DOT OPERATOR
 math          \x22c6 3               #8902   STAR OPERATOR
+
+# ===== MISCELLANEOUS TECHNICAL: 2300-23FF =====================================
+
+punctuation   \x2329 5-2356          #9001 LEFT-POINTING ANGLE BRACKET
+punctuation   \x232a 5-2356          #9002 RIGHT-POINTING ANGLE BRACKET
+
+# ===== MISCELLANEOUS SYMBOLS: 2600-26FF =======================================
+
+sign          \x2639 6-46-25-36-236  #9785   WHITE FROWNING FACE
+sign          \x263a 6-46-25-36-356  #9786   WHITE SMILING FACE
+
+# ===== SPECIAL PURPOSE CHARACTERS (from BOX DRAWING: 2500-257F) ===============
+
+# KUERZUNGSVERBOT und "DUMMY"-TEXT:
+lowercase     \x250A abcdef          #9482    BOX DRAWINGS LIGHT QUADRUPLE DASH VERTICAL
+# "DUMMY"-ZAHL:
+digit         \x250B b               #9483    BOX DRAWINGS HEAVY QUADRUPLE DASH VERTICAL
+# GROSSBUCHSTABE (virtual use only):
+sign          \x2565 46a             #9573    BOX DRAWINGS DOWN DOUBLE AND HORIZONTAL SINGLE
+# GROSSBUCHSTABENFOLGE (virtual use only):
+sign          \x2567 45a             #9575    BOX DRAWINGS UP SINGLE AND HORIZONTAL DOUBLE
+# ENDE GROSSBUCHSTABENFOLGE (virtual use only):
+sign          \x2568 45b             #9576    BOX DRAWINGS UP DOUBLE AND HORIZONTAL SINGLE
+# AUFHEBUNGSPUNKT bei Wort-Zahl-Ausdruecken (grade 2):
+sign          \x256C ab              #9580    BOX DRAWINGS DOUBLE VERTICAL AND HORIZONTAL
+# DOPPELPUNKT bei Zeitangaben:
+sign          \x2573 6-25            #9587    BOX DRAWINGS LIGHT DIAGONAL CROSS
+# MARKIERUNG FÜR ZAHL-BUCHSTABE-VERBINDUNG (zum Eliminieren überflüssiger Letter-Signs):
+digit         \x2504 ac              #9476    BOX DRAWINGS LIGHT TRIPLE DASH HORIZONTAL
+# APOSTROPH VOR ZAHL (z.B. Im Jahr '97):
+digit         \x2500 69              #9472    BOX DRAWINGS LIGHT HORIZONTAL
+# PUNKT VOR ZAHL (z.B. Kaliber .45):
+digit         \x2501 39              #9473    BOX DRAWINGS HEAVY HORIZONTAL
+# Strich und Punkt vor Zahl (Fr. --.45):
+digit         \x2510 36a-36a-3       #9488    BOX DRAWINGS LIGHT DOWN AND LEFT
+# Strich und Komma vor Zahl (EUR --,45):
+digit         \x2511 36a-36a-2       #9489    BOX DRAWINGS DOWN LIGHT AND LEFT HEAVY
 
 # ===== BRAILLE PATTERNS: 2800-28FF ============================================
 

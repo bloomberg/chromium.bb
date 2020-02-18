@@ -16,13 +16,13 @@
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/common/media/renderer_audio_input_stream_factory.mojom.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_system_impl.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "media/base/audio_parameters.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/audio/public/mojom/audio_processing.mojom.h"
@@ -36,7 +36,6 @@ namespace {
 using testing::Test;
 
 const size_t kShmemSize = 1234;
-const int kSessionId = 234;
 const bool kAGC = false;
 const uint32_t kSharedMemoryCount = 345;
 const int kSampleFrequency = 44100;
@@ -97,7 +96,7 @@ std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
     AudioInputDeviceManager::KeyboardMicRegistration keyboard_mic_registration,
     uint32_t shared_memory_count,
     int stream_id,
-    int session_id,
+    const base::UnguessableToken& session_id,
     bool automatic_gain_control,
     const media::AudioParameters& parameters,
     media::AudioInputDelegate::EventHandler* event_handler) {
@@ -110,7 +109,7 @@ std::unique_ptr<media::AudioInputDelegate> CreateFakeDelegate(
 class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
  public:
   OldOldRenderFrameAudioInputStreamFactoryTest()
-      : thread_bundle_(base::in_place),
+      : task_environment_(base::in_place),
         audio_manager_(std::make_unique<media::TestAudioThread>()),
         audio_system_(&audio_manager_),
         media_stream_manager_(&audio_system_, audio_manager_.GetTaskRunner()),
@@ -126,21 +125,21 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
     audio_manager_.Shutdown();
 
     // UniqueAudioInputStreamFactoryPtr uses DeleteOnIOThread and must run
-    // before |thread_bundle_| tear down.
+    // before |task_environment_| tear down.
     factory_handle_.reset();
 
     // Shutdown BrowserThread::IO before tearing down members.
-    thread_bundle_.reset();
+    task_environment_.reset();
   }
 
-  // |thread_bundle_| needs to be up before the members below (as they use
+  // |task_environment_| needs to be up before the members below (as they use
   // BrowserThreads for their initialization) but then needs to be torn down
   // before them as some verify they're town down in a single-threaded
   // environment (while
   // !BrowserThread::IsThreadInitiaslized(BrowserThread::IO)).
-  base::Optional<TestBrowserThreadBundle> thread_bundle_;
+  base::Optional<BrowserTaskEnvironment> task_environment_;
 
-  // These members need to be torn down after |thread_bundle_|.
+  // These members need to be torn down after |task_environment_|.
   media::MockAudioManager audio_manager_;
   media::AudioSystemImpl audio_system_;
   MediaStreamManager media_stream_manager_;
@@ -155,6 +154,7 @@ class OldOldRenderFrameAudioInputStreamFactoryTest : public testing::Test {
 };
 
 TEST_F(OldOldRenderFrameAudioInputStreamFactoryTest, CreateStream) {
+  const base::UnguessableToken kSessionId = base::UnguessableToken::Create();
   factory_ptr_->CreateStream(std::move(client_ptr_), kSessionId,
                              GetTestAudioParameters(), kAGC, kSharedMemoryCount,
                              nullptr);

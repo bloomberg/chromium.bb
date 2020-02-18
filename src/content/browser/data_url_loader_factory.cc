@@ -7,6 +7,7 @@
 #include "mojo/public/cpp/system/data_pipe_producer.h"
 #include "mojo/public/cpp/system/string_data_source.h"
 #include "net/url_request/url_request_data_job.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 
 namespace content {
@@ -58,8 +59,8 @@ void DataURLLoaderFactory::CreateLoaderAndStart(
     url = &request.url;
   }
 
-  int result = net::URLRequestDataJob::BuildResponse(*url, &mime_type, &charset,
-                                                     &data, headers.get());
+  int result = net::URLRequestDataJob::BuildResponse(
+      *url, request.method, &mime_type, &charset, &data, headers.get());
   url_ = GURL();  // Don't need it anymore.
 
   if (result != net::OK) {

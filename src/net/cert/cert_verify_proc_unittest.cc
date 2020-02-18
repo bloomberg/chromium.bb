@@ -12,13 +12,14 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/rand_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "crypto/openssl_util.h"
@@ -71,6 +72,7 @@
 #elif defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "net/cert/cert_verify_proc_mac.h"
+#include "net/cert/internal/trust_store_mac.h"
 #elif defined(OS_WIN)
 #include "base/win/windows_version.h"
 #include "net/cert/cert_verify_proc_win.h"
@@ -149,14 +151,6 @@ enum CertVerifyProcType {
   CERT_VERIFY_PROC_WIN,
   CERT_VERIFY_PROC_BUILTIN,
 };
-
-// Whether the test is running within the iphone simulator.
-const bool kTargetIsIphoneSimulator =
-#if TARGET_IPHONE_SIMULATOR
-    true;
-#else
-    false;
-#endif
 
 // Wrapper for base::mac::IsAtLeastOS10_12() to avoid littering ifdefs.
 bool IsMacAtLeastOS10_12() {
@@ -472,6 +466,25 @@ class CertBuilder {
     SetExtension(CrlDistributionPointsOid(), FinishCBB(cbb.get()));
   }
 
+  void SetSubjectCommonName(const std::string common_name) {
+    // See RFC 4519.
+    static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
+
+    // See RFC 5280, section 4.1.2.4.
+    bssl::ScopedCBB cbb;
+    CBB rdns, rdn, attr, type, value;
+    ASSERT_TRUE(CBB_init(cbb.get(), 64));
+    ASSERT_TRUE(CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET));
+    ASSERT_TRUE(CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT));
+    ASSERT_TRUE(CBBAddBytes(&type, kCommonName));
+    ASSERT_TRUE(CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING));
+    ASSERT_TRUE(CBBAddBytes(&value, common_name));
+
+    subject_tlv_ = FinishCBB(cbb.get());
+  }
+
   // Sets the SAN for the certificate to a single dNSName.
   void SetSubjectAltName(const std::string& dns_name) {
     // From RFC 5280:
@@ -587,22 +600,7 @@ class CertBuilder {
     // Use a random common name comprised of 12 bytes in hex.
     std::string common_name = MakeRandomHexString(12);
 
-    // See RFC 4519.
-    static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
-
-    // See RFC 5280, section 4.1.2.4.
-    bssl::ScopedCBB cbb;
-    CBB rdns, rdn, attr, type, value;
-    ASSERT_TRUE(CBB_init(cbb.get(), 64));
-    ASSERT_TRUE(CBB_add_asn1(cbb.get(), &rdns, CBS_ASN1_SEQUENCE));
-    ASSERT_TRUE(CBB_add_asn1(&rdns, &rdn, CBS_ASN1_SET));
-    ASSERT_TRUE(CBB_add_asn1(&rdn, &attr, CBS_ASN1_SEQUENCE));
-    ASSERT_TRUE(CBB_add_asn1(&attr, &type, CBS_ASN1_OBJECT));
-    ASSERT_TRUE(CBBAddBytes(&type, kCommonName));
-    ASSERT_TRUE(CBB_add_asn1(&attr, &value, CBS_ASN1_UTF8STRING));
-    ASSERT_TRUE(CBBAddBytes(&value, common_name));
-
-    subject_tlv_ = FinishCBB(cbb.get());
+    SetSubjectCommonName(common_name);
   }
 
   // Parses |cert| and copies the following properties:
@@ -823,6 +821,37 @@ class CertBuilder {
   CertBuilder* issuer_ = nullptr;
 };
 
+// Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
+// or CrlDistributionPoint extensions, and leaf having a subjectAltName of
+// www.example.com.
+void CreateSimpleCertBuilderChain(
+    std::unique_ptr<CertBuilder>* out_leaf,
+    std::unique_ptr<CertBuilder>* out_intermediate,
+    std::unique_ptr<CertBuilder>* out_root) {
+  const char kHostname[] = "www.example.com";
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII("target-and-intermediate");
+
+  CertificateList orig_certs = CreateCertificateListFromFile(
+      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, orig_certs.size());
+
+  // Build slightly modified variants of |orig_certs|.
+  *out_root =
+      std::make_unique<CertBuilder>(orig_certs[2]->cert_buffer(), nullptr);
+  *out_intermediate = std::make_unique<CertBuilder>(
+      orig_certs[1]->cert_buffer(), out_root->get());
+  (*out_intermediate)->EraseExtension(CrlDistributionPointsOid());
+  (*out_intermediate)->EraseExtension(AuthorityInfoAccessOid());
+  *out_leaf = std::make_unique<CertBuilder>(orig_certs[0]->cert_buffer(),
+                                            out_intermediate->get());
+  (*out_leaf)->SetSubjectAltName(kHostname);
+  (*out_leaf)->EraseExtension(CrlDistributionPointsOid());
+  (*out_leaf)->EraseExtension(AuthorityInfoAccessOid());
+}
+
 }  // namespace
 
 // This fixture is for tests that apply to concrete implementations of
@@ -874,14 +903,7 @@ class CertVerifyProcInternalTest
   }
 
   bool WeakKeysAreInvalid() const {
-#if defined(OS_IOS)
-    // Starting with iOS 13, certs with weak keys are treated as (recoverable)
-    // invalid certificate errors.
-    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
-        base::ios::IsRunningOnIOS13OrLater()) {
-      return true;
-    }
-#elif defined(OS_MACOSX)
+#if defined(OS_MACOSX) and !defined(OS_IOS)
     // Starting with Mac OS 10.12, certs with weak keys are treated as
     // (recoverable) invalid certificate errors.
     if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
@@ -889,6 +911,46 @@ class CertVerifyProcInternalTest
       return true;
     }
 #endif
+    return false;
+  }
+
+  int GetMinimumRsaDsaKeySize() const {
+#if defined(OS_IOS)
+    // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
+    // 2048 bits. See https://support.apple.com/en-us/HT210176
+    if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
+        base::ios::IsRunningOnIOS13OrLater()) {
+      return 2048;
+    }
+#elif defined(OS_MACOSX)
+    // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
+    // is 2048 bits. See https://support.apple.com/en-us/HT210176
+    if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
+        base::mac::IsAtLeastOS10_15()) {
+      return 2048;
+    }
+#endif
+
+    return 1024;
+  }
+
+  // Currently, only RSA and DSA keys are checked for weakness, and our example
+  // weak size is 768. These could change in the future.
+  //
+  // Note that this means there may be false negatives: keys for other
+  // algorithms and which are weak will pass this test.
+  bool IsWeakKeyType(const std::string& key_type) const {
+    size_t pos = key_type.find("-");
+    std::string size_str = key_type.substr(0, pos);
+    std::string type = key_type.substr(pos + 1);
+    int size = 0;
+
+    if (!base::StringToInt(size_str, &size))
+      return false;
+
+    if (type == "rsa" || type == "dsa")
+      return size < GetMinimumRsaDsaKeySize();
+
     return false;
   }
 
@@ -1145,55 +1207,90 @@ TEST_P(CertVerifyProcInternalTest, TrustedIntermediateCertWithEVPolicy) {
   }
 }
 
-// TODO(crbug.com/605457): the test expectation was incorrect on some
-// configurations, so disable the test until it is fixed (better to have
-// a bug to track a failing test than a false sense of security due to
-// false positive).
-TEST_P(CertVerifyProcInternalTest, DISABLED_PaypalNullCertParsing) {
-  // A certificate for www.paypal.com with a NULL byte in the common name.
-  // From http://www.gossamer-threads.com/lists/fulldisc/full-disclosure/70363
-  SHA256HashValue paypal_null_fingerprint = {{0x00}};
+TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndNoSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
 
-  scoped_refptr<X509Certificate> paypal_null_cert(
-      X509Certificate::CreateFromBytes(
-          reinterpret_cast<const char*>(paypal_null_der),
-          sizeof(paypal_null_der)));
+  leaf->EraseExtension(SubjectAltNameOid());
 
-  ASSERT_NE(static_cast<X509Certificate*>(nullptr), paypal_null_cert.get());
+  std::string common_name;
+  common_name += "www.fake.com";
+  common_name += '\0';
+  common_name += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectCommonName(common_name);
 
-  EXPECT_EQ(paypal_null_fingerprint, X509Certificate::CalculateFingerprint256(
-                                         paypal_null_cert->cert_buffer()));
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
 
   int flags = 0;
   CertVerifyResult verify_result;
   int error =
-      Verify(paypal_null_cert.get(), "www.paypal.com", flags,
-             CRLSet::BuiltinCRLSet().get(), CertificateList(), &verify_result);
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_NSS ||
-      verify_proc_type() == CERT_VERIFY_PROC_ANDROID) {
-    EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_IOS &&
-             kTargetIsIphoneSimulator) {
-    // iOS returns a ERR_CERT_INVALID error on the simulator, while returning
-    // ERR_CERT_AUTHORITY_INVALID on the real device.
-    EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-  } else {
-    // TODO(bulach): investigate why macosx and win aren't returning
-    // ERR_CERT_INVALID or ERR_CERT_COMMON_NAME_INVALID.
-    EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
-  }
+  // This actually fails because Chrome only looks for hostnames in
+  // SubjectAltNames now and no SubjectAltName is present.
+  EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
+}
 
-  // Either the system crypto library should correctly report a certificate
-  // name mismatch, or our certificate blacklist should cause us to report an
-  // invalid certificate.
-  if (verify_proc_type() == CERT_VERIFY_PROC_NSS ||
-      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    EXPECT_TRUE(verify_result.cert_status &
-                (CERT_STATUS_COMMON_NAME_INVALID | CERT_STATUS_INVALID));
-  }
+TEST_P(CertVerifyProcInternalTest, CertWithNullInCommonNameAndValidSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
 
-  // TODO(crbug.com/649017): What expectations to use for the other verifiers?
+  leaf->SetSubjectAltName("www.fake.com");
+
+  std::string common_name;
+  common_name += "www.fake.com";
+  common_name += '\0';
+  common_name += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectCommonName(common_name);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // SubjectAltName is valid and Chrome does not use the common name.
+  EXPECT_THAT(error, IsOk());
+}
+
+TEST_P(CertVerifyProcInternalTest, CertWithNullInSAN) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateSimpleCertBuilderChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  std::string hostname;
+  hostname += "www.fake.com";
+  hostname += '\0';
+  hostname += "a" + MakeRandomHexString(12) + ".example.com";
+  leaf->SetSubjectAltName(hostname);
+
+  // Trust the root and build a chain to verify that includes the intermediate.
+  ScopedTestRoot scoped_root(root->GetX509Certificate().get());
+  scoped_refptr<X509Certificate> chain = CreateX509CertificateWithIntermediate(
+      leaf->DupCertBuffer(), intermediate->DupCertBuffer());
+  ASSERT_TRUE(chain.get());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(chain.get(), "www.fake.com", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+
+  // SubjectAltName is invalid.
+  EXPECT_THAT(error, IsError(ERR_CERT_COMMON_NAME_INVALID));
 }
 
 // Tests the case where the target certificate is accepted by
@@ -1315,42 +1412,6 @@ TEST_P(CertVerifyProcInternalTest, RejectExpiredCert) {
              CertificateList(), &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_DATE_INVALID));
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_DATE_INVALID);
-}
-
-static int GetMinimumRsaDsaKeySize() {
-#if defined(OS_IOS)
-  // Beginning with iOS 13, the minimum key size for RSA/DSA algorithms is
-  // 2048 bits. See https://support.apple.com/en-us/HT210176
-  if (base::ios::IsRunningOnIOS13OrLater())
-    return 2048;
-#elif defined(OS_MACOSX)
-  // Beginning with macOS 10.15, the minimum key size for RSA/DSA algorithms
-  // is 2048 bits. See https://support.apple.com/en-us/HT210176
-  if (base::mac::IsAtLeastOS10_15())
-    return 2048;
-#endif
-
-  return 1024;
-}
-
-// Currently, only RSA and DSA keys are checked for weakness, and our example
-// weak size is 768. These could change in the future.
-//
-// Note that this means there may be false negatives: keys for other
-// algorithms and which are weak will pass this test.
-static bool IsWeakKeyType(const std::string& key_type) {
-  size_t pos = key_type.find("-");
-  std::string size_str = key_type.substr(0, pos);
-  std::string type = key_type.substr(pos + 1);
-  int size = 0;
-
-  if (!base::StringToInt(size_str, &size))
-    return false;
-
-  if (type == "rsa" || type == "dsa")
-    return size < GetMinimumRsaDsaKeySize();
-
-  return false;
 }
 
 TEST_P(CertVerifyProcInternalTest, RejectWeakKeys) {
@@ -1983,6 +2044,17 @@ TEST_P(CertVerifyProcInternalTest, TestKnownRoot) {
                              << "that date, please disable and file a bug "
                              << "against rsleevi.";
   EXPECT_TRUE(verify_result.is_issued_by_known_root);
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
+    auto* mac_trust_debug_info =
+        net::TrustStoreMac::ResultDebugData::Get(&verify_result);
+    ASSERT_TRUE(mac_trust_debug_info);
+    // Since this test queries the real trust store, can't know exactly
+    // what bits should be set in the trust debug info, but it should at
+    // least have something set.
+    EXPECT_NE(0, mac_trust_debug_info->combined_trust_debug_info());
+  }
+#endif
 }
 
 // This tests that on successful certificate verification,
@@ -2246,14 +2318,14 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
     EXPECT_THAT(error, IsError(ERR_CERT_SYMANTEC_LEGACY));
     EXPECT_TRUE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
 
-    // ... Unless the Symantec cert chains through a whitelisted intermediate.
-    CertVerifyResult whitelisted_result;
-    whitelisted_result.verified_cert = cert;
-    whitelisted_result.public_key_hashes.push_back(
+    // ... Unless the Symantec cert chains through a allowlisted intermediate.
+    CertVerifyResult allowlisted_result;
+    allowlisted_result.verified_cert = cert;
+    allowlisted_result.public_key_hashes.push_back(
         HashValue(kSymantecHashValue));
-    whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
-    whitelisted_result.is_issued_by_known_root = true;
-    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
+    allowlisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
+    allowlisted_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(allowlisted_result);
 
     CertVerifyResult test_result_2;
     error = verify_proc->Verify(
@@ -2311,14 +2383,14 @@ TEST(CertVerifyProcTest, SymantecCertsRejected) {
       EXPECT_FALSE(test_result_1.cert_status & CERT_STATUS_SYMANTEC_LEGACY);
     }
 
-    // ... Unless the Symantec cert chains through a whitelisted intermediate.
-    CertVerifyResult whitelisted_result;
-    whitelisted_result.verified_cert = cert;
-    whitelisted_result.public_key_hashes.push_back(
+    // ... Unless the Symantec cert chains through a allowlisted intermediate.
+    CertVerifyResult allowlisted_result;
+    allowlisted_result.verified_cert = cert;
+    allowlisted_result.public_key_hashes.push_back(
         HashValue(kSymantecHashValue));
-    whitelisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
-    whitelisted_result.is_issued_by_known_root = true;
-    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(whitelisted_result);
+    allowlisted_result.public_key_hashes.push_back(HashValue(kGoogleHashValue));
+    allowlisted_result.is_issued_by_known_root = true;
+    verify_proc = base::MakeRefCounted<MockCertVerifyProc>(allowlisted_result);
 
     CertVerifyResult test_result_2;
     error = verify_proc->Verify(
@@ -2518,57 +2590,6 @@ TEST_P(CertVerifyProcInternalTest, IsIssuedByKnownRootIgnoresTestRoots) {
 }
 
 // Test verification with a leaf that does not contain embedded SCTs, and which
-// has a notBefore date after 2018/10/15, and with no |sct_list|.
-// On recent macOS and iOS versions this should fail to verify.
-TEST_P(CertVerifyProcInternalTest, LeafNewerThan20181015NoScts) {
-  scoped_refptr<X509Certificate> chain = CreateCertificateChainFromFile(
-      GetTestCertsDirectory(), "treadclimber.pem",
-      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
-  ASSERT_TRUE(chain);
-  if (base::Time::Now() > chain->valid_expiry()) {
-    FAIL() << "This test uses a certificate chain which is now expired. Please "
-              "disable and file a bug against mattm.";
-    return;
-  }
-
-  // Verification should pass, except on recent macOS / iOS systems.
-  int flags = 0;
-  CertVerifyResult verify_result;
-  int error = verify_proc()->Verify(
-      chain.get(), "treadclimber.com", /*ocsp_response=*/std::string(),
-      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
-      CertificateList(), &verify_result);
-
-#if defined(OS_IOS) && !TARGET_IPHONE_SIMULATOR
-  if (verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (base::ios::IsRunningOnOrLater(12, 2, 0)) {
-      // TODO(mattm): Check if this can this be mapped to some better error.
-      EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-      EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
-      return;
-    }
-  }
-#elif defined(OS_MACOSX)
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC ||
-      verify_proc_type() == CERT_VERIFY_PROC_IOS) {
-    if (__builtin_available(macOS 10.14.2, iOS 13, *)) {
-      // TODO(mattm): SecTrustEvaluate just gives a generic
-      // CSSMERR_TP_VERIFY_ACTION_FAILED error. Not sure there's much that
-      // could be done about that.
-      EXPECT_THAT(error, IsError(ERR_CERT_INVALID));
-      EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_INVALID);
-      return;
-    }
-  }
-#endif
-  // On older macOS and iOS versions, and all other verifiers, verification
-  // should succeed:
-  EXPECT_THAT(error, IsOk());
-  EXPECT_EQ(0U, verify_result.cert_status);
-  EXPECT_TRUE(verify_result.is_issued_by_known_root);
-}
-
-// Test verification with a leaf that does not contain embedded SCTs, and which
 // has a notBefore date after 2018/10/15, and passing a valid |sct_list| to
 // Verify(). Verification should succeed on all platforms. (Assuming the
 // verifier trusts the SCT Logs used in |sct_list|.)
@@ -2690,6 +2711,48 @@ TEST_P(CertVerifyProcInternalTest, CRLSetLeafSerial) {
   error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
                  CertificateList(), &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+}
+
+TEST_P(CertVerifyProcInternalTest, CRLSetRootReturnsChain) {
+  if (!SupportsCRLSet()) {
+    LOG(INFO) << "Skipping test as verifier doesn't support CRLSet";
+    return;
+  }
+
+  CertificateList ca_cert_list =
+      CreateCertificateListFromFile(GetTestCertsDirectory(), "root_ca_cert.pem",
+                                    X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(1U, ca_cert_list.size());
+  ScopedTestRoot test_root(ca_cert_list[0].get());
+
+  scoped_refptr<X509Certificate> leaf = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(leaf);
+  ASSERT_EQ(1U, leaf->intermediate_buffers().size());
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error =
+      Verify(leaf.get(), "127.0.0.1", flags, CRLSet::BuiltinCRLSet().get(),
+             CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsOk());
+
+  // Test revocation of the root itself.
+  scoped_refptr<CRLSet> crl_set;
+  std::string crl_set_bytes;
+  ASSERT_TRUE(base::ReadFileToString(
+      GetTestCertsDirectory().AppendASCII("crlset_by_root_spki.raw"),
+      &crl_set_bytes));
+  ASSERT_TRUE(CRLSet::Parse(crl_set_bytes, &crl_set));
+
+  error = Verify(leaf.get(), "127.0.0.1", flags, crl_set.get(),
+                 CertificateList(), &verify_result);
+  EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+
+  EXPECT_EQ(3u, verify_result.public_key_hashes.size());
+  ASSERT_TRUE(verify_result.verified_cert);
+  EXPECT_EQ(2u, verify_result.verified_cert->intermediate_buffers().size());
 }
 
 // Tests that CertVerifyProc implementations apply CRLSet revocations by
@@ -3024,13 +3087,13 @@ class CertVerifyProcInternalWithNetFetchingTest
     : public CertVerifyProcInternalTest {
  protected:
   CertVerifyProcInternalWithNetFetchingTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT) {}
 
   void SetUp() override {
     // Create a network thread to be used for network fetches, and wait for
     // initialization to complete on that thread.
-    base::Thread::Options options(base::MessageLoop::TYPE_IO, 0);
+    base::Thread::Options options(base::MessagePumpType::IO, 0);
     network_thread_ = std::make_unique<base::Thread>("network_thread");
     CHECK(network_thread_->StartWithOptions(options));
 
@@ -3095,37 +3158,6 @@ class CertVerifyProcInternalWithNetFetchingTest
   // Returns a URL to |path| for the current test server.
   GURL GetTestServerAbsoluteUrl(const std::string& path) {
     return test_server_.GetURL(path);
-  }
-
-  // Creates a simple leaf->intermediate->root chain of CertBuilders with no AIA
-  // or CrlDistributionPoint extensions, and leaf having a subjectAltName of
-  // www.example.com.
-  static void CreateSimpleCertBuilderChain(
-      std::unique_ptr<CertBuilder>* out_leaf,
-      std::unique_ptr<CertBuilder>* out_intermediate,
-      std::unique_ptr<CertBuilder>* out_root) {
-    const char kHostname[] = "www.example.com";
-    base::FilePath certs_dir =
-        GetTestNetDataDirectory()
-            .AppendASCII("verify_certificate_chain_unittest")
-            .AppendASCII("target-and-intermediate");
-
-    CertificateList orig_certs = CreateCertificateListFromFile(
-        certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
-    ASSERT_EQ(3U, orig_certs.size());
-
-    // Build slightly modified variants of |orig_certs|.
-    *out_root =
-        std::make_unique<CertBuilder>(orig_certs[2]->cert_buffer(), nullptr);
-    *out_intermediate = std::make_unique<CertBuilder>(
-        orig_certs[1]->cert_buffer(), out_root->get());
-    (*out_intermediate)->EraseExtension(CrlDistributionPointsOid());
-    (*out_intermediate)->EraseExtension(AuthorityInfoAccessOid());
-    *out_leaf = std::make_unique<CertBuilder>(orig_certs[0]->cert_buffer(),
-                                              out_intermediate->get());
-    (*out_leaf)->SetSubjectAltName(kHostname);
-    (*out_leaf)->EraseExtension(CrlDistributionPointsOid());
-    (*out_leaf)->EraseExtension(AuthorityInfoAccessOid());
   }
 
   // Creates a certificate chain for www.example.com, where the leaf certificate
@@ -3341,7 +3373,7 @@ class CertVerifyProcInternalWithNetFetchingTest
     context->reset();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<base::Thread> network_thread_;
 
@@ -3692,14 +3724,12 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationHardFailNoCrls) {
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  // "Hard fail" handling varies for certificates that have no revocation
-  // mechanisms at all. Some implementations consider it okay, some consider it
-  // a failure.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN ||
-      verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    EXPECT_THAT(error, IsOk());
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS doesn't have an error code for lack of revocation methods, it just
+    // gets mapped to REVOKED.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_NO_REVOCATION_MECHANISM));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3902,11 +3932,11 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
              CertificateList(), &verify_result);
 
   // Should fail since no revocation information was available for the leaf.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should probably be ERR_CERT_REVOKED.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS just returns REVOKED for hard-fail checking errors.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3949,11 +3979,11 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
 
   // Should fail since no revocation information was available for the
   // intermediate.
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should probably be ERR_CERT_REVOKED.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
+  if (verify_proc_type() == CERT_VERIFY_PROC_NSS) {
+    // NSS just returns REVOKED for hard-fail checking errors.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
+  } else {
+    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
   }
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
@@ -3984,15 +4014,10 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, RevocationSoftFailNoCrls) {
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Soft-fail revocation checking should succeed when no revocation mechanism
-    // is available.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_NO_REVOCATION_MECHANISM);
+  EXPECT_FALSE(verify_result.cert_status &
+               CERT_STATUS_UNABLE_TO_CHECK_REVOCATION);
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4031,15 +4056,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should pass, leaf and intermediate were covered by CRLs and were not
-    // revoked.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4081,15 +4098,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should pass, leaf and intermediate were covered by CRLs and were not
-    // revoked.
-    EXPECT_THAT(error, IsOk());
-  }
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4129,7 +4138,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, leaf is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4173,7 +4182,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, intermediate is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4218,7 +4227,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
   if (verify_proc_type() == CERT_VERIFY_PROC_MAC && IsMacAtLeastOS10_12()) {
     // CRL handling seems broken on macOS >= 10.12.
     // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
+    EXPECT_THAT(error, IsOk());
   } else {
     // Should fail, leaf is revoked.
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
@@ -4260,16 +4269,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN) {
-    // TODO(https://crbug.com/964416): This should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
-             verify_proc_type() == CERT_VERIFY_PROC_MAC) {
+  if (verify_proc_type() == CERT_VERIFY_PROC_WIN ||
+      (verify_proc_type() == CERT_VERIFY_PROC_MAC && !IsMacAtLeastOS10_12())) {
     // Windows and Mac <= 10.11 honor MD5 CRLs. ¯\_(ツ)_/¯
     EXPECT_THAT(error, IsError(ERR_CERT_REVOKED));
   } else {
@@ -4317,19 +4318,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    // Win gives ERR_CERT_UNABLE_TO_CHECK_REVOCATION if the revocation checking
-    // network requests failed. TODO(https://crbug.com/964416): should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should succeed due to soft-fail revocation checking.
-    EXPECT_THAT(error, IsOk());
-  }
+  // Should succeed due to soft-fail revocation checking.
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -4369,19 +4359,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest,
       Verify(chain.get(), kHostname, flags, CRLSet::BuiltinCRLSet().get(),
              CertificateList(), &verify_result);
 
-  if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
-    // Win gives ERR_CERT_UNABLE_TO_CHECK_REVOCATION if the revocation checking
-    // network requests failed. TODO(https://crbug.com/964416): should be OK?
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else if (verify_proc_type() == CERT_VERIFY_PROC_MAC &&
-             IsMacAtLeastOS10_12()) {
-    // CRL handling seems broken on macOS >= 10.12.
-    // TODO(mattm): followup on this.
-    EXPECT_THAT(error, IsError(ERR_CERT_UNABLE_TO_CHECK_REVOCATION));
-  } else {
-    // Should succeed due to soft-fail revocation checking.
-    EXPECT_THAT(error, IsOk());
-  }
+  // Should succeed due to soft-fail revocation checking.
+  EXPECT_THAT(error, IsOk());
   EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
 }
 
@@ -5046,6 +5025,68 @@ TEST(CertVerifyProcTest, HasTrustAnchorVerifyOutOfDateUMA) {
   histograms.ExpectUniqueSample(kTrustAnchorVerifyHistogram,
                                 kUnknownRootHistogramID, 1);
   histograms.ExpectUniqueSample(kTrustAnchorVerifyOutOfDateHistogram, true, 1);
+}
+
+// If the CertVerifyProc::VerifyInternal implementation calculated the stapled
+// OCSP results in the CertVerifyResult, CertVerifyProc::Verify should not
+// re-calculate them.
+TEST(CertVerifyProcTest, DoesNotRecalculateStapledOCSPResult) {
+  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert);
+  ASSERT_EQ(1U, cert->intermediate_buffers().size());
+
+  CertVerifyResult result;
+
+  result.ocsp_result.response_status = OCSPVerifyResult::PROVIDED;
+  result.ocsp_result.revocation_status = OCSPRevocationStatus::GOOD;
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(cert.get(), "127.0.0.1",
+                                  /*ocsp_response=*/"invalid OCSP data",
+                                  /*sct_list=*/std::string(), flags,
+                                  CRLSet::BuiltinCRLSet().get(),
+                                  CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+
+  EXPECT_EQ(OCSPVerifyResult::PROVIDED,
+            verify_result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::GOOD,
+            verify_result.ocsp_result.revocation_status);
+}
+
+TEST(CertVerifyProcTest, CalculateStapledOCSPResultIfNotAlreadyDone) {
+  scoped_refptr<X509Certificate> cert = CreateCertificateChainFromFile(
+      GetTestCertsDirectory(), "ok_cert_by_intermediate.pem",
+      X509Certificate::FORMAT_AUTO);
+  ASSERT_TRUE(cert);
+  ASSERT_EQ(1U, cert->intermediate_buffers().size());
+
+  CertVerifyResult result;
+
+  // Confirm the default-constructed values are as expected.
+  EXPECT_EQ(OCSPVerifyResult::NOT_CHECKED, result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::UNKNOWN,
+            result.ocsp_result.revocation_status);
+
+  scoped_refptr<CertVerifyProc> verify_proc = new MockCertVerifyProc(result);
+
+  int flags = 0;
+  CertVerifyResult verify_result;
+  int error = verify_proc->Verify(
+      cert.get(), "127.0.0.1", /*ocsp_response=*/"invalid OCSP data",
+      /*sct_list=*/std::string(), flags, CRLSet::BuiltinCRLSet().get(),
+      CertificateList(), &verify_result);
+  EXPECT_EQ(OK, error);
+
+  EXPECT_EQ(OCSPVerifyResult::PARSE_RESPONSE_ERROR,
+            verify_result.ocsp_result.response_status);
+  EXPECT_EQ(OCSPRevocationStatus::UNKNOWN,
+            verify_result.ocsp_result.revocation_status);
 }
 
 }  // namespace net

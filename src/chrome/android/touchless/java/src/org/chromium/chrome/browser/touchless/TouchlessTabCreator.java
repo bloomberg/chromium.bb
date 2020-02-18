@@ -6,12 +6,15 @@ package org.chromium.chrome.browser.touchless;
 import android.content.Intent;
 import android.net.Uri;
 import android.provider.Browser;
-import android.support.customtabs.CustomTabsIntent;
+import android.support.annotation.Nullable;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider.LaunchSourceType;
+import org.chromium.chrome.browser.tab.InterceptNavigationDelegateImpl;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabIdManager;
 import org.chromium.chrome.browser.tabmodel.AsyncTabParamsManager;
@@ -21,7 +24,6 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelOrderController;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -84,8 +86,11 @@ public class TouchlessTabCreator extends ChromeTabCreator {
 
     @Override
     public boolean createTabWithWebContents(
-            Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
-        if (shouldRedirectToCCT(type, url)) {
+            @Nullable Tab parent, WebContents webContents, @TabLaunchType int type, String url) {
+        InterceptNavigationDelegateImpl delegate = parent == null ? null :
+                InterceptNavigationDelegateImpl.get(parent);
+        if (delegate != null && delegate.shouldIgnoreNewTab(url, false)) return false;
+        if (shouldRedirectToCCT(type)) {
             return mAsyncTabDelegate.createTabWithWebContents(parent, webContents, type, url);
         }
         return super.createTabWithWebContents(parent, webContents, type, url);
@@ -94,17 +99,20 @@ public class TouchlessTabCreator extends ChromeTabCreator {
     @Override
     public Tab createNewTab(
             LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, Intent intent) {
-        if (shouldRedirectToCCT(type, loadUrlParams.getUrl())) {
+        InterceptNavigationDelegateImpl delegate =
+                parent == null ? null : InterceptNavigationDelegateImpl.get(parent);
+        if (delegate != null && delegate.shouldIgnoreNewTab(loadUrlParams.getUrl(), false)) {
+            return null;
+        }
+        if (shouldRedirectToCCT(type)) {
             return mAsyncTabDelegate.createNewTab(loadUrlParams, type, parent);
         }
         return super.createNewTab(loadUrlParams, type, parent, intent);
     }
 
-    private boolean shouldRedirectToCCT(@TabLaunchType int type, String url) {
-        // Only link clicks should open in CCT, if the browser opens a tab for, say, intent
-        // handling, we should continue to open in NoTouchActivity.
-        // However, we should also handle intent URLs as normal, even if they open in a new window.
-        return isLinkClickLaunchType(type) && !UrlUtilities.validateIntentUrl(url);
+    private boolean shouldRedirectToCCT(@TabLaunchType int type) {
+        // Only link clicks should open in CCT.
+        return isLinkClickLaunchType(type);
     }
 
     private boolean isLinkClickLaunchType(@TabLaunchType int type) {

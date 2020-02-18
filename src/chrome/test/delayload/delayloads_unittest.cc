@@ -51,7 +51,8 @@ class DelayloadsTest : public testing::Test {
     ASSERT_TRUE(module_mmap.Initialize(module_path));
     base::win::PEImageAsData pe_image_data(
         reinterpret_cast<HMODULE>(const_cast<uint8_t*>(module_mmap.data())));
-    pe_image_data.EnumImportChunks(DelayloadsTest::ImportsCallback, imports);
+    pe_image_data.EnumImportChunks(DelayloadsTest::ImportsCallback, imports,
+                                   nullptr);
   }
 };
 
@@ -92,9 +93,6 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
   static const char* const kValidFilePatterns[] = {
       "KERNEL32.dll",
       "chrome_elf.dll",
-      "DWrite.dll",
-      "oneds.dll",
-      "telclient.dll",
       // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
       // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
       // be ok.
@@ -158,7 +156,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
+TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
   base::FilePath dll;
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_child.dll");
@@ -189,7 +187,6 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
       "WINSPOOL.DRV",
       "WINTRUST.dll",
       "WS2_32.dll",
-      "WTSAPI32.dll",
       // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
       // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
       // be ok.
@@ -209,7 +206,7 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllDelayloadsCheck) {
   }
 }
 
-TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTest) {
+TEST_F(DelayloadsTest, ChromeChildDllLoadSanityTest) {
   // On Win7 we expect this test to result in user32.dll getting loaded. As a
   // result, we need to ensure it is executed in its own test process. This
   // "test" will re-launch with custom parameters to accomplish that.
@@ -272,11 +269,9 @@ TEST_F(DelayloadsTest, ChromeElfDllDelayloadsCheck) {
 
   static const char* const kValidFilePatterns[] = {
     "KERNEL32.dll",
-    "RPCRT4.dll",
 #if defined(ADDRESS_SANITIZER) && defined(COMPONENT_BUILD)
     "clang_rt.asan_dynamic-i386.dll",
 #endif
-    "ADVAPI32.dll",
     // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
     // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
     // be ok.
@@ -330,9 +325,9 @@ TEST_F(DelayloadsTest, DISABLED_ChromeElfDllLoadSanityTestImpl) {
   ASSERT_TRUE(base::PathService::Get(base::DIR_EXE, &dll));
   dll = dll.Append(L"chrome_elf.dll");
 
-  // We don't expect user32 to be loaded in chrome_elf_import_unittests. If this
+  // We don't expect user32 to be loaded in delayloads_unittests. If this
   // test case fails, then it means that a dependency on user32 has crept into
-  // the chrome_elf_imports_unittests executable, which needs to be removed.
+  // the delayloads_unittests executable, which needs to be removed.
   // NOTE: it may be a secondary dependency of another system DLL.  If so,
   // try adding a "/DELAYLOAD:<blah>.dll" to the build.gn file.
   ASSERT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));

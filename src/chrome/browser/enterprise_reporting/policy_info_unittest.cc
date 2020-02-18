@@ -10,7 +10,7 @@
 #include "components/policy/core/common/mock_policy_service.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/proto/device_management_backend.pb.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/manifest_constants.h"
@@ -63,7 +63,7 @@ class PolicyInfoTest : public ::testing::Test {
   policy::MockPolicyService* policy_service() { return policy_service_; }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
   policy::PolicyMap policy_map_;
   policy::PolicyMap extension_policy_map_;
@@ -84,12 +84,12 @@ TEST_F(PolicyInfoTest, ChromePolicy) {
 
   EXPECT_CALL(*policy_service(), GetPolicies(_));
 
-  AppendChromePolicyInfoIntoProfileReport(
-      policy::GetAllPolicyValuesAsDictionary(
-          profile(), /* with_user_policies */ true, /* convert_values */ false,
-          /* with_device_data*/ false,
-          /* is_pretty_print */ false, /* convert_types */ false),
-      &profile_info);
+  AppendChromePolicyInfoIntoProfileReport(policy::DictionaryPolicyConversions()
+                                              .WithBrowserContext(profile())
+                                              .EnableConvertTypes(false)
+                                              .EnablePrettyPrint(false)
+                                              .ToValue(),
+                                          &profile_info);
   EXPECT_EQ(2, profile_info.chrome_policies_size());
 
   auto policy1 = profile_info.chrome_policies(0);
@@ -131,8 +131,11 @@ TEST_F(PolicyInfoTest, ExtensionPolicy) {
                               std::make_unique<base::Value>(3), nullptr);
   em::ChromeUserProfileInfo profile_info;
   AppendExtensionPolicyInfoIntoProfileReport(
-      policy::GetAllPolicyValuesAsDictionary(profile(), true, false, false,
-                                             false, false),
+      policy::DictionaryPolicyConversions()
+          .WithBrowserContext(profile())
+          .EnableConvertTypes(false)
+          .EnablePrettyPrint(false)
+          .ToValue(),
       &profile_info);
   // The second extension is not in the report because it has no policy.
   EXPECT_EQ(1, profile_info.extension_policies_size());

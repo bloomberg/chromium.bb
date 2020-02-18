@@ -43,6 +43,8 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
   // TODO(mstensho): Handle auto block size.
   LogicalOffset page_progression(LayoutUnit(), page_size.block_size);
 
+  container_builder_.SetIsBlockFragmentationContextRoot();
+
   do {
     // Lay out one page. Each page will become a fragment.
     NGFragmentGeometry fragment_geometry =
@@ -59,13 +61,13 @@ scoped_refptr<const NGLayoutResult> NGPageLayoutAlgorithm::Layout() {
                                     page_offset.block_offset + page_block_size);
     page_offset += page_progression;
     break_token = To<NGBlockBreakToken>(page.BreakToken());
-  } while (break_token && !break_token->IsFinished());
+  } while (break_token);
 
   container_builder_.SetIntrinsicBlockSize(intrinsic_block_size);
 
   // Recompute the block-axis size now that we know our content size.
   border_box_size.block_size = ComputeBlockSizeForFragment(
-      ConstraintSpace(), Node(), border_padding_, intrinsic_block_size);
+      ConstraintSpace(), Style(), border_padding_, intrinsic_block_size);
   container_builder_.SetBlockSize(border_box_size.block_size);
 
   NGOutOfFlowLayoutPart(

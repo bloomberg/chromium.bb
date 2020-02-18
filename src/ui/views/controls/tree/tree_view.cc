@@ -227,7 +227,7 @@ void TreeView::CommitEdit() {
 
   DCHECK(selected_node_);
   const bool editor_has_focus = editor_->HasFocus();
-  model_->SetTitle(GetSelectedNode(), editor_->text());
+  model_->SetTitle(GetSelectedNode(), editor_->GetText());
   CancelEdit();
   if (editor_has_focus)
     RequestFocus();
@@ -481,10 +481,12 @@ void TreeView::TreeNodesRemoved(TreeModel* model,
     // rather than invoking SetSelectedNode() otherwise, we'll try and use a
     // deleted value.
     selected_node_ = nullptr;
-    TreeModelNode* to_select = parent;
-    if (parent == root_.model_node() && !root_shown_) {
-      const auto& children = model_->GetChildren(parent);
-      to_select = children.empty() ? nullptr : children.front();
+    const auto& children = model_->GetChildren(parent);
+    TreeModelNode* to_select = nullptr;
+    if (!children.empty()) {
+      to_select = children[std::min(start, children.size() - 1)];
+    } else if (parent != root_.model_node() || root_shown_) {
+      to_select = parent;
     }
     SetSelectedNode(to_select);
   }

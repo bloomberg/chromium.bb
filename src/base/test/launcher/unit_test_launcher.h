@@ -19,6 +19,8 @@
 
 namespace base {
 
+extern const char kDontUseJobObjectFlag[];
+
 // Callback that runs a test suite and returns exit code.
 using RunTestSuiteCallback = OnceCallback<int(void)>;
 
@@ -126,16 +128,6 @@ class UnitTestLauncherDelegate : public TestLauncherDelegate {
  private:
   // TestLauncherDelegate:
   bool GetTests(std::vector<TestIdentifier>* output) override;
-  bool WillRunTest(const std::string& test_case_name,
-                   const std::string& test_name) override;
-
-  std::vector<TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) override;
 
   CommandLine GetCommandLine(const std::vector<std::string>& test_names,
                              const FilePath& temp_dir,

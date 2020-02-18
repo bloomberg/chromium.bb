@@ -10,10 +10,6 @@
 
 #include "fpdfsdk/cpdfsdk_pageview.h"
 
-#ifdef PDF_ENABLE_XFA
-#include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#endif  // PDF_ENABLE_XFA
-
 CPDFSDK_Annot::CPDFSDK_Annot(CPDFSDK_PageView* pPageView)
     : m_pPageView(pPageView) {}
 
@@ -23,21 +19,17 @@ CPDFSDK_BAAnnot* CPDFSDK_Annot::AsBAAnnot() {
   return nullptr;
 }
 
-#ifdef PDF_ENABLE_XFA
-
-bool CPDFSDK_Annot::IsXFAField() const {
-  return false;
-}
-
-CXFA_FFWidget* CPDFSDK_Annot::GetXFAWidget() const {
+CPDFXFA_Widget* CPDFSDK_Annot::AsXFAWidget() {
   return nullptr;
 }
 
-CPDFXFA_Page* CPDFSDK_Annot::GetPDFXFAPage() {
-  return m_pPageView ? m_pPageView->GetPDFXFAPage() : nullptr;
+IPDF_Page* CPDFSDK_Annot::GetXFAPage() {
+#ifdef PDF_ENABLE_XFA
+  if (m_pPageView)
+    return m_pPageView->GetXFAPage();
+#endif
+  return nullptr;
 }
-
-#endif  // PDF_ENABLE_XFA
 
 int CPDFSDK_Annot::GetLayoutOrder() const {
   return 5;
@@ -63,7 +55,7 @@ CFX_FloatRect CPDFSDK_Annot::GetRect() const {
 
 IPDF_Page* CPDFSDK_Annot::GetPage() {
 #ifdef PDF_ENABLE_XFA
-  CPDFXFA_Page* pXFAPage = GetPDFXFAPage();
+  IPDF_Page* pXFAPage = GetXFAPage();
   if (pXFAPage)
     return pXFAPage;
 #endif  // PDF_ENABLE_XFA

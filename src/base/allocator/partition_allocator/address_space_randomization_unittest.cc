@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/allocator/partition_allocator/page_allocator.h"
+#include "base/allocator/partition_allocator/random.h"
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -100,8 +101,8 @@ TEST(AddressSpaceRandomizationTest, Predictable) {
   if (!mask)
     return;
 
-  const uintptr_t kInitialSeed = 0xfeed5eedULL;
-  base::SetRandomPageBaseSeed(kInitialSeed);
+  const uint64_t kInitialSeed = 0xfeed5eedULL;
+  base::SetMmapSeedForTesting(kInitialSeed);
 
   std::vector<uintptr_t> sequence;
   for (size_t i = 0; i < kSamples; ++i) {
@@ -109,7 +110,7 @@ TEST(AddressSpaceRandomizationTest, Predictable) {
     sequence.push_back(address);
   }
 
-  base::SetRandomPageBaseSeed(kInitialSeed);
+  base::SetMmapSeedForTesting(kInitialSeed);
 
   for (size_t i = 0; i < kSamples; ++i) {
     uintptr_t address = reinterpret_cast<uintptr_t>(base::GetRandomPageBase());

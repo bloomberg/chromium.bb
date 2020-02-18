@@ -14,9 +14,11 @@
 #include "base/path_service.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
 #include "components/omnibox/browser/base_search_provider.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/on_device_head_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_terms_data.h"
@@ -102,8 +104,18 @@ bool OnDeviceHeadProvider::IsOnDeviceHeadProviderAllowed(
       input.type() == metrics::OmniboxInputType::EMPTY)
     return false;
 
-  // Make sure search suggest is enabled and user is not in incognito.
-  if (client()->IsOffTheRecord() || !client()->SearchSuggestEnabled())
+  // Check whether search suggest is enabled.
+  if (!client()->SearchSuggestEnabled())
+    return false;
+
+  // Make sure user is not in incognito, unless on device head provider is
+  // enabled for incognito.
+  if (client()->IsOffTheRecord() &&
+      !OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito())
+    return false;
+
+  // Reject on focus request.
+  if (input.from_omnibox_focus())
     return false;
 
   // Do not proceed if default search provider is not Google.

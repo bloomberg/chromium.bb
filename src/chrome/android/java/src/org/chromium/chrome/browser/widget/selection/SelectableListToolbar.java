@@ -146,7 +146,7 @@ public class SelectableListToolbar<E>
     public void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
-        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        hideKeyboard();
         VrModuleProvider.unregisterVrModeObserver(this);
     }
 
@@ -423,7 +423,7 @@ public class SelectableListToolbar<E>
 
         mIsSearching = false;
         mSearchEditText.setText("");
-        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        hideKeyboard();
         showNormalView();
 
         mSearchDelegate.onEndSearch();
@@ -556,7 +556,7 @@ public class SelectableListToolbar<E>
 
         switchToNumberRollView(selectedItems, wasSelectionEnabled);
 
-        if (mIsSearching) KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+        if (mIsSearching) hideKeyboard();
 
         updateDisplayStyleIfNecessary();
     }
@@ -671,6 +671,13 @@ public class SelectableListToolbar<E>
         }
     }
 
+    /**
+     * Hides the keyboard.
+     */
+    public void hideKeyboard() {
+        KeyboardVisibilityDelegate.getInstance().hideKeyboard(mSearchEditText);
+    }
+
     @Override
     public void setTitle(CharSequence title) {
         super.setTitle(title);
@@ -685,6 +692,28 @@ public class SelectableListToolbar<E>
         super.setBackgroundColor(color);
 
         updateStatusBarColor(color);
+    }
+
+    /**
+     * Returns whether the toolbar should be using dark icons (light icons are only used when in
+     * selection mode).
+     */
+    protected boolean useDarkIcons() {
+        return !mIsSelectionEnabled;
+    }
+
+    /**
+     * Returns the color state list to use when dark icons are showing (when not in selection mode).
+     */
+    protected ColorStateList getDarkIconColorStateList() {
+        return mDarkIconColorList;
+    }
+
+    /**
+     * Returns the color state list to use when light icons are showing (when in selection mode).
+     */
+    protected ColorStateList getLightIconColorStateList() {
+        return mLightIconColorList;
     }
 
     private void updateStatusBarColor(int color) {

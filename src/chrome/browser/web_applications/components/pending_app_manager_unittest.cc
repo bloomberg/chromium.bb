@@ -11,7 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/test/test_pending_app_manager.h"
@@ -65,7 +65,7 @@ class PendingAppManagerTest : public testing::Test {
     EXPECT_EQ(installed_app_urls, urls);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestAppRegistrar registrar_;
   TestPendingAppManager pending_app_manager_;
 };

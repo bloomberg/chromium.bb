@@ -10,6 +10,8 @@
 #include "base/i18n/message_formatter.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -20,6 +22,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -43,7 +46,7 @@ constexpr int kIconSize = 24;      // The size of throbber and error icon.
 constexpr int kLineHeight = 22;    // The height of text line.
 constexpr int kFontSizeDelta = 3;  // The font size of text.
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr int kLogoHeight = 20;  // The height of Chrome enterprise logo.
 #endif
 
@@ -56,7 +59,9 @@ std::unique_ptr<views::Label> CreateText(const base::string16& message) {
   auto text = std::make_unique<views::Label>(message);
   text->SetFontList(gfx::FontList().Derive(kFontSizeDelta, gfx::Font::NORMAL,
                                            gfx::Font::Weight::MEDIUM));
-  text->SetEnabledColor(gfx::kGoogleGrey700);
+  text->SetEnabledColor(
+      views::style::GetColor(*text, views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT,
+                             views::style::STYLE_PRIMARY));
   text->SetLineHeight(kLineHeight);
   return text;
 }
@@ -96,8 +101,10 @@ void EnterpriseStartupDialogView::DisplayErrorMessage(
   ResetDialog(accept_button.has_value());
   std::unique_ptr<views::Label> text = CreateText(error_message);
   auto error_icon = std::make_unique<views::ImageView>();
-  error_icon->SetImage(gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kIconSize,
-                                             gfx::kGoogleRed700));
+  error_icon->SetImage(
+      gfx::CreateVectorIcon(kBrowserToolsErrorIcon, kIconSize,
+                            GetNativeTheme()->GetSystemColor(
+                                ui::NativeTheme::kColorId_AlertSeverityHigh)));
 
   if (accept_button)
     GetDialogClientView()->ok_button()->SetText(*accept_button);
@@ -168,12 +175,15 @@ ui::ModalType EnterpriseStartupDialogView::GetModalType() const {
 }
 
 std::unique_ptr<views::View> EnterpriseStartupDialogView::CreateExtraView() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Show Google Chrome Enterprise logo only for official build.
   auto logo_image = std::make_unique<views::ImageView>();
-  logo_image->SetImage(ui::ResourceBundle::GetSharedInstance()
-                           .GetImageNamed(IDR_PRODUCT_LOGO_ENTERPRISE)
-                           .AsImageSkia());
+  logo_image->SetImage(
+      ui::ResourceBundle::GetSharedInstance()
+          .GetImageNamed((logo_image->GetNativeTheme()->ShouldUseDarkColors())
+                             ? IDR_PRODUCT_LOGO_ENTERPRISE_WHITE
+                             : IDR_PRODUCT_LOGO_ENTERPRISE)
+          .AsImageSkia());
   logo_image->set_tooltip_text(
       l10n_util::GetStringUTF16(IDS_PRODUCT_LOGO_ENTERPRISE_ALT_TEXT));
   gfx::Rect logo_bounds = logo_image->GetImageBounds();

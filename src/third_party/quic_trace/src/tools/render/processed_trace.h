@@ -80,9 +80,16 @@ class ProcessedTrace {
                  Interval interval,
                  PacketType type);
 
+  absl::flat_hash_set<uint64_t>* GetPacketsAcked(const EncryptionLevel);
+  absl::flat_hash_set<uint64_t>* GetPacketsLost(const EncryptionLevel);
+
   std::unique_ptr<Trace> trace_;
-  absl::flat_hash_set<uint64_t> packets_acked_;
-  absl::flat_hash_set<uint64_t> packets_lost_;
+  absl::flat_hash_set<uint64_t> packets_acked_initial_;
+  absl::flat_hash_set<uint64_t> packets_acked_handshake_;
+  absl::flat_hash_set<uint64_t> packets_acked_1rtt_;
+  absl::flat_hash_set<uint64_t> packets_lost_initial_;
+  absl::flat_hash_set<uint64_t> packets_lost_handshake_;
+  absl::flat_hash_set<uint64_t> packets_lost_1rtt_;
   // Map from packet-as-drawn offset to the ack.  This is required because
   // unlike sent or lost packets, there could be many acks derived from the same
   // Event object.

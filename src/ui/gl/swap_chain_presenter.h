@@ -11,6 +11,7 @@
 #include <wrl/client.h>
 
 #include "base/containers/circular_deque.h"
+#include "base/power_monitor/power_monitor.h"
 #include "base/win/scoped_handle.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gl/dc_renderer_layer_params.h"
@@ -23,12 +24,12 @@ class GLImageMemory;
 // SwapChainPresenter holds a swap chain, direct composition visuals, and other
 // associated resources for a single overlay layer.  It is updated by calling
 // PresentToSwapChain(), and can update or recreate resources as necessary.
-class SwapChainPresenter {
+class SwapChainPresenter : public base::PowerObserver {
  public:
   SwapChainPresenter(DCLayerTree* layer_tree,
                      Microsoft::WRL::ComPtr<ID3D11Device> d3d11_device,
                      Microsoft::WRL::ComPtr<IDCompositionDevice2> dcomp_device);
-  ~SwapChainPresenter();
+  ~SwapChainPresenter() override;
 
   // Present the given overlay to swap chain.  Returns true on success.
   bool PresentToSwapChain(const ui::DCRendererLayerParams& overlay);
@@ -129,14 +130,14 @@ class SwapChainPresenter {
   // Try presenting to a decode swap chain based on various conditions such as
   // global state (e.g. finch, NV12 support), texture flags, and transform.
   // Returns true on success.  See PresentToDecodeSwapChain() for more info.
-  bool TryPresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
+  bool TryPresentToDecodeSwapChain(GLImageDXGI* nv12_image,
                                    const gfx::Rect& content_rect,
                                    const gfx::Size& swap_chain_size);
 
   // Present to a decode swap chain created from compatible video decoder
-  // buffers using given |image_dxgi| with destination size |swap_chain_size|.
+  // buffers using given |nv12_image| with destination size |swap_chain_size|.
   // Returns true on success.
-  bool PresentToDecodeSwapChain(GLImageDXGI* image_dxgi,
+  bool PresentToDecodeSwapChain(GLImageDXGI* nv12_image,
                                 const gfx::Rect& content_rect,
                                 const gfx::Size& swap_chain_size);
 
@@ -144,6 +145,13 @@ class SwapChainPresenter {
   // current swap chain which could either be a regular flip swap chain or a
   // decode swap chain.
   void RecordPresentationStatistics();
+
+  // base::PowerObserver
+  void OnPowerStateChange(bool on_battery_power) override;
+
+  // If connected with a power source, let the Intel video processor to do
+  // the upscaling because it produces better results.
+  bool ShouldUseVideoProcessorScaling();
 
   // Layer tree instance that owns this swap chain presenter.
   DCLayerTree* layer_tree_ = nullptr;
@@ -197,8 +205,7 @@ class SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDCompositionVisual2> clip_visual_;
 
   // GLImages that were presented in the last frame.
-  scoped_refptr<GLImage> last_y_image_;
-  scoped_refptr<GLImage> last_uv_image_;
+  ui::DCRendererLayerParams::OverlayImages last_presented_images_;
 
   // NV12 staging texture used for software decoded YUV buffers.  Mapped to CPU
   // for copying from YUV buffers.  Texture usage is DYNAMIC or STAGING.
@@ -222,6 +229,7 @@ class SwapChainPresenter {
   Microsoft::WRL::ComPtr<IDXGIResource> decode_resource_;
   Microsoft::WRL::ComPtr<IDXGIDecodeSwapChain> decode_swap_chain_;
   Microsoft::WRL::ComPtr<IUnknown> decode_surface_;
+  bool is_on_battery_power_;
 
   DISALLOW_COPY_AND_ASSIGN(SwapChainPresenter);
 };

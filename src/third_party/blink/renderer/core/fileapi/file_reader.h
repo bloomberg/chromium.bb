@@ -32,18 +32,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_READER_H_
 
 #include <memory>
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader.h"
 #include "third_party/blink/renderer/core/fileapi/file_reader_loader_client.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-
-namespace base {
-class ElapsedTimer;
-}
 
 namespace blink {
 
@@ -78,6 +76,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   ReadyState getReadyState() const { return state_; }
   DOMException* error() { return error_; }
   void result(ScriptState*, StringOrArrayBuffer& result_attribute) const;
+  probe::AsyncTaskId* async_task_id() { return &async_task_id_; }
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
@@ -132,6 +131,7 @@ class CORE_EXPORT FileReader final : public EventTargetWithInlineData,
   scoped_refptr<BlobDataHandle> blob_data_handle_;
   FileReaderLoader::ReadType read_type_;
   String encoding_;
+  probe::AsyncTaskId async_task_id_;
 
   std::unique_ptr<FileReaderLoader> loader_;
   Member<DOMException> error_;

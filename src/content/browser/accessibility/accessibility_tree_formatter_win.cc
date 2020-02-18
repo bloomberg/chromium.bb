@@ -66,7 +66,7 @@ class AccessibilityTreeFormatterWin : public AccessibilityTreeFormatterBase {
       LONG root_x,
       LONG root_y);
 
-  const base::FilePath::StringType GetExpectedFileSuffix() override;
+  base::FilePath::StringType GetExpectedFileSuffix() override;
   const std::string GetAllowEmptyString() override;
   const std::string GetAllowString() override;
   const std::string GetDenyString() override;
@@ -920,7 +920,7 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
   // Always show role, and show it first.
   base::string16 role_value;
   dict.GetString("role", &role_value);
-  WriteAttribute(true, base::UTF16ToUTF8(role_value), &line);
+  WriteAttribute(true, role_value, &line);
   if (filtered_dict_result)
     filtered_dict_result->SetString("role", role_value);
 
@@ -1015,7 +1015,7 @@ base::string16 AccessibilityTreeFormatterWin::ProcessTreeForOutput(
   return line;
 }
 
-const base::FilePath::StringType
+base::FilePath::StringType
 AccessibilityTreeFormatterWin::GetExpectedFileSuffix() {
   return FILE_PATH_LITERAL("-expected-win.txt");
 }

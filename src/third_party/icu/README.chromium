@@ -79,8 +79,8 @@ Pre-built data files are generated and checked in with the following steps
      make the tree ready for committing updated ICU data files for
      non-Android and Android platforms.
 
-  c. Whenever data is updated (e.g timezone update), take step d as long
-  as the ICU build directory used in a ~ b is kept.
+  c. Whenever data is updated (e.g timezone update), take step b as long
+  as the ICU build directory used in a is kept.
 
 2. Note on the locale data customization
 
@@ -205,7 +205,7 @@ D. Local Modifications
      windowsZones.txt
      zoneinfo64.txt
 
-  As of May 7, 2019, the latest version is 2019a and the above files
+  As of July 3, 2019, the latest version is 2019b and the above files
   are available at the ICU github repos.
 
 4. Build-related changes
@@ -279,3 +279,42 @@ D. Local Modifications
     https://unicode-org.atlassian.net/browse/ICU-20654
   - upstream PR:
     https://github.com/unicode-org/icu/pull/674
+
+12. Add usePoolBundle option to filters.json
+  - patches/usePool.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20660
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/682
+
+13. Allow ICUPKG to generating dat with missing dependencies.
+  - patches/icupkg.patch
+  - upstream bug:
+    https://unicode-org.atlassian.net/browse/ICU-20774
+
+14. Add LocaleMatcher
+  - patches/trie.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/747
+
+  - patches/tracing.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/617
+
+  - patches/localematcher.patch
+  - upstream PR:
+    https://github.com/unicode-org/icu/pull/714
+
+15. Prevent leak from adoptCalendar
+ - patches/calendarToAdopt.patch
+ - upstream bug:
+   https://unicode-org.atlassian.net/browse/ICU-20799
+ - upstream PR:
+   https://github.com/unicode-org/icu/pull/790
+
+16. Fix minimumGroupingDigits in Hungarian locale (hu) from 4 to 1.
+ - patches/hu_minimumGroupingDigits.patch
+ - upstream bug:
+   https://unicode-org.atlassian.net/browse/CLDR-13256
+ - upstream PR:
+   https://github.com/unicode-org/cldr/pull/142

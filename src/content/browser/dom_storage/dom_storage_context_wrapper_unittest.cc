@@ -9,11 +9,12 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/dom_storage/local_storage_context_mojo.h"
 #include "content/browser/dom_storage/session_storage_context_mojo.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -46,7 +47,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> fake_mojo_task_runner_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<DOMStorageContextWrapper> context_;
@@ -55,8 +56,7 @@ class DOMStorageContextWrapperTest : public testing::Test {
 };
 
 TEST_F(DOMStorageContextWrapperTest, BadMessageScheduling) {
-  blink::mojom::SessionStorageNamespacePtr ss_namespace_ptr;
-  auto request = mojo::MakeRequest(&ss_namespace_ptr);
+  mojo::Remote<blink::mojom::SessionStorageNamespace> ss_namespace_remote;
   bool called = false;
   // This call is invalid because |CreateSessionNamespace| was never called on
   // the SessionStorage context.
@@ -64,7 +64,7 @@ TEST_F(DOMStorageContextWrapperTest, BadMessageScheduling) {
       0, "nonexistant-namespace",
       base::BindLambdaForTesting(
           [&called](const std::string& message) { called = true; }),
-      std::move(request));
+      ss_namespace_remote.BindNewPipeAndPassReceiver());
   EXPECT_FALSE(called);
   fake_mojo_task_runner_->RunPendingTasks();
 

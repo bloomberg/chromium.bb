@@ -28,7 +28,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/x509_certificate.h"
 #include "net/test/cert_test_util.h"
@@ -205,7 +205,7 @@ class MultiProfileUserControllerTest
 
   TestingProfile* profile(int index) { return user_profiles_[index]; }
 
-  content::TestBrowserThreadBundle threads_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   FakeChromeUserManager* fake_user_manager_;  // Not owned
   user_manager::ScopedUserManager user_manager_enabler_;
@@ -430,9 +430,7 @@ TEST_F(MultiProfileUserControllerTest,
   net::CertificateList certificates;
   certificates.push_back(
       net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem"));
-  service->OnPolicyProvidedCertsChanged(
-      certificates /* all_server_and_authority_certs */,
-      certificates /* trust_anchors */);
+  service->SetPolicyTrustAnchorsForTesting(/*trust_anchors=*/certificates);
   EXPECT_TRUE(service->has_policy_certificates());
   EXPECT_FALSE(controller()->IsUserAllowedInSession(
       test_users_[1].GetUserEmail(), &reason));

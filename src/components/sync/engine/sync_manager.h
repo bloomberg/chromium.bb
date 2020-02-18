@@ -55,6 +55,10 @@ class TypeDebugInfoObserver;
 class UnrecoverableErrorHandler;
 struct UserShare;
 
+namespace syncable {
+class NigoriHandler;
+}  // namespace syncable
+
 // SyncManager encapsulates syncable::Directory and serves as the parent of all
 // other objects in the sync API.  If multiple threads interact with the same
 // local sync repository (i.e. the same sqlite database), they should share a
@@ -219,7 +223,7 @@ class SyncManager {
     // Must outlive SyncManager.
     ChangeDelegate* change_delegate;
 
-    std::string authenticated_account_id;
+    CoreAccountId authenticated_account_id;
 
     // Unqiuely identifies this client to the invalidation notification server.
     std::string invalidator_client_id;
@@ -231,6 +235,9 @@ class SyncManager {
 
     // Must outlive SyncManager.
     SyncEncryptionHandler* encryption_handler;
+
+    // Must outlive SyncManager.
+    syncable::NigoriHandler* nigori_handler;
 
     WeakHandle<UnrecoverableErrorHandler> unrecoverable_error_handler;
     base::Closure report_unrecoverable_error_function;

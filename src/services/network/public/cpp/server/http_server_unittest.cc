@@ -13,7 +13,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -164,8 +164,7 @@ namespace server {
 class HttpServerTest : public testing::Test, public HttpServer::Delegate {
  public:
   HttpServerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         quit_after_request_count_(0),
         quit_on_close_connection_(-1),
         factory_(nullptr, &url_request_context_) {}
@@ -275,7 +274,7 @@ class HttpServerTest : public testing::Test, public HttpServer::Delegate {
       connection_map_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   size_t quit_after_request_count_;
   int quit_on_close_connection_;
 

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 The ANGLE Project Authors. All rights reserved.
+// Copyright 2016 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -127,14 +127,16 @@ const char *GetVendorString(uint32_t vendorId)
     {
         case VENDOR_ID_AMD:
             return "Advanced Micro Devices";
-        case VENDOR_ID_NVIDIA:
-            return "NVIDIA";
-        case VENDOR_ID_INTEL:
-            return "Intel";
-        case VENDOR_ID_QUALCOMM:
-            return "Qualcomm";
         case VENDOR_ID_ARM:
             return "ARM";
+        case VENDOR_ID_GOOGLE:
+            return "Google";
+        case VENDOR_ID_INTEL:
+            return "Intel";
+        case VENDOR_ID_NVIDIA:
+            return "NVIDIA";
+        case VENDOR_ID_QUALCOMM:
+            return "Qualcomm";
         default:
             // TODO(jmadill): More vendor IDs.
             ASSERT(vendorId == 0xba5eba11);  // Mock vendor ID used for tests.

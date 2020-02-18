@@ -22,9 +22,9 @@
 #include "components/viz/common/gpu/context_lost_observer.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/content_export.h"
-#include "media/mojo/interfaces/interface_factory.mojom.h"
-#include "media/mojo/interfaces/video_decoder.mojom.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/interface_factory.mojom.h"
+#include "media/mojo/mojom/video_decoder.mojom.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "media/video/supported_video_decoder_config.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,9 +34,9 @@ class GpuChannelHost;
 class GpuMemoryBufferManager;
 }  // namespace gpu
 
-namespace ui {
+namespace viz {
 class ContextProviderCommandBuffer;
-}  // namespace ui
+}  // namespace viz
 
 namespace content {
 
@@ -107,13 +107,13 @@ class CONTENT_EXPORT GpuVideoAcceleratorFactoriesImpl
   // present otherwise.
   void DestroyContext();
   std::unique_ptr<base::SharedMemory> CreateSharedMemory(size_t size) override;
+  base::UnsafeSharedMemoryRegion CreateSharedMemoryRegion(size_t size) override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner() override;
 
   std::vector<media::VideoEncodeAccelerator::SupportedProfile>
   GetVideoEncodeAcceleratorSupportedProfiles() override;
 
-  scoped_refptr<viz::ContextProviderCommandBuffer> GetMediaContextProvider()
-      override;
+  scoped_refptr<viz::ContextProvider> GetMediaContextProvider() override;
 
   void SetRenderingColorSpace(const gfx::ColorSpace& color_space) override;
 

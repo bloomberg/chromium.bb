@@ -1,4 +1,4 @@
-display: unicode.dis
+display: unicode-without-blank.dis
 table:
   locale: pl
   type: computer
@@ -16,3 +16,4 @@ tests:
   - [(2*44)/4=22, ⠦⢃⠔⢙⢙⠴⠲⢙⠶⢃⢃]
   - ['+44,0123456789', ⠖⢙⢙⠂⢚⢁⢃⢉⢙⢑⢋⢛⢓⢊]
   - [●, ⠔]
+  - [–, ⠤]

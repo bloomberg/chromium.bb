@@ -26,6 +26,10 @@ crbug.com/653538 [ win amd-0x6613 ] Pixel_GpuRasterization_BlueBox [ RetryOnFail
 [ android ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 [ android ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
 [ android ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
+[ android ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
+
+# Skip tab switching tests on Android webview since it doesn't have tabs
+[ android-webview-instrumentation ] Pixel_Canvas2DTabSwitch [ Skip ]
 
 # Tests running with SwiftShader are skipped on platforms where SwiftShader
 # isn't supported.
@@ -57,8 +61,10 @@ crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanv
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
 crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
-crbug.com/805739 [ android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
+crbug.com/805739 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
 crbug.com/805739 [ android android-webview-instrumentation ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
+crbug.com/992599 [ android android-webview-instrumentation ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
 # Fails on Android WebView due to requiring embedding viz clients. crbug.com/805739
 # Produces black images on Nexus 5Xs in Android Webview (qualcomm-adreno-(tm)-418) crbug.com/984352
@@ -80,6 +86,8 @@ crbug.com/624256 [ android ] Pixel_SolidColorBackground [ Failure ]
 
 crbug.com/690277 [ mac nvidia-0xfe9 ] Pixel_CSSFilterEffects [ Failure ]
 
+crbug.com/996824 [ mac nvidia-0xfe9 ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Failure ]
+
 # Became flaky on 10.13.6. When it flakes, it flakes 3 times, so
 # mark failing, unfortunately.
 crbug.com/872423 [ highsierra amd ] Pixel_CSSFilterEffects [ Failure ]
@@ -90,8 +98,6 @@ crbug.com/648369 [ linux debug intel ] * [ RetryOnFailure ]
 # Flaky for unknown reasons only on macOS. Not planning to investigate
 # further.
 crbug.com/660461 [ mac ] Pixel_ScissorTestWithPreserveDrawingBuffer [ RetryOnFailure ]
-
-crbug.com/751328 [ mac debug nvidia-0xfe9 ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ RetryOnFailure ]
 
 # Failing on Nexus 5; haven't investigated why yet.
 crbug.com/773293 [ android qualcomm-adreno-(tm)-330 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
@@ -175,15 +181,13 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Skip ]
 crbug.com/974383 [ mac ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
 
-# Fails when the browser feature SkiaRenderer is enabled
-crbug.com/976370 [ skia-renderer ] Pixel_CSS3DBlueBox [ Skip ]
-
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Linux
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplayLinearRGBUnaccelerated2DGPUCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasDisplaySRGBUnaccelerated2DGPUCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_CanvasUnacceleratedLowLatency2D [ Skip ]
+crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_Canvas2DTabSwitch_SoftwareCompositing [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2D [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasUnaccelerated2DWorker [ Skip ]
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Skip ]
@@ -191,6 +195,12 @@ crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLSo
 crbug.com/984973 [ linux skia-renderer use-vulkan ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Skip ]
 crbug.com/985366 [ linux skia-renderer use-vulkan ] Pixel_CanvasLowLatency2D [ Skip ]
 crbug.com/985366 [ linux skia-renderer use-vulkan ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+
+# Also producing blank images on Intel
+crbug.com/974383 [ linux skia-renderer use-vulkan intel ] Pixel_CanvasDisplayLinearRGBAccelerated2D [ Skip ]
+
+# Fails on Intel
+crbug.com/991289 [ linux skia-renderer intel ] Pixel_CSS3DBlueBox [ Skip ]
 
 # Fails when the browser features SkiaRenderer & Vulkan are enabled on Android
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_2DCanvasWebGL [ Failure ]
@@ -203,8 +213,8 @@ crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_Off
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
-crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
+crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
 crbug.com/969864 [ android android-chromium skia-renderer use-vulkan ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
@@ -213,9 +223,35 @@ crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_A
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Skip ]
 crbug.com/969864 [ android skia-renderer use-vulkan ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Skip ]
+crbug.com/985070 [ android android-chromium skia-renderer use-vulkan qualcomm-adreno-(tm)-540 ] Pixel_CanvasLowLatencyWebGL [ Skip ]
+crbug.com/991289 [ android skia-renderer use-vulkan ] Pixel_CSS3DBlueBox [ Skip ]
+crbug.com/991291 [ android android-chromium skia-renderer use-vulkan ] Pixel_Video_Context_Loss_VP9 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_VP9 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_BackdropFilter [ Skip ]
 
 # Produces blank images on Intel HD 630 w/ Mesa 19.0.2
 crbug.com/976861 [ linux intel-0x5912 ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
 
 # Flakily produces a ~50% blank image
 crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ RetryOnFailure ]
+
+# Skip swap chain tests on non-Windows
+[ android ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ android ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ chromeos ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ chromeos ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ linux ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ linux ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+[ mac ] Pixel_CanvasLowLatency2DSwapChain [ Skip ]
+[ mac ] Pixel_CanvasLowLatencyWebGLSwapChain [ Skip ]
+
+# Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
+crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
+
+# Rounded corner pixel test fails on Android vulkan.
+crbug.com/1007019 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_Rounded_Corner [ Failure ]

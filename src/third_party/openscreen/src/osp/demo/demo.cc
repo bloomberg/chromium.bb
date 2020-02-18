@@ -28,8 +28,12 @@
 #include "osp/public/service_publisher.h"
 #include "platform/api/logging.h"
 #include "platform/api/network_interface.h"
+#include "platform/api/network_runner.h"
+#include "platform/api/network_runner_lifetime_manager.h"
 #include "platform/api/time.h"
 #include "platform/api/trace_logging.h"
+#include "platform/impl/network_runner.h"
+#include "platform/impl/task_runner.h"
 #include "platform/impl/text_trace_logging_platform.h"
 #include "third_party/tinycbor/src/src/cbor.h"
 
@@ -345,12 +349,10 @@ struct CommandWaitResult {
 };
 
 CommandWaitResult WaitForCommand(pollfd* pollfd) {
-  NetworkServiceManager* network_service = NetworkServiceManager::Get();
   while (poll(pollfd, 1, 10) >= 0) {
     if (g_done) {
       return {true};
     }
-    network_service->RunEventLoopOnce();
 
     if (pollfd->revents == 0) {
       continue;
@@ -372,7 +374,6 @@ CommandWaitResult WaitForCommand(pollfd* pollfd) {
 }
 
 void RunControllerPollLoop(presentation::Controller* controller) {
-  TRACE_SCOPED(TraceCategory::CastFlinging, "RunControllerPollLoop");
   ReceiverObserver receiver_observer;
   RequestDelegate request_delegate;
   ConnectionDelegate connection_delegate;
@@ -380,9 +381,7 @@ void RunControllerPollLoop(presentation::Controller* controller) {
   presentation::Controller::ConnectRequest connect_request;
 
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
-  uint64_t it = 1;
   while (true) {
-    TRACE_SCOPED(TraceCategory::CastFlinging, "ControllerPollIteration", it);
     write(STDOUT_FILENO, "$ ", 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
@@ -417,8 +416,6 @@ void RunControllerPollLoop(presentation::Controller* controller) {
       request_delegate.connection->Terminate(
           presentation::TerminationReason::kControllerTerminateCalled);
     }
-
-    it += 2;  // +2 to keep the ids for reciever and controller distinct.
   };
 
   watch = presentation::Controller::ReceiverWatch();
@@ -427,16 +424,21 @@ void RunControllerPollLoop(presentation::Controller* controller) {
 void ListenerDemo() {
   SignalThings();
 
+  std::unique_ptr<platform::NetworkRunnerLifetimeManager>
+      network_runner_manager = platform::NetworkRunnerLifetimeManager::Create();
+  network_runner_manager->CreateNetworkRunner();
+  platform::NetworkRunner* network_runner = network_runner_manager->Get();
+
   ListenerObserver listener_observer;
   MdnsServiceListenerConfig listener_config;
-  auto mdns_listener =
-      MdnsServiceListenerFactory::Create(listener_config, &listener_observer);
+  auto mdns_listener = MdnsServiceListenerFactory::Create(
+      listener_config, &listener_observer, network_runner);
 
   MessageDemuxer demuxer(platform::Clock::now,
                          MessageDemuxer::kDefaultBufferLimit);
   ConnectionClientObserver client_observer;
-  auto connection_client =
-      ProtocolConnectionClientFactory::Create(&demuxer, &client_observer);
+  auto connection_client = ProtocolConnectionClientFactory::Create(
+      &demuxer, &client_observer, network_runner);
 
   auto* network_service = NetworkServiceManager::Create(
       std::move(mdns_listener), nullptr, std::move(connection_client), nullptr);
@@ -484,11 +486,8 @@ void HandleReceiverCommand(absl::string_view command,
 void RunReceiverPollLoop(pollfd& file_descriptor,
                          NetworkServiceManager* manager,
                          ReceiverDelegate& delegate) {
-  TRACE_SCOPED(TraceCategory::CastFlinging, "RunReceiverPollLoop");
   pollfd stdin_pollfd{STDIN_FILENO, POLLIN};
-  uint64_t it = 2;
   while (true) {
-    TRACE_SCOPED(TraceCategory::CastFlinging, "ReceiverPollIteration", it);
     write(STDOUT_FILENO, "$ ", 2);
 
     CommandWaitResult command_result = WaitForCommand(&stdin_pollfd);
@@ -499,8 +498,6 @@ void RunReceiverPollLoop(pollfd& file_descriptor,
     HandleReceiverCommand(command_result.command_line.command,
                           command_result.command_line.argument_tail, delegate,
                           manager);
-
-    it += 2;  // +2 to keep the ids for reciever and controller distinct.
   }
 }
 
@@ -518,6 +515,11 @@ void PublisherDemo(absl::string_view friendly_name) {
 
   constexpr uint16_t server_port = 6667;
 
+  std::unique_ptr<platform::NetworkRunnerLifetimeManager>
+      network_runner_manager = platform::NetworkRunnerLifetimeManager::Create();
+  network_runner_manager->CreateNetworkRunner();
+  platform::NetworkRunner* network_runner = network_runner_manager->Get();
+
   PublisherObserver publisher_observer;
   // TODO(btolsch): aggregate initialization probably better?
   ServicePublisher::Config publisher_config;
@@ -527,7 +529,7 @@ void PublisherDemo(absl::string_view friendly_name) {
   publisher_config.connection_server_port = server_port;
 
   auto mdns_publisher = MdnsServicePublisherFactory::Create(
-      publisher_config, &publisher_observer);
+      publisher_config, &publisher_observer, network_runner);
 
   ServerConfig server_config;
   std::vector<platform::InterfaceAddresses> interfaces =
@@ -541,7 +543,8 @@ void PublisherDemo(absl::string_view friendly_name) {
                          MessageDemuxer::kDefaultBufferLimit);
   ConnectionServerObserver server_observer;
   auto connection_server = ProtocolConnectionServerFactory::Create(
-      server_config, &demuxer, &server_observer);
+      server_config, &demuxer, &server_observer, network_runner);
+
   auto* network_service =
       NetworkServiceManager::Create(nullptr, std::move(mdns_publisher), nullptr,
                                     std::move(connection_server));

@@ -9,10 +9,6 @@ source_set("autofill") {
     "autofill_ui_type_util.mm",
     "chrome_autofill_client_ios.h",
     "chrome_autofill_client_ios.mm",
-    "form_input_accessory_coordinator.h",
-    "form_input_accessory_coordinator.mm",
-    "form_input_accessory_mediator.h",
-    "form_input_accessory_mediator.mm",
   ]
   deps = [
     ":autofill_ui",
@@ -46,6 +42,7 @@ source_set("autofill") {
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/translate:translate",
     "//ios/chrome/browser/ui/autofill/cells",
+    "//ios/chrome/browser/ui/autofill/form_input_accessory:form_input_accessory_ui",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill",
     "//ios/chrome/browser/ui/autofill/manual_fill:manual_fill_ui",
     "//ios/chrome/browser/ui/collection_view/cells",
@@ -84,6 +81,7 @@ source_set("bridges") {
     "//ios/chrome/browser/ui/collection_view/cells",
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/util",
+    "//ios/chrome/common/colors",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
     "//ios/web",
@@ -98,8 +96,6 @@ source_set("bridges") {
 source_set("autofill_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "autofill_edit_accessory_view.h",
-    "autofill_edit_accessory_view.mm",
     "autofill_ui_type.h",
     "save_card_infobar_controller.h",
     "save_card_infobar_controller.mm",
@@ -119,12 +115,14 @@ source_set("autofill_ui") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/image_util",
     "//ios/chrome/browser/ui/infobars:infobars_ui",
+    "//ios/chrome/browser/ui/toolbar/public",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/common",
+    "//ios/chrome/common/colors",
     "//ios/chrome/common/ui_util",
     "//ios/third_party/material_components_ios",
     "//ios/third_party/material_roboto_font_loader_ios",
-    "//ui/base:base",
+    "//ui/base",
     "//url:url",
   ]
   libs = [ "UIKit.framework" ]
@@ -145,6 +143,7 @@ source_set("eg_tests") {
     "//components/leveldb_proto",
     "//components/strings:components_strings_grit",
     "//ios/chrome/browser/autofill",
+    "//ios/chrome/test:eg_test_support",
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/web/public/js_messaging",

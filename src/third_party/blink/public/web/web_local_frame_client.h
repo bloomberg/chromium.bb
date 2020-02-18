@@ -41,6 +41,7 @@
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
 #include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/mojom/frame/lifecycle.mojom-shared.h"
+#include "third_party/blink/public/mojom/use_counter/css_property_id.mojom-shared.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -69,6 +70,7 @@
 #include "third_party/blink/public/web/web_history_commit_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
 #include "third_party/blink/public/web/web_icon_url.h"
+#include "third_party/blink/public/web/web_media_inspector.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -89,6 +91,7 @@ enum class WebFeature : int32_t;
 
 enum class WebTreeScopeType;
 class AssociatedInterfaceProvider;
+class BrowserInterfaceBrokerProxy;
 class WebComputedAXTree;
 class WebContentDecryptionModule;
 class WebCookieJar;
@@ -97,12 +100,12 @@ class WebDocumentLoader;
 class WebEncryptedMediaClient;
 class WebExternalPopupMenu;
 class WebExternalPopupMenuClient;
-class WebLayerTreeView;
 class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerEncryptedMediaClient;
 class WebMediaPlayerSource;
+class WebMediaStreamDeviceObserver;
 class WebNavigationControl;
 class WebServiceWorkerProvider;
 class WebPlugin;
@@ -112,7 +115,6 @@ class WebSocketHandshakeThrottle;
 class WebString;
 class WebURL;
 class WebURLResponse;
-class WebUserMediaClient;
 struct FramePolicy;
 struct WebConsoleMessage;
 struct WebContextMenuData;
@@ -144,10 +146,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // WebContentDecryptionModule* may be null if one has not yet been set.
   virtual WebMediaPlayer* CreateMediaPlayer(const WebMediaPlayerSource&,
                                             WebMediaPlayerClient*,
+                                            blink::MediaInspectorContext*,
                                             WebMediaPlayerEncryptedMediaClient*,
                                             WebContentDecryptionModule*,
-                                            const WebString& sink_id,
-                                            WebLayerTreeView*) {
+                                            const WebString& sink_id) {
     return nullptr;
   }
 
@@ -196,6 +198,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Returns an InterfaceProvider the frame can use to request interfaces from
   // the browser. This method may not return nullptr.
   virtual service_manager::InterfaceProvider* GetInterfaceProvider();
+
+  // Returns a BrowserInterfaceBrokerProxy the frame can use to request
+  // interfaces from the browser.
+  virtual blink::BrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker();
 
   // Returns an AssociatedInterfaceProvider the frame can use to request
   // navigation-associated interfaces from the browser. See also
@@ -340,7 +346,7 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Load commands -------------------------------------------------------
 
   // The client should handle the request as a download.
-  // If the request is for a blob: URL, a BlobURLTokenPtr should be provided
+  // If the request is for a blob: URL, a BlobURLToken should be provided
   // as |blob_url_token| to ensure the correct blob gets downloaded.
   enum class CrossOriginRedirects { kFollow, kNavigate };
   virtual void DownloadURL(const WebURLRequest&,
@@ -515,8 +521,11 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Tells the embedder to navigate back or forward in session history by
   // the given offset (relative to the current position in session
   // history). |has_user_gesture| tells whether or not this is the consequence
-  // of a user action.
-  virtual void NavigateBackForwardSoon(int offset, bool has_user_gesture) {}
+  // of a user action. |from_script| tells whether the action was initiated from
+  // the execution of a script.
+  virtual void NavigateBackForwardSoon(int offset,
+                                       bool has_user_gesture,
+                                       bool from_script) {}
 
   // Returns token to be used as a frame id in the devtools protocol.
   // It is derived from the content's devtools_frame_token, is
@@ -665,8 +674,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   // optimization, features already hit on other frames associated with the same
   // page in the renderer are not currently reported. This is used for reporting
   // UseCounter CSS histograms.
-  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
-                                             bool /*is_animated*/) {}
+  virtual void DidObserveNewCssPropertyUsage(
+      mojom::CSSSampleId /*css_property*/,
+      bool /*is_animated*/) {}
 
   // Reports that visible elements in the frame shifted (bit.ly/lsm-explainer).
   virtual void DidObserveLayoutShift(double score, bool after_input_or_scroll) {
@@ -693,10 +703,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   // Notifies that a new script context has been created for this frame.
   // This is similar to didClearWindowObject but only called once per
   // frame context.
-  virtual void DidCreateScriptContext(v8::Local<v8::Context>, int world_id) {}
+  virtual void DidCreateScriptContext(v8::Local<v8::Context>,
+                                      int32_t world_id) {}
 
   // WebKit is about to release its reference to a v8 context for a frame.
-  virtual void WillReleaseScriptContext(v8::Local<v8::Context>, int world_id) {}
+  virtual void WillReleaseScriptContext(v8::Local<v8::Context>,
+                                        int32_t world_id) {}
 
   // Geometry notifications ----------------------------------------------
 
@@ -724,7 +736,9 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void WillStartUsingPeerConnectionHandler(
       WebRTCPeerConnectionHandler*) {}
 
-  virtual WebUserMediaClient* UserMediaClient() { return nullptr; }
+  virtual WebMediaStreamDeviceObserver* MediaStreamDeviceObserver() {
+    return nullptr;
+  }
 
   // Encrypted Media -------------------------------------------------
 
@@ -771,6 +785,10 @@ class BLINK_EXPORT WebLocalFrameClient {
                                                    int start_offset,
                                                    const WebNode& end_node,
                                                    int end_offset) {}
+
+  // Provides accessibility information about the termination of a find
+  // in page operation.
+  virtual void HandleAccessibilityFindInPageTermination() {}
 
   // Fullscreen ----------------------------------------------------------
 
@@ -864,14 +882,10 @@ class BLINK_EXPORT WebLocalFrameClient {
   // AppCache ------------------------------------------------------------
   virtual void UpdateSubresourceFactory(
       std::unique_ptr<blink::URLLoaderFactoryBundleInfo> info) {}
-  enum class AppCacheType {
-    kAppCacheForNone = 0,
-    kAppCacheForFrame,
-    kAppCacheForSharedWorker,
-  };
-  virtual WebLocalFrameClient::AppCacheType GetAppCacheType() {
-    return WebLocalFrameClient::AppCacheType::kAppCacheForNone;
-  }
+
+  // Evicts the page from the back forward cache due to e.g., JavaScript
+  // execution.
+  virtual void EvictFromBackForwardCache() {}
 };
 
 }  // namespace blink

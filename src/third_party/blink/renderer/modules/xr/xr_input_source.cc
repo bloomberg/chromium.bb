@@ -83,6 +83,11 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
 
     updated_source->pointer_transform_matrix_ =
         TryGetTransformationMatrix(desc->pointer_offset);
+
+    updated_source->state_.profiles.clear();
+    for (const auto& name : state->description->profiles) {
+      updated_source->state_.profiles.push_back(name);
+    }
   }
 
   updated_source->base_pose_matrix_ = TryGetTransformationMatrix(state->grip);
@@ -166,6 +171,16 @@ bool XRInputSource::InvalidatesSameObject(
     if (state->description->target_ray_mode != state_.target_ray_mode) {
       return true;
     }
+
+    if (state->description->profiles.size() != state_.profiles.size()) {
+      return true;
+    }
+
+    for (wtf_size_t i = 0; i < state_.profiles.size(); ++i) {
+      if (state->description->profiles[i] != state_.profiles[i]) {
+        return true;
+      }
+    }
   }
 
   return false;
@@ -186,9 +201,7 @@ void XRInputSource::UpdateGamepad(
     const base::Optional<device::Gamepad>& gamepad) {
   if (gamepad) {
     if (!gamepad_) {
-      // TODO(https://crbug.com/955104): Is the Gamepad object creation time the
-      // correct time floor?
-      gamepad_ = MakeGarbageCollected<Gamepad>(this, 0, state_.base_timestamp,
+      gamepad_ = MakeGarbageCollected<Gamepad>(this, -1, state_.base_timestamp,
                                                base::TimeTicks::Now());
     }
 

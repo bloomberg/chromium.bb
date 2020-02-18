@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/system/system_monitor.h"
 #include "base/test/mock_devices_changed_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,8 +29,8 @@ class SystemMessageWindowWinTest : public testing::Test {
   }
 
   // Run single threaded to not require explicit COM initialization
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY};
   base::SystemMonitor system_monitor_;
   base::MockDevicesChangedObserver observer_;
   SystemMessageWindowWin window_;

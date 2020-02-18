@@ -26,6 +26,47 @@ export function testFullScroll500px(target) {
   });
 };
 
+export function testLargeChild(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    const largeChild = helpers.largeDiv('largeChild');
+    target.appendChild(largeChild);
+    const child = helpers.div('child');
+    target.appendChild(child);
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeChild.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
+export function testLargeChildComment(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    const largeChild = helpers.largeDiv('largeChild');
+    target.appendChild(largeChild);
+    // Ensure that non-element nodes don't cause problems.
+    target.appendChild(document.createComment('comment'));
+    target.appendChild(helpers.div('child'));
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeChild.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
 export function testMoveElement(target) {
   helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
   helpers.nextFrame(() => {
@@ -64,21 +105,69 @@ export function testResize(target) {
   });
 }
 
+export function testScrollFromOffScreen(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    // The page is a large element (much bigger than the page)
+    // followed by the scroller. We then scroll down to the scroller.
+    const largeSibling = helpers.largeDiv('large');
+    target.before(largeSibling);
+    const child = helpers.div('child');
+    target.appendChild(child);
+
+    // Give the scroller time to settle.
+    helpers.inNFrames(10, () => {
+      window.scrollBy(0, largeSibling.getBoundingClientRect().height);
+      helpers.stopWaiting();
+    });
+  });
+}
+
+/**
+ * Make sure that an element that was hidden by the scroller does not
+ * remain hidden if it is moved out of the scroller.
+ */
+export function testUnlockAfterRemove(target) {
+  // This scrollTo and nextFrame are not necessary for the ref-test
+  // however it helps when trying to debug this test in a
+  // browser. Without it, the scroll offset may be preserved across
+  // page reloads.
+  document.body.scrollTo(0, 0);
+  helpers.nextFrame(() => {
+    helpers.appendDivs(target, MORE_THAN_SCREENFUL, '10px');
+    helpers.nextFrame(() => {
+      const e = target.lastElementChild;
+      // Make sure the element can stay locked outside of the scroller.
+      e.style.contain = 'style layout';
+      target.parentElement.appendChild(e);
+
+      helpers.nextFrame(() => {
+        window.scrollBy(0, target.getBoundingClientRect().height);
+        helpers.stopWaiting();
+      });
+    });
+  });
+};
+
 /**
  * Runs |test| with a <virtual-scroller>, waiting until the custom element is
  * defined.
-*/
+ */
 export function withVirtualScroller(test) {
   customElements.whenDefined('virtual-scroller').then(() => {
-    runTest("virtual-scroller", test);
+    runTest('virtual-scroller', test);
   });
 }
 
 /**
  * Runs |test| with a <div>.
-*/
+ */
 export function withDiv(test) {
-  runTest("div", test);
+  runTest('div', test);
 }
 
 function runTest(elementName, test) {

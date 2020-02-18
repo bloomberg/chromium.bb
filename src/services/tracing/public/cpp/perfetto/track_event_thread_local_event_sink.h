@@ -13,6 +13,7 @@
 #include "base/component_export.h"
 #include "base/threading/thread_id_name_manager.h"
 #include "base/time/time.h"
+#include "base/trace_event/thread_instruction_count.h"
 #include "services/tracing/public/cpp/perfetto/interning_index.h"
 #include "services/tracing/public/cpp/perfetto/thread_local_event_sink.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
@@ -71,8 +72,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   InterningIndex<const char*> interned_event_categories_;
   InterningIndex<const char*, std::string> interned_event_names_;
   InterningIndex<const char*, std::string> interned_annotation_names_;
-  InterningIndex<std::pair<const char*, const char*>>
+  InterningIndex<std::tuple<const char*, const char*, int>>
       interned_source_locations_;
+  InterningIndex<const char*> interned_log_message_bodies_;
 
   static std::atomic<uint32_t> incremental_state_reset_id_;
 
@@ -80,6 +82,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TrackEventThreadLocalEventSink
   uint32_t last_incremental_state_reset_id_ = 0;
   base::TimeTicks last_timestamp_;
   base::ThreadTicks last_thread_time_;
+  base::trace_event::ThreadInstructionCount last_thread_instruction_count_;
   int process_id_;
   int thread_id_;
   std::string thread_name_;

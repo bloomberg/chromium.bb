@@ -1,8 +1,8 @@
 #
 #  Copyright (C) 2010, 2011 by DocArch <http://www.docarch.be>
-#  Copyright (C) 2014 by Bert Frees
+#  Copyright (C) 2014, 2019 by Bert Frees
 #  Copyright (C) 2014 by CBB <http://www.cbb.nl>
-#  Copyright (C) 2015, 2016 by Dedicon <http://www.dedicon.nl>
+#  Copyright (C) 2015, 2016, 2018-2019 by Dedicon <http://www.dedicon.nl>
 #
 #  This file is part of liblouis.
 #
@@ -22,23 +22,24 @@
 #
 #-------------------------------------------------------------------------------
 #
-#  Dutch Braille based on the braille standard of 2005
+#  Dutch Braille based on the braille standard of 2017
 #
 #     Created by Bert Frees <bertfrees@gmail.com>
 #     Modified by Henri Apperloo <h.apperloo@cbb.nl>
 #     Modified by Davy Kager <DavyKager@dedicon.nl>
+#     Modified by Paul Rambags <paulrambags@dedicon.nl>
 #
 #     See also: « Braillestandaard voor algemeen gebruik in het Nederlandse taalgebied,
-#                Van toepassing vanaf 1 september 2005 »
-#              (Federatie Slechtzienden- en Blindenbelang en 
-#                Belgische Confederatie voor Blinden en Slechtzienden, 2005)
-#               [https://cdn.rawgit.com/liblouis/braille-specs/master/Belgium/Eindtekst-zonder-voorblad-dec-2005.doc][1]
+#                Van toepassing vanaf 19 april 2018 »
+#              (Braille Autoriteit, 2018)
+#               [http://liblouis.org/braille-specs/dutch][1]
 #
 # ----------------------------------------------------------------------------------------------
 
-# ==============================================================================================
-# SINGLE-CELL
-# ==============================================================================================
+space       \x0009        9                                       <control> HORIZONTAL TABULATION
+space       \x001B        1b                                      <control> ESCAPE
+space       \x00A0        a                                       NO-BREAK SPACE
+include spaces.uti
 
 # ----------------------------------------------------------------------------------------------
 # Unicode 0000..007F  C0 Controls and Basic Latin
@@ -70,14 +71,9 @@ uplow       \x00DC\x00FC  1256,1256           Üü                  LATIN CAPITA
 uplow       \x1E9E\x00DF  2346,2346           ẞß                  LATIN CAPITAL LETTER SHARP S - LATIN SMALL LETTER SHARP S
 
 
-space       \x0009        9                                       <control> HORIZONTAL TABULATION
-space       \x000A        0                                       <control> LINE FEED
-space       \x000C        0                                       <control> FORM FEED
-space       \x000D        0                                       <control> CARRIAGE RETURN
-space       \x001B        1b                                      <control> ESCAPE
-space       \x0020        0                                       SPACE
 punctuation \x0021        235                 !                   EXCLAMATION MARK
 punctuation \x0022        2356                "                   QUOTATION MARK
+sign        \x0023        5-3456              #                   NUMBER SIGN
 sign        \x0024        145                 $                   DOLLAR SIGN
 sign        \x0025        123456              %                   PERCENT SIGN
 sign        \x0026        12346a              &                   AMPERSAND
@@ -96,14 +92,21 @@ include litdigits6Dots.uti
 
 punctuation \x003A        25                  :                   COLON
 punctuation \x003B        23                  ;                   SEMICOLON
+math        \x003C        5-246               <                   LESS-THAN SIGN
 math        \x003D        2356                =                   EQUALS SIGN
+math        \x003E        5-135               >                   GREATER-THAN SIGN
 punctuation \x003F        26                  ?                   QUESTION MARK
 sign        \x0040        345                 @                   COMMERCIAL AT
 punctuation \x005B        12356               [                   LEFT SQUARE BRACKET
+sign        \x005C        5-16                \                   REVERSE SOLIDUS
 punctuation \x005D        23456               ]                   RIGHT SQUARE BRACKET
-sign        \x005E        34                  ^                   CIRCUMFLEX ACCENT
+sign        \x005E        346                 ^                   CIRCUMFLEX ACCENT
 sign        \x005F        456                 _                   LOW LINE
 punctuation \x0060        3                   `                   GRAVE ACCENT
+sign        \x007C        1456                |                   VERTICAL LINE
+sign        \x007B        5-12356             {                   LEFT CURLY BRACKET
+sign        \x007D        5-23456             }                   RIGHT CURLY BRACKET
+math        \x007E        5-26                ~                   TILDE
 
 
 # ----------------------------------------------------------------------------------------------
@@ -113,8 +116,10 @@ punctuation \x0060        3                   `                   GRAVE ACCENT
 sign        \x0080        15                  €                   <control> - ANSI: EURO-CURRENCY SIGN - MACROMAN: A DIAERESIS
 punctuation \x0082        3                   ‚                   <control> BREAK PERMITTED HERE - ANSI: SINGLE LOW-9 QUOTATION MARK - MACROMAN: C CEDILLA
 punctuation \x0084        2356                „                   <control> - ANSI: DOUBLE LOW-9 QUOTATION MARK - MACROMAN: N TILDE
+punctuation \x0085        256-256-256         …                   <control> NEXT LINE (NEL) - ANSI: HORIZONTAL ELLIPSIS - MACROMAN: O DIAERESIS
 sign        \x0086        235                 †                   <control> START OF SELECTED AREA - ANSI: DAGGER - MACROMAN: U DIAERESIS
 punctuation \x0088        34                  ˆ                   <control> CHARACTER TABULATION SET - ANSI: MODIFIER LETTER CIRCUMFLEX ACCENT - MACROMAN: A GRAVE
+sign        \x0089        123456-123456       ‰                   <control> CHARACTER TABULATION WITH JUSTIFICATION - ANSI: PER MILLE SIGN - MACROMAN: A CIRCUMFLEX
 punctuation \x008B        3                   ‹                   <control> PARTIAL LINE FORWARD - ANSI: SINGLE LEFT-POINTING ANGLE QUOTATION MARK - MACROMAN: A TILDE
 punctuation \x0091        3                   ‘                   <control> PRIVATE USE ONE - ANSI: LEFT SINGLE QUOTATION MARK - MACROMAN: E DIAERESIS
 punctuation \x0092        3                   ’                   <control> PRIVATE USE TWO - ANSI: RIGHT SINGLE QUOTATION MARK - MACROMAN: I ACUTE
@@ -123,20 +128,33 @@ punctuation \x0094        2356                ”                   <control> CA
 sign        \x0095        5-256               •                   <control> MESSAGE WAITING - ANSI: BULLET - MACROMAN: I DIAERESIS
 punctuation \x0096        36                  –                   <control> START OF GUARDED AREA - ANSI: EN DASH - MACROMAN: N TILDE
 punctuation \x0097        36                  —                   <control> END OF GUARDED AREA - ANSI: EM DASH - MACROMAN: O ACUTE
+sign        \x0098        5-26                ˜                   <control> START OF STRING - ANSI: SMALL TILDE - MACROMAN: O GRAVE
+sign        \x0099        5-2345-134          ™                   <control> - ANSI: TRADE MARK SIGN - MACROMAN: O CIRCUMFLEX
 punctuation \x009B        3                   ›                   <control> CONTROL SEQUENCE INTRODUCER - ANSI: SINGLE RIGHT-POINTING ANGLE QUOTATION MARK - MACROMAN: O TILDE
 
-space       \x00A0        a                                       NO-BREAK SPACE
 punctuation \x00A1        235                 ¡                   INVERTED EXCLAMATION MARK
 sign        \x00A2        14                  ¢                   CENT SIGN
 sign        \x00A3        1234                £                   POUND SIGN
 sign        \x00A5        13456               ¥                   YEN SIGN
 sign        \x00A7        346                 §                   SECTION SIGN
+sign        \x00A9        5-14                ©                   COPYRIGHT SIGN
 punctuation \x00AB        2356                «                   LEFT-POINTING DOUBLE ANGLE QUOTATION MARK
-punctuation \x00AD        367                 ­                   SOFT HYPHEN
+punctuation \x00AD        36                 ­                   SOFT HYPHEN
+sign        \x00AE        5-1235              ®                   REGISTERED SIGN
+sign        \x00B0        4-356               °                   DEGREE SIGN
 sign        \x00B1        235-36              ±                   PLUS-MINUS SIGN
+math        \x00B2        346-3456-12         ²                   SUPERSCRIPT TWO
+math        \x00B3        346-3456-14         ³                   SUPERSCRIPT THREE
 sign        \x00B4        3                   ´                   ACUTE ACCENT
 sign        \x00B5        56-134              µ                   MICRO SIGN
+math        \x00B7        236                 ·                   MIDDLE DOT
+sign        \x00B8        45                  ¸                   CEDILLA
+sign        \x00B9        346-3456-1          ¹                   SUPERSCRIPT ONE
+sign        \x00BA        4-356               º                   MASCULINE ORDINAL INDICATOR
 punctuation \x00BB        2356                »                   RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK
+math        \x00BC        3456-1-34-3456-145  ¼                   VULGAR FRACTION ONE QUARTER
+math        \x00BD        3456-1-34-3456-12   ½                   VULGAR FRACTION ONE HALF
+math        \x00BE        3456-14-34-3456-145 ¾                   VULGAR FRACTION THREE QUARTERS
 punctuation \x00BF        26                  ¿                   INVERTED QUESTION MARK
 math        \x00D7        236                 ×                   MULTIPLICATION SIGN
 math        \x00F7        256                 ÷                   DIVISION SIGN
@@ -164,6 +182,36 @@ punctuation \x201D        2356                ”                   RIGHT DOUBLE
 punctuation \x201E        2356                „                   DOUBLE LOW-9 QUOTATION MARK
 punctuation \x201F        2356                ‟                   DOUBLE HIGH-REVERSED-9 QUOTATION MARK
 sign        \x2020        235                 †                   DAGGER
+punctuation \x2026        256-256-256         …                   HORIZONTAL ELLIPSIS
+sign        \x2030        123456-123456       ‰                   PER MILLE SIGN
+
+
+# ----------------------------------------------------------------------------------------------
+# Unicode 2070..209F  Superscripts and Subscripts
+# ----------------------------------------------------------------------------------------------
+
+math        \x2070        346-3456-245        ⁰                   SUPERSCRIPT ZERO
+math        \x2074        346-3456-145        ⁴                   SUPERSCRIPT FOUR
+math        \x2075        346-3456-15         ⁵                   SUPERSCRIPT FIVE
+math        \x2076        346-3456-124        ⁶                   SUPERSCRIPT SIX
+math        \x2077        346-3456-1245       ⁷                   SUPERSCRIPT SEVEN
+math        \x2078        346-3456-125        ⁸                   SUPERSCRIPT EIGHT
+math        \x2079        346-3456-24         ⁹                   SUPERSCRIPT NINE
+math        \x207F        346-1345            ⁿ                   SUPERSCRIPT LATIN SMALL LETTER N
+math        \x2080        16-356              ₀                   SUBSCRIPT ZERO
+math        \x2081        16-2                ₁                   SUBSCRIPT ONE
+math        \x2082        16-23               ₂                   SUBSCRIPT TWO
+math        \x2083        16-25               ₃                   SUBSCRIPT THREE
+math        \x2084        16-256              ₄                   SUBSCRIPT FOUR
+math        \x2085        16-26               ₅                   SUBSCRIPT FIVE
+math        \x2086        16-235              ₆                   SUBSCRIPT SIX
+math        \x2087        16-2356             ₇                   SUBSCRIPT SEVEN
+math        \x2088        16-236              ₈                   SUBSCRIPT EIGHT
+math        \x2089        16-35               ₉                   SUBSCRIPT NINE
+math        \x2090        16-1                ₐ                   LATIN SUBSCRIPT SMALL LETTER A
+math        \x2091        16-15               ₑ                   LATIN SUBSCRIPT SMALL LETTER E
+math        \x2092        16-135              ₒ                   LATIN SUBSCRIPT SMALL LETTER O
+math        \x2093        16-1346             ₓ                   LATIN SUBSCRIPT SMALL LETTER X
 
 
 # ----------------------------------------------------------------------------------------------
@@ -174,48 +222,10 @@ sign        \x20AC        15                  €                   EURO SIGN
 
 
 # ----------------------------------------------------------------------------------------------
-# Unicode 2200..22FF  Mathematical Operators
+# Unicode 2100..214F  Letterlike Symbols
 # ----------------------------------------------------------------------------------------------
 
-math        \x2212        36                  −                   MINUS SIGN
-math        \x2215        34                  ∕                   DIVISION SLASH
-math        \x2217        35                  ∗                   ASTERISK OPERATOR
-
-
-# ==============================================================================================
-# MULTI-CELL
-# ==============================================================================================
-
-# ----------------------------------------------------------------------------------------------
-# Unicode 0000..007F  C0 Controls and Basic Latin
-# ----------------------------------------------------------------------------------------------
-
-sign        \x0023        5-3456              #                   NUMBER SIGN
-math        \x003C        5-246               <                   LESS-THAN SIGN
-math        \x003E        5-135               >                   GREATER-THAN SIGN
-sign        \x005C        5-16                \                   REVERSE SOLIDUS
-math        \x007E        5-26                ~                   TILDE
-
-
-# ----------------------------------------------------------------------------------------------
-# Unicode 0080..00FF  C1 Controls and Latin-1 Supplement
-# ----------------------------------------------------------------------------------------------
-
-punctuation \x0085        256-256-256         …                   <control> NEXT LINE (NEL) - ANSI: HORIZONTAL ELLIPSIS - MACROMAN: O DIAERESIS
-sign        \x0089        123456-123456       ‰                   <control> CHARACTER TABULATION WITH JUSTIFICATION - ANSI: PER MILLE SIGN - MACROMAN: A CIRCUMFLEX
-sign        \x0098        5-26                ˜                   <control> START OF STRING - ANSI: SMALL TILDE - MACROMAN: O GRAVE
-sign        \x0099        5-2345-134          ™                   <control> - ANSI: TRADE MARK SIGN - MACROMAN: O CIRCUMFLEX
-sign        \x00A9        5-14                ©                   COPYRIGHT SIGN
-sign        \x00AE        5-1235              ®                   REGISTERED SIGN
-sign        \x00B0        4-356               °                   DEGREE SIGN
-math        \x00B2        34-3456-12          ²                   SUPERSCRIPT TWO
-math        \x00B3        34-3456-14          ³                   SUPERSCRIPT THREE
-sign        \x00B8        45                  ¸                   CEDILLA
-sign        \x00B9        34-3456-1           ¹                   SUPERSCRIPT ONE
-sign        \x00BA        4-356               º                   MASCULINE ORDINAL INDICATOR
-math        \x00BC        3456-1-34-3456-145  ¼                   VULGAR FRACTION ONE QUARTER
-math        \x00BD        3456-1-34-3456-12   ½                   VULGAR FRACTION ONE HALF
-math        \x00BE        3456-14-34-3456-145 ¾                   VULGAR FRACTION THREE QUARTERS
+sign        \x2122        5-2345-134          ™                   TRADE MARK SIGN
 
 
 # ----------------------------------------------------------------------------------------------
@@ -240,54 +250,15 @@ math        \x215E        3456-1245-34-3456-125 ⅞                   VULGAR FRA
 
 
 # ----------------------------------------------------------------------------------------------
-# Unicode 2000..206F  General Punctuation
-# ----------------------------------------------------------------------------------------------
-
-punctuation \x2026        256-256-256         …                   HORIZONTAL ELLIPSIS
-sign        \x2030        123456-123456       ‰                   PER MILLE SIGN
-
-
-# ----------------------------------------------------------------------------------------------
-# Unicode 2070..209F  Superscripts and Subscripts
-# ----------------------------------------------------------------------------------------------
-
-math        \x2070        34-3456-245         ⁰                   SUPERSCRIPT ZERO
-math        \x2074        34-3456-145         ⁴                   SUPERSCRIPT FOUR
-math        \x2075        34-3456-15          ⁵                   SUPERSCRIPT FIVE
-math        \x2076        34-3456-124         ⁶                   SUPERSCRIPT SIX
-math        \x2077        34-3456-1245        ⁷                   SUPERSCRIPT SEVEN
-math        \x2078        34-3456-125         ⁸                   SUPERSCRIPT EIGHT
-math        \x2079        34-3456-24          ⁹                   SUPERSCRIPT NINE
-math        \x207F        34-1345             ⁿ                   SUPERSCRIPT LATIN SMALL LETTER N
-math        \x2080        16-356              ₀                   SUBSCRIPT ZERO
-math        \x2081        16-2                ₁                   SUBSCRIPT ONE
-math        \x2082        16-23               ₂                   SUBSCRIPT TWO
-math        \x2083        16-25               ₃                   SUBSCRIPT THREE
-math        \x2084        16-256              ₄                   SUBSCRIPT FOUR
-math        \x2085        16-26               ₅                   SUBSCRIPT FIVE
-math        \x2086        16-235              ₆                   SUBSCRIPT SIX
-math        \x2087        16-2356             ₇                   SUBSCRIPT SEVEN
-math        \x2088        16-236              ₈                   SUBSCRIPT EIGHT
-math        \x2089        16-35               ₉                   SUBSCRIPT NINE
-math        \x2090        16-1                ₐ                   LATIN SUBSCRIPT SMALL LETTER A
-math        \x2091        16-15               ₑ                   LATIN SUBSCRIPT SMALL LETTER E
-math        \x2092        16-135              ₒ                   LATIN SUBSCRIPT SMALL LETTER O
-math        \x2093        16-1346             ₓ                   LATIN SUBSCRIPT SMALL LETTER X
-
-
-# ----------------------------------------------------------------------------------------------
-# Unicode 2100..214F  Letterlike Symbols
-# ----------------------------------------------------------------------------------------------
-
-sign        \x2122        5-2345-134          ™                   TRADE MARK SIGN
-
-
-# ----------------------------------------------------------------------------------------------
 # Unicode 2200..22FF  Mathematical Operators
 # ----------------------------------------------------------------------------------------------
 
+math        \x2212        36                  −                   MINUS SIGN
+math        \x2215        34                  ∕                   DIVISION SLASH
 math        \x2216        5-16                ∖                   SET MINUS
-math        \x2219        5-256               ∙                   BULLET OPERATOR
+math        \x2217        35                  ∗                   ASTERISK OPERATOR
+math        \x2219        236                 ∙                   BULLET OPERATOR
+math        \x22C5        236                 ⋅                   DOT OPERATOR
 
 
 # ----------------------------------------------------------------------------------------------

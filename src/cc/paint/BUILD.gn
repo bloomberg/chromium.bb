@@ -60,6 +60,7 @@ cc_component("paint") {
     "paint_recorder.h",
     "paint_shader.cc",
     "paint_shader.h",
+    "paint_worklet_input.cc",
     "paint_worklet_input.h",
     "paint_worklet_job.cc",
     "paint_worklet_job.h",
@@ -118,6 +119,7 @@ fuzzer_test("paint_op_buffer_fuzzer") {
   libfuzzer_options = [ "max_len=4096" ]
 
   deps = [
+    "//base/test:test_support",
     "//cc:test_support",
     "//cc/paint",
     "//components/viz/test:test_support",

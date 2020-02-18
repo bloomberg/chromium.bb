@@ -20,9 +20,9 @@ ResultType = json_results.ResultType
 _SUPPORTED_WIN_VERSIONS = ['win7', 'win10']
 _SUPPORTED_WIN_VERSIONS_WITH_DIRECT_COMPOSITION = ['win10']
 _SUPPORTED_WIN_GPU_VENDORS = [0x8086, 0x10de, 0x1002]
-_SUPPORTED_WIN_INTEL_GPUS = [0x5912]
-_SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912]
-_SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912]
+_SUPPORTED_WIN_INTEL_GPUS = [0x5912, 0x3e92]
+_SUPPORTED_WIN_INTEL_GPUS_WITH_YUY2_OVERLAYS = [0x5912, 0x3e92]
+_SUPPORTED_WIN_INTEL_GPUS_WITH_NV12_OVERLAYS = [0x5912, 0x3e92]
 
 class GpuIntegrationTest(
     serially_executed_browser_test_case.SeriallyExecutedBrowserTestCase):
@@ -80,12 +80,11 @@ class GpuIntegrationTest(
     if cls._disable_log_uploads:
       browser_options.logs_cloud_bucket = None
 
-    # A non-sandboxed, 15-seconds-delayed gpu process is currently running in
-    # the browser to collect gpu info. A command line switch is added here to
-    # skip this gpu process for all gpu integration tests to prevent any
-    # interference with the test results.
+    # A non-sandboxed, 120-seconds-delayed gpu process is currently running in
+    # the browser to collect gpu info. A command line switch is added here so
+    # the dx12/vulkan info can be collected immediately for the tests.
     browser_args.append(
-      '--disable-gpu-process-for-dx12-vulkan-info-collection')
+      '--no-delay-for-dx12-vulkan-info-collection')
 
     # Append the new arguments.
     browser_options.AppendExtraBrowserArgs(browser_args)
@@ -157,9 +156,17 @@ class GpuIntegrationTest(
   @classmethod
   def _RestartBrowser(cls, reason):
     logging.warning('Restarting browser due to '+ reason)
-    cls.StopBrowser()
-    cls.SetBrowserOptions(cls._finder_options)
-    cls.StartBrowser()
+    # The Browser may be None at this point if all attempts to start it failed.
+    # This can occur if there is a consistent startup crash. For example caused
+    # by a bad combination of command-line arguments. So reset to the original
+    # options in attempt to successfully launch a browser.
+    if cls.browser is None:
+      cls.SetBrowserOptions(cls._original_finder_options)
+      cls.StartBrowser()
+    else:
+      cls.StopBrowser()
+      cls.SetBrowserOptions(cls._finder_options)
+      cls.StartBrowser()
 
   def _RunGpuTest(self, url, test_name, *args):
     expected_results, should_retry_on_failure = (
@@ -198,7 +205,9 @@ class GpuIntegrationTest(
         # expectations, and since minidump symbolization is slow
         # (upwards of one minute on a fast laptop), symbolizing all the
         # stacks could slow down the tests' running time unacceptably.
-        self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+        # We also don't do this if the browser failed to startup.
+        if self.browser is not None:
+          self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
         # This failure might have been caused by a browser or renderer
         # crash, so restart the browser to make sure any state doesn't
         # propagate to the next test iteration.
@@ -323,6 +332,14 @@ class GpuIntegrationTest(
   @classmethod
   def _EnsureTabIsAvailable(cls):
     try:
+      # If there is no browser, the previous run may have failed an additional
+      # time, while trying to recover from an initial failure.
+      # ChromeBrowserBackend._GetDevToolsClient can cause this if there is a
+      # crash during browser startup. If this has occurred, reset the options,
+      # and attempt to bring up a browser for this test. Otherwise failures
+      # begin to cascade between tests. https://crbug.com/993379
+      if cls.browser is None:
+        cls._RestartBrowser('failure in previous shutdown')
       cls.tab = cls.browser.tabs[0]
     except Exception:
       # restart the browser to make sure a failure in a test doesn't
@@ -337,6 +354,7 @@ class GpuIntegrationTest(
   @staticmethod
   def GetJSONResultsDelimiter():
     return '/'
+
 
 def LoadAllTestsInModule(module):
   # Just delegates to serially_executed_browser_test_case to reduce the

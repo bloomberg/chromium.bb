@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/escape.h"
@@ -266,8 +266,8 @@ TEST(TextEliderTest, TestTrailingEllipsisSlashEllipsisHack) {
 TEST(TextEliderTest, TestElisionSpecialCases) {
 #if defined(OS_WIN)
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment task_environment(
-      base::test::ScopedTaskEnvironment::MainThreadType::UI);
+  base::test::SingleThreadTaskEnvironment task_environment(
+      base::test::SingleThreadTaskEnvironment::MainThreadType::UI);
 #endif
   const std::string kEllipsisStr(gfx::kEllipsis);
   const std::vector<Testcase> testcases = {

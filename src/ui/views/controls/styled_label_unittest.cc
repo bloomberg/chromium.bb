@@ -376,9 +376,13 @@ TEST_F(StyledLabelTest, Color) {
 
   Widget* widget = new Widget();
   Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_POPUP);
-  widget->Init(params);
+  widget->Init(std::move(params));
   View* container = new View();
   widget->SetContentsView(container);
+
+  // The code below is not prepared to deal with dark mode.
+  widget->GetNativeTheme()->set_use_dark_colors(false);
+
   container->AddChildView(styled());
 
   // Obtain the default text color for a label.

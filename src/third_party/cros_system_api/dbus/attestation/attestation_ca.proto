@@ -58,6 +58,10 @@ enum CertificateProfile {
 
   // A certificate for signing Android Testsuite Results using CTS-in-a-box.
   XTS_CERTIFICATE = 8;
+
+  // An EK certificate for vTPM
+  //   CN=CROS VTPM PRD EK ROOT CA
+  ENTERPRISE_VTPM_EK_CERTIFICATE = 9;
 }
 
 enum TpmVersion {

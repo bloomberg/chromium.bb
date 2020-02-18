@@ -8,12 +8,14 @@
 #include <stddef.h>
 #include <stdlib.h>
 #include <sys/types.h>
+
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/login_screen.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
@@ -27,6 +29,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -88,7 +91,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_downloading_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/arc_kiosk_splash_screen_handler.h"
@@ -189,7 +191,7 @@ const chromeos::StaticOobeScreenId kResumableScreens[] = {
 // Checks if device is in tablet mode, and that HID-detection screen is not
 // disabled by flag.
 bool CanShowHIDDetectionScreen() {
-  return !TabletModeClient::Get()->tablet_mode_enabled() &&
+  return !ash::TabletMode::Get()->InTabletMode() &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
              chromeos::switches::kDisableHIDDetectionOnOOBE) &&
          !base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -295,7 +297,7 @@ bool WizardController::skip_post_login_screens_ = false;
 bool WizardController::skip_enrollment_prompts_ = false;
 
 // static
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 bool WizardController::is_official_build_ = true;
 #else
 bool WizardController::is_official_build_ = false;
@@ -1120,10 +1122,9 @@ void WizardController::OnChangedMetricsReportingState(bool enabled) {
       ProfileManager::GetActiveUserProfile(), enabled);
   if (!enabled)
     return;
-#if defined(GOOGLE_CHROME_BUILD)
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&breakpad::InitCrashReporter, std::string()));
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  base::PostTask(FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+                 base::BindOnce(&breakpad::InitCrashReporter, std::string()));
 #endif
 }
 
@@ -1161,7 +1162,7 @@ void WizardController::OnOobeFlowFinished() {
   }
 
   // Launch browser and delete login host controller.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&UserSessionManager::DoBrowserLaunch,
                      base::Unretained(UserSessionManager::GetInstance()),

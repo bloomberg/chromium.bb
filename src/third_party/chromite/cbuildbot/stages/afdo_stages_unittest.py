@@ -7,16 +7,19 @@
 
 from __future__ import print_function
 
-import json
 import os
+import mock
+
+from chromite.api.gen.chromite.api import toolchain_pb2
 
 from chromite.cbuildbot import afdo
+from chromite.cbuildbot import cbuildbot_unittest
 from chromite.cbuildbot import commands
 from chromite.cbuildbot.stages import afdo_stages
 from chromite.cbuildbot.stages import generic_stages_unittest
 
 from chromite.lib import alerts
-from chromite.lib import failures_lib
+from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import portage_util
@@ -117,106 +120,125 @@ class UpdateChromeEbuildTest(generic_stages_unittest.AbstractStageTestCase):
     })
 
 
-class OrderfileUpdateChromeEbuildStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
-  """Test updating Chrome ebuild file with orderfile."""
+class GenerateAFDOArtifactStageTests(
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
+  """Test class of GenerateAFDOArtifactStage."""
 
+  RELEASE_TAG = ''
+
+  # pylint: disable=protected-access
   def setUp(self):
-    # Intercept the commands.RunBuildScript
-    self.command = self.PatchObject(commands, 'RunBuildScript', autospec=True)
-    # Setup temp directory
+    self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
+    self.buildstore = FakeBuildStore()
+    # Prepare the directories
     chroot_tmp = os.path.join(self.build_root, 'chroot', 'tmp')
     osutils.SafeMakedirs(chroot_tmp)
-    self._Prepare()
-    self.buildstore = FakeBuildStore()
 
-  def ConstructStage(self):
-    return afdo_stages.OrderfileUpdateChromeEbuildStage(
+  # pylint: disable=arguments-differ
+  def ConstructStage(self, is_afdo):
+    self._run.GetArchive().SetupArchivePath()
+    if is_afdo:
+      return afdo_stages.GenerateBenchmarkAFDOStage(
+          self._run, self.buildstore, self._current_board)
+
+    return afdo_stages.GenerateChromeOrderfileStage(
         self._run, self.buildstore, self._current_board)
 
-  def testRunPass(self):
-    # Redirect the current tempdir to read/write contents inside it.
-    self.PatchObject(osutils.TempDir, '__enter__',
-                     return_value=self.tempdir)
-    input_proto_file = os.path.join(self.tempdir, 'input.json')
-    output_proto_file = os.path.join(self.tempdir, 'output.json')
-    self.RunStage()
+  def testRunSuccess(self):
+    """Test the main function runs without problems."""
+    for is_afdo in [True, False]:
+      stage = self.ConstructStage(is_afdo)
+      artifacts = ['tarball.1.xz', '/path/to/tarball.2.xz']
+      self.PatchObject(stage, 'ArtifactUploader')
+      mock_generate = self.PatchObject(
+          commands, 'GenerateAFDOArtifacts',
+          return_value=artifacts)
+      mock_put = self.PatchObject(stage._upload_queue, 'put')
+      stage.PerformStage()
+      output_path = os.path.abspath(
+          os.path.join(self.build_root, 'chroot',
+                       stage.archive_path))
+      if is_afdo:
+        target = toolchain_pb2.BENCHMARK_AFDO
+      else:
+        target = toolchain_pb2.ORDERFILE
+      mock_generate.assert_called_once_with(
+          self.build_root, self._current_board,
+          output_path, target)
+      calls = [mock.call([os.path.basename(x)]) for x in artifacts]
+      mock_put.assert_has_calls(calls)
 
-    # Verify the command is called correctly
-    self.command.assert_called_once_with(
-        self.build_root,
-        ['build_api',
-         'chromite.api.ToolchainService/UpdateChromeEbuildWithOrderfile',
-         '--input-json', input_proto_file,
-         '--output-json', output_proto_file],
-        chromite_cmd=True,
-        redirect_stdout=True
-    )
 
-    # Verify the input proto has all the information
-    input_proto = json.loads(osutils.ReadFile(input_proto_file))
-    self.assertEqual(input_proto['build_target']['name'],
-                     self._current_board)
+class VerifyAFDOArtifactStageTests(
+    generic_stages_unittest.AbstractStageTestCase,
+    cbuildbot_unittest.SimpleBuilderTestCase):
+  """Test class of VerifyAFDOArtifactStage."""
+  RELEASE_TAG = ''
 
-class UploadVettedOrderfileStageTest(
-    generic_stages_unittest.AbstractStageTestCase):
-  """Test updating Chrome ebuild file with orderfile."""
-
+  # pylint: disable=protected-access
   def setUp(self):
-    # Intercept the commands.RunBuildScript
-    self.command = self.PatchObject(commands, 'RunBuildScript', autospec=True)
-    # Setup temp directory
-    chroot_tmp = os.path.join(self.build_root, 'chroot', 'tmp')
-    osutils.SafeMakedirs(chroot_tmp)
     self._Prepare()
+    self.rc_mock = self.StartPatcher(cros_test_lib.RunCommandMock())
+    self.rc_mock.SetDefaultCmdResult()
     self.buildstore = FakeBuildStore()
 
-  def ConstructStage(self):
-    return afdo_stages.UploadVettedOrderfileStage(
+  # pylint: disable=arguments-differ
+  def ConstructStage(self, artifact_type, stage_type):
+    self._run.GetArchive().SetupArchivePath()
+    if artifact_type == 'orderfile':
+      if stage_type == 'update':
+        return afdo_stages.OrderfileUpdateChromeEbuildStage(
+            self._run, self.buildstore, self._current_board)
+
+      return afdo_stages.UploadVettedOrderfileStage(
+          self._run, self.buildstore, self._current_board)
+
+    if stage_type == 'update':
+      return afdo_stages.KernelAFDOUpdateEbuildStage(
+          self._run, self.buildstore, self._current_board)
+
+    return afdo_stages.UploadVettedKernelAFDOStage(
         self._run, self.buildstore, self._current_board)
 
-  def testRunRaiseException(self):
-    # Redirect the current tempdir to read/write contents inside it.
-    self.PatchObject(osutils.TempDir, '__enter__',
-                     return_value=self.tempdir)
-    output_proto_file = os.path.join(self.tempdir, 'output.json')
+  def testOrderfileUpdateSuccess(
+      self, artifact_type='orderfile', stage_type='update'):
+    """Test update ebuild with orderfile call correctly.
 
-    # Write fail signal in output proto
-    with open(output_proto_file, 'w') as f:
-      output_proto = {
-          'status': False
-      }
-      json.dump(output_proto, f)
+    Parameterize the two arguments for testing different stage types.
+    """
+    stage = self.ConstructStage(artifact_type, stage_type)
+    mock_verify = self.PatchObject(
+        commands, 'VerifyAFDOArtifacts', return_value=True)
 
-    with self.assertRaises(failures_lib.StepFailure) as context:
-      self.RunStage()
+    stage.PerformStage()
 
-    self.assertEqual('Failed to upload vetted orderfile',
-                     str(context.exception))
+    # Verify wrapper function is called correctly.
+    if artifact_type == 'orderfile':
+      target = toolchain_pb2.ORDERFILE
+    else:
+      target = toolchain_pb2.KERNEL_AFDO
 
-  def testRunPass(self):
-    # Redirect the current tempdir to read/write contents inside it.
-    self.PatchObject(osutils.TempDir, '__enter__',
-                     return_value=self.tempdir)
-    input_proto_file = os.path.join(self.tempdir, 'input.json')
-    output_proto_file = os.path.join(self.tempdir, 'output.json')
+    if stage_type == 'update':
+      build_api = 'chromite.api.ToolchainService/UpdateEbuildWithAFDOArtifacts'
+    else:
+      build_api = 'chromite.api.ToolchainService/UploadVettedAFDOArtifacts'
 
-    # Write pass signal in output proto
-    with open(output_proto_file, 'w') as f:
-      output_proto = {
-          'status': True
-      }
-      json.dump(output_proto, f)
+    mock_verify.assert_called_once_with(
+        self.build_root, self._current_board,
+        target, build_api)
 
-    self.RunStage()
+  def testOrderfileUploadSuccess(self):
+    """Test upload vetted orderfile call correctly."""
+    self.testOrderfileUpdateSuccess(stage_type='upload')
 
-    # Verify the command is called correctly
-    self.command.assert_called_once_with(
-        self.build_root,
-        ['build_api',
-         'chromite.api.ToolchainService/UploadVettedOrderfile',
-         '--input-json', input_proto_file,
-         '--output-json', output_proto_file],
-        chromite_cmd=True,
-        redirect_stdout=True
-    )
+  def testKernelAFDOUpdateSuccess(self):
+    """Test update ebuild with kernel AFDO call correctly."""
+    self.testOrderfileUpdateSuccess(artifact_type='kernel_afdo')
+
+  def testKernelAFDOUploadSuccess(self):
+    """Test upload vetted kernel AFDO call correctly."""
+    self.testOrderfileUpdateSuccess(artifact_type='kernel_afdo',
+                                    stage_type='upload')

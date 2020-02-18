@@ -63,6 +63,7 @@ void PasswordFormToJSON(const PasswordForm& form,
                     ValueElementVectorToString(form.all_possible_passwords));
   target->SetBoolean("blacklisted", form.blacklisted_by_user);
   target->SetBoolean("preferred", form.preferred);
+  target->SetDouble("date_last_used", form.date_last_used.ToDoubleT());
   target->SetDouble("date_created", form.date_created.ToDoubleT());
   target->SetDouble("date_synced", form.date_synced.ToDoubleT());
   target->SetString("type", ToString(form.type));
@@ -108,14 +109,31 @@ bool PasswordForm::IsPossibleChangePasswordFormWithoutUsername() const {
   return IsPossibleChangePasswordForm() && username_element.empty();
 }
 
+bool PasswordForm::HasUsernameElement() const {
+  return has_renderer_ids ? username_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !username_element.empty();
+}
+
 bool PasswordForm::HasPasswordElement() const {
   return has_renderer_ids ? password_element_renderer_id !=
                                 FormFieldData::kNotSetFormControlRendererId
                           : !password_element.empty();
 }
 
+bool PasswordForm::HasNewPasswordElement() const {
+  return has_renderer_ids ? new_password_element_renderer_id !=
+                                FormFieldData::kNotSetFormControlRendererId
+                          : !new_password_element.empty();
+}
+
 bool PasswordForm::IsFederatedCredential() const {
   return !federation_origin.opaque();
+}
+
+bool PasswordForm::IsSingleUsername() const {
+  return HasUsernameElement() && !HasPasswordElement() &&
+         !HasNewPasswordElement();
 }
 
 bool PasswordForm::operator==(const PasswordForm& form) const {
@@ -143,6 +161,7 @@ bool PasswordForm::operator==(const PasswordForm& form) const {
          new_password_value == form.new_password_value &&
          preferred == form.preferred && date_created == form.date_created &&
          date_synced == form.date_synced &&
+         date_last_used == form.date_last_used &&
          blacklisted_by_user == form.blacklisted_by_user && type == form.type &&
          times_used == form.times_used &&
          form_data.SameFormAs(form.form_data) &&

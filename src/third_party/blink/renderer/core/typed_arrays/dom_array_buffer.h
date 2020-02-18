@@ -13,8 +13,6 @@
 
 namespace blink {
 
-class SharedBuffer;
-
 class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   DEFINE_WRAPPERTYPEINFO();
 
@@ -43,16 +41,13 @@ class CORE_EXPORT DOMArrayBuffer final : public DOMArrayBufferBase {
   explicit DOMArrayBuffer(scoped_refptr<WTF::ArrayBuffer> buffer)
       : DOMArrayBufferBase(std::move(buffer)) {}
 
-  DOMArrayBuffer* Slice(int begin, int end) const {
+  DOMArrayBuffer* Slice(unsigned begin, unsigned end) const {
     return Create(Buffer()->Slice(begin, end));
   }
-  DOMArrayBuffer* Slice(int begin) const {
-    return Create(Buffer()->Slice(begin));
-  }
 
-  bool IsNeuterable(v8::Isolate*);
+  bool IsDetachable(v8::Isolate*);
 
-  // Transfer the ArrayBuffer if it is neuterable, otherwise make a copy and
+  // Transfer the ArrayBuffer if it is detachable, otherwise make a copy and
   // transfer that.
   bool Transfer(v8::Isolate*, WTF::ArrayBufferContents& result);
 

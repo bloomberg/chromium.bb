@@ -17,8 +17,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
 #include "extensions/buildflags/buildflags.h"
-#include "net/base/net_errors.h"
-#include "net/base/static_cookie_policy.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -26,8 +24,10 @@ namespace content_settings {
 CookieSettings::CookieSettings(
     HostContentSettingsMap* host_content_settings_map,
     PrefService* prefs,
+    bool is_incognito,
     const char* extension_scheme)
     : host_content_settings_map_(host_content_settings_map),
+      is_incognito_(is_incognito),
       extension_scheme_(extension_scheme),
       block_third_party_cookies_(false) {
   pref_change_registrar_.Init(prefs);
@@ -36,7 +36,7 @@ CookieSettings::CookieSettings(
       base::Bind(&CookieSettings::OnCookiePreferencesChanged,
                  base::Unretained(this)));
   pref_change_registrar_.Add(
-      prefs::kCookieControlsEnabled,
+      prefs::kCookieControlsMode,
       base::Bind(&CookieSettings::OnCookiePreferencesChanged,
                  base::Unretained(this)));
   OnCookiePreferencesChanged();
@@ -59,8 +59,9 @@ void CookieSettings::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kBlockThirdPartyCookies, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterBooleanPref(
-      prefs::kCookieControlsEnabled, false,
+  registry->RegisterIntegerPref(
+      prefs::kCookieControlsMode,
+      static_cast<int>(CookieControlsMode::kIncognitoOnly),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 
@@ -118,15 +119,27 @@ bool CookieSettings::IsStorageDurable(const GURL& origin) const {
   return setting == CONTENT_SETTING_ALLOW;
 }
 
+void CookieSettings::GetSettingForLegacyCookieAccess(
+    const GURL& cookie_domain,
+    ContentSetting* setting) const {
+  DCHECK(setting);
+
+  *setting = host_content_settings_map_->GetContentSetting(
+      cookie_domain, GURL(), CONTENT_SETTINGS_TYPE_LEGACY_COOKIE_ACCESS,
+      std::string() /* resource_identifier */);
+}
+
 void CookieSettings::ShutdownOnUIThread() {
   DCHECK(thread_checker_.CalledOnValidThread());
   pref_change_registrar_.RemoveAll();
 }
 
-void CookieSettings::GetCookieSetting(const GURL& url,
-                                      const GURL& first_party_url,
-                                      content_settings::SettingSource* source,
-                                      ContentSetting* cookie_setting) const {
+void CookieSettings::GetCookieSettingInternal(
+    const GURL& url,
+    const GURL& first_party_url,
+    bool is_third_party_request,
+    content_settings::SettingSource* source,
+    ContentSetting* cookie_setting) const {
   DCHECK(cookie_setting);
   // Auto-allow in extensions or for WebUI embedded in a secure origin.
   if (first_party_url.SchemeIs(kChromeUIScheme) &&
@@ -158,18 +171,33 @@ void CookieSettings::GetCookieSetting(const GURL& url,
                      info.secondary_pattern.MatchesAllHosts() &&
                      ShouldBlockThirdPartyCookies() &&
                      !first_party_url.SchemeIs(extension_scheme_);
-  net::StaticCookiePolicy policy(
-      net::StaticCookiePolicy::BLOCK_ALL_THIRD_PARTY_COOKIES);
 
   // We should always have a value, at least from the default provider.
   DCHECK(value);
   ContentSetting setting = ValueToContentSetting(value.get());
-  bool block =
-      block_third && policy.CanAccessCookies(url, first_party_url) != net::OK;
+  bool block = block_third && is_third_party_request;
   *cookie_setting = block ? CONTENT_SETTING_BLOCK : setting;
 }
 
 CookieSettings::~CookieSettings() {
+}
+
+bool CookieSettings::IsCookieControlsEnabled() {
+  if (!base::FeatureList::IsEnabled(kImprovedCookieControls))
+    return false;
+
+  CookieControlsMode mode = static_cast<CookieControlsMode>(
+      pref_change_registrar_.prefs()->GetInteger(prefs::kCookieControlsMode));
+
+  switch (mode) {
+    case CookieControlsMode::kOn:
+      return true;
+    case CookieControlsMode::kIncognitoOnly:
+      return is_incognito_;
+    case CookieControlsMode::kOff:
+      return false;
+  }
+  return false;
 }
 
 void CookieSettings::OnCookiePreferencesChanged() {
@@ -178,10 +206,11 @@ void CookieSettings::OnCookiePreferencesChanged() {
   bool new_block_third_party_cookies =
       pref_change_registrar_.prefs()->GetBoolean(
           prefs::kBlockThirdPartyCookies) ||
-      (base::FeatureList::IsEnabled(kImprovedCookieControls) &&
-       pref_change_registrar_.prefs()->GetBoolean(
-           prefs::kCookieControlsEnabled));
+      IsCookieControlsEnabled();
 
+  // Safe to read |block_third_party_cookies_| without locking here because the
+  // only place that writes to it is this method and it will always be run on
+  // the same thread.
   if (block_third_party_cookies_ != new_block_third_party_cookies) {
     {
       base::AutoLock auto_lock(lock_);

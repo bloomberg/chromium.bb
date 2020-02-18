@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, CancelDialog) {
   ASSERT_TRUE(
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result = EvalJs(shell(), "self.chooseFileSystemEntries()");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 }
 
@@ -110,10 +110,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenFile) {
       file_contents,
       EvalJs(shell(),
              "(async () => { const file = await self.selected_entry.getFile(); "
-             "return await new Response(file).text(); })()"));
+             "return await file.text(); })()"));
 }
 
-IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile_NonExistingFile) {
   const std::string file_contents = "file contents to write";
   const base::FilePath test_file = CreateTestFile("");
   {
@@ -140,6 +140,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
                    JsReplace("(async () => {"
                              "  const w = await self.entry.createWriter();"
                              "  await w.write(0, new Blob([$1]));"
+                             "  await w.close();"
                              "  return (await self.entry.getFile()).size; })()",
                              file_contents)));
   {
@@ -148,6 +149,58 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, SaveFile) {
     EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
     EXPECT_EQ(file_contents, read_contents);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_TruncatesExistingFile) {
+  const base::FilePath test_file = CreateTestFile("Hello World");
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  EXPECT_EQ(test_file.BaseName().AsUTF8Unsafe(),
+            EvalJs(shell(),
+                   "(async () => {"
+                   "  let e = await self.chooseFileSystemEntries("
+                   "      {type: 'saveFile'});"
+                   "  self.entry = e;"
+                   "  return e.name; })()"));
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_SAVEAS_FILE, dialog_params.type);
+  EXPECT_EQ("",
+            EvalJs(shell(),
+                   "(async () => { const file = await self.entry.getFile(); "
+                   "return await file.text(); })()"));
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_BlockedPermission) {
+  const base::FilePath test_file = CreateTestFile("Save File");
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(false));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("not allowed") != std::string::npos)
+      << result.error;
+  EXPECT_EQ(ui::SelectFileDialog::SELECT_NONE, dialog_params.type);
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenMultipleFiles) {
@@ -199,10 +252,10 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
           ->GetNativeFileSystemEntryFactory())
       ->SetPermissionContextForTesting(&permission_context);
 
-  EXPECT_CALL(permission_context,
-              ConfirmSensitiveDirectoryAccess_(
-                  testing::_, testing::_, testing::_, testing::_, testing::_))
-      .WillOnce(RunOnceCallback<4>(SensitiveDirectoryResult::kAllowed));
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAllowed));
 
   EXPECT_CALL(
       permission_context,
@@ -217,8 +270,97 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, OpenDirectory_DenyAccess) {
       NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   auto result =
       EvalJs(shell(), "self.chooseFileSystemEntries({type: 'openDirectory'})");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_SensitiveDirectory_ExistingFile) {
+  const std::string file_contents = "Hello World";
+  const base::FilePath test_file = CreateTestFile(file_contents);
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
+
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(true));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
+      << result.error;
+
+  {
+    // File should still exist, and be unmodified.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    std::string read_contents;
+    EXPECT_TRUE(base::ReadFileToString(test_file, &read_contents));
+    EXPECT_EQ(file_contents, read_contents);
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest,
+                       SaveFile_SensitiveDirectory_NonExistingFile) {
+  const base::FilePath test_file = CreateTestFile("");
+  {
+    // Delete file, since SaveFile should be able to deal with non-existing
+    // files.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    ASSERT_TRUE(base::DeleteFile(test_file, false));
+  }
+
+  SelectFileDialogParams dialog_params;
+  ui::SelectFileDialog::SetFactory(
+      new FakeSelectFileDialogFactory({test_file}, &dialog_params));
+
+  testing::StrictMock<MockNativeFileSystemPermissionContext> permission_context;
+  static_cast<NativeFileSystemManagerImpl*>(
+      BrowserContext::GetStoragePartition(
+          shell()->web_contents()->GetBrowserContext(),
+          shell()->web_contents()->GetSiteInstance())
+          ->GetNativeFileSystemEntryFactory())
+      ->SetPermissionContextForTesting(&permission_context);
+
+  EXPECT_CALL(permission_context, ConfirmSensitiveDirectoryAccess_(
+                                      testing::_, testing::_, testing::_,
+                                      testing::_, testing::_, testing::_))
+      .WillOnce(RunOnceCallback<5>(SensitiveDirectoryResult::kAbort));
+
+  EXPECT_CALL(permission_context,
+              CanRequestWritePermission(url::Origin::Create(
+                  embedded_test_server()->GetURL("/title1.html"))))
+      .WillOnce(testing::Return(true));
+
+  ASSERT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+  auto result =
+      EvalJs(shell(), "self.chooseFileSystemEntries({type: 'saveFile'})");
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
+      << result.error;
+
+  {
+    // File should not have been created.
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    EXPECT_FALSE(base::PathExists(test_file));
+  }
 }
 
 IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
@@ -233,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(FileSystemChooserBrowserTest, AcceptsOptions) {
                        "  {description: 'foo', extensions: ['txt', 'Js']},"
                        "  {mimeTypes: ['image/jpeg']}"
                        "]})");
-  EXPECT_TRUE(result.error.find("AbortError") != std::string::npos)
+  EXPECT_TRUE(result.error.find("aborted") != std::string::npos)
       << result.error;
 
   ASSERT_TRUE(dialog_params.file_types);

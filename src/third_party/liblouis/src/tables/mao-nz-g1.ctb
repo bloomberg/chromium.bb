@@ -2,6 +2,7 @@
 # liblouis: Maori Braille Table
 #
 # -----------
+#-index-name: Maori
 #-display-name: Maori braille
 #
 #+locale:mi
@@ -18,6 +19,9 @@
 # the implemented braille code. Preferably submit the documents
 # to https://github.com/liblouis/braille-specs.
 # -----------
+#
+# Based on World Braille Usage 2013
+# <http://liblouis.org/braille-specs/world-braille-usage-third-edition.pdf>.
 #
 # Copyright (C) 2014, Greg Kearney, gkearney@gmail.com
 #

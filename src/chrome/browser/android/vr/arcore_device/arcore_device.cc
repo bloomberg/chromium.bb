@@ -59,7 +59,6 @@ mojom::VRDisplayInfoPtr CreateVRDisplayInfo(mojom::XRDeviceId device_id,
   left_eye->field_of_view->right_degrees = horizontal_degrees;
   left_eye->field_of_view->up_degrees = vertical_degrees;
   left_eye->field_of_view->down_degrees = vertical_degrees;
-  left_eye->offset = {0.0f, 0.0f, 0.0f};
   left_eye->render_width = width;
   left_eye->render_height = height;
   return device;
@@ -81,8 +80,7 @@ ArCoreDevice::ArCoreDevice(
       ar_image_transport_factory_(std::move(ar_image_transport_factory)),
       mailbox_bridge_(std::move(mailbox_to_surface_bridge)),
       arcore_session_utils_(std::move(arcore_session_utils)),
-      session_state_(std::make_unique<ArCoreDevice::SessionState>()),
-      weak_ptr_factory_(this) {
+      session_state_(std::make_unique<ArCoreDevice::SessionState>()) {
   // Ensure display_info_ is set to avoid crash in CallDeferredSessionCallback
   // if initialization fails. Use an arbitrary but really low resolution to make
   // it obvious if we're using this data instead of the actual values we get
@@ -231,8 +229,8 @@ void ArCoreDevice::OnDrawingSurfaceDestroyed() {
 void ArCoreDevice::OnSessionEnded() {
   DVLOG(1) << __func__;
 
-  // This may be a no-op in case it's destroyed already.
-  arcore_session_utils_->DestroyDrawingSurface();
+  // This may be a no-op in case session end was initiated from the Java side.
+  arcore_session_utils_->EndSession();
 
   // The GL thread had initialized its context with a drawing_widget based on
   // the ArImmersiveOverlay's Surface, and the one it has is no longer valid.

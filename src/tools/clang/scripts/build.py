@@ -119,6 +119,7 @@ def CheckoutLLVM(commit, dir):
 
   # Otherwise, do a fresh clone.
   if os.path.isdir(dir):
+    os.chdir(CHROMIUM_DIR)  # Can't remove dir if we're in it.
     print('Removing %s.' % dir)
     RmTree(dir)
   if RunCommand(clone_cmd, fail_hard=False):
@@ -239,20 +240,10 @@ def MaybeDownloadHostGcc(args):
   """Download a modern GCC host compiler on Linux."""
   if not sys.platform.startswith('linux') or args.gcc_toolchain:
     return
-  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc510trusty')
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc530trusty')
   if not os.path.exists(gcc_dir):
-    DownloadAndUnpack(CDS_URL + '/tools/gcc510trusty.tgz', gcc_dir)
+    DownloadAndUnpack(CDS_URL + '/tools/gcc530trusty.tgz', gcc_dir)
   args.gcc_toolchain = gcc_dir
-
-
-def SetMacXcodePath():
-  """Set DEVELOPER_DIR to the path to hermetic Xcode.app on Mac OS X."""
-  if sys.platform != 'darwin':
-    return
-
-  xcode_path = os.path.join(CHROMIUM_DIR, 'build', 'mac_files', 'Xcode.app')
-  if os.path.exists(xcode_path):
-    os.environ['DEVELOPER_DIR'] = xcode_path
 
 
 def VerifyVersionOfBuiltClangMatchesVERSION():
@@ -348,15 +339,6 @@ def main():
                       default=sys.platform in ('linux2', 'darwin'))
   args = parser.parse_args()
 
-  # TODO(crbug.com/985289): Remove when rolling past r366427.
-  if args.llvm_force_head_revision:
-    global RELEASE_VERSION
-    RELEASE_VERSION = '10.0.0'
-    old_lib_dir = os.path.join(LLVM_BUILD_DIR, 'lib', 'clang', '9.0.0')
-    if (os.path.isdir(old_lib_dir)):
-      print('Removing old lib dir: ' + old_lib_dir)
-      RmTree(old_lib_dir)
-
   if args.lto_lld and not args.bootstrap:
     print('--lto-lld requires --bootstrap')
     return 1
@@ -412,10 +394,6 @@ def main():
   print('Locally building clang %s...' % PACKAGE_VERSION)
   WriteStampFile('', STAMP_FILE)
   WriteStampFile('', FORCE_HEAD_REVISION_FILE)
-
-  # DEVELOPER_DIR needs to be set when Xcode isn't in a standard location
-  # and xcode-select wasn't run.
-  SetMacXcodePath()
 
   AddCMakeToPath(args)
   DeleteChromeToolsShim()
@@ -875,14 +853,6 @@ def main():
               'arm': 'arm',
               'i686': 'x86',
           }[target_arch]])
-
-      # NDK r16 "helpfully" installs libc++ as libstdc++ "so the compiler will
-      # pick it up by default". Only these days, the compiler tries to find
-      # libc++ instead. See https://crbug.com/902270.
-      shutil.copy(os.path.join(toolchain_dir, 'sysroot/usr/lib/libstdc++.a'),
-                  os.path.join(toolchain_dir, 'sysroot/usr/lib/libc++.a'))
-      shutil.copy(os.path.join(toolchain_dir, 'sysroot/usr/lib/libstdc++.so'),
-                  os.path.join(toolchain_dir, 'sysroot/usr/lib/libc++.so'))
 
       # Build compiler-rt runtimes needed for Android in a separate build tree.
       build_dir = os.path.join(LLVM_BUILD_DIR, 'android-' + target_arch)

@@ -266,6 +266,11 @@ static bool tf_is_valid(const skcms_TransferFunction* tf) {
         return false;
     }
 
+    // It's rather _complex_ to raise a negative number to a fractional power tf->g.
+    if (tf->a * tf->d + tf->b < 0) {
+        return false;
+    }
+
     return true;
 }
 
@@ -1393,17 +1398,23 @@ static float exp2f_(float x) {
     float fbits = (1.0f * (1<<23)) * (x + 121.274057500f
                                         -   1.490129070f*fract
                                         +  27.728023300f/(4.84252568f - fract));
-    if (fbits > INT_MAX) {
+
+    // Before we cast fbits to int32_t, check for out of range values to pacify UBSAN.
+    // INT_MAX is not exactly representable as a float, so exclude it as effectively infinite.
+    // INT_MIN is a power of 2 and exactly representable as a float, so it's fine.
+    if (fbits >= (float)INT_MAX) {
         return INFINITY_;
-    } else if (fbits < INT_MIN) {
+    } else if (fbits < (float)INT_MIN) {
         return -INFINITY_;
     }
+
     int32_t bits = (int32_t)fbits;
     small_memcpy(&x, &bits, sizeof(x));
     return x;
 }
 
 float powf_(float x, float y) {
+    assert (x >= 0);
     return (x == 0) || (x == 1) ? x
                                 : exp2f_(log2f_(x) * y);
 }
@@ -1468,12 +1479,43 @@ bool skcms_TransferFunction_invert(const skcms_TransferFunction* src, skcms_Tran
     inv.b = -k * src->e;
     inv.e = -src->b / src->a;
 
+    // We need to enforce the same constraints here that we do when fitting a curve,
+    // a >= 0 and ad+b >= 0.  These constraints are checked by tf_is_valid(), so they're true
+    // of the source function if we're here.
+
+    // Just like when fitting the curve, there's really no way to rescue a < 0.
+    if (inv.a < 0) {
+        return false;
+    }
+    // On the other hand we can rescue an ad+b that's gone slightly negative here.
+    if (inv.a * inv.d + inv.b < 0) {
+        inv.b = -inv.a * inv.d;
+    }
+
+    // That should usually make tf_is_valid(&inv) true, but there are a couple situations
+    // where we might still fail here, like non-finite parameter values.
+    if (!tf_is_valid(&inv)) {
+        return false;
+    }
+
+    assert (inv.a >= 0);
+    assert (inv.a * inv.d + inv.b >= 0);
+
     // Now in principle we're done.
-    // But to preserve the valuable invariant inv(src(1.0f)) == 1.0f,
-    // we'll tweak e.  These two values should be close to each other,
-    // just down to numerical precision issues, especially from powf_.
-    float s = powf_(src->a + src->b, src->g) + src->e;
-    inv.e = 1.0f - powf_(inv.a * s + inv.b, inv.g);
+    // But to preserve the valuable invariant inv(src(1.0f)) == 1.0f, we'll tweak
+    // e or f of the inverse, depending on which segment contains src(1.0f).
+    float s = skcms_TransferFunction_eval(src, 1.0f);
+    if (!isfinitef_(s)) {
+        return false;
+    }
+
+    float sign = s < 0 ? -1.0f : 1.0f;
+    s *= sign;
+    if (s < inv.d) {
+        inv.f = 1.0f - sign * inv.c * s;
+    } else {
+        inv.e = 1.0f - sign * powf_(inv.a * s + inv.b, inv.g);
+    }
 
     *dst = inv;
     return tf_is_valid(dst);
@@ -1635,7 +1677,8 @@ static bool fit_nonlinear(const skcms_Curve* curve, int L, int N, skcms_Transfer
     // No matter where we start, dx should always represent N even steps from 0 to 1.
     const float dx = 1.0f / (N-1);
 
-    for (int j = 0; j < 3/*TODO: tune*/; j++) {
+    // As far as we can tell, 1 Gauss-Newton step won't converge, and 3 steps is no better than 2.
+    for (int j = 0; j < 2; j++) {
         // These extra constraints a >= 0 and ad+b >= 0 are not modeled in the optimization.
         // We don't really know how to fix up a if it goes negative.
         if (P[1] < 0) {
@@ -1662,6 +1705,9 @@ static bool fit_nonlinear(const skcms_Curve* curve, int L, int N, skcms_Transfer
     if (P[1] * tf->d + P[2] < 0) {
         P[2] = -P[1] * tf->d;
     }
+
+    assert (P[1] >= 0 &&
+            P[1] * tf->d + P[2] >= 0);
 
     tf->g = P[0];
     tf->a = P[1];

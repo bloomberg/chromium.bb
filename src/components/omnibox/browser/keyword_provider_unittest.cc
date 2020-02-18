@@ -14,7 +14,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_scheme_classifier.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
@@ -87,7 +87,7 @@ class KeywordProviderTest : public testing::Test {
  protected:
   static const TemplateURLService::Initializer kTestData[];
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::FieldTrialList> field_trial_list_;
   scoped_refptr<KeywordProvider> kw_provider_;
   std::unique_ptr<MockAutocompleteProviderClient> client_;

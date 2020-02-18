@@ -16,6 +16,7 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/home_button.h"
+#include "ash/shelf/hotseat_widget.h"
 #include "ash/shelf/login_shelf_view.h"
 #include "ash/shelf/overflow_bubble.h"
 #include "ash/shelf/overflow_bubble_view.h"
@@ -23,11 +24,11 @@
 #include "ash/shelf/shelf_background_animator_observer.h"
 #include "ash/shelf/shelf_constants.h"
 #include "ash/shelf/shelf_layout_manager.h"
+#include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
-#include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
@@ -68,8 +69,9 @@ views::View* FindFirstOrLastFocusableChild(views::View* root,
 
 }  // namespace
 
-// The contents view of the Shelf. This view contains ShelfView and
-// sizes it to the width of the shelf minus the size of the status area.
+// The contents view of the Shelf. In an active session, this is used to
+// display a semi-opaque background behind the shelf. Outside of an active
+// session, this also contains the login shelf view.
 class ShelfWidget::DelegateView : public views::WidgetDelegate,
                                   public views::AccessiblePaneView,
                                   public ShelfBackgroundAnimatorObserver {
@@ -165,24 +167,11 @@ void ShelfWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
 }
 
 bool ShelfWidget::DelegateView::CanActivate() const {
-  // Allow activations coming from the overflow bubble if it is currently shown
-  // and active.
-  aura::Window* active_window = window_util::GetActiveWindow();
-  aura::Window* bubble_window = nullptr;
-  aura::Window* shelf_window = shelf_widget_->GetNativeWindow();
-  if (shelf_widget_->IsShowingOverflowBubble()) {
-    bubble_window = shelf_widget_->shelf_view_->overflow_bubble()
-                        ->bubble_view()
-                        ->GetWidget()
-                        ->GetNativeWindow();
-  }
-  if (active_window &&
-      (active_window == bubble_window || active_window == shelf_window)) {
-    return true;
-  }
-
-  // Only allow activation from the focus cycler, not from mouse events, etc.
-  return focus_cycler_ && focus_cycler_->widget_activating() == GetWidget();
+  // This widget only contains anything interesting to activate in login/lock
+  // screen mode. Only allow activation from the focus cycler, not from mouse
+  // events, etc.
+  return shelf_widget_->login_shelf_view_->GetVisible() && focus_cycler_ &&
+         focus_cycler_->widget_activating() == GetWidget();
 }
 
 void ShelfWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
@@ -261,10 +250,10 @@ views::View* ShelfWidget::DelegateView::GetDefaultFocusableChild() {
   if (shelf_widget_->login_shelf_view_->GetVisible()) {
     return FindFirstOrLastFocusableChild(shelf_widget_->login_shelf_view_,
                                          default_last_focusable_child_);
-  } else {
-    return shelf_widget_->shelf_view_->FindFirstOrLastFocusableChild(
-        default_last_focusable_child_);
   }
+  // If the login shelf view is not visible, there is nothing else to focus
+  // in this view.
+  return nullptr;
 }
 
 void ShelfWidget::DelegateView::UpdateShelfBackground(SkColor color) {
@@ -296,20 +285,28 @@ bool ShelfWidget::GetHitTestRects(aura::Window* target,
   return true;
 }
 
-ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
+ShelfWidget::ShelfWidget(Shelf* shelf)
     : shelf_(shelf),
       background_animator_(SHELF_BACKGROUND_DEFAULT,
                            shelf_,
                            Shell::Get()->wallpaper_controller()),
       shelf_layout_manager_(new ShelfLayoutManager(this, shelf)),
       delegate_view_(new DelegateView(this)),
-      shelf_view_(new ShelfView(ShelfModel::Get(), shelf_)),
-      login_shelf_view_(
-          new LoginShelfView(RootWindowController::ForWindow(shelf_container)
-                                 ->lock_screen_action_background_controller())),
       scoped_session_observer_(this) {
-  DCHECK(shelf_container);
   DCHECK(shelf_);
+}
+
+ShelfWidget::~ShelfWidget() {
+  // Must call Shutdown() before destruction.
+  DCHECK(!status_area_widget_);
+}
+
+void ShelfWidget::Initialize(aura::Window* shelf_container) {
+  DCHECK(shelf_container);
+
+  login_shelf_view_ =
+      new LoginShelfView(RootWindowController::ForWindow(shelf_container)
+                             ->lock_screen_action_background_controller());
 
   views::Widget::InitParams params(
       views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
@@ -319,17 +316,13 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
   params.delegate = delegate_view_;
   params.parent = shelf_container;
 
-  Init(params);
+  Init(std::move(params));
 
   // The shelf should not take focus when initially shown.
   set_focus_on_creation(false);
   SetContentsView(delegate_view_);
   delegate_view_->SetParentLayer(GetLayer());
 
-  // The shelf view observes the shelf model and creates icons as items are
-  // added to the model.
-  shelf_view_->Init();
-  GetContentsView()->AddChildView(shelf_view_);
   GetContentsView()->AddChildView(login_shelf_view_);
 
   shelf_layout_manager_->AddObserver(this);
@@ -341,14 +334,7 @@ ShelfWidget::ShelfWidget(aura::Window* shelf_container, Shelf* shelf)
 
   background_animator_.AddObserver(delegate_view_);
   shelf_->AddObserver(this);
-}
 
-ShelfWidget::~ShelfWidget() {
-  // Must call Shutdown() before destruction.
-  DCHECK(!status_area_widget_);
-}
-
-void ShelfWidget::Initialize() {
   // Sets initial session state to make sure the UI is properly shown.
   OnSessionStateChanged(Shell::Get()->session_controller()->GetSessionState());
   GetFocusManager()->set_arrow_key_traversal_enabled_for_widget(true);
@@ -364,6 +350,9 @@ void ShelfWidget::Shutdown() {
   Shell::Get()->focus_cycler()->RemoveWidget(status_area_widget_.get());
   status_area_widget_.reset();
 
+  Shell::Get()->focus_cycler()->RemoveWidget(navigation_widget_.get());
+  Shell::Get()->focus_cycler()->RemoveWidget(hotseat_widget_.get());
+
   // Don't need to update the shelf background during shutdown.
   background_animator_.RemoveObserver(delegate_view_);
   shelf_->RemoveObserver(this);
@@ -371,6 +360,25 @@ void ShelfWidget::Shutdown() {
   // Don't need to observe focus/activation during shutdown.
   Shell::Get()->focus_cycler()->RemoveWidget(this);
   SetFocusCycler(nullptr);
+}
+
+void ShelfWidget::CreateNavigationWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!navigation_widget_);
+  navigation_widget_ = std::make_unique<ShelfNavigationWidget>(
+      shelf_, hotseat_widget()->GetShelfView());
+  navigation_widget_->Initialize(container);
+  Shell::Get()->focus_cycler()->AddWidget(navigation_widget_.get());
+}
+
+void ShelfWidget::CreateHotseatWidget(aura::Window* container) {
+  DCHECK(container);
+  DCHECK(!hotseat_widget_);
+  hotseat_widget_ = std::make_unique<HotseatWidget>();
+  hotseat_widget_->Initialize(container, shelf_);
+
+  // Show a context menu for right clicks anywhere on the shelf widget.
+  delegate_view_->set_context_menu_controller(hotseat_widget_->GetShelfView());
 }
 
 void ShelfWidget::CreateStatusAreaWidget(aura::Window* status_container) {
@@ -401,11 +409,12 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
-  shelf_view_->OnTabletModeChanged();
+  hotseat_widget()->GetShelfView()->OnTabletModeChanged();
 }
 
 void ShelfWidget::PostCreateShelf() {
   SetFocusCycler(Shell::Get()->focus_cycler());
+  hotseat_widget()->SetFocusCycler(Shell::Get()->focus_cycler());
 
   shelf_layout_manager_->LayoutShelf();
   shelf_layout_manager_->UpdateAutoHideState();
@@ -417,11 +426,7 @@ bool ShelfWidget::IsShowingAppList() const {
 }
 
 bool ShelfWidget::IsShowingMenu() const {
-  return shelf_view_->IsShowingMenu();
-}
-
-bool ShelfWidget::IsShowingOverflowBubble() const {
-  return shelf_view_->IsShowingOverflowBubble();
+  return hotseat_widget()->GetShelfView()->IsShowingMenu();
 }
 
 void ShelfWidget::SetFocusCycler(FocusCycler* focus_cycler) {
@@ -440,25 +445,27 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(
   if (id.IsNull())
     return gfx::Rect();
 
-  gfx::Rect bounds(shelf_view_->GetIdealBoundsOfItemIcon(id));
+  gfx::Rect bounds(
+      hotseat_widget()->GetShelfView()->GetIdealBoundsOfItemIcon(id));
   gfx::Point screen_origin;
-  views::View::ConvertPointToScreen(shelf_view_, &screen_origin);
+  views::View::ConvertPointToScreen(hotseat_widget()->GetShelfView(),
+                                    &screen_origin);
   return gfx::Rect(screen_origin.x() + bounds.x(),
                    screen_origin.y() + bounds.y(), bounds.width(),
                    bounds.height());
 }
 
 HomeButton* ShelfWidget::GetHomeButton() const {
-  return shelf_view_->GetHomeButton();
+  return navigation_widget_.get()->GetHomeButton();
 }
 
 BackButton* ShelfWidget::GetBackButton() const {
-  return shelf_view_->GetBackButton();
+  return navigation_widget_.get()->GetBackButton();
 }
 
 app_list::ApplicationDragAndDropHost*
 ShelfWidget::GetDragAndDropHostForAppList() {
-  return shelf_view_;
+  return hotseat_widget()->GetShelfView();
 }
 
 void ShelfWidget::set_default_last_focusable_child(
@@ -467,29 +474,13 @@ void ShelfWidget::set_default_last_focusable_child(
       default_last_focusable_child);
 }
 
-void ShelfWidget::FocusFirstOrLastFocusableChild(bool last) {
-  // This is only ever called during an active session.
-  if (!shelf_view_->GetVisible())
-    return;
-  views::View* to_focus = shelf_view_->FindFirstOrLastFocusableChild(last);
-
-  Shell::Get()->focus_cycler()->FocusWidget(to_focus->GetWidget());
-  to_focus->GetFocusManager()->SetFocusedView(to_focus);
-}
-
 bool ShelfWidget::OnNativeWidgetActivationChanged(bool active) {
   if (!Widget::OnNativeWidgetActivationChanged(active))
     return false;
   if (active) {
-    // Do not focus the default element if the widget activation came from the
-    // overflow bubble's focus cycling. The setter of
-    // |activated_from_overflow_bubble_| should handle focusing the correct
-    // view.
-    if (activated_from_overflow_bubble_) {
-      activated_from_overflow_bubble_ = false;
-    } else {
-      delegate_view_->SetPaneFocusAndFocusDefault();
-    }
+    // This widget should not get activated in an active session.
+    DCHECK(login_shelf_view_->GetVisible());
+    delegate_view_->SetPaneFocusAndFocusDefault();
   }
   return true;
 }
@@ -532,21 +523,21 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
     switch (state) {
       case session_manager::SessionState::ACTIVE:
         login_shelf_view_->SetVisible(false);
-        shelf_view_->SetVisible(true);
+        hotseat_widget()->GetShelfView()->SetVisible(true);
         break;
       case session_manager::SessionState::LOCKED:
       case session_manager::SessionState::LOGIN_SECONDARY:
-        shelf_view_->SetVisible(false);
+        hotseat_widget()->GetShelfView()->SetVisible(false);
         login_shelf_view_->SetVisible(true);
         break;
       case session_manager::SessionState::OOBE:
         login_shelf_view_->SetVisible(true);
-        shelf_view_->SetVisible(false);
+        hotseat_widget()->GetShelfView()->SetVisible(false);
         break;
       case session_manager::SessionState::LOGIN_PRIMARY:
       case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
         login_shelf_view_->SetVisible(true);
-        shelf_view_->SetVisible(false);
+        hotseat_widget()->GetShelfView()->SetVisible(false);
         break;
       default:
         // session_manager::SessionState::UNKNOWN handled in if statement above.

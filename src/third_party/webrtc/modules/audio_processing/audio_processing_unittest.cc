@@ -18,6 +18,7 @@
 #include <memory>
 #include <queue>
 
+#include "absl/flags/flag.h"
 #include "common_audio/include/audio_util.h"
 #include "common_audio/resampler/include/push_resampler.h"
 #include "common_audio/resampler/push_sinc_resampler.h"
@@ -53,19 +54,18 @@ RTC_PUSH_IGNORING_WUNDEF()
 #endif
 RTC_POP_IGNORING_WUNDEF()
 
+ABSL_FLAG(bool,
+          write_apm_ref_data,
+          false,
+          "Write ApmTest.Process results to file, instead of comparing results "
+          "to the existing reference data file.");
+
 namespace webrtc {
 namespace {
 
 // TODO(ekmeyerson): Switch to using StreamConfig and ProcessingConfig where
 // applicable.
 
-// TODO(bjornv): This is not feasible until the functionality has been
-// re-implemented; see comment at the bottom of this file. For now, the user has
-// to hard code the |write_ref_data| value.
-// When false, this will compare the output data with the results stored to
-// file. This is the typical case. When the file should be updated, it can
-// be set to true with the command-line switch --write_ref_data.
-bool write_ref_data = false;
 const int32_t kChannels[] = {1, 2};
 const int kSampleRates[] = {8000, 16000, 32000, 48000};
 
@@ -1200,8 +1200,8 @@ TEST_F(ApmTest, NoProcessingWhenAllComponentsDisabled) {
 
 TEST_F(ApmTest, NoProcessingWhenAllComponentsDisabledFloat) {
   // Test that ProcessStream copies input to output even with no processing.
-  const size_t kSamples = 80;
-  const int sample_rate = 8000;
+  const size_t kSamples = 160;
+  const int sample_rate = 16000;
   const float src[kSamples] = {-1.0f, 0.0f, 1.0f};
   float dest[kSamples] = {};
 
@@ -1569,7 +1569,7 @@ TEST_F(ApmTest, Process) {
   GOOGLE_PROTOBUF_VERIFY_VERSION;
   audioproc::OutputData ref_data;
 
-  if (!write_ref_data) {
+  if (!absl::GetFlag(FLAGS_write_apm_ref_data)) {
     OpenFileAndReadMessage(ref_filename_, &ref_data);
   } else {
     // Write the desired tests to the protobuf reference file.
@@ -1689,7 +1689,7 @@ TEST_F(ApmTest, Process) {
         const float residual_echo_likelihood_recent_max =
             stats.residual_echo_likelihood_recent_max.value_or(-1.0f);
 
-        if (!write_ref_data) {
+        if (!absl::GetFlag(FLAGS_write_apm_ref_data)) {
           const audioproc::Test::EchoMetrics& reference =
               test->echo_metrics(stats_index);
           constexpr float kEpsilon = 0.01;
@@ -1719,7 +1719,7 @@ TEST_F(ApmTest, Process) {
     ns_speech_prob_average /= frame_count;
     rms_dbfs_average /= frame_count;
 
-    if (!write_ref_data) {
+    if (!absl::GetFlag(FLAGS_write_apm_ref_data)) {
       const int kIntNear = 1;
       // When running the test on a N7 we get a {2, 6} difference of
       // |has_voice_count| and |max_output_average| is up to 18 higher.
@@ -1771,7 +1771,7 @@ TEST_F(ApmTest, Process) {
     rewind(near_file_);
   }
 
-  if (write_ref_data) {
+  if (absl::GetFlag(FLAGS_write_apm_ref_data)) {
     OpenFileAndWriteMessage(ref_filename_, ref_data);
   }
 }
@@ -2204,15 +2204,15 @@ INSTANTIATE_TEST_SUITE_P(
 INSTANTIATE_TEST_SUITE_P(
     CommonFormats,
     AudioProcessingTest,
-    ::testing::Values(std::make_tuple(48000, 48000, 48000, 48000, 20, 0),
-                      std::make_tuple(48000, 48000, 32000, 48000, 20, 30),
-                      std::make_tuple(48000, 48000, 16000, 48000, 20, 20),
+    ::testing::Values(std::make_tuple(48000, 48000, 48000, 48000, 19, 0),
+                      std::make_tuple(48000, 48000, 32000, 48000, 19, 30),
+                      std::make_tuple(48000, 48000, 16000, 48000, 19, 20),
                       std::make_tuple(48000, 44100, 48000, 44100, 15, 20),
                       std::make_tuple(48000, 44100, 32000, 44100, 15, 15),
                       std::make_tuple(48000, 44100, 16000, 44100, 15, 15),
-                      std::make_tuple(48000, 32000, 48000, 32000, 20, 35),
-                      std::make_tuple(48000, 32000, 32000, 32000, 20, 0),
-                      std::make_tuple(48000, 32000, 16000, 32000, 20, 20),
+                      std::make_tuple(48000, 32000, 48000, 32000, 19, 35),
+                      std::make_tuple(48000, 32000, 32000, 32000, 19, 0),
+                      std::make_tuple(48000, 32000, 16000, 32000, 19, 20),
                       std::make_tuple(48000, 16000, 48000, 16000, 20, 20),
                       std::make_tuple(48000, 16000, 32000, 16000, 20, 20),
                       std::make_tuple(48000, 16000, 16000, 16000, 20, 0),
@@ -2223,12 +2223,12 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(44100, 44100, 48000, 44100, 15, 20),
                       std::make_tuple(44100, 44100, 32000, 44100, 15, 15),
                       std::make_tuple(44100, 44100, 16000, 44100, 15, 15),
-                      std::make_tuple(44100, 32000, 48000, 32000, 20, 35),
-                      std::make_tuple(44100, 32000, 32000, 32000, 20, 0),
-                      std::make_tuple(44100, 32000, 16000, 32000, 20, 20),
-                      std::make_tuple(44100, 16000, 48000, 16000, 20, 20),
-                      std::make_tuple(44100, 16000, 32000, 16000, 20, 20),
-                      std::make_tuple(44100, 16000, 16000, 16000, 20, 0),
+                      std::make_tuple(44100, 32000, 48000, 32000, 18, 35),
+                      std::make_tuple(44100, 32000, 32000, 32000, 18, 0),
+                      std::make_tuple(44100, 32000, 16000, 32000, 18, 20),
+                      std::make_tuple(44100, 16000, 48000, 16000, 19, 20),
+                      std::make_tuple(44100, 16000, 32000, 16000, 19, 20),
+                      std::make_tuple(44100, 16000, 16000, 16000, 19, 0),
 
                       std::make_tuple(32000, 48000, 48000, 48000, 35, 0),
                       std::make_tuple(32000, 48000, 32000, 48000, 65, 30),
@@ -2256,6 +2256,128 @@ INSTANTIATE_TEST_SUITE_P(
                       std::make_tuple(16000, 16000, 32000, 16000, 35, 20),
                       std::make_tuple(16000, 16000, 16000, 16000, 0, 0)));
 #endif
+
+// Produces a scoped trace debug output.
+std::string ProduceDebugText(int render_input_sample_rate_hz,
+                             int render_output_sample_rate_hz,
+                             int capture_input_sample_rate_hz,
+                             int capture_output_sample_rate_hz,
+                             size_t render_input_num_channels,
+                             size_t render_output_num_channels,
+                             size_t capture_input_num_channels,
+                             size_t capture_output_num_channels) {
+  rtc::StringBuilder ss;
+  ss << "Sample rates:"
+     << "\n"
+     << " Render input: " << render_input_sample_rate_hz << " Hz"
+     << "\n"
+     << " Render output: " << render_output_sample_rate_hz << " Hz"
+     << "\n"
+     << " Capture input: " << capture_input_sample_rate_hz << " Hz"
+     << "\n"
+     << " Capture output: " << capture_output_sample_rate_hz << " Hz"
+     << "\n"
+     << "Number of channels:"
+     << "\n"
+     << " Render input: " << render_input_num_channels << "\n"
+     << " Render output: " << render_output_num_channels << "\n"
+     << " Capture input: " << capture_input_num_channels << "\n"
+     << " Capture output: " << capture_output_num_channels;
+  return ss.Release();
+}
+
+// Validates that running the audio processing module using various combinations
+// of sample rates and number of channels works as intended.
+void RunApmRateAndChannelTest(
+    rtc::ArrayView<const int> sample_rates_hz,
+    rtc::ArrayView<const int> render_channel_counts,
+    rtc::ArrayView<const int> capture_channel_counts) {
+  std::unique_ptr<AudioProcessing> apm(AudioProcessingBuilder().Create());
+  webrtc::AudioProcessing::Config apm_config;
+  apm_config.echo_canceller.enabled = true;
+  apm->ApplyConfig(apm_config);
+
+  StreamConfig render_input_stream_config;
+  StreamConfig render_output_stream_config;
+  StreamConfig capture_input_stream_config;
+  StreamConfig capture_output_stream_config;
+
+  std::vector<float> render_input_frame_channels;
+  std::vector<float*> render_input_frame;
+  std::vector<float> render_output_frame_channels;
+  std::vector<float*> render_output_frame;
+  std::vector<float> capture_input_frame_channels;
+  std::vector<float*> capture_input_frame;
+  std::vector<float> capture_output_frame_channels;
+  std::vector<float*> capture_output_frame;
+
+  for (auto render_input_sample_rate_hz : sample_rates_hz) {
+    for (auto render_output_sample_rate_hz : sample_rates_hz) {
+      for (auto capture_input_sample_rate_hz : sample_rates_hz) {
+        for (auto capture_output_sample_rate_hz : sample_rates_hz) {
+          for (size_t render_input_num_channels : render_channel_counts) {
+            for (size_t capture_input_num_channels : capture_channel_counts) {
+              size_t render_output_num_channels = render_input_num_channels;
+              size_t capture_output_num_channels = capture_input_num_channels;
+              auto populate_audio_frame = [](int sample_rate_hz,
+                                             size_t num_channels,
+                                             StreamConfig* cfg,
+                                             std::vector<float>* channels_data,
+                                             std::vector<float*>* frame_data) {
+                cfg->set_sample_rate_hz(sample_rate_hz);
+                cfg->set_num_channels(num_channels);
+                cfg->set_has_keyboard(false);
+
+                size_t max_frame_size = ceil(sample_rate_hz / 100.f);
+                channels_data->resize(num_channels * max_frame_size);
+                std::fill(channels_data->begin(), channels_data->end(), 0.5f);
+                frame_data->resize(num_channels);
+                for (size_t channel = 0; channel < num_channels; ++channel) {
+                  (*frame_data)[channel] =
+                      &(*channels_data)[channel * max_frame_size];
+                }
+              };
+
+              populate_audio_frame(
+                  render_input_sample_rate_hz, render_input_num_channels,
+                  &render_input_stream_config, &render_input_frame_channels,
+                  &render_input_frame);
+              populate_audio_frame(
+                  render_output_sample_rate_hz, render_output_num_channels,
+                  &render_output_stream_config, &render_output_frame_channels,
+                  &render_output_frame);
+              populate_audio_frame(
+                  capture_input_sample_rate_hz, capture_input_num_channels,
+                  &capture_input_stream_config, &capture_input_frame_channels,
+                  &capture_input_frame);
+              populate_audio_frame(
+                  capture_output_sample_rate_hz, capture_output_num_channels,
+                  &capture_output_stream_config, &capture_output_frame_channels,
+                  &capture_output_frame);
+
+              for (size_t frame = 0; frame < 2; ++frame) {
+                SCOPED_TRACE(ProduceDebugText(
+                    render_input_sample_rate_hz, render_output_sample_rate_hz,
+                    capture_input_sample_rate_hz, capture_output_sample_rate_hz,
+                    render_input_num_channels, render_output_num_channels,
+                    render_input_num_channels, capture_output_num_channels));
+
+                int result = apm->ProcessReverseStream(
+                    &render_input_frame[0], render_input_stream_config,
+                    render_output_stream_config, &render_output_frame[0]);
+                EXPECT_EQ(result, AudioProcessing::kNoError);
+                result = apm->ProcessStream(
+                    &capture_input_frame[0], capture_input_stream_config,
+                    capture_output_stream_config, &capture_output_frame[0]);
+                EXPECT_EQ(result, AudioProcessing::kNoError);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
 
 }  // namespace
 
@@ -2390,6 +2512,12 @@ class MyEchoControlFactory : public EchoControlFactory {
     EXPECT_CALL(*ec, AnalyzeCapture(::testing::_)).Times(2);
     EXPECT_CALL(*ec, ProcessCapture(::testing::_, ::testing::_)).Times(2);
     return std::unique_ptr<EchoControl>(ec);
+  }
+
+  std::unique_ptr<EchoControl> Create(int sample_rate_hz,
+                                      size_t num_render_channels,
+                                      size_t num_capture_channels) {
+    return Create(sample_rate_hz);
   }
 };
 
@@ -2622,4 +2750,30 @@ TEST(ApmStatistics, ReportHasVoice) {
   EXPECT_EQ(apm->ProcessStream(&frame), 0);
   EXPECT_FALSE(apm->GetStatistics(false).voice_detected);
 }
+
+TEST(ApmConfiguration, HandlingOfRateAndChannelCombinations) {
+  std::array<int, 3> sample_rates_hz = {16000, 32000, 48000};
+  std::array<int, 2> render_channel_counts = {1, 7};
+  std::array<int, 2> capture_channel_counts = {1, 7};
+  RunApmRateAndChannelTest(sample_rates_hz, render_channel_counts,
+                           capture_channel_counts);
+}
+
+TEST(ApmConfiguration, HandlingOfChannelCombinations) {
+  std::array<int, 1> sample_rates_hz = {48000};
+  std::array<int, 8> render_channel_counts = {1, 2, 3, 4, 5, 6, 7, 8};
+  std::array<int, 8> capture_channel_counts = {1, 2, 3, 4, 5, 6, 7, 8};
+  RunApmRateAndChannelTest(sample_rates_hz, render_channel_counts,
+                           capture_channel_counts);
+}
+
+TEST(ApmConfiguration, HandlingOfRateCombinations) {
+  std::array<int, 9> sample_rates_hz = {8000,  11025, 16000,  22050, 32000,
+                                        48000, 96000, 192000, 384000};
+  std::array<int, 1> render_channel_counts = {2};
+  std::array<int, 1> capture_channel_counts = {2};
+  RunApmRateAndChannelTest(sample_rates_hz, render_channel_counts,
+                           capture_channel_counts);
+}
+
 }  // namespace webrtc

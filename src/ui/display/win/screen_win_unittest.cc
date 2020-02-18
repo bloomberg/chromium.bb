@@ -162,15 +162,14 @@ class TestScreenWinManager final : public TestScreenWinInitializer {
 
   HWND CreateFakeHwnd(const gfx::Rect& bounds) override {
     EXPECT_EQ(screen_win_, nullptr);
-    hwnd_map_.insert(std::pair<HWND, gfx::Rect>(++hwndLast_, bounds));
+    hwnd_map_.emplace(++hwndLast_, bounds);
     return hwndLast_;
   }
 
   void InitializeScreenWin() {
     ASSERT_EQ(screen_win_, nullptr);
-    screen_win_.reset(new TestScreenWin(display_infos_,
-                                        monitor_infos_,
-                                        hwnd_map_));
+    screen_win_ = std::make_unique<TestScreenWin>(display_infos_,
+                                                  monitor_infos_, hwnd_map_);
     Screen::SetScreenInstance(screen_win_.get());
   }
 
@@ -194,7 +193,7 @@ class ScreenWinTest : public testing::Test {
 
   void SetUp() override {
     testing::Test::SetUp();
-    screen_win_initializer_.reset(new TestScreenWinManager());
+    screen_win_initializer_ = std::make_unique<TestScreenWinManager>();
     SetUpScreen(screen_win_initializer_.get());
     screen_win_initializer_->InitializeScreenWin();
   }

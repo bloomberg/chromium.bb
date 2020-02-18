@@ -95,9 +95,6 @@ int GetInitialRequestID() {
 // ThrottlingURLLoader::FollowRedirectForcingRestart.
 bool RedirectRequiresLoaderRestart(const GURL& original_url,
                                    const GURL& redirect_url) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return false;
-
   // Restart is needed if the URL is no longer handled by network service.
   if (IsURLHandledByNetworkService(original_url))
     return !IsURLHandledByNetworkService(redirect_url);
@@ -178,16 +175,14 @@ void ResourceDispatcher::OnReceivedResponse(
       response_head_copy, request_info->previews_state);
 }
 
-void ResourceDispatcher::OnReceivedCachedMetadata(
-    int request_id,
-    base::span<const uint8_t> data) {
+void ResourceDispatcher::OnReceivedCachedMetadata(int request_id,
+                                                  mojo_base::BigBuffer data) {
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);
   if (!request_info)
     return;
 
   if (data.size()) {
-    request_info->peer->OnReceivedCachedMetadata(
-        reinterpret_cast<const char*>(data.data()), data.size());
+    request_info->peer->OnReceivedCachedMetadata(std::move(data));
   }
 }
 
@@ -288,7 +283,6 @@ void ResourceDispatcher::OnRequestComplete(
   }
 
   network::URLLoaderCompletionStatus renderer_status(status);
-  // TODO(toyoshim): Consider to convert status.cors_preflight_timing_info here.
   if (status.completion_time.is_null()) {
     // No completion timestamp is provided, leave it as is.
   } else if (request_info->remote_request_start.is_null() ||
@@ -435,9 +429,9 @@ void ResourceDispatcher::StartSync(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     base::TimeDelta timeout,
-    blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+    mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
     std::unique_ptr<RequestPeer> peer) {
   CheckSchemeForReferrerPolicy(*request);
 
@@ -456,7 +450,7 @@ void ResourceDispatcher::StartSync(
   // pointers to |sync_load_response| and |event| as this stack frame will
   // survive until the request is complete.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({});
+      base::CreateSingleThreadTaskRunner({base::ThreadPool()});
   task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&SyncLoadContext::StartAsyncWithWaitableEvent,
@@ -499,7 +493,7 @@ int ResourceDispatcher::StartAsync(
     bool is_sync,
     std::unique_ptr<RequestPeer> peer,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     std::unique_ptr<NavigationResponseOverrideParameters>
         response_override_params) {
   CheckSchemeForReferrerPolicy(*request);
@@ -632,20 +626,21 @@ void ResourceDispatcher::ContinueForNavigation(int request_id) {
   request_info->should_follow_redirect = false;
 
   URLLoaderClientImpl* client_ptr = request_info->url_loader_client.get();
-  // PlzNavigate: during navigations, the ResourceResponse has already been
-  // received on the browser side, and has been passed down to the renderer.
-  // Replay the redirects that happened during navigation.
+  // During navigations, the ResourceResponse has already been received on the
+  // browser side, and has been passed down to the renderer. Replay the
+  // redirects that happened during navigation.
   DCHECK_EQ(response_override->redirect_responses.size(),
             response_override->redirect_infos.size());
   for (size_t i = 0; i < response_override->redirect_responses.size(); ++i) {
-    client_ptr->OnReceiveRedirect(response_override->redirect_infos[i],
-                                  response_override->redirect_responses[i]);
+    client_ptr->OnReceiveRedirect(
+        response_override->redirect_infos[i],
+        std::move(response_override->redirect_responses[i]));
     // The request might have been cancelled while processing the redirect.
     if (!GetPendingRequestInfo(request_id))
       return;
   }
 
-  client_ptr->OnReceiveResponse(response_override->response_head);
+  client_ptr->OnReceiveResponse(std::move(response_override->response_head));
 
   // Abort if the request is cancelled.
   if (!GetPendingRequestInfo(request_id))

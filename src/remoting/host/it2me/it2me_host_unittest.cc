@@ -16,7 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/policy/policy_constants.h"
 #include "net/base/network_change_notifier.h"
@@ -188,7 +188,7 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
  private:
   void StartupHostStateHelper(const base::Closure& quit_closure);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<base::RunLoop> run_loop_;
   std::unique_ptr<FakeSignalStrategy> fake_bot_signal_strategy_;
@@ -199,12 +199,12 @@ class It2MeHostTest : public testing::Test, public It2MeHost::Observer {
   scoped_refptr<AutoThreadTaskRunner> network_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> ui_task_runner_;
 
-  base::WeakPtrFactory<It2MeHostTest> weak_factory_;
+  base::WeakPtrFactory<It2MeHostTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(It2MeHostTest);
 };
 
-It2MeHostTest::It2MeHostTest() : weak_factory_(this) {}
+It2MeHostTest::It2MeHostTest() {}
 It2MeHostTest::~It2MeHostTest() = default;
 
 void It2MeHostTest::SetUp() {

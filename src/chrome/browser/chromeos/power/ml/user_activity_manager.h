@@ -11,6 +11,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
+#include "chrome/browser/chromeos/power/ml/boot_clock.h"
 #include "chrome/browser/chromeos/power/ml/idle_event_notifier.h"
 #include "chrome/browser/chromeos/power/ml/smart_dim/model.h"
 #include "chrome/browser/chromeos/power/ml/user_activity_event.pb.h"
@@ -23,7 +24,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/viz/public/interfaces/compositing/video_detector_observer.mojom.h"
+#include "services/viz/public/mojom/compositing/video_detector_observer.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/base/user_activity/user_activity_observer.h"
@@ -31,8 +32,6 @@
 namespace chromeos {
 namespace power {
 namespace ml {
-
-class BootClock;
 
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
@@ -117,7 +116,6 @@ class UserActivityManager : public ui::UserActivityObserver,
                               UserActivityEvent::ModelPrediction prediction);
 
   // session_manager::SessionManagerObserver overrides:
-  void OnSessionManagerDestroyed() override;
   void OnSessionStateChanged() override;
 
  private:
@@ -143,11 +141,6 @@ class UserActivityManager : public ui::UserActivityObserver,
   // Log event only when an idle event is observed.
   void MaybeLogEvent(UserActivityEvent::Event::Type type,
                      UserActivityEvent::Event::Reason reason);
-
-  // Set the task runner for testing purpose.
-  void SetTaskRunnerForTesting(
-      scoped_refptr<base::SequencedTaskRunner> task_runner,
-      std::unique_ptr<BootClock> test_boot_clock);
 
   // We could have two consecutive idle events (i.e. two ScreenDimImminent)
   // without a final event logged in between. This could happen when the 1st
@@ -187,8 +180,7 @@ class UserActivityManager : public ui::UserActivityObserver,
   // Features extracted when receives an idle event.
   UserActivityEvent::Features features_;
 
-  // It is RealBootClock, but will be set to FakeBootClock for tests.
-  std::unique_ptr<BootClock> boot_clock_;
+  BootClock boot_clock_;
 
   UserActivityUkmLogger* const ukm_logger_;
 
@@ -203,7 +195,7 @@ class UserActivityManager : public ui::UserActivityObserver,
                  session_manager::SessionManagerObserver>
       session_manager_observer_;
 
-  session_manager::SessionManager* session_manager_ = nullptr;
+  session_manager::SessionManager* const session_manager_;
 
   mojo::Binding<viz::mojom::VideoDetectorObserver> binding_;
 
@@ -254,7 +246,7 @@ class UserActivityManager : public ui::UserActivityObserver,
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<UserActivityManager> weak_ptr_factory_;
+  base::WeakPtrFactory<UserActivityManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserActivityManager);
 };

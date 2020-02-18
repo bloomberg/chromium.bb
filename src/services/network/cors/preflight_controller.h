@@ -10,6 +10,7 @@
 
 #include "base/callback.h"
 #include "base/component_export.h"
+#include "base/containers/flat_set.h"
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/optional.h"
@@ -17,7 +18,6 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/preflight_cache.h"
 #include "services/network/public/cpp/cors/preflight_result.h"
-#include "services/network/public/cpp/cors/preflight_timing_info.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -25,19 +25,16 @@
 
 namespace network {
 
+struct ResourceResponseHead;
+
 namespace cors {
 
 // A class to manage CORS-preflight, making a CORS-preflight request, checking
 // its result, and owning a CORS-preflight cache.
-// TODO(toyoshim): Features explained above not fully implemented yet.
-// See also https://crbug.com/803766 to check a design doc.
 class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
  public:
-  // PreflightTimingInfo is provided only when a preflight request was made.
   using CompletionCallback =
-      base::OnceCallback<void(int net_error,
-                              base::Optional<CorsErrorStatus>,
-                              base::Optional<PreflightTimingInfo>)>;
+      base::OnceCallback<void(int net_error, base::Optional<CorsErrorStatus>)>;
   // Creates a CORS-preflight ResourceRequest for a specified |request| for a
   // URL that is originally requested.
   static std::unique_ptr<ResourceRequest> CreatePreflightRequestForTesting(
@@ -51,7 +48,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       bool tainted,
       base::Optional<CorsErrorStatus>* detected_error_status);
 
-  PreflightController();
+  explicit PreflightController(
+      const std::vector<std::string>& extra_safelisted_header_names);
   ~PreflightController();
 
   // Determines if a CORS-preflight request is needed, and checks the cache, or
@@ -64,6 +62,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       mojom::URLLoaderFactory* loader_factory);
 
+  const base::flat_set<std::string>& extra_safelisted_header_names() const {
+    return extra_safelisted_header_names_;
+  }
+
+  void set_extra_safelisted_header_names(
+      const base::flat_set<std::string>& extra_safelisted_header_names) {
+    extra_safelisted_header_names_ = extra_safelisted_header_names;
+  }
+
  private:
   class PreflightLoader;
 
@@ -75,6 +82,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) PreflightController final {
   PreflightCache cache_;
   std::set<std::unique_ptr<PreflightLoader>, base::UniquePtrComparator>
       loaders_;
+
+  base::flat_set<std::string> extra_safelisted_header_names_;
 
   DISALLOW_COPY_AND_ASSIGN(PreflightController);
 };

@@ -176,6 +176,9 @@ void ExtractStats(const cricket::VoiceReceiverInfo& info, StatsReport* report) {
     report->AddInt(StatsReport::kStatsValueNameAudioOutputLevel,
                    info.audio_level);
   }
+  if (info.decoding_codec_plc)
+    report->AddInt(StatsReport::kStatsValueNameDecodingCodecPLC,
+                   info.decoding_codec_plc);
 
   report->AddInt64(StatsReport::kStatsValueNameBytesReceived, info.bytes_rcvd);
   if (info.capture_start_ntp_time_ms >= 0) {
@@ -393,9 +396,6 @@ std::string GetTrackIdBySsrc(
       return it->second;
     }
   }
-  RTC_LOG(LS_INFO) << "Missing track ID for "
-                   << (direction == StatsReport::kSend ? "send" : "recv")
-                   << " SSRC=" << ssrc << ".";
   return "";
 }
 
@@ -636,6 +636,14 @@ StatsReport* StatsCollector::PrepareReport(bool local,
   return report;
 }
 
+StatsReport* StatsCollector::PrepareADMReport() {
+  RTC_DCHECK(pc_->signaling_thread()->IsCurrent());
+  StatsReport::Id id(StatsReport::NewTypedId(
+      StatsReport::kStatsReportTypeSession, pc_->session_id()));
+  StatsReport* report = reports_.FindOrAddNew(id);
+  return report;
+}
+
 bool StatsCollector::IsValidTrack(const std::string& track_id) {
   return reports_.Find(StatsReport::NewTypedId(
              StatsReport::kStatsReportTypeTrack, track_id)) != nullptr;
@@ -857,13 +865,13 @@ void StatsCollector::ExtractSessionInfo() {
       // not paired. Also, the candidate report generated in
       // AddConnectionInfoReport do not report port stats like StunStats.
       for (const cricket::CandidateStats& stats :
-           channel_iter.candidate_stats_list) {
+           channel_iter.ice_transport_stats.candidate_stats_list) {
         AddCandidateReport(stats, true);
       }
 
       int connection_id = 0;
       for (const cricket::ConnectionInfo& info :
-           channel_iter.connection_infos) {
+           channel_iter.ice_transport_stats.connection_infos) {
         StatsReport* connection_report = AddConnectionInfoReport(
             transport_name, channel_iter.component, connection_id++,
             channel_report->id(), info);
@@ -956,6 +964,12 @@ class VoiceMediaChannelStatsGatherer final : public MediaChannelStatsGatherer {
   void ExtractStats(StatsCollector* collector) const override {
     ExtractSenderReceiverStats(collector, voice_media_info.receivers,
                                voice_media_info.senders);
+    if (voice_media_info.device_underrun_count == -2 ||
+        voice_media_info.device_underrun_count > 0) {
+      StatsReport* report = collector->PrepareADMReport();
+      report->AddInt(StatsReport::kStatsValueNameAudioDeviceUnderrunCounter,
+                     voice_media_info.device_underrun_count);
+    }
   }
 
   bool HasRemoteAudio() const override {

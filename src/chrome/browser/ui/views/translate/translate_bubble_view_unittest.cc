@@ -162,8 +162,8 @@ class TranslateBubbleViewTest : public ChromeViewsTestBase {
         CreateParams(views::Widget::InitParams::TYPE_WINDOW);
     params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
 
-    anchor_widget_.reset(new views::Widget());
-    anchor_widget_->Init(params);
+    anchor_widget_ = std::make_unique<views::Widget>();
+    anchor_widget_->Init(std::move(params));
     anchor_widget_->Show();
 
     mock_model_ = new MockTranslateBubbleModel(
@@ -707,6 +707,41 @@ TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateLanguageMenuItem) {
 
   TriggerOptionsMenuTab();
   EXPECT_FALSE(bubble_->tab_options_menu_model_->IsItemCheckedAt(index));
+}
+
+TEST_F(TranslateBubbleViewTest, TabUiAlwaysTranslateTriggerTranslation) {
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      language::kUseButtonTranslateBubbleUi,
+      {{language::kTranslateUIBubbleKey,
+        language::kTranslateUIBubbleTabValue}});
+
+  CreateAndShowBubble();
+
+  TriggerOptionsMenuTab();
+  const int index = bubble_->tab_options_menu_model_->GetIndexOfCommandId(
+      TranslateBubbleView::ALWAYS_TRANSLATE_LANGUAGE);
+
+  EXPECT_FALSE(mock_model_->ShouldAlwaysTranslate());
+  EXPECT_FALSE(bubble_->tab_options_menu_model_->IsItemCheckedAt(index));
+  EXPECT_FALSE(mock_model_->translate_called_);
+  bubble_->tab_options_menu_model_->ActivatedAt(index);
+  EXPECT_TRUE(mock_model_->ShouldAlwaysTranslate());
+  EXPECT_TRUE(mock_model_->translate_called_);
+  EXPECT_EQ(TranslateBubbleModel::VIEW_STATE_TRANSLATING,
+            mock_model_->GetViewState());
+
+  // De-select Always Translate while the page stays translated and in state
+  // VIEW_STATE_TRANSLATING
+  mock_model_->SetAlwaysTranslate(false);
+  mock_model_->RevertTranslation();
+  EXPECT_TRUE(mock_model_->revert_translation_called_);
+
+  // Select Always Translate Again should trigger translation
+  bubble_->tab_options_menu_model_->ActivatedAt(index);
+  mock_model_->SetAlwaysTranslate(true);
+  EXPECT_TRUE(mock_model_->ShouldAlwaysTranslate());
+  EXPECT_TRUE(mock_model_->translate_called_);
+  EXPECT_TRUE(mock_model_->IsPageTranslatedInCurrentLanguages());
 }
 
 TEST_F(TranslateBubbleViewTest, TabUiTabSelectedAfterTranslation) {

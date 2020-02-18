@@ -46,6 +46,7 @@
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gfx/native_pixmap_handle.h"
@@ -105,8 +106,6 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_BGRA;
     case gfx::BufferFormat::RGBX_8888:
       return VA_FOURCC_RGBX;
-    case gfx::BufferFormat::UYVY_422:
-      return VA_FOURCC_UYVY;
     case gfx::BufferFormat::YVU_420:
       return VA_FOURCC_YV12;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -466,11 +465,10 @@ static bool GetRequiredAttribs(const base::Lock* va_lock,
                                VAProfile profile,
                                std::vector<VAConfigAttrib>* required_attribs) {
   va_lock->AssertAcquired();
-  // No attribute for kVideoProcess.
-  if (mode == VaapiWrapper::kVideoProcess)
-    return true;
 
-  // VAConfigAttribRTFormat is common to both encode and decode |mode|s.
+  // Choose a suitable VAConfigAttribRTFormat for every |mode|. For video
+  // processing, the supported surface attribs may vary according to which RT
+  // format is set.
   if (profile == VAProfileVP9Profile2 || profile == VAProfileVP9Profile3) {
     required_attribs->push_back(
         {VAConfigAttribRTFormat, VA_RT_FORMAT_YUV420_10BPP});
@@ -518,6 +516,7 @@ class VASupportedProfiles {
     VAProfile va_profile;
     gfx::Size min_resolution;
     gfx::Size max_resolution;
+    std::vector<uint32_t> pixel_formats;
     VaapiWrapper::InternalFormats supported_internal_formats;
   };
   static const VASupportedProfiles& Get();
@@ -640,9 +639,6 @@ VASupportedProfiles::VASupportedProfiles()
 std::vector<VASupportedProfiles::ProfileInfo>
 VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     VaapiWrapper::CodecMode mode) const {
-  if (mode == VaapiWrapper::kVideoProcess)
-    return {ProfileInfo{VAProfileNone, gfx::Size()}};
-
   std::vector<ProfileInfo> supported_profile_infos;
   std::vector<VAProfile> va_profiles;
   if (!GetSupportedVAProfiles(&va_profiles))
@@ -664,7 +660,7 @@ VASupportedProfiles::GetSupportedProfileInfosForCodecModeInternal(
     if (IsBlackListedDriver(va_vendor_string, mode, va_profile))
       continue;
 
-    ProfileInfo profile_info;
+    ProfileInfo profile_info{};
     if (!FillProfileInfo_Locked(va_profile, entrypoint, required_attribs,
                                 &profile_info)) {
       LOG(ERROR) << "FillProfileInfo_Locked failed for va_profile "
@@ -804,6 +800,12 @@ bool VASupportedProfiles::FillProfileInfo_Locked(
     } else if (attrib.type == VASurfaceAttribMinHeight) {
       profile_info->min_resolution.set_height(
           base::strict_cast<int>(attrib.value.value.i));
+    } else if (attrib.type == VASurfaceAttribPixelFormat) {
+      // According to va.h, VASurfaceAttribPixelFormat is meaningful as input to
+      // vaQuerySurfaceAttributes(). However, per the implementation of
+      // i965_QuerySurfaceAttributes(), our usage here should enumerate all the
+      // formats.
+      profile_info->pixel_formats.push_back(attrib.value.value.i);
     }
   }
   if (profile_info->max_resolution.IsEmpty()) {
@@ -1036,6 +1038,10 @@ bool VASupportedImageFormats::InitSupportedImageFormats_Locked() {
 
 }  // namespace
 
+NativePixmapAndSizeInfo::NativePixmapAndSizeInfo() = default;
+
+NativePixmapAndSizeInfo::~NativePixmapAndSizeInfo() = default;
+
 // static
 const std::string& VaapiWrapper::GetVendorStringForTesting() {
   return VADisplayState::Get()->va_vendor_string();
@@ -1243,6 +1249,45 @@ bool VaapiWrapper::GetJpegDecodeSuitableImageFourCC(unsigned int rt_format,
 }
 
 // static
+bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kVideoProcess, VAProfileNone, &profile_info)) {
+    return false;
+  }
+  return gfx::Rect(profile_info.min_resolution.width(),
+                   profile_info.min_resolution.height(),
+                   profile_info.max_resolution.width(),
+                   profile_info.max_resolution.height())
+      .Contains(size.width(), size.height());
+}
+
+// static
+bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
+    unsigned int rt_format,
+    uint32_t fourcc) {
+  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
+    return false;
+
+  VASupportedProfiles::ProfileInfo profile_info;
+  if (!VASupportedProfiles::Get().IsProfileSupported(
+          kVideoProcess, VAProfileNone, &profile_info)) {
+    return false;
+  }
+
+  // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
+  // format for 4:2:0 JPEG image.
+  if (base::StartsWith(VADisplayState::Get()->va_vendor_string(),
+                       kMesaGalliumDriverPrefix,
+                       base::CompareCase::SENSITIVE) &&
+      rt_format != VA_RT_FORMAT_YUV420) {
+    return false;
+  }
+
+  return base::Contains(profile_info.pixel_formats, fourcc);
+}
+
+// static
 bool VaapiWrapper::IsJpegEncodeSupported() {
   return VASupportedProfiles::Get().IsProfileSupported(kEncode,
                                                        VAProfileJPEGBaseline);
@@ -1262,8 +1307,6 @@ VaapiWrapper::GetSupportedImageFormatsForTesting() {
 // static
 uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
   switch (fmt) {
-    case gfx::BufferFormat::UYVY_422:
-      return VA_RT_FORMAT_YUV422;
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBX_8888:
@@ -1302,7 +1345,8 @@ bool VaapiWrapper::CreateContextAndSurfaces(
 
 std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateContextAndScopedVASurface(
     unsigned int va_format,
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    const base::Optional<gfx::Size>& visible_size) {
   if (va_context_id_ != VA_INVALID_ID) {
     LOG(ERROR) << "The current context should be destroyed before creating a "
                   "new one";
@@ -1310,7 +1354,7 @@ std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateContextAndScopedVASurface(
   }
 
   std::unique_ptr<ScopedVASurface> scoped_va_surface =
-      CreateScopedVASurface(va_format, size);
+      CreateScopedVASurface(va_format, size, visible_size);
   if (!scoped_va_surface)
     return nullptr;
 
@@ -1405,15 +1449,22 @@ scoped_refptr<VASurface> VaapiWrapper::CreateVASurfaceForPixmap(
                        base::BindOnce(&VaapiWrapper::DestroySurface, this));
 }
 
-scoped_refptr<gfx::NativePixmapDmaBuf>
-VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(VASurfaceID va_surface_id) {
+std::unique_ptr<NativePixmapAndSizeInfo>
+VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(
+    const ScopedVASurface& scoped_va_surface) {
+  if (!scoped_va_surface.IsValid()) {
+    LOG(ERROR) << "Cannot export an invalid surface";
+    return nullptr;
+  }
+
   VADRMPRIMESurfaceDescriptor descriptor;
   {
     base::AutoLock auto_lock(*va_lock_);
-    VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+    VAStatus va_res = vaSyncSurface(va_display_, scoped_va_surface.id());
     VA_SUCCESS_OR_RETURN(va_res, "Cannot sync VASurface", nullptr);
     va_res = vaExportSurfaceHandle(
-        va_display_, va_surface_id, VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
+        va_display_, scoped_va_surface.id(),
+        VA_SURFACE_ATTRIB_MEM_TYPE_DRM_PRIME_2,
         VA_EXPORT_SURFACE_READ_ONLY | VA_EXPORT_SURFACE_SEPARATE_LAYERS,
         &descriptor);
     VA_SUCCESS_OR_RETURN(va_res, "Failed to export VASurface", nullptr);
@@ -1426,6 +1477,7 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(VASurfaceID va_surface_id) {
   // work in AMD.
   if (descriptor.num_objects != 1u) {
     DVLOG(1) << "Only surface descriptors with one bo are supported";
+    NOTREACHED();
     return nullptr;
   }
   base::ScopedFD bo_fd(descriptor.objects[0].fd);
@@ -1480,10 +1532,33 @@ VaapiWrapper::ExportVASurfaceAsNativePixmapDmaBuf(VASurfaceID va_surface_id) {
     std::swap(handle.planes[1], handle.planes[2]);
   }
 
-  return base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+  auto exported_pixmap = std::make_unique<NativePixmapAndSizeInfo>();
+  exported_pixmap->va_surface_resolution =
       gfx::Size(base::checked_cast<int>(descriptor.width),
-                base::checked_cast<int>(descriptor.height)),
-      buffer_format, std::move(handle));
+                base::checked_cast<int>(descriptor.height));
+  exported_pixmap->byte_size =
+      base::strict_cast<size_t>(descriptor.objects[0].size);
+  if (!gfx::Rect(exported_pixmap->va_surface_resolution)
+           .Contains(gfx::Rect(scoped_va_surface.size()))) {
+    LOG(ERROR) << "A " << scoped_va_surface.size().ToString()
+               << " ScopedVASurface cannot be contained by a "
+               << exported_pixmap->va_surface_resolution.ToString()
+               << " buffer";
+    return nullptr;
+  }
+  exported_pixmap->pixmap = base::MakeRefCounted<gfx::NativePixmapDmaBuf>(
+      scoped_va_surface.size(), buffer_format, std::move(handle));
+  return exported_pixmap;
+}
+
+bool VaapiWrapper::SyncSurface(VASurfaceID va_surface_id) {
+  DCHECK_NE(va_surface_id, VA_INVALID_ID);
+
+  base::AutoLock auto_lock(*va_lock_);
+
+  VAStatus va_res = vaSyncSurface(va_display_, va_surface_id);
+  VA_SUCCESS_OR_RETURN(va_res, "Failed syncing surface", false);
+  return true;
 }
 
 bool VaapiWrapper::SubmitBuffer(VABufferType va_buffer_type,
@@ -2002,7 +2077,8 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
 
 std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
     unsigned int va_rt_format,
-    const gfx::Size& size) {
+    const gfx::Size& size,
+    const base::Optional<gfx::Size>& visible_size) {
   if (kInvalidVaRtFormat == va_rt_format) {
     LOG(ERROR) << "Invalid VA RT format to CreateScopedVASurface";
     return nullptr;
@@ -2024,8 +2100,10 @@ std::unique_ptr<ScopedVASurface> VaapiWrapper::CreateScopedVASurface(
   DCHECK_NE(VA_INVALID_ID, va_surface_id)
       << "Invalid VA surface id after vaCreateSurfaces";
 
+  DCHECK(!visible_size.has_value() || !visible_size->IsEmpty());
   auto scoped_va_surface = std::make_unique<ScopedVASurface>(
-      this, va_surface_id, size, va_rt_format);
+      this, va_surface_id, visible_size.has_value() ? *visible_size : size,
+      va_rt_format);
 
   DCHECK(scoped_va_surface);
   DCHECK(scoped_va_surface->IsValid());

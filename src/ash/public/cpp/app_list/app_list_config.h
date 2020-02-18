@@ -8,6 +8,7 @@
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_public_export.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 
 namespace gfx {
@@ -20,11 +21,35 @@ namespace app_list {
 // obtain the AppListConfig.
 class ASH_PUBLIC_EXPORT AppListConfig {
  public:
-  AppListConfig();
+  // Constructor for unscaled configurations of the provided type.
+  explicit AppListConfig(ash::AppListConfigType type);
+
+  // Constructor for scaled app list configuration.
+  // Used only if kScalableAppList feature is not enabled, in which case the
+  // app list configuration for small screens is created by scaling down
+  // AppListConfigType::kShared configuration.
+  //
+  // |scale_x| - The scale at which apps grid tile should be scaled
+  // horizontally.
+  // |scale_y| - The scale at which apps grid tile should be scaled
+  // vertically.
+  // |inner_title_scale_y| - The scale to use to vertically scale dimensions
+  // |min_y_scale| - Whether |scale_y| is the minimum scale allowed.
+  // within the apps grid tile. Different from |scale_y| because tile title
+  // height is not vertically scaled.
+  AppListConfig(const AppListConfig& base_config,
+                float scale_x,
+                float scale_y,
+                float inner_tile_scale_y,
+                bool min_y_scale);
   ~AppListConfig();
 
-  static const AppListConfig& instance();
+  // Gets default app list configuration.
+  static AppListConfig& instance();
 
+  ash::AppListConfigType type() const { return type_; }
+  float scale_x() const { return scale_x_; }
+  float scale_y() const { return scale_y_; }
   int grid_tile_width() const { return grid_tile_width_; }
   int grid_tile_height() const { return grid_tile_height_; }
   int grid_tile_spacing() const { return grid_tile_spacing_; }
@@ -39,6 +64,7 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_focus_dimension() const { return grid_focus_dimension_; }
   int grid_focus_corner_radius() const { return grid_focus_corner_radius_; }
   SkColor grid_title_color() const { return grid_title_color_; }
+  int grid_fadeout_zone_height() const { return grid_fadeout_zone_height_; }
   int search_tile_icon_dimension() const { return search_tile_icon_dimension_; }
   int search_tile_badge_icon_dimension() const {
     return search_tile_badge_icon_dimension_;
@@ -85,6 +111,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int item_icon_in_folder_icon_dimension() const {
     return item_icon_in_folder_icon_dimension_;
   }
+  int item_icon_in_folder_icon_margin() const {
+    return item_icon_in_folder_icon_margin_;
+  }
   int folder_dropping_circle_radius() const {
     return folder_dropping_circle_radius_;
   }
@@ -130,6 +159,10 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   size_t max_search_result_tiles() const { return max_search_result_tiles_; }
 
+  size_t max_search_result_list_items() const {
+    return max_search_result_list_items_;
+  }
+
   gfx::Size grid_icon_size() const {
     return gfx::Size(grid_icon_dimension_, grid_icon_dimension_);
   }
@@ -165,8 +198,13 @@ class ASH_PUBLIC_EXPORT AppListConfig {
                      folder_unclipped_icon_dimension_);
   }
 
-  int folder_icon_insets() const {
-    return (folder_unclipped_icon_dimension_ - folder_icon_dimension_) / 2;
+  gfx::Insets folder_icon_insets() const {
+    int folder_icon_dimension_diff =
+        folder_unclipped_icon_dimension_ - folder_icon_dimension_;
+    return gfx::Insets(folder_icon_dimension_diff / 2,
+                       folder_icon_dimension_diff / 2,
+                       (folder_icon_dimension_diff + 1) / 2,
+                       (folder_icon_dimension_diff + 1) / 2);
   }
 
   gfx::Size item_icon_in_folder_icon_size() const {
@@ -182,6 +220,13 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int GetMaxNumOfItemsPerPage(int page) const;
 
  private:
+  const ash::AppListConfigType type_;
+
+  // Current config scale values - should be different from 1 for
+  // AppListConfigType::kShared only.
+  const float scale_x_;
+  const float scale_y_;
+
   // The tile view's width and height of the item in apps grid view.
   const int grid_tile_width_;
   const int grid_tile_height_;
@@ -208,6 +253,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   // The focus dimension and corner radius of tile views in apps grid view.
   const int grid_focus_dimension_;
   const int grid_focus_corner_radius_;
+
+  // The vertical insets in the apps grid rezerved for the grid fade out mask.
+  const int grid_fadeout_zone_height_;
 
   // The icon dimension of tile views in search result page view.
   const int search_tile_icon_dimension_;
@@ -285,6 +333,9 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The dimension of the item icon in folder icon.
   const int item_icon_in_folder_icon_dimension_;
+
+  // The margin between item icons inside a folder icon.
+  const int item_icon_in_folder_icon_margin_;
 
   // Radius of the circle, in which if entered, show folder dropping preview
   // UI.
@@ -366,6 +417,11 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // Max number of search result tiles in the launcher suggestion window.
   const size_t max_search_result_tiles_ = 6;
+
+  // Max number of search result list items in the launcher suggestion window.
+  const size_t max_search_result_list_items_ = 5;
+
+  DISALLOW_COPY_AND_ASSIGN(AppListConfig);
 };
 
 }  // namespace app_list

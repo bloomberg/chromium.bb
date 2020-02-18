@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
@@ -132,7 +132,7 @@ class DemoSetupControllerTest : public testing::Test {
   std::unique_ptr<DemoSetupController> tested_controller_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ScopedTestingLocalState testing_local_state_;
   ScopedStubInstallAttributes test_install_attributes_;
   system::ScopedFakeStatisticsProvider statistics_provider_;

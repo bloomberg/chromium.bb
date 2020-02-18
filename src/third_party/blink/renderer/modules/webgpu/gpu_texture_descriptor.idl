@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+// https://gpuweb.github.io/gpuweb/
 
 dictionary GPUTextureDescriptor {
-    GPUExtent3D size;
+    required GPUExtent3D size;
     unsigned long arrayLayerCount = 1;
     unsigned long mipLevelCount = 1;
     unsigned long sampleCount = 1;
@@ -27,8 +27,6 @@ enum GPUTextureFormat {
     "r8uint",
     "r8sint",
     /* Normal 16 bit formats */
-    "r16unorm",
-    "r16snorm",
     "r16uint",
     "r16sint",
     "r16float",
@@ -40,8 +38,6 @@ enum GPUTextureFormat {
     "r32uint",
     "r32sint",
     "r32float",
-    "rg16unorm",
-    "rg16snorm",
     "rg16uint",
     "rg16sint",
     "rg16float",
@@ -59,8 +55,6 @@ enum GPUTextureFormat {
     "rg32uint",
     "rg32sint",
     "rg32float",
-    "rgba16unorm",
-    "rgba16snorm",
     "rgba16uint",
     "rgba16sint",
     "rgba16float",

@@ -10,7 +10,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/webui/welcome/nux/ntp_background_fetcher.h"
+#include "chrome/browser/ui/webui/welcome/ntp_background_fetcher.h"
 #include "content/public/browser/web_ui_controller.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "url/gurl.h"
@@ -34,7 +34,7 @@ class WelcomeUI : public content::WebUIController {
 
  private:
   void StorePageSeen(Profile* profile);
-  std::unique_ptr<nux::NtpBackgroundFetcher> background_fetcher_;
+  std::unique_ptr<welcome::NtpBackgroundFetcher> background_fetcher_;
   base::WeakPtrFactory<WelcomeUI> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WelcomeUI);

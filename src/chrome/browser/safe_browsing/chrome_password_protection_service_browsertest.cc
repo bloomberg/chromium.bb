@@ -4,9 +4,11 @@
 #include "chrome/browser/safe_browsing/chrome_password_protection_service.h"
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/identity_test_environment_profile_adaptor.h"
@@ -24,6 +26,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
+#include "components/safe_browsing/features.h"
+#include "components/safe_browsing/password_protection/metrics_util.h"
 #include "components/safe_browsing/password_protection/password_protection_request.h"
 #include "components/security_state/core/security_state.h"
 #include "components/signin/public/identity_manager/account_info.h"
@@ -54,6 +58,12 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUp();
   }
 
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+    feature_list_.InitAndEnableFeature(
+        safe_browsing::kPasswordProtectionForSignedInUsers);
+  }
+
   void SetUpOnMainThread() override {
     identity_test_env_adaptor_ =
         std::make_unique<IdentityTestEnvironmentProfileAdaptor>(
@@ -69,14 +79,20 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   }
 
   void SimulateGaiaPasswordChange(const std::string& new_password) {
-    password_manager::HashPasswordManager hash_manager;
-    hash_manager.set_prefs(browser()->profile()->GetPrefs());
-    hash_manager.SavePasswordHash(user_manager::kStubUserEmail,
-                                  base::UTF8ToUTF16(new_password));
+    scoped_refptr<password_manager::PasswordStore> password_store =
+        PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                            ServiceAccessType::EXPLICIT_ACCESS)
+            .get();
+    password_store->SaveGaiaPasswordHash(
+        user_manager::kStubUserEmail, base::UTF8ToUTF16(new_password),
+        password_manager::metrics_util::GaiaPasswordHashChange::
+            CHANGED_IN_CONTENT_AREA);
   }
 
-  void SimulateGaiaPasswordChanged(ChromePasswordProtectionService* service) {
-    service->OnGaiaPasswordChanged();
+  void SimulateGaiaPasswordChanged(ChromePasswordProtectionService* service,
+                                   const std::string& username,
+                                   bool is_other_gaia_password) {
+    service->OnGaiaPasswordChanged(username, is_other_gaia_password);
   }
 
   security_state::SecurityLevel GetSecurityLevel(
@@ -151,12 +167,14 @@ class ChromePasswordProtectionServiceBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<
       base::CallbackList<void(content::BrowserContext*)>::Subscription>
       will_create_browser_context_services_subscription_;
+  base::test::ScopedFeatureList feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromePasswordProtectionServiceBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        SuccessfullyChangeSignInPassword) {
+  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   Profile* profile = browser()->profile();
   content::WebContents* web_contents =
@@ -173,20 +191,27 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            GetVisibleSecurityState(web_contents)->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                        WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -203,7 +228,8 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                   .DomainIs("google.com"));
 
   // Simulates user finished changing password.
-  SimulateGaiaPasswordChanged(service);
+  SimulateGaiaPasswordChanged(service, user_manager::kStubUserEmail,
+                              /*is_other_gaia_password=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -226,15 +252,21 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ASSERT_EQ(1, browser()->tab_strip_model()->count());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
-          web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
+          web_contents, PasswordType::ENTERPRISE_PASSWORD));
   ASSERT_EQ(security_state::NONE, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_NONE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
+
   // Change password card on chrome settings page should NOT show.
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -243,6 +275,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        MarkSiteAsLegitimate) {
+  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -259,19 +292,26 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
           web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            GetVisibleSecurityState(web_contents)->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Ignore" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                        WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   // No new tab opens. Security info doesn't change.
@@ -280,12 +320,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
           web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            GetVisibleSecurityState(web_contents)->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                        WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
@@ -304,13 +346,19 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   // Simulates clicking "Ignore" to close dialog.
-  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                        WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::IGNORE_WARNING);
   base::RunLoop().RunUntilIdle();
   ASSERT_TRUE(
@@ -320,12 +368,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
       ChromePasswordProtectionService::ShouldShowPasswordReusePageInfoBubble(
           web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD));
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
-  ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_SIGN_IN_PASSWORD_REUSE,
-            GetVisibleSecurityState(web_contents)->malicious_content_status);
+  ASSERT_EQ(
+      security_state::MALICIOUS_CONTENT_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE,
+      GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, PasswordType::PRIMARY_ACCOUNT_PASSWORD,
-                        WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -353,7 +403,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                                embedded_test_server()->GetURL(kLoginPageUrl));
   ASSERT_TRUE(
       profile->GetPrefs()
-          ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+          ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
           ->empty());
   ASSERT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -363,12 +413,17 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   // Shows modal dialog on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
   EXPECT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -380,23 +435,26 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   content::WebContents* new_web_contents =
       browser2->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser2, GURL("data:text/html,<html></html>"));
-  service->ShowModalWarning(new_web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  service->ShowModalWarning(
+      new_web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
   EXPECT_TRUE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChange("new_password");
+  SimulateGaiaPasswordChanged(service, user_manager::kStubUserEmail,
+                              /*is_other_password=*/true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
@@ -411,22 +469,31 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   Profile* profile = browser()->profile();
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
   // Configures initial password to "password_1";
-  password_manager::PasswordHashData hash_data(
-      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"), true);
-  password_manager::HashPasswordManager hash_manager;
-  hash_manager.set_prefs(profile->GetPrefs());
-  hash_manager.SavePasswordHash(hash_data);
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(browser()->profile(),
+                                          ServiceAccessType::EXPLICIT_ACCESS)
+          .get();
+  password_store->SaveGaiaPasswordHash(
+      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_1"),
+      password_manager::metrics_util::GaiaPasswordHashChange::
+          CHANGED_IN_CONTENT_AREA);
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->GetURL("/"));
+
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::GSUITE);
+  account_type.set_is_account_syncing(true);
 
   // Shows modal dialog on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::PRIMARY_ACCOUNT_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
 
   // Save the same password will not trigger OnGaiaPasswordChanged(), thus no
@@ -435,15 +502,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
-
   // Save a different password will clear unhandled_password_reuses().
   SimulateGaiaPasswordChange("password_2");
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u,
             profile->GetPrefs()
-                ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+                ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
                 ->size());
 }
 
@@ -455,7 +521,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
   // Simulates previous session has unhandled password reuses.
   DictionaryPrefUpdate update(profile->GetPrefs(),
-                              prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+                              prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
   update->SetKey("https://oldreuse.com",
                  /*navigation_id=*/base::Value("12345"));
 
@@ -464,53 +530,15 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
           profile));
 
   // Simulates a Gaia password change.
-  SimulateGaiaPasswordChanged(GetService(/*is_incognito=*/false));
+  SimulateGaiaPasswordChanged(GetService(/*is_incognito=*/false), "username",
+                              /*is_other_gaia_password=*/true);
   EXPECT_FALSE(
       ChromePasswordProtectionService::ShouldShowChangePasswordSettingUI(
           profile));
   EXPECT_TRUE(
       profile->GetPrefs()
-          ->GetDictionary(prefs::kSafeBrowsingUnhandledSyncPasswordReuses)
+          ->GetDictionary(prefs::kSafeBrowsingUnhandledGaiaPasswordReuses)
           ->empty());
-}
-
-IN_PROC_BROWSER_TEST_F(
-    ChromePasswordProtectionServiceBrowserTest,
-    VerifyIsPasswordReuseProtectionConfiguredForNonDomainUser) {
-  Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  // If prefs::kPasswordProtectionWarningTrigger isn't set to PASSWORD_REUSE,
-  // |IsPasswordReuseProtectionConfigured(..)| returns false.
-  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
-  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
-                                  PasswordProtectionTrigger::PASSWORD_REUSE);
-  // Otherwise, |IsPasswordReuseProtectionConfigured(..)| returns false for
-  // GMAIL users.
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-}
-
-IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
-                       VerifyIsPasswordReuseProtectionConfiguredForDomainUser) {
-  Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  SetUpPrimaryAccountWithHostedDomain("domain.com");
-  EXPECT_EQ(PHISHING_REUSE, service->GetPasswordProtectionWarningTriggerPref());
-  EXPECT_FALSE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
-
-  profile->GetPrefs()->SetInteger(prefs::kPasswordProtectionWarningTrigger,
-                                  PasswordProtectionTrigger::PASSWORD_REUSE);
-  EXPECT_TRUE(
-      ChromePasswordProtectionService::IsPasswordReuseProtectionConfigured(
-          profile));
 }
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
@@ -521,11 +549,16 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      account_type);
+
   base::HistogramTester histograms;
   // Shows interstitial on current web_contents.
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowInterstitial(web_contents, PasswordType::ENTERPRISE_PASSWORD);
+  service->ShowInterstitial(web_contents, account_type);
   content::WebContents* new_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationObserver observer(new_web_contents,
@@ -590,9 +623,14 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   // Enterprise password reuse should not trigger warning in Chrome settings UI.
   ASSERT_TRUE(
@@ -607,8 +645,9 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking "Change Password" button on the modal dialog.
-  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
-                        WarningUIType::MODAL_DIALOG,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::MODAL_DIALOG,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
@@ -629,17 +668,23 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
   ASSERT_EQ(security_state::DANGEROUS, GetSecurityLevel(web_contents));
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
             GetVisibleSecurityState(web_contents)->malicious_content_status);
 
   // Simulates clicking on "Mark site legitimate". Site is no longer dangerous.
-  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
-                        WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::MARK_AS_LEGITIMATE);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(
@@ -652,6 +697,7 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
                        EnterprisePhishingReuseOpenChromeSettingsViaPageInfo) {
+  SetUpPrimaryAccountWithHostedDomain(kNoHostedDomainFound);
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
   ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
@@ -660,14 +706,19 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL(kLoginPageUrl));
 
+  ReusedPasswordAccountType account_type;
+  account_type.set_account_type(ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
   // Shows modal dialog on current web_contents.
-  service->ShowModalWarning(web_contents, "unused_token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  service->ShowModalWarning(
+      web_contents, RequestOutcome::UNKNOWN,
+      LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED, "unused_token",
+      account_type);
   base::RunLoop().RunUntilIdle();
 
   // Simulates clicking on "Change Password" in the page info bubble.
-  service->OnUserAction(web_contents, PasswordType::ENTERPRISE_PASSWORD,
-                        WarningUIType::PAGE_INFO,
+  service->OnUserAction(web_contents, account_type, RequestOutcome::UNKNOWN,
+                        LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+                        "unused_token", WarningUIType::PAGE_INFO,
                         WarningAction::CHANGE_PASSWORD);
   base::RunLoop().RunUntilIdle();
   content::WebContents* new_web_contents =
@@ -687,24 +738,20 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/true, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();
-  ChromePasswordProtectionService* service = GetService(/*is_incognito=*/false);
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile->GetPrefs());
-  hash_password_manager.SavePasswordHash(service->GetAccountInfo().email,
-                                         base::UTF8ToUTF16("password"),
-                                         /*is_gaia_password=*/true);
+  SimulateGaiaPasswordChange("password");
   ASSERT_EQ(1u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
                     .size());
-
   // Turn off trigger
   profile->GetPrefs()->SetInteger(
       prefs::kPasswordProtectionWarningTrigger,
       PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
-  base::RunLoop().RunUntilIdle();
+
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
-      service->GetAccountInfo().email, /*is_gaia_password=*/true));
+      user_manager::kStubUserEmail, /*is_gaia_password=*/true));
   EXPECT_EQ(0u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
@@ -716,13 +763,22 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   ConfigureEnterprisePasswordProtection(
       /*is_gsuite=*/false, PasswordProtectionTrigger::PHISHING_REUSE);
   Profile* profile = browser()->profile();
-  password_manager::HashPasswordManager hash_password_manager;
-  hash_password_manager.set_prefs(profile->GetPrefs());
-  hash_password_manager.SavePasswordHash(
-      "username", base::UTF8ToUTF16("password"), /*is_gaia_password=*/false);
-  hash_password_manager.SavePasswordHash("foo@gmail.com",
-                                         base::UTF8ToUTF16("password"),
-                                         /*is_gaia_password=*/true);
+
+  ASSERT_EQ(0u, profile->GetPrefs()
+                    ->GetList(password_manager::prefs::kPasswordHashDataList)
+                    ->GetList()
+                    .size());
+  // Configures initial password to "password_1";
+  scoped_refptr<password_manager::PasswordStore> password_store =
+      PasswordStoreFactory::GetForProfile(profile,
+                                          ServiceAccessType::EXPLICIT_ACCESS)
+          .get();
+  password_store->SaveEnterprisePasswordHash("username@domain.com",
+                                             base::UTF8ToUTF16("password_1"));
+  password_store->SaveGaiaPasswordHash(
+      user_manager::kStubUserEmail, base::UTF8ToUTF16("password_2"),
+      password_manager::metrics_util::GaiaPasswordHashChange::
+          CHANGED_IN_CONTENT_AREA);
   ASSERT_EQ(2u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
@@ -732,12 +788,15 @@ IN_PROC_BROWSER_TEST_F(ChromePasswordProtectionServiceBrowserTest,
   profile->GetPrefs()->SetInteger(
       prefs::kPasswordProtectionWarningTrigger,
       PasswordProtectionTrigger::PASSWORD_PROTECTION_OFF);
-  base::RunLoop().RunUntilIdle();
+
+  password_manager::HashPasswordManager hash_password_manager;
+  hash_password_manager.set_prefs(profile->GetPrefs());
   EXPECT_FALSE(hash_password_manager.HasPasswordHash(
-      "username", /*is_gaia_password=*/false));
-  EXPECT_TRUE(hash_password_manager.HasPasswordHash("foo@gmail.com",
-                                                    /*is_gaia_password=*/true));
-  EXPECT_EQ(1u, profile->GetPrefs()
+      "username@domain.com", /*is_gaia_password=*/false));
+  EXPECT_FALSE(
+      hash_password_manager.HasPasswordHash(user_manager::kStubUserEmail,
+                                            /*is_gaia_password=*/true));
+  EXPECT_EQ(0u, profile->GetPrefs()
                     ->GetList(password_manager::prefs::kPasswordHashDataList)
                     ->GetList()
                     .size());

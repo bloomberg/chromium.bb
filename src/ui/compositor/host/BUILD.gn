@@ -18,7 +18,7 @@ source_set("host") {
   ]
 
   public_deps = [
-    "//services/viz/privileged/interfaces/compositing",
+    "//services/viz/privileged/mojom/compositing",
   ]
 
   if (use_aura || is_mac) {
@@ -33,6 +33,6 @@ source_set("host") {
       "//ui/gfx",
     ]
 
-    public_deps += [ "//services/viz/public/interfaces" ]
+    public_deps += [ "//services/viz/public/mojom" ]
   }
 }

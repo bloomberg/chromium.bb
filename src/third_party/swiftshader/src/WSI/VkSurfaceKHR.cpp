@@ -117,7 +117,11 @@ void SurfaceKHR::getSurfaceCapabilities(VkSurfaceCapabilitiesKHR *pSurfaceCapabi
 	pSurfaceCapabilities->supportedTransforms = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	pSurfaceCapabilities->currentTransform = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
 	pSurfaceCapabilities->supportedCompositeAlpha = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
-	pSurfaceCapabilities->supportedUsageFlags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+	pSurfaceCapabilities->supportedUsageFlags =
+		VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |
+		VK_IMAGE_USAGE_TRANSFER_SRC_BIT |
+		VK_IMAGE_USAGE_TRANSFER_DST_BIT |
+		VK_IMAGE_USAGE_SAMPLED_BIT;
 }
 
 uint32_t SurfaceKHR::getSurfaceFormatsCount() const
@@ -183,6 +187,29 @@ void SurfaceKHR::disassociateSwapchain()
 bool SurfaceKHR::hasAssociatedSwapchain()
 {
 	return (associatedSwapchain != nullptr);
+}
+
+VkResult SurfaceKHR::getPresentRectangles(uint32_t *pRectCount, VkRect2D *pRects) const
+{
+	if (!pRects)
+	{
+		*pRectCount = 1;
+		return VK_SUCCESS;
+	}
+
+	if (*pRectCount < 1)
+	{
+		return VK_INCOMPLETE;
+	}
+
+	VkSurfaceCapabilitiesKHR capabilities;
+	getSurfaceCapabilities(&capabilities);
+
+	pRects[0].offset = {0,0};
+	pRects[0].extent = capabilities.currentExtent;
+	*pRectCount = 1;
+
+	return VK_SUCCESS;
 }
 
 }

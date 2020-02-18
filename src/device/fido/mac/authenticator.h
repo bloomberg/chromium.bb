@@ -64,6 +64,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) TouchIdAuthenticator
   bool IsInPairingMode() const override;
   bool IsPaired() const override;
   bool RequiresBlePairingPin() const override;
+  bool IsTouchIdAuthenticator() const override;
   void GetTouch(base::OnceClosure callback) override;
   base::WeakPtr<FidoAuthenticator> GetWeakPtr() override;
 

@@ -17,6 +17,7 @@ ch-ua-model
 ch-ua-platform
 ch-viewport-width
 ch-width
+document-access
 document-domain
 document-write
 downloads-without-user-activation
@@ -58,4 +59,5 @@ usb
 vertical-scroll
 vr
 wake-lock
+xr
 

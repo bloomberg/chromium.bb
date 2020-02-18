@@ -17,7 +17,7 @@
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/image_downloader/fetcher/multi_resolution_image_resource_fetcher.h"
+#include "third_party/blink/renderer/modules/image_downloader/multi_resolution_image_resource_fetcher.h"
 #include "third_party/blink/renderer/platform/heap/visitor.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -139,9 +139,9 @@ ImageDownloaderImpl::ImageDownloaderImpl(LocalFrame& frame)
 ImageDownloaderImpl::~ImageDownloaderImpl() {}
 
 void ImageDownloaderImpl::CreateMojoService(
-    mojom::blink::ImageDownloaderRequest request) {
-  binding_.Bind(std::move(request));
-  binding_.set_connection_error_handler(
+    mojo::PendingReceiver<mojom::blink::ImageDownloader> receiver) {
+  receiver_.Bind(std::move(receiver));
+  receiver_.set_disconnect_handler(
       WTF::Bind(&ImageDownloaderImpl::Dispose, WrapWeakPersistent(this)));
 }
 
@@ -187,7 +187,8 @@ void ImageDownloaderImpl::DidDownloadImage(
 }
 
 void ImageDownloaderImpl::Dispose() {
-  binding_.Close();
+  image_fetchers_.clear();
+  receiver_.reset();
 }
 
 void ImageDownloaderImpl::FetchImage(const KURL& image_url,
@@ -235,9 +236,9 @@ void ImageDownloaderImpl::Trace(Visitor* visitor) {
 void ImageDownloaderImpl::ContextDestroyed(ExecutionContext*) {
   for (const auto& fetchers : image_fetchers_) {
     // Will run callbacks with an empty image vector.
-    fetchers->OnRenderFrameDestruct();
+    fetchers->Dispose();
   }
-  image_fetchers_.clear();
+  Dispose();
 }
 
 }  // namespace blink

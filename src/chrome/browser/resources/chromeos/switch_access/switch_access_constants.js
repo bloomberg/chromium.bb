@@ -11,7 +11,19 @@ let SAConstants = {};
  * @type {string}
  * @const
  */
-SAConstants.MENU_ID = 'switchaccess_menu_actions';
+SAConstants.MENU_PANEL_ID = 'switchaccess_menu_actions';
+
+/**
+ * IDs of menus that can appear in the menu panel.
+ * This must be kept in sync with the div ID of each menu
+ * in menu_panel.html.
+ * @enum {string}
+ * @const
+ */
+SAConstants.MenuId = {
+  MAIN: 'main_menu',
+  TEXT_NAVIGATION: 'text_navigation_menu'
+};
 
 /**
  * The ID of the back button.
@@ -32,18 +44,17 @@ SAConstants.Focus = {};
 SAConstants.Focus.CLASS = 'focus';
 
 /**
- * The ID used for the focus ring around the current element.
- * @type {string}
- * @const
+ * The focus ring IDs used by Switch Access.
+ * @enum {string}
  */
-SAConstants.Focus.PRIMARY_ID = 'primary';
-
-/**
- * The ID used for the focus ring around the current scope.
- * @type {string}
- * @const
- */
-SAConstants.Focus.SCOPE_ID = 'scope';
+SAConstants.Focus.ID = {
+  // The ID for the user's current focus.
+  PRIMARY: 'primary',
+  // The ID for the group containing the user's focus.
+  SCOPE: 'scope',
+  // The ID for the area where text is being input.
+  TEXT: 'text'
+};
 
 /**
  * The buffer (in dip) between the primary focus ring and the scope focus ring.
@@ -51,13 +62,6 @@ SAConstants.Focus.SCOPE_ID = 'scope';
  * @const
  */
 SAConstants.Focus.SCOPE_BUFFER = 2;
-
-/**
- * The ID used for the focus ring around the active text input.
- * @type {string}
- * @const
- */
-SAConstants.Focus.TEXT_ID = 'text';
 
 /**
  * The inner color of the focus rings.
@@ -89,39 +93,14 @@ SAConstants.Focus.BUFFER = 4;
 SAConstants.KEY_PRESS_DURATION_MS = 100;
 
 /**
- * Commands that can be assigned to specific switches.
- * @enum {string}
- * @const
- */
-SAConstants.Command = {
-  MENU: 'menu',
-  NEXT: 'next',
-  PREVIOUS: 'previous',
-  SELECT: 'select'
-};
-
-/**
  * Preferences that are configurable in Switch Access.
  * @enum {string}
  */
 SAConstants.Preference = {
-  AUTO_SCAN_TIME: 'autoScanTime',
-  ENABLE_AUTO_SCAN: 'enableAutoScan'
-};
-// Every available command is also a preference, to store the switch assigned.
-Object.assign(SAConstants.Preference, SAConstants.Command);
-
-/**
- * The default value, for preferences with a default.
- * All preferences should be primitives to prevent changes to default values.
- *
- * Note: All preferences set below should be in the Preference enum (above).
- * @type {Object}
- * @const
- */
-SAConstants.DEFAULT_PREFERENCES = {
-  'autoScanTime': 800,
-  'enableAutoScan': false
+  AUTO_SCAN_ENABLED: 'settings.a11y.switch_access.auto_scan.enabled',
+  AUTO_SCAN_TIME: 'settings.a11y.switch_access.auto_scan.speed_ms',
+  AUTO_SCAN_KEYBOARD_TIME:
+      'settings.a11y.switch_access.auto_scan.keyboard.speed_ms'
 };
 
 /**
@@ -130,6 +109,10 @@ SAConstants.DEFAULT_PREFERENCES = {
  * @const
  */
 SAConstants.MenuAction = {
+  // Copy text.
+  COPY: 'copy',
+  // Cut text.
+  CUT: 'cut',
   // Decrement the value of an input field.
   DECREMENT: chrome.automation.ActionType.DECREMENT,
   // Activate dictation for voice input to an editable text region.
@@ -146,6 +129,8 @@ SAConstants.MenuAction = {
   MOVE_BACKWARD_ONE_CHAR_OF_TEXT: 'moveBackwardOneCharOfText',
   // Move text caret one word backward.
   MOVE_BACKWARD_ONE_WORD_OF_TEXT: 'moveBackwardOneWordOfText',
+  // Open the text navigation menu to move the text caret.
+  MOVE_CURSOR: 'moveCursor',
   // Move text caret one line down.
   MOVE_DOWN_ONE_LINE_OF_TEXT: 'moveDownOneLineOfText',
   // Move text caret one character forward.
@@ -154,8 +139,8 @@ SAConstants.MenuAction = {
   MOVE_FORWARD_ONE_WORD_OF_TEXT: 'moveForwardOneWordOfText',
   // Move text caret one line up.
   MOVE_UP_ONE_LINE_OF_TEXT: 'moveUpOneLineOfText',
-  // Open and jump to the Switch Access settings in a new Chrome tab.
-  OPTIONS: 'options',
+  // Paste text.
+  PASTE: 'paste',
   // Scroll the current element (or its ancestor) logically backwards.
   // Primarily used by ARC++ apps.
   SCROLL_BACKWARD: chrome.automation.ActionType.SCROLL_BACKWARD,
@@ -172,6 +157,8 @@ SAConstants.MenuAction = {
   SCROLL_UP: chrome.automation.ActionType.SCROLL_UP,
   // Either perform the default action or enter a new scope, as applicable.
   SELECT: 'select',
+  // Open and jump to the Switch Access settings.
+  SETTINGS: 'settings',
   // Show the system context menu for the current element.
   SHOW_CONTEXT_MENU: chrome.automation.ActionType.SHOW_CONTEXT_MENU,
   // Set the end of a text selection.
@@ -193,7 +180,7 @@ SAConstants.EMPTY_LOCATION = {
 
 /**
  * Defines the key codes of all key events to be sent.
- * Currently used for text navigation actions.
+ * Currently used for text navigation actions and cut/copy/paste.
  * @enum {number}
  * @const
  */
@@ -203,5 +190,9 @@ SAConstants.KeyCode = {
   LEFT_ARROW: 37,
   UP_ARROW: 38,
   RIGHT_ARROW: 39,
-  DOWN_ARROW: 40
+  DOWN_ARROW: 40,
+  // Key codes for X, C, V used for cut, copy, and paste synthetic key events.
+  C: 67,
+  V: 86,
+  X: 88
 };

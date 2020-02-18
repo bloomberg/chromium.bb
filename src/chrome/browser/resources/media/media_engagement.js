@@ -13,7 +13,7 @@ function whenPageIsPopulatedForTest() {
 
 (function() {
 
-let uiHandler = null;
+let detailsProvider = null;
 let info = null;
 let engagementTableBody = null;
 let sortReverse = true;
@@ -39,17 +39,12 @@ function createRow(rowInfo) {
 
   td[1].textContent = rowInfo.visits;
   td[2].textContent = rowInfo.mediaPlaybacks;
-  td[3].textContent = rowInfo.audioContextPlaybacks;
-  td[4].textContent = rowInfo.mediaElementPlaybacks;
-  td[5].textContent = rowInfo.audiblePlaybacks;
-  td[6].textContent = rowInfo.significantPlaybacks;
-  td[7].textContent = rowInfo.lastMediaPlaybackTime ?
+  td[3].textContent = rowInfo.lastMediaPlaybackTime ?
       new Date(rowInfo.lastMediaPlaybackTime).toISOString() :
       '';
-  td[8].textContent = rowInfo.isHigh ? 'Yes' : 'No';
-  td[9].textContent = rowInfo.highScoreChanges;
-  td[10].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
-  td[11].getElementsByClassName('engagement-bar')[0].style.width =
+  td[4].textContent = rowInfo.isHigh ? 'Yes' : 'No';
+  td[5].textContent = rowInfo.totalScore ? rowInfo.totalScore.toFixed(2) : '0';
+  td[6].getElementsByClassName('engagement-bar')[0].style.width =
       (rowInfo.totalScore * 50) + 'px';
   return document.importNode(template.content, true);
 }
@@ -180,20 +175,20 @@ function renderTable() {
  */
 function updateEngagementTable() {
   // Populate engagement table.
-  uiHandler.getMediaEngagementScoreDetails().then(response => {
+  detailsProvider.getMediaEngagementScoreDetails().then(response => {
     info = response.info;
     renderTable();
     pageIsPopulatedResolver.resolve();
   });
 
   // Populate config settings.
-  uiHandler.getMediaEngagementConfig().then(response => {
+  detailsProvider.getMediaEngagementConfig().then(response => {
     renderConfigTable(response.config);
   });
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-  uiHandler = media.mojom.MediaEngagementScoreDetailsProvider.getProxy();
+  detailsProvider = media.mojom.MediaEngagementScoreDetailsProvider.getRemote();
   updateEngagementTable();
 
   engagementTableBody = $('engagement-table-body');

@@ -11,6 +11,7 @@
 
 #include <iostream>
 
+#include "libANGLE/Overlay.h"
 #include "libANGLE/renderer/vulkan/ContextVk.h"
 #include "libANGLE/renderer/vulkan/RenderTargetVk.h"
 #include "libANGLE/renderer/vulkan/RendererVk.h"
@@ -44,9 +45,10 @@ angle::Result InitAndBeginCommandBuffer(vk::Context *context,
                                         const VkCommandBufferInheritanceInfo &inheritanceInfo,
                                         VkCommandBufferUsageFlags flags,
                                         angle::PoolAllocator *poolAllocator,
-                                        PrimaryCommandBuffer *commandBuffer)
+                                        priv::CommandBuffer *commandBuffer)
 {
     ASSERT(!commandBuffer->valid());
+    ASSERT(commandPool.valid());
     VkCommandBufferAllocateInfo createInfo = {};
     createInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
     createInfo.commandPool                 = commandPool.getHandle();
@@ -214,6 +216,24 @@ ANGLE_MAYBE_UNUSED
 std::string DumpCommands(const priv::CommandBuffer &commandBuffer, const char *separator)
 {
     return "--blob--";
+}
+
+float CalculateSecondaryCommandBufferPoolWaste(const std::vector<CommandGraphNode *> nodes)
+{
+    size_t used      = 0;
+    size_t allocated = 0;
+
+    for (const CommandGraphNode *node : nodes)
+    {
+        size_t nodeUsed;
+        size_t nodeAllocated;
+        node->getMemoryUsageStatsForDiagnostics(&nodeUsed, &nodeAllocated);
+        used += nodeUsed;
+        allocated += nodeAllocated;
+    }
+
+    allocated = std::max<size_t>(allocated, 1);
+    return static_cast<float>(used) / static_cast<float>(allocated);
 }
 
 }  // anonymous namespace
@@ -576,8 +596,9 @@ angle::Result CommandGraphNode::visitAndExecute(vk::Context *context,
                     static_cast<uint32_t>(mRenderPassRenderArea.width);
                 beginInfo.renderArea.extent.height =
                     static_cast<uint32_t>(mRenderPassRenderArea.height);
-                beginInfo.clearValueCount = mRenderPassDesc.attachmentCount();
-                beginInfo.pClearValues    = mRenderPassClearValues.data();
+                beginInfo.clearValueCount =
+                    static_cast<uint32_t>(mRenderPassDesc.attachmentCount());
+                beginInfo.pClearValues = mRenderPassClearValues.data();
 
                 primaryCommandBuffer->beginRenderPass(beginInfo, kRenderPassContents);
                 ExecuteCommands(primaryCommandBuffer, &mInsideRenderPassCommands);
@@ -788,6 +809,19 @@ std::string CommandGraphNode::dumpCommandsForDiagnostics(const char *separator) 
     return result;
 }
 
+void CommandGraphNode::getMemoryUsageStatsForDiagnostics(size_t *usedMemoryOut,
+                                                         size_t *allocatedMemoryOut) const
+{
+    size_t commandBufferUsed;
+    size_t commandBufferAllocated;
+
+    mOutsideRenderPassCommands.getMemoryUsageStats(usedMemoryOut, allocatedMemoryOut);
+    mInsideRenderPassCommands.getMemoryUsageStats(&commandBufferUsed, &commandBufferAllocated);
+
+    *usedMemoryOut += commandBufferUsed;
+    *allocatedMemoryOut += commandBufferAllocated;
+}
+
 // CommandGraph implementation.
 CommandGraph::CommandGraph(bool enableGraphDiagnostics, angle::PoolAllocator *poolAllocator)
     : mEnableGraphDiagnostics(enableGraphDiagnostics),
@@ -844,12 +878,13 @@ void CommandGraph::setNewBarrier(CommandGraphNode *newBarrier)
 angle::Result CommandGraph::submitCommands(ContextVk *context,
                                            Serial serial,
                                            RenderPassCache *renderPassCache,
-                                           CommandPool *commandPool,
-                                           PrimaryCommandBuffer *primaryCommandBufferOut)
+                                           PrimaryCommandBuffer *primaryCommandBuffer)
 {
     // There is no point in submitting an empty command buffer, so make sure not to call this
     // function if there's nothing to do.
     ASSERT(!mNodes.empty());
+
+    updateOverlay(context);
 
     size_t previousBarrierIndex       = 0;
     CommandGraphNode *previousBarrier = getLastBarrierNode(&previousBarrierIndex);
@@ -861,14 +896,6 @@ angle::Result CommandGraph::submitCommands(ContextVk *context,
         CommandGraphNode::SetHappensBeforeDependencies(
             previousBarrier, &mNodes[previousBarrierIndex + 1], afterNodesCount);
     }
-
-    VkCommandBufferAllocateInfo primaryInfo = {};
-    primaryInfo.sType                       = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-    primaryInfo.commandPool                 = commandPool->getHandle();
-    primaryInfo.level                       = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
-    primaryInfo.commandBufferCount          = 1;
-
-    ANGLE_VK_TRY(context, primaryCommandBufferOut->init(context->getDevice(), primaryInfo));
 
     if (mEnableGraphDiagnostics)
     {
@@ -882,9 +909,9 @@ angle::Result CommandGraph::submitCommands(ContextVk *context,
     beginInfo.flags                    = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
     beginInfo.pInheritanceInfo         = nullptr;
 
-    ANGLE_VK_TRY(context, primaryCommandBufferOut->begin(beginInfo));
+    ANGLE_VK_TRY(context, primaryCommandBuffer->begin(beginInfo));
 
-    ANGLE_TRY(context->traceGpuEvent(primaryCommandBufferOut, TRACE_EVENT_PHASE_BEGIN,
+    ANGLE_TRY(context->traceGpuEvent(primaryCommandBuffer, TRACE_EVENT_PHASE_BEGIN,
                                      "Primary Command Buffer"));
 
     for (CommandGraphNode *topLevelNode : mNodes)
@@ -907,7 +934,7 @@ angle::Result CommandGraph::submitCommands(ContextVk *context,
                     break;
                 case VisitedState::Ready:
                     ANGLE_TRY(node->visitAndExecute(context, serial, renderPassCache,
-                                                    primaryCommandBufferOut));
+                                                    primaryCommandBuffer));
                     nodeStack.pop_back();
                     break;
                 case VisitedState::Visited:
@@ -920,10 +947,10 @@ angle::Result CommandGraph::submitCommands(ContextVk *context,
         }
     }
 
-    ANGLE_TRY(context->traceGpuEvent(primaryCommandBufferOut, TRACE_EVENT_PHASE_END,
+    ANGLE_TRY(context->traceGpuEvent(primaryCommandBuffer, TRACE_EVENT_PHASE_END,
                                      "Primary Command Buffer"));
 
-    ANGLE_VK_TRY(context, primaryCommandBufferOut->end());
+    ANGLE_VK_TRY(context, primaryCommandBuffer->end());
 
     clear();
 
@@ -1165,6 +1192,17 @@ void CommandGraph::dumpGraphDotFile(std::ostream &out) const
     }
 
     out << "}" << std::endl;
+}
+
+void CommandGraph::updateOverlay(ContextVk *contextVk) const
+{
+    const gl::OverlayType *overlay = contextVk->getOverlay();
+
+    overlay->getRunningGraphWidget(gl::WidgetId::VulkanCommandGraphSize)->add(mNodes.size());
+
+    overlay->getRunningHistogramWidget(gl::WidgetId::VulkanSecondaryCommandBufferPoolWaste)
+        ->set(CalculateSecondaryCommandBufferPoolWaste(mNodes));
+    overlay->getRunningHistogramWidget(gl::WidgetId::VulkanSecondaryCommandBufferPoolWaste)->next();
 }
 
 CommandGraphNode *CommandGraph::getLastBarrierNode(size_t *indexOut)

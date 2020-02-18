@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/data_url_loader_factory.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_devtools_proxy.h"
@@ -21,15 +20,14 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "services/network/loader_util.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace content {
 
@@ -77,7 +75,7 @@ const net::NetworkTrafficAnnotationTag kCertFetcherTrafficAnnotation =
 std::unique_ptr<SignedExchangeCertFetcher>
 SignedExchangeCertFetcher::CreateAndStart(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const GURL& cert_url,
     bool force_fetch,
     CertificateCallback callback,
@@ -98,7 +96,7 @@ SignedExchangeCertFetcher::CreateAndStart(
 // https://wicg.github.io/webpackage/loading.html#handling-cert-url
 SignedExchangeCertFetcher::SignedExchangeCertFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
     const GURL& cert_url,
     bool force_fetch,
     CertificateCallback callback,
@@ -120,7 +118,7 @@ SignedExchangeCertFetcher::SignedExchangeCertFetcher(
       static_cast<int>(ResourceType::kSubResource);
   // Cert requests should not send credential informartion, because the default
   // credentials mode of Fetch is "omit".
-  resource_request_->allow_credentials = false;
+  resource_request_->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request_->headers.SetHeader(network::kAcceptHeader,
                                        kCertChainMimeType);
   if (force_fetch) {
@@ -145,8 +143,7 @@ void SignedExchangeCertFetcher::Start() {
   }
   // When NetworkService enabled, data URL is not handled by the passed
   // URLRequestContext's SharedURLLoaderFactory.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      resource_request_->url.SchemeIs(url::kDataScheme)) {
+  if (resource_request_->url.SchemeIs(url::kDataScheme)) {
     shared_url_loader_factory_ =
         base::MakeRefCounted<SingleRequestURLLoaderFactory>(
             base::BindOnce(&SignedExchangeCertFetcher::OnDataURLRequest,
@@ -155,7 +152,7 @@ void SignedExchangeCertFetcher::Start() {
   url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
       std::move(shared_url_loader_factory_), std::move(throttles_),
       0 /* routing_id */,
-      ResourceDispatcherHostImpl::Get()->MakeRequestID() /* request_id */,
+      signed_exchange_utils::MakeRequestID() /* request_id */,
       network::mojom::kURLLoadOptionNone, resource_request_.get(), this,
       kCertFetcherTrafficAnnotation, base::ThreadTaskRunnerHandle::Get());
 }
@@ -228,7 +225,7 @@ void SignedExchangeCertFetcher::OnDataComplete() {
 
 // network::mojom::URLLoaderClient
 void SignedExchangeCertFetcher::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnReceiveResponse");
   if (devtools_proxy_) {
@@ -238,13 +235,13 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   }
 
   if (reporter_)
-    reporter_->set_cert_server_ip_address(head.remote_endpoint.address());
+    reporter_->set_cert_server_ip_address(head->remote_endpoint.address());
 
   // |headers| is null when loading data URL.
-  if (head.headers && head.headers->response_code() != net::HTTP_OK) {
+  if (head->headers && head->headers->response_code() != net::HTTP_OK) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_, base::StringPrintf("Invalid reponse code: %d",
-                                            head.headers->response_code()));
+                                            head->headers->response_code()));
     Abort();
     return;
   }
@@ -252,37 +249,37 @@ void SignedExchangeCertFetcher::OnReceiveResponse(
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
   // "The resource at a signature's cert-url MUST have the
   // application/cert-chain+cbor content type" [spec text]
-  if (head.mime_type != kCertChainMimeType) {
+  if (head->mime_type != kCertChainMimeType) {
     signed_exchange_utils::ReportErrorAndTraceEvent(
         devtools_proxy_,
         base::StringPrintf(
             "Content type of cert-url must be application/cert-chain+cbor. "
             "Actual content type: %s",
-            head.mime_type.c_str()));
+            head->mime_type.c_str()));
     Abort();
     return;
   }
 
-  if (head.content_length > 0) {
-    if (base::checked_cast<size_t>(head.content_length) >
+  if (head->content_length > 0) {
+    if (base::checked_cast<size_t>(head->content_length) >
         g_max_cert_size_for_signed_exchange) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy_,
           base::StringPrintf("Invalid content length: %" PRIu64,
-                             head.content_length));
+                             head->content_length));
       Abort();
       return;
     }
-    body_string_.reserve(head.content_length);
+    body_string_.reserve(head->content_length);
   }
 
   UMA_HISTOGRAM_BOOLEAN("SignedExchange.CertificateFetch.CacheHit",
-                        head.was_fetched_via_cache);
+                        head->was_fetched_via_cache);
 }
 
 void SignedExchangeCertFetcher::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("loading"),
                "SignedExchangeCertFetcher::OnReceiveRedirect");
   // Currently the cert fetcher doesn't allow any redirects.

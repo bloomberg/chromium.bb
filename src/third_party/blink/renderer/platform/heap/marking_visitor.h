@@ -50,7 +50,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   }
 
   void VisitWeak(void* object,
-                 void** object_slot,
+                 void* object_weak_ref,
                  TraceDescriptor desc,
                  WeakCallback callback) final {
     // Filter out already marked values. The write barrier for WeakMember
@@ -59,7 +59,7 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     if (desc.base_object_payload != BlinkGC::kNotFullyConstructedObject &&
         HeapObjectHeader::FromPayload(desc.base_object_payload)->IsMarked())
       return;
-    RegisterWeakCallback(object_slot, callback);
+    RegisterWeakCallback(object_weak_ref, callback);
   }
 
   void VisitBackingStoreStrongly(void* object,
@@ -93,9 +93,13 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
     MarkHeaderNoTracing(HeapObjectHeader::FromPayload(object));
   }
 
-  void RegisterBackingStoreCallback(void** slot,
-                                    MovingObjectCallback,
-                                    void* callback_data) final;
+  // This callback mechanism is needed to account for backing store objects
+  // containing intra-object pointers, all of which must be relocated/rebased
+  // with respect to the moved-to location.
+  //
+  // For Blink, |HeapLinkedHashSet<>| is currently the only abstraction which
+  // relies on this feature.
+  void RegisterBackingStoreCallback(void* backing, MovingObjectCallback) final;
   bool RegisterWeakTable(const void* closure,
                          EphemeronCallback iteration_callback) final;
   void RegisterWeakCallback(void* closure, WeakCallback) final;
@@ -106,10 +110,16 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   // Flush private segments remaining in visitor's worklists to global pools.
   void FlushCompactionWorklists();
 
+  void FlushWeakTableCallbacks();
+
   size_t marked_bytes() const { return marked_bytes_; }
 
+  int task_id() const { return task_id_; }
+
+  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
+
  protected:
-  MarkingVisitorBase(ThreadState*, MarkingMode);
+  MarkingVisitorBase(ThreadState*, MarkingMode, int task_id);
   ~MarkingVisitorBase() override = default;
 
   // Marks an object and adds a tracing callback for processing of the object.
@@ -129,8 +139,11 @@ class PLATFORM_EXPORT MarkingVisitorBase : public Visitor {
   NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
   WeakCallbackWorklist::View weak_callback_worklist_;
   MovableReferenceWorklist::View movable_reference_worklist_;
+  WeakTableWorklist::View weak_table_worklist_;
+  BackingStoreCallbackWorklist::View backing_store_callback_worklist_;
   size_t marked_bytes_ = 0;
   const MarkingMode marking_mode_;
+  int task_id_;
 };
 
 ALWAYS_INLINE void MarkingVisitorBase::AccountMarkedBytes(
@@ -177,8 +190,9 @@ inline void MarkingVisitorBase::MarkHeader(HeapObjectHeader* header,
 class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
  public:
   // Write barrier that adds |value| to the set of marked objects. The barrier
-  // bails out if marking is off or the object is not yet marked.
-  ALWAYS_INLINE static void WriteBarrier(void* value);
+  // bails out if marking is off or the object is not yet marked. Returns true
+  // if the object was marked on this call.
+  ALWAYS_INLINE static bool WriteBarrier(void* value);
 
   // Eagerly traces an already marked backing store ensuring that all its
   // children are discovered by the marker. The barrier bails out if marking
@@ -200,21 +214,19 @@ class PLATFORM_EXPORT MarkingVisitor : public MarkingVisitorBase {
   // to be in construction.
   void DynamicallyMarkAddress(Address);
 
-  void AdjustMarkedBytes(HeapObjectHeader*, size_t);
-
  private:
   // Exact version of the marking write barriers.
-  static void WriteBarrierSlow(void*);
+  static bool WriteBarrierSlow(void*);
   static void TraceMarkedBackingStoreSlow(void*);
 };
 
-ALWAYS_INLINE void MarkingVisitor::WriteBarrier(void* value) {
+ALWAYS_INLINE bool MarkingVisitor::WriteBarrier(void* value) {
   if (!ThreadState::IsAnyIncrementalMarking())
-    return;
+    return false;
 
   // Avoid any further checks and dispatch to a call at this point. Aggressive
   // inlining otherwise pollutes the regular execution paths.
-  WriteBarrierSlow(value);
+  return WriteBarrierSlow(value);
 }
 
 ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
@@ -225,6 +237,13 @@ ALWAYS_INLINE void MarkingVisitor::TraceMarkedBackingStore(void* value) {
   // inlining otherwise pollutes the regular execution paths.
   TraceMarkedBackingStoreSlow(value);
 }
+
+// Visitor used to mark Oilpan objects on concurrent threads.
+class PLATFORM_EXPORT ConcurrentMarkingVisitor : public MarkingVisitorBase {
+ public:
+  ConcurrentMarkingVisitor(ThreadState*, MarkingMode, int);
+  ~ConcurrentMarkingVisitor() override = default;
+};
 
 }  // namespace blink
 

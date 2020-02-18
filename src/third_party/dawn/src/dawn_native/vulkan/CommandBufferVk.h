@@ -22,10 +22,12 @@
 
 namespace dawn_native {
     struct BeginRenderPassCmd;
+    struct TextureCopy;
 }  // namespace dawn_native
 
 namespace dawn_native { namespace vulkan {
 
+    struct CommandRecordingContext;
     class Device;
 
     class CommandBuffer : public CommandBufferBase {
@@ -33,11 +35,16 @@ namespace dawn_native { namespace vulkan {
         CommandBuffer(CommandEncoderBase* encoder, const CommandBufferDescriptor* descriptor);
         ~CommandBuffer();
 
-        void RecordCommands(VkCommandBuffer commands);
+        void RecordCommands(CommandRecordingContext* recordingContext);
 
       private:
-        void RecordComputePass(VkCommandBuffer commands);
-        void RecordRenderPass(VkCommandBuffer commands, BeginRenderPassCmd* renderPass);
+        void RecordComputePass(CommandRecordingContext* recordingContext);
+        void RecordRenderPass(CommandRecordingContext* recordingContext,
+                              BeginRenderPassCmd* renderPass);
+        void RecordCopyImageWithTemporaryBuffer(CommandRecordingContext* recordingContext,
+                                                const TextureCopy& srcCopy,
+                                                const TextureCopy& dstCopy,
+                                                const Extent3D& copySize);
 
         CommandIterator mCommands;
     };

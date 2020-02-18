@@ -42,6 +42,8 @@ static_library("snapshot") {
     "minidump/memory_snapshot_minidump.h",
     "minidump/minidump_annotation_reader.cc",
     "minidump/minidump_annotation_reader.h",
+    "minidump/minidump_context_converter.cc",
+    "minidump/minidump_context_converter.h",
     "minidump/minidump_simple_string_dictionary_reader.cc",
     "minidump/minidump_simple_string_dictionary_reader.h",
     "minidump/minidump_stream.h",
@@ -234,7 +236,10 @@ static_library("snapshot") {
   }
 }
 
-if (crashpad_is_linux) {
+if (crashpad_is_linux && use_fuzzing_engine) {
+  # Since crashpad uses its own crashpad_fuzzer_test GN template to wrap
+  # Chromium's fuzzer_test template, it's better to rely on |use_fuzzing_engine|
+  # and disable fuzz targets as they will not build successfully without it.
   crashpad_fuzzer_test("elf_image_reader_fuzzer") {
     sources = [
       "elf/elf_image_reader_fuzzer.cc",

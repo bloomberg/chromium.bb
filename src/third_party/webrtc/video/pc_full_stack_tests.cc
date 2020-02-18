@@ -1132,9 +1132,10 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast_NoConferenceMode) {
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
-        VideoConfig video(1850, 1110, 60);
+        VideoConfig video(1850, 1110, 30);
         video.screen_share_config = ScreenShareConfig(TimeDelta::seconds(10));
-        video.simulcast_config = VideoSimulcastConfig(2, 0);
+        video.simulcast_config = VideoSimulcastConfig(2, 1);
+        video.temporal_layers_count = 2;
         video.stream_label = "alice-video";
         alice->AddVideoConfig(std::move(video));
       },
@@ -1154,9 +1155,10 @@ TEST(PCFullStackTest, ScreenshareSlidesVP8_2TL_Simulcast) {
       CreateTwoNetworkLinks(network_emulation_manager.get(),
                             BuiltInNetworkBehaviorConfig()),
       [](PeerConfigurer* alice) {
-        VideoConfig video(1850, 1110, 60);
+        VideoConfig video(1850, 1110, 30);
         video.screen_share_config = ScreenShareConfig(TimeDelta::seconds(10));
-        video.simulcast_config = VideoSimulcastConfig(2, 0);
+        video.simulcast_config = VideoSimulcastConfig(2, 1);
+        video.temporal_layers_count = 2;
         video.stream_label = "alice-video";
         alice->AddVideoConfig(std::move(video));
       },
@@ -1382,6 +1384,9 @@ ParamsWithLogging::Video SimulcastVp8VideoLow() {
 #if defined(RTC_ENABLE_VP9)
 
 TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_High_Fps) {
+  webrtc::test::ScopedFieldTrials override_trials(
+      AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
+                        "Enabled,inter_layer_pred_mode:on/"));
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
@@ -1409,7 +1414,9 @@ TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_Variable_Fps) {
   webrtc::test::ScopedFieldTrials override_trials(
       AppendFieldTrials("WebRTC-VP9VariableFramerateScreenshare/"
                         "Enabled,min_qp:32,min_fps:5.0,undershoot:30,frames_"
-                        "before_steady_state:5/"));
+                        "before_steady_state:5/"
+                        "WebRTC-Vp9InterLayerPred/"
+                        "Enabled,inter_layer_pred_mode:on/"));
   std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
       CreateNetworkEmulationManager();
   auto fixture = CreateTestFixture(
@@ -1433,49 +1440,96 @@ TEST(PCFullStackTest, ScreenshareSlidesVP9_3SL_Variable_Fps) {
   fixture->Run(std::move(run_params));
 }
 
+TEST(PCFullStackTest, VP9SVC_3SL_High) {
+  webrtc::test::ScopedFieldTrials override_trials(
+      AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
+                        "Enabled,inter_layer_pred_mode:on/"));
+  std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
+      CreateNetworkEmulationManager();
+  auto fixture = CreateTestFixture(
+      "pc_vp9svc_3sl_high",
+      CreateTwoNetworkLinks(network_emulation_manager.get(),
+                            BuiltInNetworkBehaviorConfig()),
+      [](PeerConfigurer* alice) {
+        VideoConfig video(1280, 720, 30);
+        video.stream_label = "alice-video";
+        video.input_file_name =
+            ClipNameToClipPath("ConferenceMotion_1280_720_50");
+        video.simulcast_config = VideoSimulcastConfig(3, 2);
+        video.temporal_layers_count = 3;
+        alice->AddVideoConfig(std::move(video));
+      },
+      [](PeerConfigurer* bob) {});
+  RunParams run_params(TimeDelta::seconds(kTestDurationSec));
+  run_params.video_codec_name = cricket::kVp9CodecName;
+  run_params.video_codec_required_params = {
+      {kVP9FmtpProfileId, VP9ProfileToString(VP9Profile::kProfile0)}};
+  run_params.use_flex_fec = false;
+  run_params.use_ulp_fec = false;
+  fixture->Run(std::move(run_params));
+}
+
+TEST(PCFullStackTest, VP9SVC_3SL_Medium) {
+  webrtc::test::ScopedFieldTrials override_trials(
+      AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
+                        "Enabled,inter_layer_pred_mode:on/"));
+  std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
+      CreateNetworkEmulationManager();
+  auto fixture = CreateTestFixture(
+      "pc_vp9svc_3sl_medium",
+      CreateTwoNetworkLinks(network_emulation_manager.get(),
+                            BuiltInNetworkBehaviorConfig()),
+      [](PeerConfigurer* alice) {
+        VideoConfig video(1280, 720, 30);
+        video.stream_label = "alice-video";
+        video.input_file_name =
+            ClipNameToClipPath("ConferenceMotion_1280_720_50");
+        video.simulcast_config = VideoSimulcastConfig(3, 1);
+        video.temporal_layers_count = 3;
+        alice->AddVideoConfig(std::move(video));
+      },
+      [](PeerConfigurer* bob) {});
+  RunParams run_params(TimeDelta::seconds(kTestDurationSec));
+  run_params.video_codec_name = cricket::kVp9CodecName;
+  run_params.video_codec_required_params = {
+      {kVP9FmtpProfileId, VP9ProfileToString(VP9Profile::kProfile0)}};
+  run_params.use_flex_fec = false;
+  run_params.use_ulp_fec = false;
+  fixture->Run(std::move(run_params));
+}
+
+TEST(PCFullStackTest, VP9SVC_3SL_Low) {
+  webrtc::test::ScopedFieldTrials override_trials(
+      AppendFieldTrials("WebRTC-Vp9InterLayerPred/"
+                        "Enabled,inter_layer_pred_mode:on/"));
+  std::unique_ptr<NetworkEmulationManager> network_emulation_manager =
+      CreateNetworkEmulationManager();
+  auto fixture = CreateTestFixture(
+      "pc_vp9svc_3sl_low",
+      CreateTwoNetworkLinks(network_emulation_manager.get(),
+                            BuiltInNetworkBehaviorConfig()),
+      [](PeerConfigurer* alice) {
+        VideoConfig video(1280, 720, 30);
+        video.stream_label = "alice-video";
+        video.input_file_name =
+            ClipNameToClipPath("ConferenceMotion_1280_720_50");
+        video.simulcast_config = VideoSimulcastConfig(3, 0);
+        video.temporal_layers_count = 3;
+        alice->AddVideoConfig(std::move(video));
+      },
+      [](PeerConfigurer* bob) {});
+  RunParams run_params(TimeDelta::seconds(kTestDurationSec));
+  run_params.video_codec_name = cricket::kVp9CodecName;
+  run_params.video_codec_required_params = {
+      {kVP9FmtpProfileId, VP9ProfileToString(VP9Profile::kProfile0)}};
+  run_params.use_flex_fec = false;
+  run_params.use_ulp_fec = false;
+  fixture->Run(std::move(run_params));
+}
+
 #endif  // defined(RTC_ENABLE_VP9)
 
 /*
-// TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST(PCFullStackTest, VP9SVC_3SL_High) {
-  auto fixture = CreateVideoQualityTestFixture();
-  ParamsWithLogging simulcast;
-  simulcast.call.send_side_bwe = true;
-  simulcast.video[0] = SvcVp9Video();
-  simulcast.analyzer = {"vp9svc_3sl_high", 0.0, 0.0, kTestDurationSec};
-
-  simulcast.ss[0] = {
-      std::vector<VideoStream>(),  0,    3, 2, InterLayerPredMode::kOn,
-      std::vector<SpatialLayer>(), false};
-  fixture->RunWithAnalyzer(simulcast);
-}
-
-// TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST(PCFullStackTest, VP9SVC_3SL_Medium) {
-  auto fixture = CreateVideoQualityTestFixture();
-  ParamsWithLogging simulcast;
-  simulcast.call.send_side_bwe = true;
-  simulcast.video[0] = SvcVp9Video();
-  simulcast.analyzer = {"vp9svc_3sl_medium", 0.0, 0.0, kTestDurationSec};
-  simulcast.ss[0] = {
-      std::vector<VideoStream>(),  0,    3, 1, InterLayerPredMode::kOn,
-      std::vector<SpatialLayer>(), false};
-  fixture->RunWithAnalyzer(simulcast);
-}
-
-// TODO(bugs.webrtc.org/10639) requires simulcast/SVC support in PC framework
-TEST(PCFullStackTest, VP9SVC_3SL_Low) {
-  auto fixture = CreateVideoQualityTestFixture();
-  ParamsWithLogging simulcast;
-  simulcast.call.send_side_bwe = true;
-  simulcast.video[0] = SvcVp9Video();
-  simulcast.analyzer = {"vp9svc_3sl_low", 0.0, 0.0, kTestDurationSec};
-  simulcast.ss[0] = {
-      std::vector<VideoStream>(),  0,    3, 0, InterLayerPredMode::kOn,
-      std::vector<SpatialLayer>(), false};
-  fixture->RunWithAnalyzer(simulcast);
-}
-
 // bugs.webrtc.org/9506
 #if !defined(WEBRTC_MAC)
 
@@ -1588,6 +1642,7 @@ TEST(PCFullStackTest, MAYBE_SimulcastFullHdOveruse) {
         VideoConfig video(1920, 1080, 30);
         video.generator = VideoGeneratorType::kDefault;
         video.simulcast_config = VideoSimulcastConfig(3, 2);
+        video.temporal_layers_count = 3;
         video.stream_label = "alice-video";
         alice->AddVideoConfig(std::move(video));
       },

@@ -45,6 +45,7 @@ const char kMediaSessionPlaybackStatePaused[] = "Paused";
 const char kMediaSessionPlaybackStatePlaying[] = "Playing";
 
 const char kMediaSessionIsControllable[] = "Controllable";
+const char kMediaSessionIsSensitive[] = "Sensitive";
 
 }  // namespace
 
@@ -68,7 +69,7 @@ void MediaInternalsAudioFocusHelper::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));
@@ -78,7 +79,7 @@ void MediaInternalsAudioFocusHelper::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&MediaInternalsAudioFocusHelper::SendAudioFocusState,
                      base::Unretained(this)));
@@ -304,6 +305,10 @@ std::string MediaInternalsAudioFocusHelper::BuildStateString(
   // Convert the |is_controllable| boolean into a string.
   if (state->session_info->is_controllable)
     stream << " " << kMediaSessionIsControllable;
+
+  // Convert the |is_sensitive| boolean into a string.
+  if (state->session_info->is_sensitive)
+    stream << " " << kMediaSessionIsSensitive;
 
   if (!provided_state.empty())
     stream << " " << provided_state;

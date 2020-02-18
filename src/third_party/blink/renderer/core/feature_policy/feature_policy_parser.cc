@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trials.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -43,6 +44,10 @@ ParsedFeaturePolicy FeaturePolicyParser::ParseAttribute(
                GetDefaultFeatureNameMap(), document);
 }
 
+// normally 1 char = 1 byte
+// max length to parse = 2^16 = 64 kB
+constexpr wtf_size_t MAX_LENGTH_PARSE = 1 << 16;
+
 ParsedFeaturePolicy FeaturePolicyParser::Parse(
     const String& policy,
     scoped_refptr<const SecurityOrigin> self_origin,
@@ -51,6 +56,16 @@ ParsedFeaturePolicy FeaturePolicyParser::Parse(
     const FeatureNameMap& feature_names,
     FeaturePolicyParserDelegate* delegate) {
   ParsedFeaturePolicy allowlists;
+
+  if (policy.length() > MAX_LENGTH_PARSE) {
+    if (messages) {
+      messages->push_back("Feature policy declaration exceeds size limit(" +
+                          String::Number(policy.length()) + ">" +
+                          String::Number(MAX_LENGTH_PARSE) + ")");
+    }
+    return allowlists;
+  }
+
   std::bitset<static_cast<size_t>(mojom::FeaturePolicyFeature::kMaxValue) + 1>
       features_specified;
   HashSet<FeaturePolicyAllowlistType> allowlist_types_used;

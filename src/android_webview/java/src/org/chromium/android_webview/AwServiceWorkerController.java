@@ -36,8 +36,8 @@ public class AwServiceWorkerController {
         if (client != null) {
             mServiceWorkerBackgroundThreadClient = new ServiceWorkerBackgroundThreadClientImpl();
             mServiceWorkerIoThreadClient = new ServiceWorkerIoThreadClientImpl();
-            AwContentsStatics.setServiceWorkerIoThreadClient(mServiceWorkerIoThreadClient,
-                    mBrowserContext);
+            AwContentsStatics.setServiceWorkerIoThreadClient(
+                    mServiceWorkerIoThreadClient, mBrowserContext);
         } else {
             mServiceWorkerBackgroundThreadClient = null;
             mServiceWorkerIoThreadClient = null;

@@ -52,6 +52,7 @@
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_br_element.h"
@@ -116,9 +117,9 @@ class ReplacementFragment final {
 static bool IsInterchangeHTMLBRElement(const Node* node) {
   DEFINE_STATIC_LOCAL(String, interchange_newline_class_string,
                       (AppleInterchangeNewline));
-  if (!IsHTMLBRElement(node) ||
-      ToHTMLBRElement(node)->getAttribute(kClassAttr) !=
-          interchange_newline_class_string)
+  auto* html_br_element = DynamicTo<HTMLBRElement>(node);
+  if (!html_br_element || html_br_element->getAttribute(kClassAttr) !=
+                              interchange_newline_class_string)
     return false;
   UseCounter::Count(node->GetDocument(),
                     WebFeature::kEditingAppleInterchangeNewline);
@@ -482,7 +483,7 @@ bool ReplaceSelectionCommand::ShouldMergeStart(
   return !selection_start_was_start_of_paragraph &&
          !fragment_has_interchange_newline_at_start &&
          IsStartOfParagraph(start_of_inserted_content) &&
-         !IsHTMLBRElement(
+         !IsA<HTMLBRElement>(
              *start_of_inserted_content.DeepEquivalent().AnchorNode()) &&
          ShouldMerge(start_of_inserted_content, prev);
 }
@@ -497,7 +498,7 @@ bool ReplaceSelectionCommand::ShouldMergeEnd(
 
   return !selection_end_was_end_of_paragraph &&
          IsEndOfParagraph(end_of_inserted_content) &&
-         !IsHTMLBRElement(
+         !IsA<HTMLBRElement>(
              *end_of_inserted_content.DeepEquivalent().AnchorNode()) &&
          ShouldMerge(end_of_inserted_content, next);
 }
@@ -828,7 +829,7 @@ VisiblePosition ReplaceSelectionCommand::PositionAtStartOfInsertedContent()
 static void RemoveHeadContents(ReplacementFragment& fragment) {
   Node* next = nullptr;
   for (Node* node = fragment.FirstChild(); node; node = next) {
-    if (IsHTMLBaseElement(*node) || IsHTMLLinkElement(*node) ||
+    if (IsA<HTMLBaseElement>(*node) || IsHTMLLinkElement(*node) ||
         IsHTMLMetaElement(*node) || IsHTMLTitleElement(*node)) {
       next = NodeTraversal::NextSkippingChildren(*node);
       fragment.RemoveNode(node);
@@ -848,7 +849,7 @@ static bool FollowBlockElementStyle(const Node* node) {
     return false;
   // A block with a placeholder BR appears the same as an empty block.
   if (node->firstChild() == node->lastChild() &&
-      IsHTMLBRElement(node->firstChild())) {
+      IsA<HTMLBRElement>(node->firstChild())) {
     return false;
   }
 
@@ -982,7 +983,7 @@ void ReplaceSelectionCommand::MergeEndIfNeeded(EditingState* editing_state) {
 
 static Node* EnclosingInline(Node* node) {
   while (ContainerNode* parent = node->parentNode()) {
-    if (IsBlockFlowElement(*parent) || IsHTMLBodyElement(*parent))
+    if (IsBlockFlowElement(*parent) || IsA<HTMLBodyElement>(*parent))
       return node;
     // Stop if any previous sibling is a block.
     for (Node* sibling = node->previousSibling(); sibling;
@@ -1206,7 +1207,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
       return;
     // This will leave a br between the split.
     Node* br = EndingVisibleSelection().Start().AnchorNode();
-    DCHECK(IsHTMLBRElement(br)) << br;
+    DCHECK(IsA<HTMLBRElement>(br)) << br;
     // Insert content between the two blockquotes, but remove the br (since it
     // was just a placeholder).
     insertion_pos = Position::InParentBeforeNode(*br);
@@ -1230,7 +1231,7 @@ void ReplaceSelectionCommand::DoApply(EditingState* editing_state) {
   // position as p (since in the case where a br is at the end of a block and
   // collapsed away, there are positions after the br which map to the same
   // visible position as [br, 0]).
-  HTMLBRElement* end_br = ToHTMLBRElementOrNull(
+  auto* end_br = DynamicTo<HTMLBRElement>(
       *MostForwardCaretPosition(insertion_pos).AnchorNode());
   VisiblePosition original_vis_pos_before_end_br;
   if (end_br) {
@@ -2044,7 +2045,7 @@ bool ReplaceSelectionCommand::PerformTrivialReplace(
   GetDocument().UpdateStyleAndLayout();
 
   if (node_after_insertion_pos && node_after_insertion_pos->parentNode() &&
-      IsHTMLBRElement(*node_after_insertion_pos) &&
+      IsA<HTMLBRElement>(*node_after_insertion_pos) &&
       ShouldRemoveEndBR(
           ToHTMLBRElement(node_after_insertion_pos),
           VisiblePosition::BeforeNode(*node_after_insertion_pos))) {

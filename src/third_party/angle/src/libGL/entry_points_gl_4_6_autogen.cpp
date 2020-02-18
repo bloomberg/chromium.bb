@@ -13,6 +13,7 @@
 #include "libANGLE/Context.h"
 #include "libANGLE/Context.inl.h"
 #include "libANGLE/entry_points_utils.h"
+#include "libANGLE/gl_enum_utils_autogen.h"
 #include "libANGLE/validationEGL.h"
 #include "libANGLE/validationES.h"
 #include "libANGLE/validationES1.h"
@@ -31,22 +32,25 @@ void GL_APIENTRY MultiDrawArraysIndirectCount(GLenum mode,
                                               GLsizei maxdrawcount,
                                               GLsizei stride)
 {
-    EVENT("(GLenum mode = 0x%X, const void *indirect = 0x%016" PRIxPTR
-          ", GLintptr drawcount = %llu, GLsizei maxdrawcount = %d, GLsizei stride = %d)",
-          mode, (uintptr_t)indirect, static_cast<unsigned long long>(drawcount), maxdrawcount,
-          stride);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glMultiDrawArraysIndirectCount",
+          "context = %d, GLenum mode = %s, const void *indirect = 0x%016" PRIxPTR
+          ", GLintptr drawcount = %llu, GLsizei maxdrawcount = %d, GLsizei stride = %d",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode), (uintptr_t)indirect,
+          static_cast<unsigned long long>(drawcount), maxdrawcount, stride);
+
     if (context)
     {
-        ANGLE_CAPTURE(MultiDrawArraysIndirectCount, context, mode, indirect, drawcount,
-                      maxdrawcount, stride);
-        if (context->skipValidation() ||
-            ValidateMultiDrawArraysIndirectCount(context, mode, indirect, drawcount, maxdrawcount,
-                                                 stride))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateMultiDrawArraysIndirectCount(context, mode, indirect, drawcount,
+                                                                 maxdrawcount, stride));
+        if (isCallValid)
         {
             context->multiDrawArraysIndirectCount(mode, indirect, drawcount, maxdrawcount, stride);
         }
+        ANGLE_CAPTURE(MultiDrawArraysIndirectCount, isCallValid, context, mode, indirect, drawcount,
+                      maxdrawcount, stride);
     }
 }
 
@@ -57,38 +61,47 @@ void GL_APIENTRY MultiDrawElementsIndirectCount(GLenum mode,
                                                 GLsizei maxdrawcount,
                                                 GLsizei stride)
 {
-    EVENT("(GLenum mode = 0x%X, GLenum type = 0x%X, const void *indirect = 0x%016" PRIxPTR
-          ", GLintptr drawcount = %llu, GLsizei maxdrawcount = %d, GLsizei stride = %d)",
-          mode, type, (uintptr_t)indirect, static_cast<unsigned long long>(drawcount), maxdrawcount,
-          stride);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glMultiDrawElementsIndirectCount",
+          "context = %d, GLenum mode = %s, GLenum type = %s, const void *indirect = 0x%016" PRIxPTR
+          ", GLintptr drawcount = %llu, GLsizei maxdrawcount = %d, GLsizei stride = %d",
+          CID(context), GLenumToString(GLenumGroup::PrimitiveType, mode),
+          GLenumToString(GLenumGroup::DefaultGroup, type), (uintptr_t)indirect,
+          static_cast<unsigned long long>(drawcount), maxdrawcount, stride);
+
     if (context)
     {
-        ANGLE_CAPTURE(MultiDrawElementsIndirectCount, context, mode, type, indirect, drawcount,
-                      maxdrawcount, stride);
-        if (context->skipValidation() ||
-            ValidateMultiDrawElementsIndirectCount(context, mode, type, indirect, drawcount,
-                                                   maxdrawcount, stride))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidateMultiDrawElementsIndirectCount(
+                                context, mode, type, indirect, drawcount, maxdrawcount, stride));
+        if (isCallValid)
         {
             context->multiDrawElementsIndirectCount(mode, type, indirect, drawcount, maxdrawcount,
                                                     stride);
         }
+        ANGLE_CAPTURE(MultiDrawElementsIndirectCount, isCallValid, context, mode, type, indirect,
+                      drawcount, maxdrawcount, stride);
     }
 }
 
 void GL_APIENTRY PolygonOffsetClamp(GLfloat factor, GLfloat units, GLfloat clamp)
 {
-    EVENT("(GLfloat factor = %f, GLfloat units = %f, GLfloat clamp = %f)", factor, units, clamp);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glPolygonOffsetClamp",
+          "context = %d, GLfloat factor = %f, GLfloat units = %f, GLfloat clamp = %f", CID(context),
+          factor, units, clamp);
+
     if (context)
     {
-        ANGLE_CAPTURE(PolygonOffsetClamp, context, factor, units, clamp);
-        if (context->skipValidation() || ValidatePolygonOffsetClamp(context, factor, units, clamp))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid                              = (context->skipValidation() ||
+                            ValidatePolygonOffsetClamp(context, factor, units, clamp));
+        if (isCallValid)
         {
             context->polygonOffsetClamp(factor, units, clamp);
         }
+        ANGLE_CAPTURE(PolygonOffsetClamp, isCallValid, context, factor, units, clamp);
     }
 }
 
@@ -98,24 +111,28 @@ void GL_APIENTRY SpecializeShader(GLuint shader,
                                   const GLuint *pConstantIndex,
                                   const GLuint *pConstantValue)
 {
-    EVENT("(GLuint shader = %u, const GLchar *pEntryPoint = 0x%016" PRIxPTR
-          ", GLuint numSpecializationConstants = %u, const GLuint *pConstantIndex = 0x%016" PRIxPTR
-          ", const GLuint *pConstantValue = 0x%016" PRIxPTR ")",
-          shader, (uintptr_t)pEntryPoint, numSpecializationConstants, (uintptr_t)pConstantIndex,
-          (uintptr_t)pConstantValue);
-
     Context *context = GetValidGlobalContext();
+    EVENT("glSpecializeShader",
+          "context = %d, GLuint shader = %u, const GLchar *pEntryPoint = 0x%016" PRIxPTR
+          ", GLuint numSpecializationConstants = %u, const GLuint *pConstantIndex = 0x%016" PRIxPTR
+          ", const GLuint *pConstantValue = 0x%016" PRIxPTR "",
+          CID(context), shader, (uintptr_t)pEntryPoint, numSpecializationConstants,
+          (uintptr_t)pConstantIndex, (uintptr_t)pConstantValue);
+
     if (context)
     {
-        ANGLE_CAPTURE(SpecializeShader, context, shader, pEntryPoint, numSpecializationConstants,
-                      pConstantIndex, pConstantValue);
-        if (context->skipValidation() ||
-            ValidateSpecializeShader(context, shader, pEntryPoint, numSpecializationConstants,
-                                     pConstantIndex, pConstantValue))
+        std::unique_lock<std::mutex> shareContextLock = GetShareGroupLock(context);
+        bool isCallValid =
+            (context->skipValidation() ||
+             ValidateSpecializeShader(context, shader, pEntryPoint, numSpecializationConstants,
+                                      pConstantIndex, pConstantValue));
+        if (isCallValid)
         {
             context->specializeShader(shader, pEntryPoint, numSpecializationConstants,
                                       pConstantIndex, pConstantValue);
         }
+        ANGLE_CAPTURE(SpecializeShader, isCallValid, context, shader, pEntryPoint,
+                      numSpecializationConstants, pConstantIndex, pConstantValue);
     }
 }
 }  // namespace gl

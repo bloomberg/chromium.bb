@@ -8,9 +8,9 @@
 #ifndef GrRenderTargetContextPriv_DEFINED
 #define GrRenderTargetContextPriv_DEFINED
 
+#include "src/gpu/GrOpsTask.h"
 #include "src/gpu/GrPathRendering.h"
 #include "src/gpu/GrRenderTargetContext.h"
-#include "src/gpu/GrRenderTargetOpList.h"
 
 class GrFixedClip;
 class GrHardClip;
@@ -27,20 +27,20 @@ public:
     // TODO: remove after clipping overhaul.
     void setLastClip(uint32_t clipStackGenID, const SkIRect& devClipBounds,
                      int numClipAnalyticFPs) {
-        GrRenderTargetOpList* opList = fRenderTargetContext->getRTOpList();
-        opList->fLastClipStackGenID = clipStackGenID;
-        opList->fLastDevClipBounds = devClipBounds;
-        opList->fLastClipNumAnalyticFPs = numClipAnalyticFPs;
+        GrOpsTask* opsTask = fRenderTargetContext->getOpsTask();
+        opsTask->fLastClipStackGenID = clipStackGenID;
+        opsTask->fLastDevClipBounds = devClipBounds;
+        opsTask->fLastClipNumAnalyticFPs = numClipAnalyticFPs;
     }
 
     // called to determine if we have to render the clip into SB.
     // TODO: remove after clipping overhaul.
     bool mustRenderClip(uint32_t clipStackGenID, const SkIRect& devClipBounds,
                         int numClipAnalyticFPs) const {
-        GrRenderTargetOpList* opList = fRenderTargetContext->getRTOpList();
-        return opList->fLastClipStackGenID != clipStackGenID ||
-               !opList->fLastDevClipBounds.contains(devClipBounds) ||
-               opList->fLastClipNumAnalyticFPs != numClipAnalyticFPs;
+        GrOpsTask* opsTask = fRenderTargetContext->getOpsTask();
+        return opsTask->fLastClipStackGenID != clipStackGenID ||
+               !opsTask->fLastDevClipBounds.contains(devClipBounds) ||
+               opsTask->fLastClipNumAnalyticFPs != numClipAnalyticFPs;
     }
 
     using CanClearFullscreen = GrRenderTargetContext::CanClearFullscreen;
@@ -57,10 +57,11 @@ public:
      * upsampling. The "absClear" entry point ignores the content bounds but does use the
      * worst case (instantiated) bounds.
      *
+     * This call will always clear to transparent black.
+     *
      * @param rect      if (!null) the rect to clear, otherwise it is a full screen clear
-     * @param color     the color to clear to
      */
-    void absClear(const SkIRect* rect, const SkPMColor4f& color);
+    void absClear(const SkIRect* rect);
 
     // While this can take a general clip, since GrReducedClip relies on this function, it must take
     // care to only provide hard clips or we could get stuck in a loop. The general clip is needed
@@ -78,7 +79,7 @@ public:
     }
 
     void stencilPath(
-            const GrHardClip&, GrAA doStencilMSAA, const SkMatrix& viewMatrix, const GrPath*);
+            const GrHardClip&, GrAA doStencilMSAA, const SkMatrix& viewMatrix, sk_sp<const GrPath>);
 
     /**
      * Draws a path, either AA or not, and touches the stencil buffer with the user stencil settings
@@ -104,7 +105,7 @@ public:
         return fRenderTargetContext->fRenderTargetProxy->uniqueID();
     }
 
-    uint32_t testingOnly_getOpListID();
+    uint32_t testingOnly_getOpsTaskID();
 
     using WillAddOpFn = GrRenderTargetContext::WillAddOpFn;
     void testingOnly_addDrawOp(std::unique_ptr<GrDrawOp>);

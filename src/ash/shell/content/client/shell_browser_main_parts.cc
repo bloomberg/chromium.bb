@@ -27,7 +27,8 @@
 #include "base/command_line.h"
 #include "base/run_loop.h"
 #include "chromeos/dbus/biod/biod_client.h"
-#include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
+#include "chromeos/dbus/shill/shill_clients.h"
+#include "chromeos/network/network_handler.h"
 #include "components/exo/file_helper.h"
 #include "content/public/browser/context_factory.h"
 #include "content/public/browser/system_connector.h"
@@ -65,6 +66,12 @@ ShellBrowserMainParts::~ShellBrowserMainParts() {
   main_parts = nullptr;
 }
 
+void ShellBrowserMainParts::PostEarlyInitialization() {
+  content::BrowserMainParts::PostEarlyInitialization();
+  chromeos::shill_clients::InitializeFakes();
+  chromeos::NetworkHandler::Initialize();
+}
+
 void ShellBrowserMainParts::PreMainMessageLoopStart() {}
 
 void ShellBrowserMainParts::PostMainMessageLoopStart() {
@@ -80,9 +87,6 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
   browser_context_.reset(new content::ShellBrowserContext(false));
 
   ash_test_helper_ = std::make_unique<AshTestHelper>();
-  network_config_helper_ =
-      std::make_unique<chromeos::network_config::CrosNetworkConfigTestHelper>(
-          content::GetSystemConnector());
 
   AshTestHelper::InitParams init_params;
   // TODO(oshima): Separate the class for ash_shell to reduce the test binary
@@ -135,27 +139,8 @@ void ShellBrowserMainParts::PreMainMessageLoopRun() {
                             base::Unretained(browser_context_.get()), nullptr),
         base::BindRepeating(base::IgnoreResult(&EmbeddedBrowser::Create),
                             base::Unretained(browser_context_.get()),
-                            GURL("https://www.google.com")));
+                            GURL("https://www.google.com"), base::nullopt));
   }
-}
-
-void ShellBrowserMainParts::PostMainMessageLoopRun() {
-  window_watcher_.reset();
-  example_app_list_client_.reset();
-  example_session_controller_client_.reset();
-
-  ash_test_helper_->TearDown();
-  ash_test_helper_.reset();
-
-  views_delegate_.reset();
-
-  network_config_helper_.reset();
-
-  // The keyboard may have created a WebContents. The WebContents is destroyed
-  // with the UI, and it needs the BrowserContext to be alive during its
-  // destruction. So destroy all of the UI elements before destroying the
-  // browser context.
-  browser_context_.reset();
 }
 
 bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
@@ -169,6 +154,29 @@ bool ShellBrowserMainParts::MainMessageLoopRun(int* result_code) {
     run_loop.Run();
   }
   return true;
+}
+
+void ShellBrowserMainParts::PostMainMessageLoopRun() {
+  window_watcher_.reset();
+  example_app_list_client_.reset();
+  example_session_controller_client_.reset();
+
+  ash_test_helper_->TearDown();
+  ash_test_helper_.reset();
+
+  views_delegate_.reset();
+
+  // The keyboard may have created a WebContents. The WebContents is destroyed
+  // with the UI, and it needs the BrowserContext to be alive during its
+  // destruction. So destroy all of the UI elements before destroying the
+  // browser context.
+  browser_context_.reset();
+}
+
+void ShellBrowserMainParts::PostDestroyThreads() {
+  chromeos::NetworkHandler::Shutdown();
+  chromeos::shill_clients::Shutdown();
+  content::BrowserMainParts::PostDestroyThreads();
 }
 
 }  // namespace shell

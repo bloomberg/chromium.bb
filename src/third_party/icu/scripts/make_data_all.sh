@@ -8,7 +8,7 @@ function config_data {
   if [ $# -lt 1 ];
   then
     echo "config target missing." >&2
-    echo "Should be (android|android_small|cast|chromeos|common|flutter|ios)" >&2
+    echo "Should be (android|android_extra|android_small|cast|chromeos|common|flutter|ios)" >&2
     exit 1
   fi
 
@@ -52,6 +52,12 @@ echo "Build the filtered data for AndroidSmall"
 config_data android_small
 make -j 120
 $ICUROOT/scripts/copy_data.sh android_small
+
+echo "Build the filtered data for AndroidExtra"
+(cd data && make clean)
+config_data android_extra
+make -j 120
+$ICUROOT/scripts/copy_data.sh android_extra
 
 echo "Build the filtered data for iOS"
 (cd data && make clean)

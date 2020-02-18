@@ -45,10 +45,9 @@ buildflag_header("buildflags") {
     "ENABLE_NATIVE_NOTIFICATIONS=$enable_native_notifications",
     "ENABLE_SERVICE_DISCOVERY=$enable_service_discovery",
     "ENABLE_SESSION_SERVICE=$enable_session_service",
-    "ENABLE_SIMPLE_BROWSER_SERVICE_IN_PROCESS=$enable_simple_browser_service_in_process",
-    "ENABLE_SIMPLE_BROWSER_SERVICE_OUT_OF_PROCESS=$enable_simple_browser_service_out_of_process",
     "ENABLE_SUPERVISED_USERS=$enable_supervised_users",
     "ENABLE_WAYLAND_SERVER=$enable_wayland_server",
+    "ENABLE_WEBUI_TAB_STRIP=$enable_webui_tab_strip",
     "PGO_BUILD=$pgo_build",
     "OPTIMIZE_WEBUI=$optimize_webui",
   ]
@@ -138,7 +137,7 @@ static_library("common") {
     "google_url_loader_throttle.h",
     "heap_profiler_controller.cc",
     "heap_profiler_controller.h",
-    "instant_struct_traits.h",
+    "instant_mojom_traits.h",
     "logging_chrome.cc",
     "logging_chrome.h",
     "mac/app_shim_launch.h",
@@ -158,11 +157,6 @@ static_library("common") {
     "multi_process_lock_win.cc",
     "origin_trials/chrome_origin_trial_policy.cc",
     "origin_trials/chrome_origin_trial_policy.h",
-    "page_load_metrics/page_load_metrics_constants.h",
-    "page_load_metrics/page_load_metrics_util.cc",
-    "page_load_metrics/page_load_metrics_util.h",
-    "page_load_metrics/page_load_timing.cc",
-    "page_load_metrics/page_load_timing.h",
     "pdf_util.cc",
     "pdf_util.h",
     "pref_names_util.cc",
@@ -188,9 +182,6 @@ static_library("common") {
     "stack_sampling_configuration.h",
     "thread_profiler.cc",
     "thread_profiler.h",
-    "tts_messages.h",
-    "tts_utterance_request.cc",
-    "tts_utterance_request.h",
     "url_constants.cc",
     "url_constants.h",
     "web_application_info.cc",
@@ -215,7 +206,6 @@ static_library("common") {
     ":ini_parser",
     ":mojo_bindings",
     ":offline_page_auto_fetcher_mojom",
-    ":page_load_metrics_mojom",
     ":supervised_user_commands_mojom",
     "//base",
     "//base:base_static",
@@ -239,7 +229,7 @@ static_library("common") {
     "//components/gcm_driver/common",
     "//components/metrics",
     "//components/metrics:net",
-    "//components/metrics/public/interfaces:call_stack_mojo_bindings",
+    "//components/metrics/public/mojom:call_stack_mojo_bindings",
     "//components/nacl/common:buildflags",
     "//components/nacl/common:process_type",
     "//components/nacl/common:switches",
@@ -249,10 +239,12 @@ static_library("common") {
     "//components/offline_pages/buildflags",
     "//components/offline_pages/core:switches",
     "//components/omnibox/common",
+    "//components/page_load_metrics/common:page_load_metrics_mojom",
     "//components/password_manager/core/common",
     "//components/policy:generated",
     "//components/policy/core/common",
     "//components/prefs",
+    "//components/safe_browsing:buildflags",
     "//components/safe_browsing/web_ui:constants",
     "//components/services/heap_profiling/public/cpp",
     "//components/strings",
@@ -286,12 +278,15 @@ static_library("common") {
     "//ui/gfx/ipc/skia",
     "//ui/gl",
     "//ui/message_center/public/cpp",
+    "//ui/native_theme",
     "//ui/resources:resources",
     "//url",
   ]
 
   deps = [
+    "//build:branding_buildflags",
     "//components/metrics:call_stack_profile_builder",
+    "//components/page_load_metrics/common:common",
   ]
 
   if (enable_plugins) {
@@ -464,6 +459,13 @@ static_library("common") {
     ]
 
     libs = [ "wintrust.lib" ]
+  }
+
+  if (is_posix && !is_android) {
+    sources += [
+      "process_singleton_lock_posix.cc",
+      "process_singleton_lock_posix.h",
+    ]
   }
 
   if (is_mac) {
@@ -670,8 +672,6 @@ static_library("test_support") {
   visibility = [ "//chrome/test:*" ]
 
   sources = [
-    "page_load_metrics/test/page_load_metrics_test_util.cc",
-    "page_load_metrics/test/page_load_metrics_test_util.h",
     "search/mock_embedded_search_client.cc",
     "search/mock_embedded_search_client.h",
   ]
@@ -717,7 +717,6 @@ mojom("mojo_bindings") {
   sources = [
     "cache_stats_recorder.mojom",
     "chrome_render_frame.mojom",
-    "constants.mojom",
     "content_settings_renderer.mojom",
     "media/webrtc_logging.mojom",
     "navigation_corrector.mojom",
@@ -754,7 +753,7 @@ mojom("mojo_bindings") {
     "//content/public/common:interfaces",
     "//mojo/public/mojom/base",
     "//third_party/blink/public/mojom:mojom_platform",
-    "//ui/gfx/geometry/mojo",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
     "//url/mojom:url_mojom_origin",
   ]
@@ -783,18 +782,6 @@ mojom("search_mojom") {
   public_deps = [
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-mojom("page_load_metrics_mojom") {
-  sources = [
-    "page_load_metrics/page_load_metrics.mojom",
-  ]
-
-  public_deps = [
-    "//mojo/public/mojom/base",
-    "//third_party/blink/public/mojom:web_feature_mojo_bindings",
-    "//url/mojom:url_mojom_origin",
   ]
 }
 

@@ -22,6 +22,7 @@
 #include "api/crypto/frame_encryptor_interface.h"
 #include "api/function_view.h"
 #include "api/media_transport_config.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "audio/audio_state.h"
 #include "audio/channel_send.h"
 #include "audio/conversion.h"
@@ -29,7 +30,6 @@
 #include "call/rtp_transport_controller_send_interface.h"
 #include "common_audio/vad/include/vad.h"
 #include "logging/rtc_event_log/events/rtc_event_audio_send_stream_config.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/rtc_stream_config.h"
 #include "modules/audio_coding/codecs/cng/audio_encoder_cng.h"
 #include "modules/audio_processing/include/audio_processing.h"
@@ -207,6 +207,8 @@ AudioSendStream::ExtensionIds AudioSendStream::FindExtensionIds(
   for (const auto& extension : extensions) {
     if (extension.uri == RtpExtension::kAudioLevelUri) {
       ids.audio_level = extension.id;
+    } else if (extension.uri == RtpExtension::kAbsSendTimeUri) {
+      ids.abs_send_time = extension.id;
     } else if (extension.uri == RtpExtension::kTransportSequenceNumberUri) {
       ids.transport_sequence_number = extension.id;
     } else if (extension.uri == RtpExtension::kMidUri) {
@@ -236,15 +238,13 @@ void AudioSendStream::ConfigureStream(
   const auto& channel_send = stream->channel_send_;
   const auto& old_config = stream->config_;
 
+  stream->config_cs_.Enter();
+
   // Configuration parameters which cannot be changed.
   RTC_DCHECK(first_time ||
              old_config.send_transport == new_config.send_transport);
-
-  if (old_config.rtp.ssrc != new_config.rtp.ssrc) {
-    channel_send->SetLocalSSRC(new_config.rtp.ssrc);
-  }
-  if (stream->suspended_rtp_state_ &&
-      (first_time || old_config.rtp.ssrc != new_config.rtp.ssrc)) {
+  RTC_DCHECK(first_time || old_config.rtp.ssrc == new_config.rtp.ssrc);
+  if (stream->suspended_rtp_state_ && first_time) {
     stream->rtp_rtcp_module_->SetRtpState(*stream->suspended_rtp_state_);
   }
   if (first_time || old_config.rtp.c_name != new_config.rtp.c_name) {
@@ -263,11 +263,24 @@ void AudioSendStream::ConfigureStream(
 
   const ExtensionIds old_ids = FindExtensionIds(old_config.rtp.extensions);
   const ExtensionIds new_ids = FindExtensionIds(new_config.rtp.extensions);
+
+  stream->config_cs_.Leave();
+
   // Audio level indication
   if (first_time || new_ids.audio_level != old_ids.audio_level) {
     channel_send->SetSendAudioLevelIndicationStatus(new_ids.audio_level != 0,
                                                     new_ids.audio_level);
   }
+
+  if (first_time || new_ids.abs_send_time != old_ids.abs_send_time) {
+    channel_send->GetRtpRtcp()->DeregisterSendRtpHeaderExtension(
+        kRtpExtensionAbsoluteSendTime);
+    if (new_ids.abs_send_time) {
+      channel_send->GetRtpRtcp()->RegisterSendRtpHeaderExtension(
+          kRtpExtensionAbsoluteSendTime, new_ids.abs_send_time);
+    }
+  }
+
   bool transport_seq_num_id_changed =
       new_ids.transport_sequence_number != old_ids.transport_sequence_number;
   if (first_time || (transport_seq_num_id_changed &&
@@ -299,6 +312,7 @@ void AudioSendStream::ConfigureStream(
           stream->rtp_transport_, bandwidth_observer);
     }
   }
+  stream->config_cs_.Enter();
   // MID RTP header extension.
   if ((first_time || new_ids.mid != old_ids.mid ||
        new_config.rtp.mid != old_config.rtp.mid) &&
@@ -321,6 +335,7 @@ void AudioSendStream::ConfigureStream(
     ReconfigureBitrateObserver(stream, new_config);
   }
   stream->config_ = new_config;
+  stream->config_cs_.Leave();
 }
 
 void AudioSendStream::Start() {
@@ -429,7 +444,6 @@ webrtc::AudioSendStream::Stats AudioSendStream::GetStats(
       if (block.source_SSRC == stats.local_ssrc) {
         stats.packets_lost = block.cumulative_num_packets_lost;
         stats.fraction_lost = Q8ToFloat(block.fraction_lost);
-        stats.ext_seqnum = block.extended_highest_sequence_number;
         // Convert timestamps to milliseconds.
         if (spec.format.clockrate_hz / 1000 > 0) {
           stats.jitter_ms =
@@ -458,10 +472,6 @@ webrtc::AudioSendStream::Stats AudioSendStream::GetStats(
   return stats;
 }
 
-void AudioSendStream::SignalNetworkState(NetworkState state) {
-  RTC_DCHECK(worker_thread_checker_.IsCurrent());
-}
-
 void AudioSendStream::DeliverRtcp(const uint8_t* packet, size_t length) {
   // TODO(solenberg): Tests call this function on a network thread, libjingle
   // calls on the worker thread. We should move towards always using a network
@@ -487,7 +497,12 @@ uint32_t AudioSendStream::OnBitrateUpdated(BitrateAllocationUpdate update) {
 void AudioSendStream::OnPacketAdded(uint32_t ssrc, uint16_t seq_num) {
   RTC_DCHECK(pacer_thread_checker_.IsCurrent());
   // Only packets that belong to this stream are of interest.
-  if (ssrc == config_.rtp.ssrc) {
+  bool same_ssrc;
+  {
+    rtc::CritScope lock(&config_cs_);
+    same_ssrc = ssrc == config_.rtp.ssrc;
+  }
+  if (same_ssrc) {
     rtc::CritScope lock(&packet_loss_tracker_cs_);
     // TODO(eladalon): This function call could potentially reset the window,
     // setting both PLR and RPLR to unknown. Consider (during upcoming

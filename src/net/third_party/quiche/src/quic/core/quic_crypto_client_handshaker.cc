@@ -141,6 +141,11 @@ CryptoMessageParser* QuicCryptoClientHandshaker::crypto_message_parser() {
   return QuicCryptoHandshaker::crypto_message_parser();
 }
 
+size_t QuicCryptoClientHandshaker::BufferSizeLimitForLevel(
+    EncryptionLevel level) const {
+  return QuicCryptoHandshaker::BufferSizeLimitForLevel(level);
+}
+
 void QuicCryptoClientHandshaker::HandleServerConfigUpdateMessage(
     const CryptoHandshakeMessage& server_config_update) {
   DCHECK(server_config_update.tag() == kSCUP);
@@ -321,10 +326,8 @@ void QuicCryptoClientHandshaker::DoSendCHLO(
       std::move(crypto_negotiated_params_->initial_crypters.encrypter));
   session()->connection()->SetDefaultEncryptionLevel(ENCRYPTION_ZERO_RTT);
 
-  // TODO(ianswett): Merge ENCRYPTION_REESTABLISHED and
-  // ENCRYPTION_FIRST_ESTABLSIHED
   encryption_established_ = true;
-  session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_REESTABLISHED);
+  session()->OnCryptoHandshakeEvent(QuicSession::ENCRYPTION_ESTABLISHED);
 }
 
 void QuicCryptoClientHandshaker::DoReceiveREJ(

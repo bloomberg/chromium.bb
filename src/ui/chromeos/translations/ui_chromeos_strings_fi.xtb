@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Kuvan resoluutio</translation>
 <translation id="1943097386230153518">Asenna uusi palvelu</translation>
 <translation id="1947424002851288782">Näppäimistö: saksa</translation>
+<translation id="1972984168337863910">Laajenna tiedostojen palautepaneelit</translation>
 <translation id="197560921582345123">Voi muokata</translation>
 <translation id="1984603991036629094">Armenialainen foneettinen näppäimistö</translation>
 <translation id="2001796770603320721">Ylläpidä Drivessa</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Sinun täytyy olla online-tilassa käyttääksesi tätä tiedostoa.</translation>
 <translation id="4212740939091998969">Kansio nimeltä <ph name="FOLDER_NAME" /> on jo olemassa. Valitse toinen nimi.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> varmuuskopioidaan</translation>
-<translation id="4242533952199664413">Avaa asetukset</translation>
 <translation id="426015154560005552">Arabialainen näppäimistö</translation>
 <translation id="4261901459838235729">Google-esitys</translation>
 <translation id="4290535918735525311">1 kansio jaettu Linuxin kanssa</translation>
-<translation id="42981349822642051">Laajenna</translation>
 <translation id="4298972503445160211">Näppäimistö: tanska</translation>
 <translation id="4299729908419173967">brasilianportugali</translation>
 <translation id="4309915981827077375">Yleistiedot</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Automaattinen korjaus</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4886021172213954916">Tamilinkielinen näppäimistö (kirjoituskone)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> ei onnistunut avaamaan tiedostoa</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> valmiina varmuuskopiointiin</translation>
 <translation id="4924638091161556692">Korjattu</translation>
 <translation id="4935975195727477204">Kukka</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">ranska (Sveitsi)</translation>
 <translation id="5234764350956374838">Piilota</translation>
 <translation id="5241298539944515331">Vietnamilainen näppäimistö (VIQR)</translation>
-<translation id="52446585071384036">Kopioi tiedostot ensin Linux-tiedostojen kansioon, jotta <ph name="APP_NAME" /> voi avata ne.</translation>
 <translation id="5253070652067921974">Tekijä</translation>
 <translation id="5257456363153333584">Sudenkorento</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Käytä tiedostojasi missä vain, myös offline-tilassa.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">korea</translation>
 <translation id="5819442873484330149">Hangul 3-set (lopullinen)</translation>
 <translation id="5833610766403489739">Tämä tiedosto on siirretty jonnekin muualle. Tarkista lataussijainnin asetukset ja yritä uudelleen.</translation>
-<translation id="5838051104334203064">Play Kaupan sovellukset eivät pääse laitteelle</translation>
 <translation id="5838451609423551646">Kaikki kohteet poistettiin valinnasta.</translation>
 <translation id="5838825566232597749">Yhdysvallat, kansainvälinen Workman</translation>
 <translation id="5850516540536751549">Tätä tiedostotyyppiä ei tueta. Etsi tämäntyyppisiä tiedostoja avaava sovellus <ph name="BEGIN_LINK" />Chrome Web Storesta<ph name="END_LINK" />.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Jos haluat tallentaa nämä tiedostot offline-käyttöä varten, siirry online-tilaan, klikkaa tiedostoja hiiren kakkospainikkeella ja valitse vaihtoehto <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Keskeytä</translation>
 <translation id="8261506727792406068">Poista</translation>
+<translation id="8269755669432358899">Tiivistä tiedostojen palautepaneelit</translation>
 <translation id="8279388322240498158">Soranîn englantiin perustuva näppäimistö</translation>
 <translation id="8280151743281770066">armenia (foneettinen)</translation>
 <translation id="8294431847097064396">Lähde</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Valitse avattava tiedosto</translation>
 <translation id="8579285237314169903">Synkronoidaan <ph name="NUMBER_OF_FILES" /> kohdetta…</translation>
 <translation id="8600173386174225982">Tiedostot näkyvät nyt pikkukuvina.</translation>
+<translation id="8601932370724196034">Crostini-kuvatiedosto</translation>
 <translation id="8669949407341943408">Siirretään…</translation>
 <translation id="8671210955687109937">Voi kommentoida</translation>
 <translation id="8686213429977032554">Tätä Drive-tiedostoa ei ole vielä jaettu</translation>

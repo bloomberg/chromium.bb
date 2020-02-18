@@ -11,13 +11,13 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "services/viz/public/interfaces/compositing/compositing_mode_watcher.mojom.h"
+#include "services/viz/public/mojom/compositing/compositing_mode_watcher.mojom.h"
 #include "ui/base/buildflags.h"
 
 #if defined(OS_CHROMEOS)
@@ -87,10 +87,8 @@ namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
 class BrowserThreadImpl;
-class LoaderDelegateImpl;
 class MediaKeysListenerManagerImpl;
 class MediaStreamManager;
-class ResourceDispatcherHostImpl;
 class SaveFileManager;
 class ScreenlockMonitor;
 class SmsProvider;
@@ -390,8 +388,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<media::DeviceMonitorMac> device_monitor_mac_;
 #endif
 
-  std::unique_ptr<LoaderDelegateImpl> loader_delegate_;
-  std::unique_ptr<ResourceDispatcherHostImpl> resource_dispatcher_host_;
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   scoped_refptr<SaveFileManager> save_file_manager_;
   std::unique_ptr<content::TracingControllerImpl> tracing_controller_;

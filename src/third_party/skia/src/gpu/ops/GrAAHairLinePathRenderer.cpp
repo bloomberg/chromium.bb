@@ -312,7 +312,7 @@ static int gather_lines_and_quads(const SkPath& path,
 
     for (;;) {
         SkPoint pathPts[4];
-        SkPath::Verb verb = iter.next(pathPts, false);
+        SkPath::Verb verb = iter.next(pathPts);
         switch (verb) {
             case SkPath::kConic_Verb:
                 if (convertConicsToQuads) {
@@ -759,7 +759,7 @@ bool check_bounds(const SkMatrix& viewMatrix, const SkRect& devBounds, void* ver
         }
         viewMatrix.mapPoints(&pos, 1);
         if (first) {
-            actualBounds.set(pos.fX, pos.fY, pos.fX, pos.fY);
+            actualBounds.setLTRB(pos.fX, pos.fY, pos.fX, pos.fY);
             first = false;
         } else {
             SkRectPriv::GrowToInclude(&actualBounds, pos);

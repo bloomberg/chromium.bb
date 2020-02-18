@@ -345,10 +345,6 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     {"pdf/browser_api.js", IDR_PDF_BROWSER_API_JS},
     {"pdf/elements/icons.html", IDR_PDF_ICONS_HTML},
     {"pdf/elements/shared-vars.html", IDR_PDF_SHARED_VARS_HTML},
-    {"pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.html",
-     IDR_PDF_VIEWER_BOOKMARKS_CONTENT_HTML},
-    {"pdf/elements/viewer-bookmarks-content/viewer-bookmarks-content.js",
-     IDR_PDF_VIEWER_BOOKMARKS_CONTENT_JS},
     {"pdf/elements/viewer-bookmark/viewer-bookmark.html",
      IDR_PDF_VIEWER_BOOKMARK_HTML},
     {"pdf/elements/viewer-bookmark/viewer-bookmark.js",
@@ -412,7 +408,6 @@ void SetupPrintPreviewPlugin(content::WebUIDataSource* source) {
     {"pdf/pdf_scripting_api.js", IDR_PDF_PDF_SCRIPTING_API_JS},
     {"pdf/pdf_viewer.js", IDR_PDF_PDF_VIEWER_JS},
     {"pdf/toolbar_manager.js", IDR_PDF_TOOLBAR_MANAGER_JS},
-    {"pdf/viewport_interface.js", IDR_PDF_VIEWPORT_INTERFACE_JS},
     {"pdf/viewport.js", IDR_PDF_VIEWPORT_JS},
     {"pdf/viewport_scroller.js", IDR_PDF_VIEWPORT_SCROLLER_JS},
     {"pdf/zoom_manager.js", IDR_PDF_ZOOM_MANAGER_JS},
@@ -432,7 +427,7 @@ content::WebUIDataSource* CreatePrintPreviewUISource(Profile* profile) {
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIPrintHost);
   AddPrintPreviewStrings(source);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
 #if BUILDFLAG(OPTIMIZE_WEBUI)
   source->AddResourcePath("crisper.js", IDR_PRINT_PREVIEW_CRISPER_JS);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_VULCANIZED_HTML);

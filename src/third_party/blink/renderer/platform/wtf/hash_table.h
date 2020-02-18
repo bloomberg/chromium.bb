@@ -742,10 +742,10 @@ class HashTable final {
   }
 
   HashTable(const HashTable&);
-  HashTable(HashTable&&);
+  HashTable(HashTable&&) noexcept;
   void swap(HashTable&);
   HashTable& operator=(const HashTable&);
-  HashTable& operator=(HashTable&&);
+  HashTable& operator=(HashTable&&) noexcept;
 
   // When the hash table is empty, just return the same iterator for end as
   // for begin.  This is more efficient because we don't have to skip all the
@@ -888,7 +888,6 @@ class HashTable final {
     // expensive.
     return key_count_ * kMinLoad < table_size_ &&
            table_size_ > KeyTraits::kMinimumTableSize &&
-           !Allocator::IsObjectResurrectionForbidden() &&
            Allocator::IsAllocationAllowed();
   }
   ValueType* Expand(ValueType* entry = nullptr);
@@ -1710,7 +1709,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     ExpandBuffer(unsigned new_table_size, Value* entry, bool& success) {
   success = false;
   DCHECK_LT(table_size_, new_table_size);
-  CHECK(!Allocator::IsObjectResurrectionForbidden());
+  CHECK(Allocator::IsAllocationAllowed());
   if (!Allocator::ExpandHashTableBacking(table_,
                                          new_table_size * sizeof(ValueType)))
     return nullptr;
@@ -1740,7 +1739,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     }
   }
   table_ = temporary_table;
-  Allocator::BackingWriteBarrier(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
 
   if (Traits::kEmptyValueIsZero) {
     memset(original_table, 0, new_table_size * sizeof(ValueType));
@@ -1783,7 +1782,7 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
 #endif
 
   table_ = new_table;
-  Allocator::BackingWriteBarrier(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
   table_size_ = new_table_size;
 
   Value* new_entry = nullptr;
@@ -1925,7 +1924,7 @@ template <typename Key,
           typename KeyTraits,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-    HashTable(HashTable&& other)
+    HashTable(HashTable&& other) noexcept
     : table_(nullptr),
       table_size_(0),
       key_count_(0),
@@ -1960,8 +1959,8 @@ void HashTable<Key,
                Allocator>::swap(HashTable& other) {
   DCHECK(!AccessForbidden());
   std::swap(table_, other.table_);
-  Allocator::BackingWriteBarrier(table_);
-  Allocator::BackingWriteBarrier(other.table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(table_);
+  Allocator::template BackingWriteBarrierForHashTable<HashTable>(other.table_);
   std::swap(table_size_, other.table_size_);
   std::swap(key_count_, other.key_count_);
   // std::swap does not work for bit fields.
@@ -2004,7 +2003,7 @@ template <typename Key,
           typename Allocator>
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>&
 HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
-operator=(HashTable&& other) {
+operator=(HashTable&& other) noexcept {
   swap(other);
   return *this;
 }

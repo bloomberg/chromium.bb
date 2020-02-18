@@ -26,7 +26,7 @@ const char* ProtoEnumToString(
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_APP);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_REMOVE_DEFAULT_APP);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_FOLDER);
-    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_URL);
+    ENUM_CASE(sync_pb::AppListSpecifics, TYPE_OBSOLETE_URL);
     ENUM_CASE(sync_pb::AppListSpecifics, TYPE_PAGE_BREAK);
   }
   NOTREACHED();
@@ -100,13 +100,14 @@ const char* ProtoEnumToString(
 
 const char* ProtoEnumToString(sync_pb::NigoriSpecifics::PassphraseType type) {
   ASSERT_ENUM_BOUNDS(sync_pb::NigoriSpecifics, PassphraseType, UNKNOWN,
-                     CUSTOM_PASSPHRASE);
+                     TRUSTED_VAULT_PASSPHRASE);
   switch (type) {
     ENUM_CASE(sync_pb::NigoriSpecifics, UNKNOWN);
     ENUM_CASE(sync_pb::NigoriSpecifics, IMPLICIT_PASSPHRASE);
     ENUM_CASE(sync_pb::NigoriSpecifics, KEYSTORE_PASSPHRASE);
     ENUM_CASE(sync_pb::NigoriSpecifics, FROZEN_IMPLICIT_PASSPHRASE);
     ENUM_CASE(sync_pb::NigoriSpecifics, CUSTOM_PASSPHRASE);
+    ENUM_CASE(sync_pb::NigoriSpecifics, TRUSTED_VAULT_PASSPHRASE);
   }
   NOTREACHED();
   return "";

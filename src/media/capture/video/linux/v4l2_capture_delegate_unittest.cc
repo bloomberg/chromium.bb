@@ -7,7 +7,7 @@
 
 #include "base/files/file_enumerator.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/capture/video/linux/v4l2_capture_delegate.h"
@@ -186,7 +186,7 @@ class V4L2CaptureDelegateTest : public ::testing::Test {
             0)) {}
   ~V4L2CaptureDelegateTest() override = default;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   VideoCaptureDeviceDescriptor device_descriptor_;
   scoped_refptr<V4L2CaptureDevice> v4l2_;
   std::unique_ptr<V4L2CaptureDelegate> delegate_;

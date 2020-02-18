@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "jingle/glue/fake_ssl_client_socket.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
@@ -56,8 +56,7 @@ class ProxyResolvingSocketTestBase {
   ProxyResolvingSocketTestBase(bool use_tls)
       : use_tls_(use_tls),
         fake_tls_handshake_(false),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   ~ProxyResolvingSocketTestBase() {}
 
@@ -154,7 +153,7 @@ class ProxyResolvingSocketTestBase {
  private:
   const bool use_tls_;
   bool fake_tls_handshake_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::MockClientSocketFactory> mock_client_socket_factory_;
   std::unique_ptr<TestURLRequestContextWithProxy> context_with_proxy_;
   mojom::ProxyResolvingSocketFactoryPtr factory_ptr_;

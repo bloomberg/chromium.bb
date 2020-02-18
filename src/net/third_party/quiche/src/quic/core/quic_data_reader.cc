@@ -136,7 +136,7 @@ bool QuicDataReader::ReadStringPiece(QuicStringPiece* result, size_t size) {
 
 bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id,
                                       uint8_t length) {
-  if (length > kQuicMaxConnectionIdLength) {
+  if (length > kQuicMaxConnectionIdAllVersionsLength) {
     QUIC_BUG << "Attempted to read connection ID with length too high "
              << static_cast<int>(length);
     return false;
@@ -146,21 +146,13 @@ bool QuicDataReader::ReadConnectionId(QuicConnectionId* connection_id,
     return true;
   }
 
-  if (!GetQuicRestartFlag(quic_use_allocated_connection_ids)) {
-    const bool ok = ReadBytes(connection_id->mutable_data(), length);
-    if (ok) {
-      connection_id->set_length(length);
-    }
-    return ok;
-  }
-  QUIC_RESTART_FLAG_COUNT_N(quic_use_allocated_connection_ids, 6, 6);
-
   if (BytesRemaining() < length) {
     return false;
   }
 
   connection_id->set_length(length);
-  const bool ok = ReadBytes(connection_id->mutable_data(), length);
+  const bool ok =
+      ReadBytes(connection_id->mutable_data(), connection_id->length());
   DCHECK(ok);
   return ok;
 }
@@ -171,7 +163,7 @@ bool QuicDataReader::ReadLengthPrefixedConnectionId(
   if (!ReadUInt8(&connection_id_length)) {
     return false;
   }
-  if (connection_id_length > kQuicMaxConnectionIdLength) {
+  if (connection_id_length > kQuicMaxConnectionIdAllVersionsLength) {
     return false;
   }
   return ReadConnectionId(connection_id, connection_id_length);
@@ -189,6 +181,10 @@ QuicStringPiece QuicDataReader::ReadRemainingPayload() {
 
 QuicStringPiece QuicDataReader::PeekRemainingPayload() const {
   return QuicStringPiece(data_ + pos_, len_ - pos_);
+}
+
+QuicStringPiece QuicDataReader::FullPayload() const {
+  return QuicStringPiece(data_, len_);
 }
 
 bool QuicDataReader::ReadBytes(void* result, size_t size) {

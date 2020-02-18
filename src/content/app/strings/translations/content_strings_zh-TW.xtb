@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">必須輸入 <ph name="MINIMUM_DATE_OR_TIME" /> 或之後的值。</translation>
 <translation id="2759744352195237655">彈出式按鈕</translation>
 <translation id="2761667185364618470">如果你要繼續執行，請勾選這個核取方塊。</translation>
+<translation id="2844350028562914727">詳細資料</translation>
 <translation id="2896972712917208084">圓形按鈕群組</translation>
 <translation id="2908441821576996758">請輸入以逗號分隔的電子郵件地址清單。</translation>
 <translation id="2940813599313844715">物件</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">值必須小於或等於 <ph name="MAXIMUM" />。</translation>
 <translation id="3486220673238053218">定義</translation>
 <translation id="3557673793733683882">標題 <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">週挑選器</translation>
 <translation id="3685101356851116974">未標示的圖片</translation>
 <translation id="3706100364254443312">切換</translation>
 <translation id="3732799496749320381">月</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">捲軸</translation>
 <translation id="4103419683916926126">毫秒</translation>
 <translation id="4151657705144244502">圖形</translation>
+<translation id="4160057747563657758">電話</translation>
 <translation id="4193965531860883258">前言</translation>
 <translation id="4201051445878709314">顯示上一個月</translation>
 <translation id="421884353938374759">顏色選擇器</translation>
 <translation id="4248100235867064564">選單列</translation>
-<translation id="4254339807215791271">內容資訊</translation>
 <translation id="4360991593054037559">請輸入有效值。最接近的兩個有效值分別是 <ph name="VALID_VALUE_LOW" /> 和 <ph name="VALID_VALUE_HIGHER" />。</translation>
 <translation id="4384583879834880242">問與答</translation>
 <translation id="4413860115965805769">選單按鈕</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">關閉</translation>
 <translation id="588258955323874662">全螢幕</translation>
 <translation id="5888666972993069672">正在投放到「<ph name="DEVICE_FRIENDLY_NAME" />」</translation>
+<translation id="591047860372322273">搜尋框</translation>
 <translation id="5939518447894949180">重設</translation>
 <translation id="5966707198760109579">週</translation>
 <translation id="5987525920412732405">微調按鈕</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">後記</translation>
 <translation id="6209276755895393898">圖片內容似乎是：<ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">詞彙解釋</translation>
+<translation id="6281763101136022427">網址</translation>
 <translation id="6310801910862476708">離開子母畫面</translation>
 <translation id="6398862346408813489">顯示月份選取面板</translation>
 <translation id="6404546809543547843">音訊時間點拖曳工具</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">請符合要求的格式。</translation>
 <translation id="7118469954320184356">目前沒有說明。</translation>
 <translation id="7139483182332611405">前言</translation>
+<translation id="7214187073215825913">內容資訊</translation>
 <translation id="7263440858009898357">請選取一個清單中的項目。</translation>
 <translation id="727747134524199931">欄標題</translation>
 <translation id="7320576522385648310">緩衝處理中</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">正在取得說明...</translation>
 <translation id="8117451130807776954">本週</translation>
 <translation id="8199524924445686405"> 年 </translation>
+<translation id="8208673686607688524">當地日期和時間挑選器</translation>
 <translation id="8261464734335370856">拼字錯誤</translation>
 <translation id="8284326494547611709">字幕</translation>
 <translation id="835897206747267392">無效的值。</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">目錄</translation>
 <translation id="8613126697340063924">控制遠端播放</translation>
 <translation id="862370744433916922">副標題</translation>
+<translation id="8711688047404765493">輸出</translation>
 <translation id="8750798805984357768">請選取其中一個選項。</translation>
 <translation id="8808573423886751634">章節</translation>
 <translation id="8845239796550121995">正在投放到電視上</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">月</translation>
 <translation id="901493112792887934">目前時間 (以秒為單位)</translation>
+<translation id="901834265349196618">電子郵件</translation>
 <translation id="9048119486235211610">導覽</translation>
 <translation id="9062295712474918030">文件</translation>
 <translation id="9062307380734144336">選取即可在播放/暫停之間切換</translation>

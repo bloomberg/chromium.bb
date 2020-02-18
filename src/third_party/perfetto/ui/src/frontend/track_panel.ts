@@ -63,7 +63,7 @@ class TrackShell implements m.ClassComponent<TrackShellAttrs> {
           {
             title: attrs.trackState.name,
           },
-          attrs.trackState.name + '\u200E'),
+          attrs.trackState.name),
         m(TrackButton, {
           action: Actions.toggleTrackPinned({trackId: attrs.trackState.id}),
           i: isPinned(attrs.trackState.id) ? 'star' : 'star_border',
@@ -159,10 +159,17 @@ interface TrackComponentAttrs {
 }
 class TrackComponent implements m.ClassComponent<TrackComponentAttrs> {
   view({attrs}: m.CVnode<TrackComponentAttrs>) {
-    return m('.track', [
-      m(TrackShell, {trackState: attrs.trackState}),
-      m(TrackContent, {track: attrs.track})
-    ]);
+    return m(
+        '.track',
+        {
+          style: {
+            height: `${attrs.track.getHeight()}px`,
+          }
+        },
+        [
+          m(TrackShell, {trackState: attrs.trackState}),
+          m(TrackContent, {track: attrs.track})
+        ]);
   }
 }
 
@@ -196,17 +203,6 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
   }
 
   view() {
-    return m(
-        '.track',
-        {
-          style: {
-            height: `${this.track.getHeight()}px`,
-          }
-        },
-        [
-          m(TrackShell, {trackState: this.trackState}),
-          m(TrackContent, {track: this.track})
-        ]);
     return m(TrackComponent, {trackState: this.trackState, track: this.track});
   }
 
@@ -221,7 +217,7 @@ export class TrackPanel extends Panel<TrackPanelAttrs> {
 
     ctx.translate(TRACK_SHELL_WIDTH, 0);
 
-    this.track.renderCanvas(ctx);
+    this.track.render(ctx);
 
     ctx.restore();
 

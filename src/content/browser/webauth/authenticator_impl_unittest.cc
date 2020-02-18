@@ -295,9 +295,8 @@ std::vector<device::PublicKeyCredentialDescriptor> GetTestCredentials(
     base::flat_set<device::FidoTransportProtocol> transports{
         device::FidoTransportProtocol::kUsbHumanInterfaceDevice,
         device::FidoTransportProtocol::kBluetoothLowEnergy};
-    device::PublicKeyCredentialDescriptor credential(
-        device::CredentialType::kPublicKey, id, transports);
-    descriptors.push_back(std::move(credential));
+    descriptors.emplace_back(device::CredentialType::kPublicKey, std::move(id),
+                             std::move(transports));
   }
   return descriptors;
 }
@@ -445,6 +444,26 @@ class AuthenticatorImplTest : public AuthenticatorTestBase {
     TestGetAssertionCallback callback_receiver;
     authenticator->GetAssertion(std::move(options),
                                 callback_receiver.callback());
+    callback_receiver.WaitForCallback();
+
+    return callback_receiver.status();
+  }
+
+  AuthenticatorStatus TryRegistrationWithAppIdExclude(
+      const std::string& origin,
+      const std::string& appid_exclude) {
+    const GURL origin_url(origin);
+    NavigateAndCommit(origin_url);
+    mojo::Remote<blink::mojom::Authenticator> authenticator =
+        ConnectToAuthenticator();
+    PublicKeyCredentialCreationOptionsPtr options =
+        GetTestPublicKeyCredentialCreationOptions();
+    options->relying_party.id = origin_url.host();
+    options->appid_exclude = appid_exclude;
+
+    TestMakeCredentialCallback callback_receiver;
+    authenticator->MakeCredential(std::move(options),
+                                  callback_receiver.callback());
     callback_receiver.WaitForCallback();
 
     return callback_receiver.status();
@@ -858,6 +877,10 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
+
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS,
+              TryRegistrationWithAppIdExclude(test_case.origin,
+                                              test_case.claimed_authority));
   }
 
   // All the invalid relying party test cases should also be invalid as AppIDs.
@@ -873,6 +896,10 @@ TEST_F(AuthenticatorImplTest, AppIdExtensionValues) {
     EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
               TryAuthenticationWithAppId(test_case.origin,
                                          test_case.claimed_authority));
+
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN,
+              TryRegistrationWithAppIdExclude(test_case.origin,
+                                              test_case.claimed_authority));
   }
 }
 
@@ -1151,6 +1178,49 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
 
     EXPECT_EQ(true, callback_receiver.value()->echo_appid_extension);
     EXPECT_EQ(true, callback_receiver.value()->appid_extension);
+  }
+}
+
+TEST_F(AuthenticatorImplTest, AppIdExcludeExtension) {
+  SimulateNavigation(GURL(kTestOrigin1));
+  auto authenticator = ConnectToAuthenticator();
+
+  // Attempt to register a credential using the appidExclude extension. It
+  // should fail when the registration already exists on the authenticator.
+  for (bool credential_already_exists : {false, true}) {
+    SCOPED_TRACE(credential_already_exists);
+
+    for (bool is_ctap2 : {false, true}) {
+      SCOPED_TRACE(is_ctap2);
+
+      ResetVirtualDevice();
+      virtual_device_factory_->SetSupportedProtocol(
+          is_ctap2 ? device::ProtocolVersion::kCtap2
+                   : device::ProtocolVersion::kU2f);
+
+      PublicKeyCredentialCreationOptionsPtr options =
+          GetTestPublicKeyCredentialCreationOptions();
+      options->appid_exclude = kTestOrigin1;
+      options->exclude_credentials = GetTestCredentials();
+
+      if (credential_already_exists) {
+        ASSERT_TRUE(
+            virtual_device_factory_->mutable_state()->InjectRegistration(
+                options->exclude_credentials[0].id(), kTestOrigin1));
+      }
+
+      TestMakeCredentialCallback callback_receiver;
+      authenticator->MakeCredential(std::move(options),
+                                    callback_receiver.callback());
+      callback_receiver.WaitForCallback();
+
+      if (credential_already_exists) {
+        ASSERT_EQ(AuthenticatorStatus::CREDENTIAL_EXCLUDED,
+                  callback_receiver.status());
+      } else {
+        ASSERT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+      }
+    }
   }
 }
 
@@ -1618,6 +1688,7 @@ class TestAuthenticatorRequestDelegate
       override {
     ASSERT_TRUE(action_callbacks_registered_callback_)
         << "RegisterActionCallbacks called twice.";
+    cancel_callback_.emplace(std::move(cancel_callback));
     std::move(action_callbacks_registered_callback_).Run();
   }
 
@@ -1640,7 +1711,19 @@ class TestAuthenticatorRequestDelegate
 
   bool IsFocused() override { return is_focused_; }
 
+  void OnTransportAvailabilityEnumerated(
+      device::FidoRequestHandlerBase::TransportAvailabilityInfo transport_info)
+      override {
+    // Simulate the behaviour of Chrome's |AuthenticatorRequestDialogModel|
+    // which shows a specific error when no transports are available and lets
+    // the user cancel the request.
+    if (transport_info.available_transports.empty()) {
+      std::move(*cancel_callback_).Run();
+    }
+  }
+
   base::OnceClosure action_callbacks_registered_callback_;
+  base::Optional<base::OnceClosure> cancel_callback_;
   const IndividualAttestation individual_attestation_;
   const AttestationConsent attestation_consent_;
   const bool is_focused_;
@@ -2315,6 +2398,7 @@ TEST_F(AuthenticatorContentBrowserClientTest,
 }
 
 TEST_F(AuthenticatorContentBrowserClientTest, IsUVPAA) {
+  SimulateNavigation(GURL(kTestOrigin1));
   for (const bool is_uvpaa : {false, true}) {
     SCOPED_TRACE(::testing::Message() << "is_uvpaa=" << is_uvpaa);
     test_client_.is_uvpaa = is_uvpaa;
@@ -2358,6 +2442,35 @@ TEST_F(AuthenticatorContentBrowserClientTest,
   EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
 }
 
+TEST_F(AuthenticatorContentBrowserClientTest,
+       CableCredentialWithoutCableExtension) {
+  // Exercise the case where a credential is marked as "cable" but no caBLE
+  // extension is provided. The AuthenticatorRequestClientDelegate should see no
+  // transports, which triggers it to cancel the request. (Outside of a testing
+  // environment, Chrome's AuthenticatorRequestClientDelegate will show an
+  // informative error and wait for the user to cancel the request.)
+  EnableFeature(features::kWebAuthCable);
+  TestServiceManagerContext service_manager_context;
+  SimulateNavigation(GURL(kTestOrigin1));
+
+  PublicKeyCredentialRequestOptionsPtr options =
+      GetTestPublicKeyCredentialRequestOptions();
+  std::vector<uint8_t> id(32u, 1u);
+  base::flat_set<device::FidoTransportProtocol> transports{
+      device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy};
+  options->allow_credentials.clear();
+  options->allow_credentials.emplace_back(device::CredentialType::kPublicKey,
+                                          std::move(id), std::move(transports));
+
+  TestGetAssertionCallback callback_receiver;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  authenticator->GetAssertion(std::move(options), callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, callback_receiver.status());
+}
+
 class MockAuthenticatorRequestDelegateObserver
     : public TestAuthenticatorRequestDelegate {
  public:
@@ -2377,9 +2490,7 @@ class MockAuthenticatorRequestDelegateObserver
         failure_reasons_callback_(std::move(failure_reasons_callback)) {}
   ~MockAuthenticatorRequestDelegateObserver() override = default;
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     CHECK(failure_reasons_callback_);
     std::move(failure_reasons_callback_).Run(reason);
     return false;
@@ -2416,9 +2527,10 @@ class FakeAuthenticatorCommon : public AuthenticatorCommon {
         mock_delegate_(std::move(mock_delegate)) {}
   ~FakeAuthenticatorCommon() override = default;
 
-  void UpdateRequestDelegate() override {
+  std::unique_ptr<AuthenticatorRequestClientDelegate> CreateRequestDelegate(
+      std::string relying_party_id) override {
     DCHECK(mock_delegate_);
-    request_delegate_ = std::move(mock_delegate_);
+    return std::move(mock_delegate_);
   }
 
  private:
@@ -2886,12 +2998,10 @@ class PINTestAuthenticatorRequestDelegate
 
   void FinishCollectPIN() override {}
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     *failure_reason_ = reason;
     return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
-        authenticator, reason);
+        reason);
   }
 
  private:
@@ -2923,8 +3033,6 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
   PINAuthenticatorImplTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(device::kWebAuthPINSupport);
-
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
     device::VirtualCtap2Device::Config config;
@@ -2982,7 +3090,6 @@ class PINAuthenticatorImplTest : public UVAuthenticatorImplTest {
 
  private:
   ContentBrowserClient* old_client_ = nullptr;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(PINAuthenticatorImplTest);
 };
@@ -3506,12 +3613,10 @@ class ResidentKeyTestAuthenticatorRequestDelegate
     *might_create_resident_credential_ = v;
   }
 
-  bool DoesBlockRequestOnFailure(
-      const ::device::FidoAuthenticator* authenticator,
-      InterestingFailureReason reason) override {
+  bool DoesBlockRequestOnFailure(InterestingFailureReason reason) override {
     *failure_reason_ = reason;
     return AuthenticatorRequestClientDelegate::DoesBlockRequestOnFailure(
-        authenticator, reason);
+        reason);
   }
 
  private:
@@ -3546,8 +3651,7 @@ class ResidentKeyAuthenticatorImplTest : public UVAuthenticatorImplTest {
   ResidentKeyAuthenticatorImplTest() = default;
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {device::kWebAuthPINSupport, device::kWebAuthResidentKeys}, {});
+    scoped_feature_list_.InitWithFeatures({device::kWebAuthResidentKeys}, {});
 
     UVAuthenticatorImplTest::SetUp();
     old_client_ = SetBrowserClientForTesting(&test_client_);
@@ -3657,17 +3761,38 @@ TEST_F(ResidentKeyAuthenticatorImplTest, StorageFull) {
             test_client_.failure_reason);
 }
 
-TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingle) {
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingleNoPII) {
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // with no identifying user info because the UI is bad in that case: we can
+  // only display the single choice of "Unknown user".
   test_client_.expected_accounts = "<invalid>";
+  authenticator->GetAssertion(get_credential_options(),
+                              callback_receiver.callback());
+  callback_receiver.WaitForCallback();
+  EXPECT_EQ(AuthenticatorStatus::SUCCESS, callback_receiver.status());
+  EXPECT_TRUE(HasUV(callback_receiver));
+}
+
+TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionSingleWithPII) {
+  ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
+      /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, "Test User"));
+
+  TestServiceManagerContext smc;
+  mojo::Remote<blink::mojom::Authenticator> authenticator =
+      ConnectToAuthenticator();
+  TestGetAssertionCallback callback_receiver;
+  // |SelectAccount| should be called when PII is available.
+  test_client_.expected_accounts = "01020304::Test User";
+  test_client_.selected_user_id = {1, 2, 3, 4};
   authenticator->GetAssertion(get_credential_options(),
                               callback_receiver.callback());
   callback_receiver.WaitForCallback();
@@ -3708,13 +3833,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, GetAssertionUVDiscouraged) {
 
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // without identifying information.
   test_client_.expected_accounts = "<invalid>";
   PublicKeyCredentialRequestOptionsPtr options(get_credential_options());
   options->user_verification =
@@ -3924,13 +4050,14 @@ TEST_F(ResidentKeyAuthenticatorImplTest, WithAppIDExtension) {
   virtual_device_factory_->SetCtap2Config(config);
   ASSERT_TRUE(virtual_device_factory_->mutable_state()->InjectResidentKey(
       /*credential_id=*/{{4, 3, 2, 1}}, kTestRelyingPartyId,
-      /*user_id=*/{{1, 2, 3, 4}}, "test@example.com", "Test User"));
+      /*user_id=*/{{1, 2, 3, 4}}, base::nullopt, base::nullopt));
 
   TestServiceManagerContext smc;
   mojo::Remote<blink::mojom::Authenticator> authenticator =
       ConnectToAuthenticator();
   TestGetAssertionCallback callback_receiver;
-  // |SelectAccount| should not be called when there's only a single response.
+  // |SelectAccount| should not be called when there's only a single response
+  // without identifying information.
   test_client_.expected_accounts = "<invalid>";
 
   PublicKeyCredentialRequestOptionsPtr options = get_credential_options();

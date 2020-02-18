@@ -102,13 +102,13 @@ bool ShouldIgnoreContents(const Node& node) {
   if (!element)
     return false;
   return (!element->ShouldSerializeEndTag() && !IsHTMLInputElement(*element)) ||
-         IsHTMLIFrameElement(*element) || IsHTMLImageElement(*element) ||
-         IsHTMLLegendElement(*element) || IsHTMLMeterElement(*element) ||
+         IsA<HTMLIFrameElement>(*element) || IsHTMLImageElement(*element) ||
+         IsA<HTMLLegendElement>(*element) || IsHTMLMeterElement(*element) ||
          IsHTMLObjectElement(*element) || IsHTMLProgressElement(*element) ||
          (IsHTMLSelectElement(*element) &&
           ToHTMLSelectElement(*element).UsesMenuList()) ||
          IsHTMLStyleElement(*element) || IsHTMLScriptElement(*element) ||
-         IsHTMLVideoElement(*element) || IsHTMLAudioElement(*element) ||
+         IsHTMLVideoElement(*element) || IsA<HTMLAudioElement>(*element) ||
          (element->GetDisplayLockContext() &&
           !element->GetDisplayLockContext()->IsActivatable());
 }
@@ -455,7 +455,6 @@ void FindBuffer::AddTextToBuffer(const Text& text_node,
         mapped_text.Substring(unit.TextContentStart(),
                               unit.TextContentEnd() - unit.TextContentStart());
     text_for_unit.Ensure16Bit();
-    text_for_unit.Replace('\n', kObjectReplacementCharacter);
     buffer_.Append(text_for_unit.Characters16(), text_for_unit.length());
     last_unit_end = unit.TextContentEnd();
   }

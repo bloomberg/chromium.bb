@@ -16,7 +16,7 @@
 #include "base/process/memory.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -298,7 +298,7 @@ class MetricsServiceBrowserFilesTest : public InProcessBrowserTest {
     // "Local State" directory is hard-coded because the FILE_LOCAL_STATE
     // path is not yet defined at this point.
     {
-      base::test::ScopedTaskEnvironment task_env;
+      base::test::TaskEnvironment task_env;
       auto state = base::MakeRefCounted<JsonPrefStore>(
           user_dir.Append(FILE_PATH_LITERAL("Local State")));
       state->SetValue(

@@ -30,7 +30,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/stl_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "crypto/nss_util.h"
@@ -64,11 +64,12 @@
 #include "net/ssl/ssl_info.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/ssl/ssl_server_config.h"
+#include "net/ssl/test_ssl_config_service.h"
 #include "net/ssl/test_ssl_private_key.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -303,7 +304,7 @@ class FakeSocket : public StreamSocket {
 
 // Verify the correctness of the test helper classes first.
 TEST(FakeSocketTest, DataTransfer) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Establish channels between two sockets.
   FakeDataChannel channel_1;
@@ -349,11 +350,11 @@ TEST(FakeSocketTest, DataTransfer) {
   EXPECT_EQ(0, memcmp(kTestData, read_buf->data(), read));
 }
 
-class SSLServerSocketTest : public PlatformTest,
-                            public WithScopedTaskEnvironment {
+class SSLServerSocketTest : public PlatformTest, public WithTaskEnvironment {
  public:
   SSLServerSocketTest()
-      : cert_verifier_(new MockCertVerifier()),
+      : ssl_config_service_(new TestSSLConfigService(SSLContextConfig())),
+        cert_verifier_(new MockCertVerifier()),
         client_cert_verifier_(new MockClientCertVerifier()),
         transport_security_state_(new TransportSecurityState),
         ct_verifier_(new DoNothingCTVerifier),
@@ -378,16 +379,14 @@ class SSLServerSocketTest : public PlatformTest,
     ASSERT_TRUE(key);
     server_ssl_private_key_ = WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
 
-    client_ssl_config_.false_start_enabled = false;
-
     // Certificate provided by the host doesn't need authority.
     client_ssl_config_.allowed_bad_certs.emplace_back(
         server_cert_, CERT_STATUS_AUTHORITY_INVALID);
 
     client_context_ = std::make_unique<SSLClientContext>(
-        cert_verifier_.get(), transport_security_state_.get(),
-        ct_verifier_.get(), ct_policy_enforcer_.get(),
-        ssl_client_session_cache_.get());
+        ssl_config_service_.get(), cert_verifier_.get(),
+        transport_security_state_.get(), ct_verifier_.get(),
+        ct_policy_enforcer_.get(), ssl_client_session_cache_.get());
   }
 
  protected:
@@ -410,6 +409,8 @@ class SSLServerSocketTest : public PlatformTest,
         server_cert_.get(), server_ssl_private_key_, server_ssl_config_);
   }
 
+  static HostPortPair GetHostAndPort() { return HostPortPair("unittest", 0); }
+
   void CreateSockets() {
     client_socket_.reset();
     server_socket_.reset();
@@ -420,10 +421,8 @@ class SSLServerSocketTest : public PlatformTest,
     std::unique_ptr<StreamSocket> server_socket =
         std::make_unique<FakeSocket>(channel_2_.get(), channel_1_.get());
 
-    HostPortPair host_and_pair("unittest", 0);
-
     client_socket_ = client_context_->CreateSSLClientSocket(
-        std::move(client_connection), host_and_pair, client_ssl_config_);
+        std::move(client_connection), GetHostAndPort(), client_ssl_config_);
     ASSERT_TRUE(client_socket_);
 
     server_socket_ =
@@ -433,17 +432,17 @@ class SSLServerSocketTest : public PlatformTest,
 
   void ConfigureClientCertsForClient(const char* cert_file_name,
                                      const char* private_key_file_name) {
-    client_ssl_config_.send_client_cert = true;
-    client_ssl_config_.client_cert =
+    scoped_refptr<X509Certificate> client_cert =
         ImportCertFromFile(GetTestCertsDirectory(), cert_file_name);
-    ASSERT_TRUE(client_ssl_config_.client_cert);
+    ASSERT_TRUE(client_cert);
 
     std::unique_ptr<crypto::RSAPrivateKey> key =
         ReadTestKey(private_key_file_name);
     ASSERT_TRUE(key);
 
-    client_ssl_config_.client_private_key =
-        WrapOpenSSLPrivateKey(bssl::UpRef(key->key()));
+    client_context_->SetClientCertificate(
+        GetHostAndPort(), std::move(client_cert),
+        WrapOpenSSLPrivateKey(bssl::UpRef(key->key())));
   }
 
   void ConfigureClientCertsForServer() {
@@ -509,6 +508,7 @@ class SSLServerSocketTest : public PlatformTest,
   std::unique_ptr<FakeDataChannel> channel_2_;
   SSLConfig client_ssl_config_;
   SSLServerConfig server_ssl_config_;
+  std::unique_ptr<TestSSLConfigService> ssl_config_service_;
   std::unique_ptr<MockCertVerifier> cert_verifier_;
   std::unique_ptr<MockClientCertVerifier> client_cert_verifier_;
   std::unique_ptr<TransportSecurityState> transport_security_state_;
@@ -897,7 +897,7 @@ TEST_F(SSLServerSocketTest, HandshakeWithWrongClientCertSuppliedTLS12) {
       ImportCertFromFile(GetTestCertsDirectory(), kClientCertFileName);
   ASSERT_TRUE(client_cert);
 
-  client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  client_ssl_config_.version_max_override = SSL_PROTOCOL_VERSION_TLS1_2;
   ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForClient(
       kWrongClientCertFileName, kWrongClientPrivateKeyFileName));
   ASSERT_NO_FATAL_FAILURE(ConfigureClientCertsForServer());
@@ -1169,11 +1169,13 @@ TEST_F(SSLServerSocketTest, RequireEcdheFlag) {
       0xcca8,  // ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
       0xcca9,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
   };
-  client_ssl_config_.disabled_cipher_suites.assign(
+  SSLContextConfig config;
+  config.disabled_cipher_suites.assign(
       kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
 
   // Legacy RSA key exchange ciphers only exist in TLS 1.2 and below.
-  client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
   // Require ECDHE on the server.
   server_ssl_config_.require_ecdhe = true;
@@ -1247,11 +1249,12 @@ TEST_F(SSLServerSocketTest, HandshakeServerSSLPrivateKeyRequireEcdhe) {
       0xcca8,  // ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256
       0xcca9,  // ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256
   };
-  client_ssl_config_.disabled_cipher_suites.assign(
+  SSLContextConfig config;
+  config.disabled_cipher_suites.assign(
       kEcdheCiphers, kEcdheCiphers + base::size(kEcdheCiphers));
-
   // TLS 1.3 always works with SSLPrivateKey.
-  client_ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  config.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
+  ssl_config_service_->UpdateSSLConfigAndNotify(config);
 
   ASSERT_NO_FATAL_FAILURE(CreateContextSSLPrivateKey());
   ASSERT_NO_FATAL_FAILURE(CreateSockets());

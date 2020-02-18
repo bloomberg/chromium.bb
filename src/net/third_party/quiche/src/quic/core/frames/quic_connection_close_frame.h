@@ -14,16 +14,6 @@
 
 namespace quic {
 
-// There are three different forms of CONNECTION_CLOSE.
-typedef enum QuicConnectionCloseType {
-  GOOGLE_QUIC_CONNECTION_CLOSE = 0,
-  IETF_QUIC_TRANSPORT_CONNECTION_CLOSE = 1,
-  IETF_QUIC_APPLICATION_CONNECTION_CLOSE = 2
-} QuicConnectionCloseType;
-QUIC_EXPORT_PRIVATE std::ostream& operator<<(
-    std::ostream& os,
-    const QuicConnectionCloseType type);
-
 struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
   QuicConnectionCloseFrame();
 
@@ -64,9 +54,10 @@ struct QUIC_EXPORT_PRIVATE QuicConnectionCloseFrame {
     QuicErrorCode quic_error_code;
   };
 
-  // This error code is extracted from, or added to, the "QuicErrorCode:
-  // QUIC_...(123)" text in the error_details. It provides fine-grained
-  // information as to the source of the error.
+  // For IETF QUIC frames, this is the error code is extracted from, or added
+  // to, the error details text. For received Google QUIC frames, the Google
+  // QUIC error code from the frame's error code field is copied here (as well
+  // as in quic_error_code, above).
   QuicErrorCode extracted_error_code;
 
   // String with additional error details. "QuicErrorCode: 123" will be appended

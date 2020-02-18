@@ -16,12 +16,12 @@
 #include "chrome/browser/chromeos/login/lock/screen_locker.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
 #include "chrome/common/extensions/api/input_ime.h"
 #include "chrome/common/extensions/api/input_method_private.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/common/manifest_handlers/background_info.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -271,12 +271,12 @@ class ImeObserverChromeOS : public ui::ImeObserver {
     // events (e.g. runtime.onMessage) from its other pages.
     // This is to save memory for steady state Chrome OS on which the users
     // don't want any IME features.
-    extensions::ExtensionSystem* extension_system =
-        extensions::ExtensionSystem::Get(profile_);
-    if (extension_system) {
+    extensions::ExtensionRegistry* extension_registry =
+        extensions::ExtensionRegistry::Get(profile_);
+    if (extension_registry) {
       const extensions::Extension* extension =
-          extension_system->extension_service()->GetExtensionById(
-              extension_id_, false /* include_disabled */);
+          extension_registry->GetExtensionById(
+              extension_id_, extensions::ExtensionRegistry::ENABLED);
       if (!extension)
         return;
       extensions::ProcessManager* process_manager =
@@ -370,12 +370,12 @@ class ImeObserverChromeOS : public ui::ImeObserver {
 
 namespace extensions {
 
-InputMethodEngine* GetActiveEngine(Profile* profile,
-                                   const std::string& extension_id) {
+InputMethodEngine* GetEngineIfActive(Profile* profile,
+                                     const std::string& extension_id) {
   InputImeEventRouter* event_router = GetInputImeEventRouter(profile);
   InputMethodEngine* engine =
       event_router ? static_cast<InputMethodEngine*>(
-                         event_router->GetActiveEngine(extension_id))
+                         event_router->GetEngineIfActive(extension_id))
                    : nullptr;
   return engine;
 }
@@ -468,7 +468,7 @@ InputMethodEngine* InputImeEventRouter::GetEngine(
   return (it != engine_map_.end()) ? it->second : nullptr;
 }
 
-InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
+InputMethodEngineBase* InputImeEventRouter::GetEngineIfActive(
     const std::string& extension_id) {
   std::map<std::string, InputMethodEngine*>::iterator it =
       engine_map_.find(extension_id);
@@ -477,7 +477,7 @@ InputMethodEngineBase* InputImeEventRouter::GetActiveEngine(
 }
 
 ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
@@ -498,7 +498,7 @@ ExtensionFunction::ResponseAction InputImeClearCompositionFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeHideInputViewFunction::Run() {
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine)
     return RespondNow(NoArguments());
@@ -579,7 +579,7 @@ InputImeSetCandidateWindowPropertiesFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(true)));
@@ -616,7 +616,7 @@ ExtensionFunction::ResponseAction InputImeSetCandidatesFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction InputImeSetCursorPositionFunction::Run() {
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine) {
     return RespondNow(OneArgument(std::make_unique<base::Value>(false)));
@@ -713,7 +713,7 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
   std::string active_extension_id =
       chromeos::extension_ime_util::GetExtensionIDFromInputMethodID(
           current_input_method.id());
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), active_extension_id);
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
@@ -728,7 +728,7 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetCompositionBoundsFunction::Run() {
-  InputMethodEngine* engine = GetActiveEngine(
+  InputMethodEngine* engine = GetEngineIfActive(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine)
     return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
@@ -760,7 +760,7 @@ void InputImeAPI::OnExtensionLoaded(content::BrowserContext* browser_context,
       // can receive the onActivate event to recover itself upon the
       // unexpected unload.
       InputMethodEngineBase* engine =
-          event_router->GetActiveEngine(extension->id());
+          event_router->GetEngineIfActive(extension->id());
       // When extension is unloaded unexpectedly and reloaded, OS doesn't pass
       // details.browser_context value in OnListenerAdded callback. So we need
       // to reactivate engine here.
@@ -817,8 +817,8 @@ void InputImeAPI::OnListenerAdded(const EventListenerInfo& details) {
   if (!details.browser_context)
     return;
   InputMethodEngine* engine =
-      GetActiveEngine(Profile::FromBrowserContext(details.browser_context),
-                      details.extension_id);
+      GetEngineIfActive(Profile::FromBrowserContext(details.browser_context),
+                        details.extension_id);
   // Notifies the IME extension for IME ready with onActivate/onFocus events.
   if (engine)
     engine->Enable(engine->GetActiveComponentId());

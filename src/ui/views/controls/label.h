@@ -114,7 +114,7 @@ class VIEWS_EXPORT Label : public View,
   void SetSelectionBackgroundColor(SkColor color);
 
   // Get/Set drop shadows underneath the text.
-  const gfx::ShadowValues& shadows() const;
+  const gfx::ShadowValues& GetShadows() const;
   void SetShadows(const gfx::ShadowValues& shadows);
 
   // Gets/Sets whether subpixel rendering is used; the default is true, but this
@@ -128,6 +128,14 @@ class VIEWS_EXPORT Label : public View,
   // UI.
   gfx::HorizontalAlignment GetHorizontalAlignment() const;
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
+
+  // Gets/Sets the vertical alignment. Affects how whitespace is distributed
+  // vertically around the label text, or if the label is not tall enough to
+  // render all of the text, what gets cut off. ALIGN_MIDDLE is default and is
+  // strongly suggested for single-line labels because it produces a consistent
+  // baseline even when rendering with mixed fonts.
+  gfx::VerticalAlignment GetVerticalAlignment() const;
+  void SetVerticalAlignment(gfx::VerticalAlignment alignment);
 
   // Get or set the distance in pixels between baselines of multi-line text.
   // Default is 0, indicating the distance between lines should be the standard
@@ -152,6 +160,10 @@ class VIEWS_EXPORT Label : public View,
   // should "Password!" display as "*********"); default is false.
   bool GetObscured() const;
   void SetObscured(bool obscured);
+
+  // Returns true if some portion of the text is not displayed, either because
+  // of eliding or clipping.
+  bool IsDisplayTextTruncated() const;
 
   // Gets/Sets whether multi-line text can wrap mid-word; the default is false.
   // TODO(mukai): allow specifying WordWrapBehavior.
@@ -280,6 +292,7 @@ class VIEWS_EXPORT Label : public View,
   FRIEND_TEST_ALL_PREFIXES(LabelTest, EmptyLabel);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, FocusBounds);
   FRIEND_TEST_ALL_PREFIXES(LabelTest, MultiLineSizingWithElide);
+  FRIEND_TEST_ALL_PREFIXES(LabelTest, IsDisplayTextTruncated);
   friend class LabelSelectionTest;
 
   // ContextMenuController overrides:

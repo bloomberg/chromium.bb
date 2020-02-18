@@ -140,8 +140,7 @@ DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
     : file_system_(file_system),
       has_pending_free_disk_space_(false),
       free_disk_space_delay_(
-          base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)),
-      weak_ptr_factory_(this) {}
+          base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)) {}
 
 DownloadHandler::~DownloadHandler() = default;
 
@@ -315,7 +314,7 @@ void DownloadHandler::OnDownloadCreated(DownloadManager* manager,
   // Remove any persisted Drive DownloadItem. crbug.com/171384
   if (IsPersistedDriveDownload(drive_tmp_download_path_, download)) {
     // Remove download later, since doing it here results in a crash.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&DownloadHandler::RemoveDownload,
                        weak_ptr_factory_.GetWeakPtr(),
@@ -375,8 +374,8 @@ void DownloadHandler::OnCreateDirectory(
     FileError error) {
   DVLOG(1) << "OnCreateDirectory " << FileErrorToString(error);
   if (error == FILE_ERROR_OK) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::Bind(&GetDriveTempDownloadPath, drive_tmp_download_path_),
         callback);
   } else {

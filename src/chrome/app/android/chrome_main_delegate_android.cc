@@ -15,10 +15,11 @@
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/common/profiler/main_thread_stack_sampling_profiler.h"
 #include "components/policy/core/browser/android/android_combined_policy_provider.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "content/public/browser/browser_main_runner.h"
 
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
 #include "components/safe_browsing/android/safe_browsing_api_handler.h"
 #include "components/safe_browsing/android/safe_browsing_api_handler_bridge.h"
 #endif
@@ -35,7 +36,7 @@ bool ChromeMainDelegateAndroid::BasicStartupComplete(int* exit_code) {
   // Start the sampling profiler as early as possible.
   sampling_profiler_ = std::make_unique<MainThreadStackSamplingProfiler>();
 
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   safe_browsing_api_handler_.reset(
       new safe_browsing::SafeBrowsingApiHandlerBridge());
   SafeBrowsingApiHandler::SetInstance(safe_browsing_api_handler_.get());
@@ -102,7 +103,7 @@ int ChromeMainDelegateAndroid::RunProcess(
 
 void ChromeMainDelegateAndroid::ProcessExiting(
     const std::string& process_type) {
-#if defined(SAFE_BROWSING_DB_REMOTE)
+#if BUILDFLAG(SAFE_BROWSING_DB_REMOTE)
   SafeBrowsingApiHandler::SetInstance(nullptr);
 #endif
 }

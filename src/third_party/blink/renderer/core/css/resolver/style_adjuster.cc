@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -155,7 +156,7 @@ static bool StopPropagateTextDecorations(const ComputedStyle& style,
 // The <a> behavior is non-standard.
 static bool OverridesTextDecorationColors(const Element* element) {
   return element &&
-         (IsHTMLFontElement(element) || IsHTMLAnchorElement(element));
+         (IsA<HTMLFontElement>(element) || IsA<HTMLAnchorElement>(element));
 }
 
 // FIXME: This helper is only needed because pseudoStyleForElement passes a null
@@ -229,7 +230,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLFrameElement(element) || IsHTMLFrameSetElement(element)) {
+  if (IsA<HTMLFrameElement>(element) || IsA<HTMLFrameSetElement>(element)) {
     // Frames and framesets never honor position:relative or position:absolute.
     // This is necessary to fix a crash where a site tries to position these
     // objects. They also never honor display nor floating.
@@ -259,7 +260,8 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLLegendElement(element) && style.Display() != EDisplay::kContents) {
+  if (IsA<HTMLLegendElement>(element) &&
+      style.Display() != EDisplay::kContents) {
     // Allow any blockified display value for legends. Note that according to
     // the spec, this shouldn't affect computed style (like we do here).
     // Instead, the display override should be determined during box creation,
@@ -271,7 +273,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
     return;
   }
 
-  if (IsHTMLMarqueeElement(element)) {
+  if (IsA<HTMLMarqueeElement>(element)) {
     // For now, <marquee> requires an overflow clip to work properly.
     style.SetOverflowX(EOverflow::kHidden);
     style.SetOverflowY(EOverflow::kHidden);
@@ -302,9 +304,9 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   if (style.Display() == EDisplay::kContents) {
     // See https://drafts.csswg.org/css-display/#unbox-html
     // Some of these elements are handled with other adjustments above.
-    if (IsHTMLBRElement(element) || IsHTMLWBRElement(element) ||
+    if (IsA<HTMLBRElement>(element) || IsHTMLWBRElement(element) ||
         IsHTMLMeterElement(element) || IsHTMLProgressElement(element) ||
-        IsHTMLCanvasElement(element) || IsHTMLMediaElement(element) ||
+        IsA<HTMLCanvasElement>(element) || IsHTMLMediaElement(element) ||
         IsHTMLInputElement(element) || IsHTMLTextAreaElement(element) ||
         IsHTMLSelectElement(element)) {
       style.SetDisplay(EDisplay::kNone);
@@ -312,7 +314,7 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
   }
 }
 
-static void AdjustOverflow(ComputedStyle& style) {
+void StyleAdjuster::AdjustOverflow(ComputedStyle& style) {
   DCHECK(style.OverflowX() != EOverflow::kVisible ||
          style.OverflowY() != EOverflow::kVisible);
 
@@ -356,8 +358,11 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   // Blockify the children of flex, grid or LayoutCustom containers.
   if (layout_parent_style.BlockifiesChildren()) {
     style.SetIsInBlockifyingDisplay();
-    if (style.Display() != EDisplay::kContents)
+    if (style.Display() != EDisplay::kContents) {
       style.SetDisplay(EquivalentBlockDisplay(style.Display()));
+      if (!style.HasOutOfFlowPosition())
+        style.SetIsFlexOrGridOrCustomItem();
+    }
   }
 
   if (style.Display() == EDisplay::kBlock && !style.IsFloating())
@@ -418,6 +423,12 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
     style.UpdateFontOrientation();
   }
 
+  // Disable editing custom layout elements, until EditingNG is ready.
+  if (!RuntimeEnabledFeatures::EditingNGEnabled() &&
+      (style.Display() == EDisplay::kLayoutCustom ||
+       style.Display() == EDisplay::kInlineLayoutCustom))
+    style.SetUserModify(EUserModify::kReadOnly);
+
   if (layout_parent_style.IsDisplayFlexibleOrGridBox()) {
     style.SetFloating(EFloat::kNone);
 
@@ -443,7 +454,7 @@ static void AdjustEffectiveTouchAction(ComputedStyle& style,
   TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
   bool is_replaced_canvas =
-      element && IsHTMLCanvasElement(element) &&
+      element && IsA<HTMLCanvasElement>(element) &&
       element->GetDocument().GetFrame() &&
       element->GetDocument().CanExecuteScripts(kNotAboutToExecuteScript);
   bool is_non_replaced_inline_elements =
@@ -546,7 +557,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     AdjustStyleForDisplay(style, layout_parent_style,
                           element ? &element->GetDocument() : nullptr);
 
-    // If this is a child of a LayoutCustom, we need the name of the parent
+    // If this is a child of a LayoutNGCustom, we need the name of the parent
     // layout function for invalidation purposes.
     if (layout_parent_style.IsDisplayLayoutCustomBox()) {
       style.SetDisplayLayoutCustomParentName(
@@ -554,6 +565,22 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   } else {
     AdjustStyleForFirstLetter(style);
+  }
+
+  if (element && RuntimeEnabledFeatures::DisplayLockingEnabled() &&
+      element->hasAttribute(html_names::kRendersubtreeAttr)) {
+    // The element has the rendersubtree attr, so we should add style and
+    // layout containment. If the attribute contains "invisible" we should
+    // also add size containment.
+    Containment contain = kContainsStyle | kContainsLayout;
+    SpaceSplitString tokens(
+        element->getAttribute(html_names::kRendersubtreeAttr).LowerASCII());
+    if (style.ContainsSize() || tokens.Contains("invisible")) {
+      contain |= kContainsSize;
+    }
+    if (style.ContainsPaint())
+      contain |= kContainsPaint;
+    style.SetContain(contain);
   }
 
   if (style.IsColorInternalText()) {
@@ -591,8 +618,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
   style.AdjustMaskLayers();
 
   // Let the theme also have a crack at adjusting the style.
-  if (style.HasAppearance())
-    LayoutTheme::GetTheme().AdjustStyle(style, element);
+  LayoutTheme::GetTheme().AdjustStyle(style, element);
 
   AdjustStyleForEditing(style);
 
@@ -650,7 +676,7 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
 
   bool is_media_control =
       element && element->ShadowPseudoId().StartsWith("-webkit-media-controls");
-  if (is_media_control && style.Appearance() == kNoControlPart) {
+  if (is_media_control && !style.HasEffectiveAppearance()) {
     // For compatibility reasons if the element is a media control and the
     // -webkit-appearance is none then we should clear the background image.
     if (!StyleResolver::HasAuthorBackground(state)) {

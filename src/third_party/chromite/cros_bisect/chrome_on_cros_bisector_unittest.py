@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import copy
-import mock
 import itertools
 import os
+
+import mock
 
 from chromite.cli import flash
 from chromite.cros_bisect import common
@@ -403,10 +404,9 @@ class TestChromeOnCrosBisector(cros_test_lib.MockTempDirTestCase):
 
     flash_mock_call_counter = itertools.count()
     def flash_mock_return(*unused_args, **unused_kwargs):
-      nth_call = flash_mock_call_counter.next()
+      nth_call = next(flash_mock_call_counter)
       if nth_call < 3:
         raise flash.FlashError('Flash failed.')
-      return
 
     flash_mock = self.PatchObject(flash, 'Flash')
     flash_mock.side_effect = flash_mock_return

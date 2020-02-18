@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/source_stream_to_data_pipe.h"
+
 #include "base/bind.h"
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/filter/mock_source_stream.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -102,13 +103,13 @@ class SourceStreamToDataPipeTest
   mojo::DataPipeConsumerHandle consumer_end() { return consumer_end_.get(); }
 
   void CloseConsumerHandle() { consumer_end_.reset(); }
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
   base::Optional<int> CallbackResult() { return callback_result_; }
 
  private:
   void FinishedReading(int result) { callback_result_ = result; }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::MockSourceStream* source_;
   std::unique_ptr<SourceStreamToDataPipe> adapter_;
   mojo::ScopedDataPipeConsumerHandle consumer_end_;

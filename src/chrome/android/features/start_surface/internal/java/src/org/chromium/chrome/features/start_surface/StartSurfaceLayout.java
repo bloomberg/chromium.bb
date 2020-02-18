@@ -16,7 +16,6 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.text.TextUtils;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
@@ -40,7 +39,6 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
-import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -192,7 +190,7 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
     public void startHiding(int nextId, boolean hintAtTabSelection) {
         super.startHiding(nextId, hintAtTabSelection);
 
-        int sourceTabId = mNextTabId;
+        int sourceTabId = nextId;
         if (sourceTabId == Tab.INVALID_TAB_ID) sourceTabId = mTabModelSelector.getCurrentTabId();
         LayoutTab sourceLayoutTab = createLayoutTab(
                 sourceTabId, mTabModelSelector.isIncognitoSelected(), NO_CLOSE_BUTTON, NO_TITLE);
@@ -393,11 +391,6 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         String message = String.format(Locale.US,
                 "fps = %.2f (%d / %dms), maxFrameInterval = %d, dirtySpan = %d", fps, frameRendered,
                 elapsedMs, mMaxFrameInterval, dirtySpan);
-
-        if (ChromeVersionInfo.isLocalBuild()) {
-            Toast.makeText(ContextUtils.getApplicationContext(), message, Toast.LENGTH_SHORT)
-                    .show();
-        }
 
         // TODO(crbug.com/964406): stop logging it after this feature stabilizes.
         if (!ChromeVersionInfo.isStableBuild()) {

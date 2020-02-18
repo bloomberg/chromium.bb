@@ -44,13 +44,6 @@ namespace remoting {
 
 using protocol::ActionRequest;
 
-namespace {
-
-// Name of command-line flag to disable use of I444 by default.
-const char kDisableI444SwitchName[] = "disable-i444";
-
-}  // namespace
-
 ClientSession::ClientSession(
     EventHandler* event_handler,
     std::unique_ptr<protocol::ConnectionToClient> connection,
@@ -71,12 +64,7 @@ ClientSession::ClientSession(
       disable_clipboard_filter_(clipboard_echo_filter_.host_filter()),
       client_clipboard_factory_(clipboard_echo_filter_.client_filter()),
       max_duration_(max_duration),
-      pairing_registry_(pairing_registry),
-      // Note that |lossless_video_color_| defaults to true, but actually only
-      // controls VP9 video stream color quality.
-      lossless_video_color_(!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          kDisableI444SwitchName)),
-      weak_factory_(this) {
+      pairing_registry_(pairing_registry) {
   connection_->session()->AddPlugin(&host_experiment_session_plugin_);
   connection_->SetEventHandler(this);
 
@@ -453,6 +441,13 @@ void ClientSession::DisconnectSession(protocol::ErrorCode error) {
   // This triggers OnConnectionClosed(), and the session may be destroyed
   // as the result, so this call must be the last in this method.
   connection_->Disconnect(error);
+}
+
+void ClientSession::OnLocalKeyPressed(uint32_t usb_keycode) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  bool is_local = remote_input_filter_.LocalKeyPressed(usb_keycode);
+  if (is_local && desktop_environment_options_.terminate_upon_input())
+    DisconnectSession(protocol::OK);
 }
 
 void ClientSession::OnLocalPointerMoved(const webrtc::DesktopVector& position,

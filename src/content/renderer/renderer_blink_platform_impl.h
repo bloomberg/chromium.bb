@@ -20,8 +20,9 @@
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
 #include "content/common/content_export.h"
-#include "content/common/possibly_associated_interface_ptr.h"
 #include "content/renderer/top_level_blame_context.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/shared_remote.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
@@ -51,7 +52,6 @@ class SharedURLLoaderFactory;
 }
 
 namespace content {
-class BlinkInterfaceProviderImpl;
 class ChildURLLoaderFactoryBundle;
 class ThreadSafeSender;
 
@@ -71,8 +71,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Platform methods:
   blink::WebSandboxSupport* GetSandboxSupport() override;
   blink::WebThemeEngine* ThemeEngine() override;
-  std::unique_ptr<blink::WebSpeechSynthesizer> CreateSpeechSynthesizer(
-      blink::WebSpeechSynthesizerClient* client) override;
   virtual bool sandboxEnabled();
   uint64_t VisitedLinkHash(const char* canonicalURL, size_t length) override;
   bool IsLinkVisited(uint64_t linkHash) override;
@@ -123,7 +121,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
                            const char* audio_file_data,
                            size_t data_size) override;
 
-  blink::WebBlobRegistry* GetBlobRegistry() override;
   scoped_refptr<media::AudioCapturerSource> NewAudioCapturerSource(
       blink::WebLocalFrame* web_frame,
       const media::AudioSourceParameters& params) override;
@@ -135,10 +132,10 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       scoped_refptr<base::SingleThreadTaskRunner> task_runner) override;
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
-  std::unique_ptr<blink::WebMediaStreamCenter> CreateMediaStreamCenter()
-      override;
   scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcWorkerThread() override;
   rtc::Thread* GetWebRtcWorkerThreadRtcThread() override;
+  scoped_refptr<base::SingleThreadTaskRunner> GetWebRtcSignalingTaskRunner()
+      override;
   std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
       blink::WebLocalFrame* frame) override;
   std::unique_ptr<webrtc::AsyncResolverFactory>
@@ -155,6 +152,14 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       const media::AudioSinkParameters& params) override;
   media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) override;
+  blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() override;
+  base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() override;
+  base::Optional<int> GetAgcStartupMinimumVolume() override;
+  void TrackGetUserMedia(
+      const blink::WebUserMediaRequest& web_request) override;
+  bool IsWebRtcHWH264DecodingEnabled(
+      webrtc::VideoCodecType video_coded_type) override;
+  blink::WebVideoCaptureImplManager* GetVideoCaptureImplManager() override;
 
   std::unique_ptr<blink::WebGraphicsContext3DProvider>
   CreateOffscreenGraphicsContext3DProvider(
@@ -169,8 +174,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
       blink::Platform::GraphicsInfo* gl_info) override;
   gpu::GpuMemoryBufferManager* GetGpuMemoryBufferManager() override;
   blink::WebString ConvertIDNToUnicode(const blink::WebString& host) override;
-  service_manager::Connector* GetConnector() override;
-  blink::InterfaceProvider* GetInterfaceProvider() override;
   void SetDisplayThreadPriority(base::PlatformThreadId thread_id) override;
   blink::BlameContext* GetTopLevelBlameContext() override;
   void RecordRappor(const char* metric,
@@ -191,15 +194,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   void RecordMetricsForBackgroundedRendererPurge() override;
 
-  // Disables the WebSandboxSupport implementation for testing.
-  // Tests that do not set up a full sandbox environment should call
-  // SetSandboxEnabledForTesting(false) _before_ creating any instances
-  // of this class, to ensure that we don't attempt to use sandbox-related
-  // file descriptors or other resources.
-  //
-  // Returns the previous |enable| value.
-  static bool SetSandboxEnabledForTesting(bool enable);
-
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
   std::unique_ptr<blink::CodeCacheLoader> CreateCodeCacheLoader() override;
@@ -217,8 +211,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ChildURLLoaderFactoryBundle>
   CreateDefaultURLLoaderFactoryBundle();
 
-  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
-  CreateNetworkURLLoaderFactory();
+  network::mojom::URLLoaderFactoryPtr CreateNetworkURLLoaderFactory();
 
   // Tells this platform that the renderer is locked to a site (i.e., a scheme
   // plus eTLD+1, such as https://google.com), or to a more specific origin.
@@ -230,7 +223,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // Return the mojo interface for making CodeCache calls.
   blink::mojom::CodeCacheHost& GetCodeCacheHost();
 
-  std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
@@ -246,8 +238,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   // If true, the renderer process is locked to a site.
   bool is_locked_to_site_;
 
-  std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
-
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
@@ -256,10 +246,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   TopLevelBlameContext top_level_blame_context_;
 
-  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
-
-  blink::mojom::CodeCacheHostPtrInfo code_cache_host_info_;
-  scoped_refptr<blink::mojom::ThreadSafeCodeCacheHostPtr> code_cache_host_;
+  mojo::PendingRemote<blink::mojom::CodeCacheHost> code_cache_host_remote_;
+  mojo::SharedRemote<blink::mojom::CodeCacheHost> code_cache_host_;
 
   std::unique_ptr<blink::WebTransmissionEncodingInfoHandler>
       web_transmission_encoding_info_handler_;

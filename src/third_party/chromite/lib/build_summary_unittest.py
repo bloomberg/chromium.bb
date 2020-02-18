@@ -31,7 +31,7 @@ class BuildSummaryTests(cros_test_lib.TestCase):
 
   def testInvalidJson(self):
     """Test that invalid JSON raises an exception."""
-    bad_json = "{"
+    bad_json = '{'
     summary = build_summary.BuildSummary()
     self.assertRaises(ValueError, summary.from_json, bad_json)
 

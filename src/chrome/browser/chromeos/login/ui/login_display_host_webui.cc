@@ -386,8 +386,7 @@ class LoginDisplayHostWebUI::KeyboardDrivenOobeKeyHandler
 // LoginDisplayHostWebUI, public
 
 LoginDisplayHostWebUI::LoginDisplayHostWebUI()
-    : oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()),
-      weak_factory_(this) {
+    : oobe_startup_sound_played_(StartupUtils::IsOobeCompleted()) {
   SessionManagerClient::Get()->AddObserver(this);
   CrasAudioHandler::Get()->AddAudioObserver(this);
 
@@ -870,7 +869,7 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   ash_util::SetupWidgetInitParamsForContainer(
       &params, ash::kShellWindowId_LockScreenContainer);
   login_window_ = new views::Widget;
-  login_window_->Init(params);
+  login_window_->Init(std::move(params));
 
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings());
   login_view_->Init();

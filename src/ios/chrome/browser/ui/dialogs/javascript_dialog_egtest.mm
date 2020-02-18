@@ -23,12 +23,13 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #include "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/testing/earl_grey/matchers.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/url_test_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
@@ -43,6 +44,8 @@
 using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::OKButton;
 using chrome_test_util::SettingsDoneButton;
+using chrome_test_util::WebViewMatcher;
+
 using base::test::ios::kWaitForJSCompletionTimeout;
 using base::test::ios::kWaitForUIElementTimeout;
 using base::test::ios::WaitUntilConditionOrTimeout;
@@ -374,11 +377,6 @@ void TapSuppressDialogsButton() {
       chrome_test_util::ButtonWithAccessibilityLabelId(IDS_OK);
   [[EarlGrey selectElementWithMatcher:OKButton] performAction:grey_tap()
                                                         error:&errorOK];
-  // Reenable synchronization in case it was disabled by a test.  See comments
-  // in testShowJavaScriptAfterNewTabAnimation for details.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
 
   if (!errorOK || !errorCancel) {
     GREYFail(@"There are still alerts");
@@ -577,15 +575,17 @@ void TapSuppressDialogsButton() {
 
 // Tests that an alert is presented after a new tab animation is finished.
 - (void)testShowJavaScriptAfterNewTabAnimation {
+  // TODO(crbug.com/989550) Disable broken context menu tests on Xc11b5.
+  if (@available(iOS 13, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS13.");
+  }
+
   // Load the test page with a link to kOnLoadAlertURL and long tap on the link.
   [self loadPageWithLink];
 
   // TODO(crbug.com/712358): Use method LongPressElementAndTapOnButton once
   // it is moved out of context_menu_egtests.mm and into a shared location.
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:kLinkID],
                         true /* menu should appear */)];
@@ -603,28 +603,23 @@ void TapSuppressDialogsButton() {
   // continues to animate until the dialog is closed.  Disabling EarlGrey
   // synchronization code for iPad allows the test to detect and dismiss the
   // dialog while this animation is occurring.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@(NO)
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  }
+  {
+    std::unique_ptr<ScopedSynchronizationDisabler> disabler =
+        std::make_unique<ScopedSynchronizationDisabler>();
+    if (![ChromeEarlGrey isIPadIdiom]) {
+      disabler.reset();
+    }
 
-  // Wait for the alert to be shown.
-  WaitForJavaScriptDialogToBeShown(self.onLoadPageURL);
+    // Wait for the alert to be shown.
+    WaitForJavaScriptDialogToBeShown(self.onLoadPageURL);
 
-  // Verify that the omnibox shows the correct URL when the dialog is visible.
-  std::string title =
-      base::UTF16ToUTF8(web::GetDisplayTitleForUrl(self.onLoadPageURL));
-  [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
-      assertWithMatcher:grey_notNil()];
+    // Verify that the omnibox shows the correct URL when the dialog is visible.
+    std::string title =
+        base::UTF16ToUTF8(web::GetDisplayTitleForUrl(self.onLoadPageURL));
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::OmniboxText(title)]
+        assertWithMatcher:grey_notNil()];
 
-  [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
-
-  // Reenable synchronization on iPads now that the dialog has been dismissed.
-  if ([ChromeEarlGrey isIPadIdiom]) {
-    [[GREYConfiguration sharedInstance]
-            setValue:@(YES)
-        forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    [[EarlGrey selectElementWithMatcher:OKButton()] performAction:grey_tap()];
   }
 }
 

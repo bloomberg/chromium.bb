@@ -12,7 +12,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -66,7 +65,9 @@ class PLATFORM_EXPORT ThreadHeapStatsObserver {
   V(VisitPersistents)                 \
   V(VisitStackRoots)
 
-#define FOR_ALL_CONCURRENT_SCOPES(V) V(ConcurrentSweep)
+#define FOR_ALL_CONCURRENT_SCOPES(V) \
+  V(ConcurrentMark)                  \
+  V(ConcurrentSweep)
 
 // Manages counters and statistics across garbage collection cycles.
 //
@@ -252,6 +253,12 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     // Time spent incrementally marking the heap.
     base::TimeDelta incremental_marking_time() const;
 
+    // Time spent in foreground tasks marking the heap.
+    base::TimeDelta foreground_marking_time() const;
+
+    // Time spent in background tasks marking the heap.
+    base::TimeDelta background_marking_time() const;
+
     // Overall time spent marking the heap.
     base::TimeDelta marking_time() const;
 
@@ -279,7 +286,7 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
     size_t partition_alloc_bytes_before_sweeping = 0;
     double live_object_rate = 0;
     size_t wrapper_count_before_sweeping = 0;
-    base::TimeDelta gc_nested_in_v8_;
+    base::TimeDelta gc_nested_in_v8;
   };
 
   // Indicates a new garbage collection cycle.
@@ -348,7 +355,6 @@ class PLATFORM_EXPORT ThreadHeapStatsCollector {
 
   // Statistics for the previously running garbage collection.
   const Event& previous() const { return previous_; }
-
 
   void RegisterObserver(ThreadHeapStatsObserver* observer);
   void UnregisterObserver(ThreadHeapStatsObserver* observer);

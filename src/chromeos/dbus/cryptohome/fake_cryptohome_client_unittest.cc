@@ -10,7 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/attestation/attestation.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -46,7 +46,7 @@ class FakeCryptohomeClientTest : public ::testing::Test {
   FakeCryptohomeClientTest() = default;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeCryptohomeClient fake_cryptohome_client_;
 
  private:
@@ -57,7 +57,8 @@ TEST_F(FakeCryptohomeClientTest, SignSimpleChallenge) {
   constexpr char kChallenge[] = "challenge";
 
   TestObserver observer;
-  ScopedObserver<CryptohomeClient, TestObserver> scoped_observer(&observer);
+  ScopedObserver<CryptohomeClient, CryptohomeClient::Observer> scoped_observer(
+      &observer);
   scoped_observer.Add(&fake_cryptohome_client_);
 
   cryptohome::AccountIdentifier cryptohome_id;

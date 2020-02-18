@@ -8,11 +8,13 @@
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread.h"
 #include "cc/animation/animation_delegate.h"
+#include "cc/test/property_tree_test_utils.h"
 #include "cc/test/test_hooks.h"
 #include "cc/test/test_task_graph_runner.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
+#include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/test/test_gpu_memory_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,23 +34,6 @@ class Proxy;
 class SingleKeyframeEffectAnimation;
 class TestLayerTreeFrameSink;
 class TestTaskGraphRunner;
-
-// Creates the virtual viewport layer hierarchy under the given root_layer.
-// Convenient overload of the method below that creates a scrolling layer as
-// the outer viewport scroll layer.
-void CreateVirtualViewportLayers(Layer* root_layer,
-                                 const gfx::Size& inner_bounds,
-                                 const gfx::Size& outer_bounds,
-                                 const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host);
-
-// Creates the virtual viewport layer hierarchy under the given root_layer.
-// Uses the given scroll layer as the content "outer viewport scroll layer".
-void CreateVirtualViewportLayers(Layer* root_layer,
-                                 scoped_refptr<Layer> outer_scroll_layer,
-                                 const gfx::Size& outer_bounds,
-                                 const gfx::Size& scroll_bounds,
-                                 LayerTreeHost* host);
 
 class LayerTreeHostClientForTesting;
 
@@ -123,10 +108,15 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   AnimationHost* animation_host() const { return animation_host_.get(); }
 
-  void SetUseLayerList() { settings_.use_layer_lists = true; }
+  void SetUseLayerLists() { settings_.use_layer_lists = true; }
 
  protected:
   LayerTreeTest();
+
+  void SkipAllocateInitialLocalSurfaceId();
+  const viz::LocalSurfaceIdAllocation& GetCurrentLocalSurfaceIdAllocation()
+      const;
+  void GenerateNewLocalSurfaceId();
 
   virtual void InitializeSettings(LayerTreeSettings* settings) {}
 
@@ -138,8 +128,14 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   void SetInitialDeviceScaleFactor(float initial_device_scale_factor) {
     initial_device_scale_factor_ = initial_device_scale_factor;
   }
+  // Used when LayerTreeTest::SetupTree() creates the root layer. Not used if
+  // the root layer is created before LayerTreeTest::SetupTree() is called.
+  // The default is 1x1.
+  void SetInitialRootBounds(const gfx::Size& bounds) {
+    initial_root_bounds_ = bounds;
+  }
 
-  virtual void AfterTest() = 0;
+  virtual void AfterTest() {}
   virtual void WillBeginTest();
   virtual void BeginTest() = 0;
   virtual void SetupTree();
@@ -237,6 +233,7 @@ class LayerTreeTest : public testing::Test, public TestHooks {
 
   LayerTreeSettings settings_;
   float initial_device_scale_factor_ = 1.f;
+  gfx::Size initial_root_bounds_;
 
   CompositorMode mode_;
 
@@ -267,6 +264,8 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   std::unique_ptr<TestTaskGraphRunner> task_graph_runner_;
   base::CancelableOnceClosure timeout_;
   scoped_refptr<viz::TestContextProvider> compositor_contexts_;
+  bool skip_allocate_initial_local_surface_id_ = false;
+  viz::ParentLocalSurfaceIdAllocator allocator_;
   base::WeakPtr<LayerTreeTest> main_thread_weak_ptr_;
   base::WeakPtrFactory<LayerTreeTest> weak_factory_{this};
 };

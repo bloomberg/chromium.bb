@@ -43,8 +43,8 @@ ImeWindowView::ImeWindowView(ImeWindow* ime_window,
   params.visible_on_all_workspaces = false;
   params.bounds = bounds;
   window_->set_focus_on_creation(false);
-  window_->set_frame_type(views::Widget::FRAME_TYPE_FORCE_CUSTOM);
-  window_->Init(params);
+  window_->set_frame_type(views::Widget::FrameType::kForceCustom);
+  window_->Init(std::move(params));
   window_->UpdateWindowTitle();
   window_->UpdateWindowIcon();
 

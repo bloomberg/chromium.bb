@@ -195,8 +195,8 @@ SearchEnginesHandler::CreateDictionaryForEngine(int index, bool is_default) {
       "keyword",
       table_model->GetText(index, IDS_SEARCH_ENGINES_EDITOR_KEYWORD_COLUMN));
   Profile* profile = Profile::FromWebUI(web_ui());
-  dict->SetString("url", template_url->url_ref().DisplayURL(
-                             UIThreadSearchTermsData(profile)));
+  dict->SetString(
+      "url", template_url->url_ref().DisplayURL(UIThreadSearchTermsData()));
   dict->SetBoolean("urlLocked", template_url->prepopulate_id() > 0);
   GURL icon_url = template_url->favicon_url();
   if (icon_url.is_valid())
@@ -284,10 +284,10 @@ void SearchEnginesHandler::HandleSearchEngineEditStarted(
     return;
   }
 
-  edit_controller_.reset(new EditSearchEngineController(
+  edit_controller_ = std::make_unique<EditSearchEngineController>(
       index == kNewSearchEngineIndex ? nullptr
                                      : list_controller_.GetTemplateURL(index),
-      this, Profile::FromWebUI(web_ui())));
+      this, Profile::FromWebUI(web_ui()));
 }
 
 void SearchEnginesHandler::OnEditedKeyword(TemplateURL* template_url,

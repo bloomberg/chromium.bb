@@ -43,7 +43,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_request_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -72,7 +71,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoader
   mojo::ScopedDataPipeProducerHandle response_body_producer_handle_;
   mojo::ScopedDataPipeConsumerHandle response_body_consumer_handle_;
 
-  base::WeakPtrFactory<BlobURLLoader> weak_factory_;
+  base::WeakPtrFactory<BlobURLLoader> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(BlobURLLoader);
 };

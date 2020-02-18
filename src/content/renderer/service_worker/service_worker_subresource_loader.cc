@@ -22,6 +22,9 @@
 #include "content/renderer/renderer_blink_platform_impl.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
@@ -73,7 +76,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
  private:
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
         rewrite_header_callback_.Run(response_head));
@@ -81,7 +84,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override {
+      network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveRedirect(
         redirect_info, rewrite_header_callback_.Run(response_head));
@@ -128,11 +131,12 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
 class ServiceWorkerSubresourceLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
-  StreamWaiter(ServiceWorkerSubresourceLoader* owner,
-               blink::mojom::ServiceWorkerStreamCallbackRequest request)
-      : owner_(owner), binding_(this, std::move(request)) {
+  StreamWaiter(
+      ServiceWorkerSubresourceLoader* owner,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback> receiver)
+      : owner_(owner), receiver_(this, std::move(receiver)) {
     DCHECK(owner_);
-    binding_.set_connection_error_handler(
+    receiver_.set_disconnect_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
 
@@ -142,7 +146,7 @@ class ServiceWorkerSubresourceLoader::StreamWaiter
 
  private:
   ServiceWorkerSubresourceLoader* owner_;
-  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
@@ -163,10 +167,8 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
-      response_callback_binding_(this),
       body_as_blob_size_(blink::BlobUtils::kUnknownSize),
       controller_connector_(std::move(controller_connector)),
-      controller_connector_observer_(this),
       fetch_request_restarted_(false),
       blob_reading_complete_(false),
       side_data_reading_complete_(false),
@@ -221,8 +223,10 @@ void ServiceWorkerSubresourceLoader::StartRequest(
 }
 
 void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_ptr;
-  response_callback_binding_.Bind(mojo::MakeRequest(&response_callback_ptr));
+  mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback;
+  response_callback_receiver_.Bind(
+      response_callback.InitWithNewPipeAndPassReceiver());
   blink::mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
@@ -263,7 +267,7 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // TODO(falken): Grant the controller service worker's process access to files
   // in the body, like ServiceWorkerFetchDispatcher::DispatchFetchEvent() does.
   controller->DispatchFetchEventForSubresource(
-      std::move(params), std::move(response_callback_ptr),
+      std::move(params), std::move(response_callback),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
                      weak_factory_.GetWeakPtr()));
 }
@@ -305,7 +309,7 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
 }
 
 void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
-  response_callback_binding_.Close();
+  response_callback_receiver_.reset();
 
   // If the connection to the service worker gets disconnected after dispatching
   // a fetch event and before getting the response of the fetch event, restart
@@ -481,7 +485,7 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     DCHECK(!response->blob);
     DCHECK(url_loader_client_.is_bound());
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_receiver));
     CommitResponseBody(std::move(body_as_stream->stream));
     return;
   }
@@ -679,12 +683,8 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
   // Restart the request.
   TransitionToStatus(Status::kNotStarted);
   redirect_info_.reset();
-  response_callback_binding_.Close();
+  response_callback_receiver_.reset();
   StartRequest(resource_request_);
-}
-
-void ServiceWorkerSubresourceLoader::ProceedWithResponse() {
-  NOTREACHED();
 }
 
 void ServiceWorkerSubresourceLoader::SetPriority(net::RequestPriority priority,

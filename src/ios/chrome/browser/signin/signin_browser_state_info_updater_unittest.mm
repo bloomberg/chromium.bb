@@ -24,7 +24,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_chrome_browser_state_manager.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -88,7 +88,7 @@ class SigninBrowserStateInfoUpdaterTest : public PlatformTest {
   }
 
   ScopedTempDirWrapper scoped_state_path_;
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
 
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   signin::IdentityTestEnvironment identity_test_env_;

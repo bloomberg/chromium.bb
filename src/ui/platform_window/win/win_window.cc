@@ -11,7 +11,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/win/msg_util.h"
-#include "ui/platform_window/platform_window_delegate.h"
 
 #include <windows.h>
 
@@ -132,6 +131,8 @@ void WinWindow::Activate() {
 void WinWindow::Deactivate() {
   NOTIMPLEMENTED_LOG_ONCE();
 }
+
+void WinWindow::SetUseNativeFrame(bool use_native_frame) {}
 
 void WinWindow::SetCursor(PlatformCursor cursor) {
   ::SetCursor(cursor);

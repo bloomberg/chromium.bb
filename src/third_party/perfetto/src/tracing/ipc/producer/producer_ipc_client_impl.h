@@ -29,7 +29,7 @@
 #include "perfetto/ext/tracing/core/tracing_service.h"
 #include "perfetto/ext/tracing/ipc/producer_ipc_client.h"
 
-#include "perfetto/ipc/producer_port.ipc.h"
+#include "protos/perfetto/ipc/producer_port.ipc.h"
 
 namespace perfetto {
 
@@ -74,7 +74,8 @@ class ProducerIPCClientImpl : public TracingService::ProducerEndpoint,
   void ActivateTriggers(const std::vector<std::string>&) override;
 
   std::unique_ptr<TraceWriter> CreateTraceWriter(
-      BufferID target_buffer) override;
+      BufferID target_buffer,
+      BufferExhaustedPolicy) override;
   SharedMemoryArbiter* GetInProcessShmemArbiter() override;
   void NotifyFlushComplete(FlushRequestID) override;
   SharedMemory* shared_memory() const override;

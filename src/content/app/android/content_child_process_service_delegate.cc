@@ -19,6 +19,7 @@
 #include "content/public/common/content_descriptors.h"
 #include "content/public/common/content_switches.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
+#include "gpu/ipc/common/android/texture_owner.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "services/service_manager/embedder/shared_file_util.h"
 #include "services/service_manager/embedder/switches.h"
@@ -49,14 +50,14 @@ class ChildProcessSurfaceManager : public gpu::ScopedSurfaceRequestConduit,
   // Overriden from ScopedSurfaceRequestConduit:
   void ForwardSurfaceOwnerForSurfaceRequest(
       const base::UnguessableToken& request_token,
-      const gpu::SurfaceOwner* surface_owner) override {
+      const gpu::TextureOwner* texture_owner) override {
     JNIEnv* env = base::android::AttachCurrentThread();
 
     content::
         Java_ContentChildProcessServiceDelegate_forwardSurfaceForSurfaceRequest(
             env, service_impl_,
             base::android::UnguessableTokenAndroid::Create(env, request_token),
-            surface_owner->CreateJavaSurface().j_surface());
+            texture_owner->CreateJavaSurface().j_surface());
   }
 
   // Overridden from GpuSurfaceLookup:

@@ -54,10 +54,12 @@ class CONTENT_EXPORT BackgroundSyncMetrics {
                                          int num_attempts_required);
 
   // Records the result of running a batch of sync events, including the total
-  // time spent, and the batch size.
+  // time spent, the batch size, and whether the operation originated from a
+  // wakeup task.
   static void RecordBatchSyncEventComplete(
       blink::mojom::BackgroundSyncType sync_type,
       const base::TimeDelta& time,
+      bool from_wakeup_task,
       int number_of_batched_sync_events);
 
   // Records the result of successfully registering a sync. |could_fire|
@@ -80,6 +82,12 @@ class CONTENT_EXPORT BackgroundSyncMetrics {
   // Records the status of an attempt to remove a Periodic Background
   // Sync registration.
   static void CountUnregisterPeriodicSync(BackgroundSyncStatus status);
+
+  // Records whether the Chrome wakeup task actually resulted in us firing
+  // any sync events corresponding to |sync_type|.
+  static void RecordEventsFiredFromWakeupTask(
+      blink::mojom::BackgroundSyncType sync_type,
+      bool fired_events);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(BackgroundSyncMetrics);

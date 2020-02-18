@@ -10,17 +10,16 @@
 
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/sharing/fake_local_device_info_provider.h"
 #include "chrome/browser/sharing/sharing_constants.h"
-#include "chrome/browser/sharing/sharing_device_info.h"
 #include "chrome/browser/sharing/sharing_device_registration_result.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
 #include "components/gcm_driver/instance_id/instance_id_driver.h"
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,7 +62,7 @@ class FakeInstanceID : public InstanceID {
   void GetToken(const std::string& authorized_entity,
                 const std::string& scope,
                 const std::map<std::string, std::string>& options,
-                bool is_lazy,
+                std::set<Flags> flags,
                 GetTokenCallback callback) override {
     std::move(callback).Run(fcm_token_, result_);
   }
@@ -161,8 +160,8 @@ class SharingDeviceRegistrationTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+  content::BrowserTaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   sync_preferences::TestingPrefServiceSyncable prefs_;
   NiceMock<MockInstanceIDDriver> mock_instance_id_driver_;
@@ -201,6 +200,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
             device.capabilities);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 
   // Remove VAPID key to force a re-register, which will return a different FCM
   // token.
@@ -217,6 +218,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Success) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_VapidKeysUnchanged) {
@@ -259,7 +262,7 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   EXPECT_EQ(SharingDeviceRegistrationResult::kSuccess, result_);
 
   // Advance time so registration is expired.
-  scoped_task_environment_.FastForwardBy(kRegistrationExpiration);
+  task_environment_.FastForwardBy(kRegistrationExpiration);
 
   // Register the device again, Instance.GetToken will be attempted once more,
   // which will return a different FCM token.
@@ -273,6 +276,8 @@ TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_Expired) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }
 
 TEST_F(SharingDeviceRegistrationTest, RegisterDeviceTest_NetworkError) {
@@ -331,4 +336,6 @@ TEST_F(SharingDeviceRegistrationTest, UnregisterDeviceTest_Success) {
   EXPECT_EQ(kFCMToken2, it->second.fcm_token);
   EXPECT_TRUE(fcm_registration_);
   EXPECT_EQ(kFCMToken2, fcm_registration_->fcm_token);
+  EXPECT_EQ(kDevicep256dh, fcm_registration_->p256dh);
+  EXPECT_EQ(kDeviceAuthSecret, fcm_registration_->auth_secret);
 }

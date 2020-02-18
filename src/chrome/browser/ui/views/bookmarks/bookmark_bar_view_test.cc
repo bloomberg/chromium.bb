@@ -280,16 +280,18 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
   ~BookmarkBarViewEventTestBase() override = default;
 
   void SetUp() override {
-    content_client_.reset(new ChromeContentClient);
+    content_client_ = std::make_unique<ChromeContentClient>();
     content::SetContentClient(content_client_.get());
-    browser_content_client_.reset(new ChromeContentBrowserClient());
+    browser_content_client_ = std::make_unique<ChromeContentBrowserClient>();
     content::SetBrowserClientForTesting(browser_content_client_.get());
 
     views::MenuController::TurnOffMenuSelectionHoldForTest();
     BookmarkBarView::DisableAnimationsForTesting(true);
     SetConstrainedWindowViewsClient(CreateChromeConstrainedWindowViewsClient());
 
-    profile_.reset(new TestingProfile());
+    local_state_.reset(
+        new ScopedTestingLocalState(TestingBrowserProcess::GetGlobal()));
+    profile_ = std::make_unique<TestingProfile>();
     profile_->CreateBookmarkModel(true);
     model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
     bookmarks::test::WaitForBookmarkModelToLoad(model_);
@@ -298,11 +300,9 @@ class BookmarkBarViewEventTestBase : public ViewEventTestBase {
     Browser::CreateParams native_params(profile_.get(), true);
     browser_ = CreateBrowserWithTestWindowForParams(&native_params);
 
-    local_state_.reset(new ScopedTestingLocalState(
-        TestingBrowserProcess::GetGlobal()));
     model_->ClearStore();
 
-    bb_view_.reset(new BookmarkBarView(browser_.get(), NULL));
+    bb_view_ = std::make_unique<BookmarkBarView>(browser_.get(), nullptr);
     bb_view_->set_owned_by_client();
     // Real bookmark bars get a BookmarkBarViewBackground. Set an opaque
     // background here just to avoid triggering subpixel rendering issues.
@@ -1800,6 +1800,7 @@ class BookmarkBarViewTest20 : public BookmarkBarViewEventTestBase {
   void DoTestOnMessageLoop() override {
     // Add |test_view_| next to |bb_view_|.
     views::View* parent = bb_view_->parent();
+    parent->RemoveChildView(bb_view_.get());
     container_view_ = std::make_unique<ContainerViewForMenuExit>();
     container_view_->set_owned_by_client();
     container_view_->AddChildView(bb_view_.get());

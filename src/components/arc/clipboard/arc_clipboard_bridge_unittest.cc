@@ -10,11 +10,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
-#include "components/arc/common/clipboard.mojom.h"
+#include "components/arc/mojom/clipboard.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/arc/test/connection_holder_util.h"
 #include "components/arc/test/fake_clipboard_instance.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/clipboard_constants.h"
@@ -74,7 +74,7 @@ class ArcClipboardBridgeTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ArcBridgeService> arc_bridge_service_;
   std::unique_ptr<ArcClipboardBridge> clipboard_bridge_;
   std::unique_ptr<FakeClipboardInstance> clipboard_instance_;
@@ -84,7 +84,7 @@ class ArcClipboardBridgeTest : public testing::Test {
 
 TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteText(base::UTF8ToUTF16(kSampleText));
   }
 
@@ -100,7 +100,7 @@ TEST_F(ArcClipboardBridgeTest, GetClipContent_PlainText) {
 
 TEST_F(ArcClipboardBridgeTest, GetClipContent_Html) {
   {
-    ui::ScopedClipboardWriter writer(ui::ClipboardType::kCopyPaste);
+    ui::ScopedClipboardWriter writer(ui::ClipboardBuffer::kCopyPaste);
     writer.WriteHTML(base::UTF8ToUTF16(kSampleHtml), std::string());
   }
 
@@ -121,13 +121,13 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_PlainText) {
 
   std::vector<base::string16> mime_types;
   bool contains_files;
-  GetClipboard()->ReadAvailableTypes(ui::ClipboardType::kCopyPaste, &mime_types,
-                                     &contains_files);
+  GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
+                                     &mime_types, &contains_files);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeText, base::UTF16ToUTF8(mime_types[0]));
 
   base::string16 result;
-  GetClipboard()->ReadText(ui::ClipboardType::kCopyPaste, &result);
+  GetClipboard()->ReadText(ui::ClipboardBuffer::kCopyPaste, &result);
   EXPECT_EQ(kSampleText, base::UTF16ToUTF8(result));
 }
 
@@ -138,15 +138,15 @@ TEST_F(ArcClipboardBridgeTest, SetClipContent_Html) {
 
   std::vector<base::string16> mime_types;
   bool contains_files;
-  GetClipboard()->ReadAvailableTypes(ui::ClipboardType::kCopyPaste, &mime_types,
-                                     &contains_files);
+  GetClipboard()->ReadAvailableTypes(ui::ClipboardBuffer::kCopyPaste,
+                                     &mime_types, &contains_files);
   ASSERT_EQ(1u, mime_types.size());
   EXPECT_EQ(ui::kMimeTypeHTML, base::UTF16ToUTF8(mime_types[0]));
 
   base::string16 markup16;
   std::string url;
   uint32_t fragment_start, fragment_end;
-  GetClipboard()->ReadHTML(ui::ClipboardType::kCopyPaste, &markup16, &url,
+  GetClipboard()->ReadHTML(ui::ClipboardBuffer::kCopyPaste, &markup16, &url,
                            &fragment_start, &fragment_end);
   base::string16 result =
       markup16.substr(fragment_start, fragment_end - fragment_start);

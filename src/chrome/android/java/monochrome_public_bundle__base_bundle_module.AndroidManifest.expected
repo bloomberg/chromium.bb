@@ -79,6 +79,7 @@
       android:protectionLevel="signature"/>
   <application
       android:allowBackup="false"
+      android:appComponentFactory="android.support.v4.app.CoreComponentFactory"
       android:extractNativeLibs="false"
       android:icon="@drawable/ic_launcher"
       android:label="@string/app_name"
@@ -163,6 +164,22 @@
         android:enabled="false"
         android:excludeFromRecents="true"
         android:exported="true"
+        android:icon="@drawable/ic_devices_48dp"
+        android:label="@string/shared_clipboard_share_activity_title"
+        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity"
+        android:noHistory="true"
+        android:theme="@style/Theme.Chromium.Activity.TranslucentNoAnimations">
+      <intent-filter>
+        <action android:name="android.intent.action.SEND"/>
+        <category android:name="android.intent.category.DEFAULT"/>
+        <data android:mimeType="text/plain"/>
+      </intent-filter>
+    </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:enabled="false"
+        android:excludeFromRecents="true"
+        android:exported="true"
         android:icon="@drawable/ic_launcher"
         android:label="@string/send_tab_to_self_share_activity_title"
         android:name="org.chromium.chrome.browser.send_tab_to_self.SendTabToSelfShareActivity"
@@ -192,6 +209,13 @@
         <data android:mimeType="text/plain"/>
       </intent-filter>
     </activity>
+    <activity
+        android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
+        android:excludeFromRecents="true"
+        android:exported="true"
+        android:name="org.chromium.chrome.features.test_dummy.TestDummyActivity"
+        android:noHistory="true"
+        android:theme="@style/Theme.AppCompat"/>
     <activity
         android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"
         android:excludeFromRecents="true"
@@ -880,6 +904,13 @@
         android:process=":playcore_missing_splits_activity"
         android:stateNotNeeded="true"/>
     <activity
+        android:enabled="false"
+        android:exported="false"
+        android:name="com.google.android.play.core.common.PlayCoreDialogWrapperActivity"
+        android:process=":playcore_dialog_wrapper_activity"
+        android:stateNotNeeded="true"
+        android:theme="@style/Theme.PlayCore.Transparent"/>
+    <activity
         android:excludeFromRecents="true"
         android:exported="false"
         android:launchMode="singleInstance"
@@ -934,6 +965,11 @@
             android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA"/>
         <category android:name="android.intent.category.DEFAULT"/>
         <data android:scheme="https"/>
+      </intent-filter>
+      <intent-filter>
+        <action
+            android:name="android.support.customtabs.action.ACTION_MANAGE_TRUSTED_WEB_ACTIVITY_DATA"/>
+        <category android:name="android.intent.category.DEFAULT"/>
       </intent-filter>
     </activity>
     <activity
@@ -1314,7 +1350,16 @@
         android:name="org.chromium.chrome.browser.send_tab_to_self.NotificationManager$TimeoutReceiver"/>
     <receiver
         android:exported="false"
+        android:name="org.chromium.chrome.browser.sharing.SharingNotificationUtil$ActionReceiver"/>
+    <receiver
+        android:exported="false"
         android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$TapReceiver"/>
+    <receiver
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TapReceiver"/>
+    <receiver
+        android:exported="false"
+        android:name="org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardMessageHandler$TryAgainReceiver"/>
     <receiver
         android:exported="false"
         android:name="org.chromium.chrome.browser.upgrade.PackageReplacedBroadcastReceiver">
@@ -1339,6 +1384,13 @@
         <action android:name="android.intent.action.PACKAGE_DATA_CLEARED"/>
         <action android:name="android.intent.action.PACKAGE_FULLY_REMOVED"/>
         <data android:scheme="package"/>
+      </intent-filter>
+    </receiver>
+    <receiver
+        android:exported="true"
+        android:name="org.chromium.chrome.browser.sharing.click_to_call.ClickToCallMessageHandler$PhoneUnlockedReceiver">
+      <intent-filter>
+        <action android:name="android.intent.action.USER_PRESENT"/>
       </intent-filter>
     </receiver>
     <receiver
@@ -1578,7 +1630,7 @@
         <action android:name="com.google.android.gms.gcm.ACTION_TASK_READY"/>
       </intent-filter>
     </service>
-    <service android:name="android.support.customtabs.PostMessageService"/>
+    <service android:name="androidx.browser.customtabs.PostMessageService"/>
     <service
         android:exported="true"
         android:externalService="true"
@@ -1950,6 +2002,7 @@
         <category android:name="androidx.browser.trusted.category.TrustedWebActivities"/>
         <category
             android:name="androidx.browser.trusted.category.TrustedWebActivitySplashScreensV1"/>
+        <category android:name="androidx.browser.trusted.category.WebShareTargetV2"/>
       </intent-filter>
     </service>
     <service

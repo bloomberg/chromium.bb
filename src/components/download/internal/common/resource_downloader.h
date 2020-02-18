@@ -11,6 +11,7 @@
 #include "components/download/public/common/download_utils.h"
 #include "components/download/public/common/url_download_handler.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -21,20 +22,17 @@ class Connector;
 }  // namespace service_manager
 
 namespace download {
-class DownloadURLLoaderFactoryGetter;
-
 // Class for handing the download of a url. Lives on IO thread.
 class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
-    : public download::UrlDownloadHandler,
-      public download::DownloadResponseHandler::Delegate {
+    : public UrlDownloadHandler,
+      public DownloadResponseHandler::Delegate {
  public:
   // Called to start a download, must be called on IO thread.
   static std::unique_ptr<ResourceDownloader> BeginDownload(
       base::WeakPtr<download::UrlDownloadHandler::Delegate> delegate,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       std::unique_ptr<network::ResourceRequest> request,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const URLSecurityPolicy& url_security_policy,
       const GURL& site_url,
       const GURL& tab_url,
@@ -61,8 +59,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const scoped_refptr<network::ResourceResponse>& response_head,
       mojo::ScopedDataPipeConsumerHandle response_body,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const URLSecurityPolicy& url_security_policy,
       std::unique_ptr<service_manager::Connector> connector,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
@@ -77,16 +74,15 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_referrer_url,
       bool is_new_download,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-          url_loader_factory_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const URLSecurityPolicy& url_security_policy,
       std::unique_ptr<service_manager::Connector> connector);
   ~ResourceDownloader() override;
 
-  // download::DownloadResponseHandler::Delegate
+  // DownloadResponseHandler::Delegate
   void OnResponseStarted(
       std::unique_ptr<download::DownloadCreateInfo> download_create_info,
-      download::mojom::DownloadStreamHandlePtr stream_handle) override;
+      mojom::DownloadStreamHandlePtr stream_handle) override;
   void OnReceiveRedirect() override;
   void OnResponseCompleted() override;
   bool CanRequestURL(const GURL& url) override;
@@ -162,9 +158,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // TaskRunner to post callbacks to the |delegate_|
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
 
-  // URLLoaderFactory getter for issueing network requests.
-  scoped_refptr<download::DownloadURLLoaderFactoryGetter>
-      url_loader_factory_getter_;
+  // URLLoaderFactory for issuing network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to check if the URL is safe to request.
   URLSecurityPolicy url_security_policy_;
@@ -175,7 +170,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
   // Used to keep the system from sleeping while a download is ongoing. If the
   // system enters power saving mode while a download is alive, it can cause
   // download to be interrupted.
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_{this};
 

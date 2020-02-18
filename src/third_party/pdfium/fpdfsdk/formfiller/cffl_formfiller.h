@@ -10,18 +10,20 @@
 #include <map>
 #include <memory>
 
-#include "core/fpdfdoc/cba_fontmap.h"
+#include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/cpdfsdk_fieldaction.h"
+#include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_interactiveformfiller.h"
+#include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "fpdfsdk/pwl/ipwl_systemhandler.h"
 
 class CPDFSDK_Annot;
 class CPDFSDK_FormFillEnvironment;
 class CPDFSDK_PageView;
-class CPDFSDK_Widget;
 
 class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
-                        public CPWL_TimerHandler {
+                        public CFX_Timer::CallbackIface {
  public:
   CFFL_FormFiller(CPDFSDK_FormFillEnvironment* pFormFillEnv,
                   CPDFSDK_Widget* pWidget);
@@ -83,12 +85,12 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   void SetFocusForAnnot(CPDFSDK_Annot* pAnnot, uint32_t nFlag);
   void KillFocusForAnnot(uint32_t nFlag);
 
-  // CPWL_TimerHandler
-  void TimerProc() override;
-  CFX_SystemHandler* GetSystemHandler() const override;
+  // CFX_Timer::CallbackIface:
+  void OnTimerFired() override;
 
   // CPWL_Wnd::ProviderIface:
-  CFX_Matrix GetWindowMatrix(const CPWL_Wnd::PrivateData* pAttached) override;
+  CFX_Matrix GetWindowMatrix(
+      const IPWL_SystemHandler::PerWindowData* pAttached) override;
 
   virtual void GetActionData(CPDFSDK_PageView* pPageView,
                              CPDF_AAction::AActionType type,
@@ -103,8 +105,8 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   virtual CPWL_Wnd::CreateParams GetCreateParam();
   virtual std::unique_ptr<CPWL_Wnd> NewPWLWindow(
       const CPWL_Wnd::CreateParams& cp,
-      std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) = 0;
-  virtual CPWL_Wnd* ResetPDFWindow(CPDFSDK_PageView* pPageView,
+      std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData) = 0;
+  virtual CPWL_Wnd* ResetPWLWindow(CPDFSDK_PageView* pPageView,
                                    bool bRestoreValue);
   virtual void SaveState(CPDFSDK_PageView* pPageView);
   virtual void RestoreState(CPDFSDK_PageView* pPageView);
@@ -127,14 +129,14 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   virtual bool IsFieldFull(CPDFSDK_PageView* pPageView);
 #endif  // PDF_ENABLE_XFA
 
-  CPWL_Wnd* GetPDFWindow(CPDFSDK_PageView* pPageView, bool bNew);
-  void DestroyPDFWindow(CPDFSDK_PageView* pPageView);
-  void EscapeFiller(CPDFSDK_PageView* pPageView, bool bDestroyPDFWindow);
-
+  CPWL_Wnd* GetPWLWindow(CPDFSDK_PageView* pPageView, bool bNew);
+  void DestroyPWLWindow(CPDFSDK_PageView* pPageView);
+  void EscapeFiller(CPDFSDK_PageView* pPageView, bool bDestroyPWLWindow);
 
   bool IsValid() const;
-  CFX_FloatRect GetPDFWindowRect() const;
+  CFX_FloatRect GetPDFAnnotRect() const;
 
+  IPWL_SystemHandler* GetSystemHandler() const;
   CPDFSDK_PageView* GetCurPageView(bool renew);
   void SetChangeMark();
 
@@ -154,6 +156,7 @@ class CFFL_FormFiller : public CPWL_Wnd::ProviderIface,
   bool m_bValid = false;
   UnownedPtr<CPDFSDK_FormFillEnvironment> const m_pFormFillEnv;
   UnownedPtr<CPDFSDK_Widget> m_pWidget;
+  std::unique_ptr<CFX_Timer> m_pTimer;
   std::map<CPDFSDK_PageView*, std::unique_ptr<CPWL_Wnd>> m_Maps;
 };
 

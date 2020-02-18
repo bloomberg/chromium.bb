@@ -26,6 +26,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -47,12 +49,12 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/test/test_app_window_icon_observer.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/test/web_app_install_observer.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/manifest_handlers/app_launch_info.h"
@@ -210,26 +212,22 @@ class ShelfAppBrowserTest : public extensions::ExtensionBrowserTest {
                                           WindowOpenDisposition disposition) {
     EXPECT_TRUE(LoadExtension(test_data_dir_.AppendASCII(name)));
 
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
-    const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id(), false);
+    const Extension* extension = extension_registry()->GetExtensionById(
+        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
     EXPECT_TRUE(extension);
 
-    OpenApplication(AppLaunchParams(profile(), extension->id(), container,
-                                    disposition,
-                                    extensions::AppLaunchSource::kSourceTest));
+    apps::LaunchService::Get(profile())->OpenApplication(
+        AppLaunchParams(profile(), extension->id(), container, disposition,
+                        apps::mojom::AppLaunchSource::kSourceTest));
     return extension;
   }
 
   ash::ShelfID CreateShortcut(const char* name) {
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(profile())->extension_service();
     LoadExtension(test_data_dir_.AppendASCII(name));
 
     // First get app_id.
-    const Extension* extension =
-        service->GetExtensionById(last_loaded_extension_id(), false);
+    const Extension* extension = extension_registry()->GetExtensionById(
+        last_loaded_extension_id(), extensions::ExtensionRegistry::ENABLED);
     const std::string app_id = extension->id();
 
     // Then create a shortcut.
@@ -1177,11 +1175,11 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTestNoDefaultBrowser,
   EXPECT_EQ(0u, NumberOfDetectedLauncherBrowsers(false));
   EXPECT_EQ(++running_browser, chrome::GetTotalBrowserCount());
 
-  OpenApplication(
+  apps::LaunchService::Get(profile())->OpenApplication(
       AppLaunchParams(profile(), extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerTab,
+                      apps::mojom::LaunchContainer::kLaunchContainerTab,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceTest));
+                      apps::mojom::AppLaunchSource::kSourceTest));
 
   // A new browser should get detected and one more should be running.
   EXPECT_EQ(NumberOfDetectedLauncherBrowsers(false), 1u);
@@ -1702,9 +1700,9 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   AppLaunchParams params = CreateAppLaunchParamsUserContainer(
       profile(), GetExtensionForAppID(extensions::kWebStoreAppId, profile()),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceTest);
-  params.container = extensions::LaunchContainer::kLaunchContainerWindow;
-  OpenApplication(params);
+      apps::mojom::AppLaunchSource::kSourceTest);
+  params.container = apps::mojom::LaunchContainer::kLaunchContainerWindow;
+  apps::LaunchService::Get(profile())->OpenApplication(params);
   EXPECT_EQ(ash::STATUS_RUNNING, shelf_model()->ItemByID(id)->status);
 
   // Find the browser which holds our app.
@@ -1713,7 +1711,7 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, DISABLED_V1AppNavigation) {
   for (BrowserList::const_reverse_iterator it =
            browser_list->begin_last_active();
        it != browser_list->end_last_active() && !app_browser; ++it) {
-    if ((*it)->is_app()) {
+    if ((*it)->deprecated_is_app()) {
       app_browser = *it;
       break;
     }
@@ -1875,6 +1873,54 @@ IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest, WindowedHostedAndBookmarkApps) {
             shelf_model()->ItemByID(hosted_app_shelf_id)->status);
   EXPECT_EQ(ash::STATUS_RUNNING,
             shelf_model()->ItemByID(bookmark_app_shelf_id)->status);
+}
+
+// Windowed progressive web apps should have shelf activity indicator showing
+// after install.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+                       WindowedPwasHaveActivityIndicatorSet) {
+  // Start server and open test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AddTabAtIndex(
+      1,
+      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
+      ui::PAGE_TRANSITION_LINK);
+  // Install PWA.
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(true);
+  web_app::WebAppInstallObserver observer(profile());
+  chrome::ExecuteCommand(browser(), IDC_INSTALL_PWA);
+  web_app::AppId app_id = observer.AwaitNextInstall();
+  chrome::SetAutoAcceptPWAInstallConfirmationForTesting(false);
+
+  ash::ShelfID shelf_id(app_id);
+  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_EQ(
+      shelf_id,
+      ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
+}
+
+// Windowed shortcut apps should have shelf activity indicator showing after
+// install.
+IN_PROC_BROWSER_TEST_F(ShelfAppBrowserTest,
+                       WindowedShortcutAppsHaveActivityIndicatorSet) {
+  // Start server and open test page.
+  ASSERT_TRUE(embedded_test_server()->Start());
+  AddTabAtIndex(
+      1,
+      GURL(embedded_test_server()->GetURL("/banners/manifest_test_page.html")),
+      ui::PAGE_TRANSITION_LINK);
+  // Install shortcut app.
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(true);
+  web_app::WebAppInstallObserver observer(profile());
+  chrome::ExecuteCommand(browser(), IDC_CREATE_SHORTCUT);
+  web_app::AppId app_id = observer.AwaitNextInstall();
+  chrome::SetAutoAcceptBookmarkAppDialogForTesting(false);
+
+  ash::ShelfID shelf_id(app_id);
+  EXPECT_TRUE(ChromeLauncherController::instance()->IsPinned(shelf_id));
+  EXPECT_EQ(
+      shelf_id,
+      ChromeLauncherController::instance()->shelf_model()->active_shelf_id());
 }
 
 // Test that "Close" is shown in the context menu when there are opened browsers

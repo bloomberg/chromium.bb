@@ -31,9 +31,6 @@ class BuildConfigGenerator extends DefaultTask {
             "${DEPS_TOKEN_START}(.*)${DEPS_TOKEN_END}",
             Pattern.DOTALL)
     private static final DOWNLOAD_DIRECTORY_NAME = "libs"
-    // This must be unique, so better be safe and increment the suffix rather than resetting
-    // to cr0.
-    private static final CIPD_SUFFIX = "cr0"
 
     // Some libraries are hosted in Chromium's //third_party directory. This is a mapping between
     // them so they can be used instead of android_deps pulling in its own copy.
@@ -239,14 +236,44 @@ class BuildConfigGenerator extends DefaultTask {
             }
         }
         switch(dependencyId) {
-            case 'android_arch_lifecycle_runtime_java':
+            case 'androidx_annotation_annotation':
+                sb.append('  # https://crbug.com/989505\n')
+                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
+                break
+            case 'androidx_core_core':
+            case 'androidx_media_media':
+            case 'androidx_versionedparcelable_versionedparcelable':
+            case 'com_android_support_support_compat':
+            case 'com_android_support_support_media_compat':
+            case 'com_android_support_versionedparcelable':
+                // Target has AIDL, but we don't support it yet: http://crbug.com/644439
+                sb.append('  ignore_aidl = true\n')
+                break
+            case 'androidx_transition_transition':
+                // Not specified in the POM, compileOnly dependency not supposed to be used unless
+                // the library is present: b/70887421
+                sb.append('  deps += [":androidx_fragment_fragment_java"]\n')
+                break
+            case 'android_arch_lifecycle_runtime':
+            case 'android_arch_lifecycle_viewmodel':
                 sb.append('  # https://crbug.com/887942#c1\n')
                 sb.append('  ignore_proguard_configs = true\n')
                 break
-            case 'com_android_support_support_compat':
-            case 'com_android_support_support_media_compat':
+            case 'com_android_support_coordinatorlayout':
+                sb.append('  # https:crbug.com/954584\n')
+                sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_android_support_design':
+                // Reduce binary size. https:crbug.com/954584
+                sb.append('  ignore_proguard_configs = true\n')
+                break
+            case 'com_android_support_support_annotations':
+                sb.append('  # https://crbug.com/989505\n')
+                sb.append('  jar_excluded_patterns = ["META-INF/proguard/*"]\n')
+                break
+            case 'com_android_support_support_vector_drawable':
                 // Target has AIDL, but we don't support it yet: http://crbug.com/644439
-                sb.append('  ignore_aidl = true\n')
+                sb.append('  create_srcjar = false\n')
                 break
             case 'com_android_support_transition':
                 // Not specified in the POM, compileOnly dependency not supposed to be used unless
@@ -279,6 +306,11 @@ class BuildConfigGenerator extends DefaultTask {
             case 'net_sf_kxml_kxml2':
                 sb.append('  # Target needs to exclude *xmlpull* files as already included in Android SDK.\n')
                 sb.append('  jar_excluded_patterns = [ "*xmlpull*" ]\n')
+                break
+            case 'com_android_support_preference_v7':
+                // Replace broad library -keep rules with a more limited set in
+                // chrome/android/java/proguard.flags instead.
+                sb.append('  ignore_proguard_configs = true\n')
                 break
         }
     }
@@ -316,7 +348,7 @@ class BuildConfigGenerator extends DefaultTask {
             |      'packages': [
             |          {
             |              'package': '${cipdPath}',
-            |              'version': 'version:${dependency.version}-${CIPD_SUFFIX}',
+            |              'version': 'version:${dependency.version}-${dependency.cipdSuffix}',
             |          },
             |      ],
             |      'condition': 'checkout_android',
@@ -386,7 +418,7 @@ class BuildConfigGenerator extends DefaultTask {
         if (!stripFromCipdPath) {
             stripFromCipdPath = ''
         }
-        def cipdVersion = "${dependency.version}-${CIPD_SUFFIX}"
+        def cipdVersion = "${dependency.version}-${dependency.cipdSuffix}"
         def cipdPath = "${cipdBucket}/"
         if (stripFromCipdPath) {
             assert repoPath.startsWith(stripFromCipdPath)

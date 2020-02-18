@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/metrics/field_trial.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/variations/variations_associated_data.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -74,7 +74,7 @@ class VariationsIdCollectionTest : public ::testing::Test {
   VariationsIdCollection* collection() { return collection_.get(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::FieldTrialList field_trial_list_;
   std::unique_ptr<VariationsIdCollection> collection_;
   std::vector<VariationID> new_ids_;

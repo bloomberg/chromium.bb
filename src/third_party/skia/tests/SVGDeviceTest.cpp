@@ -375,7 +375,7 @@ DEF_TEST(SVGDevice_ColorFilters, reporter) {
     REPORTER_ASSERT(reporter, strcmp(dom.findAttr(filterElement, "height"), "100%") == 0);
 
     REPORTER_ASSERT(reporter,
-                    strcmp(dom.findAttr(floodElement, "flood-color"), "rgb(255,0,0)") == 0);
+                    strcmp(dom.findAttr(floodElement, "flood-color"), "red") == 0);
     REPORTER_ASSERT(reporter, atoi(dom.findAttr(floodElement, "flood-opacity")) == 1);
 
     REPORTER_ASSERT(reporter, strcmp(dom.findAttr(compositeElement, "in"), "flood") == 0);
@@ -410,6 +410,46 @@ DEF_TEST(SVGDevice_textpath, reporter) {
     REPORTER_ASSERT(reporter, !textElement, "text element found");
     pathElement = dom.getFirstChild(rootElement, "path");
     REPORTER_ASSERT(reporter, pathElement, "path element not found");
+}
+
+DEF_TEST(SVGDevice_fill_stroke, reporter) {
+    struct {
+        SkColor        color;
+        SkPaint::Style style;
+        const char*    expected_fill;
+        const char*    expected_stroke;
+    } gTests[] = {
+        { SK_ColorBLACK, SkPaint::kFill_Style  , nullptr, nullptr },
+        { SK_ColorBLACK, SkPaint::kStroke_Style, "none" , "black" },
+        { SK_ColorRED  , SkPaint::kFill_Style  , "red"  , nullptr },
+        { SK_ColorRED  , SkPaint::kStroke_Style, "none" , "red"   },
+    };
+
+    for (const auto& tst : gTests) {
+        SkPaint p;
+        p.setColor(tst.color);
+        p.setStyle(tst.style);
+
+        SkDOM dom;
+        {
+            MakeDOMCanvas(&dom)->drawRect(SkRect::MakeWH(100, 100), p);
+        }
+
+        const auto* root = dom.finishParsing();
+        REPORTER_ASSERT(reporter, root, "root element not found");
+        const auto* rect = dom.getFirstChild(root, "rect");
+        REPORTER_ASSERT(reporter, rect, "rect element not found");
+        const auto* fill = dom.findAttr(rect, "fill");
+        REPORTER_ASSERT(reporter, !!fill == !!tst.expected_fill);
+        if (fill) {
+            REPORTER_ASSERT(reporter, strcmp(fill, tst.expected_fill) == 0);
+        }
+        const auto* stroke = dom.findAttr(rect, "stroke");
+        REPORTER_ASSERT(reporter, !!stroke == !!tst.expected_stroke);
+        if (stroke) {
+            REPORTER_ASSERT(reporter, strcmp(stroke, tst.expected_stroke) == 0);
+        }
+    }
 }
 
 #endif

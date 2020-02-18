@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -16,7 +16,7 @@ namespace {
 
 class WebSocketThrottlerTest : public ::testing::Test {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST(WebSocketPerProcessThrottlerTest, InitialState) {
@@ -107,7 +107,7 @@ TEST(WebSocketPerProcessThrottlerTest, Failed) {
   EXPECT_EQ(base::TimeDelta(), throttler.CalculateDelay());
 }
 
-TEST(WebSocketPerProcessThrottlerTest, DISABLED_TooManyPendingConnections) {
+TEST(WebSocketPerProcessThrottlerTest, TooManyPendingConnections) {
   constexpr int limit = 255;
   WebSocketPerProcessThrottler throttler;
 
@@ -312,7 +312,7 @@ TEST_F(WebSocketThrottlerTest, InitialState) {
   EXPECT_EQ(0u, throttler.GetSizeForTesting());
 }
 
-TEST_F(WebSocketThrottlerTest, DISABLED_TooManyPendingConnections) {
+TEST_F(WebSocketThrottlerTest, TooManyPendingConnections) {
   constexpr int process1 = 1;
   constexpr int process2 = 2;
   constexpr int limit = 255;

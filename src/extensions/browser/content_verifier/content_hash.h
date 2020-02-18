@@ -48,35 +48,34 @@ namespace extensions {
 // take long time. This cancellation can be performed through |is_cancelled|.
 class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
  public:
-  // Key to identify an extension.
-  struct ExtensionKey {
+  // Holds key to identify an extension for content verification, parameters to
+  // fetch verified_contents.json and other supplementary info.
+  struct FetchKey {
+    // Extension info.
     ExtensionId extension_id;
     base::FilePath extension_root;
     base::Version extension_version;
+
+    // Fetch parameters.
+    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
+    GURL fetch_url;
+
     // The key used to validate verified_contents.json.
     ContentVerifierKey verifier_key;
 
-    ExtensionKey(const ExtensionId& extension_id,
-                 const base::FilePath& extension_root,
-                 const base::Version& extension_version,
-                 ContentVerifierKey verifier_key);
-    ~ExtensionKey();
-
-    ExtensionKey(const ExtensionKey& other);
-    ExtensionKey& operator=(const ExtensionKey& other);
-  };
-
-  // Parameters to fetch verified_contents.json.
-  struct FetchParams {
-    FetchParams(
+    FetchKey(
+        const ExtensionId& extension_id,
+        const base::FilePath& extension_root,
+        const base::Version& extension_version,
         network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info,
-        const GURL& fetch_url);
-    ~FetchParams();
-    FetchParams(FetchParams&&);
-    FetchParams& operator=(FetchParams&&);
+        const GURL& fetch_url,
+        ContentVerifierKey verifier_key);
+    ~FetchKey();
 
-    network::mojom::URLLoaderFactoryPtrInfo url_loader_factory_ptr_info;
-    GURL fetch_url;
+    FetchKey(FetchKey&& other);
+    FetchKey& operator=(FetchKey&& other);
+
+    DISALLOW_COPY_AND_ASSIGN(FetchKey);
   };
 
   using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
@@ -90,8 +89,7 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   using CreatedCallback =
       base::OnceCallback<void(scoped_refptr<ContentHash> hash,
                               bool was_cancelled)>;
-  static void Create(const ExtensionKey& key,
-                     FetchParams fetch_params,
+  static void Create(FetchKey key,
                      const IsCancelledCallback& is_cancelled,
                      CreatedCallback created_callback);
 
@@ -114,7 +112,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
   const std::set<base::FilePath>& hash_mismatch_unix_paths() const {
     return hash_mismatch_unix_paths_;
   }
-  const ExtensionKey extension_key() const { return key_; }
+  const ExtensionId& extension_id() const { return extension_id_; }
+  const base::FilePath& extension_root() const { return extension_root_; }
 
   // Returns whether or not computed_hashes.json re-creation might be required
   // for |this| to succeed.
@@ -138,22 +137,22 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
     kSucceeded,
   };
 
-  ContentHash(const ExtensionKey& key,
+  ContentHash(const ExtensionId& id,
+              const base::FilePath& root,
               std::unique_ptr<VerifiedContents> verified_contents,
               std::unique_ptr<ComputedHashes::Reader> computed_hashes);
   ~ContentHash();
 
-  static void FetchVerifiedContents(const ExtensionKey& extension_key,
-                                    FetchParams fetch_params,
+  static void FetchVerifiedContents(FetchKey key,
                                     const IsCancelledCallback& is_cancelled,
                                     CreatedCallback created_callback);
   static void DidFetchVerifiedContents(
       CreatedCallback created_callback,
       const IsCancelledCallback& is_cancelled,
-      const ExtensionKey& key,
+      FetchKey key,
       std::unique_ptr<std::string> fetched_contents);
 
-  static void DispatchFetchFailure(const ExtensionKey& key,
+  static void DispatchFetchFailure(FetchKey key,
                                    CreatedCallback created_callback,
                                    const IsCancelledCallback& is_cancelled);
 
@@ -177,7 +176,8 @@ class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
                            bool force_build,
                            const IsCancelledCallback& is_cancelled);
 
-  ExtensionKey key_;
+  const ExtensionId extension_id_;
+  const base::FilePath extension_root_;
 
   Status status_ = Status::kInvalid;
 

@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_image_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_item.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -30,6 +31,9 @@
 #endif
 
 using l10n_util::GetNSString;
+
+NSString* const kDataFromChromeSyncAccessibilityIdentifier =
+    @"DataFromChromeSyncAccessibilityIdentifier";
 
 namespace {
 
@@ -258,6 +262,8 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE);
   dataFromChromeSyncItem.detailText =
       GetNSString(IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION);
+  dataFromChromeSyncItem.accessibilityIdentifier =
+      kDataFromChromeSyncAccessibilityIdentifier;
   [model addItem:dataFromChromeSyncItem
       toSectionWithIdentifier:AdvancedSettingsSectionIdentifier];
 }
@@ -285,8 +291,7 @@ NSString* kGoogleServicesSyncErrorImage = @"google_services_sync_error";
   if (self.shouldEncryptionItemBeEnabled) {
     self.encryptionItem.textColor = nil;
   } else {
-    self.encryptionItem.textColor =
-        UIColorFromRGB(kTableViewSecondaryLabelLightGrayTextColor);
+    self.encryptionItem.textColor = UIColor.cr_secondaryLabelColor;
   }
   if (needsUpdate && notifyConsumer) {
     [self.consumer reloadItem:self.self.encryptionItem];

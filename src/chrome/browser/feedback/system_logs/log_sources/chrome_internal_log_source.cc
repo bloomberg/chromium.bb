@@ -32,7 +32,7 @@
 #include "extensions/common/extension_set.h"
 
 #if defined(OS_CHROMEOS)
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/metrics/chromeos_metrics_provider.h"
@@ -254,8 +254,10 @@ void ChromeInternalLogSource::Fetch(SysLogsSourceCallback callback) {
           [](std::unique_ptr<SystemLogsResponse> response,
              SysLogsSourceCallback callback) {
             SystemLogsResponse* response_ptr = response.get();
-            base::PostTaskWithTraitsAndReply(
-                FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+            base::PostTaskAndReply(
+                FROM_HERE,
+                {base::ThreadPool(), base::MayBlock(),
+                 base::TaskPriority::BEST_EFFORT},
                 base::BindOnce(&PopulateEntriesAsync, response_ptr),
                 base::BindOnce(std::move(callback), std::move(response)));
           },

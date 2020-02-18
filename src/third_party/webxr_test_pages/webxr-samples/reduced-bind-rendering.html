@@ -126,7 +126,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
       }
 
       function onRequestSession() {
-        navigator.xr.requestSession('immersive-vr').then((session) => {
+        navigator.xr.requestSession('immersive-vr', {requiredFeatures: ['local']}).then((session) => {
           session.mode = 'immersive-vr';
           xrButton.setSession(session);
           onSessionStarted(session);
@@ -141,9 +141,7 @@ CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
         initGL();
 
         session.updateRenderState({
-            baseLayer: new XRWebGLLayer(session, gl, {
-              compositionDisabled: session.mode == 'inline'
-            })
+            baseLayer: new XRWebGLLayer(session, gl)
         });
 
         session.requestReferenceSpace('local').then((refSpace) => {

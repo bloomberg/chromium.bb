@@ -6,7 +6,7 @@
 
 #include <vector>
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/renderer/loader/navigation_response_override_parameters.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/test_request_peer.h"
@@ -14,6 +14,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/redirect_info.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -62,7 +63,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
         std::make_unique<TestRequestPeer>(dispatcher_.get(),
                                           &request_peer_context_),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(this),
-        std::vector<std::unique_ptr<URLLoaderThrottle>>(),
+        std::vector<std::unique_ptr<blink::URLLoaderThrottle>>(),
         nullptr /* navigation_response_override_params */);
     request_peer_context_.request_id = request_id_;
 
@@ -98,7 +99,7 @@ class URLLoaderClientImplTest : public ::testing::Test,
     return options;
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<ResourceDispatcher> dispatcher_;
   TestRequestPeer::Context request_peer_context_;
   int request_id_ = 0;
@@ -150,18 +151,19 @@ TEST_F(URLLoaderClientImplTest, OnReceiveRedirect) {
 
 TEST_F(URLLoaderClientImplTest, OnReceiveCachedMetadata) {
   network::ResourceResponseHead response_head;
-  std::vector<uint8_t> metadata;
-  metadata.push_back('a');
+  std::vector<uint8_t> data;
+  data.push_back('a');
+  mojo_base::BigBuffer metadata(data);
 
   url_loader_client_->OnReceiveResponse(response_head);
-  url_loader_client_->OnReceiveCachedMetadata(metadata);
+  url_loader_client_->OnReceiveCachedMetadata(std::move(metadata));
 
   EXPECT_FALSE(request_peer_context_.received_response);
-  EXPECT_TRUE(request_peer_context_.cached_metadata.empty());
+  EXPECT_EQ(0u, request_peer_context_.cached_metadata.size());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(request_peer_context_.received_response);
   ASSERT_EQ(1u, request_peer_context_.cached_metadata.size());
-  EXPECT_EQ('a', request_peer_context_.cached_metadata[0]);
+  EXPECT_EQ('a', request_peer_context_.cached_metadata.data()[0]);
 }
 
 TEST_F(URLLoaderClientImplTest, OnTransferSizeUpdated) {

@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
+<translation id="1036550831858290950">আপনার বর্তমান ট্যাবটি বুকমার্ক হিসেবে সেভ করে রাখুন</translation>
 <translation id="104962181688258143">ফাইল অ্যাপ খুলুন</translation>
-<translation id="1098295134904615027">ডানদিকের ভার্চুয়াল ডেস্ক চালু করুন</translation>
 <translation id="1122869341872663659"><ph name="QUERY" /> এর জন্যে <ph name="N" />টি ফলাফল দেখানো হচ্ছে</translation>
 <translation id="1195667586424773550">ট্যাব অ্যাড্রেস বারে লিঙ্কটি টেনে আনুন</translation>
 <translation id="1204450209689312104">ছদ্মবেশী মোডে একটি নতুন উইন্ডো খুলুন</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">অ্যাড্রেস বারে আপনার ইনপুটে www. এবং .com যোগ করে পৃষ্ঠা খুলুন</translation>
+<translation id="1872219238824176091">বর্তমান ডেস্কটি সরিয়ে দিন</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> অথবা <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">বাঁদিকের ভার্চুয়াল ডেস্ক চালু করুন</translation>
 <translation id="1996162290124031907">পরের ট্যাবে যান</translation>
 <translation id="2010818616644390445">উইন্ডোটির শেষ ট্যাবে যান</translation>
 <translation id="2040706009561734834">লঞ্চার খুলুন/বন্ধ করুন</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">উইন্ডোগুলির মধ্যে দ্রুত পরিবর্তন করুন</translation>
 <translation id="2454251766545114447">ডিসপ্লের জুম কমান</translation>
 <translation id="2478303094958140141">ChromeVox (স্ক্রিনে যা আছে তা পড়ে শোনানোর বৈশিষ্ট্য) চালু অথবা বন্ধ করুন</translation>
+<translation id="2488661730534396940">বাঁদিকের ডেস্কটি চালু করুন</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ওয়েব পৃষ্ঠাটিকে স্ক্রল করে নিচে নিয়ে আসুন</translation>
 <translation id="2574014812750545982">পৃষ্ঠায় জুম লেভেল রিসেট করুন</translation>
 <translation id="2596078834055697711">উইন্ডো স্ক্রিনশট নিন</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, তারপর <ph name="TAB" /> অথবা <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">আপনার বর্তমান ওয়েব পৃষ্ঠাটি একটি বুকমার্ক হিসেবে সেভ করুন</translation>
 <translation id="2750942583782703988">আপনার বর্তমান পৃষ্ঠাটি আবার লোড করুন</translation>
 <translation id="2764005613199379871">সার্চ অ্যাড্রেস বারে ফোকাস রাখুন</translation>
+<translation id="2774822903829597107">একটি নতুন ডেস্ক তৈরি করুন</translation>
 <translation id="2789868185375229787">পৃষ্ঠাটি ছোট করুন</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> টিপুন এবং একটি লিঙ্কে ক্লিক করুন</translation>
 <translation id="2830827904629746450">ডান দিকে উইন্ডো ডক করুন</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">স্ক্রিনশট নিন</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">ফোকাস অ্যাড্রেস বার</translation>
-<translation id="3165428420335997629">একটি নতুন ভার্চুয়াল ডেস্ক তৈরি করুন</translation>
 <translation id="3256109297135787951">আপনার শেল্ফে আইটেম থেকে হাইলাইট সরিয়ে দিন</translation>
 <translation id="3288816184963444640">বর্তমান উইন্ডোটি বন্ধ করুন</translation>
 <translation id="3407560819924487926">টাস্ক ম্যানেজার আনুন</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
 <translation id="4698850295812410683">স্টাইলাস টুল দেখান</translation>
 <translation id="4801989101741319327">পরের শব্দের শেষে নিয়ে যান</translation>
+<translation id="4866066940972151697">ডানদিকের ডেস্কটি চালু করুন</translation>
 <translation id="4916163929714267752">একটি নতুন উইন্ডোতে লিঙ্কটি খুলুন</translation>
 <translation id="5030659775136592441">বুকমার্ক পরিচালক দেখান</translation>
 <translation id="5034421018520995080">পৃষ্ঠার উপরে যান</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">স্ক্রিনকে ৯০ ডিগ্রি ঘোরান</translation>
 <translation id="8241665785394195545">ডানদিকের ব্র্যাকেট দেওয়ার বোতাম</translation>
 <translation id="8264941229485248811">ডেভেলপার টুল পরিদর্শক দেখান বা লুকান</translation>
-<translation id="8355937569537581904">বর্তমানের ভার্চুয়াল ডেস্কটি সরিয়ে দিন</translation>
 <translation id="836869401750819675">ডাউনলোড হওয়া পৃষ্ঠাটি খুলুন</translation>
 <translation id="8388247778047144397">ট্যাব বারের ফাঁকা অঞ্চলে একটি লিঙ্ক টেনে আনুন</translation>
 <translation id="8389638407792712197">নতুন উইন্ডো খুলুন</translation>

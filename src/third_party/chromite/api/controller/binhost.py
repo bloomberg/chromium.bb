@@ -7,8 +7,11 @@
 
 from __future__ import print_function
 
+import os
+import shutil
 import urlparse
 
+from chromite.api import controller
 from chromite.api import validate
 from chromite.api.controller import controller_util
 from chromite.api.gen.chromite.api import binhost_pb2
@@ -28,7 +31,8 @@ _OVERLAY_TYPE_TO_NAME = {
 
 
 @validate.require('build_target.name')
-def GetBinhosts(input_proto, output_proto):
+@validate.validation_complete
+def GetBinhosts(input_proto, output_proto, _config):
   """Get a list of binhosts."""
   build_target = build_target_util.BuildTarget(input_proto.build_target.name)
 
@@ -41,7 +45,8 @@ def GetBinhosts(input_proto, output_proto):
 
 
 @validate.require('build_target.name')
-def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
+@validate.validation_complete
+def GetPrivatePrebuiltAclArgs(input_proto, output_proto, _config):
   """Get the ACL args from the files in the private overlays."""
   build_target = build_target_util.BuildTarget(input_proto.build_target.name)
 
@@ -56,7 +61,8 @@ def GetPrivatePrebuiltAclArgs(input_proto, output_proto):
     new_arg.value = value
 
 
-def PrepareBinhostUploads(input_proto, output_proto):
+@validate.require('uri')
+def PrepareBinhostUploads(input_proto, output_proto, config):
   """Return a list of files to uplooad to the binhost.
 
   See BinhostService documentation in api/proto/binhost.proto.
@@ -64,6 +70,7 @@ def PrepareBinhostUploads(input_proto, output_proto):
   Args:
     input_proto (PrepareBinhostUploadsRequest): The input proto.
     output_proto (PrepareBinhostUploadsResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
   """
   target_name = (input_proto.sysroot.build_target.name
                  or input_proto.build_target.name)
@@ -85,6 +92,9 @@ def PrepareBinhostUploads(input_proto, output_proto):
   if not gs.PathIsGs(uri):
     raise ValueError('Upload URI %s must be Google Storage.' % uri)
 
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
   parsed_uri = urlparse.urlparse(uri)
   upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
   upload_path = parsed_uri.path.lstrip('/')
@@ -103,9 +113,61 @@ def PrepareBinhostUploads(input_proto, output_proto):
   for upload_target in upload_targets:
     output_proto.upload_targets.add().path = upload_target.strip('/')
 
+@validate.require('uri', 'sysroot.path')
+@validate.exists('uploads_dir')
+def PrepareDevInstallBinhostUploads(input_proto, output_proto, config):
+  """Return a list of files to upload to the binhost"
 
-@validate.require('build_target.name', 'uri')
-def SetBinhost(input_proto, output_proto):
+  The files will also be copied to the uploads_dir.
+  See BinhostService documentation in api/proto/binhost.proto.
+
+  Args:
+    input_proto (PrepareDevInstallBinhostUploadsRequest): The input proto.
+    output_proto (PrepareDevInstallBinhostUploadsResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
+  """
+  sysroot_path = input_proto.sysroot.path
+
+  # build_target = build_target_util.BuildTarget(target_name)
+  chroot = controller_util.ParseChroot(input_proto.chroot)
+  sysroot = sysroot_lib.Sysroot(sysroot_path)
+
+  uri = input_proto.uri
+  # For now, we enforce that all input URIs are Google Storage buckets.
+  if not gs.PathIsGs(uri):
+    raise ValueError('Upload URI %s must be Google Storage.' % uri)
+
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
+
+  parsed_uri = urlparse.urlparse(uri)
+  upload_uri = gs.GetGsURL(parsed_uri.netloc, for_gsutil=True).rstrip('/')
+  upload_path = parsed_uri.path.lstrip('/')
+
+  # Calculate the filename for the to-be-created Packages file, which will
+  # contain only devinstall packages.
+  devinstall_package_index_path = os.path.join(input_proto.uploads_dir,
+                                               'Packages')
+  upload_targets_list = binhost.ReadDevInstallFilesToCreatePackageIndex(
+      chroot, sysroot, devinstall_package_index_path, upload_uri, upload_path)
+
+  package_dir = chroot.full_path(sysroot.path, 'packages')
+  for upload_target in upload_targets_list:
+    # Copy each package to target/category/package
+    upload_target = upload_target.strip('/')
+    category = upload_target.split(os.sep)[0]
+    target_dir = os.path.join(input_proto.uploads_dir, category)
+    if not os.path.exists(target_dir):
+      os.makedirs(target_dir)
+    full_src_pkg_path = os.path.join(package_dir, upload_target)
+    full_target_src_path = os.path.join(input_proto.uploads_dir, upload_target)
+    shutil.copyfile(full_src_pkg_path, full_target_src_path)
+    output_proto.upload_targets.add().path = upload_target
+  output_proto.upload_targets.add().path = 'Packages'
+
+@validate.require('build_target.name', 'key', 'uri')
+@validate.validation_complete
+def SetBinhost(input_proto, output_proto, _config):
   """Set the URI for a given binhost key and build target.
 
   See BinhostService documentation in api/proto/binhost.proto.
@@ -113,6 +175,7 @@ def SetBinhost(input_proto, output_proto):
   Args:
     input_proto (SetBinhostRequest): The input proto.
     output_proto (SetBinhostResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   target = input_proto.build_target.name
   key = binhost_pb2.BinhostKey.Name(input_proto.key)
@@ -133,17 +196,23 @@ def SetBinhost(input_proto, output_proto):
                                                 private=private)
 
 
-def RegenBuildCache(input_proto, _output_proto):
+@validate.require('overlay_type')
+@validate.is_in('overlay_type', _OVERLAY_TYPE_TO_NAME)
+@validate.validation_complete
+def RegenBuildCache(input_proto, output_proto, _config):
   """Regenerate the Build Cache for a build target.
 
   See BinhostService documentation in api/proto/binhost.proto.
 
   Args:
     input_proto (RegenBuildCacheRequest): The input proto.
-    _output_proto (RegenBuildCacheResponse): The output proto.
+    output_proto (RegenBuildCacheResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
+  chroot = controller_util.ParseChroot(input_proto.chroot)
   overlay_type = input_proto.overlay_type
-  if overlay_type in _OVERLAY_TYPE_TO_NAME:
-    binhost.RegenBuildCache(_OVERLAY_TYPE_TO_NAME[overlay_type])
-  else:
-    cros_build_lib.Die('Overlay_type must be specified.')
+  overlays = binhost.RegenBuildCache(chroot,
+                                     _OVERLAY_TYPE_TO_NAME[overlay_type])
+
+  for overlay in overlays:
+    output_proto.modified_overlays.add().path = overlay

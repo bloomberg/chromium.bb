@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/test_data_util.h"
 #include "media/capture/video/file_video_capture_device.h"
@@ -67,7 +67,7 @@ class FileVideoCaptureDeviceTest : public ::testing::Test {
   MockImageCaptureClient image_capture_client_;
   std::unique_ptr<VideoCaptureDevice> device_;
   VideoCaptureFormat last_format_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(FileVideoCaptureDeviceTest, GetPhotoState) {

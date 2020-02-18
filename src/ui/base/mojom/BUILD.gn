@@ -6,7 +6,6 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
-    "clipboard.mojom",
     "cursor.mojom",
     "ui_base_types.mojom",
     "window_open_disposition.mojom",
@@ -14,27 +13,9 @@ mojom("mojom") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//skia/public/interfaces",
-    "//ui/gfx/geometry/mojo",
+    "//skia/public/mojom",
+    "//ui/gfx/geometry/mojom",
     "//url/mojom:url_mojom_gurl",
-  ]
-}
-
-source_set("lib") {
-  sources = [
-    "clipboard_client.cc",
-    "clipboard_client.h",
-    "clipboard_host.cc",
-    "clipboard_host.h",
-    "clipboard_host_mac.mm",
-  ]
-
-  public_deps = [
-    ":mojom",
-    "//base",
-    "//mojo/public/cpp/bindings",
-    "//ui/base",
-    "//ui/base/clipboard",
   ]
 }
 
@@ -45,10 +26,10 @@ source_set("unittests") {
   ]
   deps = [
     ":mojom",
-    "//skia/public/interfaces",
+    "//skia/public/mojom",
     "//testing/gtest",
     "//ui/base",
     "//ui/events",
-    "//ui/gfx/geometry/mojo:struct_traits",
+    "//ui/gfx/geometry/mojom:mojom_traits",
   ]
 }

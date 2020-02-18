@@ -17,14 +17,12 @@
 #include "chrome/browser/chromeos/login/signin/oauth2_login_manager_factory.h"
 #include "chrome/browser/chromeos/login/signin_partition_manager.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
-#include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
-#include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
@@ -33,7 +31,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/browsing_data_remover.h"
 #include "extensions/browser/pref_names.h"
-#include "extensions/common/constants.h"
 
 namespace chromeos {
 
@@ -41,9 +38,6 @@ namespace {
 
 // As defined in /chromeos/dbus/cryptohome/cryptohome_client.cc.
 static const char kUserIdHashSuffix[] = "-hash";
-
-// The name for the lock screen app profile.
-static const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
 
 bool ShouldAddProfileDirPrefix(const std::string& user_id_hash) {
   // Do not add profile dir prefix for legacy profile dir and test
@@ -79,6 +73,14 @@ Profile* GetProfileByUserIdHash(const std::string& user_id_hash) {
       ProfileHelper::GetProfilePathByUserIdHash(user_id_hash));
 }
 
+bool IsSigninProfilePath(const base::FilePath& profile_path) {
+  return profile_path.value() == chrome::kInitialProfile;
+}
+
+bool IsLockScreenAppProfilePath(const base::FilePath& profile_path) {
+  return profile_path.value() == chrome::kLockScreenAppProfile;
+}
+
 }  // anonymous namespace
 
 // static
@@ -88,8 +90,7 @@ bool ProfileHelper::always_return_primary_user_for_testing = false;
 ////////////////////////////////////////////////////////////////////////////////
 // ProfileHelper, public
 
-ProfileHelper::ProfileHelper()
-    : browsing_data_remover_(nullptr), weak_factory_(this) {}
+ProfileHelper::ProfileHelper() : browsing_data_remover_(nullptr) {}
 
 ProfileHelper::~ProfileHelper() {
   // Checking whether UserManager is initialized covers case
@@ -180,8 +181,7 @@ base::FilePath ProfileHelper::GetUserProfileDir(
 
 // static
 bool ProfileHelper::IsSigninProfile(const Profile* profile) {
-  return profile &&
-         profile->GetPath().BaseName().value() == chrome::kInitialProfile;
+  return profile && IsSigninProfilePath(profile->GetPath().BaseName());
 }
 
 // static
@@ -205,19 +205,19 @@ bool ProfileHelper::SigninProfileHasLoginScreenExtensions() {
 
 // static
 bool ProfileHelper::IsLockScreenAppProfile(const Profile* profile) {
-  return profile &&
-         profile->GetPath().BaseName().value() == kLockScreenAppProfile;
+  return profile && IsLockScreenAppProfilePath(profile->GetPath().BaseName());
 }
 
 // static
 base::FilePath ProfileHelper::GetLockScreenAppProfilePath() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->user_data_dir().AppendASCII(kLockScreenAppProfile);
+  return profile_manager->user_data_dir().AppendASCII(
+      chrome::kLockScreenAppProfile);
 }
 
 // static
 std::string ProfileHelper::GetLockScreenAppProfileName() {
-  return kLockScreenAppProfile;
+  return chrome::kLockScreenAppProfile;
 }
 
 // static
@@ -266,6 +266,18 @@ bool ProfileHelper::IsEphemeralUserProfile(const Profile* profile) {
 
   // Otherwise, users are ephemeral when the policy is enabled.
   return ChromeUserManager::Get()->AreEphemeralUsersEnabled();
+}
+
+// static
+bool ProfileHelper::IsRegularProfile(const Profile* profile) {
+  return !chromeos::ProfileHelper::IsSigninProfile(profile) &&
+         !chromeos::ProfileHelper::IsLockScreenAppProfile(profile);
+}
+
+// static
+bool ProfileHelper::IsRegularProfilePath(const base::FilePath& profile_path) {
+  return !IsSigninProfilePath(profile_path) &&
+         !IsLockScreenAppProfilePath(profile_path);
 }
 
 void ProfileHelper::ProfileStartup(Profile* profile) {
@@ -401,8 +413,7 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
 
 const user_manager::User* ProfileHelper::GetUserByProfile(
     const Profile* profile) const {
-  if (ProfileHelper::IsSigninProfile(profile) ||
-      ProfileHelper::IsLockScreenAppProfile(profile)) {
+  if (!ProfileHelper::IsRegularProfile(profile)) {
     return nullptr;
   }
 
@@ -554,23 +565,10 @@ void ProfileHelper::FlushProfile(Profile* profile) {
   if (!profile_flusher_)
     profile_flusher_.reset(new FileFlusher);
 
-  // Files/directories that do not need to be flushed.
-  std::vector<base::FilePath> excludes;
-
-  // Preferences file is handled by ImportantFileWriter.
-  excludes.push_back(base::FilePath(chrome::kPreferencesFilename));
-  // Do not flush cache files.
-  excludes.push_back(base::FilePath(chrome::kCacheDirname));
-  excludes.push_back(base::FilePath(FILE_PATH_LITERAL("GPUCache")));
-  // Do not flush user Downloads.
-  excludes.push_back(
-      DownloadPrefs::FromBrowserContext(profile)->DownloadPath());
-  // Let extension system handle extension files.
-  excludes.push_back(base::FilePath(extensions::kInstallDirectoryName));
-  // Do not flush Drive cache.
-  excludes.push_back(base::FilePath(chromeos::kDriveCacheDirname));
-
-  profile_flusher_->RequestFlush(profile->GetPath(), excludes, base::Closure());
+  // Flushes files directly under profile path since these are the critical
+  // ones.
+  profile_flusher_->RequestFlush(profile->GetPath(), /*recursive=*/false,
+                                 base::Closure());
 }
 
 }  // namespace chromeos

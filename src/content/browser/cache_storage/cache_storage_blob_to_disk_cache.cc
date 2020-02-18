@@ -12,7 +12,6 @@
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/common/storage_histograms.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 
@@ -23,8 +22,7 @@ const int CacheStorageBlobToDiskCache::kBufferSize = 1024 * 512;
 CacheStorageBlobToDiskCache::CacheStorageBlobToDiskCache()
     : handle_watcher_(FROM_HERE,
                       mojo::SimpleWatcher::ArmingPolicy::MANUAL,
-                      base::SequencedTaskRunnerHandle::Get()),
-      client_binding_(this) {}
+                      base::SequencedTaskRunnerHandle::Get()) {}
 
 CacheStorageBlobToDiskCache::~CacheStorageBlobToDiskCache() = default;
 
@@ -58,9 +56,8 @@ void CacheStorageBlobToDiskCache::StreamBlobToCache(
   entry_ = std::move(entry);
   callback_ = std::move(callback);
 
-  blink::mojom::BlobReaderClientPtr client;
-  client_binding_.Bind(MakeRequest(&client));
-  blob->ReadAll(std::move(producer_handle), std::move(client));
+  blob->ReadAll(std::move(producer_handle),
+                client_receiver_.BindNewPipeAndPassRemote());
 
   handle_watcher_.Watch(
       consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,

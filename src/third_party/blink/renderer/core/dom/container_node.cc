@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/events/mutation_event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/radio_node_list.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -977,8 +978,8 @@ void ContainerNode::RemovedFrom(ContainerNode& insertion_point) {
 DISABLE_CFI_PERF
 void ContainerNode::AttachLayoutTree(AttachContext& context) {
   auto* element = DynamicTo<Element>(this);
-  if (element &&
-      element->StyleRecalcBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (element && element->StyleRecalcBlockedByDisplayLock(
+                     DisplayLockLifecycleTarget::kChildren)) {
     // Since we block style recalc on descendants of this node due to display
     // locking, none of its descendants should have the NeedsReattachLayoutTree
     // bit set.
@@ -1414,7 +1415,7 @@ void ContainerNode::CheckForSiblingStyleChanges(SiblingCheckType change_type,
                                                 Node* node_before_change,
                                                 Node* node_after_change) {
   if (!InActiveDocument() || GetDocument().HasPendingForcedStyleRecalc() ||
-      GetStyleChangeType() >= kSubtreeStyleChange)
+      GetStyleChangeType() == kSubtreeStyleChange)
     return;
 
   if (!HasRestyleFlag(DynamicRestyleFlags::kChildrenAffectedByStructuralRules))
@@ -1553,7 +1554,7 @@ ClassCollection* ContainerNode::getElementsByClassName(
 
 RadioNodeList* ContainerNode::GetRadioNodeList(const AtomicString& name,
                                                bool only_match_img_elements) {
-  DCHECK(IsHTMLFormElement(this) || IsHTMLFieldSetElement(this));
+  DCHECK(IsA<HTMLFormElement>(this) || IsA<HTMLFieldSetElement>(this));
   CollectionType type =
       only_match_img_elements ? kRadioImgNodeListType : kRadioNodeListType;
   return EnsureCachedCollection<RadioNodeList>(type, name);

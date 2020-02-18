@@ -16,6 +16,9 @@ namespace cast_streaming {
 // and a video stream will have a different sender SSRC.
 using Ssrc = uint32_t;
 
+// The "not set" or "null" value for the Ssrc type.
+constexpr Ssrc kNullSsrc{0};
+
 // Computes a new SSRC that will be used to uniquely identify an RTP stream. The
 // |higher_priority| argument, if true, will generate an SSRC that causes the
 // system to use a higher priority when scheduling data transmission. Generally,

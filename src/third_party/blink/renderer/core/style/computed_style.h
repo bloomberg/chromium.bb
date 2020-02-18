@@ -74,9 +74,11 @@ class FilterOperations;
 class Font;
 class FloatRoundedRect;
 class Hyphenation;
+class LayoutTheme;
 class NinePieceImage;
 class ShadowList;
 class ShapeValue;
+class StyleAdjuster;
 class StyleContentAlignmentData;
 class StyleDifference;
 class StyleImage;
@@ -97,9 +99,11 @@ class BorderLeftColor;
 class BorderRightColor;
 class BorderTopColor;
 class CaretColor;
+class Clear;
 class Color;
 class ColumnRuleColor;
 class Fill;
+class Float;
 class FloodColor;
 class InternalVisitedBackgroundColor;
 class InternalVisitedBorderBottomColor;
@@ -116,9 +120,11 @@ class InternalVisitedTextFillColor;
 class InternalVisitedTextStrokeColor;
 class LightingColor;
 class OutlineColor;
+class Resize;
 class StopColor;
 class Stroke;
 class TextDecorationColor;
+class WebkitAppearance;
 class WebkitTapHighlightColor;
 class WebkitTextEmphasisColor;
 class WebkitTextFillColor;
@@ -198,9 +204,11 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::BorderRightColor;
   friend class css_longhand::BorderTopColor;
   friend class css_longhand::CaretColor;
+  friend class css_longhand::Clear;
   friend class css_longhand::Color;
   friend class css_longhand::ColumnRuleColor;
   friend class css_longhand::Fill;
+  friend class css_longhand::Float;
   friend class css_longhand::FloodColor;
   friend class css_longhand::InternalVisitedBackgroundColor;
   friend class css_longhand::InternalVisitedBorderBottomColor;
@@ -217,6 +225,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::InternalVisitedTextStrokeColor;
   friend class css_longhand::LightingColor;
   friend class css_longhand::OutlineColor;
+  friend class css_longhand::Resize;
   friend class css_longhand::StopColor;
   friend class css_longhand::Stroke;
   friend class css_longhand::TextDecorationColor;
@@ -224,6 +233,10 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::WebkitTextEmphasisColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
+  // Access to private Appearance() and HasAppearance().
+  friend class LayoutTheme;
+  friend class StyleAdjuster;
+  friend class css_longhand::WebkitAppearance;
   // Editing has to only reveal unvisited info.
   friend class ApplyStyleCommand;
   // Editing has to only reveal unvisited info.
@@ -1238,17 +1251,47 @@ class ComputedStyle : public ComputedStyleBase,
   bool ColumnRuleEquivalent(const ComputedStyle& other_style) const;
 
   // Flex utility functions.
-  bool IsColumnFlexDirection() const {
+  bool ResolvedIsColumnFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kVertical;
+    }
     return FlexDirection() == EFlexDirection::kColumn ||
            FlexDirection() == EFlexDirection::kColumnReverse;
   }
-  bool IsReverseFlexDirection() const {
-    return FlexDirection() == EFlexDirection::kRowReverse ||
-           FlexDirection() == EFlexDirection::kColumnReverse;
+  bool ResolvedIsColumnReverseFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kVertical &&
+             BoxDirection() == EBoxDirection::kReverse;
+    }
+    return FlexDirection() == EFlexDirection::kColumnReverse;
+  }
+  bool ResolvedIsRowReverseFlexDirection() const {
+    if (Display() == EDisplay::kWebkitBox ||
+        Display() == EDisplay::kWebkitInlineBox) {
+      return BoxOrient() == EBoxOrient::kHorizontal &&
+             BoxDirection() == EBoxDirection::kReverse;
+    }
+    return FlexDirection() == EFlexDirection::kRowReverse;
   }
   bool HasBoxReflect() const { return BoxReflect(); }
   bool ReflectionDataEquivalent(const ComputedStyle& other) const {
     return DataEquivalent(BoxReflect(), other.BoxReflect());
+  }
+  float ResolvedFlexGrow(const ComputedStyle& box_style) const {
+    if (box_style.Display() == EDisplay::kWebkitBox ||
+        box_style.Display() == EDisplay::kWebkitInlineBox) {
+      return BoxFlex() > 0 ? BoxFlex() : 0.0f;
+    }
+    return FlexGrow();
+  }
+  float ResolvedFlexShrink(const ComputedStyle& box_style) const {
+    if (box_style.Display() == EDisplay::kWebkitBox ||
+        box_style.Display() == EDisplay::kWebkitInlineBox) {
+      return BoxFlex() > 0 ? BoxFlex() : 0.0f;
+    }
+    return FlexShrink();
   }
 
   // Mask utility functions.
@@ -1889,7 +1932,26 @@ class ComputedStyle : public ComputedStyleBase,
   bool CanRenderBorderImage() const;
 
   // Float utility functions.
-  bool IsFloating() const { return Floating() != EFloat::kNone; }
+  bool IsFloating() const { return FloatingInternal() != EFloat::kNone; }
+  EFloat UnresolvedFloating() const { return FloatingInternal(); }
+
+  EFloat Floating(const ComputedStyle& cb_style) const {
+    return Floating(cb_style.Direction());
+  }
+
+  EFloat Floating(TextDirection cb_direction) const {
+    const EFloat value = FloatingInternal();
+    switch (value) {
+      case EFloat::kInlineStart:
+      case EFloat::kInlineEnd: {
+        return IsLtr(cb_direction) == (value == EFloat::kInlineStart)
+                   ? EFloat::kLeft
+                   : EFloat::kRight;
+      }
+      default:
+        return value;
+    }
+  }
 
   // Mix-blend-mode utility functions.
   bool HasBlendMode() const { return GetBlendMode() != BlendMode::kNormal; }
@@ -1935,6 +1997,28 @@ class ComputedStyle : public ComputedStyleBase,
     return GetPosition() == EPosition::kSticky &&
            (!Top().IsAuto() || !Left().IsAuto() || !Right().IsAuto() ||
             !Bottom().IsAuto());
+  }
+
+  // Clear utility functions.
+  bool HasClear() const { return ClearInternal() != EClear::kNone; }
+  EClear UnresolvedClear() const { return ClearInternal(); }
+
+  EClear Clear(const ComputedStyle& cb_style) const {
+    return Clear(cb_style.Direction());
+  }
+
+  EClear Clear(TextDirection cb_direction) const {
+    const EClear value = ClearInternal();
+    switch (value) {
+      case EClear::kInlineStart:
+      case EClear::kInlineEnd: {
+        return IsLtr(cb_direction) == (value == EClear::kInlineStart)
+                   ? EClear::kLeft
+                   : EClear::kRight;
+      }
+      default:
+        return value;
+    }
   }
 
   // Clip utility functions.
@@ -2033,6 +2117,25 @@ class ComputedStyle : public ComputedStyleBase,
                              const IntPoint& hot_spot = IntPoint());
   void SetCursorList(CursorList*);
   void ClearCursorList();
+
+  // Resize utility functions.
+  bool HasResize() const { return ResizeInternal() != EResize::kNone; }
+  EResize UnresolvedResize() const { return ResizeInternal(); }
+
+  EResize Resize(const ComputedStyle& cb_style) const {
+    EResize value = ResizeInternal();
+    switch (value) {
+      case EResize::kBlock:
+      case EResize::kInline: {
+        return ::blink::IsHorizontalWritingMode(cb_style.GetWritingMode()) ==
+                       (value == EResize::kBlock)
+                   ? EResize::kVertical
+                   : EResize::kHorizontal;
+      }
+      default:
+        return value;
+    }
+  }
 
   // Text decoration utility functions.
   void ApplyTextDecorations(const Color& parent_text_decoration_color,
@@ -2246,7 +2349,10 @@ class ComputedStyle : public ComputedStyleBase,
     return HasTransformRelatedProperty() ||
            // Filter establishes containing block for non-document elements:
            // https://drafts.fxtf.org/filter-effects-1/#FilterProperty
-           (!is_document_element && HasFilter());
+           // Backdrop-filter creates a containing block for fixed and absolute
+           // positioned elements:
+           // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
+           (!is_document_element && (HasFilter() || HasBackdropFilter()));
   }
 
   // Whitespace utility functions.
@@ -2315,16 +2421,16 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool HasBoxDecorations() const {
     return HasBorderDecoration() || HasBorderRadius() || HasOutline() ||
-           HasAppearance() || BoxShadow() || HasFilterInducingProperty() ||
-           HasBackdropFilter() || Resize() != EResize::kNone;
+           HasEffectiveAppearance() || BoxShadow() ||
+           HasFilterInducingProperty() || HasBackdropFilter() || HasResize();
   }
 
   // "Box decoration background" includes all box decorations and backgrounds
   // that are painted as the background of the object. It includes borders,
   // box-shadows, background-color and background-image, etc.
   bool HasBoxDecorationBackground() const {
-    return HasBackground() || HasBorderDecoration() || HasAppearance() ||
-           BoxShadow();
+    return HasBackground() || HasBorderDecoration() ||
+           HasEffectiveAppearance() || BoxShadow();
   }
 
   LayoutRectOutsets BoxDecorationOutsets() const;
@@ -2358,7 +2464,9 @@ class ComputedStyle : public ComputedStyleBase,
   VisitedDependentColor(const CSSProperty& color_property) const;
 
   // -webkit-appearance utility functions.
-  bool HasAppearance() const { return Appearance() != kNoControlPart; }
+  bool HasEffectiveAppearance() const {
+    return EffectiveAppearance() != kNoControlPart;
+  }
 
   // Other utility functions.
   bool RequireTransformOrigin(ApplyTransformOrigin apply_origin,
@@ -2382,11 +2490,20 @@ class ComputedStyle : public ComputedStyleBase,
   // Load the images of CSS properties that were deferred by LazyLoad.
   void LoadDeferredImages(Document&) const;
 
-  enum ColorScheme UsedColorScheme() const {
-    return DarkColorScheme() ? ColorScheme::kDark : ColorScheme::kLight;
+  enum WebColorScheme UsedColorScheme() const {
+    return DarkColorScheme() ? WebColorScheme::kDark : WebColorScheme::kLight;
+  }
+
+  Color ForcedBackplateColor() const {
+    return LayoutTheme::GetTheme().SystemColor(CSSValueID::kWindow,
+                                               WebColorScheme::kLight);
   }
 
  private:
+  EClear Clear() const { return ClearInternal(); }
+  EFloat Floating() const { return FloatingInternal(); }
+  EResize Resize() const { return ResizeInternal(); }
+
   void SetInternalVisitedColor(const Color& v) {
     SetInternalVisitedColorInternal(v);
   }
@@ -2619,6 +2736,11 @@ class ComputedStyle : public ComputedStyleBase,
   const StyleColor& StopColor() const { return SvgStyle().StopColor(); }
   StyleColor FloodColor() const { return SvgStyle().FloodColor(); }
   StyleColor LightingColor() const { return SvgStyle().LightingColor(); }
+
+  // Appearance accessors are private to make sure callers use
+  // EffectiveAppearance in almost all cases.
+  ControlPart Appearance() const { return AppearanceInternal(); }
+  bool HasAppearance() const { return Appearance() != kNoControlPart; }
 
   void AddAppliedTextDecoration(const AppliedTextDecoration&);
   void OverrideTextDecorationColors(Color propagated_color);

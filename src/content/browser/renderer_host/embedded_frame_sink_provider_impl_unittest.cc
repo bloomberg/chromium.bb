@@ -5,12 +5,13 @@
 #include "content/browser/renderer_host/embedded_frame_sink_provider_impl.h"
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -21,7 +22,7 @@
 #include "components/viz/test/mock_compositor_frame_sink_client.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/renderer_host/embedded_frame_sink_impl.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom.h"
@@ -55,24 +56,20 @@ class StubEmbeddedFrameSinkClient
     : public blink::mojom::EmbeddedFrameSinkClient,
       public blink::mojom::SurfaceEmbedder {
  public:
-  StubEmbeddedFrameSinkClient()
-      : surface_embedder_binding_(this), binding_(this) {}
-  ~StubEmbeddedFrameSinkClient() override {}
+  StubEmbeddedFrameSinkClient() = default;
+  ~StubEmbeddedFrameSinkClient() override = default;
 
-  blink::mojom::EmbeddedFrameSinkClientPtr GetInterfacePtr() {
-    blink::mojom::EmbeddedFrameSinkClientPtr client;
-    binding_.Bind(mojo::MakeRequest(&client));
-    binding_.set_connection_error_handler(
+  mojo::PendingRemote<blink::mojom::EmbeddedFrameSinkClient>
+  GetInterfaceRemote() {
+    mojo::PendingRemote<blink::mojom::EmbeddedFrameSinkClient> client;
+    receiver_.Bind(client.InitWithNewPipeAndPassReceiver());
+    receiver_.set_disconnect_handler(
         base::BindOnce([](bool* error_variable) { *error_variable = true; },
                        &connection_error_));
     return client;
   }
 
-  void Close() { binding_.Close(); }
-
-  const viz::SurfaceInfo& last_surface_info() const {
-    return last_surface_info_;
-  }
+  void Close() { receiver_.reset(); }
 
   const viz::LocalSurfaceId& last_received_local_surface_id() const {
     return last_received_local_surface_id_;
@@ -82,12 +79,9 @@ class StubEmbeddedFrameSinkClient
 
  private:
   // blink::mojom::EmbeddedFrameSinkClient:
-  void OnFirstSurfaceActivation(const viz::SurfaceInfo& surface_info) override {
-    last_surface_info_ = surface_info;
-  }
   void BindSurfaceEmbedder(
-      blink::mojom::SurfaceEmbedderRequest request) override {
-    surface_embedder_binding_.Bind(std::move(request));
+      mojo::PendingReceiver<blink::mojom::SurfaceEmbedder> receiver) override {
+    surface_embedder_receiver_.Bind(std::move(receiver));
   }
 
   // blink::mojom::SurfaceEmbedder implementation:
@@ -95,9 +89,9 @@ class StubEmbeddedFrameSinkClient
     last_received_local_surface_id_ = local_surface_id;
   }
 
-  mojo::Binding<blink::mojom::SurfaceEmbedder> surface_embedder_binding_;
-  mojo::Binding<blink::mojom::EmbeddedFrameSinkClient> binding_;
-  viz::SurfaceInfo last_surface_info_;
+  mojo::Receiver<blink::mojom::SurfaceEmbedder> surface_embedder_receiver_{
+      this};
+  mojo::Receiver<blink::mojom::EmbeddedFrameSinkClient> receiver_{this};
   viz::LocalSurfaceId last_received_local_surface_id_;
   bool connection_error_ = false;
 
@@ -160,7 +154,7 @@ class EmbeddedFrameSinkProviderImplTest : public testing::Test {
  private:
   // A MessageLoop is required for mojo bindings which are used to
   // connect to graphics services.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   viz::ServerSharedBitmapManager shared_bitmap_manager_;
   viz::FakeHostFrameSinkClient host_frame_sink_client_;
   std::unique_ptr<viz::HostFrameSinkManager> host_frame_sink_manager_;
@@ -174,7 +168,7 @@ TEST_F(EmbeddedFrameSinkProviderImplTest,
   // Mimic connection from the renderer main thread to browser.
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,
-                                        efs_client.GetInterfacePtr());
+                                        efs_client.GetInterfaceRemote());
 
   EmbeddedFrameSinkImpl* efs_impl = GetEmbeddedFrameSink(kFrameSinkA);
 
@@ -184,14 +178,15 @@ TEST_F(EmbeddedFrameSinkProviderImplTest,
   EXPECT_THAT(GetAllCanvases(), ElementsAre(kFrameSinkA));
 
   // Mimic connection from the renderer main or worker thread to browser.
-  viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
+  mojo::Remote<viz::mojom::CompositorFrameSink> compositor_frame_sink;
   viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
-  blink::mojom::SurfaceEmbedderPtr surface_embedder;
+  mojo::Remote<blink::mojom::SurfaceEmbedder> surface_embedder;
   provider()->CreateCompositorFrameSink(
-      kFrameSinkA, compositor_frame_sink_client.BindInterfacePtr(),
-      mojo::MakeRequest(&compositor_frame_sink));
+      kFrameSinkA,
+      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
+      compositor_frame_sink.BindNewPipeAndPassReceiver());
   provider()->ConnectToEmbedder(kFrameSinkA,
-                                mojo::MakeRequest(&surface_embedder));
+                                surface_embedder.BindNewPipeAndPassReceiver());
 
   // Renderer submits a CompositorFrame with |local_id|.
   const viz::LocalSurfaceId local_id(1, base::UnguessableToken::Create());
@@ -218,7 +213,7 @@ TEST_F(EmbeddedFrameSinkProviderImplTest,
 TEST_F(EmbeddedFrameSinkProviderImplTest, ClientClosesConnection) {
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,
-                                        efs_client.GetInterfacePtr());
+                                        efs_client.GetInterfaceRemote());
 
   RunUntilIdle();
 
@@ -239,7 +234,7 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, ClientClosesConnection) {
 TEST_F(EmbeddedFrameSinkProviderImplTest, ProviderClosesConnections) {
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,
-                                        efs_client.GetInterfacePtr());
+                                        efs_client.GetInterfaceRemote());
 
   RunUntilIdle();
 
@@ -267,7 +262,8 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, ClientConnectionWrongOrder) {
   // Try to connect CompositorFrameSink without first making
   // EmbeddedFrameSink connection. This should fail.
   provider()->CreateCompositorFrameSink(
-      kFrameSinkA, compositor_frame_sink_client.BindInterfacePtr(),
+      kFrameSinkA,
+      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
       mojo::MakeRequest(&compositor_frame_sink));
 
   // The request will fail and trigger a connection error.
@@ -279,14 +275,15 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, ClientConnectionWrongOrder) {
 TEST_F(EmbeddedFrameSinkProviderImplTest, ParentNotRegistered) {
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkA, kFrameSinkB,
-                                        efs_client.GetInterfacePtr());
+                                        efs_client.GetInterfaceRemote());
 
   viz::mojom::CompositorFrameSinkPtr compositor_frame_sink;
   viz::MockCompositorFrameSinkClient compositor_frame_sink_client;
   // The embedder, kFrameSinkA, has already been invalidated and isn't
   // registered at this point. This request should fail.
   provider()->CreateCompositorFrameSink(
-      kFrameSinkB, compositor_frame_sink_client.BindInterfacePtr(),
+      kFrameSinkB,
+      compositor_frame_sink_client.BindInterfacePtr().PassInterface(),
       mojo::MakeRequest(&compositor_frame_sink));
 
   // The request will fail and trigger a connection error.
@@ -301,7 +298,7 @@ TEST_F(EmbeddedFrameSinkProviderImplTest, InvalidClientId) {
 
   StubEmbeddedFrameSinkClient efs_client;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, invalid_frame_sink_id,
-                                        efs_client.GetInterfacePtr());
+                                        efs_client.GetInterfaceRemote());
 
   RunUntilIdle();
 
@@ -318,11 +315,11 @@ TEST_F(EmbeddedFrameSinkProviderImplTest,
        MultiHTMLCanvasElementTransferToOffscreen) {
   StubEmbeddedFrameSinkClient efs_client_a;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkA,
-                                        efs_client_a.GetInterfacePtr());
+                                        efs_client_a.GetInterfaceRemote());
 
   StubEmbeddedFrameSinkClient efs_client_b;
   provider()->RegisterEmbeddedFrameSink(kFrameSinkParent, kFrameSinkB,
-                                        efs_client_b.GetInterfacePtr());
+                                        efs_client_b.GetInterfaceRemote());
 
   RunUntilIdle();
 

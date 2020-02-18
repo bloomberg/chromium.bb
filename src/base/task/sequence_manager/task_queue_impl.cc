@@ -12,6 +12,7 @@
 #include "base/task/sequence_manager/sequence_manager_impl.h"
 #include "base/task/sequence_manager/time_domain.h"
 #include "base/task/sequence_manager/work_queue.h"
+#include "base/task/task_observer.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
@@ -229,8 +230,8 @@ void TaskQueueImpl::MaybeLogPostTask(PostedTask* task) {
   if (!sequence_manager_->settings().log_post_task)
     return;
 
-  DVLOG(1) << name_ << " PostTask " << task->location.ToString() << " delay "
-           << task->delay;
+  LOG(INFO) << name_ << " PostTask " << task->location.ToString() << " delay "
+            << task->delay;
 #endif  // DCHECK_IS_ON()
 }
 
@@ -277,13 +278,19 @@ void TaskQueueImpl::PostImmediateTaskImpl(PostedTask task,
     EnqueueOrder sequence_number = sequence_manager_->GetNextSequenceNumber();
     bool was_immediate_incoming_queue_empty =
         any_thread_.immediate_incoming_queue.empty();
-    base::TimeTicks desired_run_time;
+    base::TimeTicks delayed_run_time;
     // The desired run time is only required when delayed fence is allowed.
     // Avoid evaluating it when not required.
-    if (delayed_fence_allowed_)
-      desired_run_time = lazy_now.Now();
+    //
+    // TODO(https://crbug.com/997203) The code that records jank metrics depends
+    // on the delayed run time to be set when |add_queue_time_to_tasks| is true.
+    // We should remove that dependency and only set the delayed run time here
+    // when |delayed_fence_allowed_| is true. See https://crbug.com/997203#c22
+    // for details about the dependency.
+    if (delayed_fence_allowed_ || add_queue_time_to_tasks)
+      delayed_run_time = lazy_now.Now();
     any_thread_.immediate_incoming_queue.push_back(Task(
-        std::move(task), desired_run_time, sequence_number, sequence_number));
+        std::move(task), delayed_run_time, sequence_number, sequence_number));
 
     if (any_thread_.on_task_ready_handler) {
       any_thread_.on_task_ready_handler.Run(
@@ -557,6 +564,8 @@ void TaskQueueImpl::MoveReadyDelayedTasksToWorkQueue(LazyNow* lazy_now) {
   while (!main_thread_only().delayed_incoming_queue.empty()) {
     Task* task =
         const_cast<Task*>(&main_thread_only().delayed_incoming_queue.top());
+    // TODO(crbug.com/990245): Remove after the crash has been resolved.
+    sequence_manager_->RecordCrashKeys(*task);
     if (!task->task || task->task.IsCancelled()) {
       main_thread_only().delayed_incoming_queue.pop();
       continue;
@@ -695,12 +704,11 @@ void TaskQueueImpl::AsValueInto(TimeTicks now,
   state->EndDictionary();
 }
 
-void TaskQueueImpl::AddTaskObserver(MessageLoop::TaskObserver* task_observer) {
+void TaskQueueImpl::AddTaskObserver(TaskObserver* task_observer) {
   main_thread_only().task_observers.AddObserver(task_observer);
 }
 
-void TaskQueueImpl::RemoveTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void TaskQueueImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }
 

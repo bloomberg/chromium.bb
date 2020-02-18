@@ -11,6 +11,7 @@ static_library("router") {
   deps = [
     "//base",
     "//chrome/common:constants",
+    "//components/cast_channel",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
     "//content/public/browser",
@@ -25,7 +26,7 @@ static_library("router") {
   ]
   public_deps = [
     "//chrome/common/media_router:router",
-    "//chrome/common/media_router/mojo:media_router",
+    "//chrome/common/media_router/mojom:media_router",
   ]
   sources = [
     "issue_manager.cc",
@@ -82,8 +83,6 @@ static_library("router") {
       "event_page_request_manager.h",
       "event_page_request_manager_factory.cc",
       "event_page_request_manager_factory.h",
-      "mojo/media_route_controller.cc",
-      "mojo/media_route_controller.h",
       "mojo/media_route_provider_util_win.cc",
       "mojo/media_route_provider_util_win.h",
       "mojo/media_router_desktop.cc",
@@ -110,6 +109,8 @@ static_library("router") {
       "providers/cast/cast_app_discovery_service.h",
       "providers/cast/cast_internal_message_util.cc",
       "providers/cast/cast_internal_message_util.h",
+      "providers/cast/cast_media_controller.cc",
+      "providers/cast/cast_media_controller.h",
       "providers/cast/cast_media_route_provider.cc",
       "providers/cast/cast_media_route_provider.h",
       "providers/cast/cast_media_route_provider_metrics.cc",
@@ -156,6 +157,8 @@ static_library("router") {
         "providers/openscreen/platform/task_runner.h",
         "providers/openscreen/platform/time.cc",
         "providers/openscreen/platform/trace_logging_platform.cc",
+        "providers/openscreen/platform/udp_socket.cc",
+        "providers/openscreen/platform/udp_socket.h",
       ]
 
       configs +=
@@ -191,8 +194,8 @@ static_library("test_support") {
   if (enable_extensions) {
     deps += [
       "discovery",
-      "//chrome/common/media_router/mojo:media_router",
-      "//chrome/common/media_router/mojo:media_router_test_interfaces",
+      "//chrome/common/media_router/mojom:media_router",
+      "//chrome/common/media_router/mojom:media_router_test_interfaces",
       "//extensions/browser",
       "//extensions/common",
     ]

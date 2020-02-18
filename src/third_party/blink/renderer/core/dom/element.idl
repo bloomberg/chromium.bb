@@ -38,7 +38,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [Affects=Nothing, CEReactions, Reflect=class] attribute DOMString className;
     [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList classList;
     [Unscopable, CEReactions, Reflect] attribute DOMString slot;
-    [RuntimeEnabled=CSSPartPseudoElement, Affects=Nothing, SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList part;
+    [Affects=Nothing, SameObject, PerWorldBindings, PutForwards=value] readonly attribute DOMTokenList part;
 
     // Pointer Events
     // https://w3c.github.io/pointerevents/#extensions-to-the-element-interface
@@ -93,7 +93,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
     // Pointer Lock
     // https://w3c.github.io/pointerlock/#extensions-to-the-element-interface
-    [MeasureAs=ElementRequestPointerLock] void requestPointerLock();
+    [MeasureAs=ElementRequestPointerLock] void requestPointerLock(optional PointerLockOptions options);
 
     // CSSOM View Module
     // https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface
@@ -144,6 +144,8 @@ callback ScrollStateCallback = void (ScrollState scrollState);
 
     // Display locking. Returns a display lock context.
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
+    // Declarative display locking.
+    [RuntimeEnabled=DisplayLocking, CEReactions, CustomElementCallbacks, Reflect] attribute DOMString renderSubtree;
 
     // Element Timing
     [RuntimeEnabled=ElementTiming, Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;

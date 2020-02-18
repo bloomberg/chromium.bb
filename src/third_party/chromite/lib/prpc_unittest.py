@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+
 import mock
 
 from chromite.lib import auth
@@ -40,7 +41,7 @@ class PRPCClientTest(cros_test_lib.MockTestCase):
   def setUp(self):
     self.mock_http = mock.MagicMock()
     self.PatchObject(auth, 'AuthorizedHttp', return_value=self.mock_http)
-    self.xssi_prefix = ')]}\'\n'
+    self.xssi_prefix = ")]}'\n"
     self.success_response = {
         'status': 200,
         'x-prpc-grpc-code': 0,

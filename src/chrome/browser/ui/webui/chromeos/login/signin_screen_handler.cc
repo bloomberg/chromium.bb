@@ -11,8 +11,9 @@
 #include <vector>
 
 #include "ash/public/cpp/login_constants.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/public/interfaces/tray_action.mojom.h"
+#include "ash/public/mojom/tray_action.mojom.h"
 #include "base/bind.h"
 #include "base/i18n/number_formatting.h"
 #include "base/location.h"
@@ -64,7 +65,6 @@
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/ui/ash/ime_controller_client.h"
 #include "chrome/browser/ui/ash/session_controller_client_impl.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/login/core_oobe_handler.h"
@@ -97,6 +97,8 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "components/version_info/version_info.h"
+#include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 #include "google_apis/gaia/gaia_auth_util.h"
@@ -235,8 +237,7 @@ SigninScreenHandler::SigninScreenHandler(
                              ->CapsLockIsEnabled()),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
-      histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
-      weak_factory_(this) {
+      histogram_helper_(new ErrorScreensHistogramHelper("Signin")) {
   DCHECK(network_state_informer_.get());
   DCHECK(error_screen_);
   DCHECK(core_oobe_view_);
@@ -266,9 +267,9 @@ SigninScreenHandler::SigninScreenHandler(
           base::Bind(&SigninScreenHandler::OnAllowedInputMethodsChanged,
                      base::Unretained(this)));
 
-  TabletModeClient* tablet_mode_client = TabletModeClient::Get();
-  tablet_mode_client->AddObserver(this);
-  OnTabletModeToggled(tablet_mode_client->tablet_mode_enabled());
+  ash::TabletMode* tablet_mode = ash::TabletMode::Get();
+  tablet_mode->AddObserver(this);
+  OnTabletModeToggled(tablet_mode->InTabletMode());
 
   WallpaperControllerClient::Get()->AddObserver(this);
 }
@@ -276,7 +277,9 @@ SigninScreenHandler::SigninScreenHandler(
 SigninScreenHandler::~SigninScreenHandler() {
   if (auto* wallpaper_controller_client = WallpaperControllerClient::Get())
     wallpaper_controller_client->RemoveObserver(this);
-  TabletModeClient::Get()->RemoveObserver(this);
+  // Ash maybe released before us.
+  if (ash::TabletMode::Get())
+    ash::TabletMode::Get()->RemoveObserver(this);
   OobeUI* oobe_ui = GetOobeUI();
   if (oobe_ui && oobe_ui_observer_added_)
     oobe_ui->RemoveObserver(this);
@@ -439,6 +442,8 @@ void SigninScreenHandler::RegisterMessages() {
   AddCallback("launchIncognito", &SigninScreenHandler::HandleLaunchIncognito);
   AddCallback("launchPublicSession",
               &SigninScreenHandler::HandleLaunchPublicSession);
+  AddCallback("launchSAMLPublicSession",
+              &SigninScreenHandler::HandleLaunchSAMLPublicSession);
   AddRawCallback("offlineLogin", &SigninScreenHandler::HandleOfflineLogin);
   AddCallback("rebootSystem", &SigninScreenHandler::HandleRebootSystem);
   AddCallback("removeUser", &SigninScreenHandler::HandleRemoveUser);
@@ -1016,6 +1021,14 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 }
 
+void SigninScreenHandler::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void SigninScreenHandler::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
+}
+
 void SigninScreenHandler::OnTabletModeToggled(bool enabled) {
   CallJS("login.AccountPickerScreen.setTabletModeState", enabled);
 }
@@ -1100,6 +1113,14 @@ void SigninScreenHandler::HandleLaunchIncognito() {
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   if (delegate_)
     delegate_->Login(context, SigninSpecifics());
+}
+
+void SigninScreenHandler::HandleLaunchSAMLPublicSession(
+    const std::string& email) {
+  const AccountId account_id = user_manager::known_user::GetAccountId(
+      email, std::string() /* id */, AccountType::UNKNOWN);
+  SigninScreenHandler::HandleLaunchPublicSession(account_id, std::string(),
+                                                 std::string());
 }
 
 void SigninScreenHandler::HandleLaunchPublicSession(
@@ -1367,7 +1388,7 @@ void SigninScreenHandler::SendPublicSessionKeyboardLayouts(
 
 void SigninScreenHandler::HandleGetTabletModeState() {
   CallJS("login.AccountPickerScreen.setTabletModeState",
-         TabletModeClient::Get()->tablet_mode_enabled());
+         ash::TabletMode::Get()->InTabletMode());
 }
 
 void SigninScreenHandler::HandleGetDemoModeState() {

@@ -63,20 +63,24 @@ buildflag_header("buildflags") {
   ]
 }
 
+source_set("hit_test") {
+  sources = [
+    "hit_test.cc",
+    "hit_test.h",
+  ]
+
+  if (use_x11 || use_ozone) {
+    sources += [
+      "hit_test_x11.cc",
+      "hit_test_x11.h",
+    ]
+  }
+}
+
 jumbo_component("base") {
   output_name = "ui_base"
 
   sources = [
-    "accelerators/media_keys_listener.cc",
-    "accelerators/media_keys_listener.h",
-    "accelerators/media_keys_util.cc",
-    "accelerators/media_keys_util.h",
-    "accelerators/menu_label_accelerator_util.cc",
-    "accelerators/menu_label_accelerator_util.h",
-    "accelerators/menu_label_accelerator_util_linux.cc",
-    "accelerators/menu_label_accelerator_util_linux.h",
-    "accelerators/platform_accelerator_cocoa.h",
-    "accelerators/platform_accelerator_cocoa.mm",
     "class_property.cc",
     "class_property.h",
     "cocoa/accessibility_focus_overrider.h",
@@ -166,8 +170,6 @@ jumbo_component("base") {
     "dragdrop/os_exchange_data_provider_mac.mm",
     "dragdrop/os_exchange_data_provider_win.cc",
     "dragdrop/os_exchange_data_provider_win.h",
-    "hit_test.cc",
-    "hit_test.h",
     "l10n/formatter.cc",
     "l10n/formatter.h",
     "l10n/l10n_font_util.cc",
@@ -216,8 +218,6 @@ jumbo_component("base") {
     "nine_image_painter_factory.h",
     "page_transition_types.cc",
     "page_transition_types.h",
-    "platform_window_defaults.cc",
-    "platform_window_defaults.h",
     "resource/resource_bundle.cc",
     "resource/resource_bundle.h",
     "resource/resource_bundle_android.cc",
@@ -230,6 +230,8 @@ jumbo_component("base") {
     "resource/resource_data_dll_win.cc",
     "resource/resource_data_dll_win.h",
     "resource/whitelist.h",
+    "scoped_visibility_tracker.cc",
+    "scoped_visibility_tracker.h",
     "template_expressions.cc",
     "template_expressions.h",
     "theme_provider.cc",
@@ -242,11 +244,6 @@ jumbo_component("base") {
     "ui_base_switches.h",
     "ui_base_switches_util.cc",
     "ui_base_switches_util.h",
-    "ui_base_types.cc",
-    "ui_base_types.h",
-    "user_activity/user_activity_detector.cc",
-    "user_activity/user_activity_detector.h",
-    "user_activity/user_activity_observer.h",
     "view_prop.cc",
     "view_prop.h",
     "webui/i18n_source_stream.cc",
@@ -301,6 +298,16 @@ jumbo_component("base") {
       "accelerators/accelerator_history.h",
       "accelerators/accelerator_manager.cc",
       "accelerators/accelerator_manager.h",
+      "accelerators/media_keys_listener.cc",
+      "accelerators/media_keys_listener.h",
+      "accelerators/media_keys_util.cc",
+      "accelerators/media_keys_util.h",
+      "accelerators/menu_label_accelerator_util.cc",
+      "accelerators/menu_label_accelerator_util.h",
+      "accelerators/menu_label_accelerator_util_linux.cc",
+      "accelerators/menu_label_accelerator_util_linux.h",
+      "accelerators/platform_accelerator_cocoa.h",
+      "accelerators/platform_accelerator_cocoa.mm",
       "base_window.cc",
       "base_window.h",
       "cocoa/bubble_closer.h",
@@ -320,6 +327,11 @@ jumbo_component("base") {
       "pointer/touch_editing_controller.h",
       "text/bytes_formatting.cc",
       "text/bytes_formatting.h",
+      "ui_base_types.cc",
+      "ui_base_types.h",
+      "user_activity/user_activity_detector.cc",
+      "user_activity/user_activity_detector.h",
+      "user_activity/user_activity_observer.h",
     ]
   }
 
@@ -386,6 +398,7 @@ jumbo_component("base") {
   public_deps = [
     ":buildflags",
     ":features",
+    ":hit_test",
     ":ui_data_pack",
     "//base",
     "//skia",
@@ -425,6 +438,10 @@ jumbo_component("base") {
       "l10n/l10n_util_mac.mm",
     ]
     public_deps += [ "//ui/events:event_constants" ]
+    deps -= [
+      "//ui/events",
+      "//ui/events/devices",
+    ]
 
     set_sources_assignment_filter(sources_assignment_filter)
   }
@@ -637,6 +654,22 @@ component("features") {
   ]
 }
 
+if (!is_ios) {
+  jumbo_static_library("pixel_diff_test_support") {
+    testonly = true
+    sources = [
+      "test/skia_gold_pixel_diff.cc",
+      "test/skia_gold_pixel_diff.h",
+    ]
+    deps = [
+      "//base",
+      "//testing/gtest",
+      "//ui/gfx",
+      "//ui/snapshot",
+    ]
+  }
+}
+
 jumbo_static_library("test_support") {
   testonly = true
   sources = [
@@ -644,13 +677,8 @@ jumbo_static_library("test_support") {
     "resource/mock_resource_bundle_delegate.h",
     "test/material_design_controller_test_api.cc",
     "test/material_design_controller_test_api.h",
-    "test/ui_controls.h",
     "test/ui_controls_aura.cc",
     "test/ui_controls_aura.h",
-    "test/ui_controls_internal_win.cc",
-    "test/ui_controls_internal_win.h",
-    "test/ui_controls_mac.mm",
-    "test/ui_controls_win.cc",
   ]
 
   if (!is_ios) {
@@ -673,6 +701,11 @@ jumbo_static_library("test_support") {
       "test/scoped_fake_nswindow_fullscreen.mm",
       "test/scoped_preferred_scroller_style_mac.h",
       "test/scoped_preferred_scroller_style_mac.mm",
+      "test/ui_controls.h",
+      "test/ui_controls_internal_win.cc",
+      "test/ui_controls_internal_win.h",
+      "test/ui_controls_mac.mm",
+      "test/ui_controls_win.cc",
       "test/view_tree_validator.h",
       "test/view_tree_validator.mm",
       "test/windowed_nsnotification_observer.h",
@@ -704,6 +737,13 @@ jumbo_static_library("test_support") {
     "//ui/gfx",
     "//ui/gfx/geometry",
   ]
+
+  if (is_ios) {
+    deps -= [
+      "//ui/events:events_base",
+      "//ui/events:test_support",
+    ]
+  }
 
   if (build_ime) {
     sources += [
@@ -849,61 +889,22 @@ test("ui_base_unittests") {
     "resource/data_pack_unittest.cc",
     "resource/resource_bundle_unittest.cc",
     "resource/scale_factor_unittest.cc",
+    "scoped_visibility_tracker_unittest.cc",
     "template_expressions_unittest.cc",
     "test/page_transition_types_unittest.cc",
     "test/run_all_unittests.cc",
-    "user_activity/user_activity_detector_unittest.cc",
     "webui/i18n_source_stream_unittest.cc",
   ]
   if (!is_ios) {
     sources += [
       "test/scoped_fake_nswindow_fullscreen_unittest.mm",
       "test/view_tree_validator_unittest.mm",
+      "user_activity/user_activity_detector_unittest.cc",
     ]
   }
 
   data = []
   data_deps = []
-
-  if (is_android) {
-    sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
-  }
-
-  if (is_ios) {
-    # Compile this Mac file on iOS as well.
-    set_sources_assignment_filter([])
-    sources += [
-      "l10n/l10n_util_mac_unittest.mm",
-      "test/ios/ui_image_test_utils_unittest.mm",
-    ]
-    set_sources_assignment_filter(sources_assignment_filter)
-  } else {  # !is_ios
-    sources += [
-      "accelerators/accelerator_history_unittest.cc",
-      "accelerators/accelerator_manager_unittest.cc",
-      "accelerators/accelerator_unittest.cc",
-      "accelerators/menu_label_accelerator_util_linux_unittest.cc",
-      "accelerators/menu_label_accelerator_util_unittest.cc",
-      "accelerators/platform_accelerator_cocoa_unittest.mm",
-      "cocoa/base_view_unittest.mm",
-      "cocoa/bubble_closer_unittest.mm",
-      "cocoa/cocoa_base_utils_unittest.mm",
-      "cocoa/constrained_window/constrained_window_animation_unittest.mm",
-      "cocoa/focus_tracker_unittest.mm",
-      "cocoa/menu_controller_unittest.mm",
-      "cocoa/touch_bar_util_unittest.mm",
-      "cocoa/tracking_area_unittest.mm",
-      "cocoa/weak_ptr_nsobject_unittest.mm",
-      "cursor/cursor_unittest.cc",
-      "cursor/cursor_util_unittest.cc",
-      "models/list_model_unittest.cc",
-      "models/list_selection_model_unittest.cc",
-      "models/tree_node_model_unittest.cc",
-      "text/bytes_formatting_unittest.cc",
-      "webui/web_ui_util_unittest.cc",
-    ]
-  }
-
   deps = [
     ":ui_base_test_resources_grit",
     ":ui_base_unittests_bundle_data",
@@ -932,12 +933,57 @@ test("ui_base_unittests") {
     "//url",
   ]
 
+  if (is_android) {
+    sources -= [ "user_activity/user_activity_detector_unittest.cc" ]
+  }
+
+  if (is_ios) {
+    # Compile this Mac file on iOS as well.
+    set_sources_assignment_filter([])
+    sources += [
+      "l10n/l10n_util_mac_unittest.mm",
+      "test/ios/ui_image_test_utils_unittest.mm",
+    ]
+    deps -= [
+      "//ui/events:events_base",
+      "//ui/events:test_support",
+    ]
+    set_sources_assignment_filter(sources_assignment_filter)
+  } else {  # !is_ios
+    sources += [
+      "accelerators/accelerator_history_unittest.cc",
+      "accelerators/accelerator_manager_unittest.cc",
+      "accelerators/accelerator_unittest.cc",
+      "accelerators/menu_label_accelerator_util_linux_unittest.cc",
+      "accelerators/menu_label_accelerator_util_unittest.cc",
+      "accelerators/platform_accelerator_cocoa_unittest.mm",
+      "cocoa/base_view_unittest.mm",
+      "cocoa/bubble_closer_unittest.mm",
+      "cocoa/cocoa_base_utils_unittest.mm",
+      "cocoa/constrained_window/constrained_window_animation_unittest.mm",
+      "cocoa/focus_tracker_unittest.mm",
+      "cocoa/menu_controller_unittest.mm",
+      "cocoa/touch_bar_util_unittest.mm",
+      "cocoa/tracking_area_unittest.mm",
+      "cocoa/weak_ptr_nsobject_unittest.mm",
+      "cursor/cursor_unittest.cc",
+      "cursor/cursor_util_unittest.cc",
+      "models/list_model_unittest.cc",
+      "models/list_selection_model_unittest.cc",
+      "models/tree_node_model_unittest.cc",
+      "test/skia_gold_pixel_diff_unittest.cc",
+      "text/bytes_formatting_unittest.cc",
+      "webui/web_ui_util_unittest.cc",
+    ]
+    deps += [ ":pixel_diff_test_support" ]
+  }
+
   if (build_ime) {
     sources += [
       "ime/candidate_window_unittest.cc",
       "ime/composition_text_unittest.cc",
       "ime/input_method_base_unittest.cc",
-      "ime/mojo/ime_struct_traits_unittest.cc",
+      "ime/mojom/ime_mojom_traits_unittest.cc",
     ]
     if (is_win) {
       sources += [
@@ -991,7 +1037,7 @@ test("ui_base_unittests") {
   if (build_ime) {
     deps += [
       "//ui/base/ime",
-      "//ui/base/ime/mojo:test_interfaces",
+      "//ui/base/ime/mojom:test_interfaces",
     ]
   }
 
@@ -999,7 +1045,7 @@ test("ui_base_unittests") {
     deps += [ "//ui/resources:ui_test_pak_bundle_data" ]
   } else {
     deps += [
-      "//ui/base/accelerators/mojo:unittests",
+      "//ui/base/accelerators/mojom:unittests",
       "//ui/base/mojom:unittests",
     ]
   }

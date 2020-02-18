@@ -48,7 +48,7 @@ class DataTypeManagerImpl : public DataTypeManager,
   // DataTypeManager interface.
   void Configure(ModelTypeSet desired_types,
                  const ConfigureContext& context) override;
-  void ReadyForStartChanged(ModelType type) override;
+  void DataTypePreconditionChanged(ModelType type) override;
   void ResetDataTypeErrors() override;
 
   // Needed only for backend migration.
@@ -136,14 +136,14 @@ class DataTypeManagerImpl : public DataTypeManager,
   // high priority to low priority.
   TypeSetPriorityList PrioritizeTypes(const ModelTypeSet& types);
 
-  // Update unready state of types in data_type_status_table_ to match value of
-  // DataTypeController::ReadyForStart().
-  void UpdateUnreadyTypeErrors(const ModelTypeSet& desired_types);
+  // Update precondition state of types in data_type_status_table_ to match
+  // value of DataTypeController::GetPreconditionState().
+  void UpdatePreconditionErrors(const ModelTypeSet& desired_types);
 
-  // Update unready state for |type|, such that data_type_status_table_ matches
-  // DataTypeController::ReadyForStart(). Returns true if there was an actual
-  // change.
-  bool UpdateUnreadyTypeError(ModelType type);
+  // Update precondition state for |type|, such that data_type_status_table_
+  // matches DataTypeController::GetPreconditionState(). Returns true if there
+  // was an actual change.
+  bool UpdatePreconditionError(ModelType type);
 
   // Post a task to reconfigure when no downloading or association are running.
   void ProcessReconfigure();
@@ -184,9 +184,6 @@ class DataTypeManagerImpl : public DataTypeManager,
   // Returns the currently enabled types.
   ModelTypeSet GetEnabledTypes() const;
 
-  // Adds or removes |type| from |downloaded_types_| based on |downloaded|.
-  void SetTypeDownloaded(ModelType type, bool downloaded);
-
   ModelTypeConfigurer* configurer_;
 
   // Map of all data type controllers that are available for sync.
@@ -205,6 +202,13 @@ class DataTypeManagerImpl : public DataTypeManager,
   // A set of types that were enabled at the time initialization with the
   // |model_association_manager_| was last attempted.
   ModelTypeSet last_enabled_types_;
+
+  // A set of types that should be redownloaded even if initial sync is
+  // completed for them.
+  // TODO(crbug.com/967677): Once all datatypes are in USS, we should redesign
+  // this class and for example compute |downloaded_types_|'s initial value
+  // only after all datatypes have loaded for the first time.
+  ModelTypeSet force_redownload_types_;
 
   // Whether an attempt to reconfigure was made while we were busy configuring.
   // The |last_requested_types_| will reflect the newest set of requested types.

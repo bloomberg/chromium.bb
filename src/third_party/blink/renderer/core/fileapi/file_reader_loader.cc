@@ -45,7 +45,6 @@
 #include "third_party/blink/renderer/core/loader/threadable_loader.h"
 #include "third_party/blink/renderer/core/loader/threadable_loader_client.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
-#include "third_party/blink/renderer/platform/blob/blob_registry.h"
 #include "third_party/blink/renderer/platform/blob/blob_url.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_initiator_type_names.h"
@@ -75,7 +74,6 @@ FileReaderLoader::FileReaderLoader(
           FROM_HERE,
           mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
           task_runner ? task_runner : base::SequencedTaskRunnerHandle::Get()),
-      binding_(this),
       task_runner_(std::move(task_runner)) {
   // TODO(https://crbug.com/957651): Change this into a DCHECK once we figured
   // out where code is passing in a null task runner,
@@ -107,14 +105,13 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
     return;
   }
 
-  mojom::blink::BlobReaderClientPtr client_ptr;
-  binding_.Bind(MakeRequest(&client_ptr, task_runner_), task_runner_);
-  blob_data->ReadAll(std::move(producer_handle), std::move(client_ptr));
+  blob_data->ReadAll(std::move(producer_handle),
+                     receiver_.BindNewPipeAndPassRemote());
 
   if (IsSyncLoad()) {
     // Wait for OnCalculatedSize, which will also synchronously drain the data
     // pipe.
-    binding_.WaitForIncomingMethodCall();
+    receiver_.WaitForIncomingCall();
     if (received_on_complete_)
       return;
     if (!received_all_data_) {
@@ -124,7 +121,7 @@ void FileReaderLoader::Start(scoped_refptr<BlobDataHandle> blob_data) {
     }
 
     // Wait for OnComplete
-    binding_.WaitForIncomingMethodCall();
+    receiver_.WaitForIncomingCall();
     if (!received_on_complete_) {
       Failed(FileErrorCode::kNotReadableErr,
              FailureType::kSyncOnCompleteNotReceived);
@@ -347,9 +344,10 @@ void FileReaderLoader::OnComplete(int32_t status, uint64_t data_length) {
   DEFINE_THREAD_SAFE_STATIC_LOCAL(SparseHistogram,
                                   file_reader_loader_read_errors_histogram,
                                   ("Storage.Blob.FileReaderLoader.ReadError"));
+  file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
+
   if (status != net::OK) {
     net_error_ = status;
-    file_reader_loader_read_errors_histogram.Sample(std::max(0, -net_error_));
     Failed(status == net::ERR_FILE_NOT_FOUND ? FileErrorCode::kNotFoundErr
                                              : FileErrorCode::kNotReadableErr,
            FailureType::kBackendReadError);

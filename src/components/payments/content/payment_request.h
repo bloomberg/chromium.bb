@@ -15,9 +15,10 @@
 #include "components/payments/content/payment_request_display_manager.h"
 #include "components/payments/content/payment_request_spec.h"
 #include "components/payments/content/payment_request_state.h"
+#include "components/payments/content/service_worker_payment_instrument.h"
 #include "components/payments/core/journey_logger.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "url/gurl.h"
 
@@ -40,7 +41,8 @@ class PaymentRequestWebContentsManager;
 class PaymentRequest : public mojom::PaymentRequest,
                        public PaymentHandlerHost::Delegate,
                        public PaymentRequestSpec::Observer,
-                       public PaymentRequestState::Delegate {
+                       public PaymentRequestState::Delegate,
+                       public ServiceWorkerPaymentInstrument::IdentityObserver {
  public:
   class ObserverForTest {
    public:
@@ -61,12 +63,12 @@ class PaymentRequest : public mojom::PaymentRequest,
                  std::unique_ptr<ContentPaymentRequestDelegate> delegate,
                  PaymentRequestWebContentsManager* manager,
                  PaymentRequestDisplayManager* display_manager,
-                 mojo::InterfaceRequest<mojom::PaymentRequest> request,
+                 mojo::PendingReceiver<mojom::PaymentRequest> receiver,
                  ObserverForTest* observer_for_testing);
   ~PaymentRequest() override;
 
   // mojom::PaymentRequest
-  void Init(mojom::PaymentRequestClientPtr client,
+  void Init(mojo::PendingRemote<mojom::PaymentRequestClient> client,
             std::vector<mojom::PaymentMethodDataPtr> method_data,
             mojom::PaymentDetailsPtr details,
             mojom::PaymentOptionsPtr options) override;
@@ -76,7 +78,7 @@ class PaymentRequest : public mojom::PaymentRequest,
   void NoUpdatedPaymentDetails() override;
   void Abort() override;
   void Complete(mojom::PaymentComplete result) override;
-  void CanMakePayment(bool legacy_mode) override;
+  void CanMakePayment() override;
   void HasEnrolledInstrument(bool per_method_quota) override;
 
   // PaymentHandlerHost::Delegate
@@ -92,6 +94,10 @@ class PaymentRequest : public mojom::PaymentRequest,
   void OnShippingOptionIdSelected(std::string shipping_option_id) override;
   void OnShippingAddressSelected(mojom::PaymentAddressPtr address) override;
   void OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) override;
+
+  // ServiceWorkerPaymentInstrument::IdentityObserver:
+  void SetInvokedServiceWorkerIdentity(const url::Origin& origin,
+                                       int64_t registration_id) override;
 
   // Called when the user explicitly cancelled the flow. Will send a message
   // to the renderer which will indirectly destroy this object (through
@@ -146,9 +152,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   // the first one being the most precise.
   void RecordFirstAbortReason(JourneyLogger::AbortReason completion_status);
 
-  // The callback for PaymentRequestState::CanMakePayment. Checks for query
-  // quota and may send QUERY_QUOTA_EXCEEDED.
-  void CanMakePaymentCallback(bool legacy_mode, bool can_make_payment);
+  // The callback for PaymentRequestState::CanMakePayment.
+  void CanMakePaymentCallback(bool can_make_payment);
 
   // The callback for PaymentRequestState::HasEnrolledInstrument. Checks for
   // query quota and may send QUERY_QUOTA_EXCEEDED.
@@ -175,8 +180,8 @@ class PaymentRequest : public mojom::PaymentRequest,
   PaymentRequestWebContentsManager* manager_;
   PaymentRequestDisplayManager* display_manager_;
   std::unique_ptr<PaymentRequestDisplayManager::DisplayHandle> display_handle_;
-  mojo::Binding<mojom::PaymentRequest> binding_;
-  mojom::PaymentRequestClientPtr client_;
+  mojo::Receiver<mojom::PaymentRequest> receiver_{this};
+  mojo::Remote<mojom::PaymentRequestClient> client_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;
   std::unique_ptr<PaymentRequestState> state_;

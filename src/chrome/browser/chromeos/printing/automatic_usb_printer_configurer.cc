@@ -31,8 +31,7 @@ AutomaticUsbPrinterConfigurer::AutomaticUsbPrinterConfigurer(
     UsbPrinterNotificationController* notification_controller)
     : printer_configurer_(std::move(printer_configurer)),
       installation_manager_(installation_manager),
-      notification_controller_(notification_controller),
-      weak_factory_(this) {
+      notification_controller_(notification_controller) {
   DCHECK(installation_manager);
 }
 
@@ -96,7 +95,8 @@ void AutomaticUsbPrinterConfigurer::OnSetupComplete(const Printer& printer,
     LOG(ERROR) << "Unable to autoconfigure usb printer " << printer.id();
     return;
   }
-  installation_manager_->PrinterInstalled(printer, true /* is_automatic */);
+  installation_manager_->PrinterInstalled(
+      printer, /*is_automatic=*/true, PrinterSetupSource::kAutoUsbConfigurer);
   PrinterConfigurer::RecordUsbPrinterSetupSource(
       UsbPrinterSetupSource::kAutoconfigured);
   CompleteConfiguration(printer);

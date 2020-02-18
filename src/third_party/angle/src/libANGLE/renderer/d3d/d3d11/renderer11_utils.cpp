@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1658,6 +1658,7 @@ void GenerateCaps(ID3D11Device *device,
     extensions->blendFuncExtended        = true;
     extensions->maxDualSourceDrawBuffers = 1;
     extensions->texture3DOES                     = true;
+    extensions->baseVertexBaseInstance           = true;
 
     // D3D11 cannot support reading depth texture as a luminance texture.
     // It treats it as a red-channel-only texture.
@@ -2429,6 +2430,9 @@ void InitializeFeatures(const Renderer11DeviceCaps &deviceCaps,
         else if (IsBroadwell(adapterDesc.DeviceId) || IsHaswell(adapterDesc.DeviceId))
         {
             features->rewriteUnaryMinusOperator.enabled = capsVersion < IntelDriverVersion(4624);
+
+            // Haswell drivers occasionally corrupt (small?) (vertex?) texture data uploads.
+            features->setDataFasterThanImageUpload.enabled = false;
         }
     }
 

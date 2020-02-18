@@ -37,7 +37,7 @@ int g_instance_count = 0;
 AwGLFunctor::AwGLFunctor(const JavaObjectWeakGlobalRef& java_ref)
     : java_ref_(java_ref),
       render_thread_manager_(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})) {
+          base::CreateSingleThreadTaskRunner({BrowserThread::UI})) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ++g_instance_count;
 }
@@ -64,8 +64,7 @@ void AwGLFunctor::DetachFunctorFromView() {
     Java_AwGLFunctor_detachFunctorFromView(env, obj);
 }
 
-void AwGLFunctor::Destroy(JNIEnv* env,
-                          const base::android::JavaParamRef<jobject>& obj) {
+void AwGLFunctor::Destroy(JNIEnv* env) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   java_ref_.reset();
   delete this;

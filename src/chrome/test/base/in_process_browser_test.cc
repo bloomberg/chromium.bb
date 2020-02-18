@@ -125,7 +125,8 @@ class FakeDeviceSyncImplFactory
   std::unique_ptr<chromeos::device_sync::DeviceSyncBase> BuildInstance(
       signin::IdentityManager* identity_manager,
       gcm::GCMDriver* gcm_driver,
-      service_manager::Connector* connector,
+      mojo::PendingRemote<prefs::mojom::PrefStoreConnector>
+          pref_store_connector,
       const chromeos::device_sync::GcmDeviceInfoProvider*
           gcm_device_info_provider,
       chromeos::device_sync::ClientAppMetadataProvider*
@@ -308,7 +309,11 @@ void InProcessBrowserTest::TearDown() {
 #if defined(OS_WIN)
   com_initializer_.reset();
 #endif
-
+  if (::testing::UnitTest::GetInstance()
+          ->current_test_info()
+          ->result()
+          ->Skipped())
+    return;
   BrowserTestBase::TearDown();
   OSCryptMocker::TearDown();
   ChromeContentBrowserClient::SetDefaultQuotaSettingsForTesting(nullptr);
@@ -317,6 +322,12 @@ void InProcessBrowserTest::TearDown() {
   chromeos::device_sync::DeviceSyncImpl::Factory::SetInstanceForTesting(
       nullptr);
 #endif
+}
+
+void InProcessBrowserTest::SelectFirstBrowser() {
+  const BrowserList* browser_list = BrowserList::GetInstance();
+  if (!browser_list->empty())
+    browser_ = browser_list->get(0);
 }
 
 void InProcessBrowserTest::CloseBrowserSynchronously(Browser* browser) {
@@ -488,9 +499,8 @@ void InProcessBrowserTest::PreRunTestOnMainThread() {
   // Pump startup related events.
   content::RunAllPendingInMessageLoop();
 
-  const BrowserList* active_browser_list = BrowserList::GetInstance();
-  if (!active_browser_list->empty()) {
-    browser_ = active_browser_list->get(0);
+  SelectFirstBrowser();
+  if (browser_) {
 #if defined(OS_CHROMEOS)
     // There are cases where windows get created maximized by default.
     if (browser_->window()->IsMaximized())

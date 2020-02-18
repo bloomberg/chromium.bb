@@ -21,16 +21,16 @@ class EmptyModuleRecordResolver final : public ModuleRecordResolver {
   void UnregisterModuleScript(const ModuleScript*) override {}
 
   const ModuleScript* GetModuleScriptFromModuleRecord(
-      const ModuleRecord&) const override {
+      v8::Local<v8::Module>) const override {
     NOTREACHED();
     return nullptr;
   }
 
-  ModuleRecord Resolve(const String& specifier,
-                       const ModuleRecord& referrer,
-                       ExceptionState&) override {
+  v8::Local<v8::Module> Resolve(const String& specifier,
+                                v8::Local<v8::Module> referrer,
+                                ExceptionState&) override {
     NOTREACHED();
-    return ModuleRecord();
+    return v8::Local<v8::Module>();
   }
 };
 
@@ -125,7 +125,17 @@ void DummyModulator::ResolveDynamically(const String&,
   NOTREACHED();
 }
 
-void DummyModulator::RegisterImportMap(const ImportMap*) {
+ScriptValue DummyModulator::CreateTypeError(const String& message) const {
+  NOTREACHED();
+  return ScriptValue();
+}
+ScriptValue DummyModulator::CreateSyntaxError(const String& message) const {
+  NOTREACHED();
+  return ScriptValue();
+}
+
+void DummyModulator::RegisterImportMap(const ImportMap*,
+                                       ScriptValue error_to_rethrow) {
   NOTREACHED();
 }
 
@@ -138,19 +148,25 @@ void DummyModulator::ClearIsAcquiringImportMaps() {
   NOTREACHED();
 }
 
+const ImportMap* DummyModulator::GetImportMapForTest() const {
+  NOTREACHED();
+  return nullptr;
+}
+
 ModuleImportMeta DummyModulator::HostGetImportMetaProperties(
-    ModuleRecord) const {
+    v8::Local<v8::Module>) const {
   NOTREACHED();
   return ModuleImportMeta(String());
 }
 
-ScriptValue DummyModulator::InstantiateModule(ModuleRecord) {
+ScriptValue DummyModulator::InstantiateModule(v8::Local<v8::Module>,
+                                              const KURL&) {
   NOTREACHED();
   return ScriptValue();
 }
 
 Vector<Modulator::ModuleRequest> DummyModulator::ModuleRequestsFromModuleRecord(
-    ModuleRecord) {
+    v8::Local<v8::Module>) {
   NOTREACHED();
   return Vector<ModuleRequest>();
 }

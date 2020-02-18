@@ -9,18 +9,18 @@
 
 #include <memory>
 
+#include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/fx_coordinates.h"
 #include "core/fxcrt/retain_ptr.h"
 #include "core/fxge/fx_dib.h"
 #include "xfa/fxfa/fxfa_basic.h"
 
-class CFXJSE_Value;
 class CXFA_FFDoc;
 class CXFA_FFPageView;
 class CXFA_FFWidget;
 class CXFA_Submit;
-class IFWL_AdapterTimerMgr;
 class IFX_SeekableReadStream;
+class IJS_Runtime;
 
 // Note, values must match fpdf_formfill.h JSPLATFORM_ALERT_BUTTON_* flags.
 enum class AlertButton {
@@ -217,7 +217,7 @@ class IXFA_AppProvider {
                              const WideString& wsData,
                              const WideString& wsEncode) = 0;
 
-  virtual std::unique_ptr<IFWL_AdapterTimerMgr> NewTimerMgr() = 0;
+  virtual TimerHandlerIface* GetTimerHandler() const = 0;
 };
 
 class IXFA_DocEnvironment {
@@ -227,19 +227,23 @@ class IXFA_DocEnvironment {
   virtual void SetChangeMark(CXFA_FFDoc* hDoc) = 0;
   virtual void InvalidateRect(CXFA_FFPageView* pPageView,
                               const CFX_RectF& rt) = 0;
+  // Show or hide caret.
   virtual void DisplayCaret(CXFA_FFWidget* hWidget,
                             bool bVisible,
                             const CFX_RectF* pRtAnchor) = 0;
+
   virtual bool GetPopupPos(CXFA_FFWidget* hWidget,
                            float fMinPopup,
                            float fMaxPopup,
                            const CFX_RectF& rtAnchor,
                            CFX_RectF* pPopupRect) = 0;
   virtual bool PopupMenu(CXFA_FFWidget* hWidget, const CFX_PointF& ptPopup) = 0;
+
+  // Specify dwFlags XFA_PAGEVIEWEVENT_Added, XFA_PAGEVIEWEVENT_Removing
   virtual void PageViewEvent(CXFA_FFPageView* pPageView, uint32_t dwFlags) = 0;
+
   virtual void WidgetPostAdd(CXFA_FFWidget* hWidget) = 0;
   virtual void WidgetPreRemove(CXFA_FFWidget* hWidget) = 0;
-
   virtual int32_t CountPages(CXFA_FFDoc* hDoc) = 0;
   virtual int32_t GetCurrentPage(CXFA_FFDoc* hDoc) = 0;
   virtual void SetCurrentPage(CXFA_FFDoc* hDoc, int32_t iCurPage) = 0;
@@ -259,20 +263,14 @@ class IXFA_DocEnvironment {
                      int32_t nEndPage,
                      uint32_t dwOptions) = 0;
   virtual FX_ARGB GetHighlightColor(CXFA_FFDoc* hDoc) = 0;
+  virtual IJS_Runtime* GetIJSRuntime(CXFA_FFDoc* hDoc) const = 0;
+  virtual RetainPtr<IFX_SeekableReadStream> OpenLinkedFile(
+      CXFA_FFDoc* hDoc,
+      const WideString& wsLink) = 0;
 
 #ifdef PDF_XFA_ELEMENT_SUBMIT_ENABLED
   virtual bool Submit(CXFA_FFDoc* hDoc, CXFA_Submit* submit) = 0;
 #endif  // PDF_XFA_ELEMENT_SUBMIT_ENABLED
-
-  virtual bool GetPropertyFromNonXFAGlobalObject(CXFA_FFDoc* hDoc,
-                                                 ByteStringView szPropName,
-                                                 CFXJSE_Value* pValue) = 0;
-  virtual bool SetPropertyInNonXFAGlobalObject(CXFA_FFDoc* hDoc,
-                                               ByteStringView szPropName,
-                                               CFXJSE_Value* pValue) = 0;
-  virtual RetainPtr<IFX_SeekableReadStream> OpenLinkedFile(
-      CXFA_FFDoc* hDoc,
-      const WideString& wsLink) = 0;
 };
 
 class IXFA_WidgetIterator {

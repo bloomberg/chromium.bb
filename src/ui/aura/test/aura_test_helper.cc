@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "ui/aura/client/default_capture_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
@@ -21,12 +22,15 @@
 #include "ui/aura/window_targeter.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/init/input_method_initializer.h"
-#include "ui/base/platform_window_defaults.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/screen.h"
 #include "ui/wm/core/wm_state.h"
+
+#if defined(OS_LINUX)
+#include "ui/platform_window/common/platform_window_defaults.h"  // nogncheck
+#endif
 
 #if defined(USE_X11)
 #include "ui/base/x/x11_util.h"  // nogncheck
@@ -45,9 +49,11 @@ AuraTestHelper::AuraTestHelper() : AuraTestHelper(nullptr) {}
 AuraTestHelper::AuraTestHelper(std::unique_ptr<Env> env)
     : env_(std::move(env)) {
   // Disable animations during tests.
-  zero_duration_mode_.reset(new ui::ScopedAnimationDurationScaleMode(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION));
+  zero_duration_mode_ = std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+#if defined(OS_LINUX)
   ui::test::EnableTestConfigForPlatformWindows();
+#endif
 }
 
 AuraTestHelper::~AuraTestHelper() {
@@ -112,7 +118,8 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory,
 
   client::SetFocusClient(root_window(), focus_client_.get());
   client::SetCaptureClient(root_window(), capture_client());
-  parenting_client_.reset(new TestWindowParentingClient(root_window()));
+  parenting_client_ =
+      std::make_unique<TestWindowParentingClient>(root_window());
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.

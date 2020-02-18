@@ -12,7 +12,7 @@
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "components/sync/driver/configure_context.h"
 #include "components/sync/driver/data_type_controller_mock.h"
@@ -138,7 +138,7 @@ class SyncFrontendDataTypeControllerTest : public testing::Test {
 
   void PumpLoop() { base::RunLoop().RunUntilIdle(); }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ModelAssociatorMock* model_associator_;
   ChangeProcessorMock* change_processor_;
   std::unique_ptr<ModelAssociatorMock> model_associator_deleter_;

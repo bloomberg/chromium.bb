@@ -5,7 +5,7 @@
 #include "content/renderer/render_frame_metadata_observer_impl.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "cc/trees/render_frame_metadata.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
@@ -75,11 +75,11 @@ class RenderFrameMetadataObserverImplTest : public testing::Test {
   void TearDown() override {
     observer_impl_.reset();
     client_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<testing::NiceMock<MockRenderFrameMetadataObserverClient>>
       client_;
   std::unique_ptr<RenderFrameMetadataObserverImpl> observer_impl_;

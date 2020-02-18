@@ -66,8 +66,6 @@
 #include "content/browser/frame_host/render_frame_host_impl.h"
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/gpu/gpu_data_manager_impl.h"
-#include "content/browser/loader/loader_io_thread_notifier.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/manifest/manifest_manager_host.h"
 #include "content/browser/media/audio_stream_broker.h"
 #include "content/browser/media/audio_stream_monitor.h"
@@ -173,6 +171,7 @@
 #if defined(OS_ANDROID)
 #include "content/browser/android/date_time_chooser_android.h"
 #include "content/browser/android/java_interfaces_impl.h"
+#include "content/browser/android/nfc_host.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #else  // !OS_ANDROID
@@ -193,23 +192,6 @@ const char kDotGoogleDotCom[] = ".google.com";
 base::LazyInstance<std::vector<
     WebContentsImpl::FriendWrapper::CreatedCallback>>::DestructorAtExit
     g_created_callbacks = LAZY_INSTANCE_INITIALIZER;
-
-void NotifyCacheOnIO(
-    scoped_refptr<net::URLRequestContextGetter> request_context,
-    const GURL& url,
-    const std::string& http_method,
-    const base::Optional<url::Origin>& top_frame_origin,
-    const url::Origin& frame_origin) {
-  net::HttpCache* cache = request_context->GetURLRequestContext()->
-      http_transaction_factory()->GetCache();
-  net::NetworkIsolationKey network_isolation_key;
-  if (cache) {
-    if (top_frame_origin)
-      network_isolation_key =
-          net::NetworkIsolationKey(*top_frame_origin, frame_origin);
-    cache->OnExternalCacheHit(url, http_method, network_isolation_key);
-  }
-}
 
 bool HasMatchingProcess(FrameTree* tree, int render_process_id) {
   for (FrameTreeNode* node : tree->Nodes()) {
@@ -272,14 +254,6 @@ bool IsUserInteractionInputType(blink::WebInputEvent::Type type) {
          type == blink::WebInputEvent::kRawKeyDown;
 }
 
-// Returns |true| if |type| is the kind of user input that should be used as
-// a user gesture signal for resource load dispatches.
-bool IsResourceLoadUserInteractionInputType(blink::WebInputEvent::Type type) {
-  return type == blink::WebInputEvent::kMouseDown ||
-         type == blink::WebInputEvent::kTouchStart ||
-         type == blink::WebInputEvent::kRawKeyDown;
-}
-
 // Ensures that OnDialogClosed is only called once.
 class CloseDialogCallbackWrapper
     : public base::RefCountedThreadSafe<CloseDialogCallbackWrapper> {
@@ -307,6 +281,24 @@ class CloseDialogCallbackWrapper
 
 bool FrameCompareDepth(RenderFrameHostImpl* a, RenderFrameHostImpl* b) {
   return a->frame_tree_node()->depth() < b->frame_tree_node()->depth();
+}
+
+bool AreValidRegisterProtocolHandlerArguments(const std::string& protocol,
+                                              const GURL& url,
+                                              const url::Origin& origin) {
+  ChildProcessSecurityPolicyImpl* policy =
+      ChildProcessSecurityPolicyImpl::GetInstance();
+  if (policy->IsPseudoScheme(protocol))
+    return false;
+
+  url::Origin url_origin = url::Origin::Create(url);
+  if (url_origin.opaque())
+    return false;
+
+  if (!url_origin.IsSameOriginWith(origin))
+    return false;
+
+  return true;
 }
 
 }  // namespace
@@ -414,12 +406,12 @@ class WebContentsImpl::DestructionObserver : public WebContentsObserver {
 class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
  public:
   ColorChooser(content::ColorChooser* chooser,
-               blink::mojom::ColorChooserRequest request,
-               blink::mojom::ColorChooserClientPtr client)
+               mojo::PendingReceiver<blink::mojom::ColorChooser> receiver,
+               mojo::PendingRemote<blink::mojom::ColorChooserClient> client)
       : chooser_(chooser),
-        binding_(this, std::move(request)),
+        receiver_(this, std::move(receiver)),
         client_(std::move(client)) {
-    binding_.set_connection_error_handler(
+    receiver_.set_disconnect_handler(
         base::BindOnce([](content::ColorChooser* chooser) { chooser->End(); },
                        base::Unretained(chooser)));
   }
@@ -438,11 +430,11 @@ class WebContentsImpl::ColorChooser : public blink::mojom::ColorChooser {
   // Color chooser that was opened by this tab.
   std::unique_ptr<content::ColorChooser> chooser_;
 
-  // mojo bindings.
-  mojo::Binding<blink::mojom::ColorChooser> binding_;
+  // mojo receiver.
+  mojo::Receiver<blink::mojom::ColorChooser> receiver_;
 
   // mojo renderer client.
-  blink::mojom::ColorChooserClientPtr client_;
+  mojo::Remote<blink::mojom::ColorChooserClient> client_;
 };
 
 // WebContentsImpl::WebContentsTreeNode ----------------------------------------
@@ -607,7 +599,6 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   pepper_playback_observer_.reset(new PepperPlaybackObserver(this));
 #endif
 
-  loader_io_thread_notifier_.reset(new LoaderIOThreadNotifier(this));
 #if !defined(OS_ANDROID)
   host_zoom_map_observer_.reset(new HostZoomMapObserver(this));
 #endif  // !defined(OS_ANDROID)
@@ -616,13 +607,13 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
   display_cutout_host_impl_ = std::make_unique<DisplayCutoutHostImpl>(this);
 #endif
 
-  registry_.AddInterface(base::BindRepeating(
+  binders_.Add(base::BindRepeating(
       &WebContentsImpl::OnColorChooserFactoryRequest, base::Unretained(this)));
 
   ui::NativeTheme* native_theme = ui::NativeTheme::GetInstanceForWeb();
   native_theme_observer_.Add(native_theme);
   in_high_contrast_ = native_theme->UsesHighContrastColors();
-  in_dark_mode_ = native_theme->SystemDarkModeEnabled();
+  using_dark_colors_ = native_theme->ShouldUseDarkColors();
   preferred_color_scheme_ = native_theme->GetPreferredColorScheme();
 }
 
@@ -1480,14 +1471,26 @@ void WebContentsImpl::IncrementCapturerCount(const gfx::Size& capture_size) {
   }
 
   if (GetVisibility() != Visibility::VISIBLE && !was_captured) {
-    // Ensure that all views act as if they were visible before capture begins.
-    // TODO(fdoray): Replace RenderWidgetHostView::WasUnOccluded() with a method
-    // to explicitly notify the RenderWidgetHostView that capture began.
-    // https://crbug.com/668690
-    if (auto* main_view = GetRenderWidgetHostView())
-      main_view->WasUnOccluded();
+    // TODO: Share code with WasShown().
+    SendPageMessage(new PageMsg_WasShown(MSG_ROUTING_NONE));
+
+    if (auto* view = GetRenderWidgetHostView()) {
+      view->Show();
+#if defined(OS_MACOSX)
+      view->SetActive(true);
+#endif
+    }
+
     if (!ShowingInterstitialPage())
       SetVisibilityForChildViews(true);
+
+    for (FrameTreeNode* node : frame_tree_.Nodes()) {
+      RenderFrameProxyHost* parent = node->render_manager()->GetProxyToParent();
+      if (!parent)
+        continue;
+
+      parent->cross_process_frame_connector()->DelegateWasShown();
+    }
   }
 }
 
@@ -1564,6 +1567,9 @@ bool WebContentsImpl::IsConnectedToSerialPort() {
   return serial_active_frame_count_ > 0;
 }
 
+bool WebContentsImpl::HasNativeFileSystemHandles() {
+  return native_file_system_handle_count_ > 0;
+}
 bool WebContentsImpl::HasNativeFileSystemDirectoryHandles() {
   return !native_file_system_directory_handles_.empty();
 }
@@ -2829,6 +2835,9 @@ void WebContentsImpl::CreateNewWindow(
     return;
   }
 
+  bool renderer_started_hidden =
+      params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB;
+
   // Create the new web contents. This will automatically create the new
   // WebContentsView. In the future, we may want to create the view separately.
   CreateParams create_params(GetBrowserContext(), site_instance.get());
@@ -2839,8 +2848,7 @@ void WebContentsImpl::CreateNewWindow(
   create_params.opener_render_process_id = render_process_id;
   create_params.opener_render_frame_id = opener->GetRoutingID();
   create_params.opener_suppressed = params.opener_suppressed;
-  if (params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB)
-    create_params.initially_hidden = true;
+  create_params.initially_hidden = renderer_started_hidden;
   create_params.renderer_initiated_creation =
       main_frame_route_id != MSG_ROUTING_NONE;
 
@@ -2875,8 +2883,13 @@ void WebContentsImpl::CreateNewWindow(
 
       // TODO(brettw): It seems bogus that we have to call this function on the
       // newly created object and give it one of its own member variables.
-      new_view->CreateViewForWidget(
+      RenderWidgetHostView* widget_view = new_view->CreateViewForWidget(
           new_contents_impl->GetRenderViewHost()->GetWidget(), false);
+      if (!renderer_started_hidden) {
+        // RenderWidgets for frames always initialize as hidden. If the renderer
+        // created this window as visible, then we show it here.
+        widget_view->Show();
+      }
     }
     // Save the created window associated with the route so we can show it
     // later.
@@ -3062,11 +3075,21 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
   if (!widget_host_view)
     return;
 
-  RenderWidgetHostView* view = nullptr;
-  if (GetOuterWebContents()) {
-    view = GetOuterWebContents()->GetRenderWidgetHostView();
-  } else {
-    view = GetRenderWidgetHostView();
+  // GetOutermostWebContents() returns |this| if there are no outer WebContents.
+  RenderWidgetHostView* view =
+      GetOutermostWebContents()->GetRenderWidgetHostView();
+
+  gfx::Rect transformed_rect(initial_rect);
+  RenderWidgetHostView* this_view = GetRenderWidgetHostView();
+  if (this_view != view) {
+    // We need to transform the coordinates of initial_rect.
+    gfx::Point origin =
+        this_view->TransformPointToRootCoordSpace(initial_rect.origin());
+    gfx::Point bottom_right =
+        this_view->TransformPointToRootCoordSpace(initial_rect.bottom_right());
+    transformed_rect =
+        gfx::Rect(origin.x(), origin.y(), bottom_right.x() - origin.x(),
+                  bottom_right.y() - origin.y());
   }
 
   // Fullscreen child widgets are frames, other child widgets are popups.
@@ -3088,7 +3111,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     if (!widget_host_view->HasFocus())
       widget_host_view->Focus();
   } else {
-    widget_host_view->InitAsPopup(view, initial_rect);
+    widget_host_view->InitAsPopup(view, transformed_rect);
   }
 
   RenderWidgetHostImpl* render_widget_host_impl = widget_host_view->host();
@@ -3274,9 +3297,8 @@ device::mojom::WakeLockContext* WebContentsImpl::GetWakeLockContext() {
 
 #if defined(OS_ANDROID)
 void WebContentsImpl::GetNFC(device::mojom::NFCRequest request) {
-  if (!nfc_host_)
-    nfc_host_.reset(new NFCHost(this));
-  nfc_host_->GetNFC(std::move(request));
+  NFCHost nfc_host(this);
+  nfc_host.GetNFC(std::move(request));
 }
 #endif
 
@@ -3637,9 +3659,10 @@ void WebContentsImpl::ReloadLoFiImages() {
     observer.DidReloadLoFiImages();
 }
 
-std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
 WebContentsImpl::PauseSubresourceLoading() {
-  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr> handles;
+  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
+      handles;
   for (RenderFrameHost* rfh : GetAllFrames()) {
     if (!rfh->IsRenderFrameLive())
       continue;
@@ -3968,6 +3991,20 @@ void WebContentsImpl::SaveFrameWithHeaders(
 void WebContentsImpl::GenerateMHTML(
     const MHTMLGenerationParams& params,
     base::OnceCallback<void(int64_t)> callback) {
+  base::OnceCallback<void(const MHTMLGenerationResult&)> wrapper_callback =
+      base::BindOnce(
+          [](base::OnceCallback<void(int64_t)> size_callback,
+             const MHTMLGenerationResult& result) {
+            std::move(size_callback).Run(result.file_size);
+          },
+          std::move(callback));
+  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
+                                                   std::move(wrapper_callback));
+}
+
+void WebContentsImpl::GenerateMHTMLWithResult(
+    const MHTMLGenerationParams& params,
+    MHTMLGenerationResult::GenerateMHTMLCallback callback) {
   MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
                                                    std::move(callback));
 }
@@ -4059,10 +4096,6 @@ void WebContentsImpl::SystemDragEnded(RenderWidgetHost* source_rwh) {
     source_rwh->DragSourceSystemDragEnded();
   if (browser_plugin_embedder_)
     browser_plugin_embedder_->SystemDragEnded();
-}
-
-void WebContentsImpl::NavigatedByUser() {
-  SendUserGestureForResourceDispatchHost();
 }
 
 void WebContentsImpl::SetClosedByUserGesture(bool value) {
@@ -4166,7 +4199,7 @@ int WebContentsImpl::DownloadImage(
     WebContents::ImageDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
-  const blink::mojom::ImageDownloaderPtr& mojo_image_downloader =
+  const mojo::Remote<blink::mojom::ImageDownloader>& mojo_image_downloader =
       GetMainFrame()->GetMojoImageDownloader();
   const int download_id = ++next_image_download_id;
   if (!mojo_image_downloader) {
@@ -4174,7 +4207,7 @@ int WebContentsImpl::DownloadImage(
     // Android), the downloader service will be invalid. Pre-Mojo, this would
     // hang the callback indefinitely since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
                        weak_factory_.GetWeakPtr(), std::move(callback),
@@ -4567,30 +4600,14 @@ void WebContentsImpl::OnDidLoadResourceFromMemoryCache(
     const GURL& url,
     const std::string& http_method,
     const std::string& mime_type,
-    const base::Optional<url::Origin>& top_frame_origin,
     ResourceType resource_type) {
   for (auto& observer : observers_)
     observer.DidLoadResourceFromMemoryCache(url, mime_type, resource_type);
 
   if (url.is_valid() && url.SchemeIsHTTPOrHTTPS()) {
     StoragePartition* partition = source->GetProcess()->GetStoragePartition();
-    const url::Origin& last_committed_origin = source->GetLastCommittedOrigin();
-
-    // We require different paths here because there is no NetworkContext
-    // for media cache.
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      partition->GetNetworkContext()->NotifyExternalCacheHit(
-          url, http_method, top_frame_origin, last_committed_origin);
-    } else {
-      scoped_refptr<net::URLRequestContextGetter> request_context(
-          resource_type == ResourceType::kMedia
-              ? partition->GetMediaURLRequestContext()
-              : partition->GetURLRequestContext());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&NotifyCacheOnIO, request_context, url, http_method,
-                         top_frame_origin, last_committed_origin));
-    }
+    partition->GetNetworkContext()->NotifyExternalCacheHit(
+        url, http_method, source->network_isolation_key());
   }
 }
 
@@ -4800,13 +4817,19 @@ void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,
   GURL validated_url(url);
   source->GetProcess()->FilterURL(false, &validated_url);
 
+  if (!source->GetParent()) {
+    size_t frame_count = source->frame_tree_node()->GetFrameTreeSize();
+    UMA_HISTOGRAM_COUNTS_1000("Navigation.MainFrame.FrameCount", frame_count);
+  }
+
   for (auto& observer : observers_)
     observer.DidFinishLoad(source, validated_url);
 }
 
 void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                                           int offset,
-                                          bool has_user_gesture) {
+                                          bool has_user_gesture,
+                                          bool from_script) {
   // Non-user initiated navigations coming from the renderer should be ignored
   // if there is an ongoing browser-initiated navigation.
   // See https://crbug.com/879965.
@@ -4824,7 +4847,11 @@ void WebContentsImpl::OnGoToEntryAtOffset(RenderFrameHostImpl* source,
 
   // All frames are allowed to navigate the global history.
   if (!delegate_ || delegate_->OnGoToEntryOffset(offset)) {
-    if (source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
+    // We only check sandboxed navigation permissions on navigations originating
+    // from scripts, and not mouse back buttons (from_script == false), which
+    // also use this path.
+    if (from_script &&
+        source->IsSandboxed(blink::WebSandboxFlags::kTopNavigation)) {
       // Keep track of whether this is a session history from a sandboxed iframe
       // with top level navigation disallowed.
       controller_.GoToOffsetInSandboxedFrame(offset,
@@ -4898,10 +4925,12 @@ void WebContentsImpl::OnRegisterProtocolHandler(RenderFrameHostImpl* source,
   if (!delegate_)
     return;
 
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsPseudoScheme(protocol))
+  if (!AreValidRegisterProtocolHandlerArguments(
+          protocol, url, source->GetLastCommittedOrigin())) {
+    ReceivedBadMessage(source->GetProcess(),
+                       bad_message::REGISTER_PROTOCOL_HANDLER_INVALID_URL);
     return;
+  }
 
   delegate_->RegisterProtocolHandler(this, protocol, url, user_gesture);
 }
@@ -4915,10 +4944,12 @@ void WebContentsImpl::OnUnregisterProtocolHandler(RenderFrameHostImpl* source,
   if (!delegate_)
     return;
 
-  ChildProcessSecurityPolicyImpl* policy =
-      ChildProcessSecurityPolicyImpl::GetInstance();
-  if (policy->IsPseudoScheme(protocol))
+  if (!AreValidRegisterProtocolHandlerArguments(
+          protocol, url, source->GetLastCommittedOrigin())) {
+    ReceivedBadMessage(source->GetProcess(),
+                       bad_message::REGISTER_PROTOCOL_HANDLER_INVALID_URL);
     return;
+  }
 
   delegate_->UnregisterProtocolHandler(this, protocol, url, user_gesture);
 }
@@ -4952,13 +4983,13 @@ void WebContentsImpl::OnAppCacheAccessed(const GURL& manifest_url,
 }
 
 void WebContentsImpl::OnColorChooserFactoryRequest(
-    blink::mojom::ColorChooserFactoryRequest request) {
-  color_chooser_factory_bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver) {
+  color_chooser_factory_receivers_.Add(this, std::move(receiver));
 }
 
 void WebContentsImpl::OpenColorChooser(
-    blink::mojom::ColorChooserRequest chooser_request,
-    blink::mojom::ColorChooserClientPtr client,
+    mojo::PendingReceiver<blink::mojom::ColorChooser> chooser_receiver,
+    mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
     SkColor color,
     std::vector<blink::mojom::ColorSuggestionPtr> suggestions) {
   content::ColorChooser* new_color_chooser =
@@ -4969,7 +5000,7 @@ void WebContentsImpl::OpenColorChooser(
 
   color_chooser_.reset();
   color_chooser_ = std::make_unique<ColorChooser>(
-      new_color_chooser, std::move(chooser_request), std::move(client));
+      new_color_chooser, std::move(chooser_receiver), std::move(client));
 }
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -5311,7 +5342,7 @@ void WebContentsImpl::OnInterfaceRequest(
     RenderFrameHost* render_frame_host,
     const std::string& interface_name,
     mojo::ScopedMessagePipeHandle* interface_pipe) {
-  registry_.TryBindInterface(interface_name, interface_pipe);
+  binders_.TryBind(interface_name, interface_pipe);
   for (auto& observer : observers_) {
     observer.OnInterfaceRequestFromFrame(render_frame_host, interface_name,
                                          interface_pipe);
@@ -6224,7 +6255,7 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
     // the outer WebContents FrameTreeNode is at |source|'s SiteInstance.
     // Transfer the focus to the inner WebContents if the outer WebContents is
     // focused. This branch is used when an inner WebContents is focused through
-    // its RenderFrameProxyHost (via FrameHostMsg_FrameFocused IPC, used to
+    // its RenderFrameProxyHost (via FrameFocused mojo call, used to
     // implement the window.focus() API).
     if (GetFocusedWebContents() == GetOuterWebContents())
       SetAsFocusedWebContentsIfNecessary();
@@ -6307,6 +6338,9 @@ void WebContentsImpl::OnFocusedElementChangedInFrame(
       NOTIFICATION_FOCUS_CHANGED_IN_PAGE,
       Source<RenderViewHost>(GetRenderViewHost()),
       Details<FocusedNodeDetails>(&details));
+
+  for (auto& observer : observers_)
+    observer.OnFocusChangedInPage(&details);
 }
 
 bool WebContentsImpl::DidAddMessageToConsole(
@@ -6335,9 +6369,6 @@ void WebContentsImpl::DidReceiveInputEvent(
 
   for (auto& observer : observers_)
     observer.DidGetUserInteraction(type);
-
-  if (IsResourceLoadUserInteractionInputType(type))
-    SendUserGestureForResourceDispatchHost();
 }
 
 bool WebContentsImpl::ShouldIgnoreInputEvents() {
@@ -6781,14 +6812,6 @@ void WebContentsImpl::OnPreferredSizeChanged(const gfx::Size& old_size) {
     delegate_->UpdatePreferredSize(this, new_size);
 }
 
-void WebContentsImpl::SendUserGestureForResourceDispatchHost() {
-  // This is null in unittests. =(
-  ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-
-  if (rdh)
-    rdh->OnUserGesture();
-}
-
 std::unique_ptr<WebUIImpl> WebContentsImpl::CreateWebUI(const GURL& url) {
   std::unique_ptr<WebUIImpl> web_ui = std::make_unique<WebUIImpl>(this);
   std::unique_ptr<WebUIController> controller(
@@ -6900,6 +6923,39 @@ void WebContentsImpl::DecrementSerialActiveFrameCount() {
   serial_active_frame_count_--;
   if (serial_active_frame_count_ == 0)
     NotifyNavigationStateChanged(INVALIDATE_TYPE_TAB);
+}
+
+void WebContentsImpl::IncrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  native_file_system_handle_count_++;
+  if (native_file_system_handle_count_ == 1) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
+}
+
+void WebContentsImpl::DecrementNativeFileSystemHandleCount() {
+  // Trying to invalidate the tab state while being destroyed could result in a
+  // use after free.
+  if (IsBeingDestroyed())
+    return;
+
+  // Notify for UI updates if the state changes. Need both TYPE_TAB and TYPE_URL
+  // to update both the tab-level usage indicator and the usage indicator in the
+  // omnibox.
+  DCHECK_NE(0u, native_file_system_handle_count_);
+  native_file_system_handle_count_--;
+  if (native_file_system_handle_count_ == 0) {
+    NotifyNavigationStateChanged(static_cast<content::InvalidateTypes>(
+        INVALIDATE_TYPE_TAB | INVALIDATE_TYPE_URL));
+  }
 }
 
 void WebContentsImpl::AddNativeFileSystemDirectoryHandle(
@@ -7223,9 +7279,7 @@ void WebContentsImpl::ShowInsecureLocalhostWarningIfNeeded() {
     return;
 
   content::SSLStatus ssl_status = entry->GetSSL();
-  bool is_cert_error = net::IsCertStatusError(ssl_status.cert_status) &&
-                       !net::IsCertStatusMinorError(ssl_status.cert_status);
-  if (!is_cert_error)
+  if (!net::IsCertStatusError(ssl_status.cert_status))
     return;
 
   GetMainFrame()->AddMessageToConsole(
@@ -7285,14 +7339,14 @@ void WebContentsImpl::SetVisibilityForChildViews(bool visible) {
 void WebContentsImpl::OnNativeThemeUpdated(ui::NativeTheme* observed_theme) {
   DCHECK(native_theme_observer_.IsObserving(observed_theme));
 
-  bool in_dark_mode = observed_theme->SystemDarkModeEnabled();
+  bool using_dark_colors = observed_theme->ShouldUseDarkColors();
   bool in_high_contrast = observed_theme->UsesHighContrastColors();
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme =
       observed_theme->GetPreferredColorScheme();
   bool preferences_changed = false;
 
-  if (in_dark_mode_ != in_dark_mode) {
-    in_dark_mode_ = in_dark_mode;
+  if (using_dark_colors_ != using_dark_colors) {
+    using_dark_colors_ = using_dark_colors;
     preferences_changed = true;
   }
   if (in_high_contrast_ != in_high_contrast) {

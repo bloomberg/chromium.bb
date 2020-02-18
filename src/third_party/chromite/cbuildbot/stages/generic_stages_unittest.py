@@ -9,10 +9,11 @@ from __future__ import print_function
 
 import contextlib
 import copy
-import mock
 import os
 import sys
 import unittest
+
+import mock
 
 from chromite.cbuildbot import cbuildbot_run
 from chromite.cbuildbot import commands
@@ -255,7 +256,7 @@ class AbstractStageTestCase(StageTestCase):
 
     Note: Must be implemented in subclasses.
     """
-    raise NotImplementedError(self, "ConstructStage: Implement in your test")
+    raise NotImplementedError(self, 'ConstructStage: Implement in your test')
 
   def RunStage(self, **kwargs):
     """Creates and runs an instance of the stage to be tested.
@@ -471,7 +472,7 @@ class BuilderStageTest(AbstractStageTestCase):
 
     # Record a result as if the stage succeeded in a _previous_ run.
     results_lib.Results.Record(stage.name, results_lib.Results.SUCCESS,
-                               description="Injected success")
+                               description='Injected success')
     with open(self.tempfile, 'w') as out:
       results_lib.Results.SaveCompletedStages(out)
     results_lib.Results.Clear()

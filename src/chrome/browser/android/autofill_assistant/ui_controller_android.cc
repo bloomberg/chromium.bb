@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/android/features/autofill_assistant/jni_headers/AssistantCollectUserDataModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetailsModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantDetails_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantFormInput_jni.h"
@@ -25,7 +26,6 @@
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantInfoBox_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AssistantOverlayModel_jni.h"
-#include "chrome/android/features/autofill_assistant/jni_headers/AssistantPaymentRequestModel_jni.h"
 #include "chrome/android/features/autofill_assistant/jni_headers/AutofillAssistantUiController_jni.h"
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
@@ -36,6 +36,7 @@
 #include "chrome/common/channel_info.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
+#include "components/autofill_assistant/browser/client_settings.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/metrics.h"
@@ -57,10 +58,6 @@ using base::android::JavaRef;
 namespace autofill_assistant {
 
 namespace {
-
-// How long to leave the UI showing after AA has stopped.
-static constexpr base::TimeDelta kGracefulShutdownDelay =
-    base::TimeDelta::FromSeconds(5);
 
 std::vector<float> ToFloatVector(const std::vector<RectF>& areas) {
   std::vector<float> flattened;
@@ -95,9 +92,8 @@ UiControllerAndroid::UiControllerAndroid(
     const base::android::JavaParamRef<jobject>& joverlay_coordinator)
     : overlay_delegate_(this),
       header_delegate_(this),
-      payment_request_delegate_(this),
-      form_delegate_(this),
-      weak_ptr_factory_(this) {
+      collect_user_data_delegate_(this),
+      form_delegate_(this) {
   java_object_ = Java_AutofillAssistantUiController_create(
       env, jactivity,
       /* allowTabSwitching= */
@@ -112,9 +108,11 @@ UiControllerAndroid::UiControllerAndroid(
   Java_AssistantHeaderModel_setDelegate(env, GetHeaderModel(),
                                         header_delegate_.GetJavaObject());
 
-  // Register payment_request_delegate_ as delegate for the payment request UI.
-  Java_AssistantPaymentRequestModel_setDelegate(
-      env, GetPaymentRequestModel(), payment_request_delegate_.GetJavaObject());
+  // Register collect_user_data_delegate_ as delegate for the collect user data
+  // UI.
+  Java_AssistantCollectUserDataModel_setDelegate(
+      env, GetCollectUserDataModel(),
+      collect_user_data_delegate_.GetJavaObject());
 }
 
 void UiControllerAndroid::Attach(content::WebContents* web_contents,
@@ -142,8 +140,10 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
   Java_AutofillAssistantUiController_setWebContents(env, java_object_,
                                                     java_web_contents);
   Java_AssistantModel_setWebContents(env, GetModel(), java_web_contents);
-  Java_AssistantPaymentRequestModel_setWebContents(
-      env, GetPaymentRequestModel(), java_web_contents);
+  Java_AssistantCollectUserDataModel_setWebContents(
+      env, GetCollectUserDataModel(), java_web_contents);
+  OnClientSettingsChanged(ui_delegate_->GetClientSettings());
+
   if (ui_delegate->GetState() != AutofillAssistantState::INACTIVE) {
     // The UI was created for an existing Controller.
     OnStatusMessageChanged(ui_delegate->GetStatusMessage());
@@ -153,9 +153,8 @@ void UiControllerAndroid::Attach(content::WebContents* web_contents,
     OnInfoBoxChanged(ui_delegate_->GetInfoBox());
     OnDetailsChanged(ui_delegate->GetDetails());
     OnUserActionsChanged(ui_delegate_->GetUserActions());
-    OnPaymentRequestOptionsChanged(ui_delegate->GetPaymentRequestOptions());
-    OnPaymentRequestInformationChanged(
-        ui_delegate->GetPaymentRequestInformation());
+    OnCollectUserDataOptionsChanged(ui_delegate->GetCollectUserDataOptions());
+    OnUserDataChanged(ui_delegate->GetUserData());
 
     std::vector<RectF> area;
     ui_delegate->GetTouchableArea(&area);
@@ -254,16 +253,21 @@ void UiControllerAndroid::SetupForState() {
 
       // make sure user sees the error message.
       ExpandBottomSheet();
-
-      // Keep showing the current UI for a while, without getting updates from
-      // the controller, then shut down the UI portion.
-      //
-      // A controller might still get attached while the timer is running,
-      // canceling the destruction.
-      destroy_timer_ = std::make_unique<base::OneShotTimer>();
-      destroy_timer_->Start(FROM_HERE, kGracefulShutdownDelay,
-                            base::BindOnce(&UiControllerAndroid::DestroySelf,
-                                           weak_ptr_factory_.GetWeakPtr()));
+      {
+        const ClientSettings& settings = ui_delegate_->GetClientSettings();
+        if (settings.enable_graceful_shutdown) {
+          // Keep showing the current UI for a while, without getting updates
+          // from the controller, then shut down the UI portion.
+          //
+          // A controller might still get attached while the timer is running,
+          // canceling the destruction.
+          destroy_timer_ = std::make_unique<base::OneShotTimer>();
+          destroy_timer_->Start(
+              FROM_HERE, settings.graceful_shutdown_delay,
+              base::BindOnce(&UiControllerAndroid::DestroySelf,
+                             weak_ptr_factory_.GetWeakPtr()));
+        }
+      }
       Detach();
       return;
 
@@ -367,8 +371,14 @@ void UiControllerAndroid::Shutdown(Metrics::DropOutReason reason) {
   client_->Shutdown(reason);
 }
 
-void UiControllerAndroid::ShowSnackbar(const std::string& message,
+void UiControllerAndroid::ShowSnackbar(base::TimeDelta delay,
+                                       const std::string& message,
                                        base::OnceCallback<void()> action) {
+  if (delay.is_zero()) {
+    std::move(action).Run();
+    return;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   auto jmodel = GetModel();
   if (!Java_AssistantModel_getVisible(env, jmodel)) {
@@ -379,7 +389,8 @@ void UiControllerAndroid::ShowSnackbar(const std::string& message,
   SetVisible(false);
   snackbar_action_ = std::move(action);
   Java_AutofillAssistantUiController_showSnackbar(
-      env, java_object_, base::android::ConvertUTF8ToJavaString(env, message));
+      env, java_object_, static_cast<jint>(delay.InMilliseconds()),
+      base::android::ConvertUTF8ToJavaString(env, message));
 }
 
 void UiControllerAndroid::SnackbarResult(
@@ -569,7 +580,8 @@ void UiControllerAndroid::CloseOrCancel(
   }
 
   // Cancel, with a snackbar to allow UNDO.
-  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
+  ShowSnackbar(ui_delegate_->GetClientSettings().cancel_delay,
+               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_STOPPED),
                base::BindOnce(&UiControllerAndroid::OnCancel,
                               weak_ptr_factory_.GetWeakPtr(), action_index,
                               std::move(trigger_context)));
@@ -636,7 +648,13 @@ void UiControllerAndroid::OnTouchableAreaChanged(
 }
 
 void UiControllerAndroid::OnUnexpectedTaps() {
-  ShowSnackbar(l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
+  if (!ui_delegate_) {
+    Shutdown(Metrics::DropOutReason::OVERLAY_STOP);
+    return;
+  }
+
+  ShowSnackbar(ui_delegate_->GetClientSettings().tap_shutdown_delay,
+               l10n_util::GetStringUTF8(IDS_AUTOFILL_ASSISTANT_MAYBE_GIVE_UP),
                base::BindOnce(&UiControllerAndroid::Shutdown,
                               weak_ptr_factory_.GetWeakPtr(),
                               Metrics::DropOutReason::OVERLAY_STOP));
@@ -669,12 +687,12 @@ void UiControllerAndroid::Detach() {
   ui_delegate_ = nullptr;
 }
 
-// Payment request related methods.
+// Collect user data related methods.
 
 base::android::ScopedJavaLocalRef<jobject>
-UiControllerAndroid::GetPaymentRequestModel() {
-  return Java_AssistantModel_getPaymentRequestModel(AttachCurrentThread(),
-                                                    GetModel());
+UiControllerAndroid::GetCollectUserDataModel() {
+  return Java_AssistantModel_getCollectUserDataModel(AttachCurrentThread(),
+                                                     GetModel());
 }
 
 void UiControllerAndroid::OnShippingAddressChanged(
@@ -682,15 +700,9 @@ void UiControllerAndroid::OnShippingAddressChanged(
   ui_delegate_->SetShippingAddress(std::move(address));
 }
 
-void UiControllerAndroid::OnBillingAddressChanged(
-    std::unique_ptr<autofill::AutofillProfile> address) {
-  ui_delegate_->SetBillingAddress(std::move(address));
-}
-
-void UiControllerAndroid::OnContactInfoChanged(std::string name,
-                                               std::string phone,
-                                               std::string email) {
-  ui_delegate_->SetContactInfo(name, phone, email);
+void UiControllerAndroid::OnContactInfoChanged(
+    std::unique_ptr<autofill::AutofillProfile> profile) {
+  ui_delegate_->SetContactInfo(std::move(profile));
 }
 
 void UiControllerAndroid::OnCreditCardChanged(
@@ -703,61 +715,81 @@ void UiControllerAndroid::OnTermsAndConditionsChanged(
   ui_delegate_->SetTermsAndConditions(state);
 }
 
+void UiControllerAndroid::OnLoginChoiceChanged(std::string identifier) {
+  ui_delegate_->SetLoginOption(identifier);
+}
+
 void UiControllerAndroid::OnTermsAndConditionsLinkClicked(int link) {
   ui_delegate_->OnTermsAndConditionsLinkClicked(link);
 }
 
-void UiControllerAndroid::OnPaymentRequestOptionsChanged(
-    const PaymentRequestOptions* payment_options) {
+void UiControllerAndroid::OnCollectUserDataOptionsChanged(
+    const CollectUserDataOptions* collect_user_data_options) {
   JNIEnv* env = AttachCurrentThread();
-  auto jmodel = GetPaymentRequestModel();
-  if (!payment_options) {
-    Java_AssistantPaymentRequestModel_setVisible(env, jmodel, false);
+  auto jmodel = GetCollectUserDataModel();
+  if (!collect_user_data_options) {
+    Java_AssistantCollectUserDataModel_setVisible(env, jmodel, false);
     return;
   }
 
-  Java_AssistantPaymentRequestModel_setRequestName(
-      env, jmodel, payment_options->request_payer_name);
-  Java_AssistantPaymentRequestModel_setRequestEmail(
-      env, jmodel, payment_options->request_payer_email);
-  Java_AssistantPaymentRequestModel_setRequestPhone(
-      env, jmodel, payment_options->request_payer_phone);
-  Java_AssistantPaymentRequestModel_setRequestShippingAddress(
-      env, jmodel, payment_options->request_shipping);
-  Java_AssistantPaymentRequestModel_setRequestPayment(
-      env, jmodel, payment_options->request_payment_method);
-  Java_AssistantPaymentRequestModel_setAcceptTermsAndConditionsText(
+  Java_AssistantCollectUserDataModel_setRequestName(
+      env, jmodel, collect_user_data_options->request_payer_name);
+  Java_AssistantCollectUserDataModel_setRequestEmail(
+      env, jmodel, collect_user_data_options->request_payer_email);
+  Java_AssistantCollectUserDataModel_setRequestPhone(
+      env, jmodel, collect_user_data_options->request_payer_phone);
+  Java_AssistantCollectUserDataModel_setRequestShippingAddress(
+      env, jmodel, collect_user_data_options->request_shipping);
+  Java_AssistantCollectUserDataModel_setRequestPayment(
+      env, jmodel, collect_user_data_options->request_payment_method);
+  Java_AssistantCollectUserDataModel_setRequestLoginChoice(
+      env, jmodel, collect_user_data_options->request_login_choice);
+  Java_AssistantCollectUserDataModel_setLoginSectionTitle(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
-          env, payment_options->accept_terms_and_conditions_text));
-  Java_AssistantPaymentRequestModel_setShowTermsAsCheckbox(
-      env, jmodel, payment_options->show_terms_as_checkbox);
-  Java_AssistantPaymentRequestModel_setRequireBillingPostalCode(
-      env, jmodel, payment_options->require_billing_postal_code);
-  Java_AssistantPaymentRequestModel_setBillingPostalCodeMissingText(
+          env, collect_user_data_options->login_section_title));
+  Java_AssistantCollectUserDataModel_setAcceptTermsAndConditionsText(
       env, jmodel,
       base::android::ConvertUTF8ToJavaString(
-          env, payment_options->billing_postal_code_missing_text));
-  Java_AssistantPaymentRequestModel_setSupportedBasicCardNetworks(
+          env, collect_user_data_options->accept_terms_and_conditions_text));
+  Java_AssistantCollectUserDataModel_setShowTermsAsCheckbox(
+      env, jmodel, collect_user_data_options->show_terms_as_checkbox);
+  Java_AssistantCollectUserDataModel_setRequireBillingPostalCode(
+      env, jmodel, collect_user_data_options->require_billing_postal_code);
+  Java_AssistantCollectUserDataModel_setBillingPostalCodeMissingText(
+      env, jmodel,
+      base::android::ConvertUTF8ToJavaString(
+          env, collect_user_data_options->billing_postal_code_missing_text));
+  Java_AssistantCollectUserDataModel_setSupportedBasicCardNetworks(
       env, jmodel,
       base::android::ToJavaArrayOfStrings(
-          env, payment_options->supported_basic_card_networks));
+          env, collect_user_data_options->supported_basic_card_networks));
+  if (collect_user_data_options->request_login_choice) {
+    auto jlist = Java_AssistantCollectUserDataModel_createLoginChoiceList(env);
+    for (const auto& login_choice : collect_user_data_options->login_choices) {
+      Java_AssistantCollectUserDataModel_addLoginChoice(
+          env, jmodel, jlist,
+          base::android::ConvertUTF8ToJavaString(env, login_choice.identifier),
+          base::android::ConvertUTF8ToJavaString(env, login_choice.label),
+          login_choice.preselect_priority);
+    }
+    Java_AssistantCollectUserDataModel_setLoginChoices(env, jmodel, jlist);
+  }
 
-  Java_AssistantPaymentRequestModel_setVisible(env, jmodel, true);
+  Java_AssistantCollectUserDataModel_setVisible(env, jmodel, true);
 }
 
-void UiControllerAndroid::OnPaymentRequestInformationChanged(
-    const PaymentInformation* state) {
+void UiControllerAndroid::OnUserDataChanged(const UserData* state) {
   JNIEnv* env = AttachCurrentThread();
-  auto jmodel = GetPaymentRequestModel();
+  auto jmodel = GetCollectUserDataModel();
   if (!state) {
     return;
   }
 
   // TODO(crbug.com/806868): Add |setContactDetails|, |setShippingAddress| and
   // |setPaymentMethod|.
-  Java_AssistantPaymentRequestModel_setTermsStatus(env, jmodel,
-                                                   state->terms_and_conditions);
+  Java_AssistantCollectUserDataModel_setTermsStatus(
+      env, jmodel, state->terms_and_conditions);
 }
 
 // FormProto related methods.
@@ -852,6 +884,13 @@ void UiControllerAndroid::OnFormChanged(const FormProto* form) {
   }
 }
 
+void UiControllerAndroid::OnClientSettingsChanged(
+    const ClientSettings& settings) {
+  Java_AssistantOverlayModel_setTapTracking(
+      AttachCurrentThread(), GetOverlayModel(), settings.tap_count,
+      settings.tap_tracking_duration.InMilliseconds());
+}
+
 void UiControllerAndroid::OnCounterChanged(int input_index,
                                            int counter_index,
                                            int value) {
@@ -879,7 +918,7 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
     return;
   }
 
-  const DetailsProto& proto = details->detailsProto();
+  const DetailsProto& proto = details->details_proto();
   const DetailsChangesProto& changes = details->changes();
 
   auto jdetails = Java_AssistantDetails_create(
@@ -897,7 +936,7 @@ void UiControllerAndroid::OnDetailsChanged(const Details* details) {
       proto.show_image_placeholder(),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price_label()),
       base::android::ConvertUTF8ToJavaString(env, proto.total_price()),
-      base::android::ConvertUTF8ToJavaString(env, details->GetDatetime()),
+      base::android::ConvertUTF8ToJavaString(env, details->datetime()),
       proto.datetime().date().year(), proto.datetime().date().month(),
       proto.datetime().date().day(), proto.datetime().time().hour(),
       proto.datetime().time().minute(), proto.datetime().time().second(),

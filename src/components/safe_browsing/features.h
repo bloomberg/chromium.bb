@@ -37,8 +37,6 @@ extern const base::Feature kCaptureInlineJavascriptForGoogleAds;
 // a SBER user downloads an APK file.
 extern const base::Feature kCaptureSafetyNetId;
 
-extern const base::Feature kCheckByURLLoaderThrottle;
-
 // Controls if safe browsing interstitials are implemented as committed
 // navigations instead of overlays.
 extern const base::Feature kCommittedSBInterstitials;
@@ -50,6 +48,9 @@ extern const base::Feature kForceUseAPDownloadProtection;
 
 // Enable GAIA password protection for signed-in users.
 extern const base::Feature kPasswordProtectionForSignedInUsers;
+
+// Controls whether Chrome sends on focus ping.
+extern const base::Feature kSendOnFocusPing;
 
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
@@ -86,6 +87,15 @@ extern const base::Feature kUseAPDownloadProtection;
 
 // Controls whether Chrome on Android uses locally cached blacklists.
 extern const base::Feature kUseLocalBlacklistsV2;
+
+// Controls whether we are uploading files to Safe Browsing for malware
+// scanning.
+extern const base::Feature kUploadForMalwareCheck;
+
+// Controls whether to do deep scanning of downloads. If both this feature and
+// the enterprise policies are enabled, the downloaded file is sent for
+// scanning.
+extern const base::Feature kDeepScanningOfDownloads;
 
 base::ListValue GetFeatureStatusList();
 

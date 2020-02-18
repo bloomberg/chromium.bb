@@ -29,6 +29,8 @@ _NAME = 'name'
 _META_DIR = 'opt/google/dlc/'
 _IMAGE_DIR = 'build/rootfs/dlc/'
 
+_BLOCK_SIZE = 4096
+
 
 class HashFileTest(cros_test_lib.TempDirTestCase):
   """Test build_dlc.HashFile"""
@@ -158,8 +160,30 @@ class DlcGeneratorTest(cros_test_lib.RunCommandTempDirTestCase):
         'manifest-version': 1,
     })
 
+  def testVerifyImageSize(self):
+    """Test that VerifyImageSize throws exception on errors only."""
+    # Succeeds since image size is smaller than preallocated size.
+    self.PatchObject(os.path, 'getsize',
+                     return_value=(_PRE_ALLOCATED_BLOCKS - 1) * _BLOCK_SIZE)
+    self.GetDlcGenerator().VerifyImageSize()
+
+    with self.assertRaises(ValueError):
+      # Fails since image size is bigger than preallocated size.
+      self.PatchObject(os.path, 'getsize',
+                       return_value=(_PRE_ALLOCATED_BLOCKS + 1) * _BLOCK_SIZE)
+      self.GetDlcGenerator().VerifyImageSize()
+
+  def testGetOptimalImageBlockSize(self):
+    """Test that GetOptimalImageBlockSize returns the valid block size."""
+    dlc_generator = self.GetDlcGenerator()
+    self.assertEqual(dlc_generator.GetOptimalImageBlockSize(0), 0)
+    self.assertEqual(dlc_generator.GetOptimalImageBlockSize(1), 1)
+    self.assertEqual(dlc_generator.GetOptimalImageBlockSize(_BLOCK_SIZE), 1)
+    self.assertEqual(dlc_generator.GetOptimalImageBlockSize(_BLOCK_SIZE+1), 2)
+
+
 class FinalizeDlcsTest(cros_test_lib.MockTempDirTestCase):
-  "Tests functions that generate the final DLC images."
+  """Tests functions that generate the final DLC images."""
 
   def testCopyAllDlcs(self):
     """Tests CopyAllDlcs to make sure all DLCs are copied correctly"""

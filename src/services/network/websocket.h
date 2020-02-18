@@ -12,10 +12,13 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "base/util/type_safety/strong_alias.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
@@ -24,71 +27,48 @@
 
 class GURL;
 
+namespace base {
+class Location;
+}  // namespace base
+
 namespace net {
-class URLRequestContext;
-class WebSocketChannel;
 class SSLInfo;
+class WebSocketChannel;
 }  // namespace net
 
 namespace network {
 
+class WebSocketFactory;
+
 // Host of net::WebSocketChannel.
 class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
  public:
-  class Delegate {
-   public:
-    enum class BadMessageReason {
-      kUnexpectedAddChannelRequest,
-      kUnexpectedSendFrame,
-    };
-    virtual ~Delegate() {}
+  using HasRawHeadersAccess =
+      util::StrongAlias<class HasRawHeadersAccessTag, bool>;
 
-    virtual net::URLRequestContext* GetURLRequestContext() = 0;
-    // This function may delete |impl|.
-    virtual void OnLostConnectionToClient(WebSocket* impl) = 0;
-    virtual void OnSSLCertificateError(
-        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
-            callbacks,
-        const GURL& url,
-        int child_id,
-        int frame_id,
-        int net_error,
-        const net::SSLInfo& ssl_info,
-        bool fatal) = 0;
-    // This function may delete |impl|.
-    virtual void ReportBadMessage(BadMessageReason reason, WebSocket* impl) = 0;
-    virtual bool CanReadRawCookies(const GURL& url) = 0;
-    virtual void OnCreateURLRequest(int child_id,
-                                    int frame_id,
-                                    net::URLRequest* request) = 0;
-  };
-
-  WebSocket(std::unique_ptr<Delegate> delegate,
-            const GURL& url,
-            const std::vector<std::string>& requested_protocols,
-            const GURL& site_for_cookies,
-            std::vector<mojom::HttpHeaderPtr> additional_headers,
-            int32_t process_id,
-            int32_t render_frame_id,
-            const url::Origin& origin,
-            uint32_t options,
-            mojom::WebSocketHandshakeClientPtr handshake_client,
-            mojom::WebSocketClientPtr client,
-            mojom::AuthenticationHandlerPtr auth_handler,
-            mojom::TrustedHeaderClientPtr header_client,
-            WebSocketThrottler::PendingConnection pending_connection_tracker,
-            base::TimeDelta delay);
+  WebSocket(
+      WebSocketFactory* factory,
+      const GURL& url,
+      const std::vector<std::string>& requested_protocols,
+      const GURL& site_for_cookies,
+      std::vector<mojom::HttpHeaderPtr> additional_headers,
+      int32_t process_id,
+      int32_t render_frame_id,
+      const url::Origin& origin,
+      uint32_t options,
+      HasRawHeadersAccess has_raw_cookie_access,
+      mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
+      mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
+      mojo::PendingRemote<mojom::TrustedHeaderClient> header_client,
+      WebSocketThrottler::PendingConnection pending_connection_tracker,
+      base::TimeDelta delay);
   ~WebSocket() override;
-
-  // The renderer process is going away.
-  // This function is virtual for testing.
-  virtual void GoAway();
 
   // mojom::WebSocket methods:
   void SendFrame(bool fin,
                  mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
-  void AddReceiveFlowControlQuota(int64_t quota) override;
+  void StartReceiving() override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
@@ -113,7 +93,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
 
   static const void* const kUserDataKey;
 
- protected:
+ private:
   class WebSocketEventHandler;
 
   // This class is used to set the WebSocket as user data on a URLRequest. This
@@ -132,11 +112,16 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
     DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
   };
 
-  void OnConnectionError();
+  void OnConnectionError(const base::Location& set_from);
   void AddChannel(const GURL& socket_url,
                   const std::vector<std::string>& requested_protocols,
                   const GURL& site_for_cookies,
                   std::vector<mojom::HttpHeaderPtr> additional_headers);
+  void OnSSLCertificateErrorResponse(
+      std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+          callbacks,
+      const net::SSLInfo& ssl_info,
+      int net_error);
   void OnAuthRequiredComplete(
       base::OnceCallback<void(const net::AuthCredentials*)> callback,
       const base::Optional<net::AuthCredentials>& credential);
@@ -153,13 +138,21 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
       const base::Optional<std::string>& headers,
       const GURL& allowed_unsafe_redirect_url);
 
-  std::unique_ptr<Delegate> delegate_;
-  mojo::Binding<mojom::WebSocket> binding_;
+  void Reset();
 
-  mojom::WebSocketHandshakeClientPtr handshake_client_;
-  mojom::WebSocketClientPtr client_;
-  mojom::AuthenticationHandlerPtr auth_handler_;
-  mojom::TrustedHeaderClientPtr header_client_;
+  // Datapipe functions to receive.
+  void OnWritable(MojoResult result, const mojo::HandleSignalsState& state);
+  void SendPendingDataFrames();
+  void SendDataFrame(base::span<const char>* data_span);
+
+  // |factory_| owns |this|.
+  WebSocketFactory* const factory_;
+  mojo::Receiver<mojom::WebSocket> receiver_{this};
+
+  mojo::Remote<mojom::WebSocketHandshakeClient> handshake_client_;
+  mojo::Remote<mojom::WebSocketClient> client_;
+  mojo::Remote<mojom::AuthenticationHandler> auth_handler_;
+  mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
   WebSocketThrottler::PendingConnection pending_connection_tracker_;
 
@@ -167,24 +160,26 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket : public mojom::WebSocket {
   std::unique_ptr<net::WebSocketChannel> channel_;
 
   // Delay used for per-renderer WebSocket throttling.
-  base::TimeDelta delay_;
+  const base::TimeDelta delay_;
 
-  // AddReceiveFlowControlQuota() is delayed when OnFlowControl() is called
-  // before AddChannel() is called.
-  // Zero indicates there is no pending AddReceiveFlowControlQuota().
-  int64_t pending_flow_control_quota_;
+  const uint32_t options_;
 
-  uint32_t options_;
-
-  int32_t child_id_;
-  int32_t frame_id_;
+  const int32_t child_id_;
+  const int32_t frame_id_;
 
   // The web origin to use for the WebSocket.
   const url::Origin origin_;
 
   // handshake_succeeded_ is used by WebSocketManager to manage counters for
   // per-renderer WebSocket throttling.
-  bool handshake_succeeded_;
+  bool handshake_succeeded_ = false;
+  const HasRawHeadersAccess has_raw_headers_access_;
+
+  // Datapipe fields to receive.
+  mojo::ScopedDataPipeProducerHandle writable_;
+  mojo::SimpleWatcher writable_watcher_;
+  base::queue<base::span<const char>> pending_data_frames_;
+  bool wait_for_writable_ = false;
 
   base::WeakPtrFactory<WebSocket> weak_ptr_factory_{this};
 

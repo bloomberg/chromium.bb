@@ -26,7 +26,7 @@ MATCHER_P(IsCtapHidCommand, expected_command, "") {
 MockFidoHidConnection::MockFidoHidConnection(
     device::mojom::HidDeviceInfoPtr device,
     device::mojom::HidConnectionRequest request,
-    std::vector<uint8_t> connection_channel_id)
+    std::array<uint8_t, 4> connection_channel_id)
     : binding_(this, std::move(request)),
       device_(std::move(device)),
       connection_channel_id_(connection_channel_id) {}
@@ -170,7 +170,7 @@ void FakeFidoHidManager::GetDevices(GetDevicesCallback callback) {
 
 void FakeFidoHidManager::Connect(
     const std::string& device_guid,
-    mojom::HidConnectionClientPtr connection_client,
+    mojo::PendingRemote<mojom::HidConnectionClient> connection_client,
     ConnectCallback callback) {
   auto device_it = devices_.find(device_guid);
   auto connection_it = connections_.find(device_guid);

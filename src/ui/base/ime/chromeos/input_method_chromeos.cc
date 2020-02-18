@@ -37,13 +37,12 @@ InputMethodChromeOS::InputMethodChromeOS(
     : InputMethodBase(delegate),
       composing_text_(false),
       composition_changed_(false),
-      handling_key_event_(false),
-      weak_ptr_factory_(this) {
+      handling_key_event_(false) {
   ResetContext();
 }
 
 InputMethodChromeOS::~InputMethodChromeOS() {
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
   // We are dead, so we need to ask the client to stop relying on us.
   OnInputMethodChanged();
 
@@ -285,7 +284,7 @@ InputMethodChromeOS::GetInputMethodKeyboardController() {
 void InputMethodChromeOS::OnWillChangeFocusedClient(
     TextInputClient* focused_before,
     TextInputClient* focused) {
-  ConfirmCompositionText();
+  ConfirmCompositionText(/* reset_engine */ true);
 
   if (GetEngine())
     GetEngine()->FocusOut();
@@ -345,13 +344,14 @@ bool InputMethodChromeOS::SetCompositionRange(
   }
 }
 
-void InputMethodChromeOS::ConfirmCompositionText() {
-  InputMethodBase::ConfirmCompositionText();
+void InputMethodChromeOS::ConfirmCompositionText(bool reset_engine) {
+  InputMethodBase::ConfirmCompositionText(reset_engine);
 
-  ResetContext();
+  // See https://crbug.com/984472.
+  ResetContext(reset_engine);
 }
 
-void InputMethodChromeOS::ResetContext() {
+void InputMethodChromeOS::ResetContext(bool reset_engine) {
   if (!IsNonPasswordInputFieldFocused() || !GetTextInputClient())
     return;
 
@@ -360,7 +360,7 @@ void InputMethodChromeOS::ResetContext() {
   composing_text_ = false;
   composition_changed_ = false;
 
-  if (GetEngine())
+  if (reset_engine && GetEngine())
     GetEngine()->Reset();
 
   character_composer_.Reset();
@@ -434,11 +434,8 @@ ui::EventDispatchDetails InputMethodChromeOS::ProcessFilteredKeyPressEvent(
   if (NeedInsertChar())
     return DispatchKeyEventPostIME(event);
 
-  ui::KeyEvent fabricated_event(ET_KEY_PRESSED,
-                                VKEY_PROCESSKEY,
-                                event->code(),
-                                event->flags(),
-                                event->GetDomKey(),
+  ui::KeyEvent fabricated_event(ET_KEY_PRESSED, VKEY_PROCESSKEY, event->code(),
+                                event->flags(), DomKey::PROCESS,
                                 event->time_stamp());
   ui::EventDispatchDetails dispatch_details =
       DispatchKeyEventPostIME(&fabricated_event);

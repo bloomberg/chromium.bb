@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tasks.tab_groups.TabGroupModelFilter;
 import org.chromium.chrome.features.start_surface.StartSurface;
 import org.chromium.chrome.features.start_surface.StartSurfaceCoordinator;
 import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
+import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Impl class that will resolve components for tab management.
@@ -31,8 +32,9 @@ import org.chromium.chrome.features.start_surface.StartSurfaceLayout;
 @UsedByReflection("TabManagementModule")
 public class TabManagementDelegateImpl implements TabManagementDelegate {
     @Override
-    public TasksSurface createTasksSurface(ChromeActivity activity) {
-        return new TasksSurfaceCoordinator(activity);
+    public TasksSurface createTasksSurface(
+            ChromeActivity activity, boolean isTabCarousel, PropertyModel propertyModel) {
+        return new TasksSurfaceCoordinator(activity, isTabCarousel, propertyModel);
     }
 
     @Override
@@ -44,7 +46,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
         }
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getCompositorViewHolder().getDynamicResourceLoader(),
+                activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
                 TabListCoordinator.TabListMode.GRID);
     }
@@ -53,7 +56,8 @@ public class TabManagementDelegateImpl implements TabManagementDelegate {
     public TabSwitcher createCarouselTabSwitcher(ChromeActivity activity, ViewGroup containerView) {
         return new TabSwitcherCoordinator(activity, activity.getLifecycleDispatcher(),
                 activity.getTabModelSelector(), activity.getTabContentManager(),
-                activity.getCompositorViewHolder(), activity.getFullscreenManager(), activity,
+                activity.getCompositorViewHolder().getDynamicResourceLoader(),
+                activity.getFullscreenManager(), activity,
                 activity.getMenuOrKeyboardActionController(), activity, containerView,
                 TabListCoordinator.TabListMode.CAROUSEL);
     }

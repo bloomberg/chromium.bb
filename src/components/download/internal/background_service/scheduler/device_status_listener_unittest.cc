@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/power_monitor_test_base.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/download/internal/background_service/scheduler/battery_status_listener_impl.h"
 #include "components/download/network/network_status_listener_impl.h"
 #include "services/network/test/test_network_connection_tracker.h"
@@ -146,7 +146,7 @@ class DeviceStatusListenerTest : public testing::Test {
   MockObserver mock_observer_;
 
   // Needed for network change notifier and power monitor.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::PowerMonitorTestSource* power_source_;
   TestBatteryStatusListener* test_battery_listener_;
 };

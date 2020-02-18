@@ -331,10 +331,9 @@ class DNSErrorPageTest : public ErrorPageTest {
                 EXPECT_EQ(origin, "null");
                 // Send RequestCreated so that anyone blocking on
                 // WaitForRequests can continue.
-                base::PostTaskWithTraits(
-                    FROM_HERE, {BrowserThread::UI},
-                    base::BindOnce(&DNSErrorPageTest::RequestCreated,
-                                   base::Unretained(owner)));
+                base::PostTask(FROM_HERE, {BrowserThread::UI},
+                               base::BindOnce(&DNSErrorPageTest::RequestCreated,
+                                              base::Unretained(owner)));
                 content::URLLoaderInterceptor::WriteResponse(
                     "chrome/test/data/mock-link-doctor.json",
                     params->client.get());
@@ -385,7 +384,7 @@ class DNSErrorPageTest : public ErrorPageTest {
 
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    UIThreadSearchTermsData search_terms_data(browser()->profile());
+    UIThreadSearchTermsData search_terms_data;
     search_term_url_ = GURL(search_terms_data.GoogleBaseURLValue());
   }
 

@@ -11,7 +11,7 @@
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/session/session_controller.h"
 #include "ash/public/cpp/session/session_types.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
@@ -345,7 +345,7 @@ bool SessionControllerClientImpl::IsMultiProfileAvailable() {
   return (users_logged_in + users_available_to_add) > 1;
 }
 
-void SessionControllerClientImpl::ActiveUserChanged(const User* active_user) {
+void SessionControllerClientImpl::ActiveUserChanged(User* active_user) {
   SendSessionInfoIfChanged();
 
   // UserAddedToSession is not called for the primary user session so its meta

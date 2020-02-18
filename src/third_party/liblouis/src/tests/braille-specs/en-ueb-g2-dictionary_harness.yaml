@@ -1,4 +1,4 @@
-display: unicode.dis
+display: unicode-without-blank.dis
 table:
   locale: en
   grade: 2
@@ -1765,7 +1765,7 @@ tests:
   - [Beth's, ⠠⠃⠑⠹⠄⠎]
   - [Bethany, ⠠⠃⠑⠹⠁⠝⠽]
   - [Bethe, ⠠⠃⠑⠮]
-  - [Bethesda, ⠠⠃⠑⠮⠎⠙⠁]
+  - [Bethesda, ⠠⠆⠮⠎⠙⠁]
   - [Bethlehem, ⠠⠃⠑⠹⠇⠑⠓⠑⠍]
   - [Bethune, ⠠⠃⠑⠹⠥⠝⠑]
   - [Betsy, ⠠⠆⠞⠎⠽, {xfail: true}]
@@ -4374,8 +4374,8 @@ tests:
   - [Douala's, ⠠⠙⠳⠁⠇⠁⠄⠎]
   - [Douay, ⠠⠙⠳⠁⠽]
   - [Douay's, ⠠⠙⠳⠁⠽⠄⠎]
-  - [Doubleday, ⠠⠙⠳⠃⠇⠫⠁⠽]
-  - [Doubleday's, ⠠⠙⠳⠃⠇⠫⠁⠽⠄⠎]
+  - [Doubleday, ⠠⠙⠳⠃⠇⠑⠐⠙]
+  - [Doubleday's, ⠠⠙⠳⠃⠇⠑⠐⠙⠄⠎]
   - [Doug, ⠠⠙⠳⠛]
   - [Doug's, ⠠⠙⠳⠛⠄⠎]
   - [Douglas, ⠠⠙⠳⠛⠇⠁⠎]
@@ -77919,6 +77919,7 @@ tests:
   - [revenue, ⠗⠑⠧⠢⠥⠑]
   - [revenue's, ⠗⠑⠧⠢⠥⠑⠄⠎]
   - [revenues, ⠗⠑⠧⠢⠥⠑⠎]
+  - [reverb, ⠗⠑⠧⠻⠃]
   - [reverberate, ⠗⠑⠧⠻⠃⠻⠁⠞⠑]
   - [reverberated, ⠗⠑⠧⠻⠃⠻⠁⠞⠫]
   - [reverberates, ⠗⠑⠧⠻⠃⠻⠁⠞⠑⠎]
@@ -97567,7 +97568,7 @@ tests:
   - [where, ⠐⠱]
   - [where's, ⠐⠱⠄⠎]
   - [whereabouts, ⠐⠱⠁⠃⠎]
-  - [whereabouts's, ⠐⠱⠁⠃⠳⠞⠎⠄⠎]
+  - [whereabouts's, ⠐⠱⠁⠃⠎⠄⠎]
   - [whereas, ⠐⠱⠁⠎]
   - [whereat, ⠐⠱⠁⠞]
   - [whereby, ⠐⠱⠃⠽]

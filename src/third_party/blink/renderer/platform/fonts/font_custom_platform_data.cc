@@ -39,7 +39,7 @@
 #include "third_party/blink/renderer/platform/fonts/opentype/font_settings.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_decoder.h"
 #include "third_party/blink/renderer/platform/fonts/web_font_typeface_factory.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/skia/include/core/SkStream.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 
@@ -137,7 +137,7 @@ FontPlatformData FontCustomPlatformData::GetFontPlatformData(
                           italic && !base_typeface_->isItalic(), orientation);
 }
 
-SkString FontCustomPlatformData::FamilyNameForInspector() const {
+String FontCustomPlatformData::FamilyNameForInspector() const {
   SkTypeface::LocalizedStrings* font_family_iterator =
       base_typeface_->createFamilyNameIterator();
   SkTypeface::LocalizedString localized_string;
@@ -150,7 +150,8 @@ SkString FontCustomPlatformData::FamilyNameForInspector() const {
     }
   }
   font_family_iterator->unref();
-  return localized_string.fString;
+  return String::FromUTF8(localized_string.fString.c_str(),
+                          localized_string.fString.size());
 }
 
 scoped_refptr<FontCustomPlatformData> FontCustomPlatformData::Create(

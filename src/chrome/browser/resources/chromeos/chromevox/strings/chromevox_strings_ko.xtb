@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1385214448885562192">동의하려면 Enter를 누르고 취소하려면 Esc를 누르세요. 다음으로 이동하려면 아래를 누르고 이전으로 이동하려면 위를 누르세요.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">서식 있는 텍스트 속성을 음성으로 안내</translation>
 <translation id="1405567553485452995">연한 녹색</translation>
 <translation id="1417889266572670458">네이비</translation>
 <translation id="1431911867058218151">플럼</translation>
@@ -170,6 +169,7 @@
 <translation id="2220529011494928058">문제 신고</translation>
 <translation id="2223693656926968778">현재 항목에서 작업 수행</translation>
 <translation id="225732394367814946">말하기 속도 증가</translation>
+<translation id="2267538686624070261">맞춤법 오류 남아 있음</translation>
 <translation id="2267945578749931355">다음 문자</translation>
 <translation id="2278490101488436824">손가락 세 개를 사용하여 왼쪽으로 스와이프</translation>
 <translation id="2281234842553884450">이전 슬라이더</translation>
@@ -208,6 +208,7 @@
 <translation id="257674075312929031">그룹</translation>
 <translation id="2582407057977008361">사이드 바</translation>
 <translation id="2592212930811759050">수정하려면 두 번 탭하세요.</translation>
+<translation id="2598495320872286378">문법 오류</translation>
 <translation id="2606210917827248971">에{COUNT,plural, =1{항목 #개 포함}other{항목 #개 포함}}</translation>
 <translation id="2614981083756825552">Math ML 레이아웃</translation>
 <translation id="2624431853467395961">학습 모드 열기</translation>
@@ -423,7 +424,6 @@
 <translation id="4039983576244166038">행 헤더가 비어 있음</translation>
 <translation id="4042843249978639960">다음 수준 2 제목이 없습니다.</translation>
 <translation id="4043348641337972076">이전 ARIA 랜드마크가 없습니다.</translation>
-<translation id="4045764028670444336">철자 오류 시작 부분</translation>
 <translation id="4047216625641135770">표시</translation>
 <translation id="404803211695627272"><ph name="V1" />-<ph name="V2" /></translation>
 <translation id="4053520724192563562">라임 그린</translation>
@@ -485,6 +485,7 @@
 <translation id="4372705107434148843">음성 중지</translation>
 <translation id="4373197658375206385">링크가 아닌 이전 항목이 없습니다.</translation>
 <translation id="4376316291247992553">그래픽을 점자로 인식하기</translation>
+<translation id="437809255587011096">텍스트 읽기 스타일 지정</translation>
 <translation id="4378308539633073595">앞으로 스크롤</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@
 <translation id="4547556996012970016">다음 수준 5 제목</translation>
 <translation id="4562381607973973258">머리글</translation>
 <translation id="4569941707103739422">이동하려면 위쪽 또는 아래쪽 화살표를 누르고, 활성화하려면 Enter를 누르세요.</translation>
-<translation id="4570424871453628777">철자 오류 끝부분</translation>
 <translation id="4591507479202817876">, 선택됨</translation>
 <translation id="4597532268155981612">양식</translation>
 <translation id="4597896406374528575">4월</translation>
@@ -728,7 +728,6 @@
 <translation id="6037602951055904232">앞으로 이동</translation>
 <translation id="6042826534790431634">활성화하려면 Search + Space를 누르세요.</translation>
 <translation id="6044160928851315051">화면을 어둡게 합니다.</translation>
-<translation id="6065293622157674001">문법 오류 시작 부분</translation>
 <translation id="6082768461603900813">기본 탐색</translation>
 <translation id="6118126368611144850">Chrome용 Android 앱입니다. 기기에 Play 스토어가 설치되어 있다면 Android 앱으로 ChromeVox를 미리 볼 수 있습니다. Play 스토어에서 Chrome Canary를 다운로드하여 실험적으로 지원되는 기능을 사용해 보세요.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@
 <translation id="6348869651006731065">딤 그레이</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{글머리 기호}other{글머리 기호 #개}}</translation>
 <translation id="6355910664415701303">이전 목록 항목이 없습니다.</translation>
-<translation id="6360318852623800555">서식 있는 텍스트 속성</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">이전 제목</translation>
 <translation id="6376999910001533545">마룬</translation>
@@ -825,6 +823,7 @@
 <translation id="6833103209700200188">바닥글</translation>
 <translation id="6858047746862060282">프롤로그</translation>
 <translation id="6859876496651143278">손가락 한 개를 사용하여 왼쪽으로 스와이프</translation>
+<translation id="6865519907510167493">맞춤법 오류</translation>
 <translation id="6871161210040114857">대소문자를 구분하지 않습니다.</translation>
 <translation id="6877435256196695200">다음 그래픽이 없습니다.</translation>
 <translation id="6897341342232909480">왼쪽으로 이동</translation>
@@ -870,7 +869,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7143207342074048698">연결 중</translation>
 <translation id="7153618581592392745">라벤더색</translation>
 <translation id="7157306005867877619">초록</translation>
-<translation id="7161425887892204659">텍스트 일치 끝부분</translation>
 <translation id="7161771961008409533">팝업 버튼</translation>
 <translation id="7165714724802225287">현재 인터리브 디스플레이 스타일입니다.</translation>
 <translation id="7167657087543110">문자 에코</translation>
@@ -908,7 +906,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">표를 종료합니다.</translation>
 <translation id="738899727977260036">슬레이트 블루</translation>
-<translation id="7392145451309930991">텍스트 일치 시작 부분</translation>
 <translation id="739763518212184081">이전 행</translation>
 <translation id="7400575256015741911">철자 오류 발견됨</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8153880621934657047">표 내부가 아닙니다.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{밑줄}other{밑줄 기호 #개}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">ChromeVox 언어를 자동으로 감지하고 전환합니다.</translation>
 <translation id="8184828902145951186">행</translation>
 <translation id="8186185314313222077">전체화면 전환</translation>
 <translation id="8199231515320852133">현재 셀의 헤더 알림</translation>
@@ -1118,12 +1114,13 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="8446884382197647889">자세히 알아보기</translation>
 <translation id="8455868257606149352">최대 <ph name="X" /></translation>
 <translation id="84575901236241018">액세스 키(<ph name="KEY" />) 있음</translation>
+<translation id="8463645336674919227">문법 오류 남아 있음</translation>
 <translation id="847154984256717791">바쁨</translation>
 <translation id="8476408756881832830">ChromeVox 음성이 나올 때는 재생을 일시중지합니다.</translation>
 <translation id="8476508772960940536">창 전체보기</translation>
 <translation id="8503360654911991865">탐색 세밀도 낮추기</translation>
-<translation id="8504695234784218301">문법 오류 끝부분</translation>
 <translation id="8520472399088452386">스핀 버튼</translation>
+<translation id="8534394844575788431">서식</translation>
 <translation id="8538744478902126321">현재 셀의 행 헤더 추측</translation>
 <translation id="8540054775867439484">페이지 상단으로 행 이동</translation>
 <translation id="8542271685829952264">ChromeVox 명령어와 단축키를 모두 보려면 검색+마침표를 누른 다음 화살표 키를 사용하여 메뉴를 탐색하고 Enter 키를 사용하여 명령어를 활성화합니다. 여기로 다시 돌아오려면 Search+o를 누른 후 t를 누르세요.</translation>
@@ -1203,6 +1200,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">탭</translation>
 <translation id="9151211641321628915">현재 위치에 대한 간단한 설명을 들려줍니다.</translation>
+<translation id="9151249085738989067">언어에 따라 자동으로 ChromeVox 음성을 전환합니다.</translation>
 <translation id="9153606228985488238">음조: <ph name="PERCENT" />퍼센트</translation>
 <translation id="9160096769946561184">현재 열의 마지막으로 이동</translation>
 <translation id="9173115498289768110">볼륨: <ph name="PERCENT" />퍼센트</translation>

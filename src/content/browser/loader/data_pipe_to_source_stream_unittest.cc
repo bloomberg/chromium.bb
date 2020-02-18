@@ -3,8 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/loader/data_pipe_to_source_stream.h"
+
 #include "base/strings/string_piece.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -110,7 +111,7 @@ class DataPipeToSourceStreamTest
   void CloseAdapter() { adapter_ = nullptr; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<net::IOBufferWithSize> output_buffer_;
   std::unique_ptr<DataPipeToSourceStream> adapter_;
   mojo::ScopedDataPipeProducerHandle producer_end_;

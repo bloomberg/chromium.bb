@@ -13,10 +13,11 @@ NOTE: This should eventually be removed as part of crbug.com/845304.
 
 from __future__ import print_function
 
-import ConfigParser
 import contextlib
 import os
 import tempfile
+
+from six.moves import configparser
 
 from chromite.lib import constants
 from chromite.lib import cros_logging as logging
@@ -46,7 +47,7 @@ def FixBotoCerts(activate=True, strict=False):
 
   boto_cfg_path = None
   try:
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
 
     # Read existing boto config file(s); this mimics what boto itself does.
     if 'BOTO_CONFIG' in os.environ:

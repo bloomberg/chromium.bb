@@ -13,7 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/remote_cocoa/app_shim/select_file_dialog_bridge.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/shell_dialogs/select_file_policy.h"
@@ -93,7 +93,7 @@ class SelectFileDialogMacTest : public testing::Test,
                     void* params) override {}
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Helper method to launch a dialog with the given |args|.
   void SelectFileWithParams(FileDialogArguments args) {
@@ -440,11 +440,18 @@ TEST_F(SelectFileDialogMacTest, MultipleDialogs) {
   EXPECT_EQ(2lu, GetActivePanelCount());
 
   // Verify closing the panel decreases the panel count.
-  [panel1 cancel:panel1];
+  [panel1 cancel:nil];
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1lu, GetActivePanelCount());
 
-  [panel2 ok:panel2];
+  // In 10.15, file picker dialogs are remote, and the restriction of apps not
+  // being allowed to OK their own file requests has been extended from just
+  // sandboxed apps to all apps. If we can test OK-ing our own dialogs, sure,
+  // but if not, at least try to close them all.
+  if (base::mac::IsAtMostOS10_14())
+    [panel2 ok:nil];
+  else
+    [panel2 cancel:nil];
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0lu, GetActivePanelCount());
 }

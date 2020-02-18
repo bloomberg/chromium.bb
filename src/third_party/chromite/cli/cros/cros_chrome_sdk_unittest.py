@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import copy
-import mock
 import os
 import shutil
+
+import mock
 
 from chromite.lib import constants
 from chromite.cli import command_unittest
@@ -179,11 +180,11 @@ class SDKFetcherMock(partial_mock.PartialMock):
   @_DependencyMockCtx
   def _GetManifest(self, _inst, _version):
     return {
-        "packages": {
-            "app-emulation/qemu": [["3.0.0", {}]],
-            "chromeos-base/tast-cmd": [["1.2.3", {}]],
-            "chromeos-base/tast-remote-tests-cros": [["7.8.9", {}]],
-            "sys-firmware/seabios": [["1.11.0", {}]]
+        'packages': {
+            'app-emulation/qemu': [['3.0.0', {}]],
+            'chromeos-base/tast-cmd': [['1.2.3', {}]],
+            'chromeos-base/tast-remote-tests-cros': [['7.8.9', {}]],
+            'sys-firmware/seabios': [['1.11.0', {}]]
         }
     }
 
@@ -506,7 +507,8 @@ class GomaTest(cros_test_lib.MockTempDirTestCase,
       self.assertTrue(bool(goma_dir))
 
 
-class VersionTest(cros_test_lib.MockTempDirTestCase):
+class VersionTest(cros_test_lib.MockTempDirTestCase,
+                  cros_test_lib.LoggingTestCase):
   """Tests the determination of which SDK version to use."""
 
   VERSION = '3543.0.0'
@@ -587,19 +589,36 @@ class VersionTest(cros_test_lib.MockTempDirTestCase):
         partial_mock.ListRegex('cat .*/LATEST-%s' % self.RECENT_VERSION_FOUND),
         output=self.FULL_VERSION_RECENT)
 
-  def testFullVersionFromRecentLatest(self):
-    """Test full version calculation when there is no matching LATEST- file."""
-    self._SetupMissingVersions()
-    self.assertEquals(
-        self.FULL_VERSION_RECENT,
-        self.sdk.GetFullVersion(self.VERSION))
+  def testNoFallbackVersion(self):
+    """Test that all versions are checked before raising an exception."""
+    def _RaiseGSNoSuchKey(*_args, **_kwargs):
+      raise gs.GSNoSuchKey('file does not exist')
 
-  def testExactVersion(self):
-    """Test exact version when there is no matching LATEST- file."""
+    self.sdk_mock.UnMockAttr('GetFullVersion')
+    self.gs_mock.AddCmdResult(
+        partial_mock.ListRegex('cat .*/LATEST-*'),
+        side_effect=_RaiseGSNoSuchKey)
+    self.sdk.fallback_versions = 2000000
+    with cros_test_lib.LoggingCapturer() as logs:
+      self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
+                        self.VERSION)
+    self.AssertLogsContain(logs, 'LATEST-1.0.0')
+    self.AssertLogsContain(logs, 'LATEST--1.0.0', inverted=True)
+
+  def testFallbackVersions(self):
+    """Test full version calculation with various fallback version counts."""
     self._SetupMissingVersions()
-    self.sdk.require_exact_version = True
-    self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
-                      self.VERSION)
+    for version in range(6):
+      self.sdk.fallback_versions = version
+      # _SetupMissingVersions mocks the result of 3 files.
+      # The file ending with LATEST-3.0.0 is the only one that would pass.
+      if version < 3:
+        self.assertRaises(cros_chrome_sdk.MissingSDK, self.sdk.GetFullVersion,
+                          self.VERSION)
+      else:
+        self.assertEquals(
+            self.FULL_VERSION_RECENT,
+            self.sdk.GetFullVersion(self.VERSION))
 
   def testFullVersionCaching(self):
     """Test full version calculation and caching."""

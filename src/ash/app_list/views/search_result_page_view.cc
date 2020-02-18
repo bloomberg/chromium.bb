@@ -23,6 +23,9 @@
 #include "ash/public/cpp/view_shadow.h"
 #include "base/memory/ptr_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/compositor_extra/shadow.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -350,7 +353,7 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
   if (app_list_features::IsSearchBoxSelectionEnabled()) {
     // Reset selection to first when things change.
     result_selection_controller_->set_block_selection_changes(false);
-    result_selection_controller_->ResetSelection();
+    result_selection_controller_->ResetSelection(nullptr /*key_event*/);
   } else {
     // Highlight the first result after search results are updated. Note that
     // the focus is not set on the first result to prevent frequent focus switch
@@ -363,6 +366,9 @@ void SearchResultPageView::OnSearchResultContainerResultsChanged() {
 void SearchResultPageView::OnSearchResultContainerResultFocused(
     SearchResultBaseView* focused_result_view) {
   if (!focused_result_view->result())
+    return;
+
+  if (app_list_features::IsSearchBoxSelectionEnabled())
     return;
 
   views::Textfield* search_box =
@@ -410,6 +416,54 @@ gfx::Rect SearchResultPageView::GetPageBoundsForState(
   return onscreen_bounds;
 }
 
+void SearchResultPageView::OnAnimationStarted(ash::AppListState from_state,
+                                              ash::AppListState to_state) {
+  if (from_state != ash::AppListState::kStateSearchResults &&
+      to_state != ash::AppListState::kStateSearchResults) {
+    return;
+  }
+
+  const gfx::Rect from_rect = GetPageBoundsForState(from_state);
+  const gfx::Rect to_rect = GetPageBoundsForState(to_state);
+  if (from_rect == to_rect)
+    return;
+
+  const ContentsView* const contents_view = AppListPage::contents_view();
+  const int to_radius =
+      contents_view->GetSearchBoxView()->GetSearchBoxBorderCornerRadiusForState(
+          to_state);
+
+  // Here does the following animations;
+  // - clip-rect, so it looks like expanding from |from_rect| to |to_rect|.
+  // - rounded-rect
+  // - transform of the shadow
+  SetBoundsRect(to_rect);
+  gfx::Rect clip_rect = from_rect;
+  clip_rect -= to_rect.OffsetFromOrigin();
+  layer()->SetClipRect(clip_rect);
+  {
+    auto settings = contents_view->CreateTransitionAnimationSettings(layer());
+    layer()->SetClipRect(gfx::Rect(to_rect.size()));
+    // This changes the shadow's corner immediately while this corner bounds
+    // gradually. This would be fine because this would be unnoticeable to
+    // users.
+    view_shadow_->SetRoundedCornerRadius(to_radius);
+  }
+
+  // Animate the shadow's bounds through transform.
+  {
+    gfx::Transform transform;
+    transform.Translate(from_rect.origin() - to_rect.origin());
+    transform.Scale(static_cast<float>(from_rect.width()) / to_rect.width(),
+                    static_cast<float>(from_rect.height()) / to_rect.height());
+    view_shadow_->shadow()->layer()->SetTransform(transform);
+
+    auto settings = contents_view->CreateTransitionAnimationSettings(
+        view_shadow_->shadow()->layer());
+    view_shadow_->shadow()->layer()->SetTransform(gfx::Transform());
+  }
+}
+
 void SearchResultPageView::OnAnimationUpdated(double progress,
                                               ash::AppListState from_state,
                                               ash::AppListState to_state) {
@@ -423,23 +477,10 @@ void SearchResultPageView::OnAnimationUpdated(double progress,
       progress, search_box->GetBackgroundColorForState(from_state),
       search_box->GetBackgroundColorForState(to_state));
 
-  // Grows this view in the same pace as the search box to make them look
-  // like a single view.
-  const int corner_radius = gfx::Tween::LinearIntValueBetween(
-      progress, search_box->GetSearchBoxBorderCornerRadiusForState(from_state),
-      search_box->GetSearchBoxBorderCornerRadiusForState(to_state));
-  view_shadow_->SetRoundedCornerRadius(corner_radius);
   if (color != background()->get_color()) {
     background()->SetNativeControlColor(color);
     SchedulePaint();
   }
-
-  gfx::Rect onscreen_bounds(
-      GetPageBoundsForState(ash::AppListState::kStateSearchResults));
-  onscreen_bounds -= bounds().OffsetFromOrigin();
-  SkPath path;
-  path.addRect(gfx::RectToSkRect(onscreen_bounds));
-  set_clip_path(path);
 }
 
 gfx::Rect SearchResultPageView::GetSearchBoxBounds() const {

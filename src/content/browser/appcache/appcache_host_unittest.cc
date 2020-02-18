@@ -13,7 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/appcache/appcache.h"
 #include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_group.h"
@@ -158,7 +158,7 @@ class AppCacheHostTest : public testing::Test {
 
   void SwapCacheCallback(bool result) { last_swap_result_ = result; }
 
-  TestBrowserThreadBundle scoped_task_environment_;
+  BrowserTaskEnvironment task_environment_;
   RenderViewHostTestEnabler rvh_enabler_;
   TestBrowserContext browser_context_;
   std::unique_ptr<TestWebContents> web_contents_;
@@ -588,8 +588,8 @@ TEST_F(AppCacheHostTest, SelectCacheTwice) {
   }
   {
     mojo::test::BadMessageObserver bad_message_observer;
-    host_remote->SelectCacheForSharedWorker(blink::mojom::kAppCacheNoCacheId);
-    EXPECT_EQ("ACH_SELECT_CACHE_FOR_SHARED_WORKER",
+    host_remote->SelectCacheForWorker(blink::mojom::kAppCacheNoCacheId);
+    EXPECT_EQ("ACH_SELECT_CACHE_FOR_WORKER",
               bad_message_observer.WaitForBadMessage());
   }
   {

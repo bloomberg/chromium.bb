@@ -15,17 +15,19 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/values.h"
 #include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/generated_resources.h"
@@ -542,7 +544,7 @@ void MockChromeCleanerProcess::Options::SetReportedResults(
           kInstalledExtensionId1, kInstalledExtensionId2, kUnknownExtensionId,
       });
 // Scanner results only fetches extension names on Windows Chrome build.
-#if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
+#if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)
       expected_extension_names_ = base::Optional<std::vector<base::string16>>({
           kInstalledExtensionName1, kInstalledExtensionName2,
           l10n_util::GetStringFUTF16(
@@ -598,7 +600,7 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kOnStartup)
     exit(kDeliberateCrashExitCode);
 
-  base::Thread::Options thread_options(base::MessageLoop::TYPE_IO, 0);
+  base::Thread::Options thread_options(base::MessagePumpType::IO, 0);
   base::Thread io_thread("IPCThread");
   EXPECT_TRUE(io_thread.StartWithOptions(thread_options));
   if (::testing::Test::HasFailure())
@@ -617,7 +619,7 @@ int MockChromeCleanerProcess::Run() {
   if (options_.crash_point() == CrashPoint::kAfterConnection)
     exit(kDeliberateCrashExitCode);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
   base::RunLoop run_loop;
   // After the response from the parent process is received, this will post a
   // task to unblock the child process's main thread.

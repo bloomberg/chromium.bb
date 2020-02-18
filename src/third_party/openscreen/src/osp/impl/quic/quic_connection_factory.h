@@ -8,14 +8,17 @@
 #include <memory>
 #include <vector>
 
+#include "absl/types/optional.h"
 #include "osp/impl/quic/quic_connection.h"
+#include "platform/api/time.h"
 #include "platform/base/ip_address.h"
 
 namespace openscreen {
 
 // This interface provides a way to make new QUIC connections to endpoints.  It
 // also provides a way to receive incoming QUIC connections (as a server).
-class QuicConnectionFactory {
+class QuicConnectionFactory : public platform::UdpReadCallback,
+                              public platform::UdpSocket::Client {
  public:
   class ServerDelegate {
    public:
@@ -33,10 +36,6 @@ class QuicConnectionFactory {
   // callbacks are sent to |delegate|.
   virtual void SetServerDelegate(ServerDelegate* delegate,
                                  const std::vector<IPEndpoint>& endpoints) = 0;
-
-  // Listen for incoming network packets on both client and server sockets and
-  // dispatch any results.
-  virtual void RunTasks() = 0;
 
   virtual std::unique_ptr<QuicConnection> Connect(
       const IPEndpoint& endpoint,

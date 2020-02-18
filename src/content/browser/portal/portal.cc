@@ -17,9 +17,11 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer_type_converters.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/features.h"
@@ -124,10 +126,6 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
   service_manager::mojom::InterfaceProviderPtr interface_provider;
   auto interface_provider_request(mojo::MakeRequest(&interface_provider));
 
-  blink::mojom::DocumentInterfaceBrokerPtrInfo
-      document_interface_broker_content;
-  blink::mojom::DocumentInterfaceBrokerPtrInfo document_interface_broker_blink;
-
   // Create a FrameTreeNode in the outer WebContents to host the portal, in
   // response to the creation of a portal in the renderer process.
   FrameTreeNode* outer_node = outer_contents_impl->GetFrameTree()->AddFrame(
@@ -135,8 +133,12 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       owner_render_frame_host_->GetProcess()->GetID(),
       owner_render_frame_host_->GetProcess()->GetNextRoutingID(),
       std::move(interface_provider_request),
-      mojo::MakeRequest(&document_interface_broker_content),
-      mojo::MakeRequest(&document_interface_broker_blink),
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver(),
+      mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver(),
+      mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>()
+          .InitWithNewPipeAndPassReceiver(),
       blink::WebTreeScopeType::kDocument, "", "", true,
       base::UnguessableToken::Create(), blink::FramePolicy(),
       FrameOwnerProperties(), false, blink::FrameOwnerElementType::kPortal);
@@ -161,7 +163,7 @@ RenderFrameProxyHost* Portal::CreateProxyAndAttachPortal() {
       portal_contents_impl_->GetMainFrame()->frame_tree_node();
   RenderFrameProxyHost* proxy_host =
       frame_tree_node->render_manager()->GetProxyToOuterDelegate();
-  proxy_host->set_render_frame_proxy_created(true);
+  proxy_host->SetRenderFrameProxyCreated(true);
   portal_contents_impl_->ReattachToOuterWebContentsFrame();
 
   if (web_contents_created)
@@ -196,6 +198,16 @@ void Portal::Navigate(const GURL& url, blink::mojom::ReferrerPtr referrer) {
       mojo::ConvertTo<Referrer>(referrer), ui::PAGE_TRANSITION_LINK, false,
       download_policy, "GET", nullptr, "", nullptr, false);
 }
+
+namespace {
+void FlushTouchEventQueues(RenderWidgetHostImpl* host) {
+  host->input_router()->FlushTouchEventQueue();
+  std::unique_ptr<RenderWidgetHostIterator> child_widgets =
+      host->GetEmbeddedRenderWidgetHosts();
+  while (RenderWidgetHost* child_widget = child_widgets->GetNextHost())
+    FlushTouchEventQueues(static_cast<RenderWidgetHostImpl*>(child_widget));
+}
+}  // namespace
 
 void Portal::Activate(blink::TransferableMessage data,
                       ActivateCallback callback) {
@@ -244,8 +256,8 @@ void Portal::Activate(blink::TransferableMessage data,
         outer_contents_main_frame_view);
 
     outer_contents_main_frame_view->CancelActiveTouches();
-    outer_contents->GetInputEventRouter()->IgnoreUnackedTouchEvents(
-        outer_contents_main_frame_view);
+    FlushTouchEventQueues(outer_contents_main_frame_view->host());
+
     outer_contents_main_frame_view->Destroy();
   }
 

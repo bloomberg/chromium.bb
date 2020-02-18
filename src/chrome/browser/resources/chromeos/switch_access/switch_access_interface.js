@@ -28,45 +28,22 @@ class SwitchAccessInterface {
   selectCurrentNode() {}
 
   /**
-   * Open the options page in a new tab.
+   * Restarts auto-scan if it is enabled.
    */
-  showOptionsPage() {}
+  restartAutoScan() {}
 
   /**
-   * Return a list of the names of all user commands.
-   * @return {!Array<!SAConstants.Command>}
-   */
-  getCommands() {}
-
-  /**
-   * Checks if the given string is a valid Switch Access command.
-   * @param {string} command
+   * Check if the current node is in the virtual keyboard.
    * @return {boolean}
    */
-  hasCommand(command) {}
+  inVirtualKeyboard() {}
 
   /**
-   * Forwards keycodes received from keyPress events to |callback|.
-   * @param {function(number)} callback
+   * Check whether or not the feature flag
+   * for improved text input is enabled.
+   * @return {boolean}
    */
-  listenForKeycodes(callback) {}
-
-  /**
-   * Stops forwarding keycodes.
-   */
-  stopListeningForKeycodes() {}
-
-  /**
-   * Run the function binding for the specified command.
-   * @param {!SAConstants.Command} command
-   */
-  runCommand(command) {}
-
-  /**
-   * Perform actions as the result of actions by the user. Currently, restarts
-   * auto-scan if it is enabled.
-   */
-  performedUserAction() {}
+  improvedTextInputEnabled() {}
 
   /**
    * Handle a change in user preferences.
@@ -75,48 +52,48 @@ class SwitchAccessInterface {
   onPreferencesChanged(changes) {}
 
   /**
-   * Set the value of the preference |key| to |value| in chrome.storage.sync.
+   * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * The behavior is not updated until the storage update is complete.
    *
-   * @param {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
    * @param {boolean|number} value
    */
-  setPreference(key, value) {}
+  setPreference(name, value) {}
 
   /**
-   * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean, or undefined.
+   * Get the boolean value for the given name. Will throw a type error if the
+   * value associated with |name| is not a boolean, or undefined.
    *
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {boolean}
    */
-  getBooleanPreference(key) {}
+  getBooleanPreference(name) {}
 
   /**
-   * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number, or undefined.
+   * Get the string value for the given name. Will throw a type error if the
+   * value associated with |name| is not a string, or is undefined.
    *
-   * @param  {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
+   * @return {string}
+   */
+  getStringPreference(name) {}
+
+  /**
+   * Get the number value for the given name. Will throw a type error if the
+   * value associated with |name| is not a number, or undefined.
+   *
+   * @param  {SAConstants.Preference} name
    * @return {number}
    */
-  getNumberPreference(key) {}
+  getNumberPreference(name) {}
 
   /**
-   * Get the number value for the given key, or |null| if none exists.
+   * Get the number value for the given name, or |null| if none exists.
    *
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {number|null}
    */
-  getNumberPreferenceIfDefined(key) {}
-
-  /**
-   * Returns true if |keyCode| is already used to run a command from the
-   * keyboard.
-   *
-   * @param {number} keyCode
-   * @return {boolean}
-   */
-  keyCodeIsUsed(keyCode) {}
+  getNumberPreferenceIfDefined(name) {}
 
   /**
    * Sets up the connection between the menuPanel and the menuManager.

@@ -50,10 +50,6 @@ const base::Feature kAutofillCreditCardUploadFeedback{
 
 const base::Feature kAutofillDoNotMigrateUnsupportedLocalCards{
     "AutofillDoNotMigrateUnsupportedLocalCards",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kAutofillDoNotUploadSaveUnsupportedCards{
-    "AutofillDoNotUploadSaveUnsupportedCards",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether the credit card downstream keyboard accessory shows
@@ -76,12 +72,6 @@ const base::Feature kAutofillEnableToolbarStatusChip{
 // When enabled, autofill can import credit cards from dynamic change form.
 const base::Feature kAutofillImportDynamicForms{
     "AutofillImportDynamicForms", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// When enabled, a credit card form that is hidden after receiving input can
-// import the card.
-const base::Feature kAutofillImportNonFocusableCreditCardForms{
-    "AutofillImportNonFocusableCreditCardForms",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether offering to migrate cards will consider data from the
 // Autofill strike database (new version).
@@ -112,11 +102,9 @@ const base::Feature kAutofillSaveCreditCardUsesImprovedMessaging{
     "AutofillSaveCreditCardUsesImprovedMessaging",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether experiment ids should be sent through
-// Google Payments RPCs or not.
-const base::Feature kAutofillSendExperimentIdsInPaymentsRPCs{
-    "AutofillSendExperimentIdsInPaymentsRPCs",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether to show updated UI for the card unmask prompt.
+const base::Feature kAutofillUpdatedCardUnmaskPromptUi{
+    "AutofillUpdatedCardUnmaskPromptUi", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Controls offering credit card upload to Google Payments. Cannot ever be
 // ENABLED_BY_DEFAULT because it's a country-specific whitelist. There are
@@ -148,14 +136,6 @@ const base::Feature kAutofillUpstreamBlankCardholderNameField{
     "AutofillUpstreamBlankCardholderNameField",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether ELO cards should be uploaded to Google Payments.
-const base::Feature kAutofillUpstreamDisallowElo{
-    "AutofillUpstreamDisallowElo", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Controls whether JCB cards should be uploaded to Google Payments.
-const base::Feature kAutofillUpstreamDisallowJcb{
-    "AutofillUpstreamDisallowJcb", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, Chrome Upstream can request the user to enter/confirm cardholder
 // name in the offer-to-save bubble if it was not detected or was conflicting
 // during the checkout flow and the user is NOT a Google Payments customer.
@@ -169,8 +149,13 @@ const base::Feature kAutofillUpstreamEditableCardholderName{
 };
 
 const base::Feature kAutofillUpstreamEditableExpirationDate{
-    "AutofillUpstreamEditableExpirationDate",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+  "AutofillUpstreamEditableExpirationDate",
+#if defined(OS_ANDROID)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 bool ShouldShowImprovedUserConsentForCreditCardSave() {
 #if defined(OS_WIN) || defined(OS_MACOSX) || \

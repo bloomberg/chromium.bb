@@ -28,7 +28,7 @@
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/session_manager_types.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
 using chromeos::DBusThreadManager;
@@ -77,7 +77,7 @@ class MobileDataNotificationsTest : public testing::Test {
     chromeos::NetworkHandler::Initialize();
     SetupNetworkShillState();
     base::RunLoop().RunUntilIdle();
-    network_connect_delegate_.reset(new NetworkConnectTestDelegate);
+    network_connect_delegate_ = std::make_unique<NetworkConnectTestDelegate>();
     chromeos::NetworkConnect::Initialize(network_connect_delegate_.get());
     mobile_data_notifications_ = std::make_unique<MobileDataNotifications>();
   }
@@ -149,14 +149,13 @@ class MobileDataNotificationsTest : public testing::Test {
     const AccountId test_account_id(AccountId::FromUserEmail(email));
     TestingProfile* profile =
         profile_manager_->CreateTestingProfile(test_account_id.GetUserEmail());
-    profile_manager_->SetLoggedIn(true);
     user_manager_->AddUser(test_account_id);
     user_manager_->LoginUser(test_account_id);
     user_manager_->SwitchActiveUser(test_account_id);
     ASSERT_TRUE(ProfileManager::GetActiveUserProfile() == profile);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   session_manager::SessionManager session_manager_;
   std::unique_ptr<MobileDataNotifications> mobile_data_notifications_;
   std::unique_ptr<NetworkConnectTestDelegate> network_connect_delegate_;

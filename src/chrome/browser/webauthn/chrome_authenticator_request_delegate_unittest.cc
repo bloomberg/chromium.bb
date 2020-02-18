@@ -87,42 +87,49 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest,
 }
 
 #if defined(OS_MACOSX)
+API_AVAILABLE(macos(10.12.2))
 std::string TouchIdMetadataSecret(
     ChromeAuthenticatorRequestDelegate* delegate) {
   return delegate->GetTouchIdAuthenticatorConfig()->metadata_secret;
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, TouchIdMetadataSecret) {
-  ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-  std::string secret = TouchIdMetadataSecret(&delegate);
-  EXPECT_EQ(secret.size(), 32u);
-  EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
+  if (__builtin_available(macOS 10.12.2, *)) {
+    ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
+    std::string secret = TouchIdMetadataSecret(&delegate);
+    EXPECT_EQ(secret.size(), 32u);
+    EXPECT_EQ(secret, TouchIdMetadataSecret(&delegate));
+  }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_EqualForSameProfile) {
-  // Different delegates on the same BrowserContext (Profile) should return the
-  // same secret.
-  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
-  ChromeAuthenticatorRequestDelegate delegate2(main_rfh(), kRelyingPartyID);
-  EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
-            TouchIdMetadataSecret(&delegate2));
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Different delegates on the same BrowserContext (Profile) should return
+    // the same secret.
+    ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+    ChromeAuthenticatorRequestDelegate delegate2(main_rfh(), kRelyingPartyID);
+    EXPECT_EQ(TouchIdMetadataSecret(&delegate1),
+              TouchIdMetadataSecret(&delegate2));
+  }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest,
        TouchIdMetadataSecret_NotEqualForDifferentProfiles) {
-  // Different profiles have different secrets. (No way to reset
-  // browser_context(), so we have to create our own.)
-  auto browser_context = base::WrapUnique(CreateBrowserContext());
-  auto web_contents = content::WebContentsTester::CreateTestWebContents(
-      browser_context.get(), nullptr);
-  ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
-  ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame(),
-                                               kRelyingPartyID);
-  EXPECT_NE(TouchIdMetadataSecret(&delegate1),
-            TouchIdMetadataSecret(&delegate2));
-  // Ensure this second secret is actually valid.
-  EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
+  if (__builtin_available(macOS 10.12.2, *)) {
+    // Different profiles have different secrets. (No way to reset
+    // browser_context(), so we have to create our own.)
+    auto browser_context = CreateBrowserContext();
+    auto web_contents = content::WebContentsTester::CreateTestWebContents(
+        browser_context.get(), nullptr);
+    ChromeAuthenticatorRequestDelegate delegate1(main_rfh(), kRelyingPartyID);
+    ChromeAuthenticatorRequestDelegate delegate2(web_contents->GetMainFrame(),
+                                                 kRelyingPartyID);
+    EXPECT_NE(TouchIdMetadataSecret(&delegate1),
+              TouchIdMetadataSecret(&delegate2));
+    // Ensure this second secret is actually valid.
+    EXPECT_EQ(32u, TouchIdMetadataSecret(&delegate2).size());
+  }
 }
 
 TEST_F(ChromeAuthenticatorRequestDelegateTest, IsUVPAA) {
@@ -185,30 +192,5 @@ TEST_F(ChromeAuthenticatorRequestDelegateTest, ShouldPromptForAttestationWin) {
                                    cb.callback());
   cb.WaitForCallback();
   EXPECT_EQ(cb.value(), true);
-}
-
-// Ensures that DoesBlockOnRequestFailure() returns false if |authenticator|
-// is the Windows native WebAuthn API because Chrome's request dialog UI
-// should not show an error sheet after the user cancels out of the native
-// Windows UI.
-TEST_F(ChromeAuthenticatorRequestDelegateTest, DoesBlockRequestOnFailure) {
-  ::device::ScopedFakeWinWebAuthnApi win_webauthn_api;
-  ::device::WinWebAuthnApiAuthenticator win_authenticator(
-      /*current_window=*/nullptr);
-  ::device::FidoDeviceAuthenticator device_authenticator(/*device=*/nullptr);
-
-  for (const bool use_win_api : {false, true}) {
-    SCOPED_TRACE(::testing::Message() << "use_win_api=" << use_win_api);
-
-    ChromeAuthenticatorRequestDelegate delegate(main_rfh(), kRelyingPartyID);
-    EXPECT_EQ(delegate.DoesBlockRequestOnFailure(
-                  use_win_api ? static_cast<::device::FidoAuthenticator*>(
-                                    &win_authenticator)
-                              : static_cast<::device::FidoAuthenticator*>(
-                                    &device_authenticator),
-                  ChromeAuthenticatorRequestDelegate::InterestingFailureReason::
-                      kUserConsentDenied),
-              !use_win_api);
-  }
 }
 #endif  // defined(OS_WIN)

@@ -14,7 +14,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/mime_sniffer.h"
 #include "net/http/http_util.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -2140,7 +2140,7 @@ class ResponseAnalyzerTest : public testing::Test,
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   net::TestURLRequestContext context_;
   net::TestDelegate delegate_;
 

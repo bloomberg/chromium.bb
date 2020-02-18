@@ -26,8 +26,7 @@ U2fRegisterOperation::U2fRegisterOperation(
     FidoDevice* device,
     const CtapMakeCredentialRequest& request,
     DeviceResponseCallback callback)
-    : DeviceOperation(device, request, std::move(callback)),
-      weak_factory_(this) {}
+    : DeviceOperation(device, request, std::move(callback)) {}
 
 U2fRegisterOperation::~U2fRegisterOperation() = default;
 
@@ -38,9 +37,9 @@ void U2fRegisterOperation::Start() {
   if (exclude_list && !exclude_list->empty()) {
     // First try signing with the excluded credentials to see whether this
     // device should be excluded.
-    TrySign();
+    WinkAndTrySign();
   } else {
-    TryRegistration();
+    WinkAndTryRegistration();
   }
 }
 
@@ -48,9 +47,23 @@ void U2fRegisterOperation::Cancel() {
   canceled_ = true;
 }
 
+void U2fRegisterOperation::WinkAndTrySign() {
+  device()->TryWink(base::BindOnce(&U2fRegisterOperation::TrySign,
+                                   weak_factory_.GetWeakPtr()));
+}
+
 void U2fRegisterOperation::TrySign() {
+  base::Optional<std::vector<uint8_t>> sign_command;
+  if (probing_alternative_rp_id_) {
+    CtapMakeCredentialRequest sign_request(request());
+    sign_request.rp.id = *request().app_id;
+    sign_command = ConvertToU2fSignCommand(sign_request, excluded_key_handle());
+  } else {
+    sign_command = ConvertToU2fSignCommand(request(), excluded_key_handle());
+  }
+
   DispatchDeviceRequest(
-      ConvertToU2fSignCommand(request(), excluded_key_handle()),
+      std::move(sign_command),
       base::BindOnce(&U2fRegisterOperation::OnCheckForExcludedKeyHandle,
                      weak_factory_.GetWeakPtr()));
 }
@@ -90,7 +103,7 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
       // Duplicate registration found. Waiting for user touch.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fRegisterOperation::TrySign,
+          base::BindOnce(&U2fRegisterOperation::WinkAndTrySign,
                          weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;
@@ -99,12 +112,20 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
     case apdu::ApduResponse::Status::SW_WRONG_LENGTH:
       // Continue to iterate through the provided key handles in the exclude
       // list to check for already registered keys.
-      if (++current_key_handle_index_ < request().exclude_list->size()) {
-        TrySign();
+      current_key_handle_index_++;
+      if (current_key_handle_index_ == request().exclude_list->size() &&
+          !probing_alternative_rp_id_ && request().app_id) {
+        // All elements of |request().exclude_list| have been tested, but
+        // there's a second AppID so they need to be tested again.
+        probing_alternative_rp_id_ = true;
+        current_key_handle_index_ = 0;
+      }
+      if (current_key_handle_index_ < request().exclude_list->size()) {
+        WinkAndTrySign();
       } else {
         // Reached the end of exclude list with no duplicate credential.
         // Proceed with registration.
-        TryRegistration();
+        WinkAndTryRegistration();
       }
       break;
 
@@ -116,6 +137,11 @@ void U2fRegisterOperation::OnCheckForExcludedKeyHandle(
           .Run(CtapDeviceResponseCode::kCtap2ErrOther, base::nullopt);
       break;
   }
+}
+
+void U2fRegisterOperation::WinkAndTryRegistration() {
+  device()->TryWink(base::BindOnce(&U2fRegisterOperation::TryRegistration,
+                                   weak_factory_.GetWeakPtr()));
 }
 
 void U2fRegisterOperation::TryRegistration() {
@@ -160,7 +186,7 @@ void U2fRegisterOperation::OnRegisterResponseReceived(
       // Waiting for user touch, retry after delay.
       base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&U2fRegisterOperation::TryRegistration,
+          base::BindOnce(&U2fRegisterOperation::WinkAndTryRegistration,
                          weak_factory_.GetWeakPtr()),
           kU2fRetryDelay);
       break;

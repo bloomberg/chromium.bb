@@ -4,6 +4,7 @@
 
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//ui/ozone/ozone.gni")
 
 group("common") {
   if (is_component_build) {
@@ -79,10 +80,9 @@ source_set("ipc_common_sources") {
     "gpu_param_traits.cc",
     "gpu_param_traits.h",
     "gpu_param_traits_macros.h",
+    "gpu_watchdog_timeout.h",
     "memory_stats.cc",
     "memory_stats.h",
-    "vulkan_ycbcr_info.cc",
-    "vulkan_ycbcr_info.h",
   ]
 
   if (is_mac) {
@@ -120,6 +120,7 @@ source_set("ipc_common_sources") {
   public_deps = [
     ":command_buffer_traits_sources",
     ":surface_handle_type",
+    ":vulkan_ycbcr_info",
     "//ipc",
     "//url/ipc:url_ipc",
   ]
@@ -141,17 +142,12 @@ source_set("ipc_common_sources") {
 
   if (is_android) {
     sources += [
-      "android/scoped_surface_request_conduit.cc",
-      "android/scoped_surface_request_conduit.h",
-      "android/surface_owner_android.cc",
-      "android/surface_owner_android.h",
       "gpu_surface_lookup.cc",
       "gpu_surface_lookup.h",
       "gpu_surface_tracker.cc",
       "gpu_surface_tracker.h",
     ]
     libs = [ "android" ]
-    deps += [ ":android_image_reader_utils" ]
   }
 
   if (use_ozone) {
@@ -177,6 +173,78 @@ if (is_android) {
   }
 }
 
+if (is_android) {
+  component("android_texture_owner") {
+    sources = [
+      "android/image_reader_gl_owner.cc",
+      "android/image_reader_gl_owner.h",
+      "android/scoped_surface_request_conduit.cc",
+      "android/scoped_surface_request_conduit.h",
+      "android/surface_texture_gl_owner.cc",
+      "android/surface_texture_gl_owner.h",
+      "android/texture_owner.cc",
+      "android/texture_owner.h",
+    ]
+    configs += [ "//gpu:gpu_implementation" ]
+    deps = [
+      ":android_image_reader_utils",
+      "//base",
+      "//gpu/command_buffer/service:gles2_sources",
+      "//gpu/command_buffer/service:service_sources",
+      "//ui/gl",
+    ]
+    libs = [ "android" ]
+    visibility = [
+      "//gpu/*",
+      "//media/gpu:gpu",
+      "//content/browser:browser",
+    ]
+  }
+}
+
+if (is_android) {
+  jumbo_static_library("android_texture_owner_test_support") {
+    testonly = true
+    sources = [
+      "android/mock_abstract_texture.cc",
+      "android/mock_abstract_texture.h",
+      "android/mock_texture_owner.cc",
+      "android/mock_texture_owner.h",
+    ]
+    deps = [
+      ":android_texture_owner",
+      "//base/test:test_support",
+      "//gpu:test_support",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
+}
+
+if (is_android) {
+  source_set("android_texture_owner_unittests") {
+    testonly = true
+    sources = [
+      "android/image_reader_gl_owner_unittest.cc",
+      "android/surface_texture_gl_owner_unittest.cc",
+    ]
+
+    deps = [
+      ":android_texture_owner",
+      ":android_texture_owner_test_support",
+      "//base/test:test_support",
+      "//gpu:test_support",
+      "//media/base:base",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//ui/gl",
+      "//ui/gl/init",
+    ]
+  }
+}
+
 # Depend on this to use surface_handle.h without pulling in all of gpu ipc.
 source_set("surface_handle_type") {
   public = [
@@ -185,6 +253,16 @@ source_set("surface_handle_type") {
 
   public_deps = [
     "//ui/gfx:native_widget_types",
+  ]
+}
+
+source_set("vulkan_ycbcr_info") {
+  sources = [
+    "vulkan_ycbcr_info.cc",
+    "vulkan_ycbcr_info.h",
+  ]
+  deps = [
+    "//base",
   ]
 }
 
@@ -207,8 +285,8 @@ mojom("interfaces") {
   public_deps = [
     ":gpu_preferences_interface",
     "//mojo/public/mojom/base",
-    "//ui/gfx/geometry/mojo",
-    "//ui/gfx/mojo",
+    "//ui/gfx/geometry/mojom",
+    "//ui/gfx/mojom",
   ]
 }
 
@@ -219,8 +297,13 @@ mojom("gpu_preferences_interface") {
 
   public_deps = [
     "//mojo/public/mojom/base",
-    "//ui/gfx/mojo",
+    "//ui/gfx/mojom",
   ]
+
+  enabled_features = []
+  if (use_ozone) {
+    enabled_features += [ "use_ozone" ]
+  }
 }
 
 mojom("test_interfaces") {
@@ -235,18 +318,19 @@ mojom("test_interfaces") {
   ]
 }
 
-source_set("struct_traits") {
+source_set("mojom_traits") {
   sources = [
-    "context_result_struct_traits.h",
-    "mailbox_holder_struct_traits.h",
-    "mailbox_struct_traits.h",
-    "memory_stats_struct_traits.h",
-    "surface_handle_struct_traits.h",
-    "sync_token_struct_traits.h",
+    "context_result_mojom_traits.h",
+    "mailbox_holder_mojom_traits.h",
+    "mailbox_mojom_traits.h",
+    "memory_stats_mojom_traits.h",
+    "surface_handle_mojom_traits.h",
+    "sync_token_mojom_traits.h",
   ]
   deps = [
     ":interfaces_shared_cpp_sources",
     ":surface_handle_type",
+    ":vulkan_ycbcr_info",
     "//gpu/command_buffer/common",
     "//gpu/ipc/common",
     "//mojo/public/cpp/bindings:bindings",

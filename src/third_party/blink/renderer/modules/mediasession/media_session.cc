@@ -13,8 +13,10 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata.h"
 #include "third_party/blink/renderer/modules/mediasession/media_metadata_sanitizer.h"
+#include "third_party/blink/renderer/modules/mediasession/media_position_state.h"
 #include "third_party/blink/renderer/modules/mediasession/media_session_action_details.h"
 #include "third_party/blink/renderer/modules/mediasession/media_session_seek_to_action_details.h"
 #include "third_party/blink/renderer/modules/mediasession/type_converters.h"
@@ -125,15 +127,17 @@ mojom::blink::MediaSessionPlaybackState StringToMediaSessionPlaybackState(
 
 MediaSession::MediaSession(ExecutionContext* execution_context)
     : ContextClient(execution_context),
-      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE),
-      client_binding_(this) {}
+      playback_state_(mojom::blink::MediaSessionPlaybackState::NONE) {}
 
 void MediaSession::Dispose() {
-  client_binding_.Close();
+  client_receiver_.reset();
 }
 
 void MediaSession::setPlaybackState(const String& playback_state) {
   playback_state_ = StringToMediaSessionPlaybackState(playback_state);
+
+  RecalculatePositionState(false /* notify */);
+
   mojom::blink::MediaSessionService* service = GetService();
   if (service)
     service->SetPlaybackState(playback_state_);
@@ -205,6 +209,65 @@ void MediaSession::setActionHandler(const String& action,
   }
 }
 
+void MediaSession::setPositionState(MediaPositionState* position_state,
+                                    ExceptionState& exception_state) {
+  // If the dictionary is empty / null then we should reset the position state.
+  if (!position_state->hasDuration() && !position_state->hasPlaybackRate() &&
+      !position_state->hasPosition()) {
+    position_state_ = nullptr;
+    declared_playback_rate_ = 0.0;
+
+    if (auto* service = GetService())
+      service->SetPositionState(nullptr);
+
+    return;
+  }
+
+  // The duration cannot be missing.
+  if (!position_state->hasDuration()) {
+    exception_state.ThrowTypeError("The duration must be provided.");
+    return;
+  }
+
+  // The duration cannot be negative.
+  if (position_state->duration() < 0) {
+    exception_state.ThrowTypeError(
+        "The provided duration cannot be less than zero.");
+    return;
+  }
+
+  // The position cannot be negative.
+  if (position_state->hasPosition() && position_state->position() < 0) {
+    exception_state.ThrowTypeError(
+        "The provided position cannot be less than zero.");
+    return;
+  }
+
+  // The position cannot be greater than the duration.
+  if (position_state->hasPosition() &&
+      position_state->position() > position_state->duration()) {
+    exception_state.ThrowTypeError(
+        "The provided position cannot be greater than the duration.");
+    return;
+  }
+
+  // The playback rate cannot be less than or equal to zero.
+  if (position_state->hasPlaybackRate() &&
+      position_state->playbackRate() <= 0) {
+    exception_state.ThrowTypeError(
+        "The provided playbackRate cannot be less than or equal to zero.");
+    return;
+  }
+
+  position_state_ =
+      mojo::ConvertTo<media_session::mojom::blink::MediaPositionPtr>(
+          position_state);
+
+  declared_playback_rate_ = position_state_->playback_rate;
+
+  RecalculatePositionState(true /* notify */);
+}
+
 void MediaSession::NotifyActionChange(const String& action,
                                       ActionChangeType type) {
   mojom::blink::MediaSessionService* service = GetService();
@@ -224,6 +287,25 @@ void MediaSession::NotifyActionChange(const String& action,
   }
 }
 
+void MediaSession::RecalculatePositionState(bool notify) {
+  if (!position_state_)
+    return;
+
+  double new_playback_rate =
+      playback_state_ == mojom::blink::MediaSessionPlaybackState::PAUSED
+          ? 0.0
+          : declared_playback_rate_;
+
+  notify = notify || new_playback_rate != position_state_->playback_rate;
+  position_state_->playback_rate = new_playback_rate;
+
+  if (!notify)
+    return;
+
+  if (auto* service = GetService())
+    service->SetPositionState(position_state_.Clone());
+}
+
 mojom::blink::MediaSessionService* MediaSession::GetService() {
   if (service_)
     return service_.get();
@@ -239,14 +321,12 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
   frame->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&service_, task_runner));
+      service_.BindNewPipeAndPassReceiver());
   if (service_.get()) {
     // Record the eTLD+1 of the frame using the API.
     Platform::Current()->RecordRapporURL("Media.Session.APIUsage.Origin",
                                          document->Url());
-    blink::mojom::blink::MediaSessionClientPtr client;
-    client_binding_.Bind(mojo::MakeRequest(&client, task_runner), task_runner);
-    service_->SetClient(std::move(client));
+    service_->SetClient(client_receiver_.BindNewPipeAndPassRemote(task_runner));
   }
 
   return service_.get();

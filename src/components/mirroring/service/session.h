@@ -22,7 +22,7 @@
 #include "gpu/config/gpu_info.h"
 #include "media/cast/cast_environment.h"
 #include "media/cast/net/cast_transport_defines.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 
 namespace media {
@@ -63,7 +63,7 @@ class COMPONENT_EXPORT(MIRRORING_SERVICE) Session final
           mojom::ResourceProviderPtr resource_provider,
           mojom::CastMessageChannelPtr outbound_channel,
           mojom::CastMessageChannelRequest inbound_channel,
-          std::unique_ptr<viz::Gpu> gpu);
+          scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~Session() override;
 

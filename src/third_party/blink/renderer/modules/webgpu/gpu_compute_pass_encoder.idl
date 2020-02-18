@@ -2,19 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://github.com/gpuweb/gpuweb/blob/master/design/sketch.webidl
+// https://gpuweb.github.io/gpuweb/
 
 [
     RuntimeEnabled=WebGPU
 ] interface GPUComputePassEncoder {
+    // GPUProgrammablePassEncoder methods
     void setBindGroup(unsigned long index,
                       GPUBindGroup bindGroup,
                       optional sequence<unsigned long long> dynamicOffsets = []);
+    void pushDebugGroup(DOMString groupLabel);
+    void popDebugGroup();
+    void insertDebugMarker(DOMString markerLabel);
+
     void setPipeline(GPUComputePipeline pipeline);
 
     void dispatch(unsigned long x,
                   optional unsigned long y = 1,
                   optional unsigned long z = 1);
+    void dispatchIndirect(GPUBuffer indirectBuffer,
+                          unsigned long long indirectOffset);
 
     void endPass();
 };

@@ -92,7 +92,7 @@ const char kSafeBrowsingScoutReportingEnabled[] =
     "safebrowsing.scout_reporting_enabled";
 const char kSafeBrowsingTriggerEventTimestamps[] =
     "safebrowsing.trigger_event_timestamps";
-const char kSafeBrowsingUnhandledSyncPasswordReuses[] =
+const char kSafeBrowsingUnhandledGaiaPasswordReuses[] =
     "safebrowsing.unhandled_sync_password_reuses";
 const char kSafeBrowsingNextPasswordCaptureEventLogTime[] =
     "safebrowsing.next_password_capture_event_log_time";
@@ -106,10 +106,24 @@ const char kPasswordProtectionWarningTrigger[] =
     "safebrowsing.password_protection_warning_trigger";
 const char kAdvancedProtectionLastRefreshInUs[] =
     "safebrowsing.advanced_protection_last_refresh";
-const char kPasswordProtectedAllowed[] =
-    "safebrowsing.password_protected_allowed";
 const char kSafeBrowsingRealTimeLookupEnabled[] =
     "safebrowsing.real_time_lookup_enabled";
+const char kSafeBrowsingSendFilesForMalwareCheck[] =
+    "safebrowsing.send_files_for_malware_check";
+const char kUnsafeEventsReportingEnabled[] =
+    "safebrowsing.unsafe_events_reporting";
+const char kBlockLargeFileTransfer[] =
+    "safebrowsing.block_large_file_transfers";
+const char kDelayDeliveryUntilVerdict[] =
+    "safebrowsing.delay_delivery_until_verdict";
+const char kAllowPasswordProtectedFiles[] =
+    "safebrowsing.allow_password_protected_files";
+const char kCheckContentCompliance[] = "safebrowsing.check_content_compliance";
+const char kDomainsToCheckComplianceOfDownloadedContent[] =
+    "safebrowsing.domains_to_check_compliance_of_downloaded_content";
+const char kDomainsToCheckForMalwareOfUploadedContent[] =
+    "safebrowsing.domains_to_check_for_malware_of_uploaded_content";
+
 }  // namespace prefs
 
 namespace safe_browsing {
@@ -161,7 +175,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
                                 false);
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingIncidentsSent);
   registry->RegisterDictionaryPref(
-      prefs::kSafeBrowsingUnhandledSyncPasswordReuses);
+      prefs::kSafeBrowsingUnhandledGaiaPasswordReuses);
   registry->RegisterStringPref(
       prefs::kSafeBrowsingNextPasswordCaptureEventLogTime,
       "0");  // int64 as string
@@ -171,13 +185,23 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(prefs::kPasswordProtectionWarningTrigger,
                                 PASSWORD_PROTECTION_OFF);
   registry->RegisterInt64Pref(prefs::kAdvancedProtectionLastRefreshInUs, 0);
-  registry->RegisterBooleanPref(prefs::kPasswordProtectedAllowed, true);
   registry->RegisterBooleanPref(prefs::kSafeBrowsingRealTimeLookupEnabled,
                                 false);
+  registry->RegisterIntegerPref(prefs::kSafeBrowsingSendFilesForMalwareCheck,
+                                0);
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(prefs::kSafeBrowsingTriggerEventTimestamps);
+  registry->RegisterBooleanPref(prefs::kUnsafeEventsReportingEnabled, false);
+  registry->RegisterIntegerPref(prefs::kBlockLargeFileTransfer, 0);
+  registry->RegisterIntegerPref(prefs::kDelayDeliveryUntilVerdict, 0);
+  registry->RegisterIntegerPref(
+      prefs::kAllowPasswordProtectedFiles,
+      AllowPasswordProtectedFilesValues::ALLOW_UPLOADS_AND_DOWNLOADS);
+  registry->RegisterIntegerPref(prefs::kCheckContentCompliance, 0);
+  registry->RegisterListPref(
+      prefs::kDomainsToCheckComplianceOfDownloadedContent);
 }
 
 void SetExtendedReportingPrefAndMetric(

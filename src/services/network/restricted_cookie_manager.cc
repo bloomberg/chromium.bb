@@ -13,10 +13,12 @@
 #include "base/debug/crash_logging.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/memory/weak_ptr.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "mojo/public/cpp/bindings/message.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/cookie_options.h"
 #include "net/cookies/cookie_store.h"
@@ -79,11 +81,13 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
            const RestrictedCookieManager* restricted_cookie_manager,
            const GURL& url,
            const GURL& site_for_cookies,
+           const url::Origin& top_frame_origin,
            net::CookieOptions options,
-           mojom::CookieChangeListenerPtr mojo_listener)
+           mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener)
       : restricted_cookie_manager_(restricted_cookie_manager),
         url_(url),
         site_for_cookies_(site_for_cookies),
+        top_frame_origin_(top_frame_origin),
         options_(options),
         mojo_listener_(std::move(mojo_listener)) {
     // TODO(pwnall): add a constructor w/options to net::CookieChangeDispatcher.
@@ -101,7 +105,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
 
   ~Listener() { DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_); }
 
-  mojom::CookieChangeListenerPtr& mojo_listener() {
+  mojo::Remote<mojom::CookieChangeListener>& mojo_listener() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return mojo_listener_;
   }
@@ -111,8 +115,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   void OnCookieChange(const net::CanonicalCookie& cookie,
                       net::CookieChangeCause cause) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    if (cookie.IncludeForRequestURL(url_, options_) !=
-        CookieInclusionStatus::INCLUDE)
+    if (!cookie.IncludeForRequestURL(url_, options_).IsInclude())
       return;
 
     // When a user blocks a site's access to cookies, the existing cookies are
@@ -120,7 +123,7 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
     // being deleted at a later time, which can happen due to eviction or due to
     // the user explicitly deleting all cookies.
     if (!restricted_cookie_manager_->cookie_settings()->IsCookieAccessAllowed(
-            url_, site_for_cookies_))
+            url_, site_for_cookies_, top_frame_origin_))
       return;
 
     mojo_listener_->OnCookieChange(cookie, ToCookieChangeCause(cause));
@@ -136,13 +139,17 @@ class RestrictedCookieManager::Listener : public base::LinkNode<Listener> {
   // The URL whose cookies this listener is interested in.
   const GURL url_;
 
-  // Site context in which we're used; used for permission-checking.
+  // Site context in which we're used; used to determine if a cookie is accessed
+  // in a third-party context.
   const GURL site_for_cookies_;
+
+  // Site context in which we're used; used to check content settings.
+  const url::Origin top_frame_origin_;
 
   // CanonicalCookie::IncludeForRequestURL options for this listener's interest.
   const net::CookieOptions options_;
 
-  mojom::CookieChangeListenerPtr mojo_listener_;
+  mojo::Remote<mojom::CookieChangeListener> mojo_listener_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
@@ -184,6 +191,7 @@ RestrictedCookieManager::~RestrictedCookieManager() {
 void RestrictedCookieManager::GetAllForUrl(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -205,21 +213,23 @@ void RestrictedCookieManager::GetAllForUrl(
       url, net_options,
       base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
                      weak_ptr_factory_.GetWeakPtr(), url, site_for_cookies,
-                     net_options, std::move(options), std::move(callback)));
+                     top_frame_origin, net_options, std::move(options),
+                     std::move(callback)));
 }
 
 void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     const net::CookieOptions& net_options,
     mojom::CookieManagerGetOptionsPtr options,
     GetAllForUrlCallback callback,
-    const net::CookieList& cookie_list,
+    const net::CookieStatusList& cookie_list,
     const net::CookieStatusList& excluded_cookies) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  bool blocked =
-      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
+  bool blocked = !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
+                                                          top_frame_origin);
 
   std::vector<net::CanonicalCookie> result;
   std::vector<net::CookieWithStatus> result_with_status;
@@ -227,11 +237,7 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
   // TODO(https://crbug.com/977040): Remove once samesite tightening up is
   // rolled out.
   for (const auto& cookie_and_status : excluded_cookies) {
-    if (cookie_and_status.status ==
-            CookieInclusionStatus::
-                EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX ||
-        cookie_and_status.status ==
-            CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE) {
+    if (cookie_and_status.status.ShouldWarn()) {
       result_with_status.push_back(
           {cookie_and_status.cookie, cookie_and_status.status});
     }
@@ -241,8 +247,10 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     result.reserve(cookie_list.size());
   mojom::CookieMatchType match_type = options->match_type;
   const std::string& match_name = options->name;
+  // TODO(https://crbug.com/993843): Use the statuses passed in |cookie_list|.
   for (size_t i = 0; i < cookie_list.size(); ++i) {
-    const net::CanonicalCookie& cookie = cookie_list[i];
+    const net::CanonicalCookie& cookie = cookie_list[i].cookie;
+    CookieInclusionStatus status = cookie_list[i].status;
     const std::string& cookie_name = cookie.Name();
 
     if (match_type == mojom::CookieMatchType::EQUALS) {
@@ -258,22 +266,12 @@ void RestrictedCookieManager::CookieListToGetAllForUrlCallback(
     }
 
     if (blocked) {
-      result_with_status.push_back(
-          {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+      status.AddExclusionReason(
+          CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     } else {
       result.push_back(cookie);
-      result_with_status.push_back({cookie, CookieInclusionStatus::INCLUDE});
-
-      // Warn about upcoming deprecations.
-      // TODO(https://crbug.com/977040): Remove once samesite tightening up is
-      // rolled out.
-      CookieInclusionStatus eventual_status =
-          net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
-                                                               net_options);
-      if (eventual_status != CookieInclusionStatus::INCLUDE) {
-        result_with_status.push_back({cookie, eventual_status});
-      }
     }
+    result_with_status.push_back({cookie, status});
   }
 
   if (network_context_client_) {
@@ -295,6 +293,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
     const net::CanonicalCookie& cookie,
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     SetCanonicalCookieCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ValidateAccessToCookiesAt(url)) {
@@ -303,14 +302,32 @@ void RestrictedCookieManager::SetCanonicalCookie(
   }
 
   // TODO(morlovich): Try to validate site_for_cookies as well.
-  bool blocked =
-      !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies);
+  bool blocked = !cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies,
+                                                          top_frame_origin);
 
-  if (blocked) {
+  CookieInclusionStatus status;
+  if (blocked)
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+
+  // Don't allow URLs with leading dots like https://.some-weird-domain.com
+  // This probably never happens.
+  if (!net::cookie_util::DomainIsHostOnly(url.host()))
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_INVALID_DOMAIN);
+
+  // Don't allow setting cookies on other domains.
+  // TODO(crbug.com/996786): This should never happen. This should eventually
+  // result in a renderer kill, but for now just log metrics.
+  bool domain_match = cookie.IsDomainMatch(url.host());
+  if (!domain_match)
+    status.AddExclusionReason(CookieInclusionStatus::EXCLUDE_DOMAIN_MISMATCH);
+  UMA_HISTOGRAM_BOOLEAN(
+      "Net.RestrictedCookieManager.SetCanonicalCookieDomainMatch",
+      domain_match);
+
+  if (!status.IsInclude()) {
     if (network_context_client_) {
-      std::vector<net::CookieWithStatus> result_with_status;
-      result_with_status.push_back(
-          {cookie, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES});
+      std::vector<net::CookieWithStatus> result_with_status = {
+          {cookie, status}};
       network_context_client_->OnCookiesChanged(
           is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
           result_with_status);
@@ -321,6 +338,7 @@ void RestrictedCookieManager::SetCanonicalCookie(
 
   // TODO(pwnall): Validate the CanonicalCookie fields.
 
+  // Update the creation and last access times.
   base::Time now = base::Time::NowFromSystemTime();
   auto sanitized_cookie = std::make_unique<net::CanonicalCookie>(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
@@ -346,38 +364,25 @@ void RestrictedCookieManager::SetCanonicalCookieResult(
   std::vector<net::CookieWithStatus> notify;
   // TODO(https://crbug.com/977040): Only report pure INCLUDE once samesite
   // tightening up is rolled out.
-  DCHECK_NE(status, CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
+  DCHECK(!status.HasExclusionReason(
+      CookieInclusionStatus::EXCLUDE_USER_PREFERENCES));
 
   if (network_context_client_) {
-    switch (status) {
-      case CookieInclusionStatus::INCLUDE: {
-        CookieInclusionStatus eventual_status =
-            net::cookie_util::CookieWouldBeExcludedDueToSameSite(cookie,
-                                                                 net_options);
-        if (eventual_status != CookieInclusionStatus::INCLUDE) {
-          notify.push_back({cookie, eventual_status});
-        }
-        FALLTHROUGH;
-      }
-      case CookieInclusionStatus::EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX:
-      case CookieInclusionStatus::EXCLUDE_SAMESITE_NONE_INSECURE:
-        notify.push_back({cookie, status});
-        network_context_client_->OnCookiesChanged(
-            is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
-            std::move(notify));
-        break;
-
-      default:
-        break;
+    if (status.IsInclude() || status.ShouldWarn()) {
+      notify.push_back({cookie, status});
+      network_context_client_->OnCookiesChanged(
+          is_service_worker_, process_id_, frame_id_, url, site_for_cookies,
+          std::move(notify));
     }
   }
-  std::move(user_callback).Run(status == CookieInclusionStatus::INCLUDE);
+  std::move(user_callback).Run(status.IsInclude());
 }
 
 void RestrictedCookieManager::AddChangeListener(
     const GURL& url,
     const GURL& site_for_cookies,
-    mojom::CookieChangeListenerPtr mojo_listener,
+    const url::Origin& top_frame_origin,
+    mojo::PendingRemote<mojom::CookieChangeListener> mojo_listener,
     AddChangeListenerCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!ValidateAccessToCookiesAt(url)) {
@@ -387,11 +392,11 @@ void RestrictedCookieManager::AddChangeListener(
 
   net::CookieOptions net_options =
       MakeOptionsForGet(role_, url, site_for_cookies);
-  auto listener =
-      std::make_unique<Listener>(cookie_store_, this, url, site_for_cookies,
-                                 net_options, std::move(mojo_listener));
+  auto listener = std::make_unique<Listener>(
+      cookie_store_, this, url, site_for_cookies, top_frame_origin, net_options,
+      std::move(mojo_listener));
 
-  listener->mojo_listener().set_connection_error_handler(
+  listener->mojo_listener().set_disconnect_handler(
       base::BindOnce(&RestrictedCookieManager::RemoveChangeListener,
                      weak_ptr_factory_.GetWeakPtr(),
                      // Safe because this owns the listener, so the listener is
@@ -407,13 +412,14 @@ void RestrictedCookieManager::AddChangeListener(
 void RestrictedCookieManager::SetCookieFromString(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     const std::string& cookie,
     SetCookieFromStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  net::CookieOptions options = MakeOptionsForSet(role_, url, site_for_cookies);
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
-      net::CanonicalCookie::Create(url, cookie, base::Time::Now(), options);
+      net::CanonicalCookie::Create(url, cookie, base::Time::Now(),
+                                   base::nullopt /* server_time */);
   if (!parsed_cookie) {
     std::move(callback).Run();
     return;
@@ -422,7 +428,7 @@ void RestrictedCookieManager::SetCookieFromString(
   // Further checks (origin_, settings), as well as logging done by
   // SetCanonicalCookie()
   SetCanonicalCookie(
-      *parsed_cookie, url, site_for_cookies,
+      *parsed_cookie, url, site_for_cookies, top_frame_origin,
       base::BindOnce([](SetCookieFromStringCallback user_callback,
                         bool success) { std::move(user_callback).Run(); },
                      std::move(callback)));
@@ -431,6 +437,7 @@ void RestrictedCookieManager::SetCookieFromString(
 void RestrictedCookieManager::GetCookiesString(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     GetCookiesStringCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Checks done by GetAllForUrl.
@@ -439,7 +446,8 @@ void RestrictedCookieManager::GetCookiesString(
   auto match_options = mojom::CookieManagerGetOptions::New();
   match_options->name = "";
   match_options->match_type = mojom::CookieMatchType::STARTS_WITH;
-  GetAllForUrl(url, site_for_cookies, std::move(match_options),
+  GetAllForUrl(url, site_for_cookies, top_frame_origin,
+               std::move(match_options),
                base::BindOnce(
                    [](GetCookiesStringCallback user_callback,
                       const std::vector<net::CanonicalCookie>& cookies) {
@@ -452,14 +460,15 @@ void RestrictedCookieManager::GetCookiesString(
 void RestrictedCookieManager::CookiesEnabledFor(
     const GURL& url,
     const GURL& site_for_cookies,
+    const url::Origin& top_frame_origin,
     CookiesEnabledForCallback callback) {
   if (!ValidateAccessToCookiesAt(url)) {
     std::move(callback).Run(false);
     return;
   }
 
-  std::move(callback).Run(
-      cookie_settings_->IsCookieAccessAllowed(url, site_for_cookies));
+  std::move(callback).Run(cookie_settings_->IsCookieAccessAllowed(
+      url, site_for_cookies, top_frame_origin));
 }
 
 void RestrictedCookieManager::RemoveChangeListener(Listener* listener) {
@@ -472,27 +481,13 @@ bool RestrictedCookieManager::ValidateAccessToCookiesAt(const GURL& url) {
   if (origin_.IsSameOriginWith(url::Origin::Create(url)))
     return true;
 
-  // TODO(https://crbug.com/983090): Remove the crash keys once fixed.
-  static base::debug::CrashKeyString* bound_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_bound_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(bound_origin, origin_.GetDebugString());
-
-  static base::debug::CrashKeyString* url_origin =
-      base::debug::AllocateCrashKeyString(
-          "restricted_cookie_manager_url_origin",
-          base::debug::CrashKeySize::Size256);
-  base::debug::SetCrashKeyString(url_origin,
-                                 url::Origin::Create(url).GetDebugString());
-
   if (url.IsAboutBlank() || url.IsAboutSrcdoc()) {
     // Temporary mitigation for 983090, classification improvement for parts of
     // 992587.
-    base::debug::DumpWithoutCrashing();
-  } else {
-    mojo::ReportBadMessage("Incorrect url origin");
+    return false;
   }
+
+  mojo::ReportBadMessage("Incorrect url origin");
   return false;
 }
 

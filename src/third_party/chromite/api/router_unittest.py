@@ -11,6 +11,7 @@ import os
 
 from google.protobuf import json_format
 
+from chromite.api import api_config
 from chromite.api import router
 from chromite.api.gen.chromite.api import build_api_test_pb2
 from chromite.lib import cros_build_lib
@@ -18,7 +19,8 @@ from chromite.lib import cros_test_lib
 from chromite.lib import osutils
 
 
-class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
+class RouterTest(cros_test_lib.RunCommandTempDirTestCase,
+                 api_config.ApiConfigMixin):
   """Test Router functionality."""
   _INPUT_JSON_TEMPLATE = '{"id":"Input ID", "chroot":{"path": "%s"}}'
 
@@ -45,25 +47,26 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
 
   def testInputOutputMethod(self):
     """Test input/output handling."""
-    def impl(input_msg, output_msg):
+    def impl(input_msg, output_msg, config):
       self.assertIsInstance(input_msg, build_api_test_pb2.TestRequestMessage)
       self.assertIsInstance(output_msg, build_api_test_pb2.TestResultMessage)
+      self.assertIsInstance(config, api_config.ApiConfig)
 
     self.PatchObject(self.router, '_GetMethod', return_value=impl)
 
     self.router.Route('chromite.api.TestApiService', 'InputOutputMethod',
-                      self.input_file, self.output_file)
+                      self.input_file, self.output_file, self.api_config)
 
   def testRenameMethod(self):
     """Test implementation name config."""
     def _GetMethod(_, method_name):
       self.assertEqual('CorrectName', method_name)
-      return lambda x, y: None
+      return lambda x, y, z: None
 
     self.PatchObject(self.router, '_GetMethod', side_effect=_GetMethod)
 
     self.router.Route('chromite.api.TestApiService', 'RenamedMethod',
-                      self.input_file, self.output_file)
+                      self.input_file, self.output_file, self.api_config)
 
   def _mock_callable(self, expect_called):
     """Helper to create the implementation mock to test chroot assertions.
@@ -75,7 +78,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     Returns:
       callable - The implementation.
     """
-    def impl(_input_msg, _output_msg):
+    def impl(_input_msg, _output_msg, _config):
       self.assertTrue(expect_called,
                       'The implementation should not have been called.')
 
@@ -98,7 +101,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.router.Route('chromite.api.InsideChrootApiService',
                       'InsideServiceInsideMethod', self.input_file,
-                      self.output_file)
+                      self.output_file, self.api_config)
 
   def testInsideServiceOutsideMethodOutsideChroot(self):
     """Test the outside method override works as expected."""
@@ -107,7 +110,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.router.Route('chromite.api.InsideChrootApiService',
                       'InsideServiceOutsideMethod', self.input_file,
-                      self.output_file)
+                      self.output_file, self.api_config)
 
   def testInsideServiceInsideMethodOutsideChroot(self):
     """Test calling an inside method from outside the chroot."""
@@ -119,7 +122,8 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service = 'chromite.api.InsideChrootApiService'
     method = 'InsideServiceInsideMethod'
     service_method = '%s/%s' % (service, method)
-    self.router.Route(service, method, self.input_file, self.output_file)
+    self.router.Route(service, method, self.input_file, self.output_file,
+                      self.api_config)
 
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
 
@@ -131,7 +135,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     with self.assertRaises(cros_build_lib.DieSystemExit):
       self.router.Route('chromite.api.InsideChrootApiService',
                         'InsideServiceOutsideMethod', self.input_file,
-                        self.output_file)
+                        self.output_file, self.api_config)
 
   def testOutsideServiceOutsideMethodOutsideChroot(self):
     """Test outside/outside/outside works correctly."""
@@ -140,7 +144,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=False)
     self.router.Route('chromite.api.OutsideChrootApiService',
                       'OutsideServiceOutsideMethod', self.input_file,
-                      self.output_file)
+                      self.output_file, self.api_config)
 
   def testOutsideServiceInsideMethodInsideChroot(self):
     """Test the inside method assertion override works properly."""
@@ -149,7 +153,7 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     self.PatchObject(cros_build_lib, 'IsInsideChroot', return_value=True)
     self.router.Route('chromite.api.OutsideChrootApiService',
                       'OutsideServiceInsideMethod', self.input_file,
-                      self.output_file)
+                      self.output_file, self.api_config)
 
   def testOutsideServiceInsideMethodOutsideChroot(self):
     """Test calling an inside override method from outside the chroot."""
@@ -161,7 +165,8 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service = 'chromite.api.OutsideChrootApiService'
     method = 'OutsideServiceInsideMethod'
     service_method = '%s/%s' % (service, method)
-    self.router.Route(service, method, self.input_file, self.output_file)
+    self.router.Route(service, method, self.input_file, self.output_file,
+                      self.api_config)
 
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
 
@@ -177,7 +182,8 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service = 'chromite.api.OutsideChrootApiService'
     method = 'OutsideServiceInsideMethod'
     service_method = '%s/%s' % (service, method)
-    self.router.Route(service, method, self.input_file, self.output_file)
+    self.router.Route(service, method, self.input_file, self.output_file,
+                      self.api_config)
 
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
 
@@ -199,8 +205,27 @@ class RouterTest(cros_test_lib.RunCommandTempDirTestCase):
     service = 'chromite.api.OutsideChrootApiService'
     method = 'OutsideServiceInsideMethod'
     service_method = '%s/%s' % (service, method)
-    self.router.Route(service, method, self.input_file, self.output_file)
+    self.router.Route(service, method, self.input_file, self.output_file,
+                      self.api_config)
 
     self.assertCommandContains(['build_api', service_method], enter_chroot=True)
     # It should be writing the empty message out.
     self.assertFileContents(self.output_file, '{}')
+
+  def testInvalidService(self):
+    """Test invalid service call."""
+    service = 'chromite.api.DoesNotExist'
+    method = 'OutsideServiceInsideMethod'
+
+    with self.assertRaises(router.UnknownServiceError):
+      self.router.Route(service, method, self.input_file, self.output_file,
+                        self.api_config)
+
+  def testInvalidMethod(self):
+    """Test invalid method call."""
+    service = 'chromite.api.OutsideChrootApiService'
+    method = 'DoesNotExist'
+
+    with self.assertRaises(router.UnknownMethodError):
+      self.router.Route(service, method, self.input_file, self.output_file,
+                        self.api_config)

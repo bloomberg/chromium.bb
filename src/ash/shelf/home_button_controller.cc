@@ -7,13 +7,11 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/assistant_overlay.h"
 #include "ash/shelf/home_button.h"
 #include "ash/shelf/shelf_button.h"
-#include "ash/shelf/shelf_button_delegate.h"
 #include "ash/shell.h"
 #include "ash/shell_state.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
@@ -23,7 +21,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/timer/timer.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "ui/display/screen.h"
 #include "ui/views/animation/ink_drop_state.h"
@@ -47,20 +45,16 @@ HomeButtonController::HomeButtonController(HomeButton* button)
     : button_(button) {
   DCHECK(button_);
   Shell* shell = Shell::Get();
-  // AppListController is only available in non-KioskNext sessions.
-  if (shell->app_list_controller())
-    shell->app_list_controller()->AddObserver(this);
+  shell->app_list_controller()->AddObserver(this);
   shell->session_controller()->AddObserver(this);
   shell->tablet_mode_controller()->AddObserver(this);
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+  AssistantState::Get()->AddObserver(this);
 
   // Initialize voice interaction overlay and sync the flags if active user
   // session has already started. This could happen when an external monitor
   // is plugged in.
-  if (shell->session_controller()->IsActiveUserSessionStarted() &&
-      chromeos::switches::IsAssistantEnabled()) {
+  if (shell->session_controller()->IsActiveUserSessionStarted())
     InitializeVoiceInteractionOverlay();
-  }
 }
 
 HomeButtonController::~HomeButtonController() {
@@ -73,7 +67,8 @@ HomeButtonController::~HomeButtonController() {
   if (shell->tablet_mode_controller())
     shell->tablet_mode_controller()->RemoveObserver(this);
   shell->session_controller()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  if (AssistantState::Get())
+    AssistantState::Get()->RemoveObserver(this);
 }
 
 bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
@@ -137,17 +132,16 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
 }
 
 bool HomeButtonController::IsVoiceInteractionAvailable() {
-  VoiceInteractionController* controller = VoiceInteractionController::Get();
-  bool settings_enabled = controller->settings_enabled().value_or(false);
+  AssistantStateBase* state = AssistantState::Get();
+  bool settings_enabled = state->settings_enabled().value_or(false);
   bool feature_allowed =
-      controller->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
+      state->allowed_state() == mojom::AssistantAllowedState::ALLOWED;
 
   return assistant_overlay_ && feature_allowed && settings_enabled;
 }
 
 bool HomeButtonController::IsVoiceInteractionRunning() {
-  return VoiceInteractionController::Get()->voice_interaction_state().value_or(
-             mojom::VoiceInteractionState::STOPPED) ==
+  return AssistantState::Get()->voice_interaction_state() ==
          mojom::VoiceInteractionState::RUNNING;
 }
 
@@ -167,7 +161,7 @@ void HomeButtonController::OnActiveUserSessionChanged(
   // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
-      !assistant_overlay_ && chromeos::switches::IsAssistantEnabled()) {
+      !assistant_overlay_) {
     InitializeVoiceInteractionOverlay();
   }
 }
@@ -176,7 +170,7 @@ void HomeButtonController::OnTabletModeStarted() {
   button_->AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
 }
 
-void HomeButtonController::OnVoiceInteractionStatusChanged(
+void HomeButtonController::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   button_->OnVoiceInteractionAvailabilityChanged();
 
@@ -190,14 +184,6 @@ void HomeButtonController::OnVoiceInteractionStatusChanged(
           base::TimeTicks::Now() - voice_interaction_start_timestamp_);
       break;
     case mojom::VoiceInteractionState::NOT_READY:
-      // If we are showing the bursting or waiting animation, no need to do
-      // anything. Otherwise show the waiting animation now.
-      // NOTE: No waiting animation for native assistant.
-      if (!chromeos::switches::IsAssistantEnabled() &&
-          !assistant_overlay_->IsBursting() &&
-          !assistant_overlay_->IsWaiting()) {
-        assistant_overlay_->WaitingAnimation();
-      }
       break;
     case mojom::VoiceInteractionState::RUNNING:
       // we start hiding the animation if it is running.
@@ -215,7 +201,7 @@ void HomeButtonController::OnVoiceInteractionStatusChanged(
   }
 }
 
-void HomeButtonController::OnVoiceInteractionSettingsEnabled(bool enabled) {
+void HomeButtonController::OnAssistantSettingsEnabled(bool enabled) {
   button_->OnVoiceInteractionAvailabilityChanged();
 }
 

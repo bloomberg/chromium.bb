@@ -23,7 +23,7 @@
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/js_messaging/web_frame_util.h"
 #import "ios/web/public/js_messaging/web_frames_manager.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/webui/web_ui_ios.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
 #include "ios/web/public/webui/web_ui_ios_message_handler.h"
@@ -61,7 +61,7 @@ web::WebUIIOSDataSource* CreateInspectUIHTMLSource() {
                              IDS_IOS_INSPECT_UI_CONSOLE_START_LOGGING);
   source->AddLocalizedString("inspectConsoleStopLogging",
                              IDS_IOS_INSPECT_UI_CONSOLE_STOP_LOGGING);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("inspect.js", IDR_IOS_INSPECT_JS);
   source->SetDefaultResource(IDR_IOS_INSPECT_HTML);
   return source;

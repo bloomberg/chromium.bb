@@ -23,21 +23,42 @@ extern const char kEnterprisePasswordEntryVerdictHistogram[];
 extern const char kEnterprisePasswordInterstitialHistogram[];
 extern const char kEnterprisePasswordPageInfoHistogram[];
 extern const char kEnterprisePasswordWarningDialogHistogram[];
-extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kGmailNonSyncPasswordInterstitialHistogram[];
+extern const char kGmailSyncPasswordPageInfoHistogram[];
+extern const char kGmailNonSyncPasswordPageInfoHistogram[];
+extern const char kGmailSyncPasswordWarningDialogHistogram[];
+extern const char kGmailNonSyncPasswordWarningDialogHistogram[];
+extern const char kNonSyncPasswordInterstitialHistogram[];
+extern const char kNonSyncPasswordPageInfoHistogram[];
+extern const char kGmailSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kGmailNonSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kGSuiteNonSyncPasswordEntryRequestOutcomeHistogram[];
 extern const char kGSuiteSyncPasswordEntryVerdictHistogram[];
+
+extern const char kGSuiteSyncPasswordEntryRequestOutcomeHistogram[];
+extern const char kGSuiteNonSyncPasswordEntryVerdictHistogram[];
+extern const char kGmailSyncPasswordEntryVerdictHistogram[];
+extern const char kGmailNonSyncPasswordEntryVerdictHistogram[];
 extern const char kGSuiteSyncPasswordInterstitialHistogram[];
+extern const char kGSuiteNonSyncPasswordInterstitialHistogram[];
 extern const char kGSuiteSyncPasswordPageInfoHistogram[];
+extern const char kGSuiteNonSyncPasswordPageInfoHistogram[];
 extern const char kGSuiteSyncPasswordWarningDialogHistogram[];
+extern const char kGSuiteNonSyncPasswordWarningDialogHistogram[];
 extern const char kPasswordOnFocusRequestOutcomeHistogram[];
 extern const char kPasswordOnFocusVerdictHistogram[];
+extern const char kNonSyncPasswordEntryRequestOutcomeHistogram[];
 extern const char kProtectedPasswordEntryRequestOutcomeHistogram[];
-extern const char kProtectedPasswordEntryVerdictHistogram[];
+extern const char kNonSyncPasswordEntryVerdictHistogram[];
 extern const char kSyncPasswordChromeSettingsHistogram[];
 extern const char kSyncPasswordEntryRequestOutcomeHistogram[];
 extern const char kSyncPasswordEntryVerdictHistogram[];
 extern const char kSyncPasswordInterstitialHistogram[];
 extern const char kSyncPasswordPageInfoHistogram[];
 extern const char kSyncPasswordWarningDialogHistogram[];
+extern const char kEnterprisePasswordAlertHistogram[];
+extern const char kGsuiteSyncPasswordAlertHistogram[];
+extern const char kGsuiteNonSyncPasswordAlertHistogram[];
 
 using ReusedPasswordAccountType =
     LoginReputationClientRequest::PasswordReuseEvent::ReusedPasswordAccountType;
@@ -179,9 +200,6 @@ void LogNumberOfReuseBeforeSyncPasswordChange(size_t reuse_count);
 void LogReferrerChainSize(
     LoginReputationClientResponse::VerdictType verdict_type,
     int referrer_chain_size);
-
-// Logs the content area size in DIPs.
-void LogContentsSize(const gfx::Size& size);
 
 }  // namespace safe_browsing
 

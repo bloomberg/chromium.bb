@@ -7,9 +7,11 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/profiles/profile.h"
-#include "components/arc/common/print_spooler.mojom.h"
+#include "components/arc/mojom/print_spooler.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "mojo/public/cpp/system/platform_handle.h"
+
+class Profile;
 
 namespace content {
 class BrowserContext;
@@ -22,9 +24,8 @@ class ArcBridgeService;
 // This class handles print related IPC from the ARC container and allows print
 // jobs to be displayed and managed in Chrome print preview instead of the
 // Android print UI.
-class ArcPrintSpoolerBridge
-    : public KeyedService,
-      public mojom::PrintSpoolerHost {
+class ArcPrintSpoolerBridge : public KeyedService,
+                              public mojom::PrintSpoolerHost {
  public:
   // Returns singleton instance for the given BrowserContext,
   // or nullptr if the browser |context| is not allowed to use ARC.
@@ -35,15 +36,27 @@ class ArcPrintSpoolerBridge
                         ArcBridgeService* bridge_service);
   ~ArcPrintSpoolerBridge() override;
 
-  // mojom::PrintSpoolerHost overrides:
-  // TODO(jschettler): Add overrides.
+  // mojom::PrintSpoolerHost:
+  void StartPrintInCustomTab(mojo::ScopedHandle scoped_handle,
+                             int32_t task_id,
+                             int32_t surface_id,
+                             int32_t top_margin,
+                             mojom::PrintSessionInstancePtr instance,
+                             StartPrintInCustomTabCallback callback) override;
+
+  void OnPrintDocumentSaved(int32_t task_id,
+                            int32_t surface_id,
+                            int32_t top_margin,
+                            mojom::PrintSessionInstancePtr instance,
+                            StartPrintInCustomTabCallback callback,
+                            base::FilePath file_path);
 
  private:
-  Profile* const profile_;
-
   ArcBridgeService* const arc_bridge_service_;  // Owned by ArcServiceManager.
 
-  base::WeakPtrFactory<ArcPrintSpoolerBridge> weak_ptr_factory_;
+  Profile* const profile_;
+
+  base::WeakPtrFactory<ArcPrintSpoolerBridge> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcPrintSpoolerBridge);
 };

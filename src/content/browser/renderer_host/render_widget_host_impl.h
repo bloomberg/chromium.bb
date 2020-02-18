@@ -59,8 +59,8 @@
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
-#include "services/viz/public/interfaces/hit_test/input_target_client.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/public/mojom/hit_test/input_target_client.mojom.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
@@ -120,6 +120,34 @@ struct TextInputState;
 
 // This implements the RenderWidgetHost interface that is exposed to
 // embedders of content, and adds things only visible to content.
+//
+// Several core rendering primitives are mirrored between the browser and
+// renderer. These are RenderWidget, RenderFrame and RenderView. Their browser
+// counterparts are RenderWidgetHost, RenderFrameHost and RenderViewHost.
+//
+// For simplicity and clarity, we want the object ownership graph in the
+// renderer to mirror the object ownership graph in the browser. The IPC message
+// that tears down the renderer object graph should be targeted at the root
+// object, and should be sent by the destructor/finalizer of the root object in
+// the browser.
+//
+// Note: We must tear down the renderer object graph with a single IPC to avoid
+// inconsistencies in renderer state.
+//
+// RenderWidget represents a surface that can paint and receive input. It is
+// used in four contexts:
+//   * Main frame for webpage
+//   * Child frame for webpage
+//   * Popups
+//   * Pepper Fullscreen
+//
+// In the first two cases, the RenderFrame is not the root of the renderer
+// object graph. For the main frame, the root is the RenderView. For child
+// frames, the root is RenderFrame. As such, for the first two cases,
+// destruction of the RenderWidgetHost will not trigger destruction of the
+// RenderWidget.
+//
+// Note: We want to converge on RenderFrame always being the root.
 class CONTENT_EXPORT RenderWidgetHostImpl
     : public RenderWidgetHost,
       public FrameTokenMessageQueue::Client,
@@ -127,7 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
       public InputDispositionHandler,
       public RenderProcessHostImpl::PriorityClient,
       public RenderProcessHostObserver,
-      public TouchEmulatorClient,
       public SyntheticGestureController::Delegate,
       public viz::mojom::CompositorFrameSink,
       public IPC::Listener,
@@ -179,13 +206,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void set_clock_for_testing(const base::TickClock* clock) { clock_ = clock; }
 
-  // Returns the viz::FrameSinkId that this object uses to put things on screen.
-  // This value is constant throughout the lifetime of this object. Note that
-  // until a RenderWidgetHostView is created, initialized, and assigned to this
-  // object, viz may not be aware of this FrameSinkId.
-  const viz::FrameSinkId& GetFrameSinkId() const;
 
   // RenderWidgetHost implementation.
+  const viz::FrameSinkId& GetFrameSinkId() override;
   void UpdateTextDirection(blink::WebTextDirection direction) override;
   void NotifyTextDirection() override;
   void Focus() override;
@@ -317,11 +340,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void WasShown(const base::Optional<RecordTabSwitchTimeRequest>&
                     record_tab_switch_time_request);
 
-  // Send a WidgetMsg_WasHidden message to the RenderWidget, without caring
-  // about the visibility state of the RenderWidgetHostImpl. This is used to
-  // address https://crbug.com/936858. See the bug for more details.
-  void SetHiddenOnCommit();
-
 #if defined(OS_ANDROID)
   // Set the importance of widget. The importance is passed onto
   // RenderProcessHost which aggregates importance of all of its widgets.
@@ -439,14 +457,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Returns an emulator for this widget. See TouchEmulator for more details.
   TouchEmulator* GetTouchEmulator();
 
-  // TouchEmulatorClient implementation.
-  void ForwardEmulatedGestureEvent(
-      const blink::WebGestureEvent& gesture_event) override;
-  void ForwardEmulatedTouchEvent(const blink::WebTouchEvent& touch_event,
-                                 RenderWidgetHostViewBase* target) override;
-  void SetCursor(const WebCursor& cursor) override;
+  void SetCursor(const WebCursor& cursor);
   void ShowContextMenuAtPoint(const gfx::Point& point,
-                              const ui::MenuSourceType source_type) override;
+                              const ui::MenuSourceType source_type);
 
   // Queues a synthetic gesture for testing purposes.  Invokes the on_complete
   // callback when the gesture is finished running.
@@ -581,15 +594,16 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Allows the main frame's page scale state to be tracked.
   void SetPageScaleState(float page_scale_factor, bool is_pinch_gesture_active);
 
-  // Fills in the |visual_properties| struct.
-  // Returns |false| if the update is redundant, |true| otherwise.
-  bool GetVisualProperties(VisualProperties* visual_properties,
-                           bool* needs_ack);
+  // Generates a filled in VisualProperties struct representing the current
+  // properties of this widget.
+  VisualProperties GetVisualProperties();
+
+  // Tracks the compositor viewport requested for an OOPIF subframe.
+  void SetCompositorViewport(const gfx::Rect& compositor_viewport);
 
   // Sets the |visual_properties| that were sent to the renderer bundled with
   // the request to create a new RenderWidget.
-  void SetInitialVisualProperties(const VisualProperties& visual_properties,
-                                  bool needs_ack);
+  void SetInitialVisualProperties(const VisualProperties& visual_properties);
 
   // Pushes updated visual properties to the renderer as well as whether the
   // focused node should be scrolled into view.
@@ -748,9 +762,12 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Marks all views in the frame tree as evicted.
   std::vector<viz::SurfaceId> CollectSurfaceIdsForEviction();
 
-  // Ignore any future TouchEvent acks that have an event ID that is in
-  // |acks_to_ignore|.
-  void IgnoreTouchEventAcks(const std::unordered_set<uint32_t>& acks_to_ignore);
+  // This function validates a renderer's attempt to enable user activation on a
+  // frame. Gaining user activation is allowed if this widget had previously
+  // seen an input event (e.g., mousedown or keydown) that may lead to user
+  // activation; in this case, this "pending user activation" is consumed and
+  // this function returns true.  Otherwise, this function returns false.
+  bool ConsumePendingUserActivationIfAllowed();
 
  protected:
   // ---------------------------------------------------------------------------
@@ -791,6 +808,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            DontPostponeInputEventAckTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, HideShowMessages);
+  FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, PendingUserActivationTimeout);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest, RendererExitedNoDrag);
   FRIEND_TEST_ALL_PREFIXES(RenderWidgetHostTest,
                            StopAndStartInputEventAckTimeout);
@@ -854,7 +872,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   void OnTextInputStateChanged(const TextInputState& params);
 
   void OnLockMouse(bool user_gesture,
-                   bool privileged);
+                   bool privileged,
+                   bool request_unadjusted_movement);
   void OnUnlockMouse();
   void OnSelectionBoundsChanged(
       const WidgetHostMsg_SelectionBounds_Params& params);
@@ -879,6 +898,24 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   // Called when visual properties have changed in the renderer.
   void DidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
+
+  // Returns true if the |new_visual_properties| differs from
+  // |old_page_visual_properties| in a way that indicates a size changed.
+  static bool DidVisualPropertiesSizeChange(
+      const VisualProperties& old_visual_properties,
+      const VisualProperties& new_visual_properties);
+
+  // Returns true if the new visual properties requires an ack from a
+  // synchronization message.
+  static bool DoesVisualPropertiesNeedAck(
+      const std::unique_ptr<VisualProperties>& old_visual_properties,
+      const VisualProperties& new_visual_properties);
+
+  // Returns true if |old_visual_properties| is out of sync with
+  // |new_visual_properties|.
+  static bool StoredVisualPropertiesNeedsUpdate(
+      const std::unique_ptr<VisualProperties>& old_visual_properties,
+      const VisualProperties& new_visual_properties);
 
   // Give key press listeners a chance to handle this key press. This allow
   // widgets that don't have focus to still handle key presses.
@@ -962,6 +999,19 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   void CreateSyntheticGestureControllerIfNecessary();
 
+  // The following functions are used to keep track of pending user activation
+  // events, which are input events (e.g., mousedown or keydown) that allow a
+  // renderer to gain user activation.  AddPendingUserActivation() increments a
+  // counter of such events and sets a timer, which allows the renderer to claim
+  // user activation within |kActivationNotificationExpireTime| ms.
+  // ClearPendingUserActivation() clears the counter and is called after
+  // navigations or timeouts
+  void AddPendingUserActivation(const blink::WebInputEvent& event);
+  void ClearPendingUserActivation();
+
+  // An expiry time for resetting the pending_user_activation_timer_.
+  static const base::TimeDelta kActivationNotificationExpireTime;
+
   // true if a renderer has once been valid. We use this flag to display a sad
   // tab only when we lose our renderer and not if a paint occurs during
   // initialization.
@@ -975,6 +1025,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   RenderWidgetHostDelegate* delegate_;
 
   // The delegate of the owner of this object.
+  // This member is non-null if and only if this RenderWidgetHost is associated
+  // with a main frame RenderWidget.
   RenderWidgetHostOwnerDelegate* owner_delegate_ = nullptr;
 
   // Created during construction and guaranteed never to be NULL, but its
@@ -1030,6 +1082,8 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // True when the renderer is currently undergoing a pinch-zoom gesture.
   bool is_pinch_gesture_active_ = false;
 
+  gfx::Rect compositor_viewport_;
+
   bool waiting_for_screen_rects_ack_ = false;
   gfx::Rect last_view_screen_rect_;
   gfx::Rect last_window_screen_rect_;
@@ -1080,7 +1134,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   bool pending_mouse_lock_request_ = false;
   bool allow_privileged_mouse_lock_ = false;
-
+  bool mouse_lock_raw_movement_ = false;
   // Stores the keyboard keys to lock while waiting for a pending lock request.
   base::Optional<base::flat_set<ui::DomCode>> keyboard_keys_to_lock_;
   bool keyboard_lock_requested_ = false;
@@ -1156,7 +1210,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   bool monitoring_composition_info_ = false;
 
 #if defined(OS_MACOSX)
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
 #endif
 
   mojo::Binding<viz::mojom::CompositorFrameSink> compositor_frame_sink_binding_;
@@ -1168,7 +1222,6 @@ class CONTENT_EXPORT RenderWidgetHostImpl
 
   std::unique_ptr<FrameTokenMessageQueue> frame_token_message_queue_;
 
-  bool enable_surface_synchronization_ = false;
   bool enable_viz_ = false;
 
   // If the |associated_widget_input_handler_| is set it should always be
@@ -1211,8 +1264,11 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // necessarily sent yet.
   bool autoscroll_in_progress_ = false;
 
-  // Event IDs for touch event acks that should be ignored.
-  std::unordered_set<uint32_t> touch_event_acks_to_ignore_;
+  // Counter for possible-activation-triggering input event.
+  int pending_user_activation_counter_ = 0;
+  // This timer resets |pending_user_activation_counter_| after a short delay.
+  // See comments on Add/ClearPendingUserActivation().
+  base::OneShotTimer pending_user_activation_timer_;
 
   base::WeakPtrFactory<RenderWidgetHostImpl> weak_factory_{this};
 

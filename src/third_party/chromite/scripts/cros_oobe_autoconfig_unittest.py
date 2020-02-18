@@ -36,7 +36,7 @@ _TEST_CONFIG_JSON = {
 _IMAGE_SIZE = 4 * 1024 * 1024
 _BLOCK_SIZE = 4096
 _SECTOR_SIZE = 512
-_STATEFUL_SIZE = _IMAGE_SIZE / 2
+_STATEFUL_SIZE = _IMAGE_SIZE // 2
 _STATEFUL_OFFSET = 120 * _SECTOR_SIZE
 
 
@@ -45,12 +45,12 @@ class SanitizeDomainTests(cros_test_lib.TestCase):
 
   def testFullASCII(self):
     """Tests that ASCII-only domains are not mangled."""
-    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain("FoO.cOm"), "foo.com")
+    self.assertEqual(cros_oobe_autoconfig.SanitizeDomain('FoO.cOm'), 'foo.com')
 
   def testUnicode(self):
     """Tests that a Unicode domain is punycoded."""
     self.assertEqual(cros_oobe_autoconfig.SanitizeDomain(
-        "t\xd0\xb5\xd1\x95t.com"), "xn--tt-nlc2k.com")
+        't\xd0\xb5\xd1\x95t.com'), 'xn--tt-nlc2k.com')
 
 
 class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
@@ -72,12 +72,12 @@ class PrepareImageTests(cros_test_lib.MockTempDirTestCase):
         ['cgpt', 'create', self.image],
         ['cgpt', 'add', self.image, '-t', 'data',
          '-l', str(constants.CROS_PART_STATEFUL),
-         '-b', str(_STATEFUL_OFFSET / _SECTOR_SIZE),
-         '-s', str(_STATEFUL_SIZE / _SECTOR_SIZE), '-i', '1'],
+         '-b', str(_STATEFUL_OFFSET // _SECTOR_SIZE),
+         '-s', str(_STATEFUL_SIZE // _SECTOR_SIZE), '-i', '1'],
         # Copy the stateful partition into the GPT image.
         ['dd', 'if=%s' % state, 'of=%s' % self.image, 'conv=notrunc', 'bs=4K',
-         'seek=%d' % (_STATEFUL_OFFSET / _BLOCK_SIZE),
-         'count=%s' % (_STATEFUL_SIZE / _BLOCK_SIZE)])
+         'seek=%d' % (_STATEFUL_OFFSET // _BLOCK_SIZE),
+         'count=%s' % (_STATEFUL_SIZE // _BLOCK_SIZE)])
     for cmd in commands:
       cros_build_lib.RunCommand(cmd, quiet=True)
 

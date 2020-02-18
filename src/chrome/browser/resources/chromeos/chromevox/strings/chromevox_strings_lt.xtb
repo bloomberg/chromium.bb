@@ -69,7 +69,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="1383876407941801731">Ieškoti</translation>
 <translation id="1385214448885562192">Jei norite priimti, spustelėkite „Enter“, jei atšaukti – „Cancel“. Rodyklėmis aukštyn ir žemyn galite peržiūrėti ankstesnius ir kitus pasiūlymus.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Skaityti raiškiojo teksto atributus</translation>
 <translation id="1405567553485452995">Šviesiai žalia</translation>
 <translation id="1417889266572670458">Tamsiai mėlyna spalva</translation>
 <translation id="1431911867058218151">Slyvų spalva</translation>
@@ -170,6 +169,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="2220529011494928058">Pranešti apie problemą</translation>
 <translation id="2223693656926968778">Imtis veiksmų dėl dabartinio elemento</translation>
 <translation id="225732394367814946">Padidinti kalbos tempą</translation>
+<translation id="2267538686624070261">Palikta rašybos klaida</translation>
 <translation id="2267945578749931355">Kitas simbolis</translation>
 <translation id="2278490101488436824">Perbraukite trim pirštais kairėn</translation>
 <translation id="2281234842553884450">Ankstesnis šliaužiklis</translation>
@@ -208,6 +208,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="257674075312929031">Grupė</translation>
 <translation id="2582407057977008361">Šalia</translation>
 <translation id="2592212930811759050">Norėdami pradėti redaguoti palieskite dukart</translation>
+<translation id="2598495320872286378">Gramatikos klaida</translation>
 <translation id="2606210917827248971">su {COUNT,plural, =1{# elementu}one{# elementu}few{# elementais}many{# elemento}other{# elementų}}</translation>
 <translation id="2614981083756825552">Matematikos žymėjimo kalbos išdėstymas</translation>
 <translation id="2624431853467395961">Atidarykite mokomąjį režimą</translation>
@@ -423,7 +424,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4039983576244166038">Tuščia eilutės antraštė</translation>
 <translation id="4042843249978639960">Nėra kitos 2 lygio antraštės.</translation>
 <translation id="4043348641337972076">Nėra ankstesnio ARIA orientyro.</translation>
-<translation id="4045764028670444336">Rašybos klaidos pradžia</translation>
 <translation id="4047216625641135770">Žymėjimas</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Ryškiai žalia spalva</translation>
@@ -485,6 +485,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4372705107434148843">Sustabdyti kalbą</translation>
 <translation id="4373197658375206385">Nėra ankstesnio elemento, kuris nebūtų nuoroda.</translation>
 <translation id="4376316291247992553">Peržiūrėkite diagramą kaip brailio rašmenis</translation>
+<translation id="437809255587011096">Informuoti apie teksto stilių</translation>
 <translation id="4378308539633073595">Slinkti pirmyn</translation>
 <translation id="4384583879834880242">Klausimai ir atsakymai</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="4547556996012970016">Kita 5 lygio antraštė</translation>
 <translation id="4562381607973973258">Antraštė</translation>
 <translation id="4569941707103739422">Jei norite naršyti, paspauskite rodyklę aukštyn arba žemyn; kad suaktyvintumėte, paspauskite „Enter“.</translation>
-<translation id="4570424871453628777">Rašybos klaidos pabaiga</translation>
 <translation id="4591507479202817876">, pasirinkta</translation>
 <translation id="4597532268155981612">forma</translation>
 <translation id="4597896406374528575">Balandis</translation>
@@ -728,7 +728,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6037602951055904232">Stumti pirmyn</translation>
 <translation id="6042826534790431634">Kad suaktyvintumėte, paspauskite paieškos ir tarpo klavišus.</translation>
 <translation id="6044160928851315051">Patamsinti ekraną</translation>
-<translation id="6065293622157674001">Gramatikos klaidos pradžia</translation>
 <translation id="6082768461603900813">Pagrindinės naršymo funkcijos</translation>
 <translation id="6118126368611144850">„Android“ programos, skirtos „Chrome“. Jei įrenginyje turite „Play“ parduotuvę, išbandykite „ChromeVox“ su „Android“ programomis. Išbandykite eksperimentinį palaikymą atsisiuntę „Google Chrome Canary“ iš „Play“ parduotuvės.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6348869651006731065">Blanki pilka spalva</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{skrituliukas}one{# skrituliukas}few{# skrituliukai}many{# skrituliuko}other{# skrituliukų}}</translation>
 <translation id="6355910664415701303">Nėra ankstesnio sąrašo elemento.</translation>
-<translation id="6360318852623800555">Raiškiojo teksto atributai</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Ankstesnė antraštė</translation>
 <translation id="6376999910001533545">Kaštoninė spalva</translation>
@@ -825,6 +823,7 @@ Kai peržiūrėsite visą mokymo programą, naudodami „ChromeVox“ pereikite 
 <translation id="6833103209700200188">Poraštė</translation>
 <translation id="6858047746862060282">Prologas</translation>
 <translation id="6859876496651143278">Perbraukite vienu pirštu kairėn</translation>
+<translation id="6865519907510167493">Rašybos klaida</translation>
 <translation id="6871161210040114857">Nepaisoma didžiųjų ir mažųjų raidžių rašybos.</translation>
 <translation id="6877435256196695200">Nėra kito grafinio elemento.</translation>
 <translation id="6897341342232909480">Perkelti į kairę</translation>
@@ -870,7 +869,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="7143207342074048698">Jungiama</translation>
 <translation id="7153618581592392745">Levandų spalva</translation>
 <translation id="7157306005867877619">Santrauka</translation>
-<translation id="7161425887892204659">Teksto atitikties pabaiga</translation>
 <translation id="7161771961008409533">Iššokantysis mygtukas</translation>
 <translation id="7165714724802225287">Dabartinis vaizdo stilius yra įterptasis.</translation>
 <translation id="7167657087543110">simbolio aidas</translation>
@@ -908,7 +906,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Išeinama iš lentelės.</translation>
 <translation id="738899727977260036">Mėlyna spalva su pilkšvu atspalviu</translation>
-<translation id="7392145451309930991">Teksto atitikties pradžia</translation>
 <translation id="739763518212184081">Ankstesnė linija</translation>
 <translation id="7400575256015741911">Aptikta rašybos klaida</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8153880621934657047">Ne lentelės viduje.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{apatinis brūkšnys}one{# apatinis brūkšnys}few{# apatiniai brūkšniai}many{# underscores}other{# apatinių brūkšnių}}</translation>
 <translation id="8179976553408161302">Įvesti</translation>
-<translation id="8183813379996435469">Automatiškai aptikti ir perjungti „ChromeVox“ kalbą.</translation>
 <translation id="8184828902145951186">eil.</translation>
 <translation id="8186185314313222077">viso ekrano režimo perjungimas</translation>
 <translation id="8199231515320852133">Pranešti apie dabartinio langelio antraštes</translation>
@@ -1118,12 +1114,13 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="8446884382197647889">Sužinokite daugiau</translation>
 <translation id="8455868257606149352">Maks. <ph name="X" /></translation>
 <translation id="84575901236241018">turi prieigos klavišą, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Palikta gramatikos klaida</translation>
 <translation id="847154984256717791">užimtas</translation>
 <translation id="8476408756881832830">Pristabdyti atkūrimą, kai kalba „ChromeVox“</translation>
 <translation id="8476508772960940536">lango apžvalga</translation>
 <translation id="8503360654911991865">Sumažinti naršymo detalumą</translation>
-<translation id="8504695234784218301">Gramatikos klaidos pabaiga</translation>
 <translation id="8520472399088452386">Sukimo mygtukas</translation>
+<translation id="8534394844575788431">Formatavimas</translation>
 <translation id="8538744478902126321">Parinkti dabartinio langelio eilutės antraštę</translation>
 <translation id="8540054775867439484">Skaidyti į viršų</translation>
 <translation id="8542271685829952264">Jei norite naršyti visas „ChromeVox“ komandas ir sparčiuosius klavišus, paspauskite „Search“ ir taško klavišą, tada rodyklių klavišais naršykite meniu ir paspauskite „Enter“, kad suaktyvintumėte komandą. Grįžkite paspausdami „Search“ + o, tada t.</translation>
@@ -1203,6 +1200,7 @@ Jei norite atidaryti „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Skirtukas</translation>
 <translation id="9151211641321628915">Paskelbiamas trumpas esamos pozicijos aprašas</translation>
+<translation id="9151249085738989067">Automatiškai perjungti „ChromeVox“ balsą pagal kalbą</translation>
 <translation id="9153606228985488238">Aukštis <ph name="PERCENT" /> proc.</translation>
 <translation id="9160096769946561184">Eiti į dabartinio stulpelio pabaigą</translation>
 <translation id="9173115498289768110">Garsumas <ph name="PERCENT" /> proc.</translation>

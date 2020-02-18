@@ -158,7 +158,7 @@ class TouchActionBrowserTest : public ContentBrowserTest,
  protected:
   void LoadURL(const char* touch_action_url) {
     const GURL data_url(touch_action_url);
-    NavigateToURL(shell(), data_url);
+    EXPECT_TRUE(NavigateToURL(shell(), data_url));
 
     RenderWidgetHostImpl* host = GetWidgetHost();
     frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
@@ -170,9 +170,8 @@ class TouchActionBrowserTest : public ContentBrowserTest,
     ignore_result(watcher.WaitAndGetTitle());
 
     // We need to wait until hit test data is available. We use our own
-    // HitTestRegionObserver here, rather than
-    // WaitForHitTestDataOrChildSurfaceReady, because we have the
-    // RenderWidgetHostImpl available.
+    // HitTestRegionObserver here because we have the RenderWidgetHostImpl
+    // available.
     HitTestRegionObserver observer(host->GetFrameSinkId());
     observer.WaitForHitTestData();
   }

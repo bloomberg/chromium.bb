@@ -50,9 +50,7 @@ const char kBluetoothDeviceNamePrefix[] = "Bluetooth device name: ";
 // VersionInfoUpdater public:
 
 VersionInfoUpdater::VersionInfoUpdater(Delegate* delegate)
-    : cros_settings_(chromeos::CrosSettings::Get()),
-      delegate_(delegate),
-      weak_pointer_factory_(this) {}
+    : cros_settings_(chromeos::CrosSettings::Get()), delegate_(delegate) {}
 
 VersionInfoUpdater::~VersionInfoUpdater() {
   policy::BrowserPolicyConnectorChromeOS* connector =
@@ -65,8 +63,9 @@ VersionInfoUpdater::~VersionInfoUpdater() {
 
 void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   if (base::SysInfo::IsRunningOnChromeOS()) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::Bind(&version_loader::GetVersion,
                    is_official_build ? version_loader::VERSION_SHORT_WITH_DATE
                                      : version_loader::VERSION_FULL),

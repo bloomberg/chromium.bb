@@ -12,8 +12,8 @@
 class SkSurfaceCharacterization;
 
 #if SK_SUPPORT_GPU
-#include "src/gpu/GrOpList.h"
-#include "src/gpu/ccpr/GrCCPerOpListPaths.h"
+#include "src/gpu/GrRenderTask.h"
+#include "src/gpu/ccpr/GrCCPerOpsTaskPaths.h"
 #endif
 
 SkDeferredDisplayList::SkDeferredDisplayList(const SkSurfaceCharacterization& characterization,

@@ -5,7 +5,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/public/identity_manager/access_token_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,17 +14,14 @@ namespace signin {
 class IdentityTestEnvironmentTest : public testing::Test {
  public:
   IdentityTestEnvironmentTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
-  ~IdentityTestEnvironmentTest() override {
-    scoped_task_environment_.RunUntilIdle();
-  }
+  ~IdentityTestEnvironmentTest() override { task_environment_.RunUntilIdle(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(IdentityTestEnvironmentTest);
 };
 

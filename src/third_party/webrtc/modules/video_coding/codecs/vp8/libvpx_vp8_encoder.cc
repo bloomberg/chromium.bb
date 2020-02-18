@@ -35,6 +35,7 @@
 #include "modules/video_coding/utility/simulcast_rate_allocator.h"
 #include "modules/video_coding/utility/simulcast_utility.h"
 #include "rtc_base/checks.h"
+#include "rtc_base/experiments/experimental_screenshare_settings.h"
 #include "rtc_base/experiments/field_trial_parser.h"
 #include "rtc_base/experiments/field_trial_units.h"
 #include "rtc_base/logging.h"
@@ -280,6 +281,8 @@ LibvpxVp8Encoder::LibvpxVp8Encoder(
     : libvpx_(std::move(interface)),
       experimental_cpu_speed_config_arm_(CpuSpeedExperiment::GetConfigs()),
       rate_control_settings_(RateControlSettings::ParseFromFieldTrials()),
+      screenshare_max_qp_(
+          ExperimentalScreenshareSettings::ParseFromFieldTrials().MaxQp()),
       encoded_complete_callback_(nullptr),
       inited_(false),
       timestamp_(0),
@@ -584,6 +587,9 @@ int LibvpxVp8Encoder::InitEncode(const VideoCodec* inst,
     qp_max_ = std::max(rate_control_settings_.LibvpxVp8QpMax().value(),
                        static_cast<int>(vpx_configs_[0].rc_min_quantizer));
   }
+  if (codec_.mode == VideoCodecMode::kScreensharing && screenshare_max_qp_) {
+    qp_max_ = *screenshare_max_qp_;
+  }
   vpx_configs_[0].rc_max_quantizer = qp_max_;
   vpx_configs_[0].rc_undershoot_pct = 100;
   vpx_configs_[0].rc_overshoot_pct = 15;
@@ -642,8 +648,9 @@ int LibvpxVp8Encoder::InitEncode(const VideoCodec* inst,
   // at position 0 and they have highest resolution at position 0.
   const size_t stream_idx_cfg_0 = encoders_.size() - 1;
   SimulcastRateAllocator init_allocator(codec_);
-  VideoBitrateAllocation allocation = init_allocator.GetAllocation(
-      inst->startBitrate * 1000, inst->maxFramerate);
+  VideoBitrateAllocation allocation =
+      init_allocator.Allocate(VideoBitrateAllocationParameters(
+          inst->startBitrate * 1000, inst->maxFramerate));
   std::vector<uint32_t> stream_bitrates;
   for (int i = 0; i == 0 || i < inst->numberOfSimulcastStreams; ++i) {
     uint32_t bitrate = allocation.GetSpatialLayerSum(i) / 1000;

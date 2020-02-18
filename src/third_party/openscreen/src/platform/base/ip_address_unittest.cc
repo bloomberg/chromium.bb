@@ -23,6 +23,10 @@ TEST(IPAddressTest, V4Constructors) {
   address2.CopyToV4(bytes);
   EXPECT_THAT(bytes, ElementsAreArray(x));
 
+  const auto b = address2.bytes();
+  const uint8_t raw_bytes[4]{b[0], b[1], b[2], b[3]};
+  EXPECT_THAT(raw_bytes, ElementsAreArray(x));
+
   IPAddress address3(IPAddress::Version::kV4, &x[0]);
   address3.CopyToV4(bytes);
   EXPECT_THAT(bytes, ElementsAreArray(x));

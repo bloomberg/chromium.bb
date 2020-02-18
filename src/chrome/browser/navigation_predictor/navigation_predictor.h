@@ -16,7 +16,8 @@
 #include "base/timer/timer.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -47,7 +48,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
-  static void Create(mojo::InterfaceRequest<AnchorElementMetricsHost> request,
+  static void Create(mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
                      content::RenderFrameHost* render_frame_host);
 
   // Enum describing the possible set of actions that navigation predictor may
@@ -195,12 +196,38 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // MaybePreconnectNow preconnects to an origin server if it's allowed.
   void MaybePreconnectNow(Action log_action);
 
+  // Sends metrics to the UKM id at |ukm_source_id_|.
+  void MaybeSendMetricsToUkm() const;
+
+  // After an in-page click, sends the index of the url that was clicked to the
+  // UKM id at |ukm_source_id_|. The index sent corresponds to the index of that
+  // url in |top_urls_|, and is 1-indexed. If the url does not appear in
+  // |top_urls_|, a 0 is returned.
+  void MaybeSendClickMetricsToUkm(const std::string& clicked_url) const;
+
+  // Returns the minimum of the bucket that |value| belongs in, for page-wide
+  // metrics, excluding |median_link_location_|.
+  int GetBucketMinForPageMetrics(int value) const;
+
+  // Returns the minimum of the bucket that |value| belongs in, used for
+  // |median_link_location_| and the |ratio_distance_root_top|.
+  int GetLinearBucketForLinkLocation(int value) const;
+
+  // Returns the minimum of the bucket that |value| belongs in, used for
+  // |ratio_area|.
+  int GetLinearBucketForRatioArea(int value) const;
+
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
 
   // Maps from target url (href) to navigation score.
   std::unordered_map<std::string, std::unique_ptr<NavigationScore>>
       navigation_scores_map_;
+
+  // The urls of the top anchor elements in the page, in a random order.
+  // If there are 10 or more urls on the page, |top_urls_| contains 10 urls.
+  // Otherwise, it contains all the urls.
+  std::vector<GURL> top_urls_;
 
   // Total number of anchors that: href has the same host as the document,
   // contains image, inside an iframe, href incremented by 1 from document url.
@@ -212,10 +239,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
 
   // Viewport-related metrics for anchor elements: the viewport size,
   // the median distance down the viewport of all the links, and the
-  // total clickable space for first viewport links.
+  // total clickable space for first viewport links. |total_clickable_space_| is
+  // a percent (between 0 and 100).
   gfx::Size viewport_size_;
   int median_link_location_ = 0;
-  int total_clickable_space_ = 0;
+  float total_clickable_space_ = 0;
 
   // Anchor-specific scaling factors used to compute navigation scores.
   const int ratio_area_scale_;
@@ -226,6 +254,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   const int source_engagement_score_scale_;
   const int target_engagement_score_scale_;
   const int area_rank_scale_;
+  const int ratio_distance_root_top_scale_;
 
   // Page-wide scaling factors used to compute navigation scores.
   const int link_total_scale_;
@@ -288,9 +317,13 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   std::unique_ptr<prerender::PrerenderHandle> prerender_handle_;
 
   // UKM ID for navigation
-  // TODO(sofiyase): implement that function that uses this id to send aggregate
-  // link information to the UKM.
   ukm::SourceId ukm_source_id_;
+
+  // UKM recorder
+  ukm::UkmRecorder* ukm_recorder_ = nullptr;
+
+  // The origin of the current page.
+  url::Origin document_origin_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -12,6 +12,7 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/tabs/tab_types.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
@@ -77,8 +78,8 @@ NewTabButton::NewTabButton(TabStrip* tab_strip, views::ButtonListener* listener)
       AddChildView(std::make_unique<views::InkDropContainerView>());
 
   SetInkDropMode(InkDropMode::ON);
-  set_ink_drop_visible_opacity(0.08f);
-  set_ink_drop_highlight_opacity(0.1f);
+  set_ink_drop_highlight_opacity(0.16f);
+  set_ink_drop_visible_opacity(0.14f);
 
   SetInstallFocusRingOnFocus(true);
 }
@@ -231,13 +232,14 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
 
-  bool has_custom_image;
-  const int bg_id = tab_strip_->GetBackgroundResourceId(&has_custom_image);
   const float scale = canvas->image_scale();
-  if (has_custom_image && !new_tab_promo_observer_.IsObservingSources()) {
+  const base::Optional<int> bg_id =
+      tab_strip_->GetCustomBackgroundId(BrowserNonClientFrameView::kUseCurrent);
+  if (bg_id.has_value() && !new_tab_promo_observer_.IsObservingSources()) {
     float x_scale = scale;
     const gfx::Rect& contents_bounds = GetContentsBounds();
-    int x = GetMirroredX() + contents_bounds.x() + background_offset_;
+    int x = GetMirroredX() + contents_bounds.x() +
+            tab_strip_->GetBackgroundOffset();
     if (base::i18n::IsRTL()) {
       // The new tab background is mirrored in RTL mode, but the theme
       // background should never be mirrored. Mirror it here to compensate.
@@ -248,8 +250,9 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
     }
 
     canvas->InitPaintFlagsForTiling(
-        *GetThemeProvider()->GetImageSkiaNamed(bg_id), x, contents_bounds.y(),
-        x_scale, scale, 0, 0, SkTileMode::kRepeat, SkTileMode::kRepeat, &flags);
+        *GetThemeProvider()->GetImageSkiaNamed(bg_id.value()), x,
+        contents_bounds.y(), x_scale, scale, 0, 0, SkTileMode::kRepeat,
+        SkTileMode::kRepeat, &flags);
   } else {
     flags.setColor(GetButtonFillColor());
   }
@@ -258,13 +261,13 @@ void NewTabButton::PaintFill(gfx::Canvas* canvas) const {
 }
 
 void NewTabButton::PaintPlusIcon(gfx::Canvas* canvas) const {
-  const SkColor background_color =
-      tab_strip_->GetTabBackgroundColor(TAB_INACTIVE);
+  const SkColor background_color = tab_strip_->GetTabBackgroundColor(
+      TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent);
 
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(
-      tab_strip_->GetTabForegroundColor(TAB_INACTIVE, background_color));
+  flags.setColor(tab_strip_->GetTabForegroundColor(TabActive::kInactive,
+                                                   background_color));
   flags.setStrokeCap(cc::PaintFlags::kRound_Cap);
   constexpr int kStrokeWidth = 2;
   flags.setStrokeWidth(kStrokeWidth);
@@ -292,7 +295,8 @@ SkColor NewTabButton::GetButtonFillColor() const {
 
   return GetThemeProvider()->GetDisplayProperty(
              ThemeProperties::SHOULD_FILL_BACKGROUND_TAB_COLOR)
-             ? tab_strip_->GetTabBackgroundColor(TAB_INACTIVE)
+             ? tab_strip_->GetTabBackgroundColor(
+                   TabActive::kInactive, BrowserNonClientFrameView::kUseCurrent)
              : SK_ColorTRANSPARENT;
 }
 

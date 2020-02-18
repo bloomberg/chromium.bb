@@ -4,10 +4,10 @@
 
 #include "ash/public/cpp/default_scale_factor_retriever.h"
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -73,7 +73,7 @@ class DefaultScaleFactorRetrieverTest : public testing::Test {
   ~DefaultScaleFactorRetrieverTest() override = default;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   DISALLOW_COPY_AND_ASSIGN(DefaultScaleFactorRetrieverTest);
 };
 

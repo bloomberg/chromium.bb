@@ -44,6 +44,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/buildflags.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -144,7 +145,7 @@ class KeyWithCopyingMoveConstructor final {
   }
   KeyWithCopyingMoveConstructor(const KeyWithCopyingMoveConstructor&) = default;
   // The move constructor delegates to the copy constructor intentionally.
-  KeyWithCopyingMoveConstructor(KeyWithCopyingMoveConstructor&& x)
+  KeyWithCopyingMoveConstructor(KeyWithCopyingMoveConstructor&& x) noexcept
       : KeyWithCopyingMoveConstructor(x) {}
   KeyWithCopyingMoveConstructor& operator=(
       const KeyWithCopyingMoveConstructor&) = default;
@@ -1427,29 +1428,6 @@ class FinalizationAllocator
   Persistent<IntWrapper>* wrapper_;
 };
 
-class PreFinalizationAllocator
-    : public GarbageCollectedFinalized<PreFinalizationAllocator> {
-  USING_PRE_FINALIZER(PreFinalizationAllocator, Dispose);
-
- public:
-  PreFinalizationAllocator(Persistent<IntWrapper>* wrapper)
-      : wrapper_(wrapper) {}
-
-  void Dispose() {
-    for (int i = 0; i < 10; ++i)
-      *wrapper_ = MakeGarbageCollected<IntWrapper>(42);
-    for (int i = 0; i < 512; ++i)
-      MakeGarbageCollected<OneKiloByteObject>();
-    for (int i = 0; i < 32; ++i)
-      MakeGarbageCollected<LargeHeapObject>();
-  }
-
-  void Trace(blink::Visitor* visitor) {}
-
- private:
-  Persistent<IntWrapper>* wrapper_;
-};
-
 class PreFinalizerBackingShrinkForbidden
     : public GarbageCollectedFinalized<PreFinalizerBackingShrinkForbidden> {
   USING_PRE_FINALIZER(PreFinalizerBackingShrinkForbidden, Dispose);
@@ -1499,6 +1477,9 @@ class PreFinalizerBackingShrinkForbidden
   HeapHashMap<int, Member<IntWrapper>> map_;
 };
 
+// Following 2 tests check for allocation failures. These failures happen
+// only when DCHECK is on.
+#if DCHECK_IS_ON()
 TEST_F(HeapTest, PreFinalizerBackingShrinkForbidden) {
   MakeGarbageCollected<PreFinalizerBackingShrinkForbidden>();
   PreciselyCollectGarbage();
@@ -1563,6 +1544,126 @@ TEST(HeapDeathTest, PreFinalizerHashTableBackingExpandForbidden) {
   MakeGarbageCollected<PreFinalizerHashTableBackingExpandForbidden>();
   TestSupportingGC::PreciselyCollectGarbage();
 }
+#endif  // DCHECK_IS_ON()
+
+class PreFinalizerAllocationForbidden
+    : public GarbageCollectedFinalized<PreFinalizerAllocationForbidden> {
+  USING_PRE_FINALIZER(PreFinalizerAllocationForbidden, Dispose);
+
+ public:
+  void Dispose() {
+    EXPECT_FALSE(ThreadState::Current()->IsAllocationAllowed());
+#if DCHECK_IS_ON()
+    EXPECT_DEATH(MakeGarbageCollected<IntWrapper>(1), "");
+#endif  // DCHECK_IS_ON()
+  }
+
+  void Trace(blink::Visitor* visitor) {}
+};
+
+TEST(HeapDeathTest, PreFinalizerAllocationForbidden) {
+  MakeGarbageCollected<PreFinalizerAllocationForbidden>();
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+#if DCHECK_IS_ON()
+namespace {
+
+class HeapTestResurrectingPreFinalizer
+    : public GarbageCollected<HeapTestResurrectingPreFinalizer> {
+  USING_PRE_FINALIZER(HeapTestResurrectingPreFinalizer, Dispose);
+
+ public:
+  enum TestType {
+    kHeapVectorMember,
+    kHeapHashSetMember,
+    kHeapHashSetWeakMember
+  };
+
+  class GlobalStorage : public GarbageCollected<GlobalStorage> {
+   public:
+    GlobalStorage() {
+      // Reserve storage upfront to avoid allocations during pre-finalizer
+      // insertion.
+      vector_member.ReserveCapacity(32);
+      hash_set_member.ReserveCapacityForSize(32);
+      hash_set_weak_member.ReserveCapacityForSize(32);
+    }
+
+    void Trace(Visitor* visitor) {
+      visitor->Trace(vector_member);
+      visitor->Trace(hash_set_member);
+      visitor->Trace(hash_set_weak_member);
+    }
+
+    HeapVector<Member<LinkedObject>> vector_member;
+    HeapHashSet<Member<LinkedObject>> hash_set_member;
+    HeapHashSet<WeakMember<LinkedObject>> hash_set_weak_member;
+  };
+
+  HeapTestResurrectingPreFinalizer(TestType test_type,
+                                   GlobalStorage* storage,
+                                   LinkedObject* object_that_dies)
+      : test_type_(test_type),
+        storage_(storage),
+        object_that_dies_(object_that_dies) {}
+
+  void Trace(Visitor* visitor) {
+    visitor->Trace(storage_);
+    visitor->Trace(object_that_dies_);
+  }
+
+ private:
+  void Dispose() { EXPECT_DEATH(Test(), ""); }
+
+  void Test() {
+    switch (test_type_) {
+      case TestType::kHeapVectorMember:
+        storage_->vector_member.push_back(object_that_dies_);
+        break;
+      case TestType::kHeapHashSetMember:
+        storage_->hash_set_member.insert(object_that_dies_);
+        break;
+      case TestType::kHeapHashSetWeakMember:
+        storage_->hash_set_weak_member.insert(object_that_dies_);
+        break;
+    }
+  }
+
+  TestType test_type_;
+  Member<GlobalStorage> storage_;
+  Member<LinkedObject> object_that_dies_;
+};
+
+}  // namespace
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapVectorMember) {
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapVectorMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetMember) {
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapHashSetMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+
+TEST(HeapDeathTest, DiesOnResurrectedHeapHashSetWeakMember) {
+  Persistent<HeapTestResurrectingPreFinalizer::GlobalStorage> storage(
+      MakeGarbageCollected<HeapTestResurrectingPreFinalizer::GlobalStorage>());
+  MakeGarbageCollected<HeapTestResurrectingPreFinalizer>(
+      HeapTestResurrectingPreFinalizer::kHeapHashSetWeakMember, storage.Get(),
+      MakeGarbageCollected<LinkedObject>());
+  TestSupportingGC::PreciselyCollectGarbage();
+}
+#endif  // DCHECK_IS_ON()
 
 class LargeMixin : public GarbageCollected<LargeMixin>, public Mixin {
   USING_GARBAGE_COLLECTED_MIXIN(LargeMixin);
@@ -4390,32 +4491,6 @@ TEST_F(HeapTest, AllocationDuringFinalization) {
   EXPECT_EQ(32, LargeHeapObject::destructor_calls_);
 }
 
-TEST_F(HeapTest, AllocationDuringPrefinalizer) {
-  ClearOutOldGarbage();
-  IntWrapper::destructor_calls_ = 0;
-  OneKiloByteObject::destructor_calls_ = 0;
-  LargeHeapObject::destructor_calls_ = 0;
-
-  Persistent<IntWrapper> wrapper;
-  MakeGarbageCollected<PreFinalizationAllocator>(&wrapper);
-
-  PreciselyCollectGarbage();
-  EXPECT_EQ(0, IntWrapper::destructor_calls_);
-  EXPECT_EQ(0, OneKiloByteObject::destructor_calls_);
-  EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
-  // Check that the wrapper allocated during finalization is not
-  // swept away and zapped later in the same sweeping phase.
-  EXPECT_EQ(42, wrapper->Value());
-
-  wrapper.Clear();
-  PreciselyCollectGarbage();
-  // The 42 IntWrappers were the ones allocated in the pre-finalizer
-  // of PreFinalizationAllocator and the ones allocated in LargeHeapObject.
-  EXPECT_EQ(42, IntWrapper::destructor_calls_);
-  EXPECT_EQ(512, OneKiloByteObject::destructor_calls_);
-  EXPECT_EQ(32, LargeHeapObject::destructor_calls_);
-}
-
 class SimpleClassWithDestructor {
  public:
   SimpleClassWithDestructor() = default;
@@ -6106,6 +6181,7 @@ TEST_F(HeapTest, AccessDeletedBackingStore) {
       thread_state->Heap().Arena(BlinkGC::kHashTableArenaIndex);
   {
     ThreadState::AtomicPauseScope scope(thread_state);
+    ScriptForbiddenScope script_forbidden_scope;
     ThreadState::SweepForbiddenScope sweep_forbidden(thread_state);
     hash_arena->CompleteSweep();
   }

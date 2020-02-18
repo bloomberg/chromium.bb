@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/macros.h"
 #include "chrome/browser/chromeos/language_preferences.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -105,7 +105,7 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   void OnIsSyncingChanged() override;
 
   // Overriden form user_manager::UserManager::UserSessionStateObserver.
-  void ActiveUserChanged(const user_manager::User* active_user) override;
+  void ActiveUserChanged(user_manager::User* active_user) override;
 
   sync_preferences::PrefServiceSyncable* prefs_;
 
@@ -123,6 +123,8 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   IntegerPrefMember touchpad_sensitivity_;
   BooleanPrefMember primary_mouse_button_right_;
   BooleanPrefMember mouse_reverse_scroll_;
+  BooleanPrefMember mouse_acceleration_;
+  BooleanPrefMember touchpad_acceleration_;
   FilePathPrefMember download_default_directory_;
 
   StringListPrefMember allowed_languages_;

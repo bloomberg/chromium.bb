@@ -37,9 +37,9 @@
 #include "content/public/browser/background_sync_parameters.h"
 #include "content/public/browser/permission_type.h"
 #include "content/public/test/background_sync_test_util.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_permission_manager.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/mock_background_sync_controller.h"
 #include "content/test/test_background_sync_context.h"
@@ -102,7 +102,7 @@ class BackgroundSyncManagerTest
       public DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   BackgroundSyncManagerTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {
     sync_options_1_.tag = "foo";
     sync_options_2_.tag = "bar";
   }
@@ -657,7 +657,7 @@ class BackgroundSyncManagerTest
     return test_background_sync_manager()->AreOptionConditionsMet();
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   StoragePartitionImpl* storage_partition_impl_;
   scoped_refptr<BackgroundSyncContextImpl> background_sync_context_;
@@ -1300,38 +1300,6 @@ TEST_F(BackgroundSyncManagerTest, TestSupensionAndRevival) {
   Unregister(sync_options_2_);
 }
 
-TEST_F(BackgroundSyncManagerTest, CrossRegistrationLimitsForOrigin) {
-  InitPeriodicSyncEventTest();
-  base::TimeDelta thirteen_hours = base::TimeDelta::FromHours(13);
-  sync_options_1_.min_interval = thirteen_hours.InMilliseconds();
-  EXPECT_TRUE(Register(sync_options_1_));
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_1_));
-
-  // Register another periodic sync with the same origin, but a smaller
-  // minInterval. Expect the delay to be set to the larger minInterval from the
-  // already registered periodic sync.
-  base::TimeDelta twelve_hours = base::TimeDelta::FromHours(12);
-  sync_options_2_.min_interval = twelve_hours.InMilliseconds();
-  EXPECT_TRUE(Register(sync_options_2_));
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-  EXPECT_TRUE(GetRegistration(sync_options_2_));
-
-  // Advance clock.
-  test_clock_.Advance(twelve_hours);
-  FireReadyEvents();
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(0, periodic_sync_events_called_);
-
-  test_clock_.Advance(base::TimeDelta::FromHours(1));
-  FireReadyEvents();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(2, periodic_sync_events_called_);
-}
-
 TEST_F(BackgroundSyncManagerTest, ReregisterMidSyncFirstAttemptFails) {
   InitDelayedSyncEventTest();
   RegisterAndVerifySyncEventDelayed(sync_options_1_);
@@ -1662,7 +1630,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalledForOneShotSync) {
 
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
-  EXPECT_LT(0, GetController()->run_in_background_count());
+  EXPECT_EQ(0, GetController()->run_in_background_count());
   EXPECT_FALSE(
       test_background_sync_manager()->IsBrowserWakeupForOneShotSyncScheduled());
 
@@ -1700,7 +1668,7 @@ TEST_F(BackgroundSyncManagerTest, WakeBrowserCalledForPeriodicSync) {
 
   // The BackgroundSyncManager should declare in initialization
   // that it doesn't need to be woken up since it has no registrations.
-  EXPECT_LT(0, GetController()->run_in_background_periodic_sync_count());
+  EXPECT_EQ(0, GetController()->run_in_background_periodic_sync_count());
   EXPECT_FALSE(test_background_sync_manager()
                    ->IsBrowserWakeupForPeriodicSyncScheduled());
 

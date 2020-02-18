@@ -15,7 +15,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/usb/usb_blocklist.h"
 #include "chrome/grit/generated_resources.h"
@@ -55,7 +54,7 @@ void RecordPermissionRevocation(WebUsbPermissionRevoked kind) {
 }
 
 bool CanStorePersistentEntry(const device::mojom::UsbDeviceInfo& device_info) {
-  return !device_info.serial_number->empty();
+  return device_info.serial_number && !device_info.serial_number->empty();
 }
 
 std::pair<int, int> GetDeviceIds(const base::Value& object) {
@@ -130,10 +129,9 @@ UsbChooserContext::UsbChooserContext(Profile* profile)
     : ChooserContextBase(profile,
                          CONTENT_SETTINGS_TYPE_USB_GUARD,
                          CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA),
-      is_incognito_(profile->IsOffTheRecord()),
-      client_binding_(this) {
-  usb_policy_allowed_devices_.reset(new UsbPolicyAllowedDevices(
-      profile->GetPrefs(), g_browser_process->local_state()));
+      is_incognito_(profile->IsOffTheRecord()) {
+  usb_policy_allowed_devices_.reset(
+      new UsbPolicyAllowedDevices(profile->GetPrefs()));
 }
 
 // static
@@ -179,26 +177,26 @@ void UsbChooserContext::EnsureConnectionWithDeviceManager() {
   if (device_manager_)
     return;
 
-  // Request UsbDeviceManagerPtr from DeviceService.
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&device_manager_));
+  // Receive mojo::Remote<UsbDeviceManager> from DeviceService.
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      device_manager_.BindNewPipeAndPassReceiver());
 
   SetUpDeviceManagerConnection();
 }
 
 void UsbChooserContext::SetUpDeviceManagerConnection() {
   DCHECK(device_manager_);
-  device_manager_.set_connection_error_handler(
+  device_manager_.set_disconnect_handler(
       base::BindOnce(&UsbChooserContext::OnDeviceManagerConnectionError,
                      base::Unretained(this)));
 
   // Listen for added/removed device events.
-  DCHECK(!client_binding_);
-  device::mojom::UsbDeviceManagerClientAssociatedPtrInfo client;
-  client_binding_.Bind(mojo::MakeRequest(&client));
+  DCHECK(!client_receiver_.is_bound());
   device_manager_->EnumerateDevicesAndSetClient(
-      std::move(client), base::BindOnce(&UsbChooserContext::InitDeviceList,
-                                        weak_factory_.GetWeakPtr()));
+      client_receiver_.BindNewEndpointAndPassRemote(),
+      base::BindOnce(&UsbChooserContext::InitDeviceList,
+                     weak_factory_.GetWeakPtr()));
 }
 
 #if defined(OS_ANDROID)
@@ -477,10 +475,10 @@ void UsbChooserContext::GetDevices(
 
 void UsbChooserContext::GetDevice(
     const std::string& guid,
-    device::mojom::UsbDeviceRequest device_request,
-    device::mojom::UsbDeviceClientPtr device_client) {
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+    mojo::PendingRemote<device::mojom::UsbDeviceClient> device_client) {
   EnsureConnectionWithDeviceManager();
-  device_manager_->GetDevice(guid, std::move(device_request),
+  device_manager_->GetDevice(guid, std::move(device_receiver),
                              std::move(device_client));
 }
 
@@ -583,7 +581,7 @@ void UsbChooserContext::OnDeviceRemoved(
 
 void UsbChooserContext::OnDeviceManagerConnectionError() {
   device_manager_.reset();
-  client_binding_.Close();
+  client_receiver_.reset();
   devices_.clear();
   is_initialized_ = false;
 
@@ -608,9 +606,9 @@ void UsbChooserContext::OnDeviceManagerConnectionError() {
 }
 
 void UsbChooserContext::SetDeviceManagerForTesting(
-    device::mojom::UsbDeviceManagerPtr fake_device_manager) {
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> fake_device_manager) {
   DCHECK(!device_manager_);
   DCHECK(fake_device_manager);
-  device_manager_ = std::move(fake_device_manager);
+  device_manager_.Bind(std::move(fake_device_manager));
   SetUpDeviceManagerConnection();
 }

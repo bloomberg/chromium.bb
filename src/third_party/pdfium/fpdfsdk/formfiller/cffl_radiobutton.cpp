@@ -8,6 +8,7 @@
 
 #include <utility>
 
+#include "core/fpdfdoc/cpdf_formcontrol.h"
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_widget.h"
 #include "fpdfsdk/formfiller/cffl_formfiller.h"
@@ -22,7 +23,7 @@ CFFL_RadioButton::~CFFL_RadioButton() {}
 
 std::unique_ptr<CPWL_Wnd> CFFL_RadioButton::NewPWLWindow(
     const CPWL_Wnd::CreateParams& cp,
-    std::unique_ptr<CPWL_Wnd::PrivateData> pAttachedData) {
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData) {
   auto pWnd =
       pdfium::MakeUnique<CPWL_RadioButton>(cp, std::move(pAttachedData));
   pWnd->Realize();
@@ -118,5 +119,5 @@ void CFFL_RadioButton::SaveData(CPDFSDK_PageView* pPageView) {
 
 CPWL_RadioButton* CFFL_RadioButton::GetRadioButton(CPDFSDK_PageView* pPageView,
                                                    bool bNew) {
-  return static_cast<CPWL_RadioButton*>(GetPDFWindow(pPageView, bNew));
+  return static_cast<CPWL_RadioButton*>(GetPWLWindow(pPageView, bNew));
 }

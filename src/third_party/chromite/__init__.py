@@ -6,8 +6,9 @@
 from __future__ import print_function
 
 import os
-import pkg_resources
 import sys
+
+import pkg_resources
 
 # Add the third_party/ dir to our search path so that we can find the
 # modules in there automatically.  This isn't normal, so don't replicate
@@ -62,6 +63,7 @@ for _path in _third_party_dirs:
   _pkg_resources.fixup_namespace_packages(_path)
 
 # Make sure we're only using the local google.protobuf.
+# pylint: disable=wrong-import-position
 import google.protobuf
 google.protobuf.__path__ = [_p for _p in google.protobuf.__path__
                             if any(_dir in _p for _dir in _third_party_dirs)]

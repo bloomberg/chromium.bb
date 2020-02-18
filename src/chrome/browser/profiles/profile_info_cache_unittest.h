@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_info_cache_observer.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ProfileInfoCache;
@@ -56,9 +56,9 @@ class ProfileInfoCacheTest : public testing::Test {
   void ResetCache();
 
  private:
-  // TestBrowserThreadBundle needs to be up through the destruction of the
+  // BrowserTaskEnvironment needs to be up through the destruction of the
   // TestingProfileManager below.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
  protected:
   TestingProfileManager testing_profile_manager_;

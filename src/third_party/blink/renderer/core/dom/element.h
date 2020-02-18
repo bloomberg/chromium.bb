@@ -25,14 +25,13 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_DOM_ELEMENT_H_
 
+#include "third_party/blink/public/platform/pointer_id.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/animation/animatable.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_selector.h"
 #include "third_party/blink/renderer/core/css/style_recalc.h"
-#include "third_party/blink/renderer/core/display_lock/display_lock_context.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
 #include "third_party/blink/renderer/core/dom/dom_high_res_time_stamp.h"
 #include "third_party/blink/renderer/core/dom/element_data.h"
@@ -40,8 +39,6 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html/focus_options.h"
 #include "third_party/blink/renderer/core/html_names.h"
-#include "third_party/blink/renderer/core/resize_observer/resize_observer.h"
-#include "third_party/blink/renderer/core/scroll/scroll_types.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -59,6 +56,7 @@ class DOMRect;
 class DOMRectList;
 class DOMStringMap;
 class DOMTokenList;
+class DisplayLockContext;
 class Document;
 class ElementAnimations;
 class ElementInternals;
@@ -66,15 +64,19 @@ class ElementIntersectionObserverData;
 class ElementRareData;
 class ExceptionState;
 class FloatQuad;
+class FloatSize;
 class FocusOptions;
 class Image;
 class InputDeviceCapabilities;
 class Locale;
 class MutableCSSPropertyValueSet;
 class NamedNodeMap;
+class PaintLayerScrollableArea;
+class PointerLockOptions;
 class PseudoElement;
 class PseudoStyleRequest;
 class ResizeObservation;
+class ResizeObserver;
 class ScrollIntoViewOptions;
 class ScrollIntoViewOptionsOrBoolean;
 class ScrollToOptions;
@@ -89,6 +91,12 @@ class StylePropertyMap;
 class StylePropertyMapReadOnly;
 class USVStringOrTrustedURL;
 class V0CustomElementDefinition;
+
+enum class CSSPropertyID;
+enum class CSSValueID;
+enum class DisplayLockLifecycleTarget;
+
+using ScrollOffset = FloatSize;
 
 enum SpellcheckAttributeState {
   kSpellcheckAttributeTrue,
@@ -192,6 +200,9 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
       double fallback_value = std::numeric_limits<double>::quiet_NaN()) const;
   void SetFloatingPointAttribute(const QualifiedName& attribute_name,
                                  double value);
+
+  Element* GetElementAttribute(const QualifiedName& name);
+  void SetElementAttribute(const QualifiedName&, Element*);
 
   // Call this to get the value of an attribute that is known not to be the
   // style attribute or one of the SVG animatable attributes.
@@ -321,9 +332,12 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   int scrollHeight();
 
   void scrollBy(double x, double y);
-  virtual void scrollBy(const ScrollToOptions*);
+  void scrollBy(const ScrollToOptions*);
   void scrollTo(double x, double y);
-  virtual void scrollTo(const ScrollToOptions*);
+  void scrollTo(const ScrollToOptions*);
+  // This will return the |GetScrollableArea| of correspond LayoutBox. For
+  // LayoutTextControlSingleLine, it will return its |InnerEditorElement|'s.
+  virtual PaintLayerScrollableArea* GetScrollableArea() const;
 
   IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual
@@ -441,7 +455,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   void SynchronizeStyleAttributeInternal() const;
 
   const CSSPropertyValueSet* PresentationAttributeStyle();
-  virtual bool IsPresentationAttribute(const QualifiedName&) const {
+  virtual bool IsPresentationAttribute(const QualifiedName& attr) const {
     return false;
   }
   virtual void CollectStyleForPresentationAttribute(
@@ -835,7 +849,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   }
   void SetIsInTopLayer(bool);
 
-  void requestPointerLock();
+  void requestPointerLock(const PointerLockOptions*);
 
   bool IsSpellCheckingEnabled() const;
 
@@ -895,7 +909,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   ElementIntersectionObserverData* IntersectionObserverData() const;
   ElementIntersectionObserverData& EnsureIntersectionObserverData();
-  bool ComputeIntersectionObservations(unsigned flags);
+  bool ComputeIntersectionsForLifecycleUpdate(unsigned flags);
   // Returns true if the Element is being observed by an IntersectionObserver
   // for which trackVisibility() is true.
   bool NeedsOcclusionTracking() const;
@@ -908,11 +922,13 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
+  DisplayLockContext& EnsureDisplayLockContext();
 
-  bool StyleRecalcBlockedByDisplayLock(
-      DisplayLockContext::LifecycleTarget) const;
+  bool StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget) const;
 
-  void ActivateDisplayLockIfNeeded();
+  // Activates all activatable locked ancestors for this element. Return true if
+  // we activated at least one previously locked element.
+  bool ActivateDisplayLockIfNeeded();
 
   virtual void SetActive(bool active);
   virtual void SetHovered(bool hovered);
@@ -1177,6 +1193,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // context. LayoutNG block fragmentation and legacy block fragmentation cannot
   // cooperate within a fragmentation context.
   void ForceLegacyLayoutInFragmentationContext(const ComputedStyle& new_style);
+  void SynchronizeContentAttributeAndElementReference(
+      const QualifiedName& name);
 
   Member<ElementData> element_data_;
 };

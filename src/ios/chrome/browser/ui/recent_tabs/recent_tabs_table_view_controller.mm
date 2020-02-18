@@ -46,7 +46,6 @@
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/browser/ui/table_view/table_view_favicon_data_source.h"
-#import "ios/chrome/browser/ui/util/top_view_controller.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/browser/url_loading/url_loading_params.h"
@@ -60,7 +59,7 @@
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 
@@ -229,7 +228,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (self.styler.tintColor) {
     historyItem.textColor = self.styler.tintColor;
   } else {
-    historyItem.textColor = [UIColor colorNamed:kTintColor];
+    historyItem.textColor = [UIColor colorNamed:kBlueColor];
   }
   historyItem.accessibilityIdentifier =
       kRecentTabsShowFullHistoryCellAccessibilityIdentifier;
@@ -869,6 +868,9 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)openTabWithContentOfDistantTab:
     (synced_sessions::DistantTab const*)distantTab {
+  // Shouldn't reach this if in incognito.
+  DCHECK(!self.isIncognito);
+
   // It is reasonable to ignore this request if a modal UI is already showing
   // above recent tabs. This can happen when a user simultaneously taps a
   // distant tab and "enable sync". The sync settings UI appears first and we
@@ -1003,6 +1005,12 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 - (void)handleLongPress:(UILongPressGestureRecognizer*)sender {
   if (sender.state != UIGestureRecognizerStateBegan)
     return;
+
+  // Do not handle the long press and present the context menu if the recent
+  // tabs UI is not visible.
+  if (!self.viewLoaded || !self.view.window || self.presentedViewController)
+    return;
+
   UIView* headerTapped = sender.view;
   NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
   NSInteger sectionIdentifier = tappedHeaderSectionIdentifier;
@@ -1027,11 +1035,8 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // Get view coordinates in local space.
   CGPoint viewCoordinate = [sender locationInView:self.tableView];
   // Present sheet/popover using controller that is added to view hierarchy.
-  // TODO(crbug.com/754642): Remove TopPresentedViewController().
-  UIViewController* topController =
-      top_view_controller::TopPresentedViewController();
   self.contextMenuCoordinator = [[ContextMenuCoordinator alloc]
-      initWithBaseViewController:topController
+      initWithBaseViewController:self
                            title:nil
                           inView:self.tableView
                       atLocation:viewCoordinate];
@@ -1149,11 +1154,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 }
 
 - (void)showSyncSettings {
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [self.dispatcher showGoogleServicesSettingsFromViewController:self];
-  } else {
-    [self.dispatcher showSyncSettingsFromViewController:self];
-  }
+  [self.dispatcher showGoogleServicesSettingsFromViewController:self];
 }
 
 - (void)showSyncPassphraseSettings {
@@ -1168,6 +1169,13 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 - (void)showSignin:(ShowSigninCommand*)command {
   [self.dispatcher showSignin:command baseViewController:self];
+}
+
+#pragma mark - UIAdaptivePresentationControllerDelegate
+- (void)presentationControllerDidDismiss:
+    (UIPresentationController*)presentationController {
+  // Call dismissRecentTabs so the Coordinator cleans up any state it needs to.
+  [self.presentationDelegate dismissRecentTabs];
 }
 
 #pragma mark - Accessibility

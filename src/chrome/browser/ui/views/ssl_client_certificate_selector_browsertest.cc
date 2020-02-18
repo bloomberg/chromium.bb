@@ -65,7 +65,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SSLClientCertificateSelectorTest::SetUpOnIOThread,
                        base::Unretained(this)));
@@ -99,7 +99,7 @@ class SSLClientCertificateSelectorTest : public InProcessBrowserTest {
   // Have to release our reference to the auth handler during the test to allow
   // it to be destroyed while the Browser and its IO thread still exist.
   void TearDownOnMainThread() override {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SSLClientCertificateSelectorTest::CleanUpOnIOThread,
                        base::Unretained(this)));
@@ -278,13 +278,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, SelectNone) {
   // Let the mock get checked on destruction.
 }
 
-#if defined(OS_MACOSX)
-// Focusing or input is not completely working on Mac: http://crbug.com/824418
-#define MAYBE_Escape DISABLED_Escape
-#else
-#define MAYBE_Escape Escape
-#endif
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, MAYBE_Escape) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, Escape) {
   base::HistogramTester histograms;
   EXPECT_CALL(*auth_requestor_.get(), CertificateSelected(nullptr, nullptr));
 
@@ -324,7 +318,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorTest, CloseTab) {
   Mock::VerifyAndClear(auth_requestor_.get());
 }
 
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, MAYBE_Escape) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, Escape) {
   // auth_requestor_1_ should get selected automatically by the
   // SSLClientAuthObserver when selector_2_ is accepted, since both 1 & 2 have
   // the same host:port.
@@ -379,14 +373,7 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiTabTest, SelectSecond) {
   EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
-#if defined(OS_MACOSX)
-// Widget activation doesn't work on Mac: https://crbug.com/823543
-#define MAYBE_Escape DISABLED_Escape
-#else
-#define MAYBE_Escape Escape
-#endif
-IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       MAYBE_Escape) {
+IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest, Escape) {
   EXPECT_CALL(*auth_requestor_1_.get(), CertificateSelected(nullptr, nullptr));
 
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(
@@ -400,14 +387,8 @@ IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
   EXPECT_CALL(*auth_requestor_.get(), CancelCertificateSelection());
 }
 
-#if defined(OS_MACOSX)
-// Widget activation doesn't work on Mac: https://crbug.com/823543
-#define MAYBE_SelectDefault DISABLED_SelectDefault
-#else
-#define MAYBE_SelectDefault SelectDefault
-#endif
 IN_PROC_BROWSER_TEST_F(SSLClientCertificateSelectorMultiProfileTest,
-                       MAYBE_SelectDefault) {
+                       SelectDefault) {
   EXPECT_CALL(*auth_requestor_1_.get(),
               CertificateSelected(cert_identity_1_->certificate(),
                                   cert_identity_1_->ssl_private_key()));

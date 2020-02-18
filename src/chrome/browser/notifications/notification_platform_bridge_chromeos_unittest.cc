@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "chrome/browser/notifications/notification_handler.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -16,7 +16,7 @@
 // Regression test for https://crbug.com/840105
 TEST(NotificationPlatformBridgeChromeOsTest, Update) {
   message_center::MessageCenter::Initialize();
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   NotificationPlatformBridgeChromeOs bridge;
 

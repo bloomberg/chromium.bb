@@ -32,6 +32,12 @@ constexpr VkBufferUsageFlags kStagingBufferFlags =
     VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 constexpr size_t kStagingBufferSize = 1024 * 16;
 
+struct TextureUnit final
+{
+    TextureVk *texture;
+    SamplerVk *sampler;
+};
+
 // A dynamic buffer is conceptually an infinitely long buffer. Each time you write to the buffer,
 // you will always write to a previously unused portion. After a series of writes, you must flush
 // the buffer data to the device. Buffer lifetime currently assumes that each new allocation will
@@ -87,7 +93,6 @@ class DynamicBuffer : angle::NonCopyable
 
     BufferHelper *getCurrentBuffer() { return mBuffer; }
 
-    size_t getAlignment() { return mAlignment; }
     void updateAlignment(RendererVk *renderer, size_t alignment);
 
     // For testing only!
@@ -411,7 +416,7 @@ class LineLoopHelper final : angle::NonCopyable
                                                       intptr_t elementArrayOffset,
                                                       vk::BufferHelper **bufferOut,
                                                       VkDeviceSize *bufferOffsetOut,
-                                                      size_t *indexCountOut);
+                                                      uint32_t *indexCountOut);
 
     angle::Result streamIndices(ContextVk *contextVk,
                                 gl::DrawElementsType glIndexType,
@@ -419,7 +424,7 @@ class LineLoopHelper final : angle::NonCopyable
                                 const uint8_t *srcPtr,
                                 vk::BufferHelper **bufferOut,
                                 VkDeviceSize *bufferOffsetOut,
-                                size_t *indexCountOut);
+                                uint32_t *indexCountOut);
 
     void release(ContextVk *contextVk);
     void destroy(VkDevice device);
@@ -530,10 +535,10 @@ class BufferHelper final : public CommandGraphResource
     void unmap(VkDevice device);
 
     // After a sequence of writes, call flush to ensure the data is visible to the device.
-    angle::Result flush(ContextVk *contextVk, size_t offset, size_t size);
+    angle::Result flush(ContextVk *contextVk, VkDeviceSize offset, VkDeviceSize size);
 
     // After a sequence of writes, call invalidate to ensure the data is visible to the host.
-    angle::Result invalidate(ContextVk *contextVk, size_t offset, size_t size);
+    angle::Result invalidate(ContextVk *contextVk, VkDeviceSize offset, VkDeviceSize size);
 
   private:
     angle::Result mapImpl(ContextVk *contextVk);
@@ -621,10 +626,10 @@ enum class ImageLayout
     TransferDst                = 3,
     ComputeShaderReadOnly      = 4,
     ComputeShaderWrite         = 5,
-    FragmentShaderReadOnly     = 6,
-    ColorAttachment            = 7,
-    DepthStencilAttachment     = 8,
-    AllGraphicsShadersReadOnly = 9,
+    AllGraphicsShadersReadOnly = 6,
+    AllGraphicsShadersWrite    = 7,
+    ColorAttachment            = 8,
+    DepthStencilAttachment     = 9,
     Present                    = 10,
 
     InvalidEnum = 11,
@@ -645,7 +650,7 @@ class ImageHelper final : public CommandGraphResource
 
     angle::Result init(Context *context,
                        gl::TextureType textureType,
-                       const gl::Extents &glExtents,
+                       const VkExtent3D &extents,
                        const Format &format,
                        GLint samples,
                        VkImageUsageFlags usage,
@@ -653,7 +658,7 @@ class ImageHelper final : public CommandGraphResource
                        uint32_t layerCount);
     angle::Result initExternal(Context *context,
                                gl::TextureType textureType,
-                               const gl::Extents &glExtents,
+                               const VkExtent3D &extents,
                                const Format &format,
                                GLint samples,
                                VkImageUsageFlags usage,
@@ -786,7 +791,8 @@ class ImageHelper final : public CommandGraphResource
     void stageSubresourceUpdateFromImage(vk::ImageHelper *image,
                                          const gl::ImageIndex &index,
                                          const gl::Offset &destOffset,
-                                         const gl::Extents &glExtents);
+                                         const gl::Extents &glExtents,
+                                         const VkImageType imageType);
 
     // Stage a clear operation to a clear value based on WebGL requirements.
     void stageSubresourceRobustClear(const gl::ImageIndex &index, const angle::Format &format);

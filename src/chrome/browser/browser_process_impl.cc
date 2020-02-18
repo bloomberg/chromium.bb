@@ -233,8 +233,6 @@ BrowserProcessImpl::BrowserProcessImpl(StartupData* startup_data) {
   browser_policy_connector_ =
       chrome_feature_list_creator_->TakeChromeBrowserPolicyConnector();
   created_browser_policy_connector_ = true;
-  pref_service_factory_ =
-      chrome_feature_list_creator_->TakePrefServiceFactory();
 
   platform_part_ = std::make_unique<BrowserProcessPlatformPart>();
   // Most work should be done in Init().
@@ -538,10 +536,9 @@ void RequestProxyResolvingSocketFactoryOnUIThread(
 
 void RequestProxyResolvingSocketFactory(
     network::mojom::ProxyResolvingSocketFactoryRequest request) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
-                     std::move(request)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+                                std::move(request)));
 }
 #endif
 
@@ -887,11 +884,6 @@ BrowserProcessImpl::resource_coordinator_parts() {
 shell_integration::DefaultWebClientState
 BrowserProcessImpl::CachedDefaultWebClientState() {
   return cached_default_web_client_state_;
-}
-
-prefs::InProcessPrefServiceFactory* BrowserProcessImpl::pref_service_factory()
-    const {
-  return pref_service_factory_.get();
 }
 
 // static
@@ -1266,14 +1258,16 @@ void BrowserProcessImpl::CreateSubresourceFilterRulesetService() {
 
   // Runner for tasks critical for user experience.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_BLOCKING,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   // Runner for tasks that do not influence user experience.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   base::FilePath user_data_dir;
@@ -1297,8 +1291,7 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
 
   optimization_guide_service_ =
       std::make_unique<optimization_guide::OptimizationGuideService>(
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::UI}));
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}));
 }
 
 void BrowserProcessImpl::CreateGCMDriver() {
@@ -1314,8 +1307,9 @@ void BrowserProcessImpl::CreateGCMDriver() {
   base::FilePath store_path;
   CHECK(base::PathService::Get(chrome::DIR_GLOBAL_GCM_STORE, &store_path));
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
@@ -1324,10 +1318,8 @@ void BrowserProcessImpl::CreateGCMDriver() {
       system_network_context_manager()->GetSharedURLLoaderFactory(),
       content::GetNetworkConnectionTracker(), chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(local_state()),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
       blocking_task_runner);
 #endif  // defined(OS_ANDROID)
 }
@@ -1466,16 +1458,16 @@ void BrowserProcessImpl::RestartBackgroundInstance() {
   DLOG(WARNING) << "Shutting down current instance of the browser.";
   chrome::AttemptExit();
 
-  upgrade_util::SetNewCommandLine(new_cl.release());
+  upgrade_util::SetNewCommandLine(std::move(new_cl));
 }
 
 void BrowserProcessImpl::OnAutoupdateTimer() {
   if (IsRunningInBackground()) {
     // upgrade_util::IsUpdatePendingRestart touches the disk, so do it on a
     // suitable thread.
-    base::PostTaskWithTraitsAndReplyWithResult(
+    base::PostTaskAndReplyWithResult(
         FROM_HERE,
-        {base::TaskPriority::BEST_EFFORT,
+        {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
          base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN, base::MayBlock()},
         base::BindOnce(&upgrade_util::IsUpdatePendingRestart),
         base::BindOnce(&BrowserProcessImpl::OnPendingRestartResult,

@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/media/router/discovery/dial/device_description_fetcher.h"
 #include "chrome/browser/media/router/discovery/dial/dial_device_data.h"
 #include "chrome/browser/media/router/test/test_helper.h"
@@ -73,7 +73,7 @@ class DeviceDescriptionFetcherTest : public testing::Test {
   MOCK_METHOD1(OnSuccess, void(const DialDeviceDescriptionData&));
   MOCK_METHOD1(OnError, void(const std::string&));
 
-  base::test::ScopedTaskEnvironment environment_;
+  base::test::TaskEnvironment environment_;
   const GURL url_;
   network::TestURLLoaderFactory loader_factory_;
   std::unique_ptr<TestDeviceDescriptionFetcher> description_fetcher_;

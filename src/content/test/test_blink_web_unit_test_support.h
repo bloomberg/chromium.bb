@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "content/child/blink_platform_impl.h"
-#include "content/test/mock_webblob_registry_impl.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 
 namespace blink {
@@ -24,7 +23,6 @@ class WebThreadScheduler;
 
 namespace content {
 
-class BlinkInterfaceProviderImpl;
 class MockClipboardHost;
 
 // An implementation of BlinkPlatformImpl for tests.
@@ -34,11 +32,11 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
     // Create a mock version of scheduling infrastructure, which just forwards
     // all calls to the default task runner.
     // All non-blink users (content_unittests etc) should call this method.
-    // Each test has to create base::test::ScopedTaskEnvironment manually.
+    // Each test has to create base::test::TaskEnvironment manually.
     kMockScheduler,
     // Initialize blink platform with the real scheduler.
     // Should be used only by webkit_unit_tests.
-    // Tests don't have to create base::test::ScopedTaskEnvironment, but should
+    // Tests don't have to create base::test::TaskEnvironment, but should
     // be careful not to leak any tasks to the other tests.
     kRealScheduler,
   };
@@ -47,17 +45,14 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
       SchedulerType scheduler_type = SchedulerType::kMockScheduler);
   ~TestBlinkWebUnitTestSupport() override;
 
-  blink::WebBlobRegistry* GetBlobRegistry() override;
-
   std::unique_ptr<blink::WebURLLoaderFactory> CreateDefaultURLLoaderFactory()
       override;
   blink::WebString UserAgent() override;
-  blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name) override;
-  blink::WebString QueryLocalizedString(blink::WebLocalizedString::Name name,
+  blink::WebString QueryLocalizedString(int resource_id) override;
+  blink::WebString QueryLocalizedString(int resource_id,
                                         const blink::WebString& value) override;
   blink::WebString QueryLocalizedString(
-      blink::WebLocalizedString::Name name,
+      int resource_id,
       const blink::WebString& value1,
       const blink::WebString& value2) override;
   blink::WebString DefaultLocale() override;
@@ -70,9 +65,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator() override;
 
-  service_manager::Connector* GetConnector() override;
-  blink::InterfaceProvider* GetInterfaceProvider() override;
-
   // May be called when |this| is registered as the active blink Platform
   // implementation. Overrides the result of IsThreadedAnimationEnabled() to
   // the provided value, and returns the value it was set to before the call.
@@ -83,9 +75,6 @@ class TestBlinkWebUnitTestSupport : public BlinkPlatformImpl {
  private:
   void BindClipboardHost(mojo::ScopedMessagePipeHandle handle);
 
-  std::unique_ptr<service_manager::Connector> connector_;
-  std::unique_ptr<BlinkInterfaceProviderImpl> blink_interface_provider_;
-  MockWebBlobRegistryImpl blob_registry_;
   std::unique_ptr<MockClipboardHost> mock_clipboard_host_;
   base::ScopedTempDir file_system_root_;
   std::unique_ptr<blink::WebURLLoaderMockFactory> url_loader_factory_;

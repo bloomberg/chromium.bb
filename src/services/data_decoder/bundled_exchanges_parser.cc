@@ -29,8 +29,8 @@ constexpr uint64_t kMaxCBORItemHeaderSize = 9;
 // The maximum size of the section-lengths CBOR item.
 constexpr uint64_t kMaxSectionLengthsCBORSize = 8192;
 
-// The maximum size of the index section allowed in this implementation.
-constexpr uint64_t kMaxIndexSectionSize = 1 * 1024 * 1024;
+// The maximum size of a metadata section allowed in this implementation.
+constexpr uint64_t kMaxMetadataSectionSize = 1 * 1024 * 1024;
 
 // The maximum size of the response header CBOR.
 constexpr uint64_t kMaxResponseHeaderLength = 512 * 1024;
@@ -38,22 +38,43 @@ constexpr uint64_t kMaxResponseHeaderLength = 512 * 1024;
 // The initial buffer size for reading an item from the response section.
 constexpr uint64_t kInitialBufferSizeForResponse = 4096;
 
+// Step 2. of
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
 const uint8_t kBundleMagicBytes[] = {
-    0x84, 0x48, 0xF0, 0x9F, 0x8C, 0x90, 0xF0, 0x9F, 0x93, 0xA6,
+    0x86, 0x48, 0xF0, 0x9F, 0x8C, 0x90, 0xF0, 0x9F, 0x93, 0xA6,
+};
+
+// Step 7. of
+// https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+// We use an implementation-specific version string "b1\0\0".
+const uint8_t kVersionB1MagicBytes[] = {
+    0x44, 0x62, 0x31, 0x00, 0x00,
 };
 
 // Section names.
+constexpr char kCriticalSection[] = "critical";
 constexpr char kIndexSection[] = "index";
+constexpr char kManifestSection[] = "manifest";
 constexpr char kResponsesSection[] = "responses";
+constexpr char kSignaturesSection[] = "signatures";
 
 // https://tools.ietf.org/html/draft-ietf-cbor-7049bis-05#section-3.1
 enum class CBORType {
   kByteString = 2,
+  kTextString = 3,
   kArray = 4,
 };
 
 // A list of (section-name, length) pairs.
 using SectionLengths = std::vector<std::pair<std::string, uint64_t>>;
+
+// A map from section name to (offset, length) pair.
+using SectionOffsets = std::map<std::string, std::pair<uint64_t, uint64_t>>;
+
+bool IsMetadataSection(const std::string& name) {
+  return (name == kCriticalSection || name == kIndexSection ||
+          name == kManifestSection || name == kSignaturesSection);
+}
 
 // Parses a `section-lengths` CBOR item.
 // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
@@ -173,6 +194,17 @@ class InputReader {
     return result;
   }
 
+  base::Optional<base::StringPiece> ReadString(size_t n) {
+    auto bytes = ReadBytes(n);
+    if (!bytes)
+      return base::nullopt;
+    base::StringPiece str(reinterpret_cast<const char*>(bytes->data()),
+                          bytes->size());
+    if (!base::IsStringUTF8(str))
+      return base::nullopt;
+    return str;
+  }
+
   // Parses the type and argument of a CBOR item from the input head. If parsed
   // successfully and the type matches |expected_type|, returns the argument.
   // Otherwise returns nullopt.
@@ -234,6 +266,27 @@ class InputReader {
   DISALLOW_COPY_AND_ASSIGN(InputReader);
 };
 
+GURL ParseExchangeURL(base::StringPiece str) {
+  if (!base::IsStringUTF8(str))
+    return GURL();
+
+  GURL url(str);
+  if (!url.is_valid())
+    return GURL();
+
+  // Exchange URL must not have a fragment or credentials.
+  if (url.has_ref() || url.has_username() || url.has_password())
+    return GURL();
+
+  // For now, we allow only http: and https: schemes in bundled exchange URLs.
+  // TODO(crbug.com/966753): Revisit this once
+  // https://github.com/WICG/webpackage/issues/468 is resolved.
+  if (!url.SchemeIsHTTPOrHTTPS())
+    return GURL();
+
+  return url;
+}
+
 }  // namespace
 
 class BundledExchangesParser::SharedBundleDataSource::Observer {
@@ -245,11 +298,8 @@ class BundledExchangesParser::SharedBundleDataSource::Observer {
   DISALLOW_COPY_AND_ASSIGN(Observer);
 };
 
-// A parser for bundle's metadata. This currently looks only at the "index"
-// section. This class owns itself and will self destruct after calling the
-// ParseMetadataCallback.
-// TODO(crbug.com/966753): Add support for the "manifest" section and "critical"
-// section.
+// A parser for bundle's metadata. This class owns itself and will self destruct
+// after calling the ParseMetadataCallback.
 class BundledExchangesParser::MetadataParser
     : BundledExchangesParser::SharedBundleDataSource::Observer {
  public:
@@ -269,23 +319,23 @@ class BundledExchangesParser::MetadataParser
   void DidGetSize(uint64_t size) {
     size_ = size;
 
-    // In the next step, we will parse `magic`, `section-lengths`, and the CBOR
-    // header of `sections`.
+    // In the next step, we will parse `magic`, `version`, and the CBOR
+    // header of `primary-url`.
     // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#top-level
-    const uint64_t length =
-        std::min(size, sizeof(kBundleMagicBytes) + kMaxSectionLengthsCBORSize +
-                           kMaxCBORItemHeaderSize * 2);
+    const uint64_t length = std::min(size, sizeof(kBundleMagicBytes) +
+                                               sizeof(kVersionB1MagicBytes) +
+                                               kMaxCBORItemHeaderSize);
     data_source_->Read(0, length,
-                       base::BindOnce(&MetadataParser::ParseBundleHeader,
+                       base::BindOnce(&MetadataParser::ParseMagicBytes,
                                       weak_factory_.GetWeakPtr(), length));
   }
 
-  // Step 1-15 of
+  // Step 1-4 of
   // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
-  void ParseBundleHeader(uint64_t expected_data_length,
-                         const base::Optional<std::vector<uint8_t>>& data) {
+  void ParseMagicBytes(uint64_t expected_data_length,
+                       const base::Optional<std::vector<uint8_t>>& data) {
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading bundle header.");
+      RunErrorCallbackAndDestroy("Error reading bundle magic bytes.");
       return;
     }
 
@@ -294,357 +344,769 @@ class BundledExchangesParser::MetadataParser
     InputReader input(*data);
 
     // Step 2. "If reading 10 bytes from stream returns an error or doesn't
-    // return the bytes with hex encoding "84 48 F0 9F 8C 90 F0 9F 93 A6"
-    // (the CBOR encoding of the 4-item array initial byte and 8-byte bytestring
-    // initial byte, followed by 🌐📦 in UTF-8), return an error."
+    // return the bytes with hex encoding "86 48 F0 9F 8C 90 F0 9F 93 A6"
+    // (the CBOR encoding of the 6-item array initial byte and 8-byte bytestring
+    // initial byte, followed by 🌐📦 in UTF-8), return a "format error"."
     const auto magic = input.ReadBytes(sizeof(kBundleMagicBytes));
     if (!magic ||
         !std::equal(magic->begin(), magic->end(), std::begin(kBundleMagicBytes),
                     std::end(kBundleMagicBytes))) {
-      RunCallbackAndDestroy(nullptr, "Wrong magic bytes.");
+      RunErrorCallbackAndDestroy("Wrong magic bytes.");
       return;
     }
 
-    // Step 3. "Let sectionLengthsLength be the result of getting the length of
+    // Step 3. "Let version be the result of reading 5 bytes from stream. If
+    // this is an error, return a "format error"."
+    const auto version = input.ReadBytes(sizeof(kVersionB1MagicBytes));
+    if (!version) {
+      RunErrorCallbackAndDestroy("Cannot read version bytes.");
+      return;
+    }
+    if (!std::equal(version->begin(), version->end(),
+                    std::begin(kVersionB1MagicBytes),
+                    std::end(kVersionB1MagicBytes))) {
+      version_mismatch_ = true;
+      // Continue parsing until Step 7 where we get a fallback URL, and
+      // then return "version error" with the fallback URL.
+    }
+
+    // Step 4. "Let urlType and urlLength be the result of reading the type and
+    // argument of a CBOR item from stream (Section 3.5.3). If this is an error
+    // or urlType is not 3 (a CBOR text string), return a "format error"."
+    const auto url_length = input.ReadCBORHeader(CBORType::kTextString);
+    if (!url_length) {
+      RunErrorCallbackAndDestroy("Cannot parse the size of fallback URL.");
+      return;
+    }
+
+    // In the next step, we will parse the content of `primary-url`,
+    // `section-lengths`, and the CBOR header of `sections`.
+    const uint64_t length = std::min(
+        size_ - input.CurrentOffset(),
+        *url_length + kMaxSectionLengthsCBORSize + kMaxCBORItemHeaderSize * 2);
+    data_source_->Read(input.CurrentOffset(), length,
+                       base::BindOnce(&MetadataParser::ParseBundleHeader,
+                                      weak_factory_.GetWeakPtr(), length,
+                                      *url_length, input.CurrentOffset()));
+  }
+
+  // Step 5-21 of
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+  void ParseBundleHeader(uint64_t expected_data_length,
+                         uint64_t url_length,
+                         uint64_t offset_in_stream,
+                         const base::Optional<std::vector<uint8_t>>& data) {
+    if (!data || data->size() != expected_data_length) {
+      RunErrorCallbackAndDestroy("Error reading bundle header.");
+      return;
+    }
+    InputReader input(*data);
+
+    // Step 5. "Let fallbackUrlBytes be the result of reading urlLength bytes
+    // from stream. If this is an error, return a "format error"."
+    const auto fallback_url_string = input.ReadString(url_length);
+    if (!fallback_url_string) {
+      RunErrorCallbackAndDestroy("Cannot read fallback URL.");
+      return;
+    }
+
+    // Step 6. "Let fallbackUrl be the result of parsing ([URL]) the UTF-8
+    // decoding of fallbackUrlBytes with no base URL. If either the UTF-8
+    // decoding or parsing fails, return a "format error"."
+    // For now, we enforce the same restriction as exchages' request URL.
+    // TODO(crbug.com/966753): Revisit URL requirements here once
+    // https://github.com/WICG/webpackage/issues/469 is resolved.
+    GURL fallback_url = ParseExchangeURL(*fallback_url_string);
+    if (!fallback_url.is_valid()) {
+      RunErrorCallbackAndDestroy("Cannot parse fallback URL.");
+      return;
+    }
+
+    // "Note: From this point forward, errors also include the fallback URL to
+    // help clients recover."
+    fallback_url_ = std::move(fallback_url);
+
+    // Step 7. "If version does not have the hex encoding "44 31 00 00 00" (the
+    // CBOR encoding of a 4-byte byte string holding an ASCII "1" followed by
+    // three 0 bytes), return a "version error" with fallbackUrl. "
+    // Note: We use an implementation-specific version string
+    // kVersionB1MagicBytes.
+    if (version_mismatch_) {
+      RunErrorCallbackAndDestroy(
+          "Version error: this implementation only supports "
+          "bundle format of version b1.",
+          mojom::BundleParseErrorType::kVersionError);
+      return;
+    }
+
+    // Step 8. "Let sectionLengthsLength be the result of getting the length of
     // the CBOR bytestring header from stream (Section 3.5.2). If this is an
-    // error, return that error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths_length =
         input.ReadCBORHeader(CBORType::kByteString);
     if (!section_lengths_length) {
-      RunCallbackAndDestroy(nullptr,
-                            "Cannot parse the size of section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot parse the size of section-lengths.");
       return;
     }
-    // Step 4. "If sectionLengthsLength is 8192 (8*1024) or greater, return an
-    // error."
+    // Step 9. "If sectionLengthsLength is 8192 (8*1024) or greater, return a
+    // "format error" with fallbackUrl."
     if (*section_lengths_length >= kMaxSectionLengthsCBORSize) {
-      RunCallbackAndDestroy(
-          nullptr, "The section-lengths CBOR must be smaller than 8192 bytes.");
+      RunErrorCallbackAndDestroy(
+          "The section-lengths CBOR must be smaller than 8192 bytes.");
       return;
     }
 
-    // Step 5. "Let sectionLengthsBytes be the result of reading
+    // Step 10. "Let sectionLengthsBytes be the result of reading
     // sectionLengthsLength bytes from stream. If sectionLengthsBytes is an
-    // error, return that error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths_bytes = input.ReadBytes(*section_lengths_length);
     if (!section_lengths_bytes) {
-      RunCallbackAndDestroy(nullptr, "Cannot read section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot read section-lengths.");
       return;
     }
 
-    // Step 6. "Let sectionLengths be the result of parsing one CBOR item
+    // Step 11. "Let sectionLengths be the result of parsing one CBOR item
     // (Section 3.5) from sectionLengthsBytes, matching the section-lengths
     // rule in the CDDL ([I-D.ietf-cbor-cddl]) above. If sectionLengths is an
-    // error, return an error."
+    // error, return a "format error" with fallbackUrl."
     const auto section_lengths = ParseSectionLengths(*section_lengths_bytes);
     if (!section_lengths) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse section-lengths.");
+      RunErrorCallbackAndDestroy("Cannot parse section-lengths.");
       return;
     }
 
-    // Step 7. "Let (sectionsType, numSections) be the result of parsing the
+    // Step 12. "Let (sectionsType, numSections) be the result of parsing the
     // type and argument of a CBOR item from stream (Section 3.5.3)."
     const auto num_sections = input.ReadCBORHeader(CBORType::kArray);
     if (!num_sections) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse the number of sections.");
+      RunErrorCallbackAndDestroy("Cannot parse the number of sections.");
       return;
     }
 
-    // Step 8. "If sectionsType is not 4 (a CBOR array) or numSections is not
-    // half of the length of sectionLengths, return an error."
+    // Step 13. "If sectionsType is not 4 (a CBOR array) or numSections is not
+    // half of the length of sectionLengths, return a "format error" with
+    // fallbackUrl."
     if (*num_sections != section_lengths->size()) {
-      RunCallbackAndDestroy(nullptr, "Unexpected number of sections.");
+      RunErrorCallbackAndDestroy("Unexpected number of sections.");
       return;
     }
 
-    // Step 9. "Let sectionsStart be the current offset within stream."
-    const uint64_t sections_start = input.CurrentOffset();
+    // Step 14. "Let sectionsStart be the current offset within stream."
+    // Note: This doesn't exceed |size_|.
+    const uint64_t sections_start = offset_in_stream + input.CurrentOffset();
 
-    // Step 10. "Let knownSections be the subset of the Section 6.2 that this
+    // Step 15. "Let knownSections be the subset of the Section 6.2 that this
     // client has implemented."
-    // Step 11. "Let ignoredSections be an empty set."
+    // Step 16. "Let ignoredSections be an empty set."
 
     // This implementation doesn't use knownSections nor ignoredSections.
 
-    // Step 12. "Let sectionOffsets be an empty map ([INFRA]) from section names
+    // Step 17. "Let sectionOffsets be an empty map ([INFRA]) from section names
     // to (offset, length) pairs. These offsets are relative to the start of
     // stream."
 
     // |section_offsets_| is defined as a class member field.
 
-    // Step 13. "Let currentOffset be sectionsStart."
+    // Step 18. "Let currentOffset be sectionsStart."
     uint64_t current_offset = sections_start;
 
-    // Step 14. "For each ("name", length) pair of adjacent elements in
+    // Step 19. "For each ("name", length) pair of adjacent elements in
     // sectionLengths:"
     for (const auto& pair : *section_lengths) {
       const std::string& name = pair.first;
       const uint64_t length = pair.second;
-      // Step 14.1. "If "name"'s specification in knownSections says not to
+      // Step 19.1. "If "name"'s specification in knownSections says not to
       // process other sections, add those sections' names to ignoredSections."
 
       // There're no such sections at the moment.
 
-      // Step 14.2. "If sectionOffsets["name"] exists, return an error. That is,
-      // duplicate sections are forbidden."
-      // Step 14.3. "Set sectionOffsets["name"] to (currentOffset, length)."
+      // Step 19.2. "If sectionOffsets["name"] exists, return a "format error"
+      // with fallbackUrl. That is, duplicate sections are forbidden."
+      // Step 19.3. "Set sectionOffsets["name"] to (currentOffset, length)."
       bool added = section_offsets_
                        .insert(std::make_pair(
                            name, std::make_pair(current_offset, length)))
                        .second;
       if (!added) {
-        RunCallbackAndDestroy(nullptr, "Duplicated section.");
+        RunErrorCallbackAndDestroy("Duplicated section.");
         return;
       }
 
-      // Step 14.4. "Set currentOffset to currentOffset + length."
+      // Step 19.4. "Set currentOffset to currentOffset + length."
       if (!base::CheckAdd(current_offset, length)
                .AssignIfValid(&current_offset) ||
           current_offset > size_) {
-        RunCallbackAndDestroy(nullptr, "Section doesn't fit in the bundle.");
+        RunErrorCallbackAndDestroy("Section doesn't fit in the bundle.");
         return;
       }
     }
 
-    // Step 15. "If the "responses" section is not last in sectionLengths,
-    // return an error. This allows a streaming parser to assume that it'll
-    // know the requests by the time their responses arrive."
+    // Step 20. "If the "responses" section is not last in sectionLengths,
+    // return a "format error" with fallbackUrl. This allows a streaming parser
+    // to assume that it'll know the requests by the time their responses
+    // arrive."
     if (section_lengths->empty() ||
         section_lengths->back().first != kResponsesSection) {
-      RunCallbackAndDestroy(
-          nullptr, "Responses section is not the last in section-lengths.");
+      RunErrorCallbackAndDestroy(
+          "Responses section is not the last in section-lengths.");
       return;
     }
 
-    // Read the index section.
-    auto index_section = section_offsets_.find(kIndexSection);
-    if (index_section == section_offsets_.end()) {
-      RunCallbackAndDestroy(nullptr, "No index section.");
-      return;
-    }
-    const uint64_t index_section_offset = index_section->second.first;
-    const uint64_t index_section_length = index_section->second.second;
+    // Step 21. "Let metadata be a map ([INFRA]) initially containing the single
+    // key/value pair "primaryUrl"/fallbackUrl."
+    metadata_ = mojom::BundleMetadata::New();
+    metadata_->primary_url = fallback_url_;
 
-    if (index_section_length > kMaxIndexSectionSize) {
-      RunCallbackAndDestroy(nullptr,
-                            "Index section larger than 1MB is not supported.");
-      return;
-    }
-
-    data_source_->Read(
-        index_section_offset, index_section_length,
-        base::BindOnce(&MetadataParser::ParseIndexSection,
-                       weak_factory_.GetWeakPtr(), index_section_length));
+    ReadMetadataSections(section_offsets_.begin());
   }
 
-  // Step 1. of
-  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
-  void ParseIndexSection(uint64_t expected_data_length,
-                         const base::Optional<std::vector<uint8_t>>& data) {
-    if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading index section.");
+  // Step 22-25 of
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#load-metadata
+  void ReadMetadataSections(SectionOffsets::const_iterator section_iter) {
+    // Step 22. "For each "name" -> (offset, length) triple in sectionOffsets:"
+    for (; section_iter != section_offsets_.end(); ++section_iter) {
+      const auto& name = section_iter->first;
+      // Step 22.1. "If "name" isn't in knownSections, continue to the next
+      // triple."
+      // Step 22.2. "If "name"'s Metadata field (Section 6.2) is "No", continue
+      // to the next triple."
+      if (!IsMetadataSection(name))
+        continue;
+
+      // Step 22.3. "If "name" is in ignoredSections, continue to the next
+      // triple."
+      // In the current spec, ignoredSections is always empty.
+
+      const uint64_t section_offset = section_iter->second.first;
+      const uint64_t section_length = section_iter->second.second;
+      if (section_length > kMaxMetadataSectionSize) {
+        RunErrorCallbackAndDestroy(
+            "Metadata sections larger than 1MB are not supported.");
+        return;
+      }
+
+      data_source_->Read(section_offset, section_length,
+                         base::BindOnce(&MetadataParser::ParseMetadataSection,
+                                        weak_factory_.GetWeakPtr(),
+                                        section_iter, section_length));
+      // This loop will be resumed by ParseMetadataSection().
       return;
     }
 
+    // Step 23. "Assert: metadata has an entry with the key "primaryUrl"."
+    DCHECK(!metadata_->primary_url.is_empty());
+
+    // Step 24. "If metadata doesn't have entries with keys "requests" and
+    // "manifest", return a "format error" with fallbackUrl."
+    if (metadata_->requests.empty()) {
+      RunErrorCallbackAndDestroy("Bundle must have an index section.");
+      return;
+    }
+    if (metadata_->manifest_url.is_empty()) {
+      RunErrorCallbackAndDestroy("Bundle must have a manifest URL.");
+      return;
+    }
+
+    // Step 25. "Return metadata."
+    RunSuccessCallbackAndDestroy();
+  }
+
+  void ParseMetadataSection(SectionOffsets::const_iterator section_iter,
+                            uint64_t expected_data_length,
+                            const base::Optional<std::vector<uint8_t>>& data) {
+    if (!data || data->size() != expected_data_length) {
+      RunErrorCallbackAndDestroy("Error reading section content.");
+      return;
+    }
+
+    // Parse the section contents as a CBOR item.
+    cbor::Reader::DecoderError error;
+    base::Optional<cbor::Value> section_value =
+        cbor::Reader::Read(*data, &error);
+    if (!section_value) {
+      RunErrorCallbackAndDestroy(
+          std::string("Error parsing section contents as CBOR: ") +
+          cbor::Reader::ErrorCodeToString(error));
+      return;
+    }
+
+    // Step 22.6. "Follow "name"'s specification from knownSections to process
+    // the section, passing sectionContents, stream, sectionOffsets, and
+    // metadata. If this returns an error, return a "format error" with
+    // fallbackUrl."
+    const auto& name = section_iter->first;
+    // Note: Parse*Section() delete |this| on failure.
+    if (name == kIndexSection) {
+      if (!ParseIndexSection(*section_value))
+        return;
+    } else if (name == kManifestSection) {
+      if (!ParseManifestSection(*section_value))
+        return;
+    } else if (name == kSignaturesSection) {
+      if (!ParseSignaturesSection(*section_value))
+        return;
+    } else if (name == kCriticalSection) {
+      if (!ParseCriticalSection(*section_value))
+        return;
+    } else {
+      NOTREACHED();
+    }
+    // Resume the loop of Step 22.
+    ReadMetadataSections(++section_iter);
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
+  bool ParseIndexSection(const cbor::Value& section_value) {
     // Step 1. "Let index be the result of parsing sectionContents as a CBOR
     // item matching the index rule in the above CDDL (Section 3.5). If index is
     // an error, return an error."
-    cbor::Reader::DecoderError error;
-    base::Optional<cbor::Value> index_section_value =
-        cbor::Reader::Read(*data, &error);
-    if (!index_section_value) {
-      VLOG(1) << cbor::Reader::ErrorCodeToString(error);
-      RunCallbackAndDestroy(nullptr, "Error parsing index section.");
-      return;
-    }
-    if (!index_section_value->is_array()) {
-      RunCallbackAndDestroy(nullptr, "Index section must be an array.");
-      return;
+    if (!section_value.is_map()) {
+      RunErrorCallbackAndDestroy("Index section must be a map.");
+      return false;
     }
 
-    // Read the header of the response section.
+    // Step 2. "Let requests be an initially-empty map ([INFRA]) from URLs to
+    // response descriptions, each of which is either a single
+    // location-in-stream value or a pair of a Variants header field value
+    // ([I-D.ietf-httpbis-variants]) and a map from that value's possible
+    // Variant-Keys to location-in-stream values, as described in Section 2.2."
+    base::flat_map<GURL, mojom::BundleIndexValuePtr> requests;
+
+    // Step 3. "Let MakeRelativeToStream be a function that takes a
+    // location-in-responses value (offset, length) and returns a
+    // ResponseMetadata struct or error by running the following
+    // sub-steps:"
+    // The logic of MakeRelativeToStream is inlined at the callsite below.
     auto responses_section = section_offsets_.find(kResponsesSection);
     DCHECK(responses_section != section_offsets_.end());
     const uint64_t responses_section_offset = responses_section->second.first;
     const uint64_t responses_section_length = responses_section->second.second;
 
-    const uint64_t length =
-        std::min(responses_section_length, kMaxCBORItemHeaderSize);
-    data_source_->Read(
-        responses_section_offset, length,
-        base::BindOnce(&MetadataParser::ParseResponsesSectionHeader,
-                       weak_factory_.GetWeakPtr(),
-                       std::move(*index_section_value), length));
-  }
-
-  // Step 2- of
-  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#index-section
-  void ParseResponsesSectionHeader(
-      cbor::Value index_section_value,
-      uint64_t expected_data_length,
-      const base::Optional<std::vector<uint8_t>>& data) {
-    const cbor::Value::ArrayValue& index_section_array =
-        index_section_value.GetArray();
-
-    // Step 2.1. "Seek to offset sectionOffsets["responses"].offset in stream.
-    // If this fails, return an error."
-    if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading responses section header.");
-      return;
-    }
-    InputReader input(*data);
-
-    // Step 2.2. "Let (responsesType, numResponses) be the result of parsing the
-    // type and argument of a CBOR item from the stream (Section 3.5.3). If this
-    // returns an error, return that error."
-    auto num_responses = input.ReadCBORHeader(CBORType::kArray);
-    if (!num_responses) {
-      RunCallbackAndDestroy(
-          nullptr,
-          "Cannot parse the number of elements of the responses section.");
-      return;
-    }
-    // Step 2.3. "If responsesType is not 4 (a CBOR array) or numResponses is
-    // not half of the length of index, return an error."
-    if (index_section_array.size() % 2 != 0 ||
-        *num_responses != index_section_array.size() / 2) {
-      RunCallbackAndDestroy(
-          nullptr, "Wrong number of elements in the responses section.");
-      return;
-    }
-
-    // Step 3. "Let currentOffset be the current offset within stream minus
-    // sectionOffsets["responses"].offset."
-    uint64_t current_offset = input.CurrentOffset();
-
-    // Step 4. "Let requests be an initially-empty map ([INFRA]) from HTTP
-    // requests ([FETCH]) to structs ([INFRA]) with items named "offset" and
-    // "length"."
-
-    // Step 5. "For each (cbor-http-request, length) pair of adjacent elements
-    // in index:"
-    for (size_t i = 0; i < index_section_array.size(); i += 2) {
-      const cbor::Value& cbor_http_request_value = index_section_array[i];
-      const cbor::Value& length_value = index_section_array[i + 1];
-
-      // Step 5.1. "Let (headers, pseudos) be the result of converting
-      // cbor-http-request to a header list and pseudoheaders using the
-      // algorithm in Section 3.6. If this returns an error, return that error."
-      auto parsed_headers = ConvertCBORValueToHeaders(cbor_http_request_value);
-      if (!parsed_headers) {
-        RunCallbackAndDestroy(nullptr,
-                              "Cannot parse headers in the index section.");
-        return;
+    // Step 4. "For each (url, responses) entry in the index map:"
+    for (const auto& item : section_value.GetMap()) {
+      if (!item.first.is_string()) {
+        RunErrorCallbackAndDestroy("Index section: key must be a string.");
+        return false;
       }
-
-      // Step 5.2. "If pseudos does not have keys named ':method' and
-      // ':url', or its size isn't 2, return an error."
-      const auto pseudo_method = parsed_headers->pseudos.find(":method");
-      const auto pseudo_url = parsed_headers->pseudos.find(":url");
-      if (parsed_headers->pseudos.size() != 2 ||
-          pseudo_method == parsed_headers->pseudos.end() ||
-          pseudo_url == parsed_headers->pseudos.end()) {
-        RunCallbackAndDestroy(nullptr,
-                              "Request headers map must have exactly two "
-                              "pseudo-headers, :method and :url.");
-        return;
+      if (!item.second.is_array()) {
+        RunErrorCallbackAndDestroy("Index section: value must be an array.");
+        return false;
       }
+      const std::string& url = item.first.GetString();
+      const cbor::Value::ArrayValue& responses_array = item.second.GetArray();
 
-      // Step 5.3. "If pseudos[':method'] is not 'GET', return an error."
-      if (pseudo_method->second != "GET") {
-        RunCallbackAndDestroy(nullptr, "Request method must be GET.");
-        return;
-      }
+      // Step 4.1. "Let parsedUrl be the result of parsing ([URL]) url with no
+      // base URL."
+      GURL parsed_url = ParseExchangeURL(url);
 
-      // Step 5.4. "Let parsedUrl be the result of parsing ([URL])
-      // pseudos[':url'] with no base URL."
-      GURL parsed_url(pseudo_url->second);
-
-      // Step 5.5. "If parsedUrl is a failure, its fragment is not null, or it
+      // Step 4.2. "If parsedUrl is a failure, its fragment is not null, or it
       // includes credentials, return an error."
-      if (!parsed_url.is_valid() || parsed_url.has_ref() ||
-          parsed_url.has_username() || parsed_url.has_password()) {
-        RunCallbackAndDestroy(nullptr,
-                              ":url in header map must be a valid URL without "
-                              "fragment or credentials.");
-        return;
+      if (!parsed_url.is_valid()) {
+        RunErrorCallbackAndDestroy("Index section: exchange URL is not valid.");
+        return false;
       }
 
-      // Step 5.6. "Let http-request be a new request ([FETCH]) whose:
-      // - method is pseudos[':method'],
-      // - url is parsedUrl,
-      // - header list is headers, and
-      // - client is null."
-      mojom::BundleIndexItemPtr item = mojom::BundleIndexItem::New();
-      item->request_method = pseudo_method->second;
-      item->request_url = std::move(parsed_url);
-      item->request_headers = std::move(parsed_headers->headers);
-
-      // Step 5.7. "Let responseOffset be sectionOffsets["responses"].offset +
-      // currentOffset. This is relative to the start of the stream."
-      const uint64_t response_offset =
-          section_offsets_[kResponsesSection].first + current_offset;
-
-      // Step 5.8. "If currentOffset + length is greater than
-      // sectionOffsets["responses"].length, return an error."
-      if (!length_value.is_unsigned()) {
-        RunCallbackAndDestroy(
-            nullptr,
-            "Length value in the index section should be an unsigned.");
-        return;
+      // Step 4.3. "If the first element of responses is the empty string:"
+      if (responses_array.empty() || !responses_array[0].is_bytestring()) {
+        RunErrorCallbackAndDestroy(
+            "Index section: the first element of responses array must be a "
+            "bytestring.");
+        return false;
       }
-      const uint64_t length = length_value.GetUnsigned();
-
-      uint64_t response_end;
-      if (!base::CheckAdd(current_offset, length)
-               .AssignIfValid(&response_end) ||
-          response_end > section_offsets_[kResponsesSection].second) {
-        RunCallbackAndDestroy(nullptr,
-                              "Index map is invalid: total length of responses "
-                              "exceeds the length of the responses section.");
-        return;
+      base::StringPiece variants_value =
+          responses_array[0].GetBytestringAsString();
+      if (variants_value.empty()) {
+        // Step 4.3.1. "If the length of responses is not 3 (i.e. there is more
+        // than one location-in-responses in responses), return an error."
+        if (responses_array.size() != 3) {
+          RunErrorCallbackAndDestroy(
+              "Index section: unexpected size of responses array.");
+          return false;
+        }
+      } else {
+        // Step 4.4. "Otherwise:"
+        // TODO(crbug.com/969596): Parse variants_value to compute the number of
+        // variantKeys, and check that responses_array has
+        // (2 * #variantKeys + 1) elements.
+        if (responses_array.size() < 3 || responses_array.size() % 2 != 1) {
+          RunErrorCallbackAndDestroy(
+              "Index section: unexpected size of responses array.");
+          return false;
+        }
       }
+      // Instead of constructing a map from Variant-Keys to location-in-stream,
+      // this implementation just returns the responses array's structure as
+      // a BundleIndexValue.
+      std::vector<mojom::BundleResponseLocationPtr> response_locations;
+      for (size_t i = 1; i < responses_array.size(); i += 2) {
+        if (!responses_array[i].is_unsigned() ||
+            !responses_array[i + 1].is_unsigned()) {
+          RunErrorCallbackAndDestroy(
+              "Index section: offset and length values must be unsigned.");
+          return false;
+        }
+        uint64_t offset = responses_array[i].GetUnsigned();
+        uint64_t length = responses_array[i + 1].GetUnsigned();
 
-      // Step 5.9. "If requests[http-request] exists, return an error. That is,
-      // duplicate requests are forbidden."
+        // MakeRelativeToStream (Step 3.) is inlined here.
+        // Step 3.1. "If offset + length is larger than
+        // sectionOffsets["responses"].length, return an error."
+        uint64_t response_end;
+        if (!base::CheckAdd(offset, length).AssignIfValid(&response_end) ||
+            response_end > responses_section_length) {
+          RunErrorCallbackAndDestroy("Index section: response out of range.");
+          return false;
+        }
+        // Step 3.2. "Otherwise, return a ResponseMetadata struct whose offset
+        // is sectionOffsets["responses"].offset + offset and whose length is
+        // length."
 
-      // TODO(crbug.com/966753): Implement this check.
+        // This doesn't wrap because (offset <= responses_section_length) and
+        // (responses_section_offset + responses_section_length) doesn't wrap.
+        uint64_t offset_within_stream = responses_section_offset + offset;
 
-      // Step 5.10. "Set requests[http-request] to a struct whose "offset"
-      // item is responseOffset and whose "length" item is length."
-      item->response_offset = response_offset;
-      item->response_length = length;
-      items_.push_back(std::move(item));
-
-      // Step 5.11. "Set currentOffset to currentOffset + length."
-      current_offset = response_end;
+        response_locations.push_back(
+            mojom::BundleResponseLocation::New(offset_within_stream, length));
+      }
+      requests.insert(std::make_pair(
+          parsed_url,
+          mojom::BundleIndexValue::New(variants_value.as_string(),
+                                       std::move(response_locations))));
     }
 
-    // We're done.
-    RunCallbackAndDestroy(
-        mojom::BundleMetadata::New(std::move(items_), manifest_url_),
-        base::nullopt);
+    // Step 5. "Set metadata["requests"] to requests."
+    metadata_->requests = std::move(requests);
+    return true;
   }
 
-  void RunCallbackAndDestroy(mojom::BundleMetadataPtr metadata,
-                             const base::Optional<std::string>& error) {
-    DCHECK((metadata && !error) || (!metadata && error));
-    std::move(callback_).Run(std::move(metadata), error);
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#manifest-section
+  bool ParseManifestSection(const cbor::Value& section_value) {
+    // Step 1. "Let urlString be the result of parsing sectionContents as a CBOR
+    // item matching the above manifest rule (Section 3.5). If urlString is an
+    // error, return that error."
+    if (!section_value.is_string()) {
+      RunErrorCallbackAndDestroy("Manifest section must be a string.");
+      return false;
+    }
+    // Step 2. "Let url be the result of parsing ([URL]) urlString with no base
+    // URL."
+    GURL parsed_url = ParseExchangeURL(section_value.GetString());
+
+    // Step 3. "If url is a failure, its fragment is not null, or it includes
+    // credentials, return an error."
+    if (!parsed_url.is_valid()) {
+      RunErrorCallbackAndDestroy("Manifest URL is not a valid exchange URL.");
+      return false;
+    }
+    // Step 4. "Set metadata["manifest"] to url."
+    metadata_->manifest_url = std::move(parsed_url);
+    return true;
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#signatures-section
+  bool ParseSignaturesSection(const cbor::Value& section_value) {
+    // Step 1. "Let signatures be the result of parsing sectionContents as a
+    // CBOR item matching the signatures rule in the above CDDL (Section 3.5)."
+    if (!section_value.is_array() || section_value.GetArray().size() != 2) {
+      RunErrorCallbackAndDestroy(
+          "Signatures section must be an array of size 2.");
+      return false;
+    }
+    const cbor::Value& authorities_value = section_value.GetArray()[0];
+    const cbor::Value& vouched_subsets_value = section_value.GetArray()[1];
+
+    if (!authorities_value.is_array()) {
+      RunErrorCallbackAndDestroy("Authorities must be an array.");
+      return false;
+    }
+    std::vector<mojom::AugmentedCertificatePtr> authorities;
+    for (const cbor::Value& value : authorities_value.GetArray()) {
+      // ParseAugmentedCertificate deletes |this| on failure.
+      auto authority = ParseAugmentedCertificate(value);
+      if (!authority)
+        return false;
+      authorities.push_back(std::move(authority));
+    }
+
+    if (!vouched_subsets_value.is_array()) {
+      RunErrorCallbackAndDestroy("Vouched-subsets must be an array.");
+      return false;
+    }
+    std::vector<mojom::VouchedSubsetPtr> vouched_subsets;
+    for (const cbor::Value& value : vouched_subsets_value.GetArray()) {
+      if (!value.is_map()) {
+        RunErrorCallbackAndDestroy(
+            "An element of vouched-subsets must be a map.");
+        return false;
+      }
+      const cbor::Value::MapValue& item_map = value.GetMap();
+
+      auto* authority_value = Lookup(item_map, "authority");
+      if (!authority_value || !authority_value->is_unsigned()) {
+        RunErrorCallbackAndDestroy(
+            "authority is not found in vouched-subsets map, or not an "
+            "unsigned.");
+        return false;
+      }
+      int64_t authority = authority_value->GetUnsigned();
+
+      auto* sig_value = Lookup(item_map, "sig");
+      if (!sig_value || !sig_value->is_bytestring()) {
+        RunErrorCallbackAndDestroy(
+            "sig is not found in vouched-subsets map, or not a bytestring.");
+        return false;
+      }
+      const cbor::Value::BinaryValue& sig = sig_value->GetBytestring();
+
+      auto* signed_value = Lookup(item_map, "signed");
+      if (!signed_value || !signed_value->is_bytestring()) {
+        RunErrorCallbackAndDestroy(
+            "signed is not found in vouched-subsets map, or not a bytestring.");
+        return false;
+      }
+      const cbor::Value::BinaryValue& raw_signed =
+          signed_value->GetBytestring();
+
+      // ParseSignedSubset deletes |this| on failure.
+      auto parsed_signed = ParseSignedSubset(raw_signed);
+      if (!parsed_signed)
+        return false;
+
+      vouched_subsets.push_back(mojom::VouchedSubset::New(
+          authority, sig, raw_signed, std::move(parsed_signed)));
+    }
+
+    // Step 2. "Set metadata["authorities"] to the list of authorities in the
+    // first element of the signatures array."
+    metadata_->authorities = std::move(authorities);
+
+    // Step 3. "Set metadata["vouched-subsets"] to the second element of the
+    // signatures array."
+    metadata_->vouched_subsets = std::move(vouched_subsets);
+
+    return true;
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#critical-section
+  bool ParseCriticalSection(const cbor::Value& section_value) {
+    // Step 1. "Let critical be the result of parsing sectionContents as a CBOR
+    // item matching the above critical rule (Section 3.5). If critical is an
+    // error, return that error."
+    if (!section_value.is_array()) {
+      RunErrorCallbackAndDestroy("Critical section must be an array.");
+      return false;
+    }
+    // Step 2. "For each value sectionName in the critical list, if the client
+    // has not implemented sections named sectionName, return an error."
+    for (const cbor::Value& elem : section_value.GetArray()) {
+      if (!elem.is_string()) {
+        RunErrorCallbackAndDestroy(
+            "Non-string element in the critical section.");
+        return false;
+      }
+      const auto& section_name = elem.GetString();
+      if (!IsMetadataSection(section_name) &&
+          section_name != kResponsesSection) {
+        RunErrorCallbackAndDestroy("Unknown critical section.");
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#cert-chain-format
+  mojom::AugmentedCertificatePtr ParseAugmentedCertificate(
+      const cbor::Value& value) {
+    if (!value.is_map()) {
+      RunErrorCallbackAndDestroy("augmented-certificate must be a map.");
+      return nullptr;
+    }
+    const cbor::Value::MapValue& item_map = value.GetMap();
+    mojom::AugmentedCertificatePtr authority =
+        mojom::AugmentedCertificate::New();
+
+    auto* cert_value = Lookup(item_map, "cert");
+    if (!cert_value || !cert_value->is_bytestring()) {
+      RunErrorCallbackAndDestroy(
+          "cert is not found in augmented-certificate, or not a bytestring.");
+      return nullptr;
+    }
+    authority->cert = cert_value->GetBytestring();
+
+    if (auto* ocsp_value = Lookup(item_map, "ocsp")) {
+      if (!ocsp_value->is_bytestring()) {
+        RunErrorCallbackAndDestroy("ocsp is not a bytestring.");
+        return nullptr;
+      }
+      authority->ocsp = ocsp_value->GetBytestring();
+    }
+
+    if (auto* sct_value = Lookup(item_map, "sct")) {
+      if (!sct_value->is_bytestring()) {
+        RunErrorCallbackAndDestroy("sct is not a bytestring.");
+        return nullptr;
+      }
+      authority->sct = sct_value->GetBytestring();
+    }
+    return authority;
+  }
+
+  // https://wicg.github.io/webpackage/draft-yasskin-wpack-bundled-exchanges.html#signatures-section
+  mojom::SignedSubsetPtr ParseSignedSubset(
+      const cbor::Value::BinaryValue& signed_bytes) {
+    // Parse |signed_bytes| as a CBOR item.
+    cbor::Reader::DecoderError error;
+    base::Optional<cbor::Value> value =
+        cbor::Reader::Read(signed_bytes, &error);
+    if (!value) {
+      RunErrorCallbackAndDestroy(
+          std::string("Error parsing signed bytes as CBOR: ") +
+          cbor::Reader::ErrorCodeToString(error));
+      return nullptr;
+    }
+
+    if (!value->is_map()) {
+      RunErrorCallbackAndDestroy("signed-subset must be a CBOR map");
+      return nullptr;
+    }
+    const cbor::Value::MapValue& value_map = value->GetMap();
+
+    auto* validity_url_value = Lookup(value_map, "validity-url");
+    if (!validity_url_value || !validity_url_value->is_string()) {
+      RunErrorCallbackAndDestroy(
+          "validity-url is not found in signed-subset, or not a string.");
+      return nullptr;
+    }
+    // TODO(crbug.com/966753): Revisit this once requirements for validity URL
+    // are speced.
+    GURL validity_url(validity_url_value->GetString());
+    if (!validity_url.is_valid()) {
+      RunErrorCallbackAndDestroy("Cannot parse validity-url.");
+      return nullptr;
+    }
+
+    auto* auth_sha256_value = Lookup(value_map, "auth-sha256");
+    if (!auth_sha256_value || !auth_sha256_value->is_bytestring()) {
+      RunErrorCallbackAndDestroy(
+          "auth-sha256 is not found in signed-subset, or not a bytestring.");
+      return nullptr;
+    }
+    auto auth_sha256 = auth_sha256_value->GetBytestring();
+
+    auto* date_value = Lookup(value_map, "date");
+    if (!date_value || !date_value->is_unsigned()) {
+      RunErrorCallbackAndDestroy(
+          "date is not found in signed-subset, or not an unsigned.");
+      return nullptr;
+    }
+    auto date = date_value->GetUnsigned();
+
+    auto* expires_value = Lookup(value_map, "expires");
+    if (!expires_value || !expires_value->is_unsigned()) {
+      RunErrorCallbackAndDestroy(
+          "expires is not found in signed-subset, or not an unsigned.");
+      return nullptr;
+    }
+    auto expires = expires_value->GetUnsigned();
+
+    auto* subset_hashes_value = Lookup(value_map, "subset-hashes");
+    if (!subset_hashes_value || !subset_hashes_value->is_map()) {
+      RunErrorCallbackAndDestroy(
+          "subset-hashes is not found in signed-subset, or not a map.");
+      return nullptr;
+    }
+    base::flat_map<GURL, mojom::SubsetHashesValuePtr> subset_hashes;
+
+    for (const auto& item : subset_hashes_value->GetMap()) {
+      if (!item.first.is_string()) {
+        RunErrorCallbackAndDestroy("subset-hashes: key must be a string.");
+        return nullptr;
+      }
+      if (!item.second.is_array()) {
+        RunErrorCallbackAndDestroy("subset-hashes: value must be an array.");
+        return nullptr;
+      }
+      const std::string& url = item.first.GetString();
+      const cbor::Value::ArrayValue& value_array = item.second.GetArray();
+
+      GURL parsed_url = ParseExchangeURL(url);
+      if (!parsed_url.is_valid()) {
+        RunErrorCallbackAndDestroy("subset-hashes: exchange URL is not valid.");
+        return nullptr;
+      }
+
+      if (value_array.empty() || !value_array[0].is_bytestring()) {
+        RunErrorCallbackAndDestroy(
+            "subset-hashes: the first element of array must be a bytestring.");
+        return nullptr;
+      }
+      base::StringPiece variants_value = value_array[0].GetBytestringAsString();
+      if (value_array.size() < 3 || value_array.size() % 2 != 1) {
+        RunErrorCallbackAndDestroy(
+            "subset-hashes: unexpected size of value array.");
+        return nullptr;
+      }
+      std::vector<mojom::ResourceIntegrityPtr> resource_integrities;
+      for (size_t i = 1; i < value_array.size(); i += 2) {
+        if (!value_array[i].is_bytestring()) {
+          RunErrorCallbackAndDestroy(
+              "subset-hashes: header-sha256 must be a byte string.");
+          return nullptr;
+        }
+        if (!value_array[i + 1].is_string()) {
+          RunErrorCallbackAndDestroy(
+              "subset-hashes: payload-integrity-header must be a string.");
+          return nullptr;
+        }
+        resource_integrities.push_back(mojom::ResourceIntegrity::New(
+            value_array[i].GetBytestring(), value_array[i + 1].GetString()));
+      }
+      subset_hashes.insert(std::make_pair(
+          parsed_url,
+          mojom::SubsetHashesValue::New(variants_value.as_string(),
+                                        std::move(resource_integrities))));
+    }
+
+    return mojom::SignedSubset::New(validity_url, auth_sha256, date, expires,
+                                    std::move(subset_hashes));
+  }
+
+  // Returns nullptr if |key| is not in |map|.
+  const cbor::Value* Lookup(const cbor::Value::MapValue& map, const char* key) {
+    auto iter = map.find(cbor::Value(key));
+    if (iter == map.end())
+      return nullptr;
+    return &iter->second;
+  }
+
+  void RunSuccessCallbackAndDestroy() {
+    std::move(callback_).Run(std::move(metadata_), nullptr);
+    delete this;
+  }
+
+  void RunErrorCallbackAndDestroy(
+      const std::string& message,
+      mojom::BundleParseErrorType error_type =
+          mojom::BundleParseErrorType::kFormatError) {
+    mojom::BundleMetadataParseErrorPtr err =
+        mojom::BundleMetadataParseError::New(error_type, fallback_url_,
+                                             message);
+    std::move(callback_).Run(nullptr, std::move(err));
     delete this;
   }
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunCallbackAndDestroy(nullptr, "Data source disconnected.");
+    RunErrorCallbackAndDestroy("Data source disconnected.");
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;
   ParseMetadataCallback callback_;
   uint64_t size_;
-  // name -> (offset, length)
-  std::map<std::string, std::pair<uint64_t, uint64_t>> section_offsets_;
-  std::vector<mojom::BundleIndexItemPtr> items_;
-  GURL manifest_url_;
+  bool version_mismatch_ = false;
+  GURL fallback_url_;
+  SectionOffsets section_offsets_;
+  mojom::BundleMetadataPtr metadata_;
 
   base::WeakPtrFactory<MetadataParser> weak_factory_{this};
 
@@ -682,7 +1144,7 @@ class BundledExchangesParser::ResponseParser
     // Step 1. "Seek to offset requestMetadata.offset in stream. If this fails,
     // return an error."
     if (!data || data->size() != expected_data_length) {
-      RunCallbackAndDestroy(nullptr, "Error reading response header.");
+      RunErrorCallbackAndDestroy("Error reading response header.");
       return;
     }
     InputReader input(*data);
@@ -691,7 +1153,7 @@ class BundledExchangesParser::ResponseParser
     // return an error."
     auto num_elements = input.ReadCBORHeader(CBORType::kArray);
     if (!num_elements || *num_elements != 2) {
-      RunCallbackAndDestroy(nullptr, "Array size of response must be 2.");
+      RunErrorCallbackAndDestroy("Array size of response must be 2.");
       return;
     }
 
@@ -700,14 +1162,14 @@ class BundledExchangesParser::ResponseParser
     // error, return that error."
     auto header_length = input.ReadCBORHeader(CBORType::kByteString);
     if (!header_length) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response header length.");
+      RunErrorCallbackAndDestroy("Cannot parse response header length.");
       return;
     }
 
     // Step 4. "If headerLength is 524288 (512*1024) or greater, return an
     // error."
     if (*header_length >= kMaxResponseHeaderLength) {
-      RunCallbackAndDestroy(nullptr, "Response header is too big.");
+      RunErrorCallbackAndDestroy("Response header is too big.");
       return;
     }
 
@@ -728,14 +1190,14 @@ class BundledExchangesParser::ResponseParser
     // If either the read or parse returns an error, return that error."
     auto headers_bytes = input.ReadBytes(*header_length);
     if (!headers_bytes) {
-      RunCallbackAndDestroy(nullptr, "Cannot read response headers.");
+      RunErrorCallbackAndDestroy("Cannot read response headers.");
       return;
     }
     cbor::Reader::DecoderError error;
     base::Optional<cbor::Value> headers_value =
         cbor::Reader::Read(*headers_bytes, &error);
     if (!headers_value) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response headers.");
+      RunErrorCallbackAndDestroy("Cannot parse response headers.");
       return;
     }
 
@@ -744,7 +1206,7 @@ class BundledExchangesParser::ResponseParser
     // If this returns an error, return that error."
     auto parsed_headers = ConvertCBORValueToHeaders(*headers_value);
     if (!parsed_headers) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response headers.");
+      RunErrorCallbackAndDestroy("Cannot parse response headers.");
       return;
     }
 
@@ -753,8 +1215,7 @@ class BundledExchangesParser::ResponseParser
     const auto pseudo_status = parsed_headers->pseudos.find(":status");
     if (parsed_headers->pseudos.size() != 1 ||
         pseudo_status == parsed_headers->pseudos.end()) {
-      RunCallbackAndDestroy(
-          nullptr,
+      RunErrorCallbackAndDestroy(
           "Response headers map must have exactly one pseudo-header, :status.");
       return;
     }
@@ -767,29 +1228,32 @@ class BundledExchangesParser::ResponseParser
         !std::all_of(status_str.begin(), status_str.end(),
                      base::IsAsciiDigit<char>) ||
         !base::StringToInt(status_str, &status)) {
-      RunCallbackAndDestroy(nullptr, ":status must be 3 ASCII decimal digits.");
+      RunErrorCallbackAndDestroy(":status must be 3 ASCII decimal digits.");
       return;
     }
 
-    // Step 9. "If headers does not contain a Content-Type header, return an
-    // error."
-
-    // TODO(crbug.com/966753): Implement this once
-    // https://github.com/WICG/webpackage/issues/445 is resolved.
-
-    // Step 10. "Let payloadLength be the result of getting the length of a CBOR
+    // Step 9. "Let payloadLength be the result of getting the length of a CBOR
     // bytestring header from stream (Section 3.5.2). If payloadLength is an
     // error, return that error."
     auto payload_length = input.ReadCBORHeader(CBORType::kByteString);
     if (!payload_length) {
-      RunCallbackAndDestroy(nullptr, "Cannot parse response payload length.");
+      RunErrorCallbackAndDestroy("Cannot parse response payload length.");
+      return;
+    }
+
+    // Step 10. "If payloadLength is greater than 0 and headers does not contain
+    // a Content-Type header, return an error."
+    if (*payload_length > 0 &&
+        !parsed_headers->headers.contains("content-type")) {
+      RunErrorCallbackAndDestroy(
+          "Non-empty response must have a content-type header.");
       return;
     }
 
     // Step 11. "If stream.currentOffset + payloadLength !=
     // requestMetadata.offset + requestMetadata.length, return an error."
     if (input.CurrentOffset() + *payload_length != response_length_) {
-      RunCallbackAndDestroy(nullptr, "Unexpected payload length.");
+      RunErrorCallbackAndDestroy("Unexpected payload length.");
       return;
     }
 
@@ -807,19 +1271,26 @@ class BundledExchangesParser::ResponseParser
     response->response_headers = std::move(parsed_headers->headers);
     response->payload_offset = response_offset_ + input.CurrentOffset();
     response->payload_length = *payload_length;
-    RunCallbackAndDestroy(std::move(response), base::nullopt);
+    RunSuccessCallbackAndDestroy(std::move(response));
   }
 
-  void RunCallbackAndDestroy(mojom::BundleResponsePtr response,
-                             const base::Optional<std::string>& error) {
-    DCHECK((response && !error) || (!response && error));
-    std::move(callback_).Run(std::move(response), error);
+  void RunSuccessCallbackAndDestroy(mojom::BundleResponsePtr response) {
+    std::move(callback_).Run(std::move(response), nullptr);
+    delete this;
+  }
+
+  void RunErrorCallbackAndDestroy(
+      const std::string& message,
+      mojom::BundleParseErrorType error_type =
+          mojom::BundleParseErrorType::kFormatError) {
+    std::move(callback_).Run(
+        nullptr, mojom::BundleResponseParseError::New(error_type, message));
     delete this;
   }
 
   // Implements SharedBundleDataSource::Observer.
   void OnDisconnect() override {
-    RunCallbackAndDestroy(nullptr, "Data source disconnected.");
+    RunErrorCallbackAndDestroy("Data source disconnected.");
   }
 
   scoped_refptr<SharedBundleDataSource> data_source_;

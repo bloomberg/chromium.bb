@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/dom/node.h"
 #include "third_party/blink/renderer/core/html/imports/html_imports_controller.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
+#include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/bindings/wrapper_type_info.h"
 #include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
 #include "third_party/blink/renderer/platform/heap/unified_heap_controller.h"
@@ -286,13 +287,14 @@ class DOMWrapperForwardingVisitor final
 
 }  // namespace
 
-void V8GCController::TraceDOMWrappers(v8::Isolate* isolate,
-                                      Visitor* parent_visitor) {
-  DOMWrapperForwardingVisitor visitor(parent_visitor);
-  isolate->VisitHandlesWithClassIds(&visitor);
+// static
+void V8GCController::TraceDOMWrappers(v8::Isolate* isolate, Visitor* visitor) {
+  DCHECK(isolate);
+  DOMWrapperForwardingVisitor forwarding_visitor(visitor);
+  isolate->VisitHandlesWithClassIds(&forwarding_visitor);
   v8::EmbedderHeapTracer* const tracer = static_cast<v8::EmbedderHeapTracer*>(
       ThreadState::Current()->unified_heap_controller());
-  tracer->IterateTracedGlobalHandles(&visitor);
+  tracer->IterateTracedGlobalHandles(&forwarding_visitor);
 }
 
 }  // namespace blink

@@ -305,6 +305,7 @@ class DocStringCheckerTest(CheckerTestCase):
       Args:
           some: has four spaces but should be two
       """,
+      """"Extra leading quotes.""",
   )
 
   # The current linter isn't good enough yet to detect these.

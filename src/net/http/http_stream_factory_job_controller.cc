@@ -627,7 +627,7 @@ int HttpStreamFactory::JobController::DoResolveProxy() {
   GURL origin_url = ApplyHostMappingRules(request_info_.url, &destination);
 
   CompletionOnceCallback io_callback =
-      base::Bind(&JobController::OnIOComplete, base::Unretained(this));
+      base::BindOnce(&JobController::OnIOComplete, base::Unretained(this));
   return session_->proxy_resolution_service()->ResolveProxy(
       origin_url, request_info_.method, &proxy_info_, std::move(io_callback),
       &proxy_resolve_request_, net_log_);
@@ -993,7 +993,8 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
   HttpServerProperties& http_server_properties =
       *session_->http_server_properties();
   const AlternativeServiceInfoVector alternative_service_info_vector =
-      http_server_properties.GetAlternativeServiceInfos(origin);
+      http_server_properties.GetAlternativeServiceInfos(
+          origin, request_info.network_isolation_key);
   if (alternative_service_info_vector.empty())
     return AlternativeServiceInfo();
 
@@ -1079,7 +1080,7 @@ HttpStreamFactory::JobController::GetAlternativeServiceInfoInternal(
                                                                destination))
       return alternative_service_info;
 
-    if (!IsQuicWhitelistedForHost(destination.host()))
+    if (!IsQuicAllowedForHost(destination.host()))
       continue;
 
     // Cache this entry if we don't have a non-broken Alt-Svc yet.
@@ -1205,8 +1206,8 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   if (request_info_.load_flags & LOAD_BYPASS_PROXY)
     return error;
 
-  if (proxy_info_.is_https() && proxy_ssl_config_.send_client_cert) {
-    session_->ssl_client_auth_cache()->Remove(
+  if (proxy_info_.is_https()) {
+    session_->ssl_client_context()->ClearClientCertificate(
         proxy_info_.proxy_server().host_port_pair());
   }
 
@@ -1233,15 +1234,15 @@ int HttpStreamFactory::JobController::ReconsiderProxyAfterError(Job* job,
   return OK;
 }
 
-bool HttpStreamFactory::JobController::IsQuicWhitelistedForHost(
+bool HttpStreamFactory::JobController::IsQuicAllowedForHost(
     const std::string& host) {
-  const base::flat_set<std::string>& host_whitelist =
-      session_->params().quic_host_whitelist;
-  if (host_whitelist.empty())
+  const base::flat_set<std::string>& host_allowlist =
+      session_->params().quic_host_allowlist;
+  if (host_allowlist.empty())
     return true;
 
   std::string lowered_host = base::ToLowerASCII(host);
-  return base::Contains(host_whitelist, lowered_host);
+  return base::Contains(host_allowlist, lowered_host);
 }
 
 }  // namespace net

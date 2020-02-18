@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/public/base/account_consistency_method.h"
@@ -30,15 +30,14 @@ MATCHER_P(CookieHasValueMatcher, value, "") {
       net::CookieOptions::SameSiteCookieContext::SAME_SITE_LAX);
   return arg.Name() == "CHROME_ID_CONSISTENCY_STATE" && arg.Value() == value &&
          arg.IncludeForRequestURL(GaiaUrls::GetInstance()->gaia_url(),
-                                  cookie_options) ==
-             net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+                                  cookie_options)
+             .IsInclude();
 }
 
 MATCHER(SetPermittedInContext, "") {
   const net::CanonicalCookie& cookie = testing::get<0>(arg);
   const net::CookieOptions& cookie_options = testing::get<1>(arg);
-  return cookie.IsSetPermittedInContext(cookie_options) ==
-         net::CanonicalCookie::CookieInclusionStatus::INCLUDE;
+  return cookie.IsSetPermittedInContext(cookie_options).IsInclude();
 }
 
 class MockCookieManager
@@ -100,7 +99,7 @@ class ConsistencyCookieManagerTest : public ::testing::Test {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
 
   // Owned by signin_client_.

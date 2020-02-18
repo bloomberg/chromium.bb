@@ -12,6 +12,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
+#include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -20,6 +21,7 @@
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_check_screen_view.h"
@@ -88,7 +90,6 @@
 #include "chrome/grit/component_extension_resources.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/services/multidevice_setup/public/mojom/constants.mojom.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
@@ -133,9 +134,8 @@ constexpr char kOobeJSPath[] = "oobe.js";
 constexpr char kProductLogoPath[] = "product-logo.png";
 constexpr char kRecommendAppListViewHTMLPath[] = "recommend_app_list_view.html";
 constexpr char kRecommendAppListViewJSPath[] = "recommend_app_list_view.js";
-constexpr char kStringsJSPath[] = "strings.js";
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 constexpr char kLogo24PX1XSvgPath[] = "logo_24px-1x.svg";
 constexpr char kLogo24PX2XSvgPath[] = "logo_24px-2x.svg";
 constexpr char kSyncConsentIcons[] = "sync-consent-icons.html";
@@ -147,7 +147,7 @@ void AddProductLogoResources(content::WebUIDataSource* source) {
   source->AddResourcePath(kArcAssistantLogoPath, IDR_ASSISTANT_LOGO_PNG);
   source->AddResourcePath(kArcSupervisionIconPath, IDR_SUPERVISION_ICON_PNG);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kLogo24PX1XSvgPath, IDR_PRODUCT_LOGO_24PX_1X);
   source->AddResourcePath(kLogo24PX2XSvgPath, IDR_PRODUCT_LOGO_24PX_2X);
 #endif
@@ -157,7 +157,7 @@ void AddProductLogoResources(content::WebUIDataSource* source) {
 }
 
 void AddSyncConsentResources(content::WebUIDataSource* source) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   source->AddResourcePath(kSyncConsentIcons,
                           IDR_PRODUCT_CHROMEOS_SYNC_CONSENT_SCREEN_ICONS);
   // No #else section here as Sync Settings screen is Chrome-specific.
@@ -179,12 +179,19 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
                           IDR_ARC_SUPPORT_RECOMMEND_APP_LIST_VIEW_HTML);
 }
 
+void AddAssistantScreensResources(content::WebUIDataSource* source) {
+  source->AddResourcePath("voice_match_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+}
+
 void AddFingerprintResources(content::WebUIDataSource* source) {
   int animation_id;
+  bool is_lottie_animation = false;
   switch (quick_unlock::GetFingerprintLocation()) {
     case quick_unlock::FingerprintLocation::TABLET_POWER_BUTTON:
-      animation_id =
-          IDR_LOGIN_FINGERPRINT_SCANNER_TABLET_POWER_BUTTON_ANIMATION;
+      is_lottie_animation = true;
+      animation_id = IDR_LOGIN_FINGER_PRINT_TABLET_ANIMATION;
       break;
     case quick_unlock::FingerprintLocation::KEYBOARD_BOTTOM_RIGHT:
       animation_id =
@@ -194,7 +201,20 @@ void AddFingerprintResources(content::WebUIDataSource* source) {
       animation_id = IDR_LOGIN_FINGERPRINT_SCANNER_LAPTOP_TOP_RIGHT_ANIMATION;
       break;
   }
-  source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
+  if (is_lottie_animation) {
+    source->AddResourcePath("fingerprint_scanner_animation.json", animation_id);
+
+    // To use lottie, the worker-src CSP needs to be updated for the web ui that
+    // is using it. Since as of now there are only a couple of webuis using
+    // lottie animations, this update has to be performed manually. As the usage
+    // increases, set this as the default so manual override is no longer
+    // required.
+    source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
+  } else {
+    source->AddResourcePath("fingerprint_scanner_animation.png", animation_id);
+  }
+
+  source->AddBoolean("useLottieAnimationForFingerprint", is_lottie_animation);
 }
 
 // Default and non-shared resource definition for kOobeDisplay display type.
@@ -235,7 +255,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUIOobeHost);
   source->AddLocalizedStrings(localized_strings);
-  source->SetJsonPath(kStringsJSPath);
+  source->UseStringsJs();
 
   // First, configure default and non-shared resources for the current display
   // type.
@@ -255,6 +275,7 @@ content::WebUIDataSource* CreateOobeUIDataSource(
   AddFingerprintResources(source);
   AddSyncConsentResources(source);
   AddArcScreensResources(source);
+  AddAssistantScreensResources(source);
 
   source->AddResourcePath(kKeyboardUtilsJSPath, IDR_KEYBOARD_UTILS_JS);
   source->OverrideContentSecurityPolicyObjectSrc(
@@ -482,10 +503,7 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
 
 void OobeUI::BindCrosNetworkConfig(
     chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  content::BrowserContext::GetConnectorFor(
-      web_ui()->GetWebContents()->GetBrowserContext())
-      ->BindInterface(chromeos::network_config::mojom::kServiceName,
-                      std::move(request));
+  ash::GetNetworkConfigService(std::move(request));
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
@@ -552,7 +570,7 @@ void OobeUI::GetLocalizedStrings(base::DictionaryValue* localized_strings) {
   const std::string& app_locale = g_browser_process->GetApplicationLocale();
   webui::SetLoadTimeDataDefaults(app_locale, localized_strings);
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   localized_strings->SetString("buildType", "chrome");
 #else
   localized_strings->SetString("buildType", "chromium");

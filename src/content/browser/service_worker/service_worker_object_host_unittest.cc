@@ -19,8 +19,8 @@
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -84,7 +84,7 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
       blink::mojom::ServiceWorkerObjectInfoPtr info)
       : info_(std::move(info)),
         state_(info_->state),
-        binding_(this, std::move(info_->request)) {}
+        receiver_(this, std::move(info_->receiver)) {}
   ~MockServiceWorkerObject() override = default;
 
   blink::mojom::ServiceWorkerState state() const { return state_; }
@@ -97,21 +97,20 @@ class MockServiceWorkerObject : public blink::mojom::ServiceWorkerObject {
 
   blink::mojom::ServiceWorkerObjectInfoPtr info_;
   blink::mojom::ServiceWorkerState state_;
-  mojo::AssociatedBinding<blink::mojom::ServiceWorkerObject> binding_;
+  mojo::AssociatedReceiver<blink::mojom::ServiceWorkerObject> receiver_;
 };
 
 class ServiceWorkerObjectHostTest : public testing::Test {
  public:
   ServiceWorkerObjectHostTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void Initialize(std::unique_ptr<EmbeddedWorkerTestHelper> helper) {
     helper_ = std::move(helper);
   }
 
   void SetUpRegistration(const GURL& scope, const GURL& script_url) {
-    helper_->context()->storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    helper_->context()->storage()->LazyInitializeForTest();
 
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = scope;
@@ -155,8 +154,8 @@ class ServiceWorkerObjectHostTest : public testing::Test {
                                                 std::move(callback));
   }
 
-  size_t GetBindingsCount(ServiceWorkerObjectHost* object_host) {
-    return object_host->bindings_.size();
+  size_t GetReceiverCount(ServiceWorkerObjectHost* object_host) {
+    return object_host->receivers_.size();
   }
 
   ServiceWorkerObjectHost* GetServiceWorkerObjectHost(
@@ -199,7 +198,7 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     return registration_info;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -222,7 +221,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
           helper_->context()->AsWeakPtr(), &remote_endpoint);
   provider_host->UpdateUrls(scope, scope);
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
-      GetRegistrationFromRemote(remote_endpoint.host_ptr()->get(), scope);
+      GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
   EXPECT_TRUE(registration_info->installing);
   EXPECT_EQ(version_->version_id(), registration_info->installing->version_id);
@@ -281,7 +280,7 @@ TEST_F(ServiceWorkerObjectHostTest,
           ->CreateCompleteObjectInfoToSend();
   ServiceWorkerObjectHost* object_host =
       GetServiceWorkerObjectHost(provider_host, version_->version_id());
-  EXPECT_EQ(1u, GetBindingsCount(object_host));
+  EXPECT_EQ(1u, GetReceiverCount(object_host));
 
   // Now simulate the service worker calling postMessage() to itself,
   // by calling DispatchExtendableMessageEvent on |object_host|.
@@ -299,7 +298,7 @@ TEST_F(ServiceWorkerObjectHostTest,
   // The dispatched ExtendableMessageEvent should be received
   // by the worker, and the source service worker object info
   // should be for its own version id.
-  EXPECT_EQ(2u, GetBindingsCount(object_host));
+  EXPECT_EQ(2u, GetReceiverCount(object_host));
   const std::vector<blink::mojom::ExtendableMessageEventPtr>& events =
       worker->events();
   EXPECT_EQ(1u, events.size());

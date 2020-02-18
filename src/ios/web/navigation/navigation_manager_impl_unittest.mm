@@ -1881,8 +1881,7 @@ TEST_P(NavigationManagerTest, ReloadWithUserAgentTypeOnIntenalUrl) {
       ->GetPendingItemInCurrentOrRestoredSession()
       ->SetVirtualURL(virtual_url);
   [mock_wk_list_ setCurrentURL:base::SysUTF8ToNSString(url.spec())];
-  navigation_manager()->OnRendererInitiatedNavigationStarted(
-      GURL("http://www.1.com/virtual"));
+  navigation_manager()->OnNavigationStarted(GURL("http://www.1.com/virtual"));
 
   navigation_manager()->ReloadWithUserAgentType(UserAgentType::DESKTOP);
 
@@ -2089,14 +2088,14 @@ TEST_P(NavigationManagerTest, Restore) {
     EXPECT_TRUE(pending_url.SchemeIsFile());
     EXPECT_EQ("restore_session.html", pending_url.ExtractFileName());
     EXPECT_EQ("http://www.url.com/0", pending_item->GetVirtualURL());
+    navigation_manager()->OnNavigationStarted(pending_url);
 
     // Simulate the end effect of loading the restore session URL in web view.
     pending_item->SetURL(urls[1]);
     [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
                     backListURLs:@[ @"http://www.url.com/0" ]
                  forwardListURLs:@[ @"http://www.url.com/2" ]];
-    navigation_manager()->OnRendererInitiatedNavigationStarted(
-        GURL("http://www.url.com/2"));
+    navigation_manager()->OnNavigationStarted(GURL("http://www.url.com/2"));
   }
 
   ASSERT_TRUE(WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
@@ -2108,7 +2107,7 @@ TEST_P(NavigationManagerTest, Restore) {
   EXPECT_EQ(1, navigation_manager()->GetLastCommittedItemIndex());
   EXPECT_EQ(urls[1], navigation_manager()->GetLastCommittedItem()->GetURL());
 
-  for (size_t i = 0; i < items.size(); ++i) {
+  for (size_t i = 0; i < base::size(urls); ++i) {
     EXPECT_EQ(urls[i], navigation_manager()->GetItemAtIndex(i)->GetURL());
   }
 
@@ -2632,6 +2631,19 @@ TEST_P(NavigationManagerTest, CommitNilPendingItem) {
   ASSERT_TRUE(navigation_manager()->GetLastCommittedItem());
   EXPECT_EQ("http://www.url.com/0",
             navigation_manager()->GetLastCommittedItem()->GetURL());
+}
+
+// Tests that NavigationManagerImpl::CommitPendingItem() for an invalid URL
+// doesn't crash.
+TEST_P(NavigationManagerTest, CommitEmptyPendingItem) {
+  [mock_wk_list_ setCurrentURL:@"http://www.url.com/1"
+                  backListURLs:nil
+               forwardListURLs:nil];
+
+  // Call CommitPendingItem() with a valid pending item.
+  auto item = std::make_unique<web::NavigationItemImpl>();
+  item->SetURL(GURL::EmptyGURL());
+  navigation_manager()->CommitPendingItem(std::move(item));
 }
 
 // Tests NavigationManagerImpl::CommitPendingItem() with a valid pending item.

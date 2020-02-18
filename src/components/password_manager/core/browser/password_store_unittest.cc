@@ -15,7 +15,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/os_crypt/os_crypt_mocker.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
@@ -109,8 +109,7 @@ class StartSyncFlareMock {
 class PasswordStoreTest : public testing::Test {
  protected:
   PasswordStoreTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -123,15 +122,20 @@ class PasswordStoreTest : public testing::Test {
     OSCryptMocker::TearDown();
   }
 
-  void WaitForPasswordStore() { scoped_task_environment_.RunUntilIdle(); }
+  void WaitForPasswordStore() { task_environment_.RunUntilIdle(); }
 
   base::FilePath test_login_db_file_path() const {
     return temp_dir_.GetPath().Append(FILE_PATH_LITERAL("login_test"));
   }
 
+  scoped_refptr<PasswordStoreDefault> CreatePasswordStore() {
+    return new PasswordStoreDefault(std::make_unique<LoginDatabase>(
+        test_login_db_file_path(), password_manager::IsAccountStore(false)));
+  }
+
  private:
   base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordStoreTest);
 };
@@ -147,40 +151,40 @@ base::Optional<PasswordHashData> GetPasswordFromPref(
 }
 
 TEST_F(PasswordStoreTest, IgnoreOldWwwGoogleLogins) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   const time_t cutoff = 1325376000;  // 00:00 Jan 1 2012 UTC
+  const time_t last_usage_time = 1546300800;  // 00:00 Jan 1 2019 UTC
   static const PasswordFormData form_data[] = {
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_1", L"", true, cutoff - 1},
+       L"username_value_1", L"", true, last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ older than the cutoff. Will be
       // ignored.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_2", L"", true, cutoff - 1},
+       L"username_value_2", L"", true, last_usage_time, cutoff - 1},
       // A form on https://www.google.com/ newer than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://www.google.com",
        "https://www.google.com/origin", "https://www.google.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value_3", L"", true, cutoff + 1},
+       L"username_value_3", L"", true, last_usage_time, cutoff + 1},
       // A form on https://accounts.google.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "https://accounts.google.com",
        "https://accounts.google.com/origin",
        "https://accounts.google.com/action", L"submit_element",
        L"username_element", L"password_element", L"username_value", L"", true,
-       cutoff - 1},
+       last_usage_time, cutoff - 1},
       // A form on http://bar.example.com/ older than the cutoff.
       {PasswordForm::Scheme::kHtml, "http://bar.example.com",
        "http://bar.example.com/origin", "http://bar.example.com/action",
        L"submit_element", L"username_element", L"password_element",
-       L"username_value", L"", true, cutoff - 1},
+       L"username_value", L"", true, last_usage_time, cutoff - 1},
   };
 
   // Build the forms vector and add the forms to the store.
@@ -241,8 +245,7 @@ TEST_F(PasswordStoreTest, StartSyncFlare) {
   // This test isn't relevant for USS code path.
   if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords))
     return;
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   StartSyncFlareMock mock;
   store->Init(
       base::Bind(&StartSyncFlareMock::StartSyncFlare, base::Unretained(&mock)),
@@ -277,8 +280,7 @@ TEST_F(PasswordStoreTest, UpdateLoginPrimaryKeyFields) {
        L"", true, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> old_form(
@@ -329,8 +331,7 @@ TEST_F(PasswordStoreTest, RemoveLoginsCreatedBetweenCallbackIsCalled) {
        L"", true, 1};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::unique_ptr<PasswordForm> test_form(
@@ -381,8 +382,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithoutAffiliations) {
        L"", true, 1}};
   /* clang-format on */
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -481,8 +481,7 @@ TEST_F(PasswordStoreTest, GetLoginsWithAffiliations) {
           false,
       }};
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -546,6 +545,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
   const wchar_t kTestOldPassword[] = L"old_password_value";
   const wchar_t kTestNewPassword[] = L"new_password_value";
   const wchar_t kTestOtherPassword[] = L"other_password_value";
+  const time_t last_usage_time = 1546300800;  // 00:00 Jan 1 2019 UTC
 
   /* clang-format off */
   static const PasswordFormData kTestCredentials[] = {
@@ -556,7 +556,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestAndroidRealm1,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 2},
+       kTestOldPassword, true, last_usage_time, 2},
 
       // --- Positive samples --- Credentials that the password update should be
       // automatically propagated to.
@@ -567,7 +567,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true, last_usage_time, 1},
       // Credential for another affiliated web site with the same username.
       // Although the password is different than the current/old password for
       // the Android application, it should be updated regardless.
@@ -576,7 +576,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin2,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true, 1},
+       kTestOtherPassword, true,last_usage_time,  1},
 
       // --- Negative samples --- Credentials that the password update should
       // not be propagated to.
@@ -588,21 +588,21 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin3,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestNewPassword, true, 1},
+       kTestNewPassword, true, last_usage_time, 1},
       // Credential for the HTTP version of an affiliated web site.
       {PasswordForm::Scheme::kHtml,
        kTestInsecureWebRealm,
        kTestInsecureWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true, last_usage_time, 1},
       // Credential for an affiliated web site, but with a different username.
       {PasswordForm::Scheme::kHtml,
        kTestWebRealm1,
        kTestWebOrigin1,
        "", L"", L"",  L"",
        kTestOtherUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for a web site that is a PSL match to a web sites affiliated
       // with the Android application.
       {PasswordForm::Scheme::kHtml,
@@ -610,26 +610,26 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestPSLMatchingWebOrigin,
        "poisoned", L"poisoned", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an unrelated web site.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedWebRealm,
        kTestUnrelatedWebOrigin,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an affiliated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestAndroidRealm2,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an unrelated Android application.
       {PasswordForm::Scheme::kHtml,
        kTestUnrelatedAndroidRealm,
        "", "", L"", L"", L"",
        kTestUsername,
-       kTestOldPassword, true, 1},
+       kTestOldPassword, true,last_usage_time,  1},
       // Credential for an affiliated web site with the same username, but one
       // that was updated at the same time via Sync as the Android credential.
       {PasswordForm::Scheme::kHtml,
@@ -637,7 +637,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
        kTestWebOrigin5,
        "", L"", L"",  L"",
        kTestUsername,
-       kTestOtherPassword, true, 2}};
+       kTestOtherPassword, true, last_usage_time, 2}};
   /* clang-format on */
 
   // The number of positive samples in |kTestCredentials|.
@@ -648,8 +648,7 @@ TEST_F(PasswordStoreTest, UpdatePasswordsStoredForAffiliatedWebsites) {
     SCOPED_TRACE(testing::Message("test_remove_and_add_login: ")
                  << test_remove_and_add_login);
 
-    scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-        std::make_unique<LoginDatabase>(test_login_db_file_path())));
+    scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
     store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
     store->RemoveLoginsCreatedBetween(base::Time(), base::Time::Max(),
                                       base::Closure());
@@ -746,8 +745,7 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
        L"", L"", nullptr, L"", true, 1}};
 
-  auto store = base::MakeRefCounted<PasswordStoreDefault>(
-      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -769,6 +767,72 @@ TEST_F(PasswordStoreTest, GetAllLogins) {
   store->ShutdownOnUIThread();
 }
 
+// Tests if all credentials in the store with a specific password are
+// successfully transferred to the consumer.
+TEST_F(PasswordStoreTest, GetLogisByPassword) {
+  static constexpr wchar_t tested_password[] = L"duplicated_password";
+  static constexpr wchar_t another_tested_password[] = L"some_other_password";
+  static constexpr wchar_t untested_password[] = L"and_another_password";
+
+  // The first, third and forth credentials use the same password, but the forth
+  // is blacklisted.
+  static constexpr PasswordFormData kTestCredentials[] = {
+      // Has the specified password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
+       L"username_value_1", tested_password, true, 1},
+      // Has another password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm2, "", "", L"", L"", L"",
+       L"username_value_2", another_tested_password, true, 1},
+      // Has the specified password:
+      {PasswordForm::Scheme::kHtml, kTestAndroidRealm3, "", "", L"", L"", L"",
+       L"username_value_3", tested_password, true, 1},
+      // Has a third password:
+      {PasswordForm::Scheme::kHtml, kTestWebRealm1, kTestWebOrigin1, "", L"",
+       L"", L"", L"username_value_4", untested_password, true, 1},
+      // A PasswordFormData with nullptr as the username_value will be converted
+      // in a blacklisted PasswordForm in FillPasswordFormWithData().
+      // Has the specified password, but is blacklisted.
+      {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
+       L"", L"", nullptr, tested_password, true, 1}};
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  std::vector<std::unique_ptr<PasswordForm>> all_credentials;
+  for (const auto& test_credential : kTestCredentials) {
+    all_credentials.push_back(FillPasswordFormWithData(test_credential));
+    store->AddLogin(*all_credentials.back());
+  }
+
+  MockPasswordStoreConsumer mock_consumer;
+  std::vector<std::unique_ptr<PasswordForm>> expected_results;
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[0]));
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[2]));
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetLoginsByPassword(base::WideToUTF16(tested_password),
+                             &mock_consumer);
+  WaitForPasswordStore();
+
+  // Tries to find all credentials with |another_tested_password|.
+  expected_results.clear();
+  expected_results.push_back(
+      std::make_unique<PasswordForm>(*all_credentials[1]));
+
+  EXPECT_CALL(mock_consumer,
+              OnGetPasswordStoreResultsConstRef(
+                  UnorderedPasswordFormElementsAre(&expected_results)));
+  store->GetLoginsByPassword(base::WideToUTF16(another_tested_password),
+                             &mock_consumer);
+  WaitForPasswordStore();
+
+  store->ShutdownOnUIThread();
+}
+
 TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
   static constexpr PasswordFormData kTestCredentials[] = {
       {PasswordForm::Scheme::kHtml, kTestAndroidRealm1, "", "", L"", L"", L"",
@@ -786,8 +850,7 @@ TEST_F(PasswordStoreTest, GetAllLoginsWithAffiliationAndBrandingInformation) {
       {PasswordForm::Scheme::kHtml, kTestWebRealm3, kTestWebOrigin3, "", L"",
        L"", L"", nullptr, L"", true, 1}};
 
-  auto store = base::MakeRefCounted<PasswordStoreDefault>(
-      std::make_unique<LoginDatabase>(test_login_db_file_path()));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   std::vector<std::unique_ptr<PasswordForm>> all_credentials;
@@ -843,8 +906,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
       {PasswordForm::Scheme::kHtml, "https://facebook.com",
        "https://facebook.com", "", L"", L"", L"", L"", L"topsecret", true, 1}};
 
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
   store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
 
   for (const auto& test_credentials : kTestCredentials) {
@@ -883,8 +945,7 @@ TEST_F(PasswordStoreTest, CheckPasswordReuse) {
 }
 
 TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
@@ -896,7 +957,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   const base::string16 input = base::ASCIIToUTF16("123password");
   store->SaveGaiaPasswordHash(
       "sync_username", sync_password,
-      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+      metrics_util::GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
   EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
   base::Optional<PasswordHashData> sync_password_hash =
@@ -914,9 +975,8 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
 
   // Save a non-sync Gaia password this time.
   const base::string16 gaia_password = base::ASCIIToUTF16("3password");
-  store->SaveGaiaPasswordHash(
-      "other_gaia_username", gaia_password,
-      metrics_util::SyncPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  store->SaveGaiaPasswordHash("other_gaia_username", gaia_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
   base::Optional<PasswordHashData> gaia_password_hash = GetPasswordFromPref(
       "other_gaia_username", /*is_gaia_password=*/true, &prefs);
   ASSERT_TRUE(gaia_password_hash.has_value());
@@ -943,7 +1003,7 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   store->ClearAllGaiaPasswordHash();
   EXPECT_EQ(0u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
   EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
-  store->CheckReuse(input, "https://facebook.com", &mock_consumer);
+  store->CheckReuse(input, "https://example.com", &mock_consumer);
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
@@ -972,12 +1032,57 @@ TEST_F(PasswordStoreTest, SavingClearingProtectedPassword) {
   WaitForPasswordStore();
   testing::Mock::VerifyAndClearExpectations(&mock_consumer);
 
+  // Save a Gmail password this time.
+  const base::string16 gmail_password = base::ASCIIToUTF16("gmailpass");
+  store->SaveGaiaPasswordHash("username@gmail.com", gmail_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  WaitForPasswordStore();
+  EXPECT_TRUE(prefs.HasPrefPath(prefs::kPasswordHashDataList));
+  base::Optional<PasswordHashData> gmail_password_hash = GetPasswordFromPref(
+      "username@gmail.com", /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(gmail_password_hash.has_value());
+
+  // Check that gmail password reuse is found.
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(gmail_password.size(), Matches(gmail_password_hash),
+                           std::vector<std::string>(), 0));
+  store->CheckReuse(gmail_password, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
+  // Also save another non-sync Gaia password this time.
+  const base::string16 non_sync_gaia_password = base::ASCIIToUTF16("3password");
+  store->SaveGaiaPasswordHash("non_sync_gaia_password@gsuite.com",
+                              non_sync_gaia_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  base::Optional<PasswordHashData> non_sync_gaia_password_hash =
+      GetPasswordFromPref("non_sync_gaia_password@gsuite.com",
+                          /*is_gaia_password=*/true, &prefs);
+  ASSERT_TRUE(non_sync_gaia_password_hash.has_value());
+  EXPECT_EQ(2u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
+
+  // Check that no non-gmail password reuse is found after clearing the
+  // password hash.
+  store->ClearAllNonGmailPasswordHash();
+  EXPECT_EQ(1u, prefs.GetList(prefs::kPasswordHashDataList)->GetList().size());
+  EXPECT_CALL(mock_consumer, OnReuseFound(_, _, _, _)).Times(0);
+  store->CheckReuse(non_sync_gaia_password, "https://example.com",
+                    &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+  EXPECT_CALL(mock_consumer,
+              OnReuseFound(gmail_password.size(), Matches(gmail_password_hash),
+                           std::vector<std::string>(), 0))
+      .Times(1);
+  store->CheckReuse(gmail_password, "https://example.com", &mock_consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&mock_consumer);
+
   store->ShutdownOnUIThread();
 }
 
 TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   std::unique_ptr<MockPasswordStoreSigninNotifier> notifier =
       std::make_unique<MockPasswordStoreSigninNotifier>();
@@ -994,8 +1099,7 @@ TEST_F(PasswordStoreTest, SubscriptionAndUnsubscriptionFromSignInEvents) {
 }
 
 TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
-  scoped_refptr<PasswordStoreDefault> store(new PasswordStoreDefault(
-      std::make_unique<LoginDatabase>(test_login_db_file_path())));
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
 
   TestingPrefServiceSimple prefs;
   prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
@@ -1003,6 +1107,7 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
   store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
 
+  // Hash does not exist yet.
   base::HistogramTester histogram_tester;
   store->ReportMetrics("sync_username", false, true);
   std::string name =
@@ -1013,15 +1118,54 @@ TEST_F(PasswordStoreTest, ReportMetricsForAdvancedProtection) {
   // Save password.
   const base::string16 sync_password = base::ASCIIToUTF16("password");
   const base::string16 input = base::ASCIIToUTF16("123password");
-  store->SaveGaiaPasswordHash(
-      "sync_username", sync_password,
-      metrics_util::SyncPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
+  store->SaveGaiaPasswordHash("sync_username", sync_password,
+                              GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN);
   WaitForPasswordStore();
 
   store->ReportMetrics("sync_username", false, true);
   histogram_tester.ExpectBucketCount(
       name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.SyncPasswordHashChange",
+      GaiaPasswordHashChange::SAVED_ON_CHROME_SIGNIN, 1);
+  store->ShutdownOnUIThread();
+}
 
+TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+
+  TestingPrefServiceSimple prefs;
+  prefs.registry()->RegisterListPref(prefs::kPasswordHashDataList,
+                                     PrefRegistry::NO_REGISTRATION_FLAGS);
+  ASSERT_FALSE(prefs.HasPrefPath(prefs::kSyncPasswordHash));
+  store->Init(syncer::SyncableService::StartSyncFlare(), &prefs);
+
+  // Hash does not exist yet.
+  base::HistogramTester histogram_tester;
+  store->ReportMetrics("not_sync_username",
+                       /*custom_passphrase_sync_enabled=*/false,
+                       /*is_under_advanced_protection=*/true);
+  std::string name =
+      "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser";
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::NOT_SAVED, 1);
+
+  // Save password.
+  const base::string16 not_sync_password = base::ASCIIToUTF16("password");
+  const base::string16 input = base::ASCIIToUTF16("123password");
+  store->SaveGaiaPasswordHash("not_sync_username", not_sync_password,
+                              GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE);
+  WaitForPasswordStore();
+
+  store->ReportMetrics("not_sync_username",
+                       /*custom_passphrase_sync_enabled=*/false,
+                       /*is_under_advanced_protection=*/true);
+  // Check that the non sync hash password was saved.
+  histogram_tester.ExpectBucketCount(
+      name, metrics_util::IsSyncPasswordHashSaved::SAVED_VIA_LIST_PREF, 1);
+  histogram_tester.ExpectBucketCount(
+      "PasswordManager.NonSyncPasswordHashChange",
+      GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
   store->ShutdownOnUIThread();
 }
 

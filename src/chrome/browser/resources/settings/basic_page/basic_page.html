@@ -17,7 +17,7 @@
 <link rel="import" href="../settings_page_css.html">
 
 <if expr="chromeos">
-<link rel="import" href="../app_management_page/app_management_page.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="../android_apps_page/android_apps_browser_proxy.html">
 <link rel="import" href="../android_apps_page/android_apps_page.html">
 <link rel="import" href="../bluetooth_page/bluetooth_page.html">
@@ -26,6 +26,7 @@
 <link rel="import" href="../device_page/device_page.html">
 <link rel="import" href="../internet_page/internet_page.html">
 <link rel="import" href="../multidevice_page/multidevice_page.html">
+<link rel="import" href="../prefs/prefs_behavior.html">
 </if>
 
 <if expr="not chromeos">
@@ -36,7 +37,7 @@
      includes both the basic and advanced settings. -->
 <dom-module id="settings-basic-page">
   <template>
-    <style include="settings-page-styles cr-hidden-style">
+    <style include="settings-page-styles cr-hidden-style settings-shared">
       :host([is-subpage-animating]) {
         /* Prevent an unwanted horizontal scrollbar when transitioning back from
          * a sub-page. */
@@ -62,13 +63,14 @@
         font-weight: 600;
       }
 
+      #osSettingsBanner,
       #secondaryUserBanner {
         @apply --cr-card-elevation;
         align-items: center;
         background-color: white;
         border-radius: 2px;
         display: flex;
-        margin: 21px 0;
+        margin-top: 21px;
       }
 
       #secondaryUserIcon {
@@ -85,11 +87,14 @@
 
       #toggleContainer {
         align-items: center;
+        color: var(--cr-primary-text-color);
         display: flex;
         font: inherit;
         justify-content: center;
         margin-bottom: 0;
         margin-top: 0;
+        padding-bottom: 0;
+        padding-top: 0;
       }
 
       #toggleSpacer {
@@ -108,12 +113,22 @@
           </settings-reset-profile-banner>
         </template>
 <if expr="chromeos">
+        <template is="dom-if" if="[[showOSSettingsBanner_]]">
+          <div id="osSettingsBanner" class="settings-box">
+            <div class="start" on-click="onOSSettingsBannerClick_">
+              $i18nRaw{osSettingsBannerText}
+            </div>
+            <cr-icon-button class="icon-clear"
+                id="hideOSSettings"
+                aria-label="$i18n{clear}"
+                on-click="onOSSettingsBannerClosed_">
+            </cr-icon-button>
+          </div>
+        </template>
         <div id="secondaryUserBanner" hidden="[[!showSecondaryUserBanner_]]">
           <div id="secondaryUserIcon"></div>
           <div class="flex">$i18n{secondaryUserBannerText}</div>
         </div>
-</if>
-<if expr="chromeos">
         <template is="dom-if" if="[[showPage_(pageVisibility.internet)]]"
             restamp>
           <settings-section page-title="$i18n{internetPageTitle}"
@@ -180,21 +195,12 @@
           </settings-section>
         </template>
 </if>
-        <template is="dom-if" if="[[showPage_(pageVisibility.search)]]" restamp>
-          <settings-section page-title="$i18n{searchPageTitle}"
-              section="search">
-            <settings-search-page prefs="{{prefs}}"></settings-search-page>
-          </settings-section>
-        </template>
+        <settings-section page-title="$i18n{searchPageTitle}"
+            section="search">
+          <settings-search-page prefs="{{prefs}}"></settings-search-page>
+        </settings-section>
 <if expr="chromeos">
-        <template is="dom-if" if="[[showApps]]" restamp>
-          <settings-section page-title="$i18n{appsPageTitle}" section="apps">
-            <settings-app-management-page>
-            </settings-app-management-page>
-          </settings-section>
-        </template>
-        <template is="dom-if" if="[[shouldCreateAndroidAppsSection_(
-            showAndroidApps, pageVisibility)]]" restamp>
+        <template is="dom-if" if="[[showAndroidApps]]" restamp>
           <settings-section page-title="$i18n{androidAppsPageTitle}"
               section="androidApps" hidden$="[[!shouldShowAndroidAppsSection_(
               androidAppsInfo)]]">
@@ -314,13 +320,10 @@
               </settings-section>
             </template>
 <if expr="not chromeos">
-            <template is="dom-if" if="[[showPage_(pageVisibility.system)]]"
-                restamp>
-              <settings-section page-title="$i18n{systemPageTitle}"
-                  section="system">
-                <settings-system-page prefs="{{prefs}}"></settings-system-page>
-              </settings-section>
-            </template>
+            <settings-section page-title="$i18n{systemPageTitle}"
+                section="system">
+              <settings-system-page prefs="{{prefs}}"></settings-system-page>
+            </settings-section>
 </if>
             <template is="dom-if" if="[[showPage_(pageVisibility.reset)]]"
                 restamp>

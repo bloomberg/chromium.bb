@@ -40,7 +40,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -399,7 +399,7 @@ class MockTimer : public base::MockOneShotTimer {
 
 }  // namespace
 
-class BidirectionalStreamTest : public TestWithScopedTaskEnvironment {
+class BidirectionalStreamTest : public TestWithTaskEnvironment {
  public:
   BidirectionalStreamTest()
       : default_url_(kDefaultUrl),
@@ -646,7 +646,7 @@ TEST_F(BidirectionalStreamTest, ClientAuthRequestIgnored) {
   // Ensure the certificate was added to the client auth cache.
   scoped_refptr<X509Certificate> client_cert;
   scoped_refptr<SSLPrivateKey> client_private_key;
-  ASSERT_TRUE(http_session_->ssl_client_auth_cache()->Lookup(
+  ASSERT_TRUE(http_session_->ssl_client_context()->GetClientCertificate(
       host_port_pair_, &client_cert, &client_private_key));
   ASSERT_FALSE(client_cert);
   ASSERT_FALSE(client_private_key);
@@ -1740,7 +1740,7 @@ TEST_F(BidirectionalStreamTest, TestHonorAlternativeServiceHeader) {
 
   AlternativeServiceInfoVector alternative_service_info_vector =
       http_session_->http_server_properties()->GetAlternativeServiceInfos(
-          url::SchemeHostPort(default_url_));
+          url::SchemeHostPort(default_url_), NetworkIsolationKey());
   ASSERT_EQ(1u, alternative_service_info_vector.size());
   AlternativeService alternative_service(kProtoQUIC, "www.example.org", 443);
   EXPECT_EQ(alternative_service,

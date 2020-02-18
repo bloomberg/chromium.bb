@@ -12,6 +12,7 @@
 #include "base/memory/singleton.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
@@ -173,11 +174,46 @@ bool IsPrimaryOrDeviceLocalAccount(
 
   const std::string gaia_id =
       identity_manager
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name)
           ->gaia;
   DCHECK(!gaia_id.empty());
   return IsPrimaryGaiaAccount(gaia_id);
+}
+
+void TriggerAccountManagerMigrationsIfRequired(Profile* profile) {
+  if (!chromeos::IsAccountManagerAvailable(profile))
+    return;
+
+  chromeos::AccountManagerMigrator* const migrator =
+      chromeos::AccountManagerMigratorFactory::GetForBrowserContext(profile);
+  if (!migrator) {
+    // Migrator can be null for ephemeral and kiosk sessions. Ignore those cases
+    // since there are no accounts to be migrated in that case.
+    return;
+  }
+  const base::Optional<chromeos::AccountMigrationRunner::MigrationResult>
+      last_migration_run_result = migrator->GetLastMigrationRunResult();
+
+  if (!last_migration_run_result)
+    return;
+
+  if (last_migration_run_result->final_status !=
+      chromeos::AccountMigrationRunner::Status::kFailure) {
+    return;
+  }
+
+  if (last_migration_run_result->failed_step_id !=
+      chromeos::AccountManagerMigrator::kArcAccountsMigrationId) {
+    // Migrations failed but not because of ARC. ARC should not try to re-run
+    // migrations in this case.
+    return;
+  }
+
+  // Migrations are idempotent and safe to run multiple times. It may have
+  // happened that ARC migrations timed out at the start of the session. Give
+  // it a chance to run again.
+  migrator->Start();
 }
 
 }  // namespace
@@ -198,8 +234,7 @@ ArcAuthService::ArcAuthService(content::BrowserContext* browser_context,
       arc_bridge_service_(arc_bridge_service),
       url_loader_factory_(
           content::BrowserContext::GetDefaultStoragePartition(profile_)
-              ->GetURLLoaderFactoryForBrowserProcess()),
-      weak_ptr_factory_(this) {
+              ->GetURLLoaderFactoryForBrowserProcess()) {
   arc_bridge_service_->auth()->SetHost(this);
   arc_bridge_service_->auth()->AddObserver(this);
 
@@ -240,11 +275,26 @@ void ArcAuthService::OnConnectionReady() {
   // provisioning.
   // For the second and subsequent sessions,
   // |ArcSessionManager::Get()->IsArcProvisioned()| will be |true|.
-  if (arc::IsArcProvisioned(profile_))
+  if (arc::IsArcProvisioned(profile_)) {
+    TriggerAccountManagerMigrationsIfRequired(profile_);
     TriggerAccountsPushToArc(false /* filter_primary_account */);
+  }
 
   if (pending_get_arc_accounts_callback_)
     DispatchAccountsInArc(std::move(pending_get_arc_accounts_callback_));
+
+  // Report main account resolution status for provisioned devices.
+  if (!IsArcProvisioned(profile_))
+    return;
+
+  auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
+                                               GetMainAccountResolutionStatus);
+  if (!instance)
+    return;
+
+  instance->GetMainAccountResolutionStatus(
+      base::BindOnce(&ArcAuthService::OnMainAccountResolutionStatus,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcAuthService::OnConnectionClosed() {
@@ -599,8 +649,8 @@ void ArcAuthService::OnPrimaryAccountAuthCodeFetched(
   DeletePendingTokenRequest(fetcher);
 
   if (success) {
-    const std::string& full_account_id = base::UTF16ToUTF8(
-        signin_ui_util::GetAuthenticatedUsername(identity_manager_));
+    const std::string& full_account_id =
+        base::UTF16ToUTF8(signin_ui_util::GetAuthenticatedUsername(profile_));
     std::move(callback).Run(
         mojom::ArcSignInStatus::SUCCESS,
         CreateAccountInfo(!IsArcOptInVerificationDisabled(), auth_code,
@@ -630,7 +680,7 @@ void ArcAuthService::FetchSecondaryAccountInfo(
 
   base::Optional<AccountInfo> account_info =
       identity_manager_
-          ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
               account_name);
   DCHECK(account_info.has_value());
 
@@ -711,8 +761,9 @@ ArcAuthService::CreateArcBackgroundAuthCodeFetcher(
     const std::string& account_id,
     bool initial_signin) {
   base::Optional<AccountInfo> account_info =
-      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id);
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id);
   DCHECK(account_info.has_value());
   auto fetcher = std::make_unique<ArcBackgroundAuthCodeFetcher>(
       url_loader_factory_, profile_, account_id, initial_signin,
@@ -752,6 +803,11 @@ void ArcAuthService::DispatchAccountsInArc(
   }
 
   instance->GetGoogleAccounts(std::move(callback));
+}
+
+void ArcAuthService::OnMainAccountResolutionStatus(
+    mojom::MainAccountResolutionStatus status) {
+  UpdateMainAccountResolutionStatus(profile_, status);
 }
 
 }  // namespace arc

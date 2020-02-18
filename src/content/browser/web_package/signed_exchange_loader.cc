@@ -22,7 +22,6 @@
 #include "content/browser/web_package/signed_exchange_validity_pinger.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
@@ -33,6 +32,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/web_package/signed_exchange_request_matcher.h"
 
 namespace content {
@@ -102,24 +102,6 @@ SignedExchangeLoader::SignedExchangeLoader(
   if (outer_response_body)
     OnStartLoadingResponseBody(std::move(outer_response_body));
 
-  // TODO(https://crbug.com/791049): Remove this when NetworkService is
-  // enabled by default.
-  if (url_loader_options_ &
-      network::mojom::kURLLoadOptionPauseOnResponseStarted) {
-    // We don't propagate the response to the navigation request and its
-    // throttles, therefore we need to call this here internally in order to
-    // move it forward.
-    //
-    // ProceedWithResponse() is used when the network service is disabled to
-    // prevent the InterceptingResourceHandler (used for download) from
-    // intercepting the load before the NavigationRequest allowed it.
-    // See https://crbug.com/791049.
-    //
-    // Special care has been taken not to resume the InterceptingResourceHandler
-    // by mistake in https://crbug.com/896659.
-    url_loader_->ProceedWithResponse();
-  }
-
   // Bind the endpoint with |this| to get the body DataPipe.
   url_loader_client_binding_.Bind(std::move(endpoints->url_loader_client));
 
@@ -130,7 +112,7 @@ SignedExchangeLoader::SignedExchangeLoader(
 SignedExchangeLoader::~SignedExchangeLoader() = default;
 
 void SignedExchangeLoader::OnReceiveResponse(
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Must not be called because this SignedExchangeLoader and the client
   // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -138,7 +120,7 @@ void SignedExchangeLoader::OnReceiveResponse(
 
 void SignedExchangeLoader::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& response_head) {
+    network::mojom::URLResponseHeadPtr response_head) {
   // Must not be called because this SignedExchangeLoader and the client
   // endpoints were bound after OnReceiveResponse() is called.
   NOTREACHED();
@@ -205,13 +187,6 @@ void SignedExchangeLoader::FollowRedirect(
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   NOTREACHED();
-}
-
-void SignedExchangeLoader::ProceedWithResponse() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  DCHECK(url_loader_options_ &
-         network::mojom::kURLLoadOptionPauseOnResponseStarted);
-  // ProceedWithResponse() has already been called in the constructor.
 }
 
 void SignedExchangeLoader::SetPriority(net::RequestPriority priority,
@@ -292,8 +267,7 @@ void SignedExchangeLoader::OnHTTPExchangeFound(
   if (ssl_info.has_value() &&
       (url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-      net::IsCertStatusError(ssl_info->cert_status) &&
-      !net::IsCertStatusMinorError(ssl_info->cert_status)) {
+      net::IsCertStatusError(ssl_info->cert_status)) {
     ssl_info_ = ssl_info;
   }
 
@@ -394,8 +368,7 @@ void SignedExchangeLoader::NotifyClientOnCompleteIfReady() {
   if (ssl_info_) {
     DCHECK((url_loader_options_ &
             network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
-           net::IsCertStatusError(ssl_info_->cert_status) &&
-           !net::IsCertStatusMinorError(ssl_info_->cert_status));
+           net::IsCertStatusError(ssl_info_->cert_status));
     status.ssl_info = *ssl_info_;
   }
 

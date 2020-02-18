@@ -18,10 +18,12 @@
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/shell/common/web_test/web_test_utils.h"
 #include "content/shell/test_runner/web_test_runtime_flags.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "printing/metafile_skia.h"
 #include "printing/print_settings.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/clipboard/clipboard.mojom.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_image.h"
@@ -89,22 +91,22 @@ void CopyImageAtAndCapturePixels(
     int x,
     int y,
     base::OnceCallback<void(const SkBitmap&)> callback) {
-  blink::mojom::ClipboardHostPtr clipboard;
-  blink::Platform::Current()->GetConnector()->BindInterface(
-      blink::Platform::Current()->GetBrowserServiceName(), &clipboard);
+  mojo::Remote<blink::mojom::ClipboardHost> clipboard;
+  blink::Platform::Current()->GetBrowserInterfaceBrokerProxy()->GetInterface(
+      clipboard.BindNewPipeAndPassReceiver());
 
   uint64_t sequence_number_before = 0;
-  clipboard->GetSequenceNumber(ui::ClipboardType::kCopyPaste,
+  clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                &sequence_number_before);
   web_frame->CopyImageAt(blink::WebPoint(x, y));
   uint64_t sequence_number_after = 0;
   while (sequence_number_before == sequence_number_after) {
-    clipboard->GetSequenceNumber(ui::ClipboardType::kCopyPaste,
+    clipboard->GetSequenceNumber(ui::ClipboardBuffer::kCopyPaste,
                                  &sequence_number_after);
   }
 
   SkBitmap bitmap;
-  clipboard->ReadImage(ui::ClipboardType::kCopyPaste, &bitmap);
+  clipboard->ReadImage(ui::ClipboardBuffer::kCopyPaste, &bitmap);
   std::move(callback).Run(bitmap);
 }
 

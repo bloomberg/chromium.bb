@@ -12,7 +12,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/base/auth.h"
 #include "net/base/load_timing_info.h"
@@ -27,7 +27,7 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_source.h"
 #include "net/log/net_log_with_source.h"
@@ -42,7 +42,7 @@
 #include "net/ssl/ssl_config_service_defaults.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_certificate_data.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -73,12 +73,10 @@ void CheckConnectTimesExceptDnsSet(
   EXPECT_EQ(base::TimeTicks::Now(), connect_timing.connect_end);
 }
 
-class SSLConnectJobTest : public WithScopedTaskEnvironment,
-                          public testing::Test {
+class SSLConnectJobTest : public WithTaskEnvironment, public testing::Test {
  public:
   SSLConnectJobTest()
-      : WithScopedTaskEnvironment(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW),
+      : WithTaskEnvironment(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         proxy_resolution_service_(ProxyResolutionService::CreateDirect()),
         ssl_config_service_(new SSLConfigServiceDefaults),
         http_auth_handler_factory_(HttpAuthHandlerFactory::CreateDefault()),
@@ -103,9 +101,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                       /*tunnel=*/true,
                                       TRAFFIC_ANNOTATION_FOR_TESTS,
                                       NetworkIsolationKey())),
-        common_connect_job_params_(session_->CreateCommonConnectJobParams()) {
-    ssl_config_service_->GetSSLConfig(&ssl_config_);
-  }
+        common_connect_job_params_(session_->CreateCommonConnectJobParams()) {}
 
   ~SSLConnectJobTest() override = default;
 
@@ -124,7 +120,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
                                             : nullptr,
         proxy == ProxyServer::SCHEME_SOCKS5 ? socks_socket_params_ : nullptr,
         proxy == ProxyServer::SCHEME_HTTP ? http_proxy_socket_params_ : nullptr,
-        HostPortPair("host", 443), ssl_config_, PRIVACY_MODE_DISABLED,
+        HostPortPair("host", 443), SSLConfig(), PRIVACY_MODE_DISABLED,
         NetworkIsolationKey());
   }
 
@@ -163,7 +159,7 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   const std::unique_ptr<ProxyResolutionService> proxy_resolution_service_;
   const std::unique_ptr<SSLConfigService> ssl_config_service_;
   const std::unique_ptr<HttpAuthHandlerFactory> http_auth_handler_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   const std::unique_ptr<HttpNetworkSession> session_;
 
   scoped_refptr<TransportSocketParams> direct_transport_socket_params_;
@@ -172,7 +168,6 @@ class SSLConnectJobTest : public WithScopedTaskEnvironment,
   scoped_refptr<SOCKSSocketParams> socks_socket_params_;
   scoped_refptr<HttpProxySocketParams> http_proxy_socket_params_;
 
-  SSLConfig ssl_config_;
   const CommonConnectJobParams common_connect_job_params_;
 };
 

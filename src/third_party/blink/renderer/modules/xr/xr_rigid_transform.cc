@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/geometry/dom_point_init.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/modules/xr/xr_utils.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 
 namespace blink {
@@ -24,22 +25,18 @@ void XRRigidTransform::DecomposeMatrix() {
   // decompose matrix to position and orientation
   TransformationMatrix::DecomposedType decomposed;
   bool succeeded = matrix_->Decompose(decomposed);
-  if (succeeded) {
-    position_ =
-        DOMPointReadOnly::Create(decomposed.translate_x, decomposed.translate_y,
-                                 decomposed.translate_z, 1.0);
+  DCHECK(succeeded) << "Matrix decompose failed for " << matrix_->ToString();
 
-    // TODO(https://crbug.com/929841): Minuses are needed as a workaround for
-    // bug in TransformationMatrix so that callers can still pass non-inverted
-    // quaternions.
-    orientation_ = makeNormalizedQuaternion(
-        -decomposed.quaternion_x, -decomposed.quaternion_y,
-        -decomposed.quaternion_z, decomposed.quaternion_w);
-  } else {
-    // TODO(crbug.com/969149): Is this the correct way to handle a failure here?
-    position_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
-    orientation_ = DOMPointReadOnly::Create(0.0, 0.0, 0.0, 1.0);
-  }
+  position_ =
+      DOMPointReadOnly::Create(decomposed.translate_x, decomposed.translate_y,
+                               decomposed.translate_z, 1.0);
+
+  // TODO(https://crbug.com/929841): Minuses are needed as a workaround for
+  // bug in TransformationMatrix so that callers can still pass non-inverted
+  // quaternions.
+  orientation_ = makeNormalizedQuaternion(
+      -decomposed.quaternion_x, -decomposed.quaternion_y,
+      -decomposed.quaternion_z, decomposed.quaternion_w);
 }
 
 XRRigidTransform::XRRigidTransform(DOMPointInit* position,
@@ -63,7 +60,29 @@ XRRigidTransform::XRRigidTransform(DOMPointInit* position,
 }
 
 XRRigidTransform* XRRigidTransform::Create(DOMPointInit* position,
-                                           DOMPointInit* orientation) {
+                                           DOMPointInit* orientation,
+                                           ExceptionState& exception_state) {
+  if (position && position->w() != 1.0) {
+    exception_state.ThrowTypeError("W component of position must be 1.0");
+    return nullptr;
+  }
+
+  if (orientation) {
+    double x = orientation->x();
+    double y = orientation->y();
+    double z = orientation->z();
+    double w = orientation->w();
+    double sq_len = x * x + y * y + z * z + w * w;
+
+    // The only way for the result of a square root to be 0 is if the squared
+    // number is 0, so save the square root operation and just compare to 0 now.
+    if (sq_len == 0.0) {
+      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                        "Orientation's length cannot be 0");
+      return nullptr;
+    }
+  }
+
   return MakeGarbageCollected<XRRigidTransform>(position, orientation);
 }
 

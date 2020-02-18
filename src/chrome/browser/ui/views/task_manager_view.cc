@@ -122,7 +122,7 @@ void TaskManagerView::SetColumnVisibility(int column_id, bool new_visibility) {
 }
 
 bool TaskManagerView::IsTableSorted() const {
-  return tab_table_->is_sorted();
+  return tab_table_->GetIsSorted();
 }
 
 TableSortDescriptor TaskManagerView::GetSortDescriptor() const {
@@ -266,15 +266,15 @@ void TaskManagerView::ShowContextMenuForViewImpl(
     views::View* source,
     const gfx::Point& point,
     ui::MenuSourceType source_type) {
-  menu_model_.reset(new ui::SimpleMenuModel(this));
+  menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
 
   for (const auto& table_column : columns_) {
     menu_model_->AddCheckItem(table_column.id,
                               l10n_util::GetStringUTF16(table_column.id));
   }
 
-  menu_runner_.reset(new views::MenuRunner(menu_model_.get(),
-                                           views::MenuRunner::CONTEXT_MENU));
+  menu_runner_ = std::make_unique<views::MenuRunner>(
+      menu_model_.get(), views::MenuRunner::CONTEXT_MENU);
 
   menu_runner_->RunMenuAt(GetWidget(), nullptr, gfx::Rect(point, gfx::Size()),
                           views::MenuAnchorPosition::kTopLeft, source_type);
@@ -325,10 +325,10 @@ void TaskManagerView::Init() {
   auto tab_table = std::make_unique<views::TableView>(
       nullptr, columns_, views::ICON_AND_TEXT, false);
   tab_table_ = tab_table.get();
-  table_model_.reset(new TaskManagerTableModel(this));
+  table_model_ = std::make_unique<TaskManagerTableModel>(this);
   tab_table->SetModel(table_model_.get());
   tab_table->SetGrouper(this);
-  tab_table->set_sort_on_paint(true);
+  tab_table->SetSortOnPaint(true);
   tab_table->set_observer(this);
   tab_table->set_context_menu_controller(this);
   set_context_menu_controller(this);

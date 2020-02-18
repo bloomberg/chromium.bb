@@ -5,7 +5,10 @@
 #include "chrome/browser/ui/views/page_action/omnibox_page_action_icon_container_view.h"
 
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
+#include "chrome/browser/sharing/shared_clipboard/shared_clipboard_ui_controller.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/location_bar/cookie_controls_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/find_bar_icon.h"
 #include "chrome/browser/ui/views/location_bar/intent_picker_view.h"
 #include "chrome/browser/ui/views/location_bar/zoom_bubble_view.h"
@@ -15,7 +18,8 @@
 #include "chrome/browser/ui/views/passwords/manage_passwords_icon_views.h"
 #include "chrome/browser/ui/views/reader_mode/reader_mode_icon_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
-#include "chrome/browser/ui/views/sharing/click_to_call/click_to_call_icon_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
+#include "chrome/browser/ui/views/sharing/sharing_icon_view.h"
 #include "chrome/browser/ui/views/translate/translate_icon_view.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -76,6 +80,11 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         zoom_view_ = new ZoomView(params.page_action_icon_delegate);
         page_action_icons_.push_back(zoom_view_);
         break;
+      case PageActionIconType::kCookieControls:
+        cookie_view_ =
+            new CookieControlsIconView(params.page_action_icon_delegate);
+        page_action_icons_.push_back(cookie_view_);
+        break;
       case PageActionIconType::kSendTabToSelf:
         send_tab_to_self_icon_view_ =
             new send_tab_to_self::SendTabToSelfIconView(
@@ -88,9 +97,26 @@ OmniboxPageActionIconContainerView::OmniboxPageActionIconContainerView(
         page_action_icons_.push_back(native_file_system_icon_);
         break;
       case PageActionIconType::kClickToCall:
-        click_to_call_icon_view_ =
-            new ClickToCallIconView(params.page_action_icon_delegate);
+        click_to_call_icon_view_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  ClickToCallUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            base::BindRepeating(SharingDialogView::GetAsBubbleForClickToCall));
         page_action_icons_.push_back(click_to_call_icon_view_);
+        break;
+      case PageActionIconType::kSharedClipboard:
+        shared_clipboard_icon_view_ = new SharingIconView(
+            params.page_action_icon_delegate,
+            base::BindRepeating([](content::WebContents* contents) {
+              return static_cast<SharingUiController*>(
+                  SharedClipboardUiController::GetOrCreateFromWebContents(
+                      contents));
+            }),
+            base::BindRepeating(SharingDialogView::GetAsBubble));
+        page_action_icons_.push_back(shared_clipboard_icon_view_);
         break;
       case PageActionIconType::kLocalCardMigration:
       case PageActionIconType::kSaveCard:
@@ -134,12 +160,16 @@ PageActionIconView* OmniboxPageActionIconContainerView::GetPageActionIconView(
       return translate_icon_;
     case PageActionIconType::kZoom:
       return zoom_view_;
+    case PageActionIconType::kCookieControls:
+      return cookie_view_;
     case PageActionIconType::kSendTabToSelf:
       return send_tab_to_self_icon_view_;
     case PageActionIconType::kNativeFileSystemAccess:
       return native_file_system_icon_;
     case PageActionIconType::kClickToCall:
       return click_to_call_icon_view_;
+    case PageActionIconType::kSharedClipboard:
+      return shared_clipboard_icon_view_;
     case PageActionIconType::kLocalCardMigration:
     case PageActionIconType::kSaveCard:
       NOTREACHED();

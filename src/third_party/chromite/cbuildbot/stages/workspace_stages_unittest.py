@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import os
+
+import mock
 
 from chromite.cbuildbot.builders import workspace_builders_unittest
 from chromite.cbuildbot import commands
@@ -62,7 +63,7 @@ class WorkspaceStageBase(
 
     Note: Must be implemented in subclasses.
     """
-    raise NotImplementedError(self, "ConstructStage: Implement in your test")
+    raise NotImplementedError(self, 'ConstructStage: Implement in your test')
 
 
 class WorkspaceStageBaseTest(WorkspaceStageBase):

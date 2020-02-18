@@ -45,6 +45,7 @@
 #include "content/public/browser/color_chooser.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/media_stream_request.h"
+#include "content/public/browser/mhtml_generation_result.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents.h"
@@ -53,6 +54,7 @@
 #include "content/public/common/page_importance_signals.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/common/three_d_api_types.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/load_states.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
@@ -73,7 +75,6 @@
 #include "ui/native_theme/native_theme_observer.h"
 
 #if defined(OS_ANDROID)
-#include "content/browser/android/nfc_host.h"
 #include "content/public/browser/android/child_process_importance.h"
 #endif
 
@@ -95,7 +96,6 @@ class FindRequestManager;
 class InterstitialPageImpl;
 class JavaScriptDialogManager;
 class JavaScriptDialogNavigationDeferrer;
-class LoaderIOThreadNotifier;
 class ManifestManagerHost;
 class MediaWebContentsObserver;
 class PluginContentOriginWhitelist;
@@ -355,6 +355,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   bool IsCurrentlyAudible() override;
   bool IsConnectedToBluetoothDevice() override;
   bool IsConnectedToSerialPort() override;
+  bool HasNativeFileSystemHandles() override;
   bool HasNativeFileSystemDirectoryHandles() override;
   std::vector<base::FilePath> GetNativeFileSystemDirectoryHandles() override;
   bool HasWritableNativeFileSystemHandles() override;
@@ -409,7 +410,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void NotifyContextMenuClosed(
       const CustomContextMenuContext& context) override;
   void ReloadLoFiImages() override;
-  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() override;
   void ExecuteCustomContextMenuCommand(
       int action,
@@ -439,12 +440,14 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             const base::string16& suggested_filename) override;
   void GenerateMHTML(const MHTMLGenerationParams& params,
                      base::OnceCallback<void(int64_t)> callback) override;
+  void GenerateMHTMLWithResult(
+      const MHTMLGenerationParams& params,
+      MHTMLGenerationResult::GenerateMHTMLCallback callback) override;
   const std::string& GetContentsMimeType() override;
   bool WillNotifyDisconnection() override;
   blink::mojom::RendererPreferences* GetMutableRendererPrefs() override;
   void Close() override;
   void SystemDragEnded(RenderWidgetHost* source_rwh) override;
-  void NavigatedByUser() override;
   void SetClosedByUserGesture(bool value) override;
   bool GetClosedByUserGesture() override;
   int GetMinimumZoomPercent() override;
@@ -860,10 +863,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // blink::mojom::ColorChooserFactory ---------------------------------------
 
   void OnColorChooserFactoryRequest(
-      blink::mojom::ColorChooserFactoryRequest request);
+      mojo::PendingReceiver<blink::mojom::ColorChooserFactory> receiver);
   void OpenColorChooser(
-      blink::mojom::ColorChooserRequest chooser,
-      blink::mojom::ColorChooserClientPtr client,
+      mojo::PendingReceiver<blink::mojom::ColorChooser> chooser,
+      mojo::PendingRemote<blink::mojom::ColorChooserClient> client,
       SkColor color,
       std::vector<blink::mojom::ColorSuggestionPtr> suggestions) override;
 
@@ -975,6 +978,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // ports.
   void IncrementSerialActiveFrameCount();
   void DecrementSerialActiveFrameCount();
+
+  // Modify the counter of native file system handles for this WebContents.
+  void IncrementNativeFileSystemHandleCount();
+  void DecrementNativeFileSystemHandleCount();
 
   // Add and remove a reference for a native file system directory handle for a
   // certain |path|. Multiple Add calls should be balanced by the same number of
@@ -1271,7 +1278,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       const GURL& url,
       const std::string& http_request,
       const std::string& mime_type,
-      const base::Optional<url::Origin>& top_frame_origin,
       ResourceType resource_type);
   void OnDidDisplayInsecureContent(RenderFrameHostImpl* source);
   void OnDidContainInsecureFormAction(RenderFrameHostImpl* source);
@@ -1284,7 +1290,8 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
   void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                            int offset,
-                           bool has_user_gesture);
+                           bool has_user_gesture,
+                           bool from_script);
   void OnUpdateZoomLimits(RenderViewHostImpl* source,
                           int minimum_percent,
                           int maximum_percent);
@@ -1465,8 +1472,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // |preferred_size_for_capture_| changes, to propagate the new value to the
   // |delegate_|.
   void OnPreferredSizeChanged(const gfx::Size& old_size);
-
-  void SendUserGestureForResourceDispatchHost();
 
   // Internal helper to create WebUI objects associated with |this|. |url| is
   // used to determine which WebUI should be created (if any).
@@ -1788,14 +1793,10 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 
   std::unique_ptr<WakeLockContextHost> wake_lock_context_host_;
 
-  service_manager::BinderRegistry registry_;
+  service_manager::BinderMap binders_;
 
-  mojo::BindingSet<blink::mojom::ColorChooserFactory>
-      color_chooser_factory_bindings_;
-
-#if defined(OS_ANDROID)
-  std::unique_ptr<NFCHost> nfc_host_;
-#endif
+  mojo::ReceiverSet<blink::mojom::ColorChooserFactory>
+      color_chooser_factory_receivers_;
 
   std::unique_ptr<ScreenOrientationProvider> screen_orientation_provider_;
 
@@ -1817,13 +1818,11 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   size_t bluetooth_connected_device_count_ = 0;
   size_t serial_active_frame_count_ = 0;
 
+  size_t native_file_system_handle_count_ = 0;
   std::map<base::FilePath, size_t> native_file_system_directory_handles_;
   size_t native_file_system_writable_handle_count_ = 0;
 
   bool has_picture_in_picture_video_ = false;
-
-  // Notifies ResourceDispatcherHostImpl of various events related to loading.
-  std::unique_ptr<LoaderIOThreadNotifier> loader_io_thread_notifier_;
 
   // Manages media players, CDMs, and power save blockers for media.
   std::unique_ptr<MediaWebContentsObserver> media_web_contents_observer_;
@@ -1924,7 +1923,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
       native_theme_observer_;
 
   bool in_high_contrast_ = false;
-  bool in_dark_mode_ = false;
+  bool using_dark_colors_ = false;
   ui::NativeTheme::PreferredColorScheme preferred_color_scheme_ =
       ui::NativeTheme::PreferredColorScheme::kNoPreference;
 

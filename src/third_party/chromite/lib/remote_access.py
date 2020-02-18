@@ -16,6 +16,8 @@ import stat
 import tempfile
 import time
 
+import six
+
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
@@ -356,7 +358,7 @@ class RemoteAccess(object):
         # Prepend sudo to cmd.
         ssh_cmd.append('sudo')
 
-      if isinstance(cmd, basestring):
+      if isinstance(cmd, six.string_types):
         if kwargs.get('shell'):
           ssh_cmd = '%s %s' % (' '.join(ssh_cmd), cmd)
         else:
@@ -740,11 +742,15 @@ class RemoteDevice(object):
 
     return self._work_dir
 
+  def HasProgramInPath(self, binary):
+    """Checks if the given binary exists on the device."""
+    result = self.GetAgent().RemoteSh(
+        ['PATH=%s:$PATH which' % DEV_BIN_PATHS, binary], error_code_ok=True)
+    return result.returncode == 0
+
   def HasRsync(self):
     """Checks if rsync exists on the device."""
-    result = self.GetAgent().RemoteSh(['PATH=%s:$PATH rsync' % DEV_BIN_PATHS,
-                                       '--version'], error_code_ok=True)
-    return result.returncode == 0
+    return self.HasProgramInPath('rsync')
 
   @memoize.MemoizedSingleCall
   def HasGigabitEthernet(self):
@@ -755,6 +761,20 @@ class RemoteDevice(object):
     result = self.GetAgent().RemoteSh(['ethtool', 'eth0'], error_code_ok=True,
                                       capture_output=True)
     return re.search(r'Speed: \d+000Mb/s', result.output)
+
+  def IsSELinuxAvailable(self):
+    """Check whether the device has SELinux compiled in."""
+    # Note that SELinux can be enabled for some devices that lack SELinux
+    # tools, so we need to check for the existence of the restorecon bin along
+    # with the sysfs check.
+    return (self.HasProgramInPath('restorecon') and
+            self.IfFileExists('/sys/fs/selinux/enforce'))
+
+  def IsSELinuxEnforced(self):
+    """Check whether the device has SELinux-enforced."""
+    if not self.IsSELinuxAvailable():
+      return False
+    return self.CatFile('/sys/fs/selinux/enforce', max_size=None).strip() == '1'
 
   def RegisterCleanupCmd(self, cmd, **kwargs):
     """Register a cleanup command to be run on the device in Cleanup().
@@ -886,6 +906,7 @@ class RemoteDevice(object):
 
   def IfFileExists(self, path, **kwargs):
     """Check if the given path exists on the device."""
+    kwargs.setdefault('error_code_ok', True)
     result = self.RunCommand(['test -f %s' % path], **kwargs)
     return result.returncode == 0
 
@@ -1113,7 +1134,7 @@ class ChromiumOSDevice(RemoteDevice):
     """The $PATH variable on the device."""
     if not self._orig_path:
       try:
-        result = self.BaseRunCommand(['echo', "${PATH}"])
+        result = self.BaseRunCommand(['echo', '${PATH}'])
       except cros_build_lib.RunCommandError as e:
         logging.error('Failed to get $PATH on the device: %s', e.result.error)
         raise

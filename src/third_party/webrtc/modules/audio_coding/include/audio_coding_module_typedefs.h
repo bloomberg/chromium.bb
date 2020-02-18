@@ -57,7 +57,8 @@ struct AudioDecodingCallStats {
       : calls_to_silence_generator(0),
         calls_to_neteq(0),
         decoded_normal(0),
-        decoded_plc(0),
+        decoded_neteq_plc(0),
+        decoded_codec_plc(0),
         decoded_cng(0),
         decoded_plc_cng(0),
         decoded_muted_output(0) {}
@@ -66,7 +67,8 @@ struct AudioDecodingCallStats {
                                    // and NetEq was disengaged from decoding.
   int calls_to_neteq;              // Number of calls to NetEq.
   int decoded_normal;  // Number of calls where audio RTP packet decoded.
-  int decoded_plc;     // Number of calls resulted in PLC.
+  int decoded_neteq_plc;  // Number of calls resulted in NetEq PLC.
+  int decoded_codec_plc;  // Number of calls resulted in codec PLC.
   int decoded_cng;  // Number of calls where comfort noise generated due to DTX.
   int decoded_plc_cng;       // Number of calls resulted where PLC faded to CNG.
   int decoded_muted_output;  // Number of calls returning a muted state output.
@@ -117,8 +119,6 @@ struct NetworkStatistics {
   // primary data, obsoleting the secondary data. It can also be caused by early
   // or late arrival of secondary data.
   uint16_t currentSecondaryDiscardedRate;
-  // clock-drift in parts-per-million (negative or positive)
-  int32_t clockDriftPPM;
   // average packet waiting time in the jitter buffer (ms)
   int meanWaitingTimeMs;
   // median packet waiting time in the jitter buffer (ms)

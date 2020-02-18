@@ -180,7 +180,7 @@ AudioBuffer::AudioBuffer(unsigned number_of_channels,
     if (!channel_data_array)
       return;
 
-    channel_data_array->SetNeuterable(false);
+    channel_data_array->SetDetachable(false);
     channels_.push_back(channel_data_array);
   }
 }
@@ -198,7 +198,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
     if (!channel_data_array)
       return;
 
-    channel_data_array->SetNeuterable(false);
+    channel_data_array->SetDetachable(false);
     const float* src = bus->Channel(i)->Data();
     float* dst = channel_data_array->Data();
     memmove(dst, src, length_ * sizeof(*dst));
@@ -236,7 +236,7 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
 void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
                                   int32_t channel_number,
-                                  uint32_t start_in_channel,
+                                  uint32_t buffer_offset,
                                   ExceptionState& exception_state) {
   if (channel_number < 0 ||
       static_cast<uint32_t>(channel_number) >= channels_.size()) {
@@ -253,18 +253,13 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (start_in_channel >= channel_data->length()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexOutsideRange(
-            "startInChannel", start_in_channel, 0U,
-            ExceptionMessages::kInclusiveBound, channel_data->length(),
-            ExceptionMessages::kExclusiveBound));
-
+  if (buffer_offset >= channel_data->length()) {
+    // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned count = channel_data->length() - start_in_channel;
+  unsigned int count = channel_data->length() - buffer_offset;
+
   count = std::min(destination.View()->length(), count);
 
   const float* src = channel_data->Data();
@@ -272,8 +267,10 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
 
   DCHECK(src);
   DCHECK(dst);
+  DCHECK_LE(count, channel_data->length());
+  DCHECK_LE(buffer_offset + count, channel_data->length());
 
-  memcpy(dst, src + start_in_channel, count * sizeof(*src));
+  memcpy(dst, src + buffer_offset, count * sizeof(*src));
 }
 
 void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
@@ -284,7 +281,7 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
 void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
                                 int32_t channel_number,
-                                uint32_t start_in_channel,
+                                uint32_t buffer_offset,
                                 ExceptionState& exception_state) {
   if (channel_number < 0 ||
       static_cast<uint32_t>(channel_number) >= channels_.size()) {
@@ -300,27 +297,23 @@ void AudioBuffer::copyToChannel(NotShared<DOMFloat32Array> source,
 
   DOMFloat32Array* channel_data = channels_[channel_number].Get();
 
-  if (start_in_channel >= channel_data->length()) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kIndexSizeError,
-        ExceptionMessages::IndexOutsideRange(
-            "startInChannel", start_in_channel, 0U,
-            ExceptionMessages::kInclusiveBound, channel_data->length(),
-            ExceptionMessages::kExclusiveBound));
-
+  if (buffer_offset >= channel_data->length()) {
+    // Nothing to copy if the buffer offset is past the end of the AudioBuffer.
     return;
   }
 
-  unsigned count = channel_data->length() - start_in_channel;
-  count = std::min(source.View()->length(), count);
+  unsigned int count = channel_data->length() - buffer_offset;
 
+  count = std::min(source.View()->length(), count);
   const float* src = source.View()->Data();
   float* dst = channel_data->Data();
 
   DCHECK(src);
   DCHECK(dst);
+  DCHECK_LE(buffer_offset + count, channel_data->length());
+  DCHECK_LE(count, source.View()->length());
 
-  memcpy(dst + start_in_channel, src, count * sizeof(*dst));
+  memcpy(dst + buffer_offset, src, count * sizeof(*dst));
 }
 
 void AudioBuffer::Zero() {

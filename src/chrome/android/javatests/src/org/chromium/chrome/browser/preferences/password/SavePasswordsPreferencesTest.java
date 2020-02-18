@@ -27,6 +27,7 @@ import static android.support.test.espresso.matcher.ViewMatchers.withContentDesc
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withParent;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static android.text.InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
 
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anyOf;
@@ -36,7 +37,6 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.Matchers.startsWith;
 
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -45,32 +45,42 @@ import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.app.Activity;
 import android.app.Instrumentation;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.espresso.Espresso;
 import android.support.test.espresso.intent.Intents;
 import android.support.test.espresso.intent.rule.IntentsTestRule;
+import android.support.test.espresso.matcher.BoundedMatcher;
 import android.support.test.filters.SmallTest;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v7.view.menu.ActionMenuItemView;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 
+import org.hamcrest.Description;
 import org.hamcrest.Matcher;
+import org.junit.After;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
@@ -79,13 +89,17 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
 import org.chromium.chrome.browser.history.HistoryManager;
 import org.chromium.chrome.browser.history.StubbedHistoryProvider;
-import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreferenceCompat;
-import org.chromium.chrome.browser.preferences.ChromeSwitchPreferenceCompat;
+import org.chromium.chrome.browser.preferences.ChromeBaseCheckBoxPreference;
+import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.preferences.Preferences;
+import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.preferences.PreferencesTest;
+import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.components.sync.ModelType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
@@ -95,6 +109,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -134,6 +149,10 @@ public class SavePasswordsPreferencesTest {
         @Nullable
         private String mExportTargetPath;
 
+        // This is set to the last entry index {@link #showPasswordEntryEditingView()} was called
+        // with.
+        private int mLastEntryIndex;
+
         public void setSavedPasswords(ArrayList<SavedPasswordEntry> savedPasswords) {
             mSavedPasswords = savedPasswords;
         }
@@ -152,6 +171,10 @@ public class SavePasswordsPreferencesTest {
 
         public String getExportTargetPath() {
             return mExportTargetPath;
+        }
+
+        public int getLastEntryIndex() {
+            return mLastEntryIndex;
         }
 
         /**
@@ -181,17 +204,21 @@ public class SavePasswordsPreferencesTest {
         }
 
         @Override
+        public void changeSavedPasswordEntry(int index, String newUsername, String newPassword) {
+            mSavedPasswords.set(index,
+                    new SavedPasswordEntry(
+                            mSavedPasswords.get(index).getUrl(), newUsername, newPassword));
+            updatePasswordLists();
+        }
+
+        @Override
         public void removeSavedPasswordEntry(int index) {
-            // Define this method before starting to use it in tests.
-            assert false;
-            return;
+            assert false : "Define this method before starting to use it in tests.";
         }
 
         @Override
         public void removeSavedPasswordException(int index) {
-            // Define this method before starting to use it in tests.
-            assert false;
-            return;
+            assert false : "Define this method before starting to use it in tests.";
         }
 
         @Override
@@ -200,6 +227,11 @@ public class SavePasswordsPreferencesTest {
             mExportSuccessCallback = successCallback;
             mExportErrorCallback = errorCallback;
             mExportTargetPath = targetPath;
+        }
+
+        @Override
+        public void showPasswordEntryEditingView(Context context, int index) {
+            mLastEntryIndex = index;
         }
     }
 
@@ -226,6 +258,29 @@ public class SavePasswordsPreferencesTest {
      * delay used in production.
      */
     private final ManualCallbackDelayer mManualDelayer = new ManualCallbackDelayer();
+
+    private void overrideProfileSyncService(
+            final boolean usingPassphrase, final boolean syncingPasswords) {
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            ProfileSyncService.overrideForTests(new ProfileSyncService() {
+                @Override
+                public boolean isUsingSecondaryPassphrase() {
+                    return usingPassphrase;
+                }
+
+                @Override
+                public Set<Integer> getActiveDataTypes() {
+                    if (syncingPasswords) return CollectionUtil.newHashSet(ModelType.PASSWORDS);
+                    return CollectionUtil.newHashSet(ModelType.AUTOFILL);
+                }
+            });
+        });
+    }
+
+    @After
+    public void tearDown() throws Exception {
+        TestThreadUtils.runOnUiThreadBlocking(() -> ProfileSyncService.resetForTests());
+    }
 
     /**
      * Helper to set up a fake source of displayed passwords.
@@ -272,38 +327,69 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Looks for the search icon by id. If it cannot be found, it's probably hidden in the overflow
-     * menu. In that case, open the menu and search for its title.
-     * @return Returns either the search icon button or the search menu option.
+     * Matches any {@link EditText} which has the content visibility matching to |shouldBeVisible|.
+     * @return The matcher checking the input type.
      */
-    public static Matcher<View> withSearchMenuIdOrText() {
-        Matcher<View> matcher = withId(R.id.menu_id_search);
+    private static Matcher<View> isVisiblePasswordInput(final boolean shouldBeVisible) {
+        return new BoundedMatcher<View, EditText>(EditText.class) {
+            @Override
+            public boolean matchesSafely(EditText editText) {
+                return ((editText.getInputType() & TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                               == TYPE_TEXT_VARIATION_VISIBLE_PASSWORD)
+                        == shouldBeVisible;
+            }
+
+            @Override
+            public void describeTo(Description description) {
+                if (shouldBeVisible) {
+                    description.appendText("The content should be visible.");
+                } else {
+                    description.appendText("The content should not be visible.");
+                }
+            }
+        };
+    }
+
+    /**
+     * Looks for the icon by id. If it cannot be found, it's probably hidden in the overflow
+     * menu. In that case, open the menu and search for its title.
+     * @return Returns either the icon button or the menu option.
+     */
+    public static Matcher<View> withMenuIdOrText(@IdRes int actionId, @StringRes int actionLabel) {
+        Matcher<View> matcher = withId(actionId);
         try {
             Espresso.onView(matcher).check(matches(isDisplayed()));
             return matcher;
         } catch (Exception NoMatchingViewException) {
             openActionBarOverflowOrOptionsMenu(
                     InstrumentationRegistry.getInstrumentation().getTargetContext());
-            return withText(R.string.search);
+            return withText(actionLabel);
         }
     }
 
     /**
-     * Looks for the edit saved password icon by id. If it cannot be found, it's probably hidden in
-     * the overflow menu. In that case, open the menu and search for its title.
-     * @return Returns either the edit saved password icon button or the edit saved password menu
-     *         option.
+     * Looks for the search icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
+     */
+    public static Matcher<View> withSearchMenuIdOrText() {
+        return withMenuIdOrText(R.id.menu_id_search, R.string.search);
+    }
+
+    /**
+     * Looks for the edit saved password icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
      */
     public static Matcher<View> withEditMenuIdOrText() {
-        Matcher<View> matcher = withId(R.id.action_edit_saved_password);
-        try {
-            Espresso.onView(matcher).check(matches(isDisplayed()));
-            return matcher;
-        } catch (Exception NoMatchingViewException) {
-            openActionBarOverflowOrOptionsMenu(
-                    InstrumentationRegistry.getInstrumentation().getTargetContext());
-            return withText(R.string.password_entry_viewer_edit_stored_password_action_title);
-        }
+        return withMenuIdOrText(R.id.action_edit_saved_password,
+                R.string.password_entry_viewer_edit_stored_password_action_title);
+    }
+
+    /**
+     * Looks for the save edited password icon by id or by its title.
+     * @return Returns either the icon button or the menu option.
+     */
+    public static Matcher<View> withSaveMenuIdOrText() {
+        return withMenuIdOrText(R.id.action_save_edited_password, R.string.save);
     }
 
     /**
@@ -331,12 +417,12 @@ public class SavePasswordsPreferencesTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             // Disable the timer for progress bar.
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getMainFragmentCompat();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             fragment.getExportFlowForTesting()
                     .getDialogManagerForTesting()
                     .replaceCallbackDelayerForTesting(mManualDelayer);
             // Now call onResume to nudge Chrome into continuing the export flow.
-            preferences.getMainFragmentCompat().onResume();
+            preferences.getMainFragment().onResume();
         });
     }
 
@@ -361,7 +447,7 @@ public class SavePasswordsPreferencesTest {
         // The text matches a text view, but the disabled entity is some wrapper two levels up in
         // the view hierarchy, hence the two withParent matchers.
         Espresso.onView(allOf(withText(R.string.save_password_preferences_export_action_title),
-                                withParent(withParent(stateMatcher))))
+                                withParent(withParent(withParent(stateMatcher)))))
                 .check(matches(isDisplayed()));
     }
 
@@ -381,7 +467,7 @@ public class SavePasswordsPreferencesTest {
             Preferences preferences, int positiveButtonLabelId) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences fragment =
-                    (SavePasswordsPreferences) preferences.getMainFragmentCompat();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             // To show an error, the error type for UMA needs to be specified. Because it is not
             // relevant for cases when the error is forcibly displayed in tests,
             // HistogramExportResult.NO_CONSUMER is passed as an arbitrarily chosen value.
@@ -407,8 +493,9 @@ public class SavePasswordsPreferencesTest {
      */
     private void waitToFinish(Activity activity, long timeout) throws InterruptedException {
         long start_time = System.currentTimeMillis();
-        while (activity.isFinishing() && (System.currentTimeMillis() - start_time < timeout))
+        while (activity.isFinishing() && (System.currentTimeMillis() - start_time < timeout)) {
             Thread.sleep(100);
+        }
     }
 
     /**
@@ -437,7 +524,7 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savePasswordPreferences =
-                    (SavePasswordsPreferences) preferences.getMainFragmentCompat();
+                    (SavePasswordsPreferences) preferences.getMainFragment();
             // Emulate an update from PasswordStore. This should not crash.
             savePasswordPreferences.passwordListAvailable(0);
         });
@@ -460,9 +547,9 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat onOffSwitch =
-                    (ChromeSwitchPreferenceCompat) savedPasswordPrefs.findPreference(
+                    (SavePasswordsPreferences) preferences.getMainFragment();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
             Assert.assertTrue(onOffSwitch.isChecked());
 
@@ -481,12 +568,104 @@ public class SavePasswordsPreferencesTest {
                         SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences savedPasswordPrefs =
-                    (SavePasswordsPreferences) preferences2.getMainFragmentCompat();
-            ChromeSwitchPreferenceCompat onOffSwitch =
-                    (ChromeSwitchPreferenceCompat) savedPasswordPrefs.findPreference(
+                    (SavePasswordsPreferences) preferences2.getMainFragment();
+            ChromeSwitchPreference onOffSwitch =
+                    (ChromeSwitchPreference) savedPasswordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_SAVE_PASSWORDS_SWITCH);
             Assert.assertFalse(onOffSwitch.isChecked());
         });
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for non signed in users.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkNotSignedIn() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for signed in users, not syncing passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSignedInNotSyncing() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(false, false);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is displayed for
+     *  users syncing passwords.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSyncing() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(false, true);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNotNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
+    }
+
+    /**
+     *  Tests that the link pointing to managing passwords in the user's account is not displayed
+     *  for users syncing passwords with custom passphrase.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    public void testManageAccountLinkSyncingWithPassphrase() throws Exception {
+        // Add a password entry, because the link is only displayed if the password list is not
+        // empty.
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+        ChromeSigninController.get().setSignedInAccountName("Test Account");
+        overrideProfileSyncService(true, true);
+
+        final Preferences preferences =
+                PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                        SavePasswordsPreferences.class.getName());
+        SavePasswordsPreferences savedPasswordPrefs =
+                (SavePasswordsPreferences) preferences.getMainFragment();
+
+        Assert.assertNull(savedPasswordPrefs.findPreference(
+                SavePasswordsPreferences.PREF_KEY_MANAGE_ACCOUNT_LINK));
     }
 
     /**
@@ -507,9 +686,9 @@ public class SavePasswordsPreferencesTest {
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences.getMainFragmentCompat();
-            ChromeBaseCheckBoxPreferenceCompat onOffSwitch =
-                    (ChromeBaseCheckBoxPreferenceCompat) passwordPrefs.findPreference(
+                    (SavePasswordsPreferences) preferences.getMainFragment();
+            ChromeBaseCheckBoxPreference onOffSwitch =
+                    (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
             Assert.assertTrue(onOffSwitch.isChecked());
 
@@ -529,12 +708,122 @@ public class SavePasswordsPreferencesTest {
                         SavePasswordsPreferences.class.getName());
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             SavePasswordsPreferences passwordPrefs =
-                    (SavePasswordsPreferences) preferences2.getMainFragmentCompat();
-            ChromeBaseCheckBoxPreferenceCompat onOffSwitch =
-                    (ChromeBaseCheckBoxPreferenceCompat) passwordPrefs.findPreference(
+                    (SavePasswordsPreferences) preferences2.getMainFragment();
+            ChromeBaseCheckBoxPreference onOffSwitch =
+                    (ChromeBaseCheckBoxPreference) passwordPrefs.findPreference(
                             SavePasswordsPreferences.PREF_AUTOSIGNIN_SWITCH);
             Assert.assertFalse(onOffSwitch.isChecked());
         });
+    }
+
+    /**
+     * Check that {@link #showPasswordEntryEditingView()} was called with the index matching the one
+     * of the password that was clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testSelectedStoredPasswordIndexIsSameAsInShowPasswordEntryEditingView()
+            throws Exception {
+        setPasswordSourceWithMultipleEntries( // Initialize preferences
+                new SavedPasswordEntry[] {new SavedPasswordEntry("https://example.com",
+                                                  "example user", "example password"),
+                        new SavedPasswordEntry("https://test.com", "test user", "test password")});
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).perform(click());
+
+        Assert.assertEquals(mHandler.getLastEntryIndex(), 1);
+    }
+
+    /**
+     * Check that the password editing activity displays the data received through arguments.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testPasswordDataDisplayedInEditingActivity() throws Exception {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
+        fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD, "test password");
+        PreferencesLauncher.launchSettingsPage(
+                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+
+        Espresso.onView(withId(R.id.site_edit)).check(matches(withText("https://example.com")));
+        Espresso.onView(withId(R.id.username_edit)).check(matches(withText("test user")));
+        Espresso.onView(withId(R.id.password_edit)).check(matches(withText("test password")));
+    }
+
+    /**
+     * Check that the changes of password data in the password editing activity are preserved and
+     * shown in the password viewing activity and in the list of passwords after the save button
+     * was clicked.
+     */
+    // TODO(izuzic): Remove @Ignore when saving of changes is enabled again.
+    @Ignore("The test is ignored because saving the changes of credentials is currently disabled.")
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testChangeOfStoredPasswordDataIsPreserved() throws Exception {
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).perform(click());
+
+        Espresso.onView(withId(R.id.username_edit)).perform(typeText(" new"));
+
+        Espresso.onView(withSaveMenuIdOrText()).perform(click());
+
+        // Check if the password viewing activity has the updated data.
+        Espresso.onView(withText("test user new")).check(matches(isDisplayed()));
+
+        Espresso.pressBack();
+        // Check if the password preferences activity has the updated data in the list of passwords.
+        Espresso.onView(withText("test user new")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check that the stored password is visible after clicking the unmasking icon and invisible
+     * after another click.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testStoredPasswordCanBeUnmaskedAndMaskedAgain() throws Exception {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
+        fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_PASSWORD, "test password");
+        PreferencesLauncher.launchSettingsPage(
+                InstrumentationRegistry.getContext(), PasswordEntryEditor.class, fragmentArgs);
+
+        ReauthenticationManager.setApiOverride(ReauthenticationManager.OverrideState.AVAILABLE);
+        ReauthenticationManager.setScreenLockSetUpOverride(
+                ReauthenticationManager.OverrideState.AVAILABLE);
+
+        ReauthenticationManager.recordLastReauth(
+                System.currentTimeMillis(), ReauthenticationManager.ReauthScope.BULK);
+
+        Espresso.onView(withId(R.id.password_entry_editor_view_password)).perform(click());
+
+        Espresso.onView(withId(R.id.password_edit)).check(matches(isVisiblePasswordInput(true)));
+
+        Espresso.onView(withId(R.id.password_entry_editor_view_password)).perform(click());
+
+        Espresso.onView(withId(R.id.password_edit)).check(matches(isVisiblePasswordInput(false)));
     }
 
     /**
@@ -669,8 +958,7 @@ public class SavePasswordsPreferencesTest {
         ReauthenticationManager.resetLastReauth();
 
         // Now call onResume to nudge Chrome into continuing the export flow.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getMainFragmentCompat().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Check that the warning dialog is not displayed.
         Espresso.onView(withText(R.string.settings_passwords_export_description))
@@ -758,8 +1046,7 @@ public class SavePasswordsPreferencesTest {
                 .perform(click());
         // The reauthentication dialog is skipped and the last reauthentication timestamp is not
         // reset. This looks like a failed reauthentication to SavePasswordsPreferences' onResume.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getMainFragmentCompat().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
         checkExportMenuItemState(MenuItemState.ENABLED);
     }
 
@@ -869,8 +1156,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getMainFragmentCompat().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         File tempFile = createFakeExportedPasswordsFile();
         // Pretend that passwords have been serialized to go directly to the intent.
@@ -943,8 +1229,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getMainFragmentCompat().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Cancel the export warning.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -988,8 +1273,7 @@ public class SavePasswordsPreferencesTest {
 
         // Call onResume to simulate that the user put Chrome into background by opening "recent
         // apps" and then restored Chrome by choosing it from the list.
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { preferences.getMainFragmentCompat().onResume(); });
+        TestThreadUtils.runOnUiThreadBlocking(() -> { preferences.getMainFragment().onResume(); });
 
         // Check that export warning is not visible again.
         Espresso.onView(withText(R.string.cancel)).check(doesNotExist());
@@ -1421,7 +1705,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getMainFragmentCompat();
+                        .getMainFragment();
 
         // Force the search option into the action bar.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1464,7 +1748,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getMainFragmentCompat();
+                        .getMainFragment();
 
         // Force the search option into the overflow menu.
         TestThreadUtils.runOnUiThreadBlocking(
@@ -1588,7 +1872,6 @@ public class SavePasswordsPreferencesTest {
         setPasswordSourceWithMultipleEntries(GREEK_GODS);
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
                 SavePasswordsPreferences.class.getName());
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
 
         // Open the search which should hide the Account link.
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
@@ -1601,7 +1884,6 @@ public class SavePasswordsPreferencesTest {
             Espresso.onView(allOf(withText(god.getUserName()), withText(god.getUrl())))
                     .check(doesNotExist());
         }
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
         Espresso.onView(withText(R.string.saved_passwords_none_text)).check(doesNotExist());
         // Check that the section header for saved passwords is not present. Do not confuse it with
         // the toolbar label which contains the same string, look for the one inside a linear
@@ -1623,7 +1905,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getMainFragmentCompat();
+                        .getMainFragment();
 
         Espresso.onView(withText(R.string.section_saved_passwords_exceptions))
                 .check(matches(isDisplayed()));
@@ -1654,7 +1936,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getMainFragmentCompat();
+                        .getMainFragment();
         final AtomicReference<Boolean> menuInitiallyVisible = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(
                 ()
@@ -1663,7 +1945,6 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
         if (menuInitiallyVisible.get()) { // Check overflow menu only on large screens that have it.
             Espresso.onView(withContentDescription(R.string.abc_action_menu_overflow_description))
                     .check(matches(isDisplayed()));
@@ -1672,7 +1953,6 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withSearchMenuIdOrText()).perform(click());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
         Espresso.onView(isRoot()).check(
                 (root, e)
                         -> waitForView((ViewGroup) root,
@@ -1705,7 +1985,6 @@ public class SavePasswordsPreferencesTest {
                 .perform(click(), typeText("Zeu"), closeSoftKeyboard());
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title)).check(doesNotExist());
-        Espresso.onView(withText(startsWith("View and manage"))).check(doesNotExist());
 
         Espresso.onView(withContentDescription(R.string.abc_action_bar_up_description))
                 .perform(click());
@@ -1713,7 +1992,6 @@ public class SavePasswordsPreferencesTest {
 
         Espresso.onView(withText(R.string.passwords_auto_signin_title))
                 .check(matches(isDisplayed()));
-        Espresso.onView(withText(startsWith("View and manage"))).check(matches(isDisplayed()));
         Espresso.onView(withId(R.id.menu_id_search)).check(matches(isDisplayed()));
     }
 
@@ -1763,7 +2041,7 @@ public class SavePasswordsPreferencesTest {
                 (SavePasswordsPreferences) PreferencesTest
                         .startPreferences(InstrumentationRegistry.getInstrumentation(),
                                 SavePasswordsPreferences.class.getName())
-                        .getMainFragmentCompat();
+                        .getMainFragment();
         Espresso.onView(withId(R.id.search_button)).check(matches(isDisplayed()));
         final AtomicReference<ColorFilter> passwordSearchFilter = new AtomicReference<>();
         TestThreadUtils.runOnUiThreadBlocking(() -> {

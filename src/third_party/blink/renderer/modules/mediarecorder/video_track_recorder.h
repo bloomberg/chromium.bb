@@ -5,6 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_MEDIARECORDER_VIDEO_TRACK_RECORDER_H_
 
+#include <atomic>
 #include <memory>
 
 #include "base/macros.h"
@@ -56,13 +57,6 @@ struct CrossThreadCopier<media::WebmMuxer::VideoParameters> {
   STATIC_ONLY(CrossThreadCopier);
   using Type = media::WebmMuxer::VideoParameters;
   static Type Copy(Type pointer) { return pointer; }
-};
-
-template <>
-struct CrossThreadCopier<std::string> {
-  STATIC_ONLY(CrossThreadCopier);
-  using Type = std::string;
-  static Type Copy(Type&& value) { return std::move(value); }
 };
 
 }  // namespace WTF
@@ -204,7 +198,9 @@ class MODULES_EXPORT VideoTrackRecorder
 
     // While |paused_|, frames are not encoded. Used only from
     // |encoding_thread_|.
-    bool paused_;
+    // Use an atomic variable since it can be set on the main thread and read
+    // on the io thread at the same time.
+    std::atomic_bool paused_;
 
     // This callback should be exercised on IO thread.
     const OnEncodedVideoCB on_encoded_video_callback_;

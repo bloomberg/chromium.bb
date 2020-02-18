@@ -10,7 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/default_clock.h"
 #include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
 #include "components/previews/content/previews_decider_impl.h"
@@ -214,7 +214,7 @@ class PreviewsUIServiceTest : public testing::Test {
 
  protected:
   // Run this test on a single thread.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestPreviewsLogger* logger_ptr_;
   network::TestNetworkQualityTracker test_network_quality_tracker_;
 
@@ -300,7 +300,7 @@ TEST_F(PreviewsUIServiceTest, TestLogPreviewDecisionMadePassesCorrectParams) {
   const base::Time time_b = base::Time::Now();
   PreviewsType type_b = PreviewsType::OFFLINE;
   std::vector<PreviewsEligibilityReason> passed_reasons_b = {
-      PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER,
+      PreviewsEligibilityReason::NOT_ALLOWED_BY_OPTIMIZATION_GUIDE,
       PreviewsEligibilityReason::NETWORK_QUALITY_UNAVAILABLE,
   };
   const std::vector<PreviewsEligibilityReason> expected_passed_reasons_b(

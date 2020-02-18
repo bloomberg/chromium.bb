@@ -14,13 +14,14 @@
 #include "chrome/browser/performance_manager/graph/node_attached_data.h"
 #include "chrome/browser/performance_manager/graph/node_base.h"
 #include "chrome/browser/performance_manager/graph/properties.h"
-#include "chrome/browser/performance_manager/observers/graph_observer.h"
 #include "chrome/browser/performance_manager/public/graph/process_node.h"
+#include "chrome/browser/performance_manager/public/render_process_host_proxy.h"
 
 namespace performance_manager {
 
 class FrameNodeImpl;
 class ProcessNodeImpl;
+class WorkerNodeImpl;
 
 // A process node follows the lifetime of a RenderProcessHost.
 // It may reference zero or one processes at a time, but during its lifetime, it
@@ -30,19 +31,19 @@ class ProcessNodeImpl;
 // 1. Created, no PID.
 // 2. Process started, have PID - in the case where the associated render
 //    process fails to start, this state may not occur.
-// 3. Process died or falied to start, have exit status.
+// 3. Process died or failed to start, have exit status.
 // 4. Back to 2.
 class ProcessNodeImpl
     : public PublicNodeImpl<ProcessNodeImpl, ProcessNode>,
       public TypedNodeBase<ProcessNodeImpl,
-                           GraphImplObserver,
                            ProcessNode,
                            ProcessNodeObserver>,
       public resource_coordinator::mojom::ProcessCoordinationUnit {
  public:
   static constexpr NodeTypeEnum Type() { return NodeTypeEnum::kProcess; }
 
-  explicit ProcessNodeImpl(GraphImpl* graph);
+  ProcessNodeImpl(GraphImpl*, RenderProcessHostProxy render_process_proxy);
+
   ~ProcessNodeImpl() override;
 
   void Bind(
@@ -67,6 +68,10 @@ class ProcessNodeImpl
   void set_cumulative_cpu_usage(base::TimeDelta cumulative_cpu_usage) {
     cumulative_cpu_usage_ = cumulative_cpu_usage;
   }
+  uint64_t resident_set_kb() const { return resident_set_kb_; }
+  void set_resident_set_kb(uint64_t resident_set_kb) {
+    resident_set_kb_ = resident_set_kb;
+  }
   base::TimeDelta cumulative_cpu_usage() const { return cumulative_cpu_usage_; }
 
   const base::flat_set<FrameNodeImpl*>& frame_nodes() const;
@@ -79,7 +84,7 @@ class ProcessNodeImpl
   // access, but will return kNullProcessId when the process is not valid. It
   // will also retain the process ID for a process that has exited.
   base::ProcessId process_id() const { return process_id_; }
-  const base::Process& process() const { return process_; }
+  const base::Process& process() const { return process_.value(); }
   base::Time launch_time() const { return launch_time_; }
   base::Optional<int32_t> exit_status() const { return exit_status_; }
 
@@ -91,13 +96,23 @@ class ProcessNodeImpl
     return main_thread_task_load_is_low_.value();
   }
 
+  const RenderProcessHostProxy& render_process_host_proxy() const {
+    return render_process_host_proxy_;
+  }
+
   double cpu_usage() const { return cpu_usage_; }
 
   // Add |frame_node| to this process.
   void AddFrame(FrameNodeImpl* frame_node);
   // Removes |frame_node| from the set of frames hosted by this process. Invoked
-  // from the destructor of FrameNodeImpl.
+  // when the frame is removed from the graph.
   void RemoveFrame(FrameNodeImpl* frame_node);
+
+  // Add |worker_node| to this process.
+  void AddWorker(WorkerNodeImpl* worker_node);
+  // Removes |worker_node| from the set of workers hosted by this process.
+  // Invoked when the worker is removed from the graph.
+  void RemoveWorker(WorkerNodeImpl* worker_node);
 
   void OnAllFramesInProcessFrozenForTesting() { OnAllFramesInProcessFrozen(); }
 
@@ -108,6 +123,7 @@ class ProcessNodeImpl
 
  private:
   friend class FrozenFrameAggregatorAccess;
+  friend class ProcessMetricsDecoratorAccess;
 
   // ProcessNode implementation. These are private so that users of the impl use
   // the private getters rather than the public interface.
@@ -122,6 +138,8 @@ class ProcessNodeImpl
   double GetCpuUsage() const override;
   base::TimeDelta GetCumulativeCpuUsage() const override;
   uint64_t GetPrivateFootprintKb() const override;
+  uint64_t GetResidentSetKb() const override;
+  const RenderProcessHostProxy& GetRenderProcessHostProxy() const override;
 
   void OnAllFramesInProcessFrozen();
 
@@ -131,25 +149,32 @@ class ProcessNodeImpl
 
   base::TimeDelta cumulative_cpu_usage_;
   uint64_t private_footprint_kb_ = 0u;
+  uint64_t resident_set_kb_ = 0;
 
   base::ProcessId process_id_ = base::kNullProcessId;
-  base::Process process_;
+  ObservedProperty::NotifiesAlways<
+      base::Process,
+      &ProcessNodeObserver::OnProcessLifetimeChange>
+      process_;
+
   base::Time launch_time_;
   base::Optional<int32_t> exit_status_;
 
+  const RenderProcessHostProxy render_process_host_proxy_;
+
   ObservedProperty::NotifiesAlways<
       base::TimeDelta,
-      &GraphImplObserver::OnExpectedTaskQueueingDurationSample,
       &ProcessNodeObserver::OnExpectedTaskQueueingDurationSample>
       expected_task_queueing_duration_;
   ObservedProperty::NotifiesOnlyOnChanges<
       bool,
-      &GraphImplObserver::OnMainThreadTaskLoadIsLow,
       &ProcessNodeObserver::OnMainThreadTaskLoadIsLow>
       main_thread_task_load_is_low_{false};
   double cpu_usage_ = 0;
 
   base::flat_set<FrameNodeImpl*> frame_nodes_;
+
+  base::flat_set<WorkerNodeImpl*> worker_nodes_;
 
   // Inline storage for FrozenFrameAggregator user data.
   InternalNodeAttachedDataStorage<sizeof(uintptr_t) + 8> frozen_frame_data_;

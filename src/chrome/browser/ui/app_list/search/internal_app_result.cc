@@ -9,13 +9,14 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "base/bind.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/chromeos/release_notes/release_notes_storage.h"
 #include "chrome/browser/favicon/large_icon_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
-#include "components/favicon/core/favicon_server_fetcher_params.h"
 #include "components/favicon/core/large_icon_service.h"
 #include "components/favicon_base/fallback_icon_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -42,8 +43,7 @@ InternalAppResult::InternalAppResult(Profile* profile,
                                      const std::string& app_id,
                                      AppListControllerDelegate* controller,
                                      bool is_recommendation)
-    : AppResult(profile, app_id, controller, is_recommendation),
-      weak_factory_(this) {
+    : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
   SetResultType(ResultType::kInternalApp);
   SetIcon(GetIconForResourceId(
@@ -59,12 +59,21 @@ InternalAppResult::InternalAppResult(Profile* profile,
     large_icon_service_ =
         LargeIconServiceFactory::GetForBrowserContext(profile);
     UpdateContinueReadingFavicon(/*continue_to_google_server=*/true);
+  }
 
+  if (IsSuggestionChip(id())) {
     // Set these values to make sure that the chip will show up
     // in the proper position.
     SetDisplayIndex(ash::SearchResultDisplayIndex::kFirstIndex);
     SetDisplayLocation(
         ash::SearchResultDisplayLocation::kSuggestionChipContainer);
+  }
+
+  if (id() == kReleaseNotesAppId) {
+    SetNotifyVisibilityChange(true);
+    // Make sure that if both Continue Reading and Release Notes are available,
+    // Release Notes shows up first in the suggestion chip container.
+    SetPositionPriority(1.0f);
   }
 
   RecordShowHistogram(app_id);
@@ -154,8 +163,7 @@ void InternalAppResult::OnGetFaviconFromCacheFinished(
         })");
   large_icon_service_
       ->GetLargeIconOrFallbackStyleFromGoogleServerSkippingLocalCache(
-          favicon::FaviconServerFetcherParams::CreateForDesktop(
-              url_for_continuous_reading_),
+          url_for_continuous_reading_,
           /*may_page_url_be_private=*/false,
           /*should_trim_page_url_path=*/false, traffic_annotation,
           base::BindRepeating(
@@ -184,6 +192,16 @@ void InternalAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
         std::make_unique<InternalAppContextMenu>(profile(), id(), controller());
   }
   context_menu_->GetMenuModel(std::move(callback));
+}
+
+void InternalAppResult::OnVisibilityChanged(bool visibility) {
+  DCHECK_EQ(id(), kReleaseNotesAppId);
+
+  if (visibility) {
+    DCHECK(chromeos::ReleaseNotesStorage(profile()).ShouldShowSuggestionChip());
+    chromeos::ReleaseNotesStorage(profile())
+        .DecreaseTimesLeftToShowSuggestionChip();
+  }
 }
 
 SearchResultType InternalAppResult::GetSearchResultType() const {

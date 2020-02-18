@@ -9,7 +9,6 @@
 #include "ash/focus_cycler.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
-#include "ash/login/ui/parent_access_widget.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/login_screen_client.h"
 #include "ash/public/cpp/toast_data.h"
@@ -24,6 +23,7 @@
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/debug/alias.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,7 +63,7 @@ void SetSystemTrayVisibility(SystemTrayVisibility visibility) {
 
 LoginScreenController::LoginScreenController(
     SystemTrayNotifier* system_tray_notifier)
-    : system_tray_notifier_(system_tray_notifier), weak_factory_(this) {
+    : system_tray_notifier_(system_tray_notifier) {
   system_tray_notifier_->AddSystemTrayFocusObserver(this);
 }
 
@@ -177,13 +177,33 @@ void LoginScreenController::AuthenticateUserWithEasyUnlock(
   client_->AuthenticateUserWithEasyUnlock(account_id);
 }
 
+void LoginScreenController::AuthenticateUserWithChallengeResponse(
+    const AccountId& account_id,
+    OnAuthenticateCallback callback) {
+  LOG_IF(FATAL, IsAuthenticating())
+      << "Duplicate authentication attempt; current authentication stage is "
+      << static_cast<int>(authentication_stage_);
+
+  if (!client_) {
+    std::move(callback).Run(/*success=*/base::nullopt);
+    return;
+  }
+
+  authentication_stage_ = AuthenticationStage::kDoAuthenticate;
+  client_->AuthenticateUserWithChallengeResponse(
+      account_id,
+      base::BindOnce(&LoginScreenController::OnAuthenticateComplete,
+                     weak_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 bool LoginScreenController::ValidateParentAccessCode(
     const AccountId& account_id,
-    const std::string& code) {
+    const std::string& code,
+    base::Time validation_time) {
   if (!client_)
     return false;
 
-  return client_->ValidateParentAccessCode(account_id, code);
+  return client_->ValidateParentAccessCode(account_id, code, validation_time);
 }
 
 void LoginScreenController::HardlockPod(const AccountId& account_id) {
@@ -350,11 +370,13 @@ void LoginScreenController::ShowParentAccessButton(bool show) {
 
 void LoginScreenController::ShowParentAccessWidget(
     const AccountId& child_account_id,
-    base::RepeatingCallback<void(bool success)> callback,
+    ParentAccessWidget::OnExitCallback callback,
     ParentAccessRequestReason reason,
-    bool extra_dimmer) {
-  parent_access_widget_ = std::make_unique<ash::ParentAccessWidget>(
-      child_account_id, callback, reason, extra_dimmer);
+    bool extra_dimmer,
+    base::Time validation_time) {
+  DCHECK(!ParentAccessWidget::Get());
+  ParentAccessWidget::Show(child_account_id, std::move(callback), reason,
+                           extra_dimmer, validation_time);
 }
 
 void LoginScreenController::SetAllowLoginAsGuest(bool allow_guest) {
@@ -370,6 +392,26 @@ LoginScreenController::GetScopedGuestButtonBlocker() {
       ->shelf_widget()
       ->login_shelf_view()
       ->GetScopedGuestButtonBlocker();
+}
+
+void LoginScreenController::RequestSecurityTokenPin(
+    SecurityTokenPinRequest request) {
+  if (!LockScreen::HasInstance()) {
+    // Corner case: the PIN request is made at inappropriate time, racing with
+    // the lock screen showing/hiding.
+    std::move(request.pin_ui_closed_callback).Run();
+    return;
+  }
+  LockScreen::Get()->RequestSecurityTokenPin(std::move(request));
+}
+
+void LoginScreenController::ClearSecurityTokenPinRequest() {
+  if (!LockScreen::HasInstance()) {
+    // Corner case: the request is made at inappropriate time, racing with the
+    // lock screen showing/hiding.
+    return;
+  }
+  LockScreen::Get()->ClearSecurityTokenPinRequest();
 }
 
 void LoginScreenController::ShowLockScreen() {
@@ -405,6 +447,10 @@ void LoginScreenController::ShowResetScreen() {
 
 void LoginScreenController::ShowAccountAccessHelpApp() {
   client_->ShowAccountAccessHelpApp();
+}
+
+void LoginScreenController::ShowParentAccessHelpApp() {
+  client_->ShowParentAccessHelpApp();
 }
 
 void LoginScreenController::ShowLockScreenNotificationSettings() {

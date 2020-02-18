@@ -20,7 +20,6 @@
 #include "ios/web/public/browser_state.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #include "ios/web/public/navigation/navigation_context.h"
-#include "ios/web/public/web_state/web_state.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -227,8 +226,7 @@ bool TranslateController::OnTranslateSendRequest(
   auto request = std::make_unique<network::ResourceRequest>();
   request->method = method;
   request->url = GURL(url);
-  request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   auto fetcher = network::SimpleURLLoader::Create(std::move(request),
                                                   NO_TRAFFIC_ANNOTATION_YET);
   fetcher->AttachStringForUpload(body, "application/x-www-form-urlencoded");

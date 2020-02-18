@@ -10,9 +10,10 @@ from __future__ import print_function
 import collections
 import glob
 import grp
-import mock
 import os
 import pwd
+
+import mock
 
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_test_lib
@@ -124,8 +125,8 @@ class TestOsutils(cros_test_lib.TempDirTestCase):
       self.assertFalse(osutils.SafeUnlink(path))
       self.assertNotExists(path)
 
-    f("nonsudo", False)
-    f("sudo", True)
+    f('nonsudo', False)
+    f('sudo', True)
 
   def testSafeMakedirs(self):
     """Test creating directory trees work (existing or not)."""
@@ -937,14 +938,14 @@ class IterateMountPointsTests(cros_test_lib.TempDirTestCase):
     self.proc_mount = os.path.join(self.tempdir, 'mounts')
     osutils.WriteFile(
         self.proc_mount,
-        r'''/dev/loop0 /mnt/dir_8 ext4 rw,relatime,data=ordered 0 0
+        r"""/dev/loop0 /mnt/dir_8 ext4 rw,relatime,data=ordered 0 0
 /dev/loop2 /mnt/dir_1 ext4 rw,relatime,data=ordered 0 0
 /dev/loop1 /mnt/dir_12 vfat rw 0 0
 /dev/loop4 /mnt/dir_3 ext4 ro,relatime 0 0
 weird\040system /mnt/weirdo unknown ro 0 0
 tmpfs /mnt/spaced\040dir tmpfs ro 0 0
 tmpfs /mnt/\134 tmpfs ro 0 0
-'''
+"""
     )
 
   def testOkay(self):
@@ -1034,16 +1035,16 @@ class IsInsideVmTest(cros_test_lib.MockTempDirTestCase):
         glob, 'glob', return_value=[self.model_file])
 
   def testIsInsideVm(self):
-    osutils.WriteFile(self.model_file, "VBOX")
+    osutils.WriteFile(self.model_file, 'VBOX')
     self.assertTrue(osutils.IsInsideVm())
     self.assertEqual(self.mock_glob.call_args[0][0],
-                     "/sys/block/*/device/model")
+                     '/sys/block/*/device/model')
 
-    osutils.WriteFile(self.model_file, "VMware")
+    osutils.WriteFile(self.model_file, 'VMware')
     self.assertTrue(osutils.IsInsideVm())
 
   def testIsNotInsideVm(self):
-    osutils.WriteFile(self.model_file, "ST1000DM000-1CH1")
+    osutils.WriteFile(self.model_file, 'ST1000DM000-1CH1')
     self.assertFalse(osutils.IsInsideVm())
 
 

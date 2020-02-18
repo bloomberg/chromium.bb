@@ -53,26 +53,21 @@ REPOSITORY_ROOT = os.path.abspath(os.path.join(
     os.path.dirname(__file__), '..', '..', '..', '..', '..'))
 
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'tools', 'perf'))
-from core import path_util  # pylint: disable=wrong-import-position
-sys.path.append(path_util.GetTelemetryDir())
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'build', 'android'))
-sys.path.append(os.path.join(
-    REPOSITORY_ROOT, 'third_party', 'catapult', 'devil'))
 sys.path.append(os.path.join(REPOSITORY_ROOT, 'components'))
 
 # pylint: disable=wrong-import-position
-from cronet.tools import android_rndis_forwarder
-from cronet.tools import perf_test_utils
 from chrome_telemetry_build import chromium_config
 from devil.android import device_utils
 from devil.android.sdk import intent
+from core import benchmark_runner
+from cronet.tools import android_rndis_forwarder
+from cronet.tools import perf_test_utils
 import lighttpd_server
 from pylib import constants
 from telemetry import android
 from telemetry import benchmark
-from telemetry import benchmark_runner
 from telemetry import story
-from telemetry.value import scalar
 from telemetry.web_perf import timeline_based_measurement
 # pylint: enable=wrong-import-position
 
@@ -144,8 +139,7 @@ class CronetPerfTestMeasurement(
     jsonResults = json.loads(self._device.ReadFile(
         perf_test_utils.GetConfig(self._device)['RESULTS_FILE']))
     for test in jsonResults:
-      results.AddValue(scalar.ScalarValue(results.current_page, test,
-          'ms', jsonResults[test]))
+      results.AddMeasurement(test, 'ms', jsonResults[test])
 
   def DidRunStory(self, platform, results):
     # Skip parent implementation which calls into tracing_controller which this

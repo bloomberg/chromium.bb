@@ -13,10 +13,11 @@
 #include "ash/public/cpp/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/public/cpp/default_frame_header.h"
 #include "ash/public/cpp/frame_utils.h"
+#include "ash/public/cpp/tablet_mode.h"
 #include "ash/public/cpp/touch_uma.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/public/cpp/window_state_type.h"
-#include "ash/public/interfaces/constants.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
 #include "base/metrics/user_metrics.h"
@@ -27,10 +28,8 @@
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
 #include "chrome/browser/ui/ash/session_util.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -41,6 +40,7 @@
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -102,8 +102,8 @@ bool IsSnappedInSplitView(const aura::Window* window) {
 // the header used for packaged apps.
 bool UsePackagedAppHeaderStyle(const Browser* browser) {
   // Use for non tabbed trusted source windows, e.g. Settings, as well as apps.
-  return (!browser->is_type_tabbed() && browser->is_trusted_source()) ||
-         browser->is_app();
+  return (!browser->is_type_normal() && browser->is_trusted_source()) ||
+         browser->deprecated_is_app();
 }
 
 }  // namespace
@@ -123,9 +123,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
   browser_view()->browser()->command_controller()->RemoveCommandObserver(
       IDC_BACK, this);
 
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->RemoveObserver(this);
-
+  ash::TabletMode::Get()->RemoveObserver(this);
   ash::SplitViewNotifier::Get()->RemoveObserver(this);
 
   ImmersiveModeController* immersive_controller =
@@ -154,8 +152,8 @@ void BrowserNonClientFrameViewAsh::Init() {
   aura::Window* window = frame()->GetNativeWindow();
   window->SetProperty(
       aura::client::kAppType,
-      static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
-                                         : ash::AppType::BROWSER));
+      static_cast<int>(browser->deprecated_is_app() ? ash::AppType::CHROME_APP
+                                                    : ash::AppType::BROWSER));
 
   window_observer_.Add(GetFrameWindow());
 
@@ -164,11 +162,9 @@ void BrowserNonClientFrameViewAsh::Init() {
   if (browser->profile()->IsOffTheRecord())
     window->SetProperty(ash::kBlockedForAssistantSnapshotKey, true);
 
-  // TabletModeClient may not be initialized during unit tests.
-  if (TabletModeClient::Get())
-    TabletModeClient::Get()->AddObserver(this);
+  ash::TabletMode::Get()->AddObserver(this);
 
-  if (browser->is_app() && IsV1AppBackButtonEnabled()) {
+  if (browser->deprecated_is_app() && IsV1AppBackButtonEnabled()) {
     browser->command_controller()->AddCommandObserver(IDC_BACK, this);
     back_button_ = new ash::FrameBackButton();
     AddChildView(back_button_);
@@ -251,7 +247,7 @@ void BrowserNonClientFrameViewAsh::UpdateFrameColor() {
     inactive_color = GetFrameColor(kInactive);
   } else if (browser_view()->IsBrowserTypeHostedApp()) {
     active_color = browser_view()->browser()->app_controller()->GetThemeColor();
-  } else if (!browser_view()->browser()->is_app()) {
+  } else if (!browser_view()->browser()->deprecated_is_app()) {
     // TODO(crbug.com/836128): Remove when System Web Apps flag is removed, as
     // the above Hosted App branch will render the theme color.
     active_color =
@@ -362,7 +358,7 @@ void BrowserNonClientFrameViewAsh::GetWindowMask(const gfx::Size& size,
 
 void BrowserNonClientFrameViewAsh::ResetWindowControls() {
   BrowserNonClientFrameView::ResetWindowControls();
-  caption_button_container_->SetVisible(true);
+  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
   caption_button_container_->ResetWindowControls();
 }
 
@@ -493,7 +489,15 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ash::mojom::TabletModeClient:
+// ash::TabletModeToggleObserver:
+
+void BrowserNonClientFrameViewAsh::OnTabletModeStarted() {
+  OnTabletModeToggled(true);
+}
+
+void BrowserNonClientFrameViewAsh::OnTabletModeEnded() {
+  OnTabletModeToggled(false);
+}
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
   if (!enabled && browser_view()->immersive_mode_controller()->IsRevealed()) {
@@ -560,7 +564,7 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFaviconForTabIconView() {
 void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
                                                                  bool enabled) {
   DCHECK_EQ(IDC_BACK, id);
-  DCHECK(browser_view()->browser()->is_app());
+  DCHECK(browser_view()->browser()->deprecated_is_app());
 
   if (back_button_)
     back_button_->SetEnabled(enabled);
@@ -649,8 +653,8 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
   // minimize all windows when pressing the Launcher button on the shelf.
   const bool hide_caption_buttons_in_tablet_mode =
       !UsePackagedAppHeaderStyle(browser_view()->browser());
-  if (hide_caption_buttons_in_tablet_mode && TabletModeClient::Get() &&
-      TabletModeClient::Get()->tablet_mode_enabled()) {
+  if (hide_caption_buttons_in_tablet_mode &&
+      ash::TabletMode::Get()->InTabletMode()) {
     return false;
   }
 
@@ -664,9 +668,12 @@ int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
-  return ShouldShowCaptionButtons()
-             ? caption_button_container_->GetPreferredSize().width()
-             : 0;
+  int inset = 0;
+  if (ShouldShowCaptionButtons())
+    inset += caption_button_container_->GetPreferredSize().width();
+  if (hosted_app_button_container())
+    inset += hosted_app_button_container()->GetPreferredSize().width();
+  return inset;
 }
 
 bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
@@ -718,7 +725,7 @@ BrowserNonClientFrameViewAsh::CreateFrameHeader() {
 
 void BrowserNonClientFrameViewAsh::SetUpForHostedApp() {
   Browser* browser = browser_view()->browser();
-  if (!browser->app_controller()->ShouldShowHostedAppButtonContainer())
+  if (!browser->app_controller()->HasTitlebarToolbar())
     return;
 
   // Add the container for extra hosted app buttons (e.g app menu button).
@@ -746,7 +753,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowProfileIndicatorIcon() const {
   if (browser->profile()->IsIncognitoProfile())
     return false;
 
-  if (!browser->is_type_tabbed() && !browser->is_app())
+  if (browser->is_type_popup())
     return false;
 
   return MultiUserWindowManagerHelper::ShouldShowAvatar(

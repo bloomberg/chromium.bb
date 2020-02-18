@@ -72,7 +72,6 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/page_load_metrics/test/page_load_metrics_test_util.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -81,6 +80,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_popup_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
+#include "components/page_load_metrics/common/test/page_load_metrics_test_util.h"
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -306,7 +306,7 @@ class ChannelDestructionWatcher {
 
    private:
     ~DestructionMessageFilter() override {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&ChannelDestructionWatcher::OnChannelDestroyed,
                          base::Unretained(watcher_)));
@@ -451,7 +451,7 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
   NewTabNavigationOrSwapObserver() {
     BrowserList::AddObserver(this);
     for (const Browser* browser : *BrowserList::GetInstance())
-      tab_strip_observer_.Add(browser->tab_strip_model());
+      browser->tab_strip_model()->AddObserver(this);
   }
 
   ~NewTabNavigationOrSwapObserver() override {
@@ -481,12 +481,10 @@ class NewTabNavigationOrSwapObserver : public TabStripModelObserver,
 
   // BrowserListObserver:
   void OnBrowserAdded(Browser* browser) override {
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
  private:
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
   base::RunLoop new_tab_run_loop_;
   std::unique_ptr<NavigationOrSwapObserver> swap_observer_;
 
@@ -2328,8 +2326,9 @@ IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest, PrerenderIncognito) {
 }
 
 // Checks that prerenders are aborted when an incognito profile is closed.
+// ToDo(crbug.com/994068): The test is crashing on multiple platforms.
 IN_PROC_BROWSER_TEST_F(PrerenderIncognitoBrowserTest,
-                       PrerenderIncognitoClosed) {
+                       DISABLED_PrerenderIncognitoClosed) {
   std::unique_ptr<TestPrerender> prerender = PrerenderTestURL(
       "/prerender/prerender_page.html", FINAL_STATUS_PROFILE_DESTROYED, 1);
   current_browser()->window()->Close();

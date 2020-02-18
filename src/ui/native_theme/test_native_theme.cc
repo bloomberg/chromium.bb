@@ -9,7 +9,8 @@ namespace ui {
 TestNativeTheme::TestNativeTheme() {}
 TestNativeTheme::~TestNativeTheme() {}
 
-SkColor TestNativeTheme::GetSystemColor(ColorId color_id) const {
+SkColor TestNativeTheme::GetSystemColor(ColorId color_id,
+                                        ColorScheme color_scheme) const {
   return SK_ColorRED;
 }
 
@@ -23,7 +24,8 @@ void TestNativeTheme::Paint(cc::PaintCanvas* canvas,
                             Part part,
                             State state,
                             const gfx::Rect& rect,
-                            const ExtraParams& extra) const {}
+                            const ExtraParams& extra,
+                            ColorScheme color_scheme) const {}
 
 bool TestNativeTheme::SupportsNinePatch(Part part) const {
   return false;
@@ -41,7 +43,7 @@ bool TestNativeTheme::UsesHighContrastColors() const {
   return high_contrast_;
 }
 
-bool TestNativeTheme::SystemDarkModeEnabled() const {
+bool TestNativeTheme::ShouldUseDarkColors() const {
   return dark_mode_;
 }
 

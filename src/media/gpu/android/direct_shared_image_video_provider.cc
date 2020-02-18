@@ -18,13 +18,13 @@
 #include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/shared_image_factory.h"
+#include "gpu/command_buffer/service/shared_image_video.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/media_switches.h"
-#include "media/gpu/android/shared_image_video.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/scoped_make_current.h"
@@ -73,7 +73,7 @@ void DirectSharedImageVideoProvider::Initialize(GpuInitCB gpu_init_cb) {
 void DirectSharedImageVideoProvider::RequestImage(
     ImageReadyCB cb,
     const ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   // It's unclear that we should handle the image group, but since CodecImages
   // have to be registered on it, we do.  If the CodecImage is ever re-used,
   // then part of that re-use would be to call the (then mis-named)
@@ -89,8 +89,7 @@ void DirectSharedImageVideoProvider::RequestImage(
 }
 
 GpuSharedImageVideoFactory::GpuSharedImageVideoFactory(
-    SharedImageVideoProvider::GetStubCB get_stub_cb)
-    : weak_factory_(this) {
+    SharedImageVideoProvider::GetStubCB get_stub_cb) {
   DETACH_FROM_THREAD(thread_checker_);
   stub_ = get_stub_cb.Run();
   if (stub_)
@@ -142,7 +141,7 @@ void GpuSharedImageVideoFactory::Initialize(
 void GpuSharedImageVideoFactory::CreateImage(
     FactoryImageReadyCB image_ready_cb,
     const SharedImageVideoProvider::ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner) {
+    scoped_refptr<gpu::TextureOwner> texture_owner) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   // Generate a shared image mailbox.
@@ -187,7 +186,7 @@ void GpuSharedImageVideoFactory::CreateImage(
 
 bool GpuSharedImageVideoFactory::CreateImageInternal(
     const SharedImageVideoProvider::ImageSpec& spec,
-    scoped_refptr<TextureOwner> texture_owner,
+    scoped_refptr<gpu::TextureOwner> texture_owner,
     gpu::Mailbox mailbox,
     scoped_refptr<CodecImage> image) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -239,8 +238,8 @@ bool GpuSharedImageVideoFactory::CreateImageInternal(
   // colorspace and wire it here.
   // TODO(vikassoni): This shared image need to be thread safe eventually for
   // webview to work with shared images.
-  auto shared_image = std::make_unique<SharedImageVideo>(
-      mailbox, gfx::ColorSpace::CreateSRGB(), std::move(image),
+  auto shared_image = std::make_unique<gpu::SharedImageVideo>(
+      mailbox, size, gfx::ColorSpace::CreateSRGB(), std::move(image),
       std::move(texture), std::move(shared_context),
       false /* is_thread_safe */);
 

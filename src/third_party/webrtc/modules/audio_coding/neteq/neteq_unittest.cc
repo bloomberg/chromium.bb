@@ -93,7 +93,6 @@ void Convert(const webrtc::NetEqNetworkStatistics& stats_raw,
   stats->set_accelerate_rate(stats_raw.accelerate_rate);
   stats->set_secondary_decoded_rate(stats_raw.secondary_decoded_rate);
   stats->set_secondary_discarded_rate(stats_raw.secondary_discarded_rate);
-  stats->set_clockdrift_ppm(stats_raw.clockdrift_ppm);
   stats->set_added_zero_samples(stats_raw.added_zero_samples);
   stats->set_mean_waiting_time_ms(stats_raw.mean_waiting_time_ms);
   stats->set_median_waiting_time_ms(stats_raw.median_waiting_time_ms);
@@ -457,16 +456,16 @@ TEST_F(NetEqDecodingTest, MAYBE_TestBitExactness) {
       webrtc::test::ResourcePath("audio_coding/neteq_universal_new", "rtp");
 
   const std::string output_checksum =
-      PlatformChecksum("998be2e5a707e636af0b6298f54bedfabe72aae1",
-                       "61e238ece4cd3b67d66a0b7047e06b20607dcb79", "not used",
-                       "998be2e5a707e636af0b6298f54bedfabe72aae1",
-                       "4116ac2a6e75baac3194b712d6fabe28b384275e");
+      PlatformChecksum("6ae9f643dc3e5f3452d28a772eef7e00e74158bc",
+                       "f4374430e870d66268c1b8e22fb700eb072d567e", "not used",
+                       "6ae9f643dc3e5f3452d28a772eef7e00e74158bc",
+                       "8d73c98645917cdeaaa01c20cf095ccc5a10b2b5");
 
   const std::string network_stats_checksum =
-      PlatformChecksum("3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4",
-                       "0a596217fccd8d90eff7d1666b8cc63143eeda12", "not used",
-                       "3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4",
-                       "3689c9f0ab9e50cefab3e44c37c3d7aa0de82ca4");
+      PlatformChecksum("3d186ea7e243abfdbd3d39b8ebf8f02a318117e4",
+                       "0b725774133da5dd823f2046663c12a76e0dbd79", "not used",
+                       "3d186ea7e243abfdbd3d39b8ebf8f02a318117e4",
+                       "3d186ea7e243abfdbd3d39b8ebf8f02a318117e4");
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
                    absl::GetFlag(FLAGS_gen_ref));
@@ -486,16 +485,23 @@ TEST_F(NetEqDecodingTest, MAYBE_TestOpusBitExactness) {
   const std::string maybe_sse =
       "6b602683ca7285a98118b4824d72f4257952c18f|"
       "eb0b68bddcac00fc85403df64f83126f8ea9bc93";
+  // The neon implementation may differ.
+  const std::string maybe_neon =
+      "f95f2a220c9ca5d60b81c4653d46e0de2bee159f|"
+      "63651b8cc7711a66c9491d6b6ce94b774b64a0ce";
   const std::string output_checksum = PlatformChecksum(
-      maybe_sse, "f95f2a220c9ca5d60b81c4653d46e0de2bee159f",
-      "6f288a03d34958f62496f18fa85655593eef4dbe", maybe_sse, maybe_sse);
+      maybe_sse, maybe_neon, "6f288a03d34958f62496f18fa85655593eef4dbe",
+      maybe_sse, maybe_sse);
 
-  const std::string network_stats_checksum =
-      PlatformChecksum("0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a",
-                       "a71dce66c7bea85ba22d4e29a5298f606f810444",
-                       "7c64e1e915bace7c4bf583484efd64eaf234552f",
-                       "0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a",
-                       "0b3d34baffaf651812ffaf06ea1b5ce45ea1c47a");
+  // The neon implementation may differ.
+  const std::string stats_maybe_neon =
+      "a71dce66c7bea85ba22d4e29a5298f606f810444|"
+      "6b8c29e39c82f5479f59726744d0cf3e88e725d3";
+  const std::string network_stats_checksum = PlatformChecksum(
+      "87d2d3e5ca7f1b3fb7a501ffaa51ae29aea74544", stats_maybe_neon,
+      "c876f2a04c4f0a91da7f084f80e87871b7c5a4a1",
+      "87d2d3e5ca7f1b3fb7a501ffaa51ae29aea74544",
+      "87d2d3e5ca7f1b3fb7a501ffaa51ae29aea74544");
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
                    absl::GetFlag(FLAGS_gen_ref));
@@ -519,7 +525,7 @@ TEST_F(NetEqDecodingTest, MAYBE_TestOpusDtxBitExactness) {
       "da9f9a2d94e0c2d67342fad4965d7b91cda50b25", maybe_sse, maybe_sse);
 
   const std::string network_stats_checksum =
-      "bab58dc587d956f326056d7340c96eb9d2d3cc21";
+      "8caf49765f35b6862066d3f17531ce44d8e25f60";
 
   DecodeAndCompare(input_rtp_file, output_checksum, network_stats_checksum,
                    absl::GetFlag(FLAGS_gen_ref));
@@ -574,62 +580,6 @@ TEST_F(NetEqDecodingTestFaxMode, TestFrameWaitingTimeStatistics) {
   EXPECT_EQ(-1, stats.median_waiting_time_ms);
   EXPECT_EQ(-1, stats.min_waiting_time_ms);
   EXPECT_EQ(-1, stats.max_waiting_time_ms);
-}
-
-TEST_F(NetEqDecodingTest, TestAverageInterArrivalTimeNegative) {
-  const int kNumFrames = 3000;  // Needed for convergence.
-  int frame_index = 0;
-  const size_t kSamples = 10 * 16;
-  const size_t kPayloadBytes = kSamples * 2;
-  while (frame_index < kNumFrames) {
-    // Insert one packet each time, except every 10th time where we insert two
-    // packets at once. This will create a negative clock-drift of approx. 10%.
-    int num_packets = (frame_index % 10 == 0 ? 2 : 1);
-    for (int n = 0; n < num_packets; ++n) {
-      uint8_t payload[kPayloadBytes] = {0};
-      RTPHeader rtp_info;
-      PopulateRtpInfo(frame_index, frame_index * kSamples, &rtp_info);
-      ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, payload, 0));
-      ++frame_index;
-    }
-
-    // Pull out data once.
-    bool muted;
-    ASSERT_EQ(0, neteq_->GetAudio(&out_frame_, &muted));
-    ASSERT_EQ(kBlockSize16kHz, out_frame_.samples_per_channel_);
-  }
-
-  NetEqNetworkStatistics network_stats;
-  ASSERT_EQ(0, neteq_->NetworkStatistics(&network_stats));
-  EXPECT_EQ(-103192, network_stats.clockdrift_ppm);
-}
-
-TEST_F(NetEqDecodingTest, TestAverageInterArrivalTimePositive) {
-  const int kNumFrames = 5000;  // Needed for convergence.
-  int frame_index = 0;
-  const size_t kSamples = 10 * 16;
-  const size_t kPayloadBytes = kSamples * 2;
-  for (int i = 0; i < kNumFrames; ++i) {
-    // Insert one packet each time, except every 10th time where we don't insert
-    // any packet. This will create a positive clock-drift of approx. 11%.
-    int num_packets = (i % 10 == 9 ? 0 : 1);
-    for (int n = 0; n < num_packets; ++n) {
-      uint8_t payload[kPayloadBytes] = {0};
-      RTPHeader rtp_info;
-      PopulateRtpInfo(frame_index, frame_index * kSamples, &rtp_info);
-      ASSERT_EQ(0, neteq_->InsertPacket(rtp_info, payload, 0));
-      ++frame_index;
-    }
-
-    // Pull out data once.
-    bool muted;
-    ASSERT_EQ(0, neteq_->GetAudio(&out_frame_, &muted));
-    ASSERT_EQ(kBlockSize16kHz, out_frame_.samples_per_channel_);
-  }
-
-  NetEqNetworkStatistics network_stats;
-  ASSERT_EQ(0, neteq_->NetworkStatistics(&network_stats));
-  EXPECT_EQ(110953, network_stats.clockdrift_ppm);
 }
 
 void NetEqDecodingTest::LongCngWithClockDrift(double drift_factor,
@@ -783,7 +733,7 @@ TEST_F(NetEqDecodingTest, LongCngWithPositiveClockDrift) {
   const double kDriftFactor = 1000.0 / (1000.0 - 25.0);
   const double kNetworkFreezeTimeMs = 0.0;
   const bool kGetAudioDuringFreezeRecovery = false;
-  const int kDelayToleranceMs = 20;
+  const int kDelayToleranceMs = 40;
   const int kMaxTimeToSpeechMs = 100;
   LongCngWithClockDrift(kDriftFactor, kNetworkFreezeTimeMs,
                         kGetAudioDuringFreezeRecovery, kDelayToleranceMs,
@@ -807,7 +757,7 @@ TEST_F(NetEqDecodingTest, LongCngWithPositiveClockDriftNetworkFreeze) {
   const double kDriftFactor = 1000.0 / (1000.0 - 25.0);
   const double kNetworkFreezeTimeMs = 5000.0;
   const bool kGetAudioDuringFreezeRecovery = false;
-  const int kDelayToleranceMs = 20;
+  const int kDelayToleranceMs = 40;
   const int kMaxTimeToSpeechMs = 100;
   LongCngWithClockDrift(kDriftFactor, kNetworkFreezeTimeMs,
                         kGetAudioDuringFreezeRecovery, kDelayToleranceMs,
@@ -819,7 +769,7 @@ TEST_F(NetEqDecodingTest, LongCngWithPositiveClockDriftNetworkFreezeExtraPull) {
   const double kDriftFactor = 1000.0 / (1000.0 - 25.0);
   const double kNetworkFreezeTimeMs = 5000.0;
   const bool kGetAudioDuringFreezeRecovery = true;
-  const int kDelayToleranceMs = 20;
+  const int kDelayToleranceMs = 40;
   const int kMaxTimeToSpeechMs = 100;
   LongCngWithClockDrift(kDriftFactor, kNetworkFreezeTimeMs,
                         kGetAudioDuringFreezeRecovery, kDelayToleranceMs,

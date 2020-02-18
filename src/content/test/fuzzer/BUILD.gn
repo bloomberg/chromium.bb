@@ -73,16 +73,6 @@ fuzzer_test("renderer_tree_fuzzer") {
   ]
 }
 
-fuzzer_test("clear_site_data_fuzzer") {
-  sources = [
-    "clear_site_data_fuzzer.cc",
-  ]
-  deps = [
-    "//content/test:test_support",
-  ]
-  seed_corpus = "//content/test/data/fuzzer_corpus/clear_site_data/"
-}
-
 fuzzer_test("renderer_proto_tree_fuzzer") {
   sources = [
     "renderer_proto_tree_fuzzer.cc",
@@ -265,5 +255,21 @@ fuzzer_test("speech_audio_encoder_fuzzer") {
   deps = [
     "//base",
     "//third_party/flac",
+  ]
+}
+
+fuzzer_test("browser_accessibility_fuzzer") {
+  sources = [
+    "browser_accessibility_fuzzer.cc",
+  ]
+  deps = [
+    "//content/app:both_for_content_tests",
+    "//content/browser:browser",
+    "//content/browser:browser",
+    "//content/public/browser:browser_sources",
+    "//content/test:test_support",
+    "//mojo/core/embedder",
+    "//services/network:test_support",
+    "//storage/browser:test_support",
   ]
 }

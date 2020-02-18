@@ -69,7 +69,6 @@
 <translation id="1383876407941801731">搜索</translation>
 <translation id="1385214448885562192">按回车键可接受，按退出键可取消；按向下箭头键可移至下一条搜索结果，按向上箭头键可移至上一条搜索结果。</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">播报富文本属性</translation>
 <translation id="1405567553485452995">浅绿色</translation>
 <translation id="1417889266572670458">海军蓝</translation>
 <translation id="1431911867058218151">梅红色</translation>
@@ -169,6 +168,7 @@
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="2223693656926968778">对当前项执行操作</translation>
 <translation id="225732394367814946">加快语速</translation>
+<translation id="2267538686624070261">退出的区域含有拼写错误</translation>
 <translation id="2267945578749931355">下一个字符</translation>
 <translation id="2278490101488436824">向左滑动三根手指</translation>
 <translation id="2281234842553884450">上一个滑块</translation>
@@ -207,6 +207,7 @@
 <translation id="257674075312929031">群组</translation>
 <translation id="2582407057977008361">边栏内容</translation>
 <translation id="2592212930811759050">点按两次即可开始修改</translation>
+<translation id="2598495320872286378">语法错误</translation>
 <translation id="2606210917827248971">包含 {COUNT,plural, =1{# 项内容}other{# 项内容}}</translation>
 <translation id="2614981083756825552">数学标记语言布局</translation>
 <translation id="2624431853467395961">打开学习模式</translation>
@@ -422,7 +423,6 @@
 <translation id="4039983576244166038">行标题为空</translation>
 <translation id="4042843249978639960">不存在下一个2级标题。</translation>
 <translation id="4043348641337972076">不存在上一个ARIA地标。</translation>
-<translation id="4045764028670444336">拼写有误的字词的开头</translation>
 <translation id="4047216625641135770">标记</translation>
 <translation id="404803211695627272"><ph name="V1" />到<ph name="V2" /></translation>
 <translation id="4053520724192563562">柠檬绿</translation>
@@ -484,6 +484,7 @@
 <translation id="4372705107434148843">关闭语音</translation>
 <translation id="4373197658375206385">不存在上一个非链接项。</translation>
 <translation id="4376316291247992553">以盲文的形式查看图形</translation>
+<translation id="437809255587011096">播报文本样式</translation>
 <translation id="4378308539633073595">向前滚动</translation>
 <translation id="4384583879834880242">问答</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -504,7 +505,6 @@
 <translation id="4547556996012970016">下一个5级标题</translation>
 <translation id="4562381607973973258">标头标记</translation>
 <translation id="4569941707103739422">按向上或向下箭头即可浏览；按 Enter 键即可启动。</translation>
-<translation id="4570424871453628777">拼写有误的字词的末尾</translation>
 <translation id="4591507479202817876">，已选中</translation>
 <translation id="4597532268155981612">表单</translation>
 <translation id="4597896406374528575">4月</translation>
@@ -727,7 +727,6 @@
 <translation id="6037602951055904232">向前平移</translation>
 <translation id="6042826534790431634">同时按搜索键和空格键即可启动。</translation>
 <translation id="6044160928851315051">调暗屏幕</translation>
-<translation id="6065293622157674001">语法错误的开头</translation>
 <translation id="6082768461603900813">基本导航操作</translation>
 <translation id="6118126368611144850">适合在 Chrome 中使用的 Android 应用。如果您的设备上安装了 Play 商店，则可以通过 Android 应用抢先体验 ChromeVox。只需从 Play 商店下载 Google Chrome Canary，即可体验实验功能。</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -760,7 +759,6 @@
 <translation id="6348869651006731065">暗灰色</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{1 个项目符号}other{# 个项目符号}}</translation>
 <translation id="6355910664415701303">不存在上一个列表项。</translation>
-<translation id="6360318852623800555">富文本属性</translation>
 <translation id="6364795331201459219">6级标题标记</translation>
 <translation id="6368143427468974988">上一个标题</translation>
 <translation id="6376999910001533545">栗色</translation>
@@ -824,6 +822,7 @@
 <translation id="6833103209700200188">页脚标记</translation>
 <translation id="6858047746862060282">序言</translation>
 <translation id="6859876496651143278">向左滑动一根手指</translation>
+<translation id="6865519907510167493">拼写错误</translation>
 <translation id="6871161210040114857">不区分大小写。</translation>
 <translation id="6877435256196695200">不存在下一个图形。</translation>
 <translation id="6897341342232909480">向左移动</translation>
@@ -869,7 +868,6 @@
 <translation id="7143207342074048698">正在连接</translation>
 <translation id="7153618581592392745">薰衣草色</translation>
 <translation id="7157306005867877619">摘要</translation>
-<translation id="7161425887892204659">匹配文字的末尾</translation>
 <translation id="7161771961008409533">弹出式按钮</translation>
 <translation id="7165714724802225287">当前显示样式为交错。</translation>
 <translation id="7167657087543110">字符回显</translation>
@@ -907,7 +905,6 @@
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">即将离开表格。</translation>
 <translation id="738899727977260036">岩蓝色</translation>
-<translation id="7392145451309930991">匹配文字的开头</translation>
 <translation id="739763518212184081">上一行</translation>
 <translation id="7400575256015741911">检测到拼写错误</translation>
 <translation id="7408482676469142474">表格标记</translation>
@@ -1086,7 +1083,6 @@
 <translation id="8153880621934657047">不在表格内。</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{1个下划线}other{#个下划线}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">自动检测和切换 ChromeVox 语言。</translation>
 <translation id="8184828902145951186">行</translation>
 <translation id="8186185314313222077">切换全屏模式</translation>
 <translation id="8199231515320852133">读出当前单元格的标题</translation>
@@ -1117,12 +1113,13 @@
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8455868257606149352">最大值为<ph name="X" /></translation>
 <translation id="84575901236241018">有快捷键，<ph name="KEY" /></translation>
+<translation id="8463645336674919227">退出的区域含有语法错误</translation>
 <translation id="847154984256717791">忙碌</translation>
 <translation id="8476408756881832830">在 ChromeVox 朗读时暂停播放音频</translation>
 <translation id="8476508772960940536">窗口概览</translation>
 <translation id="8503360654911991865">降低导航精细度</translation>
-<translation id="8504695234784218301">语法错误的末尾</translation>
 <translation id="8520472399088452386">数值调节按钮</translation>
+<translation id="8534394844575788431">格式化</translation>
 <translation id="8538744478902126321">推测当前单元格的行标题</translation>
 <translation id="8540054775867439484">转至顶部</translation>
 <translation id="8542271685829952264">要想了解所有 ChromeVox 命令和快捷键，请按“Search+句点”组合键，然后使用箭头键浏览菜单中的内容，并按 Enter 键启动相应命令。若想返回此处，请先按 Search+O 组合键，然后按 T 键。</translation>
@@ -1202,6 +1199,7 @@
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">标签</translation>
 <translation id="9151211641321628915">读出关于当前位置的简短说明</translation>
+<translation id="9151249085738989067">根据语言自动切换 ChromeVox 语音</translation>
 <translation id="9153606228985488238">音高为<ph name="PERCENT" />%</translation>
 <translation id="9160096769946561184">转到当前列的末尾</translation>
 <translation id="9173115498289768110">音量：<ph name="PERCENT" />%</translation>

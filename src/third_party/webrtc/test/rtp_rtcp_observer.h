@@ -18,12 +18,12 @@
 #include "api/test/simulated_network.h"
 #include "call/simulated_packet_receiver.h"
 #include "call/video_send_stream.h"
-#include "modules/rtp_rtcp/include/rtp_header_parser.h"
 #include "rtc_base/critical_section.h"
 #include "rtc_base/event.h"
 #include "system_wrappers/include/field_trial.h"
 #include "test/direct_transport.h"
 #include "test/gtest.h"
+#include "test/rtp_header_parser.h"
 
 namespace {
 const int kShortTimeoutMs = 500;
@@ -33,7 +33,7 @@ namespace webrtc {
 namespace test {
 
 class PacketTransport;
-class SingleThreadedTaskQueueForTesting;
+class DEPRECATED_SingleThreadedTaskQueueForTesting;
 
 class RtpRtcpObserver {
  public:
@@ -71,7 +71,8 @@ class RtpRtcpObserver {
  protected:
   RtpRtcpObserver() : RtpRtcpObserver(0) {}
   explicit RtpRtcpObserver(int event_timeout_ms)
-      : parser_(RtpHeaderParser::Create()), timeout_ms_(event_timeout_ms) {}
+      : parser_(RtpHeaderParser::CreateForTest()),
+        timeout_ms_(event_timeout_ms) {}
 
   rtc::Event observation_complete_;
   const std::unique_ptr<RtpHeaderParser> parser_;
@@ -84,7 +85,7 @@ class PacketTransport : public test::DirectTransport {
  public:
   enum TransportType { kReceiver, kSender };
 
-  PacketTransport(SingleThreadedTaskQueueForTesting* task_queue,
+  PacketTransport(DEPRECATED_SingleThreadedTaskQueueForTesting* task_queue,
                   Call* send_call,
                   RtpRtcpObserver* observer,
                   TransportType transport_type,

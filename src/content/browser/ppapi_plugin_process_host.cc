@@ -17,12 +17,14 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/plugin_service_impl.h"
 #include "content/browser/renderer_host/render_message_filter.h"
 #include "content/common/child_process_host_impl.h"
 #include "content/common/content_switches_internal.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_constants.h"
@@ -46,6 +48,11 @@
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/font_render_params.h"
+#endif
+
+#if defined(OS_LINUX)
+#include "components/services/font/public/mojom/font_service.mojom.h"  // nogncheck
+#include "content/browser/font_service.h"  // nogncheck
 #endif
 
 #if BUILDFLAG(USE_ZYGOTE_HANDLE)
@@ -136,6 +143,10 @@ class PpapiPluginSandboxedProcessLauncherDelegate
 #endif  // OS_WIN
     return service_manager::SANDBOX_TYPE_PPAPI;
   }
+
+#if defined(OS_MACOSX)
+  bool DisclaimResponsibility() override { return true; }
+#endif
 
  private:
 #if BUILDFLAG(USE_ZYGOTE_HANDLE) || defined(OS_WIN)
@@ -476,7 +487,19 @@ void PpapiPluginProcessHost::OnProcessLaunched() {
 
 void PpapiPluginProcessHost::OnProcessCrashed(int exit_code) {
   VLOG(1) << "ppapi plugin process crashed.";
-  PluginServiceImpl::GetInstance()->RegisterPluginCrash(plugin_path_);
+  base::PostTaskWithTraits(
+      FROM_HERE, {BrowserThread::UI},
+      base::BindOnce(&PluginServiceImpl::RegisterPluginCrash,
+                     base::Unretained(PluginServiceImpl::GetInstance()),
+                     plugin_path_));
+}
+
+void PpapiPluginProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+#if defined(OS_LINUX)
+  if (auto font_receiver = receiver.As<font_service::mojom::FontService>())
+    ConnectToFontService(std::move(font_receiver));
+#endif
 }
 
 bool PpapiPluginProcessHost::OnMessageReceived(const IPC::Message& msg) {

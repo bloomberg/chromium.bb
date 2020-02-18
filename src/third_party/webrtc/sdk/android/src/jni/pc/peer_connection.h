@@ -34,6 +34,9 @@ void JavaToNativeRTCConfiguration(
 rtc::KeyType GetRtcConfigKeyType(JNIEnv* env,
                                  const JavaRef<jobject>& j_rtc_config);
 
+ScopedJavaLocalRef<jobject> NativeToJavaAdapterType(JNIEnv* env,
+                                                    int adapterType);
+
 // Adapter between the C++ PeerConnectionObserver interface and the Java
 // PeerConnection.Observer interface.  Wraps an instance of the Java interface
 // and dispatches C++ callbacks to Java.
@@ -58,6 +61,8 @@ class PeerConnectionObserverJni : public PeerConnectionObserver {
   void OnIceConnectionReceivingChange(bool receiving) override;
   void OnIceGatheringChange(
       PeerConnectionInterface::IceGatheringState new_state) override;
+  void OnIceSelectedCandidatePairChanged(
+      const cricket::CandidatePairChangeEvent& event) override;
   void OnAddStream(rtc::scoped_refptr<MediaStreamInterface> stream) override;
   void OnRemoveStream(rtc::scoped_refptr<MediaStreamInterface> stream) override;
   void OnDataChannel(rtc::scoped_refptr<DataChannelInterface> channel) override;

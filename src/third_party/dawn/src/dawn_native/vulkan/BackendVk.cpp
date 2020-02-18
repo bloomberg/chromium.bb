@@ -55,9 +55,13 @@ namespace dawn_native { namespace vulkan {
         return mInstance;
     }
 
+    const VulkanGlobalInfo& Backend::GetGlobalInfo() const {
+        return mGlobalInfo;
+    }
+
     MaybeError Backend::Initialize() {
         if (!mVulkanLib.Open(kVulkanLibName)) {
-            return DAWN_CONTEXT_LOST_ERROR(std::string("Couldn't open ") + kVulkanLibName);
+            return DAWN_DEVICE_LOST_ERROR(std::string("Couldn't open ") + kVulkanLibName);
         }
 
         DAWN_TRY(mFunctions.LoadGlobalProcs(mVulkanLib));
@@ -138,6 +142,18 @@ namespace dawn_native { namespace vulkan {
             extensionsToRequest.push_back(kExtensionNameMvkMacosSurface);
             usedKnobs.macosSurface = true;
         }
+        if (mGlobalInfo.externalMemoryCapabilities) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalMemoryCapabilities);
+            usedKnobs.externalMemoryCapabilities = true;
+        }
+        if (mGlobalInfo.externalSemaphoreCapabilities) {
+            extensionsToRequest.push_back(kExtensionNameKhrExternalSemaphoreCapabilities);
+            usedKnobs.externalSemaphoreCapabilities = true;
+        }
+        if (mGlobalInfo.getPhysicalDeviceProperties2) {
+            extensionsToRequest.push_back(kExtensionNameKhrGetPhysicalDeviceProperties2);
+            usedKnobs.getPhysicalDeviceProperties2 = true;
+        }
         if (mGlobalInfo.surface) {
             extensionsToRequest.push_back(kExtensionNameKhrSurface);
             usedKnobs.surface = true;
@@ -166,7 +182,7 @@ namespace dawn_native { namespace vulkan {
         appInfo.applicationVersion = 0;
         appInfo.pEngineName = nullptr;
         appInfo.engineVersion = 0;
-        appInfo.apiVersion = VK_API_VERSION_1_0;
+        appInfo.apiVersion = mGlobalInfo.apiVersion;
 
         VkInstanceCreateInfo createInfo;
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;

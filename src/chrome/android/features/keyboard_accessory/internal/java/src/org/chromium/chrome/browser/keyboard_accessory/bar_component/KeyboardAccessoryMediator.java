@@ -6,9 +6,11 @@ package org.chromium.chrome.browser.keyboard_accessory.bar_component;
 
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BAR_ITEMS;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.BOTTOM_OFFSET_PX;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.DISABLE_ANIMATIONS_FOR_TESTING;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.KEYBOARD_TOGGLE_VISIBLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHEET_TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SHOW_KEYBOARD_CALLBACK;
+import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.SKIP_CLOSING_ANIMATION;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.TAB_LAYOUT_ITEM;
 import static org.chromium.chrome.browser.keyboard_accessory.bar_component.KeyboardAccessoryProperties.VISIBLE;
 
@@ -125,6 +127,8 @@ class KeyboardAccessoryMediator
      */
     private boolean shouldShowSuggestion(AutofillSuggestion suggestion) {
         switch (suggestion.getSuggestionId()) {
+            case PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
+                // The insecure context warning has a replacement in the fallback sheet.
             case PopupItemId.ITEM_ID_SEPARATOR:
             case PopupItemId.ITEM_ID_CLEAR_FORM:
             case PopupItemId.ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
@@ -134,9 +138,6 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
             case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:
                 return false;
-            case PopupItemId.ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE:
-                return ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case PopupItemId.ITEM_ID_AUTOCOMPLETE_ENTRY:
             case PopupItemId.ITEM_ID_PASSWORD_ENTRY:
             case PopupItemId.ITEM_ID_DATALIST_ENTRY:
@@ -216,7 +217,12 @@ class KeyboardAccessoryMediator
     }
 
     void show() {
+        mModel.set(SKIP_CLOSING_ANIMATION, false);
         mModel.set(VISIBLE, true);
+    }
+
+    void skipClosingAnimationOnce() {
+        mModel.set(SKIP_CLOSING_ANIMATION, true);
     }
 
     void dismiss() {
@@ -243,7 +249,9 @@ class KeyboardAccessoryMediator
             return;
         }
         if (propertyKey == BOTTOM_OFFSET_PX || propertyKey == SHOW_KEYBOARD_CALLBACK
-                || propertyKey == TAB_LAYOUT_ITEM || propertyKey == SHEET_TITLE) {
+                || propertyKey == TAB_LAYOUT_ITEM || propertyKey == SHEET_TITLE
+                || propertyKey == SKIP_CLOSING_ANIMATION
+                || propertyKey == DISABLE_ANIMATIONS_FOR_TESTING) {
             return;
         }
         assert false : "Every property update needs to be handled explicitly!";

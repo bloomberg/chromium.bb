@@ -13,8 +13,8 @@
 #include "content/browser/devtools/devtools_background_services.pb.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -90,7 +90,7 @@ class DevToolsBackgroundServicesContextTest
       DevToolsBackgroundServicesContextImpl::EventObserver {
  public:
   DevToolsBackgroundServicesContextTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         embedded_worker_test_helper_(base::FilePath() /* in memory */) {}
 
   ~DevToolsBackgroundServicesContextTest() override = default;
@@ -157,7 +157,7 @@ class DevToolsBackgroundServicesContextTest
   }
 
   void LogTestBackgroundServiceEvent(const std::string& log_message) {
-    context_->LogBackgroundServiceEventOnIO(
+    context_->LogBackgroundServiceEventOnCoreThread(
         service_worker_registration_id_, origin_,
         DevToolsBackgroundService::kBackgroundFetch, kEventName, kInstanceId,
         {{"key", log_message}});
@@ -171,7 +171,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void StopRecording() {
@@ -183,7 +183,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
 
     // Wait for the messages to propagate to the browser client.
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ClearLoggedBackgroundServiceEvents() {
@@ -191,7 +191,7 @@ class DevToolsBackgroundServicesContextTest
         devtools::proto::BackgroundService::BACKGROUND_FETCH);
   }
 
-  TestBrowserThreadBundle thread_bundle_;  // Must be first member.
+  BrowserTaskEnvironment task_environment_;  // Must be first member.
   url::Origin origin_ = url::Origin::Create(GURL("https://example.com"));
   int64_t service_worker_registration_id_ =
       blink::mojom::kInvalidServiceWorkerRegistrationId;
@@ -346,14 +346,13 @@ TEST_F(DevToolsBackgroundServicesContextTest, RecordingExpiration) {
 
   // Logging should not happen.
   EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
-  LogTestBackgroundServiceEvent("f1");
-
-  // Observers should be informed that recording stopped.
+  // Observers should be informed when recording stops.
   EXPECT_CALL(*this,
               OnRecordingStateChanged(
                   false, devtools::proto::BackgroundService::BACKGROUND_FETCH));
+  LogTestBackgroundServiceEvent("f1");
 
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // The expiration time entry should be cleared.
   EXPECT_TRUE(GetExpirationTime().is_null());
@@ -382,7 +381,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
   {
     EXPECT_CALL(*this, OnEventReceived(_)).Times(0);
     LogTestBackgroundServiceEvent("f1");
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   StartRecording();
@@ -390,7 +389,7 @@ TEST_F(DevToolsBackgroundServicesContextTest, EventObserverCalled) {
   {
     EXPECT_CALL(*this, OnEventReceived(_));
     LogTestBackgroundServiceEvent("f2");
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 }
 

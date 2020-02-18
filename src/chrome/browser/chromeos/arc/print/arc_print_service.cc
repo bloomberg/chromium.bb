@@ -30,6 +30,7 @@
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_browser_context_keyed_service_factory_base.h"
+#include "components/arc/mojom/print_common.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_task_traits.h"
@@ -171,9 +172,8 @@ void CreateQueryOnIOThread(std::unique_ptr<printing::PrintSettings> settings,
 // Send initialized PrinterQuery to UI thread.
 void OnSetSettingsDoneOnIOThread(std::unique_ptr<printing::PrinterQuery> query,
                                  PrinterQueryCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(std::move(callback), std::move(query)));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(std::move(callback), std::move(query)));
 }
 
 std::unique_ptr<printing::PrinterSemanticCapsAndDefaults>
@@ -216,8 +216,7 @@ class PrinterDiscoverySessionHostImpl
         printers_manager_(
             chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
                 profile)),
-        configurer_(chromeos::PrinterConfigurer::Create(profile)),
-        weak_ptr_factory_(this) {
+        configurer_(chromeos::PrinterConfigurer::Create(profile)) {
     printers_manager_->AddObserver(this);
     binding_.set_connection_error_handler(MakeErrorHandler());
     instance_.set_connection_error_handler(MakeErrorHandler());
@@ -300,13 +299,15 @@ class PrinterDiscoverySessionHostImpl
       RemovePrinter(printer.id());
       return;
     }
-    printers_manager_->PrinterInstalled(printer, true /*is_automatic*/);
+    printers_manager_->PrinterInstalled(
+        printer, /*is_automatic=*/true,
+        chromeos::PrinterSetupSource::kArcPrintService);
     FetchCapabilities(printer);
   }
 
   void FetchCapabilities(const chromeos::Printer& printer) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&FetchCapabilitiesOnBlockingTaskRunner, printer.id()),
         base::BindOnce(&PrinterDiscoverySessionHostImpl::CapabilitiesReceived,
                        weak_ptr_factory_.GetWeakPtr(), printer));
@@ -337,7 +338,7 @@ class PrinterDiscoverySessionHostImpl
   ArcPrintServiceImpl* const service_;
   chromeos::CupsPrintersManager* printers_manager_;
   std::unique_ptr<chromeos::PrinterConfigurer> configurer_;
-  base::WeakPtrFactory<PrinterDiscoverySessionHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrinterDiscoverySessionHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrinterDiscoverySessionHostImpl);
 };
@@ -383,18 +384,17 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
       : binding_(this, std::move(request)),
         instance_(std::move(instance)),
         service_(service),
-        job_manager_(job_manager),
-        weak_ptr_factory_(this) {
+        job_manager_(job_manager) {
     // We read printing data from pipe on working thread in parallel with
     // initializing PrinterQuery on IO thread. When both tasks are complete we
     // start printing.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(&ReadFileOnBlockingTaskRunner, std::move(file),
                        data_size),
         base::BindOnce(&PrintJobHostImpl::OnFileRead,
                        weak_ptr_factory_.GetWeakPtr()));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&CreateQueryOnIOThread, std::move(settings),
                        base::BindOnce(&PrintJobHostImpl::OnSetSettingsDone,
@@ -479,6 +479,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
     job_ = base::MakeRefCounted<printing::PrintJob>();
     job_->Initialize(std::move(query), base::string16() /* name */,
                      1 /* page_count */);
+    job_->SetSource(printing::PrintJob::Source::ARC, /*source_id=*/"");
     registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                    content::Source<printing::PrintJob>(job_.get()));
     StartPrintingIfReady();
@@ -508,7 +509,7 @@ class PrintJobHostImpl : public mojom::PrintJobHost,
   scoped_refptr<printing::PrintJob> job_;
   chromeos::CupsPrintJob* cups_job_;
   content::NotificationRegistrar registrar_;
-  base::WeakPtrFactory<PrintJobHostImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<PrintJobHostImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(PrintJobHostImpl);
 };

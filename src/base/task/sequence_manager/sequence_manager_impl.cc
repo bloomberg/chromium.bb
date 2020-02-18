@@ -302,8 +302,8 @@ void SequenceManagerImpl::BindToMessagePump(std::unique_ptr<MessagePump> pump) {
 
   // On Android attach to the native loop when there is one.
 #if defined(OS_ANDROID)
-  if (settings_.message_loop_type == MessagePump::Type::UI ||
-      settings_.message_loop_type == MessagePump::Type::JAVA) {
+  if (settings_.message_loop_type == MessagePumpType::UI ||
+      settings_.message_loop_type == MessagePumpType::JAVA) {
     controller_->AttachToMessagePump();
   }
 #endif
@@ -518,14 +518,14 @@ void SequenceManagerImpl::LogTaskDebugInfo(
       break;
 
     case Settings::TaskLogging::kEnabled:
-      DVLOG(1) << "#"
-               << static_cast<uint64_t>(
-                      executing_task.pending_task.enqueue_order())
-               << " " << executing_task.task_queue_name
-               << (executing_task.pending_task.cross_thread_
-                       ? " Run crossthread "
-                       : " Run ")
-               << executing_task.pending_task.posted_from.ToString();
+      LOG(INFO) << "#"
+                << static_cast<uint64_t>(
+                       executing_task.pending_task.enqueue_order())
+                << " " << executing_task.task_queue_name
+                << (executing_task.pending_task.cross_thread_
+                        ? " Run crossthread "
+                        : " Run ")
+                << executing_task.pending_task.posted_from.ToString();
       break;
 
     case Settings::TaskLogging::kEnabledWithBacktrace: {
@@ -539,14 +539,14 @@ void SequenceManagerImpl::LogTaskDebugInfo(
         ++length;
       if (length == 0)
         break;
-      DVLOG(1) << "#"
-               << static_cast<uint64_t>(
-                      executing_task.pending_task.enqueue_order())
-               << " " << executing_task.task_queue_name
-               << (executing_task.pending_task.cross_thread_
-                       ? " Run crossthread "
-                       : " Run ")
-               << debug::StackTrace(task_trace.data(), length);
+      LOG(INFO) << "#"
+                << static_cast<uint64_t>(
+                       executing_task.pending_task.enqueue_order())
+                << " " << executing_task.task_queue_name
+                << (executing_task.pending_task.cross_thread_
+                        ? " Run crossthread "
+                        : " Run ")
+                << debug::StackTrace(task_trace.data(), length);
       break;
     }
   }
@@ -847,14 +847,12 @@ void SequenceManagerImpl::SetTimerSlack(TimerSlack timer_slack) {
   controller_->SetTimerSlack(timer_slack);
 }
 
-void SequenceManagerImpl::AddTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void SequenceManagerImpl::AddTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.AddObserver(task_observer);
 }
 
-void SequenceManagerImpl::RemoveTaskObserver(
-    MessageLoop::TaskObserver* task_observer) {
+void SequenceManagerImpl::RemoveTaskObserver(TaskObserver* task_observer) {
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   main_thread_only().task_observers.RemoveObserver(task_observer);
 }
@@ -1035,7 +1033,7 @@ bool SequenceManagerImpl::HasTasks() {
   return false;
 }
 
-MessagePump::Type SequenceManagerImpl::GetType() const {
+MessagePumpType SequenceManagerImpl::GetType() const {
   return settings_.message_loop_type;
 }
 
@@ -1109,7 +1107,7 @@ MessagePump* SequenceManagerImpl::GetMessagePump() const {
   return controller_->GetBoundMessagePump();
 }
 
-bool SequenceManagerImpl::IsType(MessagePump::Type type) const {
+bool SequenceManagerImpl::IsType(MessagePumpType type) const {
   return settings_.message_loop_type == type;
 }
 

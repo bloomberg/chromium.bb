@@ -285,7 +285,6 @@ NotificationUIManager* TestingBrowserProcess::notification_ui_manager() {
     notification_ui_manager_ = NotificationUIManager::Create();
   return notification_ui_manager_.get();
 #else
-  NOTIMPLEMENTED();
   return nullptr;
 #endif
 }
@@ -424,11 +423,6 @@ resource_coordinator::TabManager* TestingBrowserProcess::GetTabManager() {
 shell_integration::DefaultWebClientState
 TestingBrowserProcess::CachedDefaultWebClientState() {
   return shell_integration::UNKNOWN_DEFAULT;
-}
-
-prefs::InProcessPrefServiceFactory*
-TestingBrowserProcess::pref_service_factory() const {
-  return nullptr;
 }
 
 void TestingBrowserProcess::SetSharedURLLoaderFactory(

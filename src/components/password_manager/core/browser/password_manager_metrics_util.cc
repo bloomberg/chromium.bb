@@ -9,6 +9,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -53,6 +54,45 @@ void LogPresavedUpdateUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration(
       "PasswordManager.PresavedUpdateUIDismissalReason", reason,
       NUM_UI_RESPONSES);
+}
+
+void LogLeakDialogTypeAndDismissalReason(LeakDialogType type,
+                                         LeakDialogDismissalReason reason) {
+  static constexpr char kHistogram[] =
+      "PasswordManager.LeakDetection.DialogDismissalReason";
+  auto GetSuffix = [type] {
+    switch (type) {
+      case LeakDialogType::kCheckup:
+        return "Checkup";
+      case LeakDialogType::kChange:
+        return "Change";
+      case LeakDialogType::kCheckupAndChange:
+        return "CheckupAndChange";
+    }
+  };
+
+  base::UmaHistogramEnumeration(kHistogram, reason);
+  base::UmaHistogramEnumeration(base::StrCat({kHistogram, ".", GetSuffix()}),
+                                reason);
+}
+
+void LogOnboardingState(OnboardingState state) {
+  base::UmaHistogramEnumeration("PasswordManager.Onboarding.State", state);
+}
+
+void LogOnboardingUIDismissalReason(OnboardingUIDismissalReason reason) {
+  base::UmaHistogramEnumeration("PasswordManager.Onboarding.UIDismissalReason",
+                                reason);
+}
+
+void LogResultOfSavingFlow(OnboardingResultOfSavingFlow result) {
+  base::UmaHistogramEnumeration("PasswordManager.Onboarding.ResultOfSavingFlow",
+                                result);
+}
+
+void LogResultOfOnboardingSavingFlow(OnboardingResultOfSavingFlow result) {
+  base::UmaHistogramEnumeration(
+      "PasswordManager.Onboarding.ResultOfSavingFlowAfterOnboarding", result);
 }
 
 void LogUIDisplayDisposition(UIDisplayDisposition disposition) {
@@ -236,21 +276,25 @@ void LogGenerationDialogChoice(GenerationDialogChoice choice,
 }  // namespace metrics_util
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
-void LogSyncPasswordHashChange(SyncPasswordHashChange event) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.SyncPasswordHashChange", event,
-      SyncPasswordHashChange::SAVED_SYNC_PASSWORD_CHANGE_COUNT);
+void LogGaiaPasswordHashChange(GaiaPasswordHashChange event,
+                               bool is_sync_password) {
+  if (is_sync_password) {
+    base::UmaHistogramEnumeration("PasswordManager.SyncPasswordHashChange",
+                                  event);
+  } else {
+    base::UmaHistogramEnumeration("PasswordManager.NonSyncPasswordHashChange",
+                                  event);
+  }
 }
 
 void LogIsSyncPasswordHashSaved(IsSyncPasswordHashSaved state,
                                 bool is_under_advanced_protection) {
-  base::UmaHistogramEnumeration(
-      "PasswordManager.IsSyncPasswordHashSaved", state,
-      IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+  base::UmaHistogramEnumeration("PasswordManager.IsSyncPasswordHashSaved",
+                                state);
   if (is_under_advanced_protection) {
     base::UmaHistogramEnumeration(
         "PasswordManager.IsSyncPasswordHashSavedForAdvancedProtectionUser",
-        state, IsSyncPasswordHashSaved::IS_SYNC_PASSWORD_HASH_SAVED_COUNT);
+        state);
   }
 }
 

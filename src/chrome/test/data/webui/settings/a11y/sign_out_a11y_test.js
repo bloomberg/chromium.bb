@@ -26,8 +26,8 @@ SettingsA11ySignOut.prototype = {
   // Include files that define the mocha tests.
   extraLibraries: SettingsAccessibilityTest.prototype.extraLibraries.concat([
     '../../test_browser_proxy.js',
+    '../../test_util.js',
     '../sync_test_util.js',
-    '../test_util.js',
     '../test_sync_browser_proxy.js',
   ]),
 };
@@ -101,7 +101,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
               parent = this.peoplePage;
               disconnectButtonSelector = '#disconnectButton';
             }
-            return test_util.waitForRender(parent);
+            return test_util.waitBeforeNextRender(parent);
           })
           .then(() => {
             disconnectButton = parent.$$(disconnectButtonSelector);

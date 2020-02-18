@@ -347,7 +347,6 @@ _NOT_CONVERTED_TO_MODERN_BIND_AND_CALLBACK = '|'.join((
   '^components/policy/',
   '^components/pref_registry/',
   '^components/prefs/',
-  '^components/printing/',
   '^components/proxy_config/',
   '^components/quirks/',
   '^components/rappor/',
@@ -498,7 +497,7 @@ _BANNED_CPP_FUNCTIONS = (
       (
        'New code should not use NULL. Use nullptr instead.',
       ),
-      True,
+      False,
       (),
     ),
     # Make sure that gtest's FRIEND_TEST() macro is not used; the
@@ -715,7 +714,7 @@ _BANNED_CPP_FUNCTIONS = (
       'base::ScopedMockTimeMessageLoopTaskRunner',
       (
         'ScopedMockTimeMessageLoopTaskRunner is deprecated. Prefer',
-        'ScopedTaskEnvironment::TimeSource::MOCK_TIME. There are still a',
+        'TaskEnvironment::TimeSource::MOCK_TIME. There are still a',
         'few cases that may require a ScopedMockTimeMessageLoopTaskRunner',
         '(i.e. mocking the main MessageLoopForUI in browser_tests), but check',
         'with gab@ first if you think you need it)',
@@ -972,7 +971,7 @@ _BANNED_CPP_FUNCTIONS = (
       'RunAllPendingInMessageLoop(BrowserThread',
       (
           'RunAllPendingInMessageLoop is deprecated. Use RunLoop for',
-          'BrowserThread::UI, TestBrowserThreadBundle::RunIOThreadUntilIdle',
+          'BrowserThread::UI, BrowserTaskEnvironment::RunIOThreadUntilIdle',
           'for BrowserThread::IO, and prefer RunLoop::QuitClosure to observe',
           'async events instead of flushing threads.',
       ),
@@ -1024,7 +1023,7 @@ _BANNED_CPP_FUNCTIONS = (
         r'.*_ios\.(cc|h)$',
         r'^net[\\/].*\.(cc|h)$',
         r'.*[\\/]tools[\\/].*\.(cc|h)$',
-        r'^fuchsia/engine/test_devtools_list_fetcher\.cc$',
+        r'^fuchsia/base/test_devtools_list_fetcher\.cc$',
       ),
     ),
     (
@@ -1195,7 +1194,7 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
     'build/android/gyp/assert_static_initializers.pydeps',
     'build/android/gyp/bytecode_processor.pydeps',
     'build/android/gyp/compile_resources.pydeps',
-    'build/android/gyp/create_app_bundle_minimal_apks.pydeps',
+    'build/android/gyp/create_app_bundle_apks.pydeps',
     'build/android/gyp/create_bundle_wrapper_script.pydeps',
     'build/android/gyp/copy_ex.pydeps',
     'build/android/gyp/create_app_bundle.pydeps',
@@ -1240,6 +1239,8 @@ _ANDROID_SPECIFIC_PYDEPS_FILES = [
 _GENERIC_PYDEPS_FILES = [
     'chrome/test/chromedriver/test/run_py_tests.pydeps',
     'chrome/test/chromedriver/log_replay/client_replay_unittest.pydeps',
+    'third_party/blink/renderer/bindings/scripts/build_web_idl_database.pydeps',
+    'third_party/blink/renderer/bindings/scripts/collect_idl_files.pydeps',
     'tools/binary_size/sizes.pydeps',
     'tools/binary_size/supersize.pydeps',
 ]
@@ -2664,6 +2665,9 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       'third_party/protobuf/benchmarks/python/*',
       'third_party/third_party/blink/renderer/platform/bindings/*',
       'third_party/win_build_output/*',
+      # These aidl files are just used to communicate between class loaders
+      # running in the same process.
+      'weblayer/browser/java/org/chromium/weblayer_private/aidl/*',
   ]
 
   # Dictionary mapping an OWNERS file path to Patterns.
@@ -3764,6 +3768,58 @@ def _CheckForTooLargeFiles(input_api, output_api):
   else:
     return []
 
+
+def _CheckFuzzTargets(input_api, output_api):
+  """Checks specific for fuzz target sources."""
+  EXPORTED_SYMBOLS = [
+      'LLVMFuzzerInitialize',
+      'LLVMFuzzerCustomMutator',
+      'LLVMFuzzerCustomCrossOver',
+      'LLVMFuzzerMutate',
+  ]
+
+  REQUIRED_HEADER = '#include "testing/libfuzzer/libfuzzer_exports.h"'
+
+  def FilterFile(affected_file):
+    """Ignore libFuzzer source code."""
+    white_list = r'.*fuzz.*\.(h|hpp|hcc|cc|cpp|cxx)$'
+    black_list = r"^third_party[\\/]libFuzzer"
+
+    return input_api.FilterSourceFile(
+        affected_file,
+        white_list=[white_list],
+        black_list=[black_list])
+
+  files_with_missing_header = []
+  for f in input_api.AffectedSourceFiles(FilterFile):
+    contents = input_api.ReadFile(f, 'r')
+    if REQUIRED_HEADER in contents:
+      continue
+
+    if any(symbol in contents for symbol in EXPORTED_SYMBOLS):
+      files_with_missing_header.append(f.LocalPath())
+
+  if not files_with_missing_header:
+    return []
+
+  long_text = (
+      'If you define any of the libFuzzer optional functions (%s), it is '
+      'recommended to add \'%s\' directive. Otherwise, the fuzz target may '
+      'work incorrectly on Mac (crbug.com/687076).\nNote that '
+      'LLVMFuzzerInitialize should not be used, unless your fuzz target needs '
+      'to access command line arguments passed to the fuzzer. Instead, prefer '
+      'static initialization and shared resources as documented in '
+      'https://chromium.googlesource.com/chromium/src/+/master/testing/'
+      'libfuzzer/efficient_fuzzing.md#simplifying-initialization_cleanup.\n' % (
+          ', '.join(EXPORTED_SYMBOLS), REQUIRED_HEADER)
+    )
+
+  return [output_api.PresubmitPromptWarning(
+        message="Missing '%s' in:" % REQUIRED_HEADER,
+        items=files_with_missing_header,
+        long_text=long_text)]
+
+
 def _AndroidSpecificOnUploadChecks(input_api, output_api):
   """Groups upload checks that target android code."""
   results = []
@@ -4077,8 +4133,11 @@ def _CheckForIncludeGuards(input_api, output_api):
     # We only check header files under the control of the Chromium
     # project. That is, those outside third_party apart from
     # third_party/blink.
+    # We also exclude *_message_generator.h headers as they use
+    # include guards in a special, non-typical way.
     file_with_path = input_api.os_path.normpath(f.LocalPath())
     return (file_with_path.endswith('.h') and
+            not file_with_path.endswith('_message_generator.h') and
             (not file_with_path.startswith('third_party') or
              file_with_path.startswith(
                input_api.os_path.join('third_party', 'blink'))))
@@ -4234,6 +4293,7 @@ def CheckChangeOnUpload(input_api, output_api):
   results.extend(_CheckGoogleSupportAnswerUrl(input_api, output_api))
   results.extend(_CheckUniquePtr(input_api, output_api))
   results.extend(_CheckNewHeaderWithoutGnChange(input_api, output_api))
+  results.extend(_CheckFuzzTargets(input_api, output_api))
   return results
 
 

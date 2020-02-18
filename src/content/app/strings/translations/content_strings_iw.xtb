@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">על הערך להיות <ph name="MINIMUM_DATE_OR_TIME" /> ומעלה.</translation>
 <translation id="2759744352195237655">לחצן קופץ</translation>
 <translation id="2761667185364618470">סמן תיבה זו אם אתה רוצה להמשיך.</translation>
+<translation id="2844350028562914727">פרטים</translation>
 <translation id="2896972712917208084">קבוצת לחצני בחירה</translation>
 <translation id="2908441821576996758">הזן רשימה של כתובות אימייל המופרדות באמצעות פסיקים.</translation>
 <translation id="2940813599313844715">אובייקט</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">הערך חייב להיות קטן מ-<ph name="MAXIMUM" /> או שווה לו.</translation>
 <translation id="3486220673238053218">הגדרה</translation>
 <translation id="3557673793733683882">כותרת <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">בורר השבועות</translation>
 <translation id="3685101356851116974">תמונה ללא תיאור</translation>
 <translation id="3706100364254443312">מעבר</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">סרגל גלילה</translation>
 <translation id="4103419683916926126">אלפיות שנייה</translation>
 <translation id="4151657705144244502">פריט גרפי</translation>
+<translation id="4160057747563657758">טלפון</translation>
 <translation id="4193965531860883258">פתח דבר</translation>
 <translation id="4201051445878709314">הצג חודש קודם</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4248100235867064564">שורת תפריטים</translation>
-<translation id="4254339807215791271">פרטי תוכן</translation>
 <translation id="4360991593054037559">הזן ערך חוקי. שני הערכים החוקיים הקרובים ביותר הם <ph name="VALID_VALUE_LOW" /> ו-<ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">שאלות ותשובות</translation>
 <translation id="4413860115965805769">לחצן תפריט</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">כבוי</translation>
 <translation id="588258955323874662">מסך מלא</translation>
 <translation id="5888666972993069672">מתבצעת העברה אל <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">תיבת חיפוש</translation>
 <translation id="5939518447894949180">אפס</translation>
 <translation id="5966707198760109579">שבוע</translation>
 <translation id="5987525920412732405">לחצן קביעת ערך</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">אחרית דבר</translation>
 <translation id="6209276755895393898">נראה כמו: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">מילון מונחים</translation>
+<translation id="6281763101136022427">‏כתובת URL</translation>
 <translation id="6310801910862476708">יציאה ממצב 'תמונה בתוך תמונה'</translation>
 <translation id="6398862346408813489">הצג חלונית לבחירת חודש</translation>
 <translation id="6404546809543547843">מסתיר משך אודיו</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">התאם את הפורמט המבוקש.</translation>
 <translation id="7118469954320184356">אין תיאור זמין.</translation>
 <translation id="7139483182332611405">הקדמה</translation>
+<translation id="7214187073215825913">פרטי תוכן</translation>
 <translation id="7263440858009898357">בחר פריט מהרשימה.</translation>
 <translation id="727747134524199931">כותרת עמודה</translation>
 <translation id="7320576522385648310">אגירה</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">התיאור עוד מעט מוכן…</translation>
 <translation id="8117451130807776954">השבוע</translation>
 <translation id="8199524924445686405">yyyy</translation>
+<translation id="8208673686607688524">בורר תאריך ושעה מקומיים</translation>
 <translation id="8261464734335370856">איות שגוי</translation>
 <translation id="8284326494547611709">כתוביות</translation>
 <translation id="835897206747267392">ערך לא חוקי.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">תוכן העניינים</translation>
 <translation id="8613126697340063924">שליטה בהפעלה מרחוק</translation>
 <translation id="862370744433916922">כותרת משנה</translation>
+<translation id="8711688047404765493">פלט</translation>
 <translation id="8750798805984357768">בחר אחת מהאפשרויות הבאות.</translation>
 <translation id="8808573423886751634">פרק</translation>
 <translation id="8845239796550121995">מעביר תוכן לטלוויזיה</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689">‏<ph name="QUANTITY" /> KB‏</translation>
 <translation id="8987927404178983737">חודש</translation>
 <translation id="901493112792887934">זמן נוכחי בשניות</translation>
+<translation id="901834265349196618">אימייל</translation>
 <translation id="9048119486235211610">ניווט</translation>
 <translation id="9062295712474918030">מסמך</translation>
 <translation id="9062307380734144336">יש לבחור באפשרות הזו כדי להפעיל או להשהות</translation>

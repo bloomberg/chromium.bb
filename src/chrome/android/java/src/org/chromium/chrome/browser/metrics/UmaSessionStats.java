@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.text.TextUtils;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
@@ -195,7 +197,6 @@ public class UmaSessionStats {
      */
     private void updatePreferences() {
         PrivacyPreferencesManager prefManager = PrivacyPreferencesManager.getInstance();
-        prefManager.migrateUsageAndCrashPreferences();
 
         // Update the metrics sampling state so it's available before the native feature list is
         // available.
@@ -223,6 +224,14 @@ public class UmaSessionStats {
     public static boolean isMetricsServiceAvailable() {
         return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
                 .isFullBrowserStarted();
+    }
+
+    /**
+     * Returns whether there is a visible activity.
+     */
+    @CalledByNative
+    private static boolean hasVisibleActivity() {
+        return ApplicationStatus.hasVisibleActivities();
     }
 
     private static native long nativeInit();

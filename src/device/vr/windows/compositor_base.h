@@ -31,6 +31,7 @@ class XRDeviceAbstraction {
   virtual void StopRuntime() = 0;
   virtual void OnSessionStart();
   virtual bool PreComposite();
+  virtual bool HasSessionEnded();
   virtual bool SubmitCompositedFrame() = 0;
   virtual void HandleDeviceLost();
   virtual void OnLayerBoundsChanged();
@@ -61,8 +62,8 @@ class XRCompositorCommon : public base::Thread,
   void GetFrameData(mojom::XRFrameDataRequestOptionsPtr options,
                     XRFrameDataProvider::GetFrameDataCallback callback) final;
   void SetInputSourceButtonListener(
-      mojom::XRInputSourceButtonListenerAssociatedPtrInfo input_listener_info)
-      override;
+      device::mojom::XRInputSourceButtonListenerAssociatedPtrInfo
+          input_listener_info) override;
   void GetControllerDataAndSendFrameData(
       XRFrameDataProvider::GetFrameDataCallback callback,
       mojom::XRFrameDataPtr frame_data);

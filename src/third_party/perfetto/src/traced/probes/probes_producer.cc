@@ -43,10 +43,10 @@
 #include "src/traced/probes/ps/process_stats_data_source.h"
 #include "src/traced/probes/sys_stats/sys_stats_data_source.h"
 
-#include "perfetto/trace/filesystem/inode_file_map.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
-#include "perfetto/trace/ftrace/ftrace_stats.pbzero.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/filesystem/inode_file_map.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_event_bundle.pbzero.h"
+#include "protos/perfetto/trace/ftrace/ftrace_stats.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 namespace {
@@ -134,6 +134,7 @@ void ProbesProducer::OnConnect() {
   {
     DataSourceDescriptor desc;
     desc.set_name(MetatraceDataSource::kDataSourceName);
+    desc.set_will_notify_on_stop(true);
     endpoint_->RegisterDataSource(desc);
   }
 }
@@ -153,7 +154,7 @@ void ProbesProducer::OnDisconnect() {
 void ProbesProducer::Restart() {
   // We lost the connection with the tracing service. At this point we need
   // to reset all the data sources. Trying to handle that manually is going to
-  // be error prone. What we do here is simply desroying the instance and
+  // be error prone. What we do here is simply destroying the instance and
   // recreating it again.
   // TODO(hjd): Add e2e test for this.
 
@@ -338,6 +339,14 @@ void ProbesProducer::StopDataSource(DataSourceInstanceID id) {
     return;
   }
   ProbesDataSource* data_source = it->second.get();
+
+  // MetatraceDataSource special case: re-flush and ack the stop (to record the
+  // flushes of other data sources).
+  if (data_source->type_id == MetatraceDataSource::kTypeId) {
+    data_source->Flush(FlushRequestID{0}, [] {});
+    endpoint_->NotifyDataSourceStopped(id);
+  }
+
   TracingSessionID session_id = data_source->tracing_session_id;
   auto range = session_data_sources_.equal_range(session_id);
   for (auto kv = range.first; kv != range.second; kv++) {

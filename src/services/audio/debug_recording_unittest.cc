@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/files/file_path.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/audio/audio_debug_recording_test.h"
 #include "media/audio/mock_audio_debug_recording_manager.h"
 #include "media/audio/mock_audio_manager.h"
@@ -21,7 +21,7 @@
 #include "services/service_manager/public/cpp/service_keepalive.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-using testing::_;
+    using testing::_;
 using testing::Exactly;
 
 namespace audio {
@@ -100,7 +100,7 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest,
 
   void DestroyDebugRecording() {
     remote_debug_recording_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(service_keepalive_.HasNoRefs());
   }
 
@@ -145,7 +145,7 @@ TEST_F(DebugRecordingTest, CreateWavFileCallsFileProviderCreateWavFile) {
 
   EXPECT_CALL(*mock_debug_recording_manager_, EnableDebugRecording(_));
   remote_debug_recording_->Enable(std::move(remote_file_provider));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   const int id = 1;
   EXPECT_CALL(
@@ -153,7 +153,7 @@ TEST_F(DebugRecordingTest, CreateWavFileCallsFileProviderCreateWavFile) {
       DoCreateWavFile(media::AudioDebugRecordingStreamType::kInput, id));
   debug_recording_->CreateWavFile(media::AudioDebugRecordingStreamType::kInput,
                                   id, base::BindOnce(&FileCreated));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*mock_debug_recording_manager_, DisableDebugRecording());
   DestroyDebugRecording();

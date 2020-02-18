@@ -181,14 +181,6 @@ void CrossProcessFrameConnector::RenderProcessGone() {
     parent_view->host()->delegate()->SubframeCrashed(visibility_);
 }
 
-void CrossProcessFrameConnector::FirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  if (!features::IsSurfaceSynchronizationEnabled()) {
-    frame_proxy_in_parent_renderer_->Send(new FrameMsg_FirstSurfaceActivation(
-        frame_proxy_in_parent_renderer_->GetRoutingID(), surface_info));
-  }
-}
-
 void CrossProcessFrameConnector::SendIntrinsicSizingInfoToParent(
     const blink::WebIntrinsicSizingInfo& sizing_info) {
   frame_proxy_in_parent_renderer_->Send(
@@ -292,10 +284,10 @@ void CrossProcessFrameConnector::FocusRootView() {
     root_view->Focus();
 }
 
-bool CrossProcessFrameConnector::LockMouse() {
+bool CrossProcessFrameConnector::LockMouse(bool request_unadjusted_movement) {
   RenderWidgetHostViewBase* root_view = GetRootRenderWidgetHostView();
   if (root_view)
-    return root_view->LockMouse();
+    return root_view->LockMouse(request_unadjusted_movement);
   return false;
 }
 

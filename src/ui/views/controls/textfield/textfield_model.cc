@@ -8,7 +8,7 @@
 
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -522,7 +522,7 @@ bool TextfieldModel::Redo() {
 
 bool TextfieldModel::Cut() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(GetSelectedText());
     // A trick to let undo/redo handle cursor correctly.
     // Undoing CUT moves the cursor to the end of the change rather
@@ -539,7 +539,7 @@ bool TextfieldModel::Cut() {
 
 bool TextfieldModel::Copy() {
   if (!HasCompositionText() && HasSelection() && !render_text_->obscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
         .WriteText(GetSelectedText());
     return true;
   }
@@ -548,17 +548,23 @@ bool TextfieldModel::Copy() {
 
 bool TextfieldModel::Paste() {
   base::string16 text;
-  ui::Clipboard::GetForCurrentThread()->ReadText(ui::ClipboardType::kCopyPaste,
-                                                 &text);
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &text);
   if (text.empty())
     return false;
 
-  base::string16 actual_text = base::CollapseWhitespace(text, false);
-  // If the clipboard contains all whitespaces then paste a single space.
-  if (actual_text.empty())
-    actual_text = base::ASCIIToUTF16(" ");
+  // Leading/trailing whitespace is often selected accidentally, and is rarely
+  // critical to include (e.g. when pasting into a find bar).  Trim it.  By
+  // contrast, whitespace in the middle of the string may need exact
+  // preservation to avoid changing the effect (e.g. converting a full-width
+  // space to a regular space), so don't call a more aggressive function like
+  // CollapseWhitespace().
+  base::TrimWhitespace(text, base::TRIM_ALL, &text);
+  // If the clipboard contains all whitespace then paste a single space.
+  if (text.empty())
+    text = base::ASCIIToUTF16(" ");
 
-  InsertTextInternal(actual_text, false);
+  InsertTextInternal(text, false);
   return true;
 }
 

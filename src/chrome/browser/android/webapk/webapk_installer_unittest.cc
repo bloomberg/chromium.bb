@@ -22,7 +22,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -76,7 +76,6 @@ class TestWebApkInstaller : public WebApkInstaller {
       : WebApkInstaller(browser_context), test_space_status_(status) {}
 
   void InstallOrUpdateWebApk(const std::string& package_name,
-                             int version,
                              const std::string& token) override {
     PostTaskToRunSuccessCallback();
   }
@@ -270,7 +269,7 @@ class WebApkInstallerTest : public ::testing::Test {
       WebApkResponseBuilder;
 
   WebApkInstallerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~WebApkInstallerTest() override {}
 
   void SetUp() override {
@@ -338,7 +337,7 @@ class WebApkInstallerTest : public ::testing::Test {
   }
 
   std::unique_ptr<TestingProfile> profile_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   net::EmbeddedTestServer test_server_;
 
   // Builds response to the WebAPK creation request.

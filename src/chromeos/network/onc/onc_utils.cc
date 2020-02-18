@@ -1065,8 +1065,6 @@ NetworkTypePattern NetworkTypePatternFromOncType(const std::string& type) {
     return NetworkTypePattern::VPN();
   if (type == ::onc::network_type::kWiFi)
     return NetworkTypePattern::WiFi();
-  if (type == ::onc::network_type::kWimax)
-    return NetworkTypePattern::Wimax();
   if (type == ::onc::network_type::kWireless)
     return NetworkTypePattern::Wireless();
   NOTREACHED() << "Unrecognized ONC type: " << type;
@@ -1092,6 +1090,10 @@ base::Value ConvertOncProxySettingsToProxyConfig(
   if (type == ::onc::proxy::kManual) {
     const base::Value* manual_dict =
         onc_proxy_settings.FindKey(::onc::proxy::kManual);
+    if (!manual_dict) {
+      NOTREACHED() << "Manual proxy missing dictionary";
+      return base::Value();
+    }
     std::string manual_spec;
     AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kFtp, &manual_spec);
     AppendProxyServerForScheme(*manual_dict, ::onc::proxy::kHttp, &manual_spec);

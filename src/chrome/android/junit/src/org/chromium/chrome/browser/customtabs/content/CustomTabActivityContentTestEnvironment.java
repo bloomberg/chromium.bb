@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.view.View;
 
 import org.junit.rules.TestWatcher;
@@ -33,7 +32,6 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.WebContentsFactory;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.customtabs.CloseButtonNavigator;
 import org.chromium.chrome.browser.customtabs.CustomTabDelegateFactory;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
@@ -56,6 +54,8 @@ import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.WebContents;
 
+import androidx.browser.customtabs.CustomTabsSessionToken;
+
 /**
  * A TestRule that sets up the mocks and contains helper methods for JUnit/Robolectric tests scoped
  * to the content layer of Custom Tabs code.
@@ -71,7 +71,6 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
     @Mock public ChromeActivity activity;
     @Mock public CustomTabsConnection connection;
     @Mock public CustomTabIntentDataProvider intentDataProvider;
-    @Mock public TabContentManager tabContentManager;
     @Mock public TabObserverRegistrar tabObserverRegistrar;
     @Mock public CompositorViewHolder compositorViewHolder;
     @Mock public WarmupManager warmupManager;
@@ -114,6 +113,8 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
         when(tabModelSelector.getModel(anyBoolean())).thenReturn(tabModel);
         when(connection.getSpeculatedUrl(any())).thenReturn(SPECULATED_URL);
         when(browserInitializer.hasNativeInitializationCompleted()).thenReturn(true);
+        // Default setup is toolbarManager doesn't consume back press event.
+        when(toolbarManager.back()).thenReturn(null);
 
         doNothing().when(activityTabProvider).addObserverAndTrigger(
                 activityTabObserverCaptor.capture());
@@ -132,13 +133,10 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
 
     public CustomTabActivityTabController createTabController() {
         return new CustomTabActivityTabController(activity,
-                ()
-                        -> customTabDelegateFactory,
-                connection, intentDataProvider, activityTabProvider, tabObserverRegistrar,
-                ()
-                        -> compositorViewHolder,
-                lifecycleDispatcher, warmupManager, tabPersistencePolicy, tabFactory,
-                () -> customTabObserver, webContentsFactory, navigationEventObserver, tabProvider);
+                () -> customTabDelegateFactory, connection, intentDataProvider, activityTabProvider,
+                tabObserverRegistrar, () -> compositorViewHolder, lifecycleDispatcher,
+                warmupManager, tabPersistencePolicy, tabFactory, () -> customTabObserver,
+                webContentsFactory, navigationEventObserver, tabProvider);
     }
 
     public CustomTabActivityNavigationController createNavigationController(
@@ -149,11 +147,13 @@ public class CustomTabActivityContentTestEnvironment extends TestWatcher {
                 () -> fullscreenManager);
     }
 
-    public CustomTabActivityInitialPageLoader createInitialPageLoader(
+    public CustomTabIntentHandler createIntentHandler(
             CustomTabActivityNavigationController navigationController) {
-        return new CustomTabActivityInitialPageLoader(tabProvider,
-                intentDataProvider, connection, () -> customTabObserver,
-                navigationEventObserver, navigationController);
+        CustomTabIntentHandlingStrategy strategy = new DefaultCustomTabIntentHandlingStrategy(
+                tabProvider, navigationController, navigationEventObserver,
+                () -> customTabObserver);
+        return new CustomTabIntentHandler(tabProvider,
+                intentDataProvider, strategy, (intent) -> false, activity);
     }
 
 

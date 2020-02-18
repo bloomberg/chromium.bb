@@ -35,10 +35,10 @@ class DepthStencilStateTest : public DawnTest {
             renderTargetDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
             renderTargetDescriptor.mipLevelCount = 1;
             renderTargetDescriptor.usage =
-                dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+                dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
             renderTarget = device.CreateTexture(&renderTargetDescriptor);
 
-            renderTargetView = renderTarget.CreateDefaultView();
+            renderTargetView = renderTarget.CreateView();
 
             dawn::TextureDescriptor depthDescriptor;
             depthDescriptor.dimension = dawn::TextureDimension::e2D;
@@ -49,12 +49,12 @@ class DepthStencilStateTest : public DawnTest {
             depthDescriptor.sampleCount = 1;
             depthDescriptor.format = dawn::TextureFormat::Depth24PlusStencil8;
             depthDescriptor.mipLevelCount = 1;
-            depthDescriptor.usage = dawn::TextureUsageBit::OutputAttachment;
+            depthDescriptor.usage = dawn::TextureUsage::OutputAttachment;
             depthTexture = device.CreateTexture(&depthDescriptor);
 
-            depthTextureView = depthTexture.CreateDefaultView();
+            depthTextureView = depthTexture.CreateView();
 
-            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+            vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform myBlock {
                     vec3 color;
@@ -69,7 +69,7 @@ class DepthStencilStateTest : public DawnTest {
                 }
             )");
 
-            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            fsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform myBlock {
                     vec3 color;
@@ -83,7 +83,7 @@ class DepthStencilStateTest : public DawnTest {
 
             bindGroupLayout = utils::MakeBindGroupLayout(
                 device, {
-                            {0, dawn::ShaderStageBit::Vertex | dawn::ShaderStageBit::Fragment,
+                            {0, dawn::ShaderStage::Vertex | dawn::ShaderStage::Fragment,
                              dawn::BindingType::UniformBuffer},
                         });
 
@@ -265,7 +265,8 @@ class DepthStencilStateTest : public DawnTest {
                     test.depth,
                 };
                 // Upload a buffer for each triangle's depth and color data
-                dawn::Buffer buffer = utils::CreateBufferFromData(device, &data, sizeof(TriangleData), dawn::BufferUsageBit::Uniform);
+                dawn::Buffer buffer = utils::CreateBufferFromData(
+                    device, &data, sizeof(TriangleData), dawn::BufferUsage::Uniform);
 
                 // Create a bind group for the data
                 dawn::BindGroup bindGroup = utils::MakeBindGroup(device, bindGroupLayout, {{0, buffer, 0, sizeof(TriangleData)}});
@@ -274,7 +275,7 @@ class DepthStencilStateTest : public DawnTest {
 
                 utils::ComboRenderPipelineDescriptor descriptor(device);
                 descriptor.layout = pipelineLayout;
-                descriptor.cVertexStage.module = vsModule;
+                descriptor.vertexStage.module = vsModule;
                 descriptor.cFragmentStage.module = fsModule;
                 descriptor.cDepthStencilState = test.depthStencilState;
                 descriptor.cDepthStencilState.format = dawn::TextureFormat::Depth24PlusStencil8;

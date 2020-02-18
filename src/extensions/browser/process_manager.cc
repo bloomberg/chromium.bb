@@ -27,7 +27,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
-#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/site_instance.h"
@@ -255,11 +254,10 @@ ProcessManager::ProcessManager(BrowserContext* context,
     : extension_registry_(extension_registry),
       site_instance_(content::SiteInstance::Create(context)),
       browser_context_(context),
-      worker_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO})),
+      worker_task_runner_(
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})),
       startup_background_hosts_created_(false),
-      last_background_close_sequence_id_(0),
-      process_observer_(this) {
+      last_background_close_sequence_id_(0) {
   // ExtensionRegistry is shared between incognito and regular contexts.
   DCHECK_EQ(original_context, extension_registry_->browser_context());
   extension_registry_->AddObserver(this);

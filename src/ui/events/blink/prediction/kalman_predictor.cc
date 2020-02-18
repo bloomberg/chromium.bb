@@ -18,16 +18,16 @@ namespace ui {
 
 constexpr base::TimeDelta InputPredictor::kMaxTimeDelta;
 constexpr base::TimeDelta InputPredictor::kMaxResampleTime;
+constexpr base::TimeDelta InputPredictor::kMaxPredictionTime;
+constexpr base::TimeDelta InputPredictor::kTimeInterval;
+constexpr base::TimeDelta InputPredictor::kMinimumTimeInterval;
 
-KalmanPredictor::KalmanPredictor(const bool enable_time_filtering)
-    : enable_time_filtering_(enable_time_filtering) {}
+KalmanPredictor::KalmanPredictor() = default;
 
 KalmanPredictor::~KalmanPredictor() = default;
 
 const char* KalmanPredictor::GetName() const {
-  return enable_time_filtering_
-             ? input_prediction::kScrollPredictorNameKalmanTimeFiltered
-             : input_prediction::kScrollPredictorNameKalman;
+  return input_prediction::kScrollPredictorNameKalman;
 }
 
 void KalmanPredictor::Reset() {
@@ -44,12 +44,11 @@ void KalmanPredictor::Update(const InputData& cur_input) {
     dt = cur_input.time_stamp - last_point_.time_stamp;
     if (dt > kMaxTimeDelta)
       Reset();
-    else if (enable_time_filtering_)
+    else
       time_filter_.Update(dt.InMillisecondsF(), 0);
   }
 
-  double dt_ms = enable_time_filtering_ ? time_filter_.GetPosition()
-                                        : dt.InMillisecondsF();
+  double dt_ms = time_filter_.GetPosition();
   last_point_ = cur_input;
   x_predictor_.Update(cur_input.pos.x(), dt_ms);
   y_predictor_.Update(cur_input.pos.y(), dt_ms);
@@ -79,6 +78,13 @@ bool KalmanPredictor::GeneratePrediction(base::TimeTicks predict_time,
   result->pos.set_x(position.x());
   result->pos.set_y(position.y());
   return true;
+}
+
+base::TimeDelta KalmanPredictor::TimeInterval() const {
+  return time_filter_.GetPosition()
+             ? std::max(kMinimumTimeInterval, base::TimeDelta::FromMilliseconds(
+                                                  time_filter_.GetPosition()))
+             : kTimeInterval;
 }
 
 gfx::Vector2dF KalmanPredictor::PredictPosition() const {

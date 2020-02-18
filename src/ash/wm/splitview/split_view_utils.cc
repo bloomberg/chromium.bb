@@ -230,8 +230,10 @@ void DoSplitviewTransformAnimation(ui::Layer* layer,
 }
 
 void MaybeRestoreSplitView(bool refresh_snapped_windows) {
-  if (!ShouldAllowSplitView())
+  if (!ShouldAllowSplitView() ||
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
     return;
+  }
 
   // Search for snapped windows to detect if the now active user session, or
   // desk were in split view. In case multiple windows were snapped to one side,
@@ -253,6 +255,13 @@ void MaybeRestoreSplitView(bool refresh_snapped_windows) {
         Shell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal(
             kActiveDesk);
     for (aura::Window* window : windows) {
+      if (!CanSnapInSplitview(window)) {
+        // Since we are in tablet mode, and this window is not snappable, we
+        // should maximize it.
+        WindowState::Get(window)->Maximize();
+        continue;
+      }
+
       switch (WindowState::Get(window)->GetStateType()) {
         case WindowStateType::kLeftSnapped:
           if (!split_view_controller->left_window()) {

@@ -43,30 +43,6 @@ base::string16 AXNodePosition::GetText() const {
   return text;
 }
 
-int AXNodePosition::MaxTextOffset() const {
-  if (IsNullPosition())
-    return INVALID_INDEX;
-
-  const AXNode* anchor = GetAnchor();
-  DCHECK(anchor);
-  const std::string& value =
-      anchor->data().GetStringAttribute(ax::mojom::StringAttribute::kValue);
-  if (!value.empty())
-    return value.length();
-
-  if (anchor->IsText()) {
-    return anchor->data()
-        .GetStringAttribute(ax::mojom::StringAttribute::kName)
-        .length();
-  }
-
-  int max_text_offset = 0;
-  for (int i = 0; i < AnchorChildCount(); ++i)
-    max_text_offset += CreateChildPositionAt(i)->MaxTextOffset();
-
-  return max_text_offset;
-}
-
 // static
 AXNodePosition::AXPositionInstance AXNodePosition::CreatePosition(
     AXTreeID tree_id,
@@ -142,6 +118,30 @@ AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
     }
   }
   return CreateNullPosition();
+}
+
+int AXNodePosition::MaxTextOffset() const {
+  if (IsNullPosition())
+    return INVALID_INDEX;
+
+  const AXNode* anchor = GetAnchor();
+  DCHECK(anchor);
+  const std::string& value =
+      anchor->data().GetStringAttribute(ax::mojom::StringAttribute::kValue);
+  if (!value.empty())
+    return value.length();
+
+  if (anchor->IsText()) {
+    return anchor->data()
+        .GetStringAttribute(ax::mojom::StringAttribute::kName)
+        .length();
+  }
+
+  int max_text_offset = 0;
+  for (int i = 0; i < AnchorChildCount(); ++i)
+    max_text_offset += CreateChildPositionAt(i)->MaxTextOffset();
+
+  return max_text_offset;
 }
 
 void AXNodePosition::AnchorChild(int child_index,

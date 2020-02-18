@@ -117,7 +117,7 @@ class CertificateProviderService::SSLPrivateKey : public net::SSLPrivateKey {
   // Must be dereferenced on |service_task_runner_| only.
   const base::WeakPtr<CertificateProviderService> service_;
   base::ThreadChecker thread_checker_;
-  base::WeakPtrFactory<SSLPrivateKey> weak_factory_;
+  base::WeakPtrFactory<SSLPrivateKey> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SSLPrivateKey);
 };
@@ -227,8 +227,7 @@ CertificateProviderService::SSLPrivateKey::SSLPrivateKey(
     : extension_id_(extension_id),
       cert_info_(cert_info),
       service_task_runner_(service_task_runner),
-      service_(service),
-      weak_factory_(this) {
+      service_(service) {
   // This constructor is called on |service_task_runner|. Only subsequent calls
   // to member functions have to be on a common thread.
   thread_checker_.DetachFromThread();
@@ -258,8 +257,9 @@ void CertificateProviderService::SSLPrivateKey::SignDigestOnServiceTaskRunner(
     std::move(callback).Run(net::ERR_FAILED, no_signature);
     return;
   }
-  service->RequestSignatureFromExtension(extension_id, certificate, algorithm,
-                                         input, std::move(callback));
+  service->RequestSignatureFromExtension(
+      extension_id, certificate, algorithm, input,
+      /*authenticating_user_account_id=*/{}, std::move(callback));
 }
 
 void CertificateProviderService::SSLPrivateKey::Sign(
@@ -313,8 +313,7 @@ void CertificateProviderService::SSLPrivateKey::DidSignDigest(
   std::move(callback).Run(error, signature);
 }
 
-CertificateProviderService::CertificateProviderService()
-    : weak_factory_(this) {}
+CertificateProviderService::CertificateProviderService() {}
 
 CertificateProviderService::~CertificateProviderService() {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -371,7 +370,8 @@ void CertificateProviderService::ReplyToSignRequest(
   if (!sign_requests_.RemoveRequest(extension_id, sign_request_id, &certificate,
                                     &callback)) {
     LOG(ERROR) << "request id unknown.";
-    // Maybe multiple replies to the same request.
+    // The request was aborted before, or the extension replied multiple times
+    // to the same request.
     return;
   }
 
@@ -428,6 +428,7 @@ void CertificateProviderService::RequestSignatureBySpki(
     const std::string& subject_public_key_info,
     uint16_t algorithm,
     base::span<const uint8_t> digest,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
   bool is_currently_provided = false;
@@ -442,7 +443,8 @@ void CertificateProviderService::RequestSignatureBySpki(
   }
 
   RequestSignatureFromExtension(extension_id, info.certificate, algorithm,
-                                digest, std::move(callback));
+                                digest, authenticating_user_account_id,
+                                std::move(callback));
 }
 
 bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
@@ -460,6 +462,30 @@ bool CertificateProviderService::GetSupportedAlgorithmsBySpki(
   }
   *supported_algorithms = info.supported_algorithms;
   return true;
+}
+
+void CertificateProviderService::AbortSignatureRequestsForAuthenticatingUser(
+    const AccountId& authenticating_user_account_id) {
+  using ExtensionNameRequestIdPair =
+      certificate_provider::SignRequests::ExtensionNameRequestIdPair;
+
+  const std::vector<ExtensionNameRequestIdPair> sign_requests_to_abort =
+      sign_requests_.FindRequestsForAuthenticatingUser(
+          authenticating_user_account_id);
+
+  for (const ExtensionNameRequestIdPair& sign_request :
+       sign_requests_to_abort) {
+    const std::string& extension_id = sign_request.first;
+    const int sign_request_id = sign_request.second;
+    pin_dialog_manager_.AbortSignRequest(extension_id, sign_request_id);
+
+    scoped_refptr<net::X509Certificate> certificate;
+    net::SSLPrivateKey::SignCallback sign_callback;
+    if (sign_requests_.RemoveRequest(extension_id, sign_request_id,
+                                     &certificate, &sign_callback)) {
+      std::move(sign_callback).Run(net::ERR_FAILED, std::vector<uint8_t>());
+    }
+  }
 }
 
 void CertificateProviderService::GetCertificatesFromExtensions(
@@ -526,11 +552,15 @@ void CertificateProviderService::RequestSignatureFromExtension(
     const scoped_refptr<net::X509Certificate>& certificate,
     uint16_t algorithm,
     base::span<const uint8_t> digest,
+    const base::Optional<AccountId>& authenticating_user_account_id,
     net::SSLPrivateKey::SignCallback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  const int sign_request_id =
-      sign_requests_.AddRequest(extension_id, certificate, std::move(callback));
+  const int sign_request_id = sign_requests_.AddRequest(
+      extension_id, certificate, authenticating_user_account_id,
+      std::move(callback));
+  pin_dialog_manager_.AddSignRequestId(extension_id, sign_request_id,
+                                       authenticating_user_account_id);
   if (!delegate_->DispatchSignRequestToExtension(
           extension_id, sign_request_id, algorithm, certificate, digest)) {
     scoped_refptr<net::X509Certificate> local_certificate;

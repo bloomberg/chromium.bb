@@ -68,6 +68,20 @@ class BrowserFinderOptions(optparse.Values):
   def CreateParser(self, *args, **kwargs):
     parser = optparse.OptionParser(*args, **kwargs)
 
+    # Options to interact with a potential external results processor.
+    parser.set_defaults(
+        external_results_processor=False,
+        intermediate_dir=None,
+        # TODO(crbug.com/928275): Remove these when Telemetry is no longer
+        # involved in any results processing.
+        output_dir=None,
+        output_formats=[],
+        legacy_output_formats=[],
+        reset_results=True,
+        results_label='telemetry_run',
+        upload_results=False,
+        upload_bucket=None)
+
     # Selection group
     group = optparse.OptionGroup(parser, 'Which browser to use')
     group.add_option(
@@ -117,6 +131,10 @@ class BrowserFinderOptions(optparse.Values):
         help='Select the compatibility change that you want to enforce when '
              'running benchmarks. The options are: %s' % ', '.join(
                  compat_mode_options_list))
+    parser.add_option(
+        '--experimental-proto-trace-format',
+        action='store_true',
+        help='Request traces from Chrome in protobuf file format.')
     identity = None
     testing_rsa = os.path.join(
         util.GetTelemetryThirdPartyDir(), 'chromite', 'ssh_keys', 'testing_rsa')

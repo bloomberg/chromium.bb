@@ -380,6 +380,7 @@ class GraphicsPipelineDesc final
                                        bool primitiveRestartEnabled);
 
     // Raster states
+    void setCullMode(VkCullModeFlagBits cullMode);
     void updateCullMode(GraphicsPipelineTransitionBits *transition,
                         const gl::RasterizerState &rasterState);
     void updateFrontFace(GraphicsPipelineTransitionBits *transition,
@@ -695,7 +696,7 @@ class TextureDescriptorDesc
     TextureDescriptorDesc(const TextureDescriptorDesc &other);
     TextureDescriptorDesc &operator=(const TextureDescriptorDesc &other);
 
-    void update(size_t index, Serial serial);
+    void update(size_t index, Serial textureSerial, Serial samplerSerial);
     size_t hash() const;
     void reset();
 
@@ -706,7 +707,12 @@ class TextureDescriptorDesc
 
   private:
     uint32_t mMaxIndex;
-    gl::ActiveTextureArray<uint32_t> mSerials;
+    struct TexUnitSerials
+    {
+        uint32_t texture;
+        uint32_t sampler;
+    };
+    gl::ActiveTextureArray<TexUnitSerials> mSerials;
 };
 }  // namespace vk
 }  // namespace rx
@@ -893,11 +899,11 @@ class PipelineLayoutCache final : angle::NonCopyable
 //
 // The set/binding assignment is done as following:
 //
-// - Set 0 contains uniform blocks created to encompass default uniforms.  Bindings 0 and 1
-//   correspond to default uniforms in the vertex and fragment shaders respectively.  Additionally,
-//   transform feedback buffers are bound from binding 2 and up.
+// - Set 0 contains uniform blocks created to encompass default uniforms.  1 binding is used per
+//   pipeline stage.  Additionally, transform feedback buffers are bound from binding 2 and up.
 // - Set 1 contains all textures.
-// - Set 2 contains all other shader resources.
+// - Set 2 contains all other shader resources, such as uniform and storage blocks, atomic counter
+//   buffers and images.
 // - Set 3 contains the ANGLE driver uniforms at binding 0.  Note that driver uniforms are updated
 //   only under rare circumstances, such as viewport or depth range change.  However, there is only
 //   one binding in this set.

@@ -91,10 +91,9 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_request.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -856,8 +855,8 @@ Node* DragController::DraggableNode(const LocalFrame* src,
         candidate_drag_type = kDragSourceActionDHTML;
         break;
       }
-      if (IsHTMLAnchorElement(*node) &&
-          ToHTMLAnchorElement(node)->IsLiveLink()) {
+      auto* html_anchor_element = DynamicTo<HTMLAnchorElement>(node);
+      if (html_anchor_element && html_anchor_element->IsLiveLink()) {
         candidate_drag_type = kDragSourceActionLink;
         break;
       }
@@ -957,7 +956,8 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   DataTransfer* data_transfer = state.drag_data_transfer_.Get();
   Node* node = state.drag_src_.Get();
 
-  if (IsHTMLAnchorElement(*node) && ToHTMLAnchorElement(node)->IsLiveLink() &&
+  auto* html_anchor_element = DynamicTo<HTMLAnchorElement>(node);
+  if (html_anchor_element && html_anchor_element->IsLiveLink() &&
       !link_url.IsEmpty()) {
     // Simplify whitespace so the title put on the clipboard resembles what
     // the user sees on the web page. This includes replacing newlines with

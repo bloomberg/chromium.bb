@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace base {
 class TickClock;
@@ -129,7 +128,9 @@ class CORE_EXPORT LocalFrameUkmAggregator
     kIntersectionObservation,
     kPaint,
     kPrePaint,
-    kStyleAndLayout,
+    kStyleAndLayout,  // Remove for M-80
+    kStyle,
+    kLayout,
     kForcedStyleAndLayout,
     kScrollingCoordinator,
     kHandleInputEvents,
@@ -164,6 +165,8 @@ class CORE_EXPORT LocalFrameUkmAggregator
                                              {"Paint", true},
                                              {"PrePaint", true},
                                              {"StyleAndLayout", true},
+                                             {"Style", true},
+                                             {"Layout", true},
                                              {"ForcedStyleAndLayout", true},
                                              {"ScrollingCoordinator", true},
                                              {"HandleInputEvents", true},
@@ -192,7 +195,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
     STACK_ALLOCATED();
 
    public:
-    ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&);
+    ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&) noexcept;
     ~ScopedUkmHierarchicalTimer();
 
    private:

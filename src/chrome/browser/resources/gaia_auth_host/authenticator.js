@@ -6,7 +6,7 @@
 // Note: webview_event_manager.js is already included by saml_handler.js.
 
 /**
- * @fileoverview An UI component to authenciate to Chrome. The component hosts
+ * @fileoverview An UI component to authenticate to Chrome. The component hosts
  * IdP web pages in a webview. A client who is interested in monitoring
  * authentication events should subscribe itself via addEventListener(). After
  * initialization, call {@code load} to start the authentication flow.
@@ -109,6 +109,12 @@ cr.define('cr.login', function() {
     'email',
     'readOnlyEmail',
     'realm',
+    // If the authentication is done via external IdP, 'startsOnSamlPage'
+    // indicates whether the flow should start on the IdP page.
+    'startsOnSamlPage',
+    // SAML assertion consumer URL, used to detect when Gaia-less SAML flows end
+    // (e.g. for SAML managed guest sessions).
+    'samlAclUrl',
   ];
 
 
@@ -255,6 +261,7 @@ cr.define('cr.login', function() {
        * @private
        */
       this.isSamlUserPasswordless_ = null;
+      this.samlAclUrl_ = null;
 
       window.addEventListener(
           'message', this.onMessageFromWebview_.bind(this), false);
@@ -455,12 +462,23 @@ cr.define('cr.login', function() {
 
       this.initialFrameUrl_ = this.constructInitialFrameUrl_(data);
       this.reloadUrl_ = data.frameUrl || this.initialFrameUrl_;
+      this.samlAclUrl_ = data.samlAclUrl;
+      // The email field is repurposed as public session email in SAML guest
+      // mode, ie when frameUrl is not empty.
+      if (data.samlAclUrl) {
+        this.email_ = data.email;
+      }
+
+      if (data.startsOnSamlPage) {
+        this.samlHandler_.startsOnSamlPage = true;
+      }
       // Don't block insecure content for desktop flow because it lands on
       // http. Otherwise, block insecure content as long as gaia is https.
       this.samlHandler_.blockInsecureContent = authMode != AuthMode.DESKTOP &&
           this.idpOrigin_.startsWith('https://');
       this.samlHandler_.extractSamlPasswordAttributes =
           data.extractSamlPasswordAttributes;
+
       this.needPassword = !('needPassword' in data) || data.needPassword;
 
       this.webview_.contextMenus.onShow.addListener(function(e) {
@@ -577,6 +595,9 @@ cr.define('cr.login', function() {
       }
       if (data.ignoreCrOSIdpSetting === true) {
         url = appendParam(url, 'ignoreCrOSIdpSetting', 'true');
+      }
+      if (data.enableGaiaActionButtons) {
+        url = appendParam(url, 'use_native_navigation', 1);
       }
       return url;
     }
@@ -960,6 +981,7 @@ cr.define('cr.login', function() {
               gaiaId: this.gaiaId_ || '',
               password: this.password_ || '',
               usingSAML: this.authFlow == AuthFlow.SAML,
+              publicSAML: this.samlAclUrl_ || false,
               chooseWhatToSync: this.chooseWhatToSync_,
               skipForNow: this.skipForNow_,
               sessionIndex: this.sessionIndex_ || '',
@@ -1085,6 +1107,9 @@ cr.define('cr.login', function() {
         this.webview_.focus();
       } else if (currentUrl == BLANK_PAGE_URL) {
         this.fireReadyEvent_();
+      } else if (currentUrl == this.samlAclUrl_) {
+        this.skipForNow_ = true;
+        this.onAuthCompleted_();
       }
     }
 
@@ -1094,7 +1119,7 @@ cr.define('cr.login', function() {
      */
     onLoadAbort_(e) {
       this.dispatchEvent(new CustomEvent(
-          'loadAbort', {detail: {error: e.reason, src: e.url}}));
+          'loadAbort', {detail: {error_code: e.code, src: e.url}}));
     }
 
     /**

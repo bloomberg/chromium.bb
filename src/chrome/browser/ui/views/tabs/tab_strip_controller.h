@@ -15,7 +15,7 @@
 #include "ui/base/ui_base_types.h"
 
 class Tab;
-class TabGroupData;
+class TabGroupVisualData;
 class TabGroupId;
 class TabStrip;
 
@@ -111,8 +111,12 @@ class TabStripController {
   // from this tabstrip but the user is still dragging the tabs.
   virtual void OnStoppedDraggingTabs() = 0;
 
-  // Returns the TabGroupData instance for the given |group|.
-  virtual const TabGroupData* GetDataForGroup(TabGroupId group) const = 0;
+  // Returns the TabGroupVisualData instance for the given |group|.
+  virtual const TabGroupVisualData* GetVisualDataForGroup(
+      TabGroupId group) const = 0;
+
+  virtual void SetVisualDataForGroup(TabGroupId group,
+                                     TabGroupVisualData visual_data) = 0;
 
   // Returns the list of tabs in the given |group|.
   virtual std::vector<int> ListTabsInGroup(TabGroupId group) const = 0;
@@ -148,15 +152,10 @@ class TabStripController {
   // state of the window.
   virtual SkColor GetToolbarTopSeparatorColor() const = 0;
 
-  // For non-transparent windows, returns the resource ID to use behind
-  // background tabs.  |has_custom_image| will be set to true if this has been
-  // customized by the theme in some way.  Note that because of fallback during
-  // image generation, |has_custom_image| may be true even when the returned
-  // background resource ID has not been directly overridden (i.e.
-  // ThemeProvider::HasCustomImage() returns false).
-  virtual int GetTabBackgroundResourceId(
-      BrowserNonClientFrameView::ActiveState active_state,
-      bool* has_custom_image) const = 0;
+  // For non-transparent windows, returns the background tab image resource ID
+  // if the image has been customized, directly or indirectly, by the theme.
+  virtual base::Optional<int> GetCustomBackgroundId(
+      BrowserNonClientFrameView::ActiveState active_state) const = 0;
 
   // Returns the accessible tab name.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;

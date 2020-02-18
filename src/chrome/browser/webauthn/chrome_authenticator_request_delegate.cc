@@ -47,9 +47,6 @@ namespace {
 bool IsWebauthnRPIDListedInEnterprisePolicy(
     content::BrowserContext* browser_context,
     const std::string& relying_party_id) {
-#if defined(OS_ANDROID)
-  return false;
-#else
   const Profile* profile = Profile::FromBrowserContext(browser_context);
   const PrefService* prefs = profile->GetPrefs();
   const base::ListValue* permit_attestation =
@@ -58,7 +55,6 @@ bool IsWebauthnRPIDListedInEnterprisePolicy(
                      [&relying_party_id](const base::Value& v) {
                        return v.GetString() == relying_party_id;
                      });
-#endif
 }
 
 }  // namespace
@@ -127,23 +123,11 @@ content::BrowserContext* ChromeAuthenticatorRequestDelegate::browser_context()
 }
 
 bool ChromeAuthenticatorRequestDelegate::DoesBlockRequestOnFailure(
-    const ::device::FidoAuthenticator* authenticator,
     InterestingFailureReason reason) {
   if (!IsWebAuthnUIEnabled())
     return false;
   if (!weak_dialog_model_)
     return false;
-
-  DCHECK(authenticator || reason == InterestingFailureReason::kTimeout);
-
-#if defined(OS_WIN)
-  if (authenticator && authenticator->IsWinNativeApiAuthenticator()) {
-    // Do not display a Chrome error dialog if the user cancels out of the
-    // Windows UI. No other errors are reachable.
-    DCHECK(reason == InterestingFailureReason::kUserConsentDenied);
-    return false;
-  }
-#endif  // defined(OS_WIN)
 
   switch (reason) {
     case InterestingFailureReason::kTimeout:
@@ -216,11 +200,6 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
     const std::string& relying_party_id,
     const device::FidoAuthenticator* authenticator,
     base::OnceCallback<void(bool)> callback) {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn which will take care
-  // of prompting.
-  std::move(callback).Run(true);
-#else
   if (IsWebauthnRPIDListedInEnterprisePolicy(browser_context(),
                                              relying_party_id)) {
     std::move(callback).Run(true);
@@ -247,10 +226,22 @@ void ChromeAuthenticatorRequestDelegate::ShouldReturnAttestation(
 #endif  // defined(OS_WIN)
 
   weak_dialog_model_->RequestAttestationPermission(std::move(callback));
-#endif
 }
 
 bool ChromeAuthenticatorRequestDelegate::SupportsResidentKeys() {
+  return true;
+}
+
+bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
+    const url::Origin& origin) {
+  return true;
+}
+
+bool ChromeAuthenticatorRequestDelegate::SetCableTransportInfo(
+    bool cable_extension_provided,
+    base::Optional<device::QRGeneratorKey> qr_generator_key) {
+  weak_dialog_model_->set_cable_transport_info(cable_extension_provided,
+                                               std::move(qr_generator_key));
   return true;
 }
 
@@ -274,15 +265,10 @@ void ChromeAuthenticatorRequestDelegate::SelectAccount(
 }
 
 bool ChromeAuthenticatorRequestDelegate::IsFocused() {
-#if defined(OS_ANDROID)
-  // Android is expected to use platform APIs for webauthn.
-  return true;
-#else
   auto* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host());
   DCHECK(web_contents);
   return web_contents->GetVisibility() == content::Visibility::VISIBLE;
-#endif
 }
 
 #if defined(OS_MACOSX)
@@ -386,7 +372,6 @@ ChromeAuthenticatorRequestDelegate::GetTouchIdAuthenticatorConfig() {
 
 void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
     device::FidoRequestHandlerBase::TransportAvailabilityInfo data) {
-#if !defined(OS_ANDROID)
   if (disable_ui_ || !transient_dialog_model_holder_) {
     return;
   }
@@ -401,7 +386,6 @@ void ChromeAuthenticatorRequestDelegate::OnTransportAvailabilityEnumerated(
   ShowAuthenticatorRequestDialog(
       content::WebContents::FromRenderFrameHost(render_frame_host()),
       std::move(transient_dialog_model_holder_));
-#endif  // !defined(OS_ANDROID)
 }
 
 bool ChromeAuthenticatorRequestDelegate::EmbedderControlsAuthenticatorDispatch(

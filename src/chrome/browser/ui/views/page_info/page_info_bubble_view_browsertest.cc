@@ -78,7 +78,7 @@ void OpenPageInfoBubble(Browser* browser) {
   ClickEvent event;
   location_icon_view->ShowBubble(event);
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
   EXPECT_NE(nullptr, page_info);
   page_info->set_close_on_deactivate(false);
 }
@@ -87,7 +87,7 @@ void OpenPageInfoBubble(Browser* browser) {
 // |view_id|.
 views::View* GetView(Browser* browser, int view_id) {
   views::Widget* page_info_bubble =
-      PageInfoBubbleView::GetPageInfoBubble()->GetWidget();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetWidget();
   EXPECT_TRUE(page_info_bubble);
 
   views::View* view = page_info_bubble->GetRootView()->GetViewByID(view_id);
@@ -146,7 +146,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     constexpr char kMalware[] = "Malware";
     constexpr char kDeceptive[] = "Deceptive";
     constexpr char kUnwantedSoftware[] = "UnwantedSoftware";
-    constexpr char kSignInPasswordReuse[] = "SignInPasswordReuse";
+    constexpr char kSignInSyncPasswordReuse[] = "SignInSyncPasswordReuse";
+    constexpr char kSignInNonSyncPasswordReuse[] = "SignInNonSyncPasswordReuse";
     constexpr char kEnterprisePasswordReuse[] = "EnterprisePasswordReuse";
     constexpr char kMalwareAndBadCert[] = "MalwareAndBadCert";
     constexpr char kMixedContentForm[] = "MixedContentForm";
@@ -216,9 +217,12 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     } else if (name == kUnwantedSoftware) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_UNWANTED_SOFTWARE;
-    } else if (name == kSignInPasswordReuse) {
+    } else if (name == kSignInSyncPasswordReuse) {
       identity.safe_browsing_status =
-          PageInfo::SAFE_BROWSING_STATUS_SIGN_IN_PASSWORD_REUSE;
+          PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_SYNC_PASSWORD_REUSE;
+    } else if (name == kSignInNonSyncPasswordReuse) {
+      identity.safe_browsing_status =
+          PageInfo::SAFE_BROWSING_STATUS_SIGNED_IN_NON_SYNC_PASSWORD_REUSE;
     } else if (name == kEnterprisePasswordReuse) {
       identity.safe_browsing_status =
           PageInfo::SAFE_BROWSING_STATUS_ENTERPRISE_PASSWORD_REUSE;
@@ -261,7 +265,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
       PageInfoBubbleView* page_info_bubble_view =
           static_cast<PageInfoBubbleView*>(
-              PageInfoBubbleView::GetPageInfoBubble());
+              PageInfoBubbleView::GetPageInfoBubbleForTesting());
       // Normally |PageInfoBubbleView| doesn't update the permissions already
       // shown if they change while it's still open. For this test, manually
       // force an update by clearing the existing permission views here.
@@ -277,7 +281,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
         name != kFile) {
       // The bubble may be PageInfoBubbleView or InternalPageInfoBubbleView. The
       // latter is only used for |kInternal|, so it is safe to static_cast here.
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+      static_cast<PageInfoBubbleView*>(
+          PageInfoBubbleView::GetPageInfoBubbleForTesting())
           ->SetIdentityInfo(identity);
     }
   }
@@ -288,7 +293,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 #if defined(TOOLKIT_VIEWS)
     // Check that each expected View is present in the Page Info bubble.
     views::View* page_info_bubble_view =
-        PageInfoBubbleView::GetPageInfoBubble()->GetContentsView();
+        PageInfoBubbleView::GetPageInfoBubbleForTesting()->GetContentsView();
     for (auto id : expected_identifiers_) {
       views::View* view = GetView(browser(), id);
       if (!page_info_bubble_view->Contains(view))
@@ -331,7 +336,7 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
   void TriggerReloadPromptOnClose() const {
     PageInfoBubbleView* const page_info_bubble_view =
         static_cast<PageInfoBubbleView*>(
-            PageInfoBubbleView::GetPageInfoBubble());
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
     ASSERT_NE(nullptr, page_info_bubble_view);
 
     // Set some dummy non-default permissions. This will trigger a reload prompt
@@ -347,7 +352,8 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
 
   void SetPageInfoBubbleIdentityInfo(
       const PageInfoUI::IdentityInfo& identity_info) {
-    static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble())
+    static_cast<PageInfoBubbleView*>(
+        PageInfoBubbleView::GetPageInfoBubbleForTesting())
         ->SetIdentityInfo(identity_info);
   }
 
@@ -356,8 +362,15 @@ class PageInfoBubbleViewBrowserTest : public DialogBrowserTest {
     // PageInfoBubbleView, or title() in HoverButton.
     PageInfoBubbleView* page_info_bubble_view =
         static_cast<PageInfoBubbleView*>(
-            PageInfoBubbleView::GetPageInfoBubble());
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
     return page_info_bubble_view->certificate_button_->title()->GetText();
+  }
+
+  const base::string16 GetPageInfoBubbleViewDetailText() {
+    PageInfoBubbleView* page_info_bubble_view =
+        static_cast<PageInfoBubbleView*>(
+            PageInfoBubbleView::GetPageInfoBubbleForTesting());
+    return page_info_bubble_view->details_text();
   }
 
  private:
@@ -459,8 +472,16 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
           GetPasswordProtectionService(browser()->profile());
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
-  service->ShowModalWarning(contents, "token",
-                            PasswordType::ENTERPRISE_PASSWORD);
+  safe_browsing::ReusedPasswordAccountType reused_password_account_type;
+  reused_password_account_type.set_account_type(
+      safe_browsing::ReusedPasswordAccountType::NON_GAIA_ENTERPRISE);
+  service->set_reused_password_account_type_for_last_shown_warning(
+      reused_password_account_type);
+
+  service->ShowModalWarning(
+      contents, safe_browsing::RequestOutcome::UNKNOWN,
+      safe_browsing::LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED,
+      "unused_token", reused_password_account_type);
 
   OpenPageInfoBubble(browser());
   views::View* change_password_button = GetView(
@@ -475,6 +496,9 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
       helper->GetVisibleSecurityState();
   ASSERT_EQ(security_state::MALICIOUS_CONTENT_STATUS_ENTERPRISE_PASSWORD_REUSE,
             visible_security_state->malicious_content_status);
+  ASSERT_EQ(l10n_util::GetStringUTF16(
+                IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE),
+            GetPageInfoBubbleViewDetailText());
 
   // Verify these two buttons are showing.
   EXPECT_TRUE(change_password_button->GetVisible());
@@ -675,7 +699,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTestWithAutoupgradesDisabled,
   OpenPageInfoBubble(browser());
 
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
 
   EXPECT_EQ(page_info->GetWindowTitle(),
             l10n_util::GetStringUTF16(IDS_PAGE_INFO_SECURE_SUMMARY));
@@ -706,7 +730,7 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest, BlockedAndInvalidCert) {
   SetPageInfoBubbleIdentityInfo(identity);
 
   views::BubbleDialogDelegateView* page_info =
-      PageInfoBubbleView::GetPageInfoBubble();
+      PageInfoBubbleView::GetPageInfoBubbleForTesting();
 
   // Verify bubble complains of malware...
   EXPECT_EQ(page_info->GetWindowTitle(),
@@ -825,8 +849,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   web_contents_focus_tracker.WaitForFocus(true);
 
   OpenPageInfoBubble(browser());
-  PageInfoBubbleView* page_info_bubble_view =
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  PageInfoBubbleView* page_info_bubble_view = static_cast<PageInfoBubbleView*>(
+      PageInfoBubbleView::GetPageInfoBubbleForTesting());
   EXPECT_FALSE(web_contents_focus_tracker.focused());
 
   page_info_bubble_view->GetWidget()->CloseWithReason(
@@ -850,8 +874,8 @@ IN_PROC_BROWSER_TEST_F(PageInfoBubbleViewBrowserTest,
   web_contents_focus_tracker.WaitForFocus(true);
 
   OpenPageInfoBubble(browser());
-  PageInfoBubbleView* page_info_bubble_view =
-      static_cast<PageInfoBubbleView*>(PageInfoBubbleView::GetPageInfoBubble());
+  PageInfoBubbleView* page_info_bubble_view = static_cast<PageInfoBubbleView*>(
+      PageInfoBubbleView::GetPageInfoBubbleForTesting());
   EXPECT_FALSE(web_contents_focus_tracker.focused());
 
   TriggerReloadPromptOnClose();

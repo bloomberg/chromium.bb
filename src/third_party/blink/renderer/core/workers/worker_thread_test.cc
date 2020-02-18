@@ -55,10 +55,8 @@ void WaitForSignalTask(WorkerThread* worker_thread,
 
   worker_thread->DebuggerTaskStarted();
   // Notify the main thread that the debugger task is waiting for the signal.
-  PostCrossThreadTask(
-      *worker_thread->GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalTest),
-      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+  PostCrossThreadTask(*worker_thread->GetParentTaskRunnerForTesting(),
+                      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
   waitable_event->Wait();
   worker_thread->DebuggerTaskFinished();
 }
@@ -101,9 +99,6 @@ void CreateNestedWorkerThenTerminateParent(
               DidCreateWorkerGlobalScope(_))
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
-              DidInitializeWorkerContext())
-      .Times(1);
-  EXPECT_CALL(*nested_worker_helper->reporting_proxy,
               WillEvaluateClassicScriptMock(_, _))
       .Times(1);
   EXPECT_CALL(*nested_worker_helper->reporting_proxy,
@@ -120,15 +115,13 @@ void CreateNestedWorkerThenTerminateParent(
       *nested_worker_helper->reporting_proxy);
   nested_worker_helper->worker_thread->StartWithSourceCode(
       SecurityOrigin::Create(KURL("http://fake.url/")).get(),
-      "//fake source code", ParentExecutionContextTaskRunners::Create());
+      "//fake source code");
   nested_worker_helper->worker_thread->WaitForInit();
 
   // Ask the main threat to terminate this parent thread.
   base::WaitableEvent child_waitable;
   PostCrossThreadTask(
-      *parent_thread->GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalTest),
-      FROM_HERE,
+      *parent_thread->GetParentTaskRunnerForTesting(), FROM_HERE,
       CrossThreadBindOnce(&TerminateParentOfNestedWorker,
                           CrossThreadUnretained(parent_thread),
                           CrossThreadUnretained(&child_waitable)));
@@ -137,10 +130,8 @@ void CreateNestedWorkerThenTerminateParent(
 
   parent_thread->ChildThreadStartedOnWorkerThread(
       nested_worker_helper->worker_thread.get());
-  PostCrossThreadTask(
-      *parent_thread->GetParentExecutionContextTaskRunners()->Get(
-          TaskType::kInternalTest),
-      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
+  PostCrossThreadTask(*parent_thread->GetParentTaskRunnerForTesting(),
+                      FROM_HERE, CrossThreadBindOnce(&test::ExitRunLoop));
 }
 
 void VerifyParentAndChildAreTerminated(WorkerThread* parent_thread,
@@ -175,17 +166,15 @@ class WorkerThreadTest : public testing::Test {
   void TearDown() override {}
 
   void Start() {
-    worker_thread_->StartWithSourceCode(
-        security_origin_.get(), "//fake source code",
-        ParentExecutionContextTaskRunners::Create());
+    worker_thread_->StartWithSourceCode(security_origin_.get(),
+                                        "//fake source code");
   }
 
   void StartWithSourceCodeNotToFinish() {
     // Use a JavaScript source code that makes an infinite loop so that we
     // can catch some kind of issues as a timeout.
-    worker_thread_->StartWithSourceCode(
-        security_origin_.get(), "while(true) {}",
-        ParentExecutionContextTaskRunners::Create());
+    worker_thread_->StartWithSourceCode(security_origin_.get(),
+                                        "while(true) {}");
   }
 
   void SetForcibleTerminationDelay(base::TimeDelta forcible_termination_delay) {
@@ -199,7 +188,6 @@ class WorkerThreadTest : public testing::Test {
  protected:
   void ExpectReportingCalls() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(1);
     EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(true)).Times(1);
@@ -209,8 +197,6 @@ class WorkerThreadTest : public testing::Test {
 
   void ExpectReportingCallsForWorkerPossiblyTerminatedBeforeInitialization() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext())
-        .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(AtMost(1));
     EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(_))
@@ -222,7 +208,6 @@ class WorkerThreadTest : public testing::Test {
 
   void ExpectReportingCallsForWorkerForciblyTerminated() {
     EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-    EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
     EXPECT_CALL(*reporting_proxy_, WillEvaluateClassicScriptMock(_, _))
         .Times(1);
     EXPECT_CALL(*reporting_proxy_, DidEvaluateClassicScript(false)).Times(1);
@@ -388,7 +373,6 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
   SetForcibleTerminationDelay(kDelay);
 
   EXPECT_CALL(*reporting_proxy_, DidCreateWorkerGlobalScope(_)).Times(1);
-  EXPECT_CALL(*reporting_proxy_, DidInitializeWorkerContext()).Times(1);
   EXPECT_CALL(*reporting_proxy_, WillDestroyWorkerGlobalScope()).Times(1);
   EXPECT_CALL(*reporting_proxy_, DidTerminateWorkerThread()).Times(1);
 
@@ -404,7 +388,9 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
           network::mojom::ReferrerPolicy::kDefault, security_origin_.get(),
           false /* starter_secure_context */,
           CalculateHttpsState(security_origin_.get()),
-          MakeGarbageCollected<WorkerClients>(), mojom::IPAddressSpace::kLocal,
+          MakeGarbageCollected<WorkerClients>(),
+          nullptr /* content_settings_client */,
+          network::mojom::IPAddressSpace::kLocal,
           nullptr /* originTrialToken */, base::UnguessableToken::Create(),
           std::make_unique<WorkerSettings>(std::make_unique<Settings>().get()),
           kV8CacheOptionsDefault, nullptr /* worklet_module_responses_map */);
@@ -416,8 +402,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   worker_thread_->Start(std::move(global_scope_creation_params),
                         WorkerBackingThreadStartupData::CreateDefault(),
-                        std::move(devtools_params),
-                        ParentExecutionContextTaskRunners::Create());
+                        std::move(devtools_params));
 
   // Used to wait for worker thread termination in a debugger task on the
   // worker thread.

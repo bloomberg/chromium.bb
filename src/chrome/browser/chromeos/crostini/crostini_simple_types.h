@@ -43,7 +43,7 @@ enum class CrostiniResult {
   INSTALL_LINUX_PACKAGE_FAILED = 17,
   BLOCKING_OPERATION_ALREADY_ACTIVE = 18,
   UNINSTALL_PACKAGE_FAILED = 19,
-  // SSHFS_MOUNT_ERROR = 20,
+  SSHFS_MOUNT_ERROR = 20,
   OFFLINE_WHEN_UPGRADE_REQUIRED = 21,
   LOAD_COMPONENT_FAILED = 22,
   // PERMISSION_BROKER_ERROR = 23,
@@ -60,6 +60,9 @@ enum class CrostiniResult {
   NOT_ALLOWED = 34,
   CONTAINER_EXPORT_IMPORT_FAILED_SPACE = 35,
   GET_CONTAINER_SSH_KEYS_FAILED = 36,
+  CONTAINER_EXPORT_IMPORT_CANCELLED = 37,
+  RESTART_ABORTED = 38,
+  kMaxValue = RESTART_ABORTED,
 };
 
 enum class InstallLinuxPackageProgressStatus {
@@ -100,6 +103,7 @@ enum class ImportContainerProgressStatus {
 struct VmInfo {
   VmState state;
   vm_tools::concierge::VmInfo info;
+  bool usb_devices_shared = false;
 };
 
 struct StreamingExportStatus {

@@ -8,6 +8,7 @@
 from __future__ import print_function
 
 import json
+
 import mock
 
 from chromite.lib import auth
@@ -108,7 +109,7 @@ class BuildbucketClientTest(cros_test_lib.MockTestCase):
         }, {
             'build_id': buildbucket_id_2,
             'error': {
-                'message': "Cannot cancel a completed build",
+                'message': 'Cannot cancel a completed build',
                 'reason': error_reason,
             }
         }]
@@ -346,7 +347,7 @@ class GetAttributeTest(cros_test_lib.MockTestCase):
         'results':[{
             'build_id': buildbucket_id_1,
             'error': {
-                'message': "Cannot cancel a completed build",
+                'message': 'Cannot cancel a completed build',
                 'reason': 'error_reason',
             }
         }]

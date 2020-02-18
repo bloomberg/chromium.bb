@@ -13,6 +13,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
@@ -71,8 +72,8 @@ void StartDisplayingBlockingPage(
   }
 
   // Tab is gone or it's being prerendered.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                           base::BindOnce(resource.callback, false));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(resource.callback, false));
 }
 
 }  // namespace
@@ -84,7 +85,7 @@ UrlCheckerDelegateImpl::UrlCheckerDelegateImpl(
       ui_manager_(std::move(ui_manager)),
       threat_types_(CreateSBThreatTypeSet({
 // TODO(crbug.com/835961): Enable on Android when list is available.
-#if defined(SAFE_BROWSING_DB_LOCAL)
+#if BUILDFLAG(SAFE_BROWSING_DB_LOCAL)
         safe_browsing::SB_THREAT_TYPE_SUSPICIOUS_SITE,
 #endif
             safe_browsing::SB_THREAT_TYPE_URL_MALWARE,
@@ -99,7 +100,7 @@ UrlCheckerDelegateImpl::~UrlCheckerDelegateImpl() = default;
 void UrlCheckerDelegateImpl::MaybeDestroyPrerenderContents(
     const base::Callback<content::WebContents*()>& web_contents_getter) {
   // Destroy the prefetch with FINAL_STATUS_SAFEBROSWING.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DestroyPrerenderContents, web_contents_getter));
 }
@@ -110,7 +111,7 @@ void UrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
     const net::HttpRequestHeaders& headers,
     bool is_main_frame,
     bool has_user_gesture) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&StartDisplayingBlockingPage, ui_manager_, resource));
 }
@@ -132,9 +133,9 @@ bool UrlCheckerDelegateImpl::ShouldSkipRequestCheck(
 void UrlCheckerDelegateImpl::NotifySuspiciousSiteDetected(
     const base::RepeatingCallback<content::WebContents*()>&
         web_contents_getter) {
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&NotifySuspiciousSiteTriggerDetected,
-                                          web_contents_getter));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&NotifySuspiciousSiteTriggerDetected,
+                                web_contents_getter));
 }
 
 const SBThreatTypeSet& UrlCheckerDelegateImpl::GetThreatTypes() {

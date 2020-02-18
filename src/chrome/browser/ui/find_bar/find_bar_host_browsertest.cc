@@ -131,7 +131,7 @@ class FindInPageControllerTest : public InProcessBrowserTest {
   }
 
   void EnsureFindBoxOpenForBrowser(Browser* browser) {
-    chrome::ShowFindBar(browser);
+    chrome::Find(browser);
     gfx::Point position;
     bool fully_visible = false;
     EXPECT_TRUE(GetFindBarWindowInfoForBrowser(
@@ -443,8 +443,6 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
     base::ScopedAllowBlockingForTesting allow_blocking;
     base::ReadFileToString(path, &query);
   }
-  if (query[query.length() - 1] == '\n')
-    query.pop_back();
   EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query),
                             kFwd, kIgnoreCase, NULL));
 }
@@ -491,6 +489,25 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, SingleOccurrence) {
                                       ASCIIToUTF16("2010 Pro Bowl"), kBack,
                                       kIgnoreCase, NULL, &second_rect));
   ASSERT_EQ(first_rect, second_rect);
+}
+
+// Find the whole text file page and find count should be 1.
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindWholeFileContent) {
+  WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  base::FilePath path = ui_test_utils::GetTestFilePath(
+      base::FilePath().AppendASCII("find_in_page"),
+      base::FilePath().AppendASCII("find_test.txt"));
+  ui_test_utils::NavigateToURL(browser(), net::FilePathToFileURL(path));
+
+  std::string query;
+  {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    base::ReadFileToString(path, &query);
+  }
+  EXPECT_EQ(1, FindInPage16(web_contents, base::UTF8ToUTF16(query), false,
+                            false, NULL));
 }
 
 // This test loads a single-frame page and makes sure the ordinal returned makes
@@ -841,7 +858,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url2 = GetURL(kFramePage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -862,7 +879,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   EXPECT_FALSE(fully_visible);
 
   // Open the find bar again.
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // Make sure it is open.
   EXPECT_TRUE(GetFindBarWindowInfo(&position, &fully_visible));
@@ -880,7 +897,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindStayVisibleOnAnchorLoad) {
   GURL url = GetURL(kAnchorPage);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -907,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   gfx::Point position;
   bool fully_visible = false;
@@ -943,7 +960,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   GURL url = GetURL(kMoveIfOver);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // This is needed on GTK because the reposition operation is asynchronous.
   base::RunLoop().RunUntilIdle();
@@ -1035,7 +1052,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, StayActive) {
   GURL url = GetURL(kSimple);
   ui_test_utils::NavigateToURL(browser(), url);
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
 
   // Simulate a user clearing the search string. Ideally, we should be
   // simulating keypresses here for searching for something and pressing

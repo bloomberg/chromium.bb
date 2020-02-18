@@ -14,17 +14,21 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/accessibility_messages.h"
 #include "content/common/frame_messages.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/fake_pepper_plugin_instance.h"
 #include "content/public/test/render_view_test.h"
 #include "content/renderer/accessibility/ax_action_target_factory.h"
 #include "content/renderer/accessibility/ax_image_annotator.h"
 #include "content/renderer/render_frame_impl.h"
 #include "content/renderer/render_view_impl.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "ppapi/c/private/ppp_pdf.h"
 #include "services/image_annotation/public/cpp/image_processor.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -39,6 +43,7 @@
 #include "ui/accessibility/ax_action_target.h"
 #include "ui/accessibility/ax_mode.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/accessibility/null_ax_action_target.h"
 #include "ui/native_theme/native_theme_features.h"
 
 namespace content {
@@ -65,11 +70,12 @@ class TestRenderAccessibilityImpl : public RenderAccessibilityImpl {
 
 class TestAXImageAnnotator : public AXImageAnnotator {
  public:
-  TestAXImageAnnotator(TestRenderAccessibilityImpl* const render_accessibility,
-                       image_annotation::mojom::AnnotatorPtr annotator_ptr)
+  TestAXImageAnnotator(
+      TestRenderAccessibilityImpl* const render_accessibility,
+      mojo::PendingRemote<image_annotation::mojom::Annotator> annotator)
       : AXImageAnnotator(render_accessibility,
                          std::string() /* preferred_language */,
-                         std::move(annotator_ptr)) {}
+                         std::move(annotator)) {}
   ~TestAXImageAnnotator() override = default;
 
  private:
@@ -95,10 +101,10 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
   MockAnnotationService() = default;
   ~MockAnnotationService() override = default;
 
-  image_annotation::mojom::AnnotatorPtr GetPtr() {
-    image_annotation::mojom::AnnotatorPtr ptr;
-    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<image_annotation::mojom::Annotator> GetRemote() {
+    mojo::PendingRemote<image_annotation::mojom::Annotator> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
   void AnnotateImage(const std::string& image_id,
@@ -123,7 +129,7 @@ class MockAnnotationService : public image_annotation::mojom::Annotator {
     image_processors_[index].reset();
   }
 
-  mojo::BindingSet<image_annotation::mojom::Annotator> bindings_;
+  mojo::ReceiverSet<image_annotation::mojom::Annotator> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(MockAnnotationService);
 };
@@ -367,6 +373,61 @@ TEST_F(RenderAccessibilityImplTest, ShowAccessibilityObject) {
   EXPECT_EQ(2, CountAccessibilityNodesSentToBrowser());
 }
 
+class MockPluginAccessibilityTreeSource : public content::PluginAXTreeSource {
+ public:
+  MockPluginAccessibilityTreeSource(ui::AXNode::AXID root_node_id) {
+    ax_tree_ = std::make_unique<ui::AXTree>();
+    root_node_ =
+        std::make_unique<ui::AXNode>(ax_tree_.get(), nullptr, root_node_id, 0);
+  }
+  ~MockPluginAccessibilityTreeSource() override {}
+  bool GetTreeData(ui::AXTreeData* data) const override { return true; }
+  ui::AXNode* GetRoot() const override { return root_node_.get(); }
+  ui::AXNode* GetFromId(ui::AXNode::AXID id) const override {
+    return (root_node_->data().id == id) ? root_node_.get() : nullptr;
+  }
+  int32_t GetId(const ui::AXNode* node) const override {
+    return root_node_->data().id;
+  }
+  void GetChildren(
+      const ui::AXNode* node,
+      std::vector<const ui::AXNode*>* out_children) const override {
+    DCHECK(node);
+    *out_children = std::vector<const ui::AXNode*>(node->children().cbegin(),
+                                                   node->children().cend());
+  }
+  ui::AXNode* GetParent(const ui::AXNode* node) const override {
+    return nullptr;
+  }
+  bool IsValid(const ui::AXNode* node) const override { return true; }
+  bool IsEqual(const ui::AXNode* node1,
+               const ui::AXNode* node2) const override {
+    return (node1 == node2);
+  }
+  const ui::AXNode* GetNull() const override { return nullptr; }
+  void SerializeNode(const ui::AXNode* node,
+                     ui::AXNodeData* out_data) const override {
+    DCHECK(node);
+    *out_data = node->data();
+  }
+  void HandleAction(const ui::AXActionData& action_data) {}
+  void ResetAccActionStatus() {}
+  bool IsIgnored(const ui::AXNode* node) const override { return false; }
+  std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
+      const ui::AXNode& target_node) override {
+    action_target_called_ = true;
+    return std::make_unique<ui::NullAXActionTarget>();
+  }
+  bool GetActionTargetCalled() { return action_target_called_; }
+  void ResetActionTargetCalled() { action_target_called_ = false; }
+
+ private:
+  std::unique_ptr<ui::AXTree> ax_tree_;
+  std::unique_ptr<ui::AXNode> root_node_;
+  bool action_target_called_ = false;
+  DISALLOW_COPY_AND_ASSIGN(MockPluginAccessibilityTreeSource);
+};
+
 TEST_F(RenderAccessibilityImplTest, TestAXActionTargetFromNodeId) {
   // Validate that we create the correct type of AXActionTarget for a given
   // node id.
@@ -382,12 +443,24 @@ TEST_F(RenderAccessibilityImplTest, TestAXActionTargetFromNodeId) {
 
   // An AxID for an HTML node should produce a Blink action target.
   std::unique_ptr<ui::AXActionTarget> body_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, body.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr, body.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink, body_action_target->GetType());
+
+  // An AxID for a Plugin node should produce a Plugin action target.
+  ui::AXNode::AXID root_node_id = render_accessibility().GenerateAXID();
+  MockPluginAccessibilityTreeSource pdf_acc_tree(root_node_id);
+  render_accessibility().SetPluginTreeSource(&pdf_acc_tree);
+
+  // An AxId from Pdf, should call PdfAccessibilityTree::CreateActionTarget.
+  std::unique_ptr<ui::AXActionTarget> pdf_action_target =
+      AXActionTargetFactory::CreateFromNodeId(document, &pdf_acc_tree,
+                                              root_node_id);
+  EXPECT_TRUE(pdf_acc_tree.GetActionTargetCalled());
+  pdf_acc_tree.ResetActionTargetCalled();
 
   // An invalid AxID should produce a null action target.
   std::unique_ptr<ui::AXActionTarget> null_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, -1);
+      AXActionTargetFactory::CreateFromNodeId(document, &pdf_acc_tree, -1);
   EXPECT_EQ(ui::AXActionTarget::Type::kNull, null_action_target->GetType());
 }
 
@@ -439,41 +512,48 @@ TEST_F(BlinkAXActionTargetTest, TestMethods) {
   WebAXObject text_two = body.ChildAt(6).ChildAt(0);
 
   std::unique_ptr<ui::AXActionTarget> input_checkbox_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, input_checkbox.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              input_checkbox.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             input_checkbox_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> input_range_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, input_range.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              input_range.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             input_range_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> input_text_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, input_text.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              input_text.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             input_text_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> option_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, option.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr, option.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink, option_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> scroller_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, scroller.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              scroller.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             scroller_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> scroller_child_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, scroller_child.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              scroller_child.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             scroller_child_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> text_one_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, text_one.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              text_one.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             text_one_action_target->GetType());
 
   std::unique_ptr<ui::AXActionTarget> text_two_action_target =
-      AXActionTargetFactory::CreateFromNodeId(document, text_two.AxID());
+      AXActionTargetFactory::CreateFromNodeId(document, nullptr,
+                                              text_two.AxID());
   EXPECT_EQ(ui::AXActionTarget::Type::kBlink,
             text_two_action_target->GetType());
 
@@ -583,7 +663,7 @@ class AXImageAnnotatorTest : public RenderAccessibilityImplTest {
     SetMode(mode);
     render_accessibility().ax_image_annotator_ =
         std::make_unique<TestAXImageAnnotator>(&render_accessibility(),
-                                               mock_annotator().GetPtr());
+                                               mock_annotator().GetRemote());
     render_accessibility().tree_source_.RemoveImageAnnotator();
     render_accessibility().tree_source_.AddImageAnnotator(
         render_accessibility().ax_image_annotator_.get());
@@ -617,7 +697,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // Every time we call a method on a Mojo interface, a message is posted to the
   // current task queue. We need to ask the queue to drain itself before we
   // check test expectations.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
@@ -638,7 +718,7 @@ TEST_F(AXImageAnnotatorTest, OnImageAdded) {
   // already visible one.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg", "test2.jpg"));
@@ -661,7 +741,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // Every time we call a method on a Mojo interface, a message is posted to the
   // current task queue. We need to ask the queue to drain itself before we
   // check test expectations.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_, ElementsAre("test1.jpg"));
   ASSERT_EQ(1u, mock_annotator().image_processors_.size());
@@ -675,7 +755,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // This should update the annotations of all images on the page.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg"));
@@ -692,7 +772,7 @@ TEST_F(AXImageAnnotatorTest, OnImageUpdated) {
   // now updated image src.
   render_accessibility().MarkWebAXObjectDirty(root_obj, true /* subtree */);
   render_accessibility().SendPendingAccessibilityEvents();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_THAT(mock_annotator().image_ids_,
               ElementsAre("test1.jpg", "test1.jpg", "test2.jpg"));

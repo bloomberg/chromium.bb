@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_ENTERPRISE_REPORTING_REPORT_GENERATOR_H_
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -15,17 +16,21 @@
 
 namespace em = enterprise_management;
 
+namespace content {
+struct WebPluginInfo;
+}
+
 namespace enterprise_reporting {
 
 class ReportGenerator {
  public:
-  using ReportCallback = base::OnceCallback<void(
-      std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>>)>;
+  using Requests = std::queue<std::unique_ptr<em::ChromeDesktopReportRequest>>;
+  using ReportCallback = base::OnceCallback<void(Requests)>;
 
   ReportGenerator();
-  ~ReportGenerator();
+  virtual ~ReportGenerator();
 
-  void Generate(ReportCallback callback);
+  virtual void Generate(ReportCallback callback);
 
   void SetMaximumReportSizeForTesting(size_t size);
 
@@ -56,16 +61,16 @@ class ReportGenerator {
   std::vector<std::unique_ptr<em::ChromeUserProfileInfo>> GetProfiles();
 
  private:
-  void GetNextProfileReport(int profile_index);
-  void OnProfileReportReady(
-      int profile_index,
-      std::unique_ptr<em::ChromeUserProfileInfo> profile_report);
+  void GenerateProfileReportWithIndex(int profile_index);
+
+  void OnPluginsReady(const std::vector<content::WebPluginInfo>& plugins);
+  void OnBasicRequestReady();
 
   ProfileReportGenerator profile_report_generator_;
 
   ReportCallback callback_;
 
-  std::vector<std::unique_ptr<em::ChromeDesktopReportRequest>> requests_;
+  Requests requests_;
 
   // Basic information that is shared among requests.
   em::ChromeDesktopReportRequest basic_request_;
@@ -73,7 +78,7 @@ class ReportGenerator {
 
   size_t maximum_report_size_;
 
-  base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_;
+  base::WeakPtrFactory<ReportGenerator> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ReportGenerator);
 };

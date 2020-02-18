@@ -421,10 +421,10 @@ void DebuggerFunction::FormatErrorMessage(const std::string& format) {
 
 bool DebuggerFunction::InitAgentHost() {
   if (debuggee_.tab_id) {
-    WebContents* web_contents = NULL;
+    WebContents* web_contents = nullptr;
     bool result = ExtensionTabUtil::GetTabById(*debuggee_.tab_id, GetProfile(),
                                                include_incognito_information(),
-                                               NULL, NULL, &web_contents, NULL);
+                                               &web_contents);
     if (result && web_contents) {
       // TODO(rdevlin.cronin) This should definitely be GetLastCommittedURL().
       GURL url = web_contents->GetVisibleURL();
@@ -668,7 +668,7 @@ DebuggerGetTargetsFunction::~DebuggerGetTargetsFunction() {
 
 bool DebuggerGetTargetsFunction::RunAsync() {
   content::DevToolsAgentHost::List list = DevToolsAgentHost::GetOrCreateAll();
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&DebuggerGetTargetsFunction::SendTargetList, this, list));
   return true;

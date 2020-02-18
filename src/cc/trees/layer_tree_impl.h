@@ -20,6 +20,7 @@
 #include "cc/input/overscroll_behavior.h"
 #include "cc/layers/layer_impl.h"
 #include "cc/layers/layer_list_iterator.h"
+#include "cc/paint/discardable_image_map.h"
 #include "cc/resources/ui_resource_client.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_host_impl.h"
@@ -357,17 +358,17 @@ class CC_EXPORT LayerTreeImpl {
     return new_local_surface_id_request_;
   }
 
-  void SetDeviceViewportSize(const gfx::Size& device_viewport_size);
-  void SetViewportVisibleRect(const gfx::Rect& visible_rect);
-  const gfx::Rect& viewport_visible_rect() const {
-    return viewport_visible_rect_;
-  }
+  void SetDeviceViewportRect(const gfx::Rect& device_viewport_rect);
 
   // TODO(fsamuel): The reason this is not a trivial accessor is because it
   // may return an external viewport specified in LayerTreeHostImpl. In the
   // future, all properties should flow through the pending and active layer
   // trees and we shouldn't need to reach out to LayerTreeHostImpl.
   gfx::Rect GetDeviceViewport() const;
+
+  // This accessor is the same as above, except it only ever returns the
+  // internal (i.e. not external) device viewport.
+  gfx::Rect internal_device_viewport() { return device_viewport_rect_; }
 
   void SetRasterColorSpace(int raster_color_space_id,
                            const gfx::ColorSpace& raster_color_space);
@@ -657,12 +658,18 @@ class CC_EXPORT LayerTreeImpl {
   void InvalidateRegionForImages(
       const PaintImageIdFlatSet& images_to_invalidate);
 
+  void UpdateViewportContainerSizes();
+
   LayerTreeLifecycle& lifecycle() { return lifecycle_; }
 
   std::string LayerListAsJson() const;
   // TODO(pdr): This should be removed because there is no longer a tree
   // of layers, only a list.
   std::string LayerTreeAsJson() const;
+
+  AnimatedPaintWorkletTracker& paint_worklet_tracker() {
+    return host_impl_->paint_worklet_tracker();
+  }
 
  protected:
   float ClampPageScaleFactorToLimits(float page_scale_factor) const;
@@ -715,12 +722,9 @@ class CC_EXPORT LayerTreeImpl {
 
   viz::LocalSurfaceIdAllocation local_surface_id_allocation_from_parent_;
   bool new_local_surface_id_request_ = false;
-  gfx::Size device_viewport_size_;
-
-  // Viewport clip rect passed in from the main thrad, in physical pixels.
-  // This is used for out-of-process iframes whose size exceeds the window
-  // in order to prevent full raster.
-  gfx::Rect viewport_visible_rect_;
+  // Contains the physical rect of the device viewport, to be used in
+  // determining what needs to be drawn.
+  gfx::Rect device_viewport_rect_;
 
   scoped_refptr<SyncedElasticOverscroll> elastic_overscroll_;
 

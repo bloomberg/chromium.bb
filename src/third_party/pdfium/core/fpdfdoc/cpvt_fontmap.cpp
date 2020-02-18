@@ -10,13 +10,14 @@
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
 #include "core/fpdfapi/parser/cpdf_reference.h"
+#include "core/fpdfapi/parser/fpdf_parser_utility.h"
 #include "core/fpdfdoc/cpdf_interactiveform.h"
 #include "core/fxcrt/fx_codepage.h"
 #include "third_party/base/logging.h"
 
 CPVT_FontMap::CPVT_FontMap(CPDF_Document* pDoc,
                            CPDF_Dictionary* pResDict,
-                           CPDF_Font* pDefFont,
+                           const RetainPtr<CPDF_Font>& pDefFont,
                            const ByteString& sDefFontAlias)
     : m_pDocument(pDoc),
       m_pResDict(pResDict),
@@ -26,36 +27,38 @@ CPVT_FontMap::CPVT_FontMap(CPDF_Document* pDoc,
 CPVT_FontMap::~CPVT_FontMap() {}
 
 // static
-CPDF_Font* CPVT_FontMap::GetAnnotSysPDFFont(CPDF_Document* pDoc,
-                                            CPDF_Dictionary* pResDict,
-                                            ByteString* sSysFontAlias) {
+RetainPtr<CPDF_Font> CPVT_FontMap::GetAnnotSysPDFFont(
+    CPDF_Document* pDoc,
+    CPDF_Dictionary* pResDict,
+    ByteString* sSysFontAlias) {
   if (!pDoc || !pResDict)
     return nullptr;
 
   CPDF_Dictionary* pFormDict = pDoc->GetRoot()->GetDictFor("AcroForm");
-  CPDF_Font* pPDFFont =
+  RetainPtr<CPDF_Font> pPDFFont =
       AddNativeInteractiveFormFont(pFormDict, pDoc, sSysFontAlias);
   if (!pPDFFont)
     return nullptr;
 
   CPDF_Dictionary* pFontList = pResDict->GetDictFor("Font");
-  if (pFontList && !pFontList->KeyExist(*sSysFontAlias)) {
+  if (ValidateFontResourceDict(pFontList) &&
+      !pFontList->KeyExist(*sSysFontAlias)) {
     pFontList->SetNewFor<CPDF_Reference>(*sSysFontAlias, pDoc,
                                          pPDFFont->GetFontDict()->GetObjNum());
   }
   return pPDFFont;
 }
 
-CPDF_Font* CPVT_FontMap::GetPDFFont(int32_t nFontIndex) {
+RetainPtr<CPDF_Font> CPVT_FontMap::GetPDFFont(int32_t nFontIndex) {
   switch (nFontIndex) {
     case 0:
-      return m_pDefFont.Get();
+      return m_pDefFont;
     case 1:
       if (!m_pSysFont) {
         m_pSysFont = GetAnnotSysPDFFont(m_pDocument.Get(), m_pResDict.Get(),
                                         &m_sSysFontAlias);
       }
-      return m_pSysFont.Get();
+      return m_pSysFont;
     default:
       return nullptr;
   }

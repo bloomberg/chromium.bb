@@ -23,6 +23,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
+#include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/frame_host/frame_navigation_entry.h"
 #include "content/browser/frame_host/frame_tree.h"
 #include "content/browser/frame_host/navigation_controller_impl.h"
@@ -41,9 +42,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/resource_dispatcher_host.h"
-#include "content/public/browser/resource_dispatcher_host_delegate.h"
-#include "content/public/browser/resource_throttle.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
@@ -1091,9 +1089,8 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ErrorPageReplacement) {
   NavigationController& controller = shell()->web_contents()->GetController();
   GURL error_url = embedded_test_server()->GetURL("/close-socket");
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
 
   EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -8481,6 +8478,117 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   EXPECT_EQ(url1, shell()->web_contents()->GetLastCommittedURL());
 }
 
+// Test to verify that LoadErrorPage loads an error page even with a
+// valid URL.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPage) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* root = shell()->web_contents()->GetMainFrame();
+  scoped_refptr<SiteInstance> success_site_instance = root->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(root, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  scoped_refptr<SiteInstance> error_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(PAGE_TYPE_ERROR, controller.GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(error_html, EvalJs(shell(), "document.body.innerHTML"));
+
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  // Verify the error page committed to the error page process.
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
+  EXPECT_NE(success_site_instance, error_site_instance);
+  EXPECT_TRUE(
+      success_site_instance->IsRelatedSiteInstance(error_site_instance.get()));
+  EXPECT_NE(success_site_instance->GetProcess()->GetID(),
+            error_site_instance->GetProcess()->GetID());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+
+  // Verify that the error page process is locked to origin.
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
+}
+
+// Test to verify that LoadErrorPage loads an error page in a subframe
+// correctly.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPageForSubframe) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* child =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  scoped_refptr<SiteInstance> success_site_instance = child->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(child, url, error_html, net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(child->GetLastCommittedURL(), url);
+  EXPECT_EQ(error_html, EvalJs(child, "document.body.innerHTML"));
+
+  // Verify that the subframe error page did not commit in the error page
+  // process.
+  scoped_refptr<SiteInstance> error_site_instance = child->GetSiteInstance();
+  EXPECT_EQ(success_site_instance, error_site_instance);
+  EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+}
+
+// Test to verify that LoadErrorPage works correctly when supplied with an
+// about:blank url for the error page.
+IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
+                       BrowserInitiatedLoadErrorPageWithAboutBlankUrl) {
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+
+  GURL url(embedded_test_server()->GetURL(
+      "/navigation_controller/page_with_iframe.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  RenderFrameHost* child =
+      ChildFrameAt(shell()->web_contents()->GetMainFrame(), 0);
+  scoped_refptr<SiteInstance> success_site_instance = child->GetSiteInstance();
+
+  std::string error_html = "Error page";
+  GURL error_url("about:blank#error");
+  TestNavigationObserver error_observer(shell()->web_contents());
+  controller.LoadErrorPage(child, error_url, error_html,
+                           net::ERR_BLOCKED_BY_CLIENT);
+  error_observer.Wait();
+
+  EXPECT_FALSE(error_observer.last_navigation_succeeded());
+  EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, error_observer.last_net_error_code());
+  EXPECT_EQ(child->GetLastCommittedURL(), error_url);
+  EXPECT_EQ(error_html, EvalJs(child, "document.body.innerHTML"));
+
+  // Verify that the subframe error page did not commit in the error page
+  // process.
+  scoped_refptr<SiteInstance> error_site_instance = child->GetSiteInstance();
+  EXPECT_EQ(success_site_instance, error_site_instance);
+  EXPECT_NE(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+}
+
 using NavigationControllerHistoryInterventionBrowserTest =
     NavigationControllerBrowserTest;
 
@@ -9577,6 +9685,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTestNoServer,
 class SandboxedNavigationControllerBrowserTest
     : public NavigationControllerBrowserTest {
  protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryPreventSandboxedNavigation);
+    NavigationControllerBrowserTest::SetUp();
+  }
+
   void SetupNavigation() {
     NavigationControllerImpl& controller =
         static_cast<NavigationControllerImpl&>(
@@ -9613,6 +9727,7 @@ class SandboxedNavigationControllerBrowserTest
     std::string script = "document.getElementById('test_anchor').click()";
     EXPECT_TRUE(ExecJs(root->child_at(1), script));
     ASSERT_EQ(5, controller.GetEntryCount());
+    EXPECT_EQ(4, controller.GetCurrentEntryIndex());
 
     // History should now be:
     // [preload_url, main(simple1, sandbox(simple1)),
@@ -9622,6 +9737,9 @@ class SandboxedNavigationControllerBrowserTest
 
   static constexpr const char* kWithinSubtreeHistogram =
       "Navigation.SandboxFrameBackForwardStaysWithinSubtree";
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
 };
 
 // Tests navigations which occur from a sandboxed frame are tracked
@@ -9639,25 +9757,63 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   std::string back_script = "history.back();";
   std::string forward_script = "history.forward();";
 
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
   // Navigate sandbox frame back same-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 1);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+  EXPECT_EQ(3, controller.GetCurrentEntryIndex());
 
   // Navigate innermost frame back cross-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Navigate sibling frame back cross-document.
+  // Navigate sibling frame back cross-document. It should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
-  // Navigate main frame back cross-document.
+  // Try it again and it should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
   histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+
+  // Do it browser initiated. Make sure histograms don't change.
+  ASSERT_TRUE(controller.CanGoBack());
+  controller.GoBack();
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
+  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
+
+  // Go forward to reset state, then a mouse back button navigation.
+  // Using the mouse back button should be allowed because it is a
+  // UA level default action even though it originates from the
+  // renderer side. The sandbox policy shouldn't be applied when it
+  // doesn't originate from a script.
+  controller.GoForward();
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  root->child_at(1)
+      ->current_frame_host()
+      ->GetRenderWidgetHost()
+      ->ForwardMouseEvent(blink::WebMouseEvent(
+          blink::WebInputEvent::Type::kMouseUp, blink::WebFloatPoint(),
+          blink::WebFloatPoint(), blink::WebPointerProperties::Button::kBack, 0,
+          0, base::TimeTicks::Now()));
+  RunUntilInputProcessed(
+      root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
 }
 
 // Tests navigations that occur inside a doubly nested sandbox
@@ -9719,6 +9875,75 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   // the main frame though.
   EXPECT_TRUE(ExecJs(root, forward_script));
   histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
+}
+
+class SandboxedNavigationControllerPopupBrowserTest
+    : public NavigationControllerBrowserTest {
+ protected:
+  void SetUp() override {
+    feature_list_.InitAndEnableFeature(
+        features::kHistoryPreventSandboxedNavigation);
+    NavigationControllerBrowserTest::SetUp();
+  }
+
+  void SetupNavigation() {
+    EXPECT_EQ(1u, Shell::windows().size());
+    NavigationControllerImpl& controller =
+        static_cast<NavigationControllerImpl&>(
+            shell()->web_contents()->GetController());
+    GURL preload_url(embedded_test_server()->GetURL(
+        "/navigation_controller/page_with_sandboxed_iframe_popup.html"));
+    EXPECT_TRUE(NavigateToURL(shell(), preload_url));
+    ASSERT_EQ(1, controller.GetEntryCount());
+
+    FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                              ->GetFrameTree()
+                              ->root();
+    ASSERT_EQ(1U, root->child_count());
+    ASSERT_NE(nullptr, root->child_at(0));
+    ShellAddedObserver new_shell_observer;
+    // Click link inside sandboxed iframe, causing popup open.
+    std::string script = "document.getElementById('test_link').click()";
+    EXPECT_TRUE(ExecJs(root->child_at(0), script));
+
+    popup_shell_ = new_shell_observer.GetShell();
+    EXPECT_TRUE(WaitForLoadStop(popup_shell_->web_contents()));
+    FrameTreeNode* popup_root =
+        static_cast<WebContentsImpl*>(popup_shell_->web_contents())
+            ->GetFrameTree()
+            ->root();
+    // Click link inside sandboxed popup, causing the frame to have an
+    // additional entry in history state.
+    std::string popup_script = "document.getElementById('test_anchor').click()";
+    EXPECT_TRUE(ExecJs(popup_root, popup_script));
+  }
+
+ protected:
+  Shell* popup_shell_ = nullptr;
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+// Tests navigations that sandboxed top level frames still
+// can navigate.
+IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerPopupBrowserTest,
+                       NavigateSelf) {
+  SetupNavigation();
+
+  std::string back_script = "history.back();";
+  FrameTreeNode* root =
+      static_cast<WebContentsImpl*>(popup_shell_->web_contents())
+          ->GetFrameTree()
+          ->root();
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      popup_shell_->web_contents()->GetController());
+  ASSERT_EQ(2, controller.GetEntryCount());
+  EXPECT_EQ(1, controller.GetCurrentEntryIndex());
+  // Navigate sandboxed top frame back.
+  EXPECT_TRUE(ExecJs(root, back_script));
+  EXPECT_TRUE(WaitForLoadStop(popup_shell_->web_contents()));
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
 }
 
 class NavigationControllerMainDocumentSequenceNumberBrowserTest

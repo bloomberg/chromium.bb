@@ -18,6 +18,16 @@
 #endif
 #endif
 
+// TODO(issues/40): Delete this macro once the g++ version is upgraded on the
+// bots.
+#ifndef MAYBE_NODISCARD
+#if defined(__GNUC__) && __GNUC__ < 6
+#define MAYBE_NODISCARD
+#else
+#define MAYBE_NODISCARD [[nodiscard]]
+#endif
+#endif
+
 #ifdef DISALLOW_COPY
 #define OSP_DISALLOW_COPY DISALLOW_COPY
 #else

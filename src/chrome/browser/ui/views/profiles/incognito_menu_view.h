@@ -26,20 +26,17 @@ class IncognitoMenuView : public ProfileMenuViewBase {
                     Browser* browser);
   ~IncognitoMenuView() override;
 
+  // ProfileMenuViewBase:
+  void BuildMenu() override;
+
  private:
   // views::BubbleDialogDelegateView:
-  void Init() override;
   base::string16 GetAccessibleWindowTitle() const override;
 
-  // views::ButtonListener:
-  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+  // Button actions.
+  void OnExitButtonClicked();
 
-  void Reset();
-
-  // Adds the incognito window count view.
-  void AddIncognitoWindowCountView();
-
-  views::Button* exit_button_;
+  views::Button* exit_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(IncognitoMenuView);
 };

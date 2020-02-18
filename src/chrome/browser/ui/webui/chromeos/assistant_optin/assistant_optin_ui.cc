@@ -8,7 +8,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
@@ -20,7 +20,6 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
-#include "components/arc/arc_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "content/public/browser/host_zoom_map.h"
@@ -29,7 +28,9 @@
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/common/content_features.h"
 #include "net/base/url_util.h"
+#include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_animations.h"
 
 namespace chromeos {
 
@@ -76,11 +77,14 @@ AssistantOptInUI::AssistantOptInUI(content::WebUI* web_ui)
   base::DictionaryValue localized_strings;
   assistant_handler_ptr_->GetLocalizedStrings(&localized_strings);
   source->AddLocalizedStrings(localized_strings);
-  source->SetJsonPath("strings.js");
+  source->UseStringsJs();
   source->AddResourcePath("assistant_optin.js", IDR_ASSISTANT_OPTIN_JS);
   source->AddResourcePath("assistant_logo.png", IDR_ASSISTANT_LOGO_PNG);
   source->AddBoolean("hotwordDspAvailable", chromeos::IsHotwordDspAvailable());
   source->SetDefaultResource(IDR_ASSISTANT_OPTIN_HTML);
+  source->AddResourcePath("voice_match_animation.json",
+                          IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
+  source->OverrideContentSecurityPolicyWorkerSrc("worker-src blob: 'self';");
   content::WebUIDataSource::Add(Profile::FromWebUI(web_ui), source);
 
   // Do not zoom for Assistant opt-in web contents.
@@ -135,6 +139,17 @@ void AssistantOptInDialog::Show(
   g_dialog->ShowSystemDialog();
 }
 
+// static
+bool AssistantOptInDialog::BounceIfActive() {
+  if (!g_dialog)
+    return false;
+
+  g_dialog->Focus();
+  wm::AnimateWindow(g_dialog->dialog_window(),
+                    wm::WINDOW_ANIMATION_TYPE_BOUNCE);
+  return true;
+}
+
 AssistantOptInDialog::AssistantOptInDialog(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback)
@@ -172,7 +187,7 @@ void AssistantOptInDialog::OnDialogClosed(const std::string& json_retval) {
 
   PrefService* prefs = ProfileManager::GetActiveUserProfile()->GetPrefs();
   const bool completed =
-      prefs->GetBoolean(arc::prefs::kVoiceInteractionEnabled) &&
+      prefs->GetBoolean(chromeos::assistant::prefs::kAssistantEnabled) &&
       (prefs->GetInteger(assistant::prefs::kAssistantConsentStatus) ==
        assistant::prefs::ConsentStatus::kActivityControlAccepted);
   std::move(callback_).Run(completed);

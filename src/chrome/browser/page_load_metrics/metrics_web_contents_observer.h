@@ -13,9 +13,9 @@
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
-#include "chrome/common/page_load_metrics/page_load_metrics.mojom.h"
-#include "chrome/common/page_load_metrics/page_load_timing.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_data.h"
+#include "components/page_load_metrics/common/page_load_metrics.mojom.h"
+#include "components/page_load_metrics/common/page_load_timing.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_binding_set.h"
@@ -63,6 +63,10 @@ class MetricsWebContentsObserver
     // In cases where LoadTimingInfo is not needed, waiting until commit is
     // fine.
     virtual void OnCommit(PageLoadTracker* tracker) {}
+
+    // Returns the observer delegate for the committed load associated with
+    // the MetricsWebContentsObserver.
+    const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
 
    private:
     page_load_metrics::MetricsWebContentsObserver* observer_;
@@ -126,6 +130,12 @@ class MetricsWebContentsObserver
                       const net::CanonicalCookie& cookie,
                       bool blocked_by_policy) override;
 
+  // These methods are forwarded from the ChromeRenderMessageFilter.
+  void OnDomStorageAccessed(const GURL& url,
+                            const GURL& first_party_url,
+                            bool local,
+                            bool blocked_by_policy);
+
   // These methods are forwarded from the MetricsNavigationThrottle.
   void WillStartNavigationRequest(content::NavigationHandle* navigation_handle);
   void WillProcessNavigationResponse(
@@ -137,8 +147,8 @@ class MetricsWebContentsObserver
   // notification.
   void FlushMetricsOnAppEnterBackground();
 
-  // This getter function is required for testing.
-  const PageLoadExtraInfo GetPageLoadExtraInfoForCommittedLoad();
+  // Returns the delegate for the current committed load, required for testing.
+  const PageLoadMetricsObserverDelegate& GetDelegateForCommittedLoad();
 
   // Register / unregister TestingObservers. Should only be called from tests.
   void AddTestingObserver(TestingObserver* observer);
@@ -163,6 +173,9 @@ class MetricsWebContentsObserver
 
  private:
   friend class content::WebContentsUserData<MetricsWebContentsObserver>;
+
+  void WillStartNavigationRequestImpl(
+      content::NavigationHandle* navigation_handle);
 
   // page_load_metrics::mojom::PageLoadMetrics implementation.
   void UpdateTiming(

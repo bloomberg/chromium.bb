@@ -232,6 +232,7 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
   void SetContentAspectRatio(const gfx::SizeF& aspect_ratio) override;
   void SetCALayerParams(const gfx::CALayerParams& ca_layer_params) override;
   void SetWindowTitle(const base::string16& title) override;
+  void SetIgnoresMouseEvents(bool ignores_mouse_events) override;
   void MakeFirstResponder() override;
   void ClearTouchBar() override;
   void UpdateTooltip() override;
@@ -253,6 +254,9 @@ class REMOTE_COCOA_APP_SHIM_EXPORT NativeWidgetNSWindowBridge
 
  private:
   friend class views::test::BridgedNativeWidgetTestApi;
+
+  // Attach child windows, if the window is visible (see comment inline).
+  void OrderChildren();
 
   // Closes all child windows. NativeWidgetNSWindowBridge children will be
   // destroyed.

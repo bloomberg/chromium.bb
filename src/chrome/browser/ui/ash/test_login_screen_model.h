@@ -27,10 +27,14 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
   void DisableAuthForUser(
       const AccountId& account_id,
       const ash::AuthDisabledData& auth_disabled_data) override;
-  void EnableTapToUnlockForUser(const AccountId& account_id) override;
+  void SetTapToUnlockEnabledForUser(const AccountId& account_id,
+                                    bool enabled) override;
   void ForceOnlineSignInForUser(const AccountId& account_id) override;
   void ShowEasyUnlockIcon(const AccountId& user,
                           const ash::EasyUnlockIconOptions& icon) override;
+  void SetChallengeResponseAuthEnabledForUser(const AccountId& user,
+                                              bool enabled) override;
+
   void UpdateWarningMessage(const base::string16& message) override;
   void SetSystemInfo(bool show_if_hidden,
                      const std::string& os_version_label_text,

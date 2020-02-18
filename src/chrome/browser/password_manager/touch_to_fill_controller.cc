@@ -17,67 +17,52 @@
 #include "components/autofill/core/browser/ui/popup_item_ids.h"
 #include "components/autofill/core/browser/ui/suggestion.h"
 #include "components/autofill/core/common/autofill_util.h"
+#include "components/password_manager/core/browser/android_affiliation/affiliation_utils.h"
+#include "components/password_manager/core/browser/origin_credential_store.h"
+#include "components/password_manager/core/browser/password_manager_driver.h"
+#include "components/password_manager/core/browser/password_manager_metrics_util.h"
 
 using content::WebContents;
 
-// static
-TouchToFillController* TouchToFillController::GetOrCreate(
-    WebContents* web_contents) {
-  DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
-  DCHECK(TouchToFillController::AllowedForWebContents(web_contents));
-
-  TouchToFillController::CreateForWebContents(web_contents);
-  return TouchToFillController::FromWebContents(web_contents);
+TouchToFillController::TouchToFillController(WebContents* web_contents)
+    : web_contents_(web_contents) {
+  DCHECK(web_contents);
 }
 
-// static
-std::unique_ptr<TouchToFillController> TouchToFillController::CreateForTesting(
-    base::WeakPtr<ManualFillingController> mf_controller) {
-  // Using `new` to access a non-public constructor.
-  return base::WrapUnique(new TouchToFillController(mf_controller));
+TouchToFillController::TouchToFillController(
+    base::WeakPtr<ManualFillingController> mf_controller,
+    util::PassKey<TouchToFillControllerTest>)
+    : mf_controller_(std::move(mf_controller)) {
+  DCHECK(mf_controller_);
 }
 
 TouchToFillController::~TouchToFillController() = default;
 
-// static
-bool TouchToFillController::AllowedForWebContents(WebContents* web_contents) {
-  return autofill::IsTouchToFillEnabled();
-}
-
 void TouchToFillController::Show(
-    base::span<const autofill::Suggestion> suggestions,
-    base::WeakPtr<autofill::AutofillPopupController> popup_controller) {
-  popup_controller_ = std::move(popup_controller);
+    base::span<const password_manager::CredentialPair> credentials,
+    base::WeakPtr<password_manager::PasswordManagerDriver> driver) {
+  credentials_.assign(credentials.begin(), credentials.end());
+  driver_ = std::move(driver);
 
   autofill::AccessorySheetData::Builder builder(
       autofill::AccessoryTabType::TOUCH_TO_FILL,
       // TODO(crbug.com/957532): Update title once mocks are finalized.
       base::ASCIIToUTF16("Touch to Fill"));
-  for (size_t i = 0; i < suggestions.size(); ++i) {
-    const auto& suggestion = suggestions[i];
-    // Ignore suggestions that don't directly correspond to user credentials.
-    if (suggestion.frontend_id != autofill::POPUP_ITEM_ID_USERNAME_ENTRY &&
-        suggestion.frontend_id != autofill::POPUP_ITEM_ID_PASSWORD_ENTRY) {
-      continue;
-    }
 
-    // This needs to stay in sync with how the PasswordAutofillManager creates
-    // Suggestions out of PasswordFormFillData.
-    const base::string16& username = suggestion.value;
-    const base::string16& password = suggestion.additional_label;
-    // This is only set if the credential's realm differs from the realm of the
-    // form.
-    const base::string16& maybe_realm = suggestion.label;
+  for (size_t i = 0; i < credentials_.size(); ++i) {
+    const auto& credential = credentials_[i];
+    if (credential.is_public_suffix_match)
+      builder.AddUserInfo(credential.origin_url.spec());
+    else
+      builder.AddUserInfo();
 
     std::string field_id = base::NumberToString(i);
-    builder.AddUserInfo();
-    builder.AppendField(username, username, field_id,
+    builder.AppendField(credential.username, credential.username, field_id,
                         /*is_obfuscated=*/false,
                         /*is_selectable=*/true);
-    builder.AppendField(password, password, field_id, /*is_obfuscated=*/true,
-                        /*is_selectable=*/false);
-    builder.AppendField(maybe_realm, maybe_realm, std::move(field_id),
-                        /*is_obfuscated=*/false,
+    builder.AppendField(credential.password, credential.password,
+                        std::move(field_id),
+                        /*is_obfuscated=*/true,
                         /*is_selectable=*/false);
   }
 
@@ -86,25 +71,34 @@ void TouchToFillController::Show(
 
 void TouchToFillController::OnFillingTriggered(
     const autofill::UserInfo::Field& selection) {
-  if (!popup_controller_) {
-    LOG(DFATAL) << "|popup_controller_| is not set or has been invalidated.";
+  if (!driver_) {
+    LOG(DFATAL) << "|driver_| is not set or has been invalidated.";
     return;
   }
 
-  int index = 0;
-  if (!base::StringToInt(selection.id(), &index)) {
+  size_t index = 0;
+  if (!base::StringToSizeT(selection.id(), &index)) {
     LOG(DFATAL) << "Failed to convert selection.id(): " << selection.id();
     return;
   }
 
-  if (popup_controller_->GetLineCount() <= index) {
+  if (index >= credentials_.size()) {
     LOG(DFATAL) << "Received invalid suggestion index: " << index;
     return;
   }
 
-  // Ivalidate |popup_controller_| to ignore future invocations of
-  // OnFillingTriggered for the same suggestions.
-  std::exchange(popup_controller_, nullptr)->AcceptSuggestion(index);
+  const auto& credential = credentials_[index];
+  password_manager::metrics_util::LogFilledCredentialIsFromAndroidApp(
+      password_manager::IsValidAndroidFacetURI(credential.origin_url.spec()));
+  // Invalidate |driver_| and |credentials_| to ignore future invocations of
+  // OnFillingTriggered for the same credentials.
+  std::exchange(driver_, nullptr)
+      ->FillSuggestion(credential.username, credential.password);
+  credentials_.clear();
+
+  mf_controller_->UpdateSourceAvailability(
+      ManualFillingController::FillingSource::TOUCH_TO_FILL,
+      /*has_suggestions=*/false);
 }
 
 void TouchToFillController::OnOptionSelected(
@@ -114,20 +108,9 @@ void TouchToFillController::OnOptionSelected(
   NOTREACHED();
 }
 
-TouchToFillController::TouchToFillController(WebContents* web_contents)
-    : web_contents_(web_contents) {}
-
-TouchToFillController::TouchToFillController(
-    base::WeakPtr<ManualFillingController> mf_controller)
-    : mf_controller_(std::move(mf_controller)) {
-  DCHECK(mf_controller_);
-}
-
 ManualFillingController* TouchToFillController::GetManualFillingController() {
   if (!mf_controller_)
     mf_controller_ = ManualFillingController::GetOrCreate(web_contents_);
   DCHECK(mf_controller_);
   return mf_controller_.get();
 }
-
-WEB_CONTENTS_USER_DATA_KEY_IMPL(TouchToFillController)

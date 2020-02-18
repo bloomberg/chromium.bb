@@ -545,13 +545,13 @@ AXTree::AXTree() {
   // TODO(chrishall): do we want to initialize all the time, on demand, or only
   //                  when feature flag is set?
   DCHECK(!language_detection_manager);
-  language_detection_manager.reset(new AXLanguageDetectionManager());
+  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
 }
 
 AXTree::AXTree(const AXTreeUpdate& initial_state) {
   CHECK(Unserialize(initial_state)) << error();
   DCHECK(!language_detection_manager);
-  language_detection_manager.reset(new AXLanguageDetectionManager());
+  language_detection_manager = std::make_unique<AXLanguageDetectionManager>();
 }
 
 AXTree::~AXTree() {
@@ -604,7 +604,9 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     // If the node bounds is empty (either width or height is zero),
     // try to compute good bounds from the children.
-    if (bounds.IsEmpty()) {
+    // If a tree update is in progress, skip this step as children may be in a
+    // bad state.
+    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState()) {
       for (size_t i = 0; i < node->children().size(); i++) {
         ui::AXNode* child = node->children()[i];
         bounds.Union(GetTreeBounds(child));
@@ -1290,6 +1292,10 @@ bool AXTree::UpdateNode(const AXNodeData& src,
     node->SetData(src);
   }
 
+  // If we come across a page breaking object, mark the tree as a paginated root
+  if (src.GetBoolAttribute(ax::mojom::BoolAttribute::kIsPageBreakingObject))
+    has_pagination_support_ = true;
+
   update_state->node_data_changed_ids.insert(node->id());
 
   // First, delete nodes that used to be children of this node but aren't
@@ -1812,9 +1818,10 @@ void AXTree::PopulateOrderedSetItems(const AXNode* ordered_set,
     if (!node_is_radio_button && child->SetRoleMatchesItemRole(ordered_set))
       items.push_back(child);
 
-    // Recurse if there is a generic container or is ignored.
-    if (child->data().role == ax::mojom::Role::kGenericContainer ||
-        child->data().role == ax::mojom::Role::kIgnored) {
+    // Recurse if there is a generic container, ignored, or unknown.
+    if (child->IsIgnored() ||
+        child->data().role == ax::mojom::Role::kGenericContainer ||
+        child->data().role == ax::mojom::Role::kUnknown) {
       PopulateOrderedSetItems(ordered_set, child, items, original_node);
     }
   }
@@ -2036,6 +2043,10 @@ bool AXTree::GetTreeUpdateInProgressState() const {
 
 void AXTree::SetTreeUpdateInProgressState(bool set_tree_update_value) {
   tree_update_in_progress_ = set_tree_update_value;
+}
+
+bool AXTree::HasPaginationSupport() const {
+  return has_pagination_support_;
 }
 
 }  // namespace ui

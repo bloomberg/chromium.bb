@@ -21,6 +21,7 @@
 #include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/autofill/android/personal_data_manager_android.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
+#include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -28,6 +29,7 @@
 #include "components/autofill_assistant/browser/access_token_fetcher.h"
 #include "components/autofill_assistant/browser/controller.h"
 #include "components/autofill_assistant/browser/features.h"
+#include "components/autofill_assistant/browser/website_login_fetcher_impl.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/version_info/channel.h"
@@ -99,8 +101,7 @@ ClientAndroid::ClientAndroid(content::WebContents* web_contents)
     : web_contents_(web_contents),
       java_object_(Java_AutofillAssistantClient_create(
           AttachCurrentThread(),
-          reinterpret_cast<intptr_t>(this))),
-      weak_ptr_factory_(this) {
+          reinterpret_cast<intptr_t>(this))) {
   server_url_ = base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kAutofillAssistantUrl);
   if (server_url_.empty()) {
@@ -366,6 +367,14 @@ autofill::PersonalDataManager* ClientAndroid::GetPersonalDataManager() {
       ProfileManager::GetLastUsedProfile());
 }
 
+WebsiteLoginFetcher* ClientAndroid::GetWebsiteLoginFetcher() {
+  if (!website_login_fetcher_) {
+    website_login_fetcher_ = std::make_unique<WebsiteLoginFetcherImpl>(
+        ChromePasswordManagerClient::FromWebContents(web_contents_));
+  }
+  return website_login_fetcher_.get();
+}
+
 std::string ClientAndroid::GetServerUrl() {
   return server_url_;
 }
@@ -392,9 +401,9 @@ void ClientAndroid::Shutdown(Metrics::DropOutReason reason) {
 
   // Delete the controller in a separate task. This avoids tricky ordering
   // issues when Shutdown is called from the controller.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&ClientAndroid::DestroyController,
-                                          weak_ptr_factory_.GetWeakPtr()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&ClientAndroid::DestroyController,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ClientAndroid::FetchAccessToken(

@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_io_thread.h"
 #include "services/device/hid/hid_service.h"
 #include "services/device/public/mojom/hid.mojom.h"
@@ -149,8 +149,7 @@ class TestIoCallback {
 class HidConnectionTest : public testing::Test {
  public:
   HidConnectionTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI),
         io_thread_(base::TestIOThread::kAutoStart) {}
 
  protected:
@@ -173,7 +172,7 @@ class HidConnectionTest : public testing::Test {
     ASSERT_FALSE(device_guid_.empty());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::TestIOThread io_thread_;
   std::unique_ptr<HidService> service_;
   std::unique_ptr<UsbTestGadget> test_gadget_;

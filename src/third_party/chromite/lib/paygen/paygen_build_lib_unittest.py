@@ -9,10 +9,14 @@ from __future__ import print_function
 
 import json
 import os
-import mock
 import tarfile
+import sys
 
+import mock
+
+from chromite.cbuildbot import commands
 from chromite.lib import config_lib_unittest
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 from chromite.lib import gs
 from chromite.lib import parallel
@@ -22,6 +26,11 @@ from chromite.lib.paygen import gspaths
 from chromite.lib.paygen import paygen_build_lib
 from chromite.lib.paygen import paygen_payload_lib
 
+AUTOTEST_DIR = os.path.join(constants.SOURCE_ROOT, 'src', 'third_party',
+                            'autotest', 'files')
+sys.path.insert(0, AUTOTEST_DIR)
+# pylint: disable=import-error,wrong-import-position
+from site_utils.autoupdate.lib import test_params
 
 # We access a lot of protected members during testing.
 # pylint: disable=protected-access
@@ -55,7 +64,7 @@ class PaygenJsonTests(BasePaygenBuildLibTest):
   """Test cases that require mocking paygen.json fetching."""
 
   def testGetPaygenJsonCaching(self):
-    expected_paygen_size = 1078
+    expected_paygen_size = 1069
     result = paygen_build_lib.PaygenBuild.GetPaygenJson()
     self.assertEqual(len(result), expected_paygen_size)
     self.mockGetJson.assert_called_once()
@@ -1238,3 +1247,89 @@ DEPENDENCIES = "skip_provision"
 REQUIRE_SSP = False
 
 DOC ="""))
+
+
+class HWTest(cros_test_lib.MockTestCase):
+  """Test HW test invocation."""
+
+  def testScheduleAutotestTests(self):
+    run_test_mock = self.PatchObject(
+        commands,
+        'RunSkylabHWTestPlan',
+        return_value=commands.HWTestSuiteResult(None, None))
+
+    paygen_build_lib.ScheduleAutotestTests(
+        suite_name='dummy-suite',
+        board='dummy-board',
+        model='dummy-model',
+        build='dummy-build',
+        skip_duts_check=None, # ignored
+        debug=None, # ignored
+        payload_test_configs=[],
+        test_env=None, # ignored
+        job_keyvals=None) # ignored
+
+    run_test_mock.assert_called_once_with(
+        test_plan=paygen_build_lib._TestPlan(
+            payload_test_configs=[],
+            suite_name='dummy-suite',
+            build='dummy-build'),
+        build='dummy-build',
+        legacy_suite='dummy-suite',
+        pool='DUT_POOL_BVT',
+        board='dummy-board',
+        model='dummy-model',
+        timeout_mins=2*3*60,
+        tags=['build:dummy-build',
+              'suite:dummy-suite',
+              'user:PaygenTestStage'],
+        keyvals={'build': 'dummy-build',
+                 'suite': 'dummy-suite'})
+
+  def testTestPlan(self):
+    payload_test_configs = [
+        test_params.TestConfig(
+            board='dummy-board',
+            name='dummy-test',
+            is_delta_update=True,
+            source_release='source-release',
+            target_release='target-release',
+            source_payload_uri='source-uri',
+            target_payload_uri='target-uri',
+            suite_name='dummy-suite')]
+
+    test_plan_string = paygen_build_lib._TestPlan(
+        payload_test_configs=payload_test_configs,
+        suite_name='dummy-suite',
+        build='dummy-build')
+    test_plan_dict = json.loads(test_plan_string)
+    test_args_string = test_plan_dict[
+        'enumeration']['autotestInvocations'][0].pop('testArgs')
+    # There's no guarantee on the order.
+    test_args_set = set(test_args_string.split(' '))
+
+    expected_test_plan = {
+        'enumeration': {
+            'autotestInvocations': [{
+                'test': {
+                    'name': 'autoupdate_EndToEndTest',
+                    'allowRetries': True,
+                    'maxRetries': 1,
+                    'executionEnvironment': 'EXECUTION_ENVIRONMENT_SERVER'
+                },
+                'displayName': 'dummy-build/dummy-suite/' +
+                               'autoupdate_EndToEndTest_' +
+                               'dummy-test_delta_source-release'
+            }]
+        }
+    }
+    expected_test_args = set(['name=dummy-test',
+                              'update_type=delta',
+                              'source_release=source-release',
+                              'target_release=target-release',
+                              'target_payload_uri=target-uri',
+                              'SUITE=dummy-suite',
+                              'source_payload_uri=source-uri'])
+
+    self.assertDictEqual(test_plan_dict, expected_test_plan)
+    self.assertSetEqual(test_args_set, expected_test_args)

@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_color.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_render_bundle.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_render_pipeline.h"
 
 namespace blink {
@@ -40,6 +41,20 @@ void GPURenderPassEncoder::setBindGroup(
   GetProcs().renderPassEncoderSetBindGroup(
       GetHandle(), index, bindGroup->GetHandle(), dynamicOffsets.size(),
       dynamicOffsets.data());
+}
+
+void GPURenderPassEncoder::pushDebugGroup(String groupLabel) {
+  GetProcs().renderPassEncoderPushDebugGroup(GetHandle(),
+                                             groupLabel.Utf8().data());
+}
+
+void GPURenderPassEncoder::popDebugGroup() {
+  GetProcs().renderPassEncoderPopDebugGroup(GetHandle());
+}
+
+void GPURenderPassEncoder::insertDebugMarker(String markerLabel) {
+  GetProcs().renderPassEncoderInsertDebugMarker(GetHandle(),
+                                                markerLabel.Utf8().data());
 }
 
 void GPURenderPassEncoder::setPipeline(GPURenderPipeline* pipeline) {
@@ -111,6 +126,26 @@ void GPURenderPassEncoder::drawIndexed(uint32_t indexCount,
   GetProcs().renderPassEncoderDrawIndexed(GetHandle(), indexCount,
                                           instanceCount, firstIndex, baseVertex,
                                           firstInstance);
+}
+
+void GPURenderPassEncoder::drawIndirect(GPUBuffer* indirectBuffer,
+                                        uint64_t indirectOffset) {
+  GetProcs().renderPassEncoderDrawIndirect(
+      GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
+void GPURenderPassEncoder::drawIndexedIndirect(GPUBuffer* indirectBuffer,
+                                               uint64_t indirectOffset) {
+  GetProcs().renderPassEncoderDrawIndexedIndirect(
+      GetHandle(), indirectBuffer->GetHandle(), indirectOffset);
+}
+
+void GPURenderPassEncoder::executeBundles(
+    const HeapVector<Member<GPURenderBundle>>& bundles) {
+  std::unique_ptr<DawnRenderBundle[]> dawn_bundles = AsDawnType(bundles);
+
+  GetProcs().renderPassEncoderExecuteBundles(GetHandle(), bundles.size(),
+                                             dawn_bundles.get());
 }
 
 void GPURenderPassEncoder::endPass() {

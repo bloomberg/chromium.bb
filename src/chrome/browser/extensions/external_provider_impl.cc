@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
@@ -27,7 +28,6 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/extensions/extension_migrator.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_component_loader.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
 #include "chrome/browser/extensions/external_pref_loader.h"
@@ -41,7 +41,7 @@
 #include "components/crx_file/id_util.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
 #include "extensions/common/extension.h"
@@ -145,6 +145,12 @@ void ExternalProviderImpl::SetPrefs(
   // Check if the service is still alive. It is possible that it went
   // away while |loader_| was working on the FILE thread.
   if (!service_) return;
+
+  for (const auto& it : prefs->DictItems()) {
+    InstallationReporter::ReportInstallationStage(
+        profile_, it.first,
+        InstallationReporter::Stage::SEEN_BY_EXTERNAL_PROVIDER);
+  }
 
   prefs_ = std::move(prefs);
   ready_ = true;  // Queries for extensions are allowed from this point.
@@ -339,10 +345,12 @@ void ExternalProviderImpl::RetrieveExtensionsFromPrefs(
     bool keep_if_present = false;
     if (extension->GetBoolean(kKeepIfPresent, &keep_if_present) &&
         keep_if_present && profile_) {
-      ExtensionServiceInterface* extension_service =
-          ExtensionSystem::Get(profile_)->extension_service();
-      const Extension* extension = extension_service ?
-          extension_service->GetExtensionById(extension_id, true) : NULL;
+      ExtensionRegistry* extension_registry = ExtensionRegistry::Get(profile_);
+      const Extension* extension =
+          extension_registry
+              ? extension_registry->GetExtensionById(
+                    extension_id, ExtensionRegistry::COMPATIBILITY)
+              : nullptr;
       if (!extension) {
         unsupported_extensions.insert(extension_id);
         InstallationReporter::ReportFailure(
@@ -586,8 +594,8 @@ void ExternalProviderImpl::CreateExternalProviders(
     // them as built-in extensions. Extensions (not apps) installed through this
     // path will have type |TYPE_LOGIN_SCREE_EXTENSION| with limited API
     // capabilities.
-    external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+    external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
     auto signin_profile_provider = std::make_unique<ExternalProviderImpl>(
         service, external_loader, profile, crx_location,
@@ -620,19 +628,19 @@ void ExternalProviderImpl::CreateExternalProviders(
       NOTREACHED();
     }
   } else {
-    external_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+    external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::FORCED);
-    external_recommended_loader = new ExternalPolicyLoader(
-        ExtensionManagementFactory::GetForBrowserContext(profile),
+    external_recommended_loader = base::MakeRefCounted<ExternalPolicyLoader>(
+        profile, ExtensionManagementFactory::GetForBrowserContext(profile),
         ExternalPolicyLoader::RECOMMENDED);
   }
 #else
-  external_loader = new ExternalPolicyLoader(
-      ExtensionManagementFactory::GetForBrowserContext(profile),
+  external_loader = base::MakeRefCounted<ExternalPolicyLoader>(
+      profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::FORCED);
-  external_recommended_loader = new ExternalPolicyLoader(
-      ExtensionManagementFactory::GetForBrowserContext(profile),
+  external_recommended_loader = base::MakeRefCounted<ExternalPolicyLoader>(
+      profile, ExtensionManagementFactory::GetForBrowserContext(profile),
       ExternalPolicyLoader::RECOMMENDED);
 #endif
 
@@ -724,8 +732,9 @@ void ExternalProviderImpl::CreateExternalProviders(
     pref_load_flags |= ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER;
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                               pref_load_flags, profile),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS, pref_load_flags,
+            profile),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         bundled_extension_creation_flags));
 
@@ -759,9 +768,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #elif defined(OS_LINUX)
   provider_list->push_back(std::make_unique<ExternalProviderImpl>(
       service,
-      new ExternalPrefLoader(chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
-                             ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER,
-                             profile),
+      base::MakeRefCounted<ExternalPrefLoader>(
+          chrome::DIR_STANDALONE_EXTERNAL_EXTENSIONS,
+          ExternalPrefLoader::USE_USER_TYPE_PROFILE_FILTER, profile),
       profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
       bundled_extension_creation_flags));
 #endif
@@ -777,8 +786,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #else
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_EXTERNAL_EXTENSIONS,
-                               check_admin_permissions_on_mac, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_EXTERNAL_EXTENSIONS, check_admin_permissions_on_mac,
+            nullptr),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         bundled_extension_creation_flags));
 
@@ -786,8 +796,9 @@ void ExternalProviderImpl::CreateExternalProviders(
 #if defined(OS_MACOSX) || (defined(OS_LINUX) && BUILDFLAG(CHROMIUM_BRANDING))
     provider_list->push_back(std::make_unique<ExternalProviderImpl>(
         service,
-        new ExternalPrefLoader(chrome::DIR_USER_EXTERNAL_EXTENSIONS,
-                               ExternalPrefLoader::NONE, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_USER_EXTERNAL_EXTENSIONS, ExternalPrefLoader::NONE,
+            nullptr),
         profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
         Extension::NO_FLAGS));
 #endif
@@ -798,8 +809,8 @@ void ExternalProviderImpl::CreateExternalProviders(
     // extension installer codeflow.
     provider_list->push_back(std::make_unique<default_apps::Provider>(
         profile, service,
-        new ExternalPrefLoader(chrome::DIR_DEFAULT_APPS,
-                               ExternalPrefLoader::NONE, nullptr),
+        base::MakeRefCounted<ExternalPrefLoader>(
+            chrome::DIR_DEFAULT_APPS, ExternalPrefLoader::NONE, nullptr),
         Manifest::INTERNAL, Manifest::INTERNAL,
         Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 #endif
@@ -807,8 +818,9 @@ void ExternalProviderImpl::CreateExternalProviders(
     std::unique_ptr<ExternalProviderImpl> drive_migration_provider(
         new ExternalProviderImpl(
             service,
-            new ExtensionMigrator(profile, extension_misc::kDriveHostedAppId,
-                                  extension_misc::kDocsOfflineExtensionId),
+            base::MakeRefCounted<ExtensionMigrator>(
+                profile, extension_misc::kDriveHostedAppId,
+                extension_misc::kDocsOfflineExtensionId),
             profile, Manifest::EXTERNAL_PREF, Manifest::EXTERNAL_PREF_DOWNLOAD,
             Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
     drive_migration_provider->set_auto_acknowledge(true);
@@ -816,7 +828,7 @@ void ExternalProviderImpl::CreateExternalProviders(
   }
 
   provider_list->push_back(std::make_unique<ExternalProviderImpl>(
-      service, new ExternalComponentLoader(profile), profile,
+      service, base::MakeRefCounted<ExternalComponentLoader>(profile), profile,
       Manifest::INVALID_LOCATION, Manifest::EXTERNAL_COMPONENT,
       Extension::FROM_WEBSTORE | Extension::WAS_INSTALLED_BY_DEFAULT));
 }

@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2016 The ANGLE Project Authors. All rights reserved.
+// Copyright 2016 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1189,34 +1189,42 @@ Error ValidateCreateContext(Display *display,
         case 1:
             if (clientMinorVersion != 0 && clientMinorVersion != 1)
             {
-                return EglBadConfig();
+                return EglBadAttribute();
+            }
+            if (!(configuration->renderableType & EGL_OPENGL_ES_BIT))
+            {
+                return EglBadMatch();
             }
             break;
 
         case 2:
             if (clientMinorVersion != 0)
             {
-                return EglBadConfig();
+                return EglBadAttribute();
+            }
+            if (!(configuration->renderableType & EGL_OPENGL_ES2_BIT))
+            {
+                return EglBadMatch();
             }
             break;
         case 3:
             if (clientMinorVersion != 0 && clientMinorVersion != 1)
             {
-                return EglBadConfig();
+                return EglBadAttribute();
             }
-            if (!(configuration->renderableType & EGL_OPENGL_ES3_BIT_KHR))
+            if (!(configuration->renderableType & EGL_OPENGL_ES3_BIT))
             {
-                return EglBadConfig();
+                return EglBadMatch();
             }
             if (display->getMaxSupportedESVersion() <
                 gl::Version(static_cast<GLuint>(clientMajorVersion),
                             static_cast<GLuint>(clientMinorVersion)))
             {
-                return EglBadConfig() << "Requested GLES version is not supported.";
+                return EglBadAttribute() << "Requested GLES version is not supported.";
             }
             break;
         default:
-            return EglBadConfig();
+            return EglBadAttribute();
             break;
     }
 
@@ -1772,21 +1780,24 @@ Error ValidateMakeCurrent(Display *display, Surface *draw, Surface *read, gl::Co
 
     if (draw != read)
     {
-        UNIMPLEMENTED();  // FIXME
-
         if (draw)
         {
             ANGLE_TRY(ValidateCompatibleConfigs(display, draw->getConfig(), draw,
                                                 context->getConfig(), draw->getType()));
+        }
+        if (read)
+        {
+            ANGLE_TRY(ValidateCompatibleConfigs(display, read->getConfig(), read,
+                                                context->getConfig(), read->getType()));
         }
     }
     return NoError();
 }
 
 Error ValidateCompatibleConfigs(const Display *display,
-                                const Config *config1,
+                                const Config *surfaceConfig,
                                 const Surface *surface,
-                                const Config *config2,
+                                const Config *contextConfig,
                                 EGLint surfaceType)
 {
 
@@ -1794,36 +1805,39 @@ Error ValidateCompatibleConfigs(const Display *display,
     {
         // Config compatibility is defined in section 2.2 of the EGL 1.5 spec
 
-        bool colorBufferCompat = config1->colorBufferType == config2->colorBufferType;
+        bool colorBufferCompat = surfaceConfig->colorBufferType == contextConfig->colorBufferType;
         if (!colorBufferCompat)
         {
             return EglBadMatch() << "Color buffer types are not compatible.";
         }
 
-        bool colorCompat =
-            config1->redSize == config2->redSize && config1->greenSize == config2->greenSize &&
-            config1->blueSize == config2->blueSize && config1->alphaSize == config2->alphaSize &&
-            config1->luminanceSize == config2->luminanceSize;
+        bool colorCompat = surfaceConfig->redSize == contextConfig->redSize &&
+                           surfaceConfig->greenSize == contextConfig->greenSize &&
+                           surfaceConfig->blueSize == contextConfig->blueSize &&
+                           surfaceConfig->alphaSize == contextConfig->alphaSize &&
+                           surfaceConfig->luminanceSize == contextConfig->luminanceSize;
         if (!colorCompat)
         {
             return EglBadMatch() << "Color buffer sizes are not compatible.";
         }
 
-        bool componentTypeCompat = config1->colorComponentType == config2->colorComponentType;
+        bool componentTypeCompat =
+            surfaceConfig->colorComponentType == contextConfig->colorComponentType;
         if (!componentTypeCompat)
         {
             return EglBadMatch() << "Color buffer component types are not compatible.";
         }
 
-        bool dsCompat = config1->depthSize == config2->depthSize &&
-                        config1->stencilSize == config2->stencilSize;
+        bool dsCompat = surfaceConfig->depthSize == contextConfig->depthSize &&
+                        surfaceConfig->stencilSize == contextConfig->stencilSize;
         if (!dsCompat)
         {
             return EglBadMatch() << "Depth-stencil buffer types are not compatible.";
         }
     }
 
-    bool surfaceTypeCompat = (config1->surfaceType & config2->surfaceType & surfaceType) != 0;
+    bool surfaceTypeCompat =
+        (surfaceConfig->surfaceType & contextConfig->surfaceType & surfaceType) != 0;
     if (!surfaceTypeCompat)
     {
         return EglBadMatch() << "Surface types are not compatible.";
@@ -1912,7 +1926,7 @@ Error ValidateCreateImage(const Display *display,
 
             ANGLE_TRY(ValidateContext(display, context));
             const gl::Texture *texture =
-                context->getTexture(egl_gl::EGLClientBufferToGLObjectHandle(buffer));
+                context->getTexture({egl_gl::EGLClientBufferToGLObjectHandle(buffer)});
             if (texture == nullptr || texture->getType() != gl::TextureType::_2D)
             {
                 return EglBadParameter() << "target is not a 2D texture.";
@@ -1955,7 +1969,7 @@ Error ValidateCreateImage(const Display *display,
 
             ANGLE_TRY(ValidateContext(display, context));
             const gl::Texture *texture =
-                context->getTexture(egl_gl::EGLClientBufferToGLObjectHandle(buffer));
+                context->getTexture({egl_gl::EGLClientBufferToGLObjectHandle(buffer)});
             if (texture == nullptr || texture->getType() != gl::TextureType::CubeMap)
             {
                 return EglBadParameter() << "target is not a cubemap texture.";
@@ -2001,7 +2015,7 @@ Error ValidateCreateImage(const Display *display,
 
             ANGLE_TRY(ValidateContext(display, context));
             const gl::Texture *texture =
-                context->getTexture(egl_gl::EGLClientBufferToGLObjectHandle(buffer));
+                context->getTexture({egl_gl::EGLClientBufferToGLObjectHandle(buffer)});
             if (texture == nullptr || texture->getType() != gl::TextureType::_3D)
             {
                 return EglBadParameter() << "target is not a 3D texture.";
@@ -2055,7 +2069,7 @@ Error ValidateCreateImage(const Display *display,
 
             ANGLE_TRY(ValidateContext(display, context));
             const gl::Renderbuffer *renderbuffer =
-                context->getRenderbuffer(egl_gl::EGLClientBufferToGLObjectHandle(buffer));
+                context->getRenderbuffer({egl_gl::EGLClientBufferToGLObjectHandle(buffer)});
             if (renderbuffer == nullptr)
             {
                 return EglBadParameter() << "target is not a renderbuffer.";

@@ -5,6 +5,8 @@
 #include "content/browser/devtools/protocol/webauthn_handler.h"
 
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/strings/string_number_conversions.h"
@@ -14,6 +16,7 @@
 #include "content/browser/webauth/virtual_authenticator.h"
 #include "content/browser/webauth/virtual_fido_discovery_factory.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_transport_protocol.h"
 #include "device/fido/virtual_fido_device.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -28,14 +31,22 @@ static constexpr char kCableNotSupportedOnU2f[] =
     "U2F only supports the \"usb\", \"ble\" and \"nfc\" transports";
 static constexpr char kCouldNotCreateCredential[] =
     "An error occurred trying to create the credential";
+static constexpr char kCredentialNotFound[] =
+    "Could not find a credential matching the ID";
 static constexpr char kDevToolsNotAttached[] =
     "The DevTools session is not attached to a frame";
 static constexpr char kErrorCreatingAuthenticator[] =
     "An error occurred when trying to create the authenticator";
+static constexpr char kHandleRequiredForResidentCredential[] =
+    "The User Handle is required for Resident Credentials";
 static constexpr char kInvalidProtocol[] = "The protocol is not valid";
-static constexpr char kInvalidRpIdHash[] =
-    "The Relying Party ID hash must have a size of ";
 static constexpr char kInvalidTransport[] = "The transport is not valid";
+static constexpr char kInvalidUserHandle[] =
+    "The User Handle must have a maximum size of ";
+static constexpr char kResidentCredentialNotSupported[] =
+    "The Authenticator does not support Resident Credentials.";
+static constexpr char kRpIdRequired[] =
+    "The Relying Party ID is a required parameter";
 static constexpr char kVirtualEnvironmentNotEnabled[] =
     "The Virtual Authenticator Environment has not been enabled for this "
     "session";
@@ -50,6 +61,30 @@ device::ProtocolVersion ConvertToProtocolVersion(base::StringPiece protocol) {
 
 std::vector<uint8_t> CopyBinaryToVector(const Binary& binary) {
   return std::vector<uint8_t>(binary.data(), binary.data() + binary.size());
+}
+
+std::unique_ptr<WebAuthn::Credential> BuildCredentialFromRegistration(
+    const std::pair<const std::vector<uint8_t>,
+                    device::VirtualFidoDevice::RegistrationData>&
+        registration) {
+  std::vector<uint8_t> private_key;
+  registration.second.private_key->ExportPrivateKey(&private_key);
+
+  auto credential =
+      WebAuthn::Credential::Create()
+          .SetCredentialId(Binary::fromVector(registration.first))
+          .SetPrivateKey(Binary::fromVector(std::move(private_key)))
+          .SetSignCount(registration.second.counter)
+          .SetIsResidentCredential(registration.second.is_resident)
+          .Build();
+
+  if (registration.second.rp)
+    credential->SetRpId(registration.second.rp->id);
+  if (registration.second.user) {
+    credential->SetUserHandle(Binary::fromVector(registration.second.user->id));
+  }
+
+  return credential;
 }
 
 }  // namespace
@@ -147,19 +182,60 @@ Response WebAuthnHandler::AddCredential(
   if (!response.isSuccess())
     return response;
 
-  if (credential->GetRpIdHash().size() != device::kRpIdHashLength) {
+  Binary user_handle = credential->GetUserHandle(Binary());
+  if (credential->HasUserHandle() &&
+      user_handle.size() > device::kUserHandleMaxLength) {
     return Response::InvalidParams(
-        kInvalidRpIdHash + base::NumberToString(device::kRpIdHashLength));
+        kInvalidUserHandle +
+        base::NumberToString(device::kUserHandleMaxLength));
   }
 
-  if (!authenticator->AddRegistration(
-          CopyBinaryToVector(credential->GetCredentialId()),
-          CopyBinaryToVector(credential->GetRpIdHash()),
-          CopyBinaryToVector(credential->GetPrivateKey()),
-          credential->GetSignCount())) {
+  if (!credential->HasRpId())
+    return Response::InvalidParams(kRpIdRequired);
+  std::string rp_id = credential->GetRpId("");
+
+  bool credential_created;
+  if (credential->GetIsResidentCredential()) {
+    if (!authenticator->has_resident_key())
+      return Response::InvalidParams(kResidentCredentialNotSupported);
+
+    if (!credential->HasUserHandle())
+      return Response::InvalidParams(kHandleRequiredForResidentCredential);
+
+    credential_created = authenticator->AddResidentRegistration(
+        CopyBinaryToVector(credential->GetCredentialId()), rp_id,
+        CopyBinaryToVector(credential->GetPrivateKey()),
+        credential->GetSignCount(), CopyBinaryToVector(user_handle));
+  } else {
+    credential_created = authenticator->AddRegistration(
+        CopyBinaryToVector(credential->GetCredentialId()),
+        base::make_span<uint8_t, device::kRpIdHashLength>(
+            device::fido_parsing_utils::CreateSHA256Hash(rp_id)),
+        CopyBinaryToVector(credential->GetPrivateKey()),
+        credential->GetSignCount());
+  }
+
+  if (!credential_created)
     return Response::Error(kCouldNotCreateCredential);
-  }
 
+  return Response::OK();
+}
+
+Response WebAuthnHandler::GetCredential(
+    const String& authenticator_id,
+    const Binary& credential_id,
+    std::unique_ptr<WebAuthn::Credential>* out_credential) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  auto registration =
+      authenticator->registrations().find(CopyBinaryToVector(credential_id));
+  if (registration == authenticator->registrations().end())
+    return Response::InvalidParams(kCredentialNotFound);
+
+  *out_credential = BuildCredentialFromRegistration(*registration);
   return Response::OK();
 }
 
@@ -172,20 +248,23 @@ Response WebAuthnHandler::GetCredentials(
     return response;
 
   *out_credentials = std::make_unique<Array<WebAuthn::Credential>>();
-  for (const auto& credential : authenticator->registrations()) {
-    const auto& rp_id_hash = credential.second.application_parameter;
-    std::vector<uint8_t> private_key;
-    credential.second.private_key->ExportPrivateKey(&private_key);
+  for (const auto& registration : authenticator->registrations()) {
     (*out_credentials)
-        ->emplace_back(
-            WebAuthn::Credential::Create()
-                .SetCredentialId(Binary::fromVector(credential.first))
-                .SetRpIdHash(
-                    Binary::fromSpan(rp_id_hash.data(), rp_id_hash.size()))
-                .SetPrivateKey(Binary::fromVector(std::move(private_key)))
-                .SetSignCount(credential.second.counter)
-                .Build());
+        ->emplace_back(BuildCredentialFromRegistration(registration));
   }
+  return Response::OK();
+}
+
+Response WebAuthnHandler::RemoveCredential(const String& authenticator_id,
+                                           const Binary& credential_id) {
+  VirtualAuthenticator* authenticator;
+  Response response = FindAuthenticator(authenticator_id, &authenticator);
+  if (!response.isSuccess())
+    return response;
+
+  if (!authenticator->RemoveRegistration(CopyBinaryToVector(credential_id)))
+    return Response::InvalidParams(kCredentialNotFound);
+
   return Response::OK();
 }
 

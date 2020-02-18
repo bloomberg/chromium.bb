@@ -45,7 +45,7 @@ OverlayPresentationContextImpl::OverlayPresentationContextImpl(
     OverlayModality modality)
     : presenter_(OverlayPresenter::FromBrowser(browser, modality)),
       shutdown_helper_(browser, presenter_),
-      ui_dismissal_helper_(this),
+      coordinator_delegate_(this),
       coordinator_factory_([OverlayRequestCoordinatorFactory
           factoryForBrowser:browser
                    modality:modality]),
@@ -98,6 +98,7 @@ bool OverlayPresentationContextImpl::IsActive() const {
 void OverlayPresentationContextImpl::ShowOverlayUI(
     OverlayPresenter* presenter,
     OverlayRequest* request,
+    OverlayPresentationCallback presentation_callback,
     OverlayDismissalCallback dismissal_callback) {
   DCHECK_EQ(presenter_, presenter);
   // Create the UI state for |request| if necessary.
@@ -105,7 +106,7 @@ void OverlayPresentationContextImpl::ShowOverlayUI(
     states_[request] = std::make_unique<OverlayRequestUIState>(request);
   // Present the overlay UI and update the UI state.
   GetRequestUIState(request)->OverlayPresentionRequested(
-      std::move(dismissal_callback));
+      std::move(presentation_callback), std::move(dismissal_callback));
   SetRequest(request);
 }
 
@@ -208,13 +209,22 @@ void OverlayPresentationContextImpl::ShowUIForPresentedRequest() {
       overlay_coordinator.baseViewController != container_view_controller) {
     overlay_coordinator = [coordinator_factory_
         newCoordinatorForRequest:request_
-               dismissalDelegate:&ui_dismissal_helper_
+                        delegate:&coordinator_delegate_
               baseViewController:container_view_controller];
     state->OverlayUIWillBePresented(overlay_coordinator);
   }
 
   [overlay_coordinator startAnimated:!state->has_ui_been_presented()];
   state->OverlayUIWasPresented();
+}
+
+void OverlayPresentationContextImpl::OverlayUIWasPresented() {
+  OverlayRequestUIState* state = GetRequestUIState(request_);
+  DCHECK(state);
+  UIView* overlay_view = state->coordinator().viewController.view;
+  DCHECK(overlay_view);
+  UIAccessibilityPostNotification(UIAccessibilityScreenChangedNotification,
+                                  overlay_view);
 }
 
 void OverlayPresentationContextImpl::DismissPresentedUI(
@@ -264,16 +274,24 @@ void OverlayPresentationContextImpl::BrowserShutdownHelper::BrowserDestroyed(
 
 #pragma mark OverlayDismissalHelper
 
-OverlayPresentationContextImpl::OverlayDismissalHelper::OverlayDismissalHelper(
-    OverlayPresentationContextImpl* presentation_context)
+OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
+    OverlayRequestCoordinatorDelegateImpl(
+        OverlayPresentationContextImpl* presentation_context)
     : presentation_context_(presentation_context) {
   DCHECK(presentation_context_);
 }
 
-OverlayPresentationContextImpl::OverlayDismissalHelper::
-    ~OverlayDismissalHelper() = default;
+OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
+    ~OverlayRequestCoordinatorDelegateImpl() = default;
 
-void OverlayPresentationContextImpl::OverlayDismissalHelper::
+void OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
+    OverlayUIDidFinishPresentation(OverlayRequest* request) {
+  DCHECK(request);
+  DCHECK_EQ(presentation_context_->request_, request);
+  presentation_context_->OverlayUIWasPresented();
+}
+
+void OverlayPresentationContextImpl::OverlayRequestCoordinatorDelegateImpl::
     OverlayUIDidFinishDismissal(OverlayRequest* request) {
   DCHECK(request);
   DCHECK_EQ(presentation_context_->request_, request);

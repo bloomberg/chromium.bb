@@ -26,7 +26,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/test/shell_test_api.h"
-#include "ash/public/interfaces/ime_info.mojom.h"
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
@@ -662,7 +662,7 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   params.bounds = gfx::Rect(5, 5, 20, 20);
   views::Widget* widget = new views::Widget;
   params.context = CurrentContext();
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   widget->Activate();
   widget->GetNativeView()->SetProperty(
@@ -2031,7 +2031,7 @@ class MediaSessionAcceleratorTest
     MediaControllerImpl* media_controller = Shell::Get()->media_controller();
     media_controller->SetClient(client_.get());
     media_controller->SetMediaSessionControllerForTest(
-        controller_->CreateMediaControllerPtr());
+        controller_->CreateMediaControllerRemote());
     media_controller->SetForceMediaClientKeyHandling(
         GetParam().force_key_handling);
     media_controller->FlushForTesting();

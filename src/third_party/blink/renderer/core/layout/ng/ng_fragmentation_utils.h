@@ -15,32 +15,6 @@ namespace blink {
 
 class NGConstraintSpace;
 
-// Return the total amount of block space spent on a node by fragments
-// preceding this one (but not including this one).
-LayoutUnit PreviouslyUsedBlockSpace(const NGConstraintSpace&,
-                                    const NGPhysicalFragment&);
-
-// Return true if the specified fragment is the first generated fragment of
-// some node.
-inline bool IsFirstFragment(const NGConstraintSpace& constraint_space,
-                            const NGPhysicalFragment& fragment) {
-  // TODO(mstensho): Figure out how to behave for non-box fragments here. How
-  // can we tell whether it's the first one? Looking for previously used block
-  // space certainly isn't the answer.
-  if (!fragment.IsBox())
-    return true;
-  return PreviouslyUsedBlockSpace(constraint_space, fragment) <= LayoutUnit();
-}
-
-// Return true if the specified fragment is the final fragment of some node.
-inline bool IsLastFragment(const NGPhysicalFragment& fragment) {
-  if (!fragment.IsContainer())
-    return false;
-  const auto* break_token =
-      To<NGPhysicalContainerFragment>(fragment).BreakToken();
-  return !break_token || break_token->IsFinished();
-}
-
 // Join two adjacent break values specified on break-before and/or break-
 // after. avoid* values win over auto values, and forced break values win over
 // avoid* values. |first_value| is specified on an element earlier in the flow
@@ -58,14 +32,6 @@ EBreakBetween JoinFragmentainerBreakValues(EBreakBetween first_value,
 // current fragmentation context.
 bool IsForcedBreakValue(const NGConstraintSpace&, EBreakBetween);
 
-// Return true if we are to ignore the block-start margin of the child. At the
-// start of fragmentainers, in-flow block-start margins are ignored, unless
-// we're right after a forced break.
-// https://drafts.csswg.org/css-break/#break-margins
-bool ShouldIgnoreBlockStartMargin(const NGConstraintSpace&,
-                                  NGLayoutInputNode,
-                                  const NGBreakToken*);
-
 // Return true if we're resuming layout after a previous break.
 inline bool IsResumingLayout(const NGBlockBreakToken* token) {
   return token && !token->IsBreakBefore();
@@ -79,7 +45,15 @@ inline bool IsResumingLayout(const NGBlockBreakToken* token) {
 // fragmentainer block-start.
 void SetupFragmentation(const NGConstraintSpace& parent_space,
                         LayoutUnit new_bfc_block_offset,
-                        NGConstraintSpaceBuilder*);
+                        NGConstraintSpaceBuilder*,
+                        bool is_new_fc);
+
+// Write fragmentation information to the fragment builder after layout.
+void FinishFragmentation(NGBoxFragmentBuilder*,
+                         LayoutUnit block_size,
+                         LayoutUnit intrinsic_block_size,
+                         LayoutUnit previously_consumed_block_size,
+                         LayoutUnit space_left);
 
 }  // namespace blink
 

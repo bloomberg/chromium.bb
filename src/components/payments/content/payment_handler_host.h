@@ -5,13 +5,20 @@
 #ifndef COMPONENTS_PAYMENTS_CONTENT_PAYMENT_HANDLER_HOST_H_
 #define COMPONENTS_PAYMENTS_CONTENT_PAYMENT_HANDLER_HOST_H_
 
+#include <stdint.h>
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom.h"
+#include "url/origin.h"
+
+namespace content {
+class WebContents;
+}  // namespace content
 
 namespace payments {
 
@@ -19,7 +26,7 @@ namespace payments {
 // merchant renderer process.
 class PaymentHandlerHost : public mojom::PaymentHandlerHost {
  public:
-  // The interfce to be implemented by the object that can communicate to the
+  // The interface to be implemented by the object that can communicate to the
   // merchant's renderer process.
   class Delegate {
    public:
@@ -32,9 +39,29 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   };
 
   // The |delegate| cannot be null and must outlive this object. Typically this
-  // is accomplished by the |delegate| owning this object.
-  explicit PaymentHandlerHost(Delegate* delegate);
+  // is accomplished by the |delegate| owning this object. The |web_contents| is
+  // used for developer tools logging and should be from the same browser
+  // context as the payment handler.
+  PaymentHandlerHost(content::WebContents* web_contents, Delegate* delegate);
   ~PaymentHandlerHost() override;
+
+  // Sets the origin of the payment handler / service worker registration scope.
+  // Used for developer tools logging.
+  void set_sw_origin_for_logs(const url::Origin& origin) {
+    sw_origin_for_logs_ = origin;
+  }
+
+  // Sets the registration identifier of the payment handler / service worker.
+  // Used for developer tools logging.
+  void set_registration_id_for_logs(int64_t id) {
+    registration_id_for_logs_ = id;
+  }
+
+  // Sets the identifier for the Payment Request object. Used for developer
+  // tools logging.
+  void set_payment_request_id_for_logs(const std::string& id) {
+    payment_request_id_for_logs_ = id;
+  }
 
   // Returns "true" when the payment handler has changed the payment method, but
   // has not received the response from the merchant yet.
@@ -43,7 +70,7 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   }
 
   // Binds to an IPC endpoint and returns it.
-  mojom::PaymentHandlerHostPtrInfo Bind();
+  mojo::PendingRemote<mojom::PaymentHandlerHost> Bind();
 
   // Notifies the payment handler of the updated details, such as updated total,
   // in response to the change of the payment method.
@@ -71,10 +98,25 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
 
   // The end-point for the payment handler renderer process to call into the
   // browser process.
-  mojo::Binding<mojom::PaymentHandlerHost> binding_;
+  mojo::Receiver<mojom::PaymentHandlerHost> receiver_{this};
+
+  // The merchant page that invoked the Payment Request API.
+  content::WebContents* web_contents_;
 
   // Not null and outlives this object. Owns this object.
   Delegate* delegate_;
+
+  // The origin of the payment handler / service worker registration scope. Used
+  // for developer tools logging.
+  url::Origin sw_origin_for_logs_;
+
+  // The registration identifier for the payment handler / service worker. Used
+  // for developer tools logging.
+  int64_t registration_id_for_logs_ = -1;
+
+  // The identifier for the Payment Request object. Used for developer tools
+  // logging.
+  std::string payment_request_id_for_logs_;
 
   base::WeakPtrFactory<PaymentHandlerHost> weak_ptr_factory_{this};
 

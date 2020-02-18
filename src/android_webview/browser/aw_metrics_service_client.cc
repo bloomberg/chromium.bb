@@ -59,6 +59,8 @@ std::unique_ptr<metrics::ClientInfo> LoadClientInfo() {
 // - WebView uses the low-entropy source for all studies, so there would be
 //   crosstalk between the metrics sampling study and all other studies.
 bool IsInSample(const std::string& client_id) {
+  DCHECK(!client_id.empty());
+
   // client_id comes from base::GenerateGUID(), so its value is random/uniform,
   // except for a few bit positions with fixed values, and some hyphens. Rather
   // than separating the random payload from the fixed bits, just hash the whole

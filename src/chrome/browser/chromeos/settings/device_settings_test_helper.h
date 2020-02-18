@@ -17,7 +17,7 @@
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/user_manager/scoped_user_manager.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class TestingProfile;
@@ -66,7 +66,7 @@ class DeviceSettingsTestBase : public testing::Test {
 
   FakePowerManagerClient* power_manager_client();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<policy::DevicePolicyBuilder> device_policy_;
 

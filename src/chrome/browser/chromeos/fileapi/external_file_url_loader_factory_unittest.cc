@@ -23,8 +23,8 @@
 #include "content/public/browser/child_process_security_policy.h"
 #include "content/public/common/child_process_host.h"
 #include "content/public/common/url_constants.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -49,7 +49,7 @@ constexpr char kExpectedFileContents[] =
 class ExternalFileURLLoaderFactoryTest : public testing::Test {
  protected:
   ExternalFileURLLoaderFactoryTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         integration_service_factory_callback_(base::BindRepeating(
             &ExternalFileURLLoaderFactoryTest::CreateDriveIntegrationService,
             base::Unretained(this))),
@@ -142,7 +142,7 @@ class ExternalFileURLLoaderFactoryTest : public testing::Test {
         drive_cache_dir_.GetPath(), fake_file_system_);
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   drive::DriveIntegrationServiceFactory::FactoryCallback
       integration_service_factory_callback_;

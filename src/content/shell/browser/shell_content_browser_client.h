@@ -18,7 +18,6 @@
 
 namespace content {
 
-class ResourceDispatcherHostDelegate;
 class ShellBrowserContext;
 class ShellBrowserMainParts;
 
@@ -52,7 +51,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   void AppendExtraCommandLineSwitches(base::CommandLine* command_line,
                                       int child_process_id) override;
   std::string GetAcceptLangs(BrowserContext* context) override;
-  void ResourceDispatcherHostCreated() override;
   std::string GetDefaultDownloadName() override;
   WebContentsViewDelegate* GetWebContentsViewDelegate(
       WebContents* web_contents) override;
@@ -73,6 +71,7 @@ class ShellContentBrowserClient : public ContentBrowserClient {
       override;
   void OverrideWebkitPrefs(RenderViewHost* render_view_host,
                            WebPreferences* prefs) override;
+  base::FilePath GetFontLookupTableCacheDir() override;
   DevToolsManagerDelegate* GetDevToolsManagerDelegate() override;
   void OpenURL(SiteInstance* site_instance,
                const OpenURLParams& params,
@@ -98,19 +97,18 @@ class ShellContentBrowserClient : public ContentBrowserClient {
 #endif  // defined(OS_LINUX) || defined(OS_ANDROID)
 
 #if defined(OS_WIN)
-  bool PreSpawnRenderer(sandbox::TargetPolicy* policy) override;
+  bool PreSpawnRenderer(sandbox::TargetPolicy* policy,
+                        RendererSpawnFlags flags) override;
 #endif
 
   network::mojom::NetworkContextPtr CreateNetworkContext(
       BrowserContext* context,
       bool in_memory,
       const base::FilePath& relative_partition_path) override;
+  std::vector<base::FilePath> GetNetworkContextsParentDirectory() override;
 
   ShellBrowserContext* browser_context();
   ShellBrowserContext* off_the_record_browser_context();
-  ResourceDispatcherHostDelegate* resource_dispatcher_host_delegate() {
-    return resource_dispatcher_host_delegate_.get();
-  }
   ShellBrowserMainParts* shell_browser_main_parts() {
     return shell_browser_main_parts_;
   }
@@ -140,9 +138,6 @@ class ShellContentBrowserClient : public ContentBrowserClient {
   }
 
  private:
-  std::unique_ptr<ResourceDispatcherHostDelegate>
-      resource_dispatcher_host_delegate_;
-
   base::OnceClosure select_client_certificate_callback_;
   base::OnceCallback<bool(const service_manager::Identity&)>
       should_terminate_on_service_quit_callback_;

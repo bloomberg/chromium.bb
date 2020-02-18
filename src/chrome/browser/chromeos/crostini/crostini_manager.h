@@ -121,6 +121,10 @@ class CrostiniManager : public KeyedService,
  public:
   using CrostiniResultCallback =
       base::OnceCallback<void(CrostiniResult result)>;
+  using ExportLxdContainerResultCallback =
+      base::OnceCallback<void(CrostiniResult result,
+                              uint64_t container_size,
+                              uint64_t compressed_size)>;
   // Callback indicating success or failure
   using BoolCallback = base::OnceCallback<void(bool success)>;
 
@@ -258,7 +262,7 @@ class CrostiniManager : public KeyedService,
   void ExportLxdContainer(std::string vm_name,
                           std::string container_name,
                           base::FilePath export_path,
-                          CrostiniResultCallback callback);
+                          ExportLxdContainerResultCallback callback);
 
   // Checks the arguments for importing an Lxd container via
   // CiceroneClient::ImportLxdContainer. |callback| is called immediately if the
@@ -267,6 +271,14 @@ class CrostiniManager : public KeyedService,
                           std::string container_name,
                           base::FilePath import_path,
                           CrostiniResultCallback callback);
+
+  // Checks the arguments for cancelling a Lxd container export via
+  // CiceroneClient::CancelExportLxdContainer .
+  void CancelExportLxdContainer(ContainerId key);
+
+  // Checks the arguments for cancelling a Lxd container import via
+  // CiceroneClient::CancelImportLxdContainer.
+  void CancelImportLxdContainer(ContainerId key);
 
   // Asynchronously launches an app as specified by its desktop file id.
   void LaunchContainerApplication(std::string vm_name,
@@ -365,7 +377,9 @@ class CrostiniManager : public KeyedService,
   using RestartId = int;
   static const RestartId kUninitializedRestartId = -1;
   // Runs all the steps required to restart the given crostini vm and container.
-  // The optional |observer| tracks progress.
+  // The optional |observer| tracks progress. If provided, it must be alive
+  // until the restart completes (i.e. when |callback| is called) or the restart
+  // is aborted via |AbortRestartCrostini|.
   RestartId RestartCrostini(std::string vm_name,
                             std::string container_name,
                             CrostiniResultCallback callback,
@@ -471,6 +485,12 @@ class CrostiniManager : public KeyedService,
   void SetContainerSshfsMounted(std::string vm_name,
                                 std::string container_name,
                                 bool is_mounted);
+  void SetContainerOsRelease(std::string vm_name,
+                             std::string container_name,
+                             const vm_tools::cicerone::OsRelease& os_release);
+  const vm_tools::cicerone::OsRelease* GetContainerOsRelease(
+      std::string vm_name,
+      std::string container_name);
   // Returns null if VM or container is not running.
   base::Optional<ContainerInfo> GetContainerInfo(std::string vm_name,
                                                  std::string container_name);
@@ -607,6 +627,18 @@ class CrostiniManager : public KeyedService,
       std::string container_name,
       base::Optional<vm_tools::cicerone::ImportLxdContainerResponse> response);
 
+  // Callback for CiceroneClient::CancelExportLxdContainer.
+  void OnCancelExportLxdContainer(
+      const ContainerId& key,
+      base::Optional<vm_tools::cicerone::CancelExportLxdContainerResponse>
+          response);
+
+  // Callback for CiceroneClient::CancelImportLxdContainer.
+  void OnCancelImportLxdContainer(
+      const ContainerId& key,
+      base::Optional<vm_tools::cicerone::CancelImportLxdContainerResponse>
+          response);
+
   // Callback for CrostiniManager::LaunchContainerApplication.
   void OnLaunchContainerApplication(
       BoolCallback callback,
@@ -662,6 +694,10 @@ class CrostiniManager : public KeyedService,
       ListUsbDevicesCallback callback,
       base::Optional<vm_tools::concierge::ListUsbDeviceResponse> response);
 
+  // Callback for
+  // CrostiniAnsibleManagementService::InstallAnsibleInDefaultContainer
+  void OnAnsibleInDefaultContainerInstalled(bool success);
+
   // Helper for CrostiniManager::MaybeUpgradeCrostini. Makes blocking calls to
   // check for file paths and registered components.
   static void CheckPathsAndComponents();
@@ -696,7 +732,8 @@ class CrostiniManager : public KeyedService,
   std::multimap<ContainerId, CrostiniResultCallback>
       create_lxd_container_callbacks_;
   std::multimap<ContainerId, BoolCallback> delete_lxd_container_callbacks_;
-  std::map<ContainerId, CrostiniResultCallback> export_lxd_container_callbacks_;
+  std::map<ContainerId, ExportLxdContainerResultCallback>
+      export_lxd_container_callbacks_;
   std::map<ContainerId, CrostiniResultCallback> import_lxd_container_callbacks_;
 
   // Callbacks to run after Tremplin is started, keyed by vm_name. These are
@@ -708,6 +745,10 @@ class CrostiniManager : public KeyedService,
 
   // Running containers as keyed by vm name.
   std::multimap<std::string, ContainerInfo> running_containers_;
+
+  // OsRelease protos keyed by ContainerId. We populate this map even if a
+  // container fails to start normally.
+  std::map<ContainerId, vm_tools::cicerone::OsRelease> container_os_releases_;
 
   std::vector<RemoveCrostiniCallback> remove_crostini_callbacks_;
 
@@ -744,7 +785,7 @@ class CrostiniManager : public KeyedService,
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.
-  base::WeakPtrFactory<CrostiniManager> weak_ptr_factory_;
+  base::WeakPtrFactory<CrostiniManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CrostiniManager);
 };

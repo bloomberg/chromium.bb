@@ -22,9 +22,9 @@
 #include "media/gpu/test/video_player/video.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 #include "media/gpu/linux/platform_video_frame_utils.h"
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
 
 namespace media {
 namespace test {
@@ -195,7 +195,7 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
   ASSERT_EQ(video_frames_.size(), 0u);
   ASSERT_EQ(textures_per_buffer, 1u);
   DVLOGF(4) << "Requested " << requested_num_of_buffers
-            << " picture buffers with size " << dimensions.height() << "x"
+            << " picture buffers with size " << dimensions.width() << "x"
             << dimensions.height();
 
   // If using allocate mode the format requested here might be
@@ -217,20 +217,24 @@ void TestVDAVideoDecoder::ProvidePictureBuffersWithVisibleRect(
       // handles to the video frame's data to the decoder.
       for (const PictureBuffer& picture_buffer : picture_buffers) {
         scoped_refptr<VideoFrame> video_frame;
-#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
         video_frame = CreatePlatformVideoFrame(
             format, dimensions, visible_rect, visible_rect.size(),
             base::TimeDelta(), gfx::BufferUsage::SCANOUT_VDA_WRITE);
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
         LOG_ASSERT(video_frame) << "Failed to create video frame";
         video_frames_.emplace(picture_buffer.id(), video_frame);
         gfx::GpuMemoryBufferHandle handle;
-#if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
+
+#if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
         handle = CreateGpuMemoryBufferHandle(video_frame.get());
         DCHECK(!handle.is_null());
 #else
         NOTREACHED();
-#endif
+#endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
+
         LOG_ASSERT(!handle.is_null()) << "Failed to create GPU memory handle";
         decoder_->ImportBufferForPicture(picture_buffer.id(), format,
                                          std::move(handle));
@@ -362,19 +366,19 @@ void TestVDAVideoDecoder::NotifyError(VideoDecodeAccelerator::Error error) {
 
   switch (error) {
     case VideoDecodeAccelerator::ILLEGAL_STATE:
-      LOG(FATAL) << "ILLEGAL_STATE";
+      LOG(ERROR) << "ILLEGAL_STATE";
       break;
     case VideoDecodeAccelerator::INVALID_ARGUMENT:
-      LOG(FATAL) << "INVALID_ARGUMENT";
+      LOG(ERROR) << "INVALID_ARGUMENT";
       break;
     case VideoDecodeAccelerator::UNREADABLE_INPUT:
-      LOG(FATAL) << "UNREADABLE_INPUT";
+      LOG(ERROR) << "UNREADABLE_INPUT";
       break;
     case VideoDecodeAccelerator::PLATFORM_FAILURE:
-      LOG(FATAL) << "PLATFORM_FAILURE";
+      LOG(ERROR) << "PLATFORM_FAILURE";
       break;
     default:
-      LOG(FATAL) << "Unknown error " << error;
+      LOG(ERROR) << "Unknown error " << error;
       break;
   }
 }

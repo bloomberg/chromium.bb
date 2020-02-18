@@ -9,14 +9,15 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/page_transition_types.h"
 
@@ -153,7 +154,7 @@ class RenderViewHostTestEnabler {
 #if defined(OS_ANDROID)
   std::unique_ptr<display::Screen> screen_;
 #endif
-  std::unique_ptr<base::test::ScopedTaskEnvironment> task_environment_;
+  std::unique_ptr<base::test::TaskEnvironment> task_environment_;
   std::unique_ptr<MockRenderProcessHostFactory> rph_factory_;
   std::unique_ptr<TestRenderViewHostFactory> rvh_factory_;
   std::unique_ptr<TestRenderFrameHostFactory> rfh_factory_;
@@ -163,12 +164,12 @@ class RenderViewHostTestEnabler {
 // RenderViewHostTestHarness ---------------------------------------------------
 class RenderViewHostTestHarness : public testing::Test {
  public:
-  // Constructs a RenderViewHostTestHarness which uses |args| to initialize its
-  // TestBrowserThreadBundle.
-  template <typename... Args>
-  RenderViewHostTestHarness(Args... args)
-      : RenderViewHostTestHarness(
-            std::make_unique<TestBrowserThreadBundle>(args...)) {}
+  // Constructs a RenderViewHostTestHarness which uses |traits| to initialize
+  // its BrowserTaskEnvironment.
+  template <typename... TaskEnvironmentTraits>
+  explicit RenderViewHostTestHarness(TaskEnvironmentTraits&&... traits)
+      : RenderViewHostTestHarness(std::make_unique<BrowserTaskEnvironment>(
+            std::forward<TaskEnvironmentTraits>(traits)...)) {}
 
   ~RenderViewHostTestHarness() override;
 
@@ -233,7 +234,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // It is invoked by SetUp after threads were started.
   // RenderViewHostTestHarness will take ownership of the returned
   // BrowserContext.
-  virtual BrowserContext* CreateBrowserContext();
+  virtual std::unique_ptr<BrowserContext> CreateBrowserContext();
 
   // Derived classes can override this method to have the test harness use a
   // different BrowserContext than the one owned by this class. This is most
@@ -241,7 +242,7 @@ class RenderViewHostTestHarness : public testing::Test {
   // context.
   virtual BrowserContext* GetBrowserContext();
 
-  TestBrowserThreadBundle* thread_bundle() { return thread_bundle_.get(); }
+  BrowserTaskEnvironment* task_environment() { return task_environment_.get(); }
 
 #if defined(USE_AURA)
   aura::Window* root_window() { return aura_test_helper_->root_window(); }
@@ -254,9 +255,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // The template constructor has to be in the header but it delegates to this
   // constructor to initialize all other members out-of-line.
   explicit RenderViewHostTestHarness(
-      std::unique_ptr<TestBrowserThreadBundle> thread_bundle);
+      std::unique_ptr<BrowserTaskEnvironment> task_environment);
 
-  std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<BrowserTaskEnvironment> task_environment_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
 

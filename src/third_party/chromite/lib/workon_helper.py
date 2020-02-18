@@ -385,9 +385,15 @@ class WorkonHelper(object):
       return self._GetCanonicalAtom(autocompleted_package)
 
     if not _IsWorkonEbuild(True, ebuild_path):
-      logging.warning(
-          '"%s" is a -9999 ebuild, but does not inherit from cros-workon?',
-          ebuild_path)
+      msg = ('In order to cros_workon a package, it must have a -9999 ebuild '
+             'that inherits from cros-workon.\n')
+      if '-9999' in ebuild_path:
+        msg += ('"%s" is a -9999 ebuild, make sure it inherits from '
+                'cros-workon.\n' % ebuild_path)
+      else:
+        msg += '"%s" is not a -9999 ebuild.\n' % ebuild_path
+
+      logging.warning(msg)
       return None
 
     return portage_util.EbuildToCP(ebuild_path)
@@ -654,7 +660,7 @@ class WorkonHelper(object):
       ebuilds = [self._FindEbuildForPackage(atom) for atom in atoms]
 
     build_root = self._src_root
-    src_root = os.path.join(build_root, "src")
+    src_root = os.path.join(build_root, 'src')
     manifest = git.ManifestCheckout.Cached(build_root)
 
     ebuild_to_repos = {}

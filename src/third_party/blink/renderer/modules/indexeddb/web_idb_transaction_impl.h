@@ -9,6 +9,8 @@
 #include <memory>
 
 #include "base/single_thread_task_runner.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "third_party/blink/public/common/indexeddb/web_idb_types.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom-blink.h"
 #include "third_party/blink/renderer/modules/indexeddb/web_idb_transaction.h"
@@ -32,16 +34,16 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
            std::unique_ptr<IDBValue> value,
            std::unique_ptr<IDBKey> primary_key,
            mojom::IDBPutMode,
-           WebIDBCallbacks*,
+           std::unique_ptr<WebIDBCallbacks> callbacks,
            Vector<IDBIndexKeys>) override;
+  void PutCallback(std::unique_ptr<WebIDBCallbacks> callbacks,
+                   mojom::blink::IDBTransactionPutResultPtr result);
   void Commit(int64_t num_errors_handled) override;
 
-  mojom::blink::IDBTransactionAssociatedRequest CreateRequest() override;
+  mojo::PendingAssociatedReceiver<mojom::blink::IDBTransaction> CreateReceiver()
+      override;
 
  private:
-  mojom::blink::IDBCallbacksAssociatedPtrInfo GetCallbacksProxy(
-      std::unique_ptr<WebIDBCallbacks> callbacks);
-
   FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, ValueSizeTest);
   FRIEND_TEST_ALL_PREFIXES(WebIDBTransactionImplTest, KeyAndValueSizeTest);
 
@@ -52,8 +54,7 @@ class MODULES_EXPORT WebIDBTransactionImpl : public WebIDBTransaction {
   size_t max_put_value_size_ =
       mojom::blink::kIDBMaxMessageSize - mojom::blink::kIDBMaxMessageOverhead;
 
-  mojom::blink::IDBTransactionAssociatedPtr transaction_;
-  mojom::blink::IDBTransactionAssociatedRequest transaction_request_;
+  mojo::AssociatedRemote<mojom::blink::IDBTransaction> transaction_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   int64_t transaction_id_;
 };

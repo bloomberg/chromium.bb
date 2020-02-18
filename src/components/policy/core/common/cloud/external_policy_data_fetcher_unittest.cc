@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -52,7 +52,7 @@ class ExternalPolicyDataFetcherTest : public testing::Test {
                      std::unique_ptr<std::string> data);
   int GetAndResetCallbackCount();
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> owner_task_runner_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;

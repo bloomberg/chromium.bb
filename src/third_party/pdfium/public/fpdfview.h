@@ -45,6 +45,7 @@ typedef struct fpdf_dest_t__* FPDF_DEST;
 typedef struct fpdf_document_t__* FPDF_DOCUMENT;
 typedef struct fpdf_font_t__* FPDF_FONT;
 typedef struct fpdf_form_handle_t__* FPDF_FORMHANDLE;
+typedef struct fpdf_javascript_action_t* FPDF_JAVASCRIPT_ACTION;
 typedef struct fpdf_link_t__* FPDF_LINK;
 typedef struct fpdf_page_t__* FPDF_PAGE;
 typedef struct fpdf_pagelink_t__* FPDF_PAGELINK;
@@ -888,7 +889,8 @@ FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_PageToDevice(FPDF_PAGE page,
 //
 //          This function allocates enough memory for holding all pixels in the
 //          bitmap, but it doesn't initialize the buffer. Applications can use
-//          FPDFBitmap_FillRect to fill the bitmap using any color.
+//          FPDFBitmap_FillRect() to fill the bitmap using any color. If the OS
+//          allows it, this function can allocate up to 4 GB of memory.
 FPDF_EXPORT FPDF_BITMAP FPDF_CALLCONV FPDFBitmap_Create(int width,
                                                         int height,
                                                         int alpha);

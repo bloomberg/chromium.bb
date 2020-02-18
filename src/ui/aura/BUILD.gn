@@ -36,6 +36,7 @@ jumbo_component("aura") {
     "input_state_lookup_win.h",
     "layout_manager.h",
     "null_window_targeter.h",
+    "scoped_enable_unadjusted_mouse_events.h",
     "scoped_keyboard_hook.h",
     "scoped_simple_keyboard_hook.h",
     "scoped_window_targeter.h",
@@ -246,12 +247,18 @@ jumbo_static_library("test_support") {
   }
 
   if (use_ozone) {
+    if (is_fuchsia) {
+      deps += [ "//ui/ozone" ]
+    }
     sources += [ "test/ui_controls_factory_ozone.cc" ]
+  }
+
+  if (is_linux) {
+    deps += [ "//ui/platform_window/common" ]
   }
 }
 
-executable("demo") {
-  output_name = "aura_demo"
+executable("aura_demo") {
   testonly = true
 
   sources = [
@@ -266,6 +273,7 @@ executable("demo") {
     "//build/win:default_exe_manifest",
     "//components/viz/host",
     "//components/viz/service",
+    "//mojo/core/embedder",
     "//skia",
     "//third_party/icu",
     "//ui/base",

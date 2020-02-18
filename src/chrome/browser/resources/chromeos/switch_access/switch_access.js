@@ -29,12 +29,6 @@ class SwitchAccess {
     this.autoScanManager_ = null;
 
     /**
-     * Handles keyboard input.
-     * @private {KeyEventHandler}
-     */
-    this.keyEventHandler_ = null;
-
-    /**
      * Handles interactions with the accessibility tree, including moving to and
      * selecting nodes.
      * @private {NavigationManager}
@@ -58,7 +52,7 @@ class SwitchAccess {
      * Feature flag controlling improvement of text input capabilities.
      * @private {boolean}
      */
-    this.enableTextEditing_ = false;
+    this.enableImprovedTextInput_ = false;
 
     this.init_();
   }
@@ -68,22 +62,24 @@ class SwitchAccess {
    * @private
    */
   init_() {
+    chrome.commandLinePrivate.hasSwitch(
+        'enable-experimental-accessibility-switch-access-text', (result) => {
+          this.enableImprovedTextInput_ = result;
+        });
+
     this.commands_ = new Commands(this);
-    this.switchAccessPreferences_ = new SwitchAccessPreferences(this);
     this.autoScanManager_ = new AutoScanManager(this);
-    this.keyEventHandler_ = new KeyEventHandler(this);
+    const onPrefsReady =
+        this.autoScanManager_.onPrefsReady.bind(this.autoScanManager_);
+    this.switchAccessPreferences_ =
+        new SwitchAccessPreferences(this, onPrefsReady);
 
     chrome.automation.getDesktop(function(desktop) {
-      this.navigationManager_ = new NavigationManager(desktop);
+      this.navigationManager_ = new NavigationManager(desktop, this);
 
       if (this.navReadyCallback_)
         this.navReadyCallback_();
     }.bind(this));
-
-    chrome.commandLinePrivate.hasSwitch(
-        'enable-experimental-accessibility-switch-access-text', (result) => {
-          this.enableTextEditing_ = result;
-        });
   }
 
   /**
@@ -124,72 +120,35 @@ class SwitchAccess {
   }
 
   /**
-   * Open the options page in a new tab.
+   * Check if the current node is in the virtual keyboard.
+   * @return {boolean}
    * @override
+   * @public
    */
-  showOptionsPage() {
-    const optionsPage = {url: 'options.html'};
-    chrome.tabs.create(optionsPage);
+  inVirtualKeyboard() {
+    if (this.navigationManager_) {
+      return this.navigationManager_.inVirtualKeyboard();
+    }
+    return false;
   }
 
   /**
    * Returns whether or not the feature flag
-   * for text editing is enabled.
+   * for improved text input is enabled.
    * @return {boolean}
+   * @override
    * @public
    */
-  textEditingEnabled() {
-    return this.enableTextEditing_;
+  improvedTextInputEnabled() {
+    return this.enableImprovedTextInput_;
   }
 
   /**
-   * Return a list of the names of all user commands.
+   * Restarts auto-scan if it is enabled.
    * @override
-   * @return {!Array<!SAConstants.Command>}
+   * @public
    */
-  getCommands() {
-    return Object.values(SAConstants.Command);
-  }
-
-  /**
-   * Checks if the given string is a valid Switch Access command.
-   * @param {string} command
-   * @return {boolean}
-   */
-  hasCommand(command) {
-    return Object.values(SAConstants.Command).includes(command);
-  }
-
-  /**
-   * Forwards the keycodes received from keyPressed events to |callback|.
-   * @param {function(number)} callback
-   */
-  listenForKeycodes(callback) {
-    this.keyEventHandler_.listenForKeycodes(callback);
-  }
-
-  /**
-   * Stops forwarding keycodes.
-   */
-  stopListeningForKeycodes() {
-    this.keyEventHandler_.stopListeningForKeycodes();
-  }
-
-  /**
-   * Run the function binding for the specified command.
-   * @override
-   * @param {!SAConstants.Command} command
-   */
-  runCommand(command) {
-    this.commands_.runCommand(command);
-  }
-
-  /**
-   * Perform actions as the result of actions by the user. Currently, restarts
-   * auto-scan if it is enabled.
-   * @override
-   */
-  performedUserAction() {
+  restartAutoScan() {
     this.autoScanManager_.restartIfRunning();
   }
 
@@ -201,77 +160,77 @@ class SwitchAccess {
   onPreferencesChanged(changes) {
     for (const key of Object.keys(changes)) {
       switch (key) {
-        case 'enableAutoScan':
+        case SAConstants.Preference.AUTO_SCAN_ENABLED:
           this.autoScanManager_.setEnabled(changes[key]);
           break;
-        case 'autoScanTime':
-          this.autoScanManager_.setScanTime(changes[key]);
+        case SAConstants.Preference.AUTO_SCAN_TIME:
+          this.autoScanManager_.setDefaultScanTime(changes[key]);
           break;
-        default:
-          if (this.hasCommand(key))
-            this.keyEventHandler_.updateSwitchAccessKeys();
+        case SAConstants.Preference.AUTO_SCAN_KEYBOARD_TIME:
+          this.autoScanManager_.setKeyboardScanTime(changes[key]);
+          break;
       }
     }
   }
 
   /**
-   * Set the value of the preference |key| to |value| in chrome.storage.sync.
+   * Set the value of the preference |name| to |value| in chrome.storage.sync.
    * Once the storage is set, the Switch Access preferences/behavior are
    * updated.
    *
    * @override
-   * @param {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
    * @param {boolean|number} value
    */
-  setPreference(key, value) {
-    this.switchAccessPreferences_.setPreference(key, value);
+  setPreference(name, value) {
+    this.switchAccessPreferences_.setPreference(name, value);
   }
 
   /**
-   * Get the boolean value for the given key. Will throw a type error if the
-   * value associated with |key| is not a boolean, or undefined.
+   * Get the boolean value for the given name. Will throw a type error if the
+   * value associated with |name| is not a boolean, or undefined.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {boolean}
    */
-  getBooleanPreference(key) {
-    return this.switchAccessPreferences_.getBooleanPreference(key);
+  getBooleanPreference(name) {
+    return this.switchAccessPreferences_.getBooleanPreference(name);
   }
 
   /**
-   * Get the number value for the given key. Will throw a type error if the
-   * value associated with |key| is not a number, or undefined.
+   * Get the string value for the given name. Will throw a type error if the
+   * value associated with |name| is not a string, or is undefined.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param {SAConstants.Preference} name
+   * @return {string}
+   */
+  getStringPreference(name) {
+    return this.switchAccessPreferences_.getStringPreference(name);
+  }
+
+  /**
+   * Get the number value for the given name. Will throw a type error if the
+   * value associated with |name| is not a number, or undefined.
+   *
+   * @override
+   * @param  {SAConstants.Preference} name
    * @return {number}
    */
-  getNumberPreference(key) {
-    return this.switchAccessPreferences_.getNumberPreference(key);
+  getNumberPreference(name) {
+    return this.switchAccessPreferences_.getNumberPreference(name);
   }
 
   /**
-   * Get the number value for the given key, or |null| if none exists.
+   * Get the number value for the given name, or |null| if none exists.
    *
    * @override
-   * @param  {SAConstants.Preference} key
+   * @param  {SAConstants.Preference} name
    * @return {number|null}
    */
-  getNumberPreferenceIfDefined(key) {
-    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(key);
-  }
-
-  /**
-   * Returns true if |keyCode| is already used to run a command from the
-   * keyboard.
-   *
-   * @override
-   * @param {number} keyCode
-   * @return {boolean}
-   */
-  keyCodeIsUsed(keyCode) {
-    return this.switchAccessPreferences_.keyCodeIsUsed(keyCode);
+  getNumberPreferenceIfDefined(name) {
+    return this.switchAccessPreferences_.getNumberPreferenceIfDefined(name);
   }
 
   /**

@@ -88,7 +88,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='sys', gid=3, users={'root', 'bin', 'adm'}),
     GroupEntry(group='adm', gid=4, users={'root', 'adm', 'daemon'}),
     GroupEntry(group='tty', gid=5, users={'power', 'brltty'}),
-    GroupEntry(group='disk', gid=6, users={'root', 'adm', 'cros-disks'}),
+    GroupEntry(group='disk', gid=6, users={'root', 'adm', 'cros-disks',
+                                           'cros_healthd'}),
     GroupEntry(group='lp', gid=7, users={'lp', 'lpadmin', 'cups', 'chronos'}),
     GroupEntry(group='mem', gid=8),
     GroupEntry(group='kmem', gid=9),
@@ -102,7 +103,8 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='cdrom', gid=19, users={'cros-disks'}),
     GroupEntry(group='tape', gid=26, users={'root'}),
     GroupEntry(group='video', gid=27, users={'root', 'chronos', 'arc-camera',
-                                             'dlm', 'rtanalytics', 'crosvm'}),
+                                             'dlm', 'rtanalytics', 'crosvm',
+                                             'cfm-monitor'}),
     GroupEntry(group='cdrw', gid=80, users={'cros-disks'}),
     GroupEntry(group='usb', gid=85, users={'mtp', 'brltty', 'dlm', 'modem'}),
     GroupEntry(group='users', gid=100),
@@ -178,6 +180,7 @@ GROUP_BASELINE = dict((e.group, e) for e in (
     GroupEntry(group='kerberosd', gid=20131, users={'kerberosd',
                                                     'kerberosd-exec'}),
     GroupEntry(group='hidraw', gid=403, users={'fwupdate-hidraw'}),
+    GroupEntry(group='cups-proxy', gid=20136, users={'crosvm', 'cups-proxy'}),
 ))
 
 GROUP_BASELINE_LAKITU = dict((e.group, e) for e in (

@@ -61,9 +61,10 @@ TEST(CommandLineFlagsTest, CanBeAccessedInCodeOnceGTestHIsIncluded) {
 #include <time.h>
 
 #include <map>
-#include <vector>
 #include <ostream>
+#include <type_traits>
 #include <unordered_set>
+#include <vector>
 
 #include "gtest/gtest-spi.h"
 #include "src/gtest-internal-inl.h"
@@ -226,7 +227,6 @@ using testing::TestProperty;
 using testing::TestResult;
 using testing::TimeInMillis;
 using testing::UnitTest;
-using testing::internal::AddReference;
 using testing::internal::AlwaysFalse;
 using testing::internal::AlwaysTrue;
 using testing::internal::AppendUserMessage;
@@ -262,7 +262,6 @@ using testing::internal::OsStackTraceGetterInterface;
 using testing::internal::ParseInt32Flag;
 using testing::internal::RelationToSourceCopy;
 using testing::internal::RelationToSourceReference;
-using testing::internal::RemoveConst;
 using testing::internal::RemoveReference;
 using testing::internal::ShouldRunTestOnShard;
 using testing::internal::ShouldShard;
@@ -2016,10 +2015,11 @@ void ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTest(
 
 void ExpectNonFatalFailureRecordingPropertyWithReservedKeyForCurrentTestSuite(
     const char* key) {
-  const TestCase* test_case = UnitTest::GetInstance()->current_test_case();
-  ASSERT_TRUE(test_case != nullptr);
+  const testing::TestSuite* test_suite =
+      UnitTest::GetInstance()->current_test_suite();
+  ASSERT_TRUE(test_suite != nullptr);
   ExpectNonFatalFailureRecordingPropertyWithReservedKey(
-      test_case->ad_hoc_test_result(), key);
+      test_suite->ad_hoc_test_result(), key);
 }
 
 void ExpectNonFatalFailureRecordingPropertyWithReservedKeyOutsideOfTestSuite(
@@ -2049,8 +2049,10 @@ class UnitTestRecordPropertyTest :
         "time");
 
     Test::RecordProperty("test_case_key_1", "1");
+
     const testing::TestSuite* test_suite =
-        UnitTest::GetInstance()->current_test_case();
+        UnitTest::GetInstance()->current_test_suite();
+
     ASSERT_TRUE(test_suite != nullptr);
 
     ASSERT_EQ(1, test_suite->ad_hoc_test_result().test_property_count());
@@ -2167,12 +2169,12 @@ static Environment* record_property_env GTEST_ATTRIBUTE_UNUSED_ =
 
 // First, some predicates and predicate-formatters needed by the tests.
 
-// Returns true iff the argument is an even number.
+// Returns true if the argument is an even number.
 bool IsEven(int n) {
   return (n % 2) == 0;
 }
 
-// A functor that returns true iff the argument is an even number.
+// A functor that returns true if the argument is an even number.
 struct IsEvenFunctor {
   bool operator()(int n) { return IsEven(n); }
 };
@@ -2216,12 +2218,12 @@ struct AssertIsEvenFunctor {
   }
 };
 
-// Returns true iff the sum of the arguments is an even number.
+// Returns true if the sum of the arguments is an even number.
 bool SumIsEven2(int n1, int n2) {
   return IsEven(n1 + n2);
 }
 
-// A functor that returns true iff the sum of the arguments is an even
+// A functor that returns true if the sum of the arguments is an even
 // number.
 struct SumIsEven3Functor {
   bool operator()(int n1, int n2, int n3) {
@@ -7132,33 +7134,6 @@ TEST(RemoveReferenceTest, MacroVersion) {
   TestGTestRemoveReference<const char, const char&>();
 }
 
-
-// Tests that RemoveConst does not affect non-const types.
-TEST(RemoveConstTest, DoesNotAffectNonConstType) {
-  CompileAssertTypesEqual<int, RemoveConst<int>::type>();
-  CompileAssertTypesEqual<char&, RemoveConst<char&>::type>();
-}
-
-// Tests that RemoveConst removes const from const types.
-TEST(RemoveConstTest, RemovesConst) {
-  CompileAssertTypesEqual<int, RemoveConst<const int>::type>();
-  CompileAssertTypesEqual<char[2], RemoveConst<const char[2]>::type>();
-  CompileAssertTypesEqual<char[2][3], RemoveConst<const char[2][3]>::type>();
-}
-
-// Tests GTEST_REMOVE_CONST_.
-
-template <typename T1, typename T2>
-void TestGTestRemoveConst() {
-  CompileAssertTypesEqual<T1, GTEST_REMOVE_CONST_(T2)>();
-}
-
-TEST(RemoveConstTest, MacroVersion) {
-  TestGTestRemoveConst<int, int>();
-  TestGTestRemoveConst<double&, double&>();
-  TestGTestRemoveConst<char, const char>();
-}
-
 // Tests GTEST_REMOVE_REFERENCE_AND_CONST_.
 
 template <typename T1, typename T2>
@@ -7172,30 +7147,6 @@ TEST(RemoveReferenceToConstTest, Works) {
   TestGTestRemoveReferenceAndConst<char, const char>();
   TestGTestRemoveReferenceAndConst<char, const char&>();
   TestGTestRemoveReferenceAndConst<const char*, const char*>();
-}
-
-// Tests that AddReference does not affect reference types.
-TEST(AddReferenceTest, DoesNotAffectReferenceType) {
-  CompileAssertTypesEqual<int&, AddReference<int&>::type>();
-  CompileAssertTypesEqual<const char&, AddReference<const char&>::type>();
-}
-
-// Tests that AddReference adds reference to non-reference types.
-TEST(AddReferenceTest, AddsReference) {
-  CompileAssertTypesEqual<int&, AddReference<int>::type>();
-  CompileAssertTypesEqual<const char&, AddReference<const char>::type>();
-}
-
-// Tests GTEST_ADD_REFERENCE_.
-
-template <typename T1, typename T2>
-void TestGTestAddReference() {
-  CompileAssertTypesEqual<T1, GTEST_ADD_REFERENCE_(T2)>();
-}
-
-TEST(AddReferenceTest, MacroVersion) {
-  TestGTestAddReference<int&, int>();
-  TestGTestAddReference<const char&, const char&>();
 }
 
 // Tests GTEST_REFERENCE_TO_CONST_.

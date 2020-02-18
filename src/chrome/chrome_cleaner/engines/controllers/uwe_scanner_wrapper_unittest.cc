@@ -13,7 +13,7 @@
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "chrome/chrome_cleaner/chrome_utils/extension_id.h"
 #include "chrome/chrome_cleaner/constants/uws_id.h"
@@ -210,7 +210,7 @@ class UwEScannerWrapperTest : public testing::Test {
 
   UwEMatchers matchers_;
   TestPUPData test_pup_data_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   scoped_refptr<StrictMockEngineClient> mock_engine_client_{
       base::MakeRefCounted<StrictMockEngineClient>()};

@@ -16,6 +16,7 @@
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_clock.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
+#include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_string_piece.h"
@@ -42,9 +43,15 @@ void QuicStreamSequencer::OnStreamFrame(const QuicStreamFrame& frame) {
   const size_t data_len = frame.data_length;
 
   if (frame.fin) {
-    CloseStreamAtOffset(frame.offset + data_len);
+    bool should_process_data = CloseStreamAtOffset(frame.offset + data_len);
     if (data_len == 0) {
       return;
+    }
+    if (GetQuicReloadableFlag(quic_no_stream_data_after_reset)) {
+      QUIC_RELOADABLE_FLAG_COUNT(quic_no_stream_data_after_reset);
+      if (!should_process_data) {
+        return;
+      }
     }
   }
   OnFrameData(byte_offset, data_len, frame.data_buffer);
@@ -109,24 +116,25 @@ void QuicStreamSequencer::OnFrameData(QuicStreamOffset byte_offset,
   }
 }
 
-void QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
+bool QuicStreamSequencer::CloseStreamAtOffset(QuicStreamOffset offset) {
   const QuicStreamOffset kMaxOffset =
       std::numeric_limits<QuicStreamOffset>::max();
 
   // If there is a scheduled close, the new offset should match it.
   if (close_offset_ != kMaxOffset && offset != close_offset_) {
     stream_->Reset(QUIC_MULTIPLE_TERMINATION_OFFSETS);
-    return;
+    return false;
   }
 
   close_offset_ = offset;
 
   MaybeCloseStream();
+  return true;
 }
 
-bool QuicStreamSequencer::MaybeCloseStream() {
+void QuicStreamSequencer::MaybeCloseStream() {
   if (blocked_ || !IsClosed()) {
-    return false;
+    return;
   }
 
   QUIC_DVLOG(1) << "Passing up termination, as we've processed "
@@ -143,7 +151,6 @@ bool QuicStreamSequencer::MaybeCloseStream() {
     stream_->OnDataAvailable();
   }
   buffered_frames_.Clear();
-  return true;
 }
 
 int QuicStreamSequencer::GetReadableRegions(iovec* iov, size_t iov_len) const {
@@ -160,11 +167,6 @@ bool QuicStreamSequencer::PeekRegion(QuicStreamOffset offset,
                                      iovec* iov) const {
   DCHECK(!blocked_);
   return buffered_frames_.PeekRegion(offset, iov);
-}
-
-bool QuicStreamSequencer::PrefetchNextRegion(iovec* iov) {
-  DCHECK(!blocked_);
-  return buffered_frames_.PrefetchNextRegion(iov);
 }
 
 void QuicStreamSequencer::Read(std::string* buffer) {

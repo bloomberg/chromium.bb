@@ -24,6 +24,8 @@
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 
@@ -50,12 +52,11 @@ std::string ComposeFetchEventResultString(
 class ServiceWorkerNavigationLoader::StreamWaiter
     : public blink::mojom::ServiceWorkerStreamCallback {
  public:
-  StreamWaiter(
-      ServiceWorkerNavigationLoader* owner,
-      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request)
-      : owner_(owner),
-        binding_(this, std::move(callback_request)) {
-    binding_.set_connection_error_handler(
+  StreamWaiter(ServiceWorkerNavigationLoader* owner,
+               mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
+                   callback_receiver)
+      : owner_(owner), receiver_(this, std::move(callback_receiver)) {
+    receiver_.set_disconnect_handler(
         base::BindOnce(&StreamWaiter::OnAborted, base::Unretained(this)));
   }
 
@@ -71,7 +72,7 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 
  private:
   ServiceWorkerNavigationLoader* owner_;
-  mojo::Binding<blink::mojom::ServiceWorkerStreamCallback> binding_;
+  mojo::Receiver<blink::mojom::ServiceWorkerStreamCallback> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamWaiter);
 };
@@ -102,6 +103,9 @@ ServiceWorkerNavigationLoader::~ServiceWorkerNavigationLoader() {
 
 void ServiceWorkerNavigationLoader::DetachedFromRequest() {
   is_detached_ = true;
+  // Clear |fallback_callback_| since it's no longer safe to invoke it because
+  // the bound object has been destroyed.
+  fallback_callback_.Reset();
   DeleteIfNeeded();
 }
 
@@ -120,7 +124,7 @@ void ServiceWorkerNavigationLoader::StartRequest(
                          "url", resource_request.url.spec());
   DCHECK(ServiceWorkerUtils::IsMainResourceType(
       static_cast<ResourceType>(resource_request.resource_type)));
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
 
   resource_request_ = resource_request;
   if (provider_host_ && provider_host_->fetch_request_window_id()) {
@@ -257,7 +261,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     blink::mojom::ServiceWorkerFetchEventTimingPtr timing,
     scoped_refptr<ServiceWorkerVersion> version) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(status_, Status::kStarted);
 
   TRACE_EVENT_WITH_FLOW2(
@@ -283,8 +287,10 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     // page, but the risk is that the user will be stuck if there's a persistent
     // failure.
     provider_host_->NotifyControllerLost();
-    std::move(fallback_callback_)
-        .Run(true /* reset_subresource_loader_params */);
+    if (fallback_callback_) {
+      std::move(fallback_callback_)
+          .Run(true /* reset_subresource_loader_params */);
+    }
     return;
   }
 
@@ -294,8 +300,10 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     RecordTimingMetrics(false);
     // TODO(falken): Propagate the timing info to the renderer somehow, or else
     // Navigation Timing etc APIs won't know about service worker.
-    std::move(fallback_callback_)
-        .Run(false /* reset_subresource_loader_params */);
+    if (fallback_callback_) {
+      std::move(fallback_callback_)
+          .Run(false /* reset_subresource_loader_params */);
+    }
     return;
   }
 
@@ -318,7 +326,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
     blink::mojom::FetchAPIResponsePtr response,
     scoped_refptr<ServiceWorkerVersion> version,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK_EQ(status_, Status::kStarted);
 
   ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, &response_head_);
@@ -370,7 +378,7 @@ void ServiceWorkerNavigationLoader::StartResponse(
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "result", "stream response");
     stream_waiter_ = std::make_unique<StreamWaiter>(
-        this, std::move(body_as_stream->callback_request));
+        this, std::move(body_as_stream->callback_receiver));
     CommitResponseBody(std::move(body_as_stream->stream));
     // StreamWaiter will call CommitCompleted() when done.
     return;
@@ -415,12 +423,6 @@ void ServiceWorkerNavigationLoader::FollowRedirect(
     const net::HttpRequestHeaders& modified_headers,
     const base::Optional<GURL>& new_url) {
   NOTIMPLEMENTED();
-}
-
-void ServiceWorkerNavigationLoader::ProceedWithResponse() {
-  // ServiceWorkerNavigationLoader doesn't need to wait for
-  // ProceedWithResponse() since it doesn't use MojoAsyncResourceHandler to load
-  // the resource request.
 }
 
 void ServiceWorkerNavigationLoader::SetPriority(net::RequestPriority priority,

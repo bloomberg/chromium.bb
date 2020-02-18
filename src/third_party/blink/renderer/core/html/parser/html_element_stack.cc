@@ -353,7 +353,7 @@ void HTMLElementStack::RemoveHTMLHeadElement(Element* element) {
 }
 
 void HTMLElementStack::Remove(Element* element) {
-  DCHECK(!IsHTMLHeadElement(element));
+  DCHECK(!IsA<HTMLHeadElement>(element));
   if (top_->GetElement() == element) {
     Pop();
     return;
@@ -507,8 +507,8 @@ void HTMLElementStack::PopCommon() {
 }
 
 void HTMLElementStack::RemoveNonTopCommon(Element* element) {
-  DCHECK(!IsHTMLHtmlElement(element));
-  DCHECK(!IsHTMLBodyElement(element));
+  DCHECK(!IsA<HTMLHtmlElement>(element));
+  DCHECK(!IsA<HTMLBodyElement>(element));
   DCHECK_NE(Top(), element);
   for (ElementRecord* pos = top_.Get(); pos; pos = pos->Next()) {
     if (pos->Next()->GetElement() == element) {

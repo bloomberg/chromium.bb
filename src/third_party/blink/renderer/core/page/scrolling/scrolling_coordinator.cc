@@ -31,14 +31,12 @@
 #include "build/build_config.h"
 #include "cc/animation/animation_host.h"
 #include "cc/input/main_thread_scrolling_reason.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/painted_overlay_scrollbar_layer.h"
 #include "cc/layers/painted_scrollbar_layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/layers/scrollbar_layer_interface.h"
 #include "cc/layers/solid_color_scrollbar_layer.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_element.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
@@ -94,6 +92,7 @@ void ScrollingCoordinator::Trace(blink::Visitor* visitor) {
 void ScrollingCoordinator::SetShouldHandleScrollGestureOnMainThreadRegion(
     const Region& region,
     GraphicsLayer* layer) {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
   if (cc::Layer* cc_layer = GraphicsLayerToCcLayer(layer))
     cc_layer->SetNonFastScrollableRegion(RegionToCCRegion(region));
 }
@@ -102,14 +101,6 @@ void ScrollingCoordinator::NotifyGeometryChanged(LocalFrameView* frame_view) {
   frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
   frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
   frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(true);
-}
-
-void ScrollingCoordinator::NotifyTransformChanged(LocalFrame* frame) {
-  DCHECK(frame);
-  if (!frame->View())
-    return;
-
-  frame->View()->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
 ScrollableArea*
@@ -167,33 +158,8 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
                            LocalFrameUkmAggregator::kScrollingCoordinator);
   TRACE_EVENT0("input", "ScrollingCoordinator::UpdateAfterPaint");
 
-  // TODO(pdr): Move the scroll gesture region logic to use touch action rects.
-  // These features are similar and do not need independent implementations.
   if (scroll_gesture_region_dirty) {
-    // Compute the regions of the page where we can't handle scroll gestures on
-    // the impl thread. This currently includes:
-    // 1. All scrollable areas, such as subframes, overflow divs and list boxes,
-    //    whose composited scrolling are not enabled. We need to do this even if
-    //    the frame view whose layout was updated is not the main frame.
-    // 2. Resize control areas, e.g. the small rect at the right bottom of
-    //    div/textarea/iframe when CSS property "resize" is enabled.
-    // 3. Plugin areas.
-    Region main_thread_scrolling_region;
-    Region main_thread_fixed_region;
-    ComputeShouldHandleScrollGestureOnMainThreadRegion(
-        frame, &main_thread_scrolling_region, &main_thread_fixed_region);
-
-    SetShouldHandleScrollGestureOnMainThreadRegion(
-        main_thread_scrolling_region,
-        frame_view->GetScrollableArea()->LayerForScrolling());
-
-    // Fixed regions will be stored on the visual viewport's scroll layer. This
-    // is because a region for an area that's fixed to the layout viewport
-    // won't move when the layout viewport scrolls.
-    SetShouldHandleScrollGestureOnMainThreadRegion(
-        main_thread_fixed_region,
-        page_->GetVisualViewport().LayerForScrolling());
-
+    UpdateNonFastScrollableRegions(frame);
     frame_view->GetScrollingContext()->SetScrollGestureRegionIsDirty(false);
   }
 
@@ -209,31 +175,12 @@ void ScrollingCoordinator::UpdateAfterPaint(LocalFrameView* frame_view) {
 
   if (should_scroll_on_main_thread_dirty ||
       frame_view->FrameIsScrollableDidChange()) {
-    // When blink generates property trees, main thread scrolling reasons are
-    // stored on scroll nodes.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      // TODO(pdr): This also takes over scroll animations if main thread
-      // reasons are present. This needs to be implemented for
-      // BlinkGenPropertyTrees.
-      // TODO(bokan): Does this work for scrollers other than FrameViews? If
-      // not, this will need to account for root scrollers.
-      SetShouldUpdateScrollLayerPositionOnMainThread(
-          frame, frame_view->GetMainThreadScrollingReasons());
-
-      // Need to update scroll on main thread reasons for subframe because
-      // subframe (e.g. iframe with background-attachment:fixed) should
-      // scroll on main thread while the main frame scrolls on impl.
-      frame_view->UpdateSubFrameScrollOnMainReason(*frame, 0);
-    }
+    // TODO(pdr): Now that BlinkGenPropertyTrees has launched, we should remove
+    // FrameIsScrollableDidChange.
     frame_view->GetScrollingContext()->SetShouldScrollOnMainThreadIsDirty(
         false);
   }
   frame_view->ClearFrameIsScrollableDidChange();
-
-  // When blink generates property trees, the user input scrollable bits are
-  // stored on scroll nodes instead of layers.
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    UpdateUserInputScrollable(&page_->GetVisualViewport());
 }
 
 template <typename Function>
@@ -252,6 +199,60 @@ static void ForAllPaintingGraphicsLayers(GraphicsLayer& layer,
     ForAllPaintingGraphicsLayers(*child, function);
 }
 
+// Set the non-fast scrollable regions on |layer|'s cc layer.
+static void UpdateLayerNonFastScrollableRegions(GraphicsLayer& layer) {
+  DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+  // CompositeAfterPaint does this update in PaintArtifactCompositor.
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
+
+  DCHECK(layer.PaintsContentOrHitTest());
+
+  if (layer.Client().ShouldThrottleRendering()) {
+    layer.CcLayer()->SetNonFastScrollableRegion(cc::Region());
+    return;
+  }
+
+  auto offset = layer.GetOffsetFromTransformNode();
+  gfx::Vector2dF layer_offset = gfx::Vector2dF(offset.X(), offset.Y());
+  PaintChunkSubset paint_chunks =
+      PaintChunkSubset(layer.GetPaintController().PaintChunks());
+  PaintArtifactCompositor::UpdateNonFastScrollableRegions(
+      layer.CcLayer(), layer_offset, layer.GetPropertyTreeState(),
+      paint_chunks);
+}
+
+// Compute the regions of the page where we can't handle scroll gestures on
+// the impl thread. This currently includes:
+// 1. All scrollable areas, such as subframes, overflow divs and list boxes,
+//    whose composited scrolling are not enabled. We need to do this even if
+//    the frame view whose layout was updated is not the main frame.
+// 2. Resize control areas, e.g. the small rect at the right bottom of
+//    div/textarea/iframe when CSS property "resize" is enabled.
+// 3. Plugin areas.
+void ScrollingCoordinator::UpdateNonFastScrollableRegions(LocalFrame* frame) {
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    auto* view_layer = frame->View()->GetLayoutView()->Layer();
+    if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
+      ForAllPaintingGraphicsLayers(*root, UpdateLayerNonFastScrollableRegions);
+  } else {
+    Region main_thread_scrolling_region;
+    Region main_thread_fixed_region;
+    ComputeShouldHandleScrollGestureOnMainThreadRegion(
+        frame, &main_thread_scrolling_region, &main_thread_fixed_region);
+
+    SetShouldHandleScrollGestureOnMainThreadRegion(
+        main_thread_scrolling_region,
+        frame->View()->GetScrollableArea()->LayerForScrolling());
+
+    // Fixed regions will be stored on the visual viewport's scroll layer.
+    // This is because a region for an area that's fixed to the layout
+    // viewport won't move when the layout viewport scrolls.
+    SetShouldHandleScrollGestureOnMainThreadRegion(
+        main_thread_fixed_region,
+        page_->GetVisualViewport().LayerForScrolling());
+  }
+}
+
 // Set the touch action rects on the cc layer from the touch action data stored
 // on the GraphicsLayer's paint chunks.
 static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
@@ -267,70 +268,6 @@ static void UpdateLayerTouchActionRects(GraphicsLayer& layer) {
   PaintArtifactCompositor::UpdateTouchActionRects(layer.CcLayer(), layer_offset,
                                                   layer.GetPropertyTreeState(),
                                                   paint_chunks);
-}
-
-static void ClearPositionConstraintExceptForLayer(GraphicsLayer* layer,
-                                                  GraphicsLayer* except) {
-  // When blink generates property trees, the layer position constraints are
-  // not set on cc::Layer because they are only used by the cc property tree
-  // builder.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  if (layer && layer != except && GraphicsLayerToCcLayer(layer)) {
-    GraphicsLayerToCcLayer(layer)->SetPositionConstraint(
-        cc::LayerPositionConstraint());
-  }
-}
-
-static cc::LayerPositionConstraint ComputePositionConstraint(
-    const PaintLayer* layer) {
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-  DCHECK(layer->HasCompositedLayerMapping());
-  do {
-    if (layer->GetLayoutObject().Style()->GetPosition() == EPosition::kFixed) {
-      const LayoutObject& fixed_position_object = layer->GetLayoutObject();
-      bool fixed_to_right = !fixed_position_object.Style()->Right().IsAuto();
-      bool fixed_to_bottom = fixed_position_object.Style()->IsFixedToBottom();
-      cc::LayerPositionConstraint constraint;
-      constraint.set_is_fixed_position(true);
-      constraint.set_is_fixed_to_right_edge(fixed_to_right);
-      constraint.set_is_fixed_to_bottom_edge(fixed_to_bottom);
-      return constraint;
-    }
-
-    layer = layer->Parent();
-
-    // Composited layers that inherit a fixed position state will be positioned
-    // with respect to the nearest compositedLayerMapping's GraphicsLayer.
-    // So, once we find a layer that has its own compositedLayerMapping, we can
-    // stop searching for a fixed position LayoutObject.
-  } while (layer && !layer->HasCompositedLayerMapping());
-  return cc::LayerPositionConstraint();
-}
-
-void ScrollingCoordinator::UpdateLayerPositionConstraint(PaintLayer* layer) {
-  // When blink generates property trees, the layer position constraints are
-  // not set on cc::Layer because they are only used by the cc property tree
-  // builder.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled() &&
-         !RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
-
-  DCHECK(layer->HasCompositedLayerMapping());
-  CompositedLayerMapping* composited_layer_mapping =
-      layer->GetCompositedLayerMapping();
-  GraphicsLayer* main_layer = composited_layer_mapping->ChildForSuperlayers();
-
-  // Avoid unnecessary commits
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->SquashingContainmentLayer(), main_layer);
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->AncestorClippingLayer(), main_layer);
-  ClearPositionConstraintExceptForLayer(
-      composited_layer_mapping->MainGraphicsLayer(), main_layer);
-
-  if (cc::Layer* scrollable_layer = GraphicsLayerToCcLayer(main_layer))
-    scrollable_layer->SetPositionConstraint(ComputePositionConstraint(layer));
 }
 
 void ScrollingCoordinator::WillDestroyScrollableArea(
@@ -526,26 +463,12 @@ void ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   if (!page_ || !page_->MainFrame())
     return;
 
-  if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    UpdateUserInputScrollable(scrollable_area);
-
   cc::Layer* cc_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
   cc::Layer* container_layer =
       GraphicsLayerToCcLayer(scrollable_area->LayerForContainer());
   if (cc_layer) {
     cc_layer->SetScrollable(container_layer->bounds());
-
-    // The scroll offset is pushed to cc::Layers separately in
-    // UpdateCompositedScrolloffset. This is needed for the visual viewport
-    // scroll offsets which aren't updated as part of a compositing update. In
-    // BlinkGenPropertyTrees, the visual viewport sets scroll offsets directly
-    // into its transform paint property nodes so this becomes unneeded.
-    if (!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
-      FloatPoint scroll_position(scrollable_area->ScrollPosition());
-      cc_layer->SetScrollOffset(
-          static_cast<gfx::ScrollOffset>(scroll_position));
-    }
 
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
@@ -627,29 +550,11 @@ void ScrollingCoordinator::UpdateTouchEventTargetRectsIfNeeded(
   TRACE_EVENT0("input",
                "ScrollingCoordinator::updateTouchEventTargetRectsIfNeeded");
 
-  // TODO(chrishtr): implement touch event target rects for CAP.
-  if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled())
-    return;
+  DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
 
   auto* view_layer = frame->View()->GetLayoutView()->Layer();
   if (auto* root = view_layer->Compositor()->PaintRootGraphicsLayer())
     ForAllPaintingGraphicsLayers(*root, UpdateLayerTouchActionRects);
-}
-
-void ScrollingCoordinator::UpdateUserInputScrollable(
-    ScrollableArea* scrollable_area) {
-  // When blink generates property trees, the user input scrollable bits are
-  // stored on scroll nodes instead of layers so this is not needed.
-  DCHECK(!RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled());
-  cc::Layer* cc_layer =
-      GraphicsLayerToCcLayer(scrollable_area->LayerForScrolling());
-  if (cc_layer) {
-    bool can_scroll_x =
-        scrollable_area->UserInputScrollable(kHorizontalScrollbar);
-    bool can_scroll_y =
-        scrollable_area->UserInputScrollable(kVerticalScrollbar);
-    cc_layer->SetUserScrollable(can_scroll_x, can_scroll_y);
-  }
 }
 
 void ScrollingCoordinator::Reset(LocalFrame* frame) {
@@ -692,82 +597,7 @@ void ScrollingCoordinator::TouchEventTargetRectsDidChange(LocalFrame* frame) {
   frame_view->GetScrollingContext()->SetTouchEventTargetRectsAreDirty(true);
 }
 
-void ScrollingCoordinator::UpdateScrollParentForGraphicsLayer(
-    GraphicsLayer* child,
-    const PaintLayer* parent) {
-  cc::Layer* scroll_parent_cc_layer = nullptr;
-  if (parent && parent->HasCompositedLayerMapping())
-    scroll_parent_cc_layer = GraphicsLayerToCcLayer(
-        parent->GetCompositedLayerMapping()->ScrollingContentsLayer());
-
-  child->SetScrollParent(scroll_parent_cc_layer);
-}
-
-void ScrollingCoordinator::UpdateClipParentForGraphicsLayer(
-    GraphicsLayer* child,
-    const PaintLayer* parent) {
-  cc::Layer* clip_parent_cc_layer = nullptr;
-  if (parent && parent->HasCompositedLayerMapping()) {
-    clip_parent_cc_layer = GraphicsLayerToCcLayer(
-        parent->GetCompositedLayerMapping()->ParentForSublayers());
-  }
-
-  child->SetClipParent(clip_parent_cc_layer);
-}
-
-void ScrollingCoordinator::SetShouldUpdateScrollLayerPositionOnMainThread(
-    LocalFrame* frame,
-    MainThreadScrollingReasons main_thread_scrolling_reasons) {
-  VisualViewport& visual_viewport = frame->GetPage()->GetVisualViewport();
-  GraphicsLayer* visual_viewport_layer = visual_viewport.ScrollLayer();
-  cc::Layer* visual_viewport_scroll_layer =
-      GraphicsLayerToCcLayer(visual_viewport_layer);
-  // TODO(bokan): It would probably make more sense to use the root scroller's
-  // layer here, but this code is only ever executed in !BGPT mode. With BGPT
-  // the MainThreadScrollingReasons are already stored on individual
-  // ScrollNodes. The CompositorAnimation hand-off should probably be
-  // generalized to work on non-FrameView scrollers though.
-  ScrollableArea* scrollable_area = frame->View()->LayoutViewport();
-  GraphicsLayer* layer = scrollable_area->LayerForScrolling();
-  if (cc::Layer* scroll_layer = GraphicsLayerToCcLayer(layer)) {
-    if (main_thread_scrolling_reasons) {
-      if (ScrollAnimatorBase* scroll_animator =
-              scrollable_area->ExistingScrollAnimator()) {
-        DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-               frame->GetDocument()->Lifecycle().GetState() >=
-                   DocumentLifecycle::kCompositingClean);
-        scroll_animator->TakeOverCompositorAnimation();
-      }
-      scroll_layer->AddMainThreadScrollingReasons(
-          main_thread_scrolling_reasons);
-      if (visual_viewport_scroll_layer) {
-        if (ScrollAnimatorBase* scroll_animator =
-                visual_viewport.ExistingScrollAnimator()) {
-          DCHECK(RuntimeEnabledFeatures::CompositeAfterPaintEnabled() ||
-                 frame->GetDocument()->Lifecycle().GetState() >=
-                     DocumentLifecycle::kCompositingClean);
-          scroll_animator->TakeOverCompositorAnimation();
-        }
-        visual_viewport_scroll_layer->AddMainThreadScrollingReasons(
-            main_thread_scrolling_reasons);
-      }
-    } else {
-      // Clear all main thread scrolling reasons except the one that's set
-      // if there is a running scroll animation.
-      uint32_t main_thread_scrolling_reasons_to_clear = ~0u;
-      main_thread_scrolling_reasons_to_clear &=
-          ~cc::MainThreadScrollingReason::kHandlingScrollFromMainThread;
-      scroll_layer->ClearMainThreadScrollingReasons(
-          main_thread_scrolling_reasons_to_clear);
-      if (visual_viewport_scroll_layer)
-        visual_viewport_scroll_layer->ClearMainThreadScrollingReasons(
-            main_thread_scrolling_reasons_to_clear);
-    }
-  }
-}
-
-void ScrollingCoordinator::LayerTreeViewInitialized(
-    WebLayerTreeView& layer_tree_view,
+void ScrollingCoordinator::AnimationHostInitialized(
     cc::AnimationHost& animation_host,
     LocalFrameView* view) {
   if (!Platform::Current()->IsThreadedAnimationEnabled())
@@ -787,9 +617,7 @@ void ScrollingCoordinator::LayerTreeViewInitialized(
   }
 }
 
-void ScrollingCoordinator::WillCloseLayerTreeView(
-    WebLayerTreeView& layer_tree_view,
-    LocalFrameView* view) {
+void ScrollingCoordinator::WillCloseAnimationHost(LocalFrameView* view) {
   if (view && view->GetFrame().LocalFrameRoot() != page_->MainFrame()) {
     view->GetCompositorAnimationHost()->RemoveAnimationTimeline(
         view->GetCompositorAnimationTimeline()->GetAnimationTimeline());
@@ -827,6 +655,8 @@ bool ScrollingCoordinator::CoordinatesScrollingForFrameView(
 namespace {
 
 bool ScrollsWithRootFrame(LayoutObject* object) {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+
   DCHECK(object);
   DCHECK(object->GetFrame());
 
@@ -866,6 +696,8 @@ void ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
     const LocalFrame* frame,
     Region* scrolling_region,
     Region* fixed_region) const {
+  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
+
   LocalFrameView* frame_view = frame->View();
   DCHECK(scrolling_region);
   DCHECK(fixed_region);

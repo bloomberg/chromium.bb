@@ -10,11 +10,12 @@
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/ash_prefs.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/i18n/time_formatting.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -58,7 +59,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
 #include "services/service_manager/public/cpp/connector.h"
-#include "third_party/blink/public/platform/web_speech_synthesis_constants.h"
+#include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
@@ -228,6 +229,12 @@ void Preferences::RegisterProfilePrefs(
   registry->RegisterBooleanPref(
       prefs::kMouseReverseScroll, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kMouseAcceleration, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
+  registry->RegisterBooleanPref(
+      prefs::kTouchpadAcceleration, true,
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PRIORITY_PREF);
   registry->RegisterBooleanPref(prefs::kLabsMediaplayerEnabled, false);
   registry->RegisterBooleanPref(prefs::kLabsAdvancedFilesystemEnabled, false);
   registry->RegisterBooleanPref(prefs::kAppReinstallRecommendationEnabled,
@@ -353,6 +360,10 @@ void Preferences::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterIntegerPref(
       ash::prefs::kAccessibilitySwitchAccessAutoScanSpeedMs,
+      ash::kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
+      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
+  registry->RegisterIntegerPref(
+      ash::prefs::kAccessibilitySwitchAccessAutoScanKeyboardSpeedMs,
       ash::kDefaultSwitchAccessAutoScanSpeed.InMilliseconds(),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterBooleanPref(
@@ -553,16 +564,13 @@ void Preferences::RegisterProfilePrefs(
       prefs::kTextToSpeechLangToVoiceName,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechRate,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechRate,
+      prefs::kTextToSpeechRate, blink::mojom::kSpeechSynthesisDefaultRate,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechPitch,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechPitch,
+      prefs::kTextToSpeechPitch, blink::mojom::kSpeechSynthesisDefaultPitch,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
   registry->RegisterDoublePref(
-      prefs::kTextToSpeechVolume,
-      blink::kWebSpeechSynthesisDefaultTextToSpeechVolume,
+      prefs::kTextToSpeechVolume, blink::mojom::kSpeechSynthesisDefaultVolume,
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF | PrefRegistry::PUBLIC);
 
   // By default showing Sync Consent is set to true. It can changed by policy.
@@ -573,6 +581,9 @@ void Preferences::RegisterProfilePrefs(
 
   registry->RegisterBooleanPref(prefs::kStartupBrowserWindowLaunchSuppressed,
                                 false);
+
+  registry->RegisterBooleanPref(prefs::kSettingsShowBrowserBanner, true);
+  registry->RegisterBooleanPref(prefs::kSettingsShowOSBanner, true);
 }
 
 void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
@@ -594,6 +605,8 @@ void Preferences::InitUserPrefs(sync_preferences::PrefServiceSyncable* prefs) {
   primary_mouse_button_right_.Init(prefs::kPrimaryMouseButtonRight,
                                    prefs, callback);
   mouse_reverse_scroll_.Init(prefs::kMouseReverseScroll, prefs, callback);
+  mouse_acceleration_.Init(prefs::kMouseAcceleration, prefs, callback);
+  touchpad_acceleration_.Init(prefs::kTouchpadAcceleration, prefs, callback);
   download_default_directory_.Init(prefs::kDownloadDefaultDirectory,
                                    prefs, callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines, prefs, callback);
@@ -831,6 +844,25 @@ void Preferences::ApplyPreferences(ApplyReason reason,
       UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Changed", enabled);
     else if (reason == REASON_INITIALIZATION)
       UMA_HISTOGRAM_BOOLEAN("Mouse.ReverseScroll.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED || pref_name == prefs::kMouseAcceleration) {
+    const bool enabled = mouse_acceleration_.GetValue();
+    if (user_is_active)
+      mouse_settings.SetAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Mouse.Acceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Mouse.Acceleration.Started", enabled);
+  }
+  if (reason != REASON_PREF_CHANGED ||
+      pref_name == prefs::kTouchpadAcceleration) {
+    const bool enabled = touchpad_acceleration_.GetValue();
+    if (user_is_active)
+      touchpad_settings.SetAcceleration(enabled);
+    if (reason == REASON_PREF_CHANGED)
+      base::UmaHistogramBoolean("Touchpad.Acceleration.Changed", enabled);
+    else if (reason == REASON_INITIALIZATION)
+      base::UmaHistogramBoolean("Touchpad.Acceleration.Started", enabled);
   }
   if (reason != REASON_PREF_CHANGED ||
       pref_name == prefs::kDownloadDefaultDirectory) {
@@ -1096,7 +1128,7 @@ void Preferences::UpdateAutoRepeatRate() {
       rate.repeat_interval_in_ms);
 }
 
-void Preferences::ActiveUserChanged(const user_manager::User* active_user) {
+void Preferences::ActiveUserChanged(user_manager::User* active_user) {
   if (active_user != user_)
     return;
   ApplyPreferences(REASON_ACTIVE_USER_CHANGED, "");

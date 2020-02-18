@@ -100,7 +100,9 @@ class IRContext {
         constant_mgr_(nullptr),
         type_mgr_(nullptr),
         id_to_name_(nullptr),
-        max_id_bound_(kDefaultMaxIdBound) {
+        max_id_bound_(kDefaultMaxIdBound),
+        preserve_bindings_(false),
+        preserve_spec_constants_(false) {
     SetContextMessageConsumer(syntax_context_, consumer_);
     module_->SetContext(this);
   }
@@ -115,7 +117,9 @@ class IRContext {
         valid_analyses_(kAnalysisNone),
         type_mgr_(nullptr),
         id_to_name_(nullptr),
-        max_id_bound_(kDefaultMaxIdBound) {
+        max_id_bound_(kDefaultMaxIdBound),
+        preserve_bindings_(false),
+        preserve_spec_constants_(false) {
     SetContextMessageConsumer(syntax_context_, consumer_);
     module_->SetContext(this);
     InitializeCombinators();
@@ -186,9 +190,13 @@ class IRContext {
   // Clears all debug instructions (excluding OpLine & OpNoLine).
   inline void debug_clear();
 
+  // Add |capability| to the module, if it is not already enabled.
+  inline void AddCapability(SpvCapability capability);
+
   // Appends a capability instruction to this module.
   inline void AddCapability(std::unique_ptr<Instruction>&& c);
   // Appends an extension instruction to this module.
+  inline void AddExtension(const std::string& ext_name);
   inline void AddExtension(std::unique_ptr<Instruction>&& e);
   // Appends an extended instruction set instruction to this module.
   inline void AddExtInstImport(std::unique_ptr<Instruction>&& e);
@@ -378,6 +386,15 @@ class IRContext {
   // |before| and |after| must be registered definitions in the DefUseManager.
   bool ReplaceAllUsesWith(uint32_t before, uint32_t after);
 
+  // Replace all uses of |before| id with |after| id if those uses
+  // (instruction, operand pair) return true for |predicate|. Returns true if
+  // any replacement happens. This method does not kill the definition of the
+  // |before| id. If |after| is the same as |before|, does nothing and return
+  // false.
+  bool ReplaceAllUsesWithPredicate(
+      uint32_t before, uint32_t after,
+      const std::function<bool(Instruction*, uint32_t)>& predicate);
+
   // Returns true if all of the analyses that are suppose to be valid are
   // actually valid.
   bool IsConsistent();
@@ -456,7 +473,16 @@ class IRContext {
 
   // Return the next available SSA id and increment it.  Returns 0 if the
   // maximum SSA id has been reached.
-  inline uint32_t TakeNextId() { return module()->TakeNextIdBound(); }
+  inline uint32_t TakeNextId() {
+    uint32_t next_id = module()->TakeNextIdBound();
+    if (next_id == 0) {
+      if (consumer()) {
+        std::string message = "ID overflow. Try running compact-ids.";
+        consumer()(SPV_MSG_ERROR, "", {0, 0, 0}, message.c_str());
+      }
+    }
+    return next_id;
+  }
 
   FeatureManager* get_feature_mgr() {
     if (!feature_mgr_.get()) {
@@ -464,6 +490,8 @@ class IRContext {
     }
     return feature_mgr_.get();
   }
+
+  void ResetFeatureManager() { feature_mgr_.reset(nullptr); }
 
   // Returns the grammar for this context.
   const AssemblyGrammar& grammar() const { return grammar_; }
@@ -482,10 +510,20 @@ class IRContext {
   uint32_t max_id_bound() const { return max_id_bound_; }
   void set_max_id_bound(uint32_t new_bound) { max_id_bound_ = new_bound; }
 
-  // Return id of variable only decorated with |builtin|, if in module.
+  bool preserve_bindings() const { return preserve_bindings_; }
+  void set_preserve_bindings(bool should_preserve_bindings) {
+    preserve_bindings_ = should_preserve_bindings;
+  }
+
+  bool preserve_spec_constants() const { return preserve_spec_constants_; }
+  void set_preserve_spec_constants(bool should_preserve_spec_constants) {
+    preserve_spec_constants_ = should_preserve_spec_constants;
+  }
+
+  // Return id of input variable only decorated with |builtin|, if in module.
   // Create variable and return its id otherwise. If builtin not currently
   // supported, return 0.
-  uint32_t GetBuiltinVarId(uint32_t builtin);
+  uint32_t GetBuiltinInputVarId(uint32_t builtin);
 
   // Returns the function whose id is |id|, if one exists.  Returns |nullptr|
   // otherwise.
@@ -523,6 +561,10 @@ class IRContext {
   // |roots| will be empty.
   bool ProcessCallTreeFromRoots(ProcessFunction& pfn,
                                 std::queue<uint32_t>* roots);
+
+  // Emmits a error message to the message consumer indicating the error
+  // described by |message| occurred in |inst|.
+  void EmitErrorMessage(std::string message, Instruction* inst);
 
  private:
   // Builds the def-use manager from scratch, even if it was already valid.
@@ -648,9 +690,9 @@ class IRContext {
   // true if the cfg is invalidated.
   bool CheckCFG();
 
-  // Return id of variable only decorated with |builtin|, if in module.
+  // Return id of input variable only decorated with |builtin|, if in module.
   // Return 0 otherwise.
-  uint32_t FindBuiltinVar(uint32_t builtin);
+  uint32_t FindBuiltinInputVar(uint32_t builtin);
 
   // Add |var_id| to all entry points in module.
   void AddVarToEntryPoints(uint32_t var_id);
@@ -741,6 +783,13 @@ class IRContext {
 
   // The maximum legal value for the id bound.
   uint32_t max_id_bound_;
+
+  // Whether all bindings within |module_| should be preserved.
+  bool preserve_bindings_;
+
+  // Whether all specialization constants within |module_|
+  // should be preserved.
+  bool preserve_spec_constants_;
 };
 
 inline IRContext::Analysis operator|(IRContext::Analysis lhs,
@@ -880,14 +929,44 @@ IteratorRange<Module::const_inst_iterator> IRContext::debugs3() const {
 
 void IRContext::debug_clear() { module_->debug_clear(); }
 
+void IRContext::AddCapability(SpvCapability capability) {
+  if (!get_feature_mgr()->HasCapability(capability)) {
+    std::unique_ptr<Instruction> capability_inst(new Instruction(
+        this, SpvOpCapability, 0, 0,
+        {{SPV_OPERAND_TYPE_CAPABILITY, {static_cast<uint32_t>(capability)}}}));
+    AddCapability(std::move(capability_inst));
+  }
+}
+
 void IRContext::AddCapability(std::unique_ptr<Instruction>&& c) {
   AddCombinatorsForCapability(c->GetSingleWordInOperand(0));
+  if (feature_mgr_ != nullptr) {
+    feature_mgr_->AddCapability(
+        static_cast<SpvCapability>(c->GetSingleWordInOperand(0)));
+  }
+  if (AreAnalysesValid(kAnalysisDefUse)) {
+    get_def_use_mgr()->AnalyzeInstDefUse(c.get());
+  }
   module()->AddCapability(std::move(c));
+}
+
+void IRContext::AddExtension(const std::string& ext_name) {
+  const auto num_chars = ext_name.size();
+  // Compute num words, accommodate the terminating null character.
+  const auto num_words = (num_chars + 1 + 3) / 4;
+  std::vector<uint32_t> ext_words(num_words, 0u);
+  std::memcpy(ext_words.data(), ext_name.data(), num_chars);
+  AddExtension(std::unique_ptr<Instruction>(
+      new Instruction(this, SpvOpExtension, 0u, 0u,
+                      {{SPV_OPERAND_TYPE_LITERAL_STRING, ext_words}})));
 }
 
 void IRContext::AddExtension(std::unique_ptr<Instruction>&& e) {
   if (AreAnalysesValid(kAnalysisDefUse)) {
     get_def_use_mgr()->AnalyzeInstDefUse(e.get());
+  }
+  if (feature_mgr_ != nullptr) {
+    feature_mgr_->AddExtension(&*e);
   }
   module()->AddExtension(std::move(e));
 }

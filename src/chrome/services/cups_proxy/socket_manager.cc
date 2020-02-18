@@ -73,8 +73,9 @@ struct SocketRequest {
   ~SocketRequest();
 
   // Used for writing/reading the IPP request/response.
-  std::vector<uint8_t> response;
   scoped_refptr<net::DrainableIOBuffer> io_buffer;
+
+  std::vector<uint8_t> response;
   SocketManagerCallback cb;
 };
 
@@ -84,7 +85,7 @@ class SocketManagerImpl : public SocketManager {
  public:
   explicit SocketManagerImpl(
       std::unique_ptr<net::UnixDomainClientSocket> socket,
-      base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate);
+      base::WeakPtr<CupsProxyServiceDelegate> delegate);
   ~SocketManagerImpl() override;
 
   void ProxyToCups(std::vector<uint8_t> request,
@@ -117,7 +118,7 @@ class SocketManagerImpl : public SocketManager {
   std::unique_ptr<net::UnixDomainClientSocket> socket_;
 
   SEQUENCE_CHECKER(sequence_checker_);
-  base::WeakPtrFactory<SocketManagerImpl> weak_factory_;
+  base::WeakPtrFactory<SocketManagerImpl> weak_factory_{this};
 };
 
 // Defaults for SocketRequest.
@@ -127,11 +128,10 @@ SocketRequest::~SocketRequest() = default;
 
 SocketManagerImpl::SocketManagerImpl(
     std::unique_ptr<net::UnixDomainClientSocket> socket,
-    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate)
+    base::WeakPtr<CupsProxyServiceDelegate> delegate)
     : main_runner_(base::SequencedTaskRunnerHandle::Get()),
       socket_runner_(delegate->GetIOTaskRunner()),
-      socket_(std::move(socket)),
-      weak_factory_(this) {}
+      socket_(std::move(socket)) {}
 SocketManagerImpl::~SocketManagerImpl() {}
 
 void SocketManagerImpl::ProxyToCups(std::vector<uint8_t> request,
@@ -282,7 +282,7 @@ void SocketManagerImpl::Fail(const char* error_message) {
 }  // namespace
 
 std::unique_ptr<SocketManager> SocketManager::Create(
-    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate) {
+    base::WeakPtr<CupsProxyServiceDelegate> delegate) {
   return std::make_unique<SocketManagerImpl>(
       std::make_unique<net::UnixDomainClientSocket>(
           kCupsSocketPath, false /* not abstract namespace */),
@@ -291,7 +291,7 @@ std::unique_ptr<SocketManager> SocketManager::Create(
 
 std::unique_ptr<SocketManager> SocketManager::CreateForTesting(
     std::unique_ptr<net::UnixDomainClientSocket> socket,
-    base::WeakPtr<chromeos::printing::CupsProxyServiceDelegate> delegate) {
+    base::WeakPtr<CupsProxyServiceDelegate> delegate) {
   return std::make_unique<SocketManagerImpl>(std::move(socket),
                                              std::move(delegate));
 }

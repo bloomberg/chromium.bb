@@ -73,8 +73,9 @@ content::OpenURLParams MakeOpenURLParams(content::NavigationHandle* handle,
                                          GURL url,
                                          const std::string& headers) {
   content::OpenURLParams url_params(
-      url, handle->GetReferrer(), WindowOpenDisposition::CURRENT_TAB,
-      handle->GetPageTransition(), handle->IsRendererInitiated());
+      url, content::Referrer(handle->GetReferrer()),
+      WindowOpenDisposition::CURRENT_TAB, handle->GetPageTransition(),
+      handle->IsRendererInitiated());
   url_params.initiator_origin = handle->GetInitiatorOrigin();
   // crbug.com/916892: When a client redirect occurs on a site before the page
   // has finished loading, it is not considered a new NavigationEntry and so
@@ -393,7 +394,7 @@ void PreviewsLitePageNavigationThrottle::LoadAndBypass(
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PreviewsWebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(), params, std::move(info)));
@@ -449,7 +450,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
       timed_out_info = info->Clone();
   timed_out_info->status = previews::ServerLitePageStatus::kFailure;
   if (timeout > base::TimeDelta()) {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &PreviewsWebContentsLifetimeHelper::CheckForHungNavigation,
@@ -467,7 +468,7 @@ PreviewsLitePageNavigationThrottle::TriggerPreview() const {
   // dying in-between the PostTask and its execution, resulting in a use after
   // free crash. Since the helper is a WebContentsUserData, it will be
   // destroyed when the WebContents is and the task will not be executed.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&PreviewsWebContentsLifetimeHelper::PostNewNavigation,
                      helper->GetWeakPtr(),
@@ -507,7 +508,7 @@ PreviewsLitePageNavigationThrottle::WillStartRequest() {
         PreviewsWebContentsLifetimeHelper::FromWebContents(
             navigation_handle()->GetWebContents());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &PreviewsWebContentsLifetimeHelper::PostNewNavigation,

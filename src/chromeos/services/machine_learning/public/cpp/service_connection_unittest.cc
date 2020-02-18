@@ -9,8 +9,9 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "chromeos/dbus/machine_learning/machine_learning_client.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
@@ -39,14 +40,14 @@ class ServiceConnectionTest : public testing::Test {
   static void SetUpTestCase() {
     static base::Thread ipc_thread("ipc");
     ipc_thread.StartWithOptions(
-        base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
+        base::Thread::Options(base::MessagePumpType::IO, 0));
     static mojo::core::ScopedIPCSupport ipc_support(
         ipc_thread.task_runner(),
         mojo::core::ScopedIPCSupport::ShutdownPolicy::CLEAN);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionTest);
 };

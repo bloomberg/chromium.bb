@@ -14,6 +14,7 @@
 
 #include <utility>
 
+#include "rtc_base/bind.h"
 #include "rtc_base/logging.h"
 
 namespace webrtc {
@@ -59,27 +60,26 @@ absl::optional<bool> AndroidVideoTrackSource::needs_denoising() const {
 }
 
 void AndroidVideoTrackSource::SetState(JNIEnv* env,
-                                       const JavaRef<jobject>& j_caller,
                                        jboolean j_is_live) {
-  InternalSetState(j_is_live ? kLive : kEnded);
-}
-
-void AndroidVideoTrackSource::InternalSetState(SourceState state) {
-  if (rtc::Thread::Current() != signaling_thread_) {
-    invoker_.AsyncInvoke<void>(
-        RTC_FROM_HERE, signaling_thread_,
-        rtc::Bind(&AndroidVideoTrackSource::InternalSetState, this, state));
-    return;
-  }
-
-  if (state_ != state) {
-    state_ = state;
-    FireOnChanged();
+  const SourceState state = j_is_live ? kLive : kEnded;
+  if (state_.exchange(state) != state) {
+    if (rtc::Thread::Current() == signaling_thread_) {
+      FireOnChanged();
+    } else {
+      // TODO(sakal): Is this even necessary, does FireOnChanged have to be
+      // called from signaling thread?
+      signaling_thread_->PostTask(
+          RTC_FROM_HERE,
+          rtc::Bind(
+              &AndroidVideoTrackSource::FireOnChanged,
+              static_cast<webrtc::Notifier<webrtc::VideoTrackSourceInterface>*>(
+                  this)));
+    }
   }
 }
 
 AndroidVideoTrackSource::SourceState AndroidVideoTrackSource::state() const {
-  return state_;
+  return state_.load();
 }
 
 bool AndroidVideoTrackSource::remote() const {
@@ -88,7 +88,6 @@ bool AndroidVideoTrackSource::remote() const {
 
 ScopedJavaLocalRef<jobject> AndroidVideoTrackSource::AdaptFrame(
     JNIEnv* env,
-    const JavaRef<jobject>& j_caller,
     jint j_width,
     jint j_height,
     jint j_rotation,
@@ -130,7 +129,6 @@ ScopedJavaLocalRef<jobject> AndroidVideoTrackSource::AdaptFrame(
 
 void AndroidVideoTrackSource::OnFrameCaptured(
     JNIEnv* env,
-    const JavaRef<jobject>& j_caller,
     jint j_rotation,
     jlong j_timestamp_ns,
     const JavaRef<jobject>& j_video_frame_buffer) {
@@ -151,7 +149,6 @@ void AndroidVideoTrackSource::OnFrameCaptured(
 
 void AndroidVideoTrackSource::AdaptOutputFormat(
     JNIEnv* env,
-    const JavaRef<jobject>& j_caller,
     jint j_landscape_width,
     jint j_landscape_height,
     const JavaRef<jobject>& j_max_landscape_pixel_count,

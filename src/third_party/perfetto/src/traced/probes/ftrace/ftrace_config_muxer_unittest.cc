@@ -18,11 +18,10 @@
 
 #include <memory>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
 #include "src/traced/probes/ftrace/atrace_wrapper.h"
 #include "src/traced/probes/ftrace/ftrace_procfs.h"
 #include "src/traced/probes/ftrace/proto_translation_table.h"
+#include "test/gtest_and_gmock.h"
 
 using testing::_;
 using testing::AnyNumber;
@@ -283,7 +282,7 @@ TEST_F(FtraceConfigMuxerTest, AddAllEvents) {
 
   // Non-generic event.
   std::map<std::string, const Event*> events;
-  Event sched_switch = {"sched_switch", "sched"};
+  Event sched_switch = {"sched_switch", "sched", {}, 0, 0, 0};
   sched_switch.ftrace_event_id = 1;
   ON_CALL(*mock_table, GetOrCreateEvent(GroupAndName("sched", "sched_switch")))
       .WillByDefault(Return(&sched_switch));
@@ -385,7 +384,7 @@ TEST_F(FtraceConfigMuxerTest, TurnFtraceOnOff) {
   EXPECT_THAT(actual_config->ftrace_events(), Not(Contains("foo")));
 
   EXPECT_CALL(ftrace, WriteToFile("/root/tracing_on", "0"));
-  EXPECT_CALL(ftrace, WriteToFile("/root/buffer_size_kb", "0"));
+  EXPECT_CALL(ftrace, WriteToFile("/root/buffer_size_kb", "4"));
   EXPECT_CALL(ftrace, WriteToFile("/root/events/enable", "0"));
   EXPECT_CALL(ftrace,
               WriteToFile("/root/events/sched/sched_switch/enable", "0"));
@@ -580,7 +579,7 @@ TEST_F(FtraceConfigMuxerTest, FallbackOnSetEvent) {
   EXPECT_THAT(actual_config->ftrace_events(), Contains("cgroup/cgroup_mkdir"));
 
   EXPECT_CALL(ftrace, WriteToFile("/root/tracing_on", "0"));
-  EXPECT_CALL(ftrace, WriteToFile("/root/buffer_size_kb", "0"));
+  EXPECT_CALL(ftrace, WriteToFile("/root/buffer_size_kb", "4"));
   EXPECT_CALL(ftrace, WriteToFile("/root/events/enable", "0"));
   EXPECT_CALL(ftrace,
               WriteToFile("/root/events/sched/sched_switch/enable", "0"));

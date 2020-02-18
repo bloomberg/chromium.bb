@@ -11,16 +11,20 @@
 #include "base/macros.h"
 #include "device/vr/windows/compositor_base.h"
 
+struct XrView;
+
 namespace device {
 
 class OpenXrApiWrapper;
+class OpenXrGamepadHelper;
 
 class OpenXrRenderLoop : public XRCompositorCommon {
  public:
-  OpenXrRenderLoop();
+  OpenXrRenderLoop(base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
+                       on_display_info_changed);
   ~OpenXrRenderLoop() override;
 
-  void GetViewSize(uint32_t* width, uint32_t* height) const;
+  gfx::Size GetViewSize() const;
 
  private:
   // XRDeviceAbstraction:
@@ -30,9 +34,23 @@ class OpenXrRenderLoop : public XRCompositorCommon {
   void StopRuntime() override;
   void OnSessionStart() override;
   bool PreComposite() override;
+  bool HasSessionEnded() override;
   bool SubmitCompositedFrame() override;
 
+  bool UpdateDisplayInfo();
+  bool UpdateEyeParameters();
+  bool UpdateEye(const XrView& view,
+                 const gfx::Point3F& center,
+                 const gfx::Size& view_size,
+                 mojom::VREyeParametersPtr* eye) const;
+  bool UpdateStageParameters();
+
   std::unique_ptr<OpenXrApiWrapper> openxr_;
+  std::unique_ptr<OpenXrGamepadHelper> gamepad_helper_;
+
+  base::RepeatingCallback<void(mojom::VRDisplayInfoPtr)>
+      on_display_info_changed_;
+  mojom::VRDisplayInfoPtr current_display_info_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenXrRenderLoop);
 };

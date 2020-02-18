@@ -61,7 +61,7 @@ TlsServerHandshaker::TlsServerHandshaker(QuicCryptoStream* stream,
 
   if (!SetTransportParameters()) {
     CloseConnection(QUIC_HANDSHAKE_FAILED,
-                    "Failed to set Transport Parameters");
+                    "Server failed to set Transport Parameters");
   }
 }
 
@@ -136,6 +136,11 @@ CryptoMessageParser* TlsServerHandshaker::crypto_message_parser() {
   return TlsHandshaker::crypto_message_parser();
 }
 
+size_t TlsServerHandshaker::BufferSizeLimitForLevel(
+    EncryptionLevel level) const {
+  return TlsHandshaker::BufferSizeLimitForLevel(level);
+}
+
 void TlsServerHandshaker::AdvanceHandshake() {
   if (state_ == STATE_CONNECTION_CLOSED) {
     QUIC_LOG(INFO) << "TlsServerHandshaker received handshake message after "
@@ -170,7 +175,8 @@ void TlsServerHandshaker::AdvanceHandshake() {
     QUIC_LOG(WARNING) << "SSL_do_handshake failed; SSL_get_error returns "
                       << ssl_error << ", state_ = " << state_;
     ERR_print_errors_fp(stderr);
-    CloseConnection(QUIC_HANDSHAKE_FAILED, "TLS handshake failed");
+    CloseConnection(QUIC_HANDSHAKE_FAILED,
+                    "Server observed TLS handshake failure");
   }
 }
 
@@ -188,8 +194,9 @@ bool TlsServerHandshaker::ProcessTransportParameters(
   SSL_get_peer_quic_transport_params(ssl(), &client_params_bytes,
                                      &params_bytes_len);
   if (params_bytes_len == 0 ||
-      !ParseTransportParameters(client_params_bytes, params_bytes_len,
-                                Perspective::IS_CLIENT, &client_params)) {
+      !ParseTransportParameters(session()->connection()->version(),
+                                Perspective::IS_CLIENT, client_params_bytes,
+                                params_bytes_len, &client_params)) {
     *error_details = "Unable to parse Transport Parameters";
     return false;
   }
@@ -228,7 +235,8 @@ bool TlsServerHandshaker::SetTransportParameters() {
   // TODO(nharper): Provide an actual value for the stateless reset token.
   server_params.stateless_reset_token.resize(16);
   std::vector<uint8_t> server_params_bytes;
-  if (!SerializeTransportParameters(server_params, &server_params_bytes) ||
+  if (!SerializeTransportParameters(session()->connection()->version(),
+                                    server_params, &server_params_bytes) ||
       SSL_set_quic_transport_params(ssl(), server_params_bytes.data(),
                                     server_params_bytes.size()) != 1) {
     return false;
@@ -237,6 +245,16 @@ bool TlsServerHandshaker::SetTransportParameters() {
 }
 
 void TlsServerHandshaker::FinishHandshake() {
+  if (!valid_alpn_received_) {
+    QUIC_DLOG(ERROR)
+        << "Server: handshake finished without receiving a known ALPN";
+    // TODO(b/130164908) this should send no_application_protocol
+    // instead of QUIC_HANDSHAKE_FAILED.
+    CloseConnection(QUIC_HANDSHAKE_FAILED,
+                    "Server did not receive a known ALPN");
+    return;
+  }
+
   QUIC_LOG(INFO) << "Server: handshake finished";
   state_ = STATE_HANDSHAKE_COMPLETE;
 
@@ -244,6 +262,7 @@ void TlsServerHandshaker::FinishHandshake() {
   session()->NeuterUnencryptedData();
   encryption_established_ = true;
   handshake_confirmed_ = true;
+  session()->OnCryptoHandshakeEvent(QuicSession::HANDSHAKE_CONFIRMED);
 }
 
 ssl_private_key_result_t TlsServerHandshaker::PrivateKeySign(
@@ -326,25 +345,44 @@ int TlsServerHandshaker::SelectAlpn(const uint8_t** out,
                                     const uint8_t* in,
                                     unsigned in_len) {
   // |in| contains a sequence of 1-byte-length-prefixed values.
-  // We currently simply return the first provided ALPN value.
-  // TODO(b/130164908) Act on ALPN.
+  *out_len = 0;
+  *out = nullptr;
   if (in_len == 0) {
-    *out_len = 0;
-    *out = nullptr;
-    QUIC_DLOG(INFO) << "No ALPN provided";
-    return SSL_TLSEXT_ERR_OK;
+    QUIC_DLOG(ERROR) << "No ALPN provided by client";
+    return SSL_TLSEXT_ERR_NOACK;
   }
-  const uint8_t first_alpn_length = in[0];
-  if (static_cast<unsigned>(first_alpn_length) > in_len - 1) {
-    QUIC_LOG(ERROR) << "Failed to parse ALPN";
-    return SSL_TLSEXT_ERR_ALERT_FATAL;
+
+  CBS all_alpns;
+  CBS_init(&all_alpns, in, in_len);
+
+  std::vector<QuicStringPiece> alpns;
+  while (CBS_len(&all_alpns) > 0) {
+    CBS alpn;
+    if (!CBS_get_u8_length_prefixed(&all_alpns, &alpn)) {
+      QUIC_DLOG(ERROR) << "Failed to parse ALPN length";
+      return SSL_TLSEXT_ERR_NOACK;
+    }
+
+    const size_t alpn_length = CBS_len(&alpn);
+    if (alpn_length == 0) {
+      QUIC_DLOG(ERROR) << "Received invalid zero-length ALPN";
+      return SSL_TLSEXT_ERR_NOACK;
+    }
+
+    alpns.emplace_back(reinterpret_cast<const char*>(CBS_data(&alpn)),
+                       alpn_length);
   }
-  *out_len = first_alpn_length;
-  *out = in + 1;
-  QUIC_DLOG(INFO) << "Server selecting ALPN '"
-                  << QuicStringPiece(reinterpret_cast<const char*>(*out),
-                                     *out_len)
-                  << "'";
+
+  auto selected_alpn = session()->SelectAlpn(alpns);
+  if (selected_alpn == alpns.end()) {
+    QUIC_DLOG(ERROR) << "No known ALPN provided by client";
+    return SSL_TLSEXT_ERR_NOACK;
+  }
+
+  session()->OnAlpnSelected(*selected_alpn);
+  valid_alpn_received_ = true;
+  *out_len = selected_alpn->size();
+  *out = reinterpret_cast<const uint8_t*>(selected_alpn->data());
   return SSL_TLSEXT_ERR_OK;
 }
 

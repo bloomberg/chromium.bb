@@ -13,6 +13,8 @@
 #include "ios/chrome/browser/ui/util/rtl_geometry.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_theme_resources.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -40,13 +42,7 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
 
 @implementation OmniboxPopupRow
 
-@synthesize textTruncatingLabel = _textTruncatingLabel;
-@synthesize detailTruncatingLabel = _detailTruncatingLabel;
-@synthesize detailAnswerLabel = _detailAnswerLabel;
-@synthesize trailingButton = _trailingButton;
-@synthesize answerImageView = _answerImageView;
 @synthesize imageView = _imageView;
-@synthesize rowHeight = _rowHeight;
 
 - (instancetype)initWithStyle:(UITableViewCellStyle)style
               reuseIdentifier:(NSString*)reuseIdentifier {
@@ -58,7 +54,12 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
               reuseIdentifier:@"OmniboxPopupRow"];
   if (self) {
     self.isAccessibilityElement = YES;
-    self.backgroundColor = [UIColor clearColor];
+    self.backgroundColor = UIColor.clearColor;
+    self.selectedBackgroundView = [[UIView alloc] initWithFrame:CGRectZero];
+    self.selectedBackgroundView.backgroundColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:kTableViewRowHighlightColor], _incognito,
+        [UIColor colorNamed:kTableViewRowHighlightDarkColor]);
+
     _incognito = incognito;
 
     _textTruncatingLabel =
@@ -93,12 +94,11 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
     _imageView.userInteractionEnabled = NO;
     _imageView.contentMode = UIViewContentModeCenter;
 
-      _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
-      _imageView.backgroundColor = incognito
-                                       ? [UIColor colorWithWhite:1 alpha:0.05]
-                                       : [UIColor colorWithWhite:0 alpha:0.03];
-      _imageView.tintColor = incognito ? [UIColor colorWithWhite:1 alpha:0.4]
-                                       : [UIColor colorWithWhite:0 alpha:0.33];
+    _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
+    _imageView.backgroundColor = UIColor.clearColor;
+    _imageView.tintColor = color::DarkModeDynamicColor(
+        [UIColor colorNamed:@"omnibox_suggestion_icon_color"], _incognito,
+        [UIColor colorNamed:@"omnibox_suggestion_icon_dark_color"]);
 
     _answerImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
     _answerImageView.userInteractionEnabled = NO;
@@ -147,27 +147,6 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   _imageView.frame = frame;
 }
 
-- (void)updateHighlightBackground:(BOOL)highlighted {
-  // Set the background color to match the color of selected table view cells
-  // when their selection style is UITableViewCellSelectionStyleGray.
-  if (highlighted) {
-    self.backgroundColor = _incognito ? [UIColor colorWithWhite:1 alpha:0.1]
-                                      : [UIColor colorWithWhite:0 alpha:0.05];
-  } else {
-    self.backgroundColor = [UIColor clearColor];
-  }
-}
-
-- (void)setHighlighted:(BOOL)highlighted animated:(BOOL)animated {
-  [super setHighlighted:highlighted animated:animated];
-  [self updateHighlightBackground:highlighted];
-}
-
-- (void)setHighlighted:(BOOL)highlighted {
-  [super setHighlighted:highlighted];
-  [self updateHighlightBackground:highlighted];
-}
-
 - (void)setTabMatch:(BOOL)tabMatch {
   _tabMatch = tabMatch;
   [self updateTrailingButtonImages];
@@ -189,7 +168,8 @@ const CGFloat kLeadingPaddingIpadCompact = 71;
   appendImage =
       [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   _trailingButton.tintColor =
-      _incognito ? [UIColor whiteColor] : UIColorFromRGB(kLocationBarTintBlue);
+      color::DarkModeDynamicColor([UIColor colorNamed:kBlueColor], _incognito,
+                                  [UIColor colorNamed:kBlueDarkColor]);
 
   [_trailingButton setImage:appendImage forState:UIControlStateNormal];
 }

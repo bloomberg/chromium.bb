@@ -35,9 +35,7 @@ class TraceLoggingPlatform {
                         const char* file,
                         Clock::time_point start_time,
                         Clock::time_point end_time,
-                        TraceId trace_id,
-                        TraceId parent_id,
-                        TraceId root_id,
+                        TraceIdHierarchy ids,
                         Error::Code error) = 0;
 
   // Log an asynchronous trace start.
@@ -45,9 +43,7 @@ class TraceLoggingPlatform {
                              const uint32_t line,
                              const char* file,
                              Clock::time_point timestamp,
-                             TraceId trace_id,
-                             TraceId parent_id,
-                             TraceId root_id) = 0;
+                             TraceIdHierarchy ids) = 0;
 
   // Log an asynchronous trace end.
   virtual void LogAsyncEnd(const uint32_t line,

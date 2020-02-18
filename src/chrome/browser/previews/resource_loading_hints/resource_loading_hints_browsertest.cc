@@ -11,14 +11,12 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
-#include "chrome/browser/previews/previews_service.h"
-#include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/resource_loading_hints/resource_loading_hints_web_contents_observer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -26,16 +24,13 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/optimization_guide/hints_component_info.h"
+#include "components/optimization_guide/hints_component_util.h"
+#include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_features.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 #include "components/optimization_guide/test_hints_component_creator.h"
-#include "components/previews/content/previews_decider_impl.h"
-#include "components/previews/content/previews_hints.h"
-#include "components/previews/content/previews_optimization_guide.h"
-#include "components/previews/content/previews_ui_service.h"
 #include "components/previews/core/previews_black_list.h"
-#include "components/previews/core/previews_constants.h"
 #include "components/previews/core/previews_features.h"
 #include "components/previews/core/previews_switches.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -150,22 +145,6 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpOnMainThread();
   }
 
-  void InitializeOptimizationHints() {
-    std::unique_ptr<optimization_guide::proto::Configuration> config =
-        std::make_unique<optimization_guide::proto::Configuration>();
-    std::unique_ptr<previews::PreviewsHints> hints =
-        previews::PreviewsHints::CreateFromHintsConfiguration(std::move(config),
-                                                              nullptr);
-
-    PreviewsService* previews_service =
-        PreviewsServiceFactory::GetForProfile(browser()->profile());
-
-    previews_service->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->UpdateHints(base::DoNothing(), std::move(hints));
-  }
-
   void SetUpCommandLine(base::CommandLine* cmd) override {
     cmd->AppendSwitch("enable-spdy-proxy-auth");
 
@@ -186,21 +165,21 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   // processed before returning.
   void ProcessHintsComponent(
       const optimization_guide::HintsComponentInfo& component_info) {
-    // Register a QuitClosure for when the next hint update is started below.
-    base::RunLoop run_loop;
-    PreviewsServiceFactory::GetForProfile(
-        Profile::FromBrowserContext(browser()
-                                        ->tab_strip_model()
-                                        ->GetActiveWebContents()
-                                        ->GetBrowserContext()))
-        ->previews_ui_service()
-        ->previews_decider_impl()
-        ->previews_opt_guide()
-        ->ListenForNextUpdateForTesting(run_loop.QuitClosure());
+    base::HistogramTester histogram_tester;
 
     g_browser_process->optimization_guide_service()->MaybeUpdateHintsComponent(
         component_info);
-    run_loop.Run();
+
+    RetryForHistogramUntilCountReached(
+        &histogram_tester,
+        optimization_guide::kComponentHintsUpdatedResultHistogramString, 1);
+  }
+
+  void InitializeOptimizationHints() {
+    ProcessHintsComponent(
+        test_hints_component_creator_.CreateHintsComponentInfoWithPageHints(
+            optimization_guide::proto::RESOURCE_LOADING, {"doesntmatter.com"},
+            "*", {}));
   }
 
   // Performs a navigation to |url| and waits for the the url's host's hints to
@@ -215,8 +194,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
     ui_test_utils::NavigateToURL(browser(), url);
 
     RetryForHistogramUntilCountReached(
-        &histogram_tester,
-        previews::kPreviewsOptimizationGuideOnLoadedHintResultHistogramString,
+        &histogram_tester, optimization_guide::kLoadedHintLocalHistogramString,
         1);
   }
 
@@ -319,9 +297,25 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         ->GetID();
   }
 
- protected:
-  base::test::ScopedFeatureList scoped_feature_list_;
+  void RetryUntilAllExpectedSubresourcesSeen() {
+    while (true) {
+      base::ThreadPoolInstance::Get()->FlushForTesting();
+      base::RunLoop().RunUntilIdle();
 
+      bool have_seen_all_expected_subresources = true;
+      for (const auto& expect : subresource_expected_) {
+        if (expect.second) {
+          have_seen_all_expected_subresources = false;
+          break;
+        }
+      }
+
+      if (have_seen_all_expected_subresources)
+        break;
+    }
+  }
+
+ protected:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
  private:
@@ -336,11 +330,10 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     // This method is called on embedded test server thread. Post the
     // information on UI thread.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
-                           MonitorResourceRequestOnUIThread,
-                       base::Unretained(this), request.GetURL()));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ResourceLoadingNoFeaturesBrowserTest::
+                                      MonitorResourceRequestOnUIThread,
+                                  base::Unretained(this), request.GetURL()));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
@@ -364,6 +357,7 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(expect.second)
             << " GURL " << gurl
             << " was expected to be blocked, but was actually fetched";
+
         // Subresource should not be fetched again.
         subresource_expected_[gurl.path()] = false;
         return;
@@ -400,13 +394,17 @@ class ResourceLoadingNoFeaturesBrowserTest : public InProcessBrowserTest {
 // preloads resources in the HTML head using link-rel preload.
 // Second parameter is true if the blink feature
 // kSendPreviewsLoadingHintsBeforeCommit should be enabled.
+// Third parameter is true if the OptimizationGuideKeyedService feature is
+// enabled.
+// All tests should pass in the same way for all cases.
 class ResourceLoadingHintsBrowserTest
-    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool, bool>>,
       public ResourceLoadingNoFeaturesBrowserTest {
  public:
   ResourceLoadingHintsBrowserTest()
       : use_preload_resources_webpage_(std::get<0>(GetParam())),
-        use_render_frame_observer_(std::get<1>(GetParam())) {}
+        use_render_frame_observer_(std::get<1>(GetParam())),
+        use_optimization_guide_keyed_service_(std::get<2>(GetParam())) {}
 
   ~ResourceLoadingHintsBrowserTest() override = default;
 
@@ -430,6 +428,14 @@ class ResourceLoadingHintsBrowserTest
            data_reduction_proxy::features::
                kDataReductionProxyEnabledWithNetworkService},
           {});
+    }
+
+    if (use_optimization_guide_keyed_service_) {
+      ogks_feature_list_.InitWithFeatures(
+          {optimization_guide::features::kOptimizationGuideKeyedService}, {});
+    } else {
+      ogks_feature_list_.InitWithFeatures(
+          {}, {optimization_guide::features::kOptimizationGuideKeyedService});
     }
     ResourceLoadingNoFeaturesBrowserTest::SetUp();
   }
@@ -457,9 +463,14 @@ class ResourceLoadingHintsBrowserTest
 
   bool use_render_frame_observer() const { return use_render_frame_observer_; }
 
+ protected:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList ogks_feature_list_;
+
  private:
   const bool use_preload_resources_webpage_;
   const bool use_render_frame_observer_;
+  const bool use_optimization_guide_keyed_service_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceLoadingHintsBrowserTest);
 };
@@ -467,10 +478,12 @@ class ResourceLoadingHintsBrowserTest
 // First parameter is true if the test should be run with a webpage that
 // preloads resources in the HTML head using link-rel preload. Second parameter
 // is true if the blink feature kSendPreviewsLoadingHintsBeforeCommit
-// should be enabled.
+// should be enabled. Third parameter is true if the
+// OptimizationGuideKeyedService feature is enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          ResourceLoadingHintsBrowserTest,
                          ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool(),
                                             ::testing::Bool()));
 
 // Previews InfoBar (which these tests triggers) does not work on Mac.
@@ -499,6 +512,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -522,6 +536,7 @@ IN_PROC_BROWSER_TEST_P(
   SetExpectedBarJpgRequest(true);
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -552,6 +567,7 @@ IN_PROC_BROWSER_TEST_P(
     ui_test_utils::NavigateToURL(
         browser(),
         GetURLWithMockHost(*https_server_, "/resource_loading_hints.html"));
+    RetryUntilAllExpectedSubresourcesSeen();
 
     int current_process_id = GetProcessID();
     EXPECT_NE(previous_process_id, current_process_id);
@@ -573,8 +589,10 @@ IN_PROC_BROWSER_TEST_P(
     DISABLE_ON_WIN_MAC_CHROMESOS(ResourceLoadingHintsHttpsWhitelisted_Iframe)) {
   GURL url = https_url_iframe();
 
-  // Whitelist resource loading hints for https_url_iframe()'s' host.
-  SetDefaultOnlyResourceLoadingHints(https_url_iframe());
+  // Whitelist resource loading hints for https_url_iframe()'s' host, which is
+  // the same as the hint setup URL. Having this be https_url_iframe() makes the
+  // test flaky.
+  SetDefaultOnlyResourceLoadingHints(https_hint_setup_url());
 
   // Loading of these two resources should not be blocked since they are loaded
   // by a webpage inside an iframe.
@@ -588,6 +606,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -649,6 +668,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -684,6 +704,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -729,6 +750,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -758,23 +780,22 @@ IN_PROC_BROWSER_TEST_P(
   // Whitelist resource loading hints for https_hint_setup_url()'s' host.
   // Set pattern to a string that does not matches https_url() path.
   ASSERT_EQ(std::string::npos, https_url().path().find("mismatched_pattern"));
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     "mismatched_pattern");
 
   SetExpectedFooJpgRequest(true);
   SetExpectedBarJpgRequest(true);
-  InitializeOptimizationHints();
 
   base::HistogramTester histogram_tester;
 
   // The URL is not whitelisted. Verify that the hints are not used.
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
@@ -792,7 +813,7 @@ IN_PROC_BROWSER_TEST_P(
   if (use_preload_resources_webpage() && !use_render_frame_observer())
     return;
   // Whitelist resource loading hints for https_url()'s' host and pattern.
-  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_url(),
+  SetDefaultOnlyResourceLoadingHintsWithPagePattern(https_hint_setup_url(),
                                                     https_url().path());
 
   // Hints should be used when loading https_url().
@@ -802,6 +823,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester_1;
 
   ui_test_utils::NavigateToURL(browser(), https_url());
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester_1,
@@ -835,8 +857,8 @@ IN_PROC_BROWSER_TEST_P(
 
   histogram_tester_2.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester_2.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
@@ -869,6 +891,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -899,6 +922,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   RetryForHistogramUntilCountReached(
       &histogram_tester, "ResourceLoadingHints.CountBlockedSubresourcePatterns",
@@ -931,12 +955,12 @@ IN_PROC_BROWSER_TEST_P(
 
   // The URL is not whitelisted.
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
-      static_cast<int>(
-          previews::PreviewsEligibilityReason::HOST_NOT_WHITELISTED_BY_SERVER),
+      static_cast<int>(previews::PreviewsEligibilityReason::
+                           NOT_ALLOWED_BY_OPTIMIZATION_GUIDE),
       1);
   histogram_tester.ExpectTotalCount(
       "Previews.PreviewShown.ResourceLoadingHints", 0);
@@ -957,7 +981,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -982,7 +1006,7 @@ IN_PROC_BROWSER_TEST_P(ResourceLoadingHintsBrowserTest,
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
-  base::RunLoop().RunUntilIdle();
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",
@@ -1018,6 +1042,7 @@ IN_PROC_BROWSER_TEST_P(
   base::HistogramTester histogram_tester;
 
   ui_test_utils::NavigateToURL(browser(), url);
+  RetryUntilAllExpectedSubresourcesSeen();
 
   histogram_tester.ExpectBucketCount(
       "Previews.EligibilityReason.ResourceLoadingHints",

@@ -7,15 +7,13 @@ from __future__ import division
 from __future__ import absolute_import
 
 import logging
-import time
 
-from google.appengine.ext import db
 from google.appengine.ext import deferred
 from google.appengine.ext import ndb
 
+from dashboard import list_tests
 from dashboard import update_test_suites
 from dashboard.common import datastore_hooks
-from dashboard.common import descriptor
 from dashboard.common import namespaced_stored_object
 from dashboard.common import request_handler
 from dashboard.common import stored_object
@@ -26,12 +24,43 @@ from tracing.value.diagnostics import reserved_infos
 from tracing.value.diagnostics import generic_set
 
 
-def CacheKey(test_suite):
-  return 'test_suite_descriptor_' + test_suite
+def CacheKey(master, test_suite):
+  return 'test_suite_descriptor_%s_%s' % (master, test_suite)
 
 
-def FetchCachedTestSuiteDescriptor(test_suite):
-  return namespaced_stored_object.Get(CacheKey(test_suite))
+def FetchCachedTestSuiteDescriptor(master, test_suite):
+  masters = [master]
+  if not master:
+    masters = _GetMastersForSuite(test_suite)
+
+  futures = [namespaced_stored_object.GetAsync(
+      CacheKey(m, test_suite)) for m in masters]
+
+  ndb.Future.wait_all(futures)
+
+  desc = {
+      'measurements': [],
+      'bots': [],
+      'cases': [],
+      'caseTags': {}
+  }
+
+  for f in futures:
+    cur_desc = f.get_result()
+
+    desc['measurements'].extend(cur_desc['measurements'])
+    desc['bots'].extend(cur_desc['bots'])
+    desc['cases'].extend(cur_desc['cases'])
+    for tag, case_tags in cur_desc['caseTags'].iteritems():
+      desc['caseTags'].setdefault(tag, []).extend(case_tags)
+
+  desc['measurements'] = list(sorted(set(desc['measurements'])))
+  desc['bots'] = list(sorted(set(desc['bots'])))
+  desc['cases'] = list(sorted(set(desc['cases'])))
+  for tag in desc['caseTags'].keys():
+    desc['caseTags'][tag] = list(sorted(set(desc['caseTags'][tag])))
+
+  return desc
 
 
 class UpdateTestSuiteDescriptorsHandler(request_handler.RequestHandler):
@@ -54,22 +83,7 @@ def UpdateTestSuiteDescriptors(namespace):
 
 
 def ScheduleUpdateDescriptor(test_suite, namespace):
-  deferred.defer(_UpdateDescriptor, test_suite, namespace)
-
-
-def _QueryTestSuite(test_suite):
-  desc = descriptor.Descriptor(test_suite=test_suite, bot='place:holder')
-  test_path = list(desc.ToTestPathsSync())[0].split('/')
-
-  query = graph_data.TestMetadata.query()
-  query = query.filter(graph_data.TestMetadata.suite_name == test_path[2])
-  if len(test_path) > 3:
-    # test_suite is composite.
-    query = query.filter(
-        graph_data.TestMetadata.test_part1_name == test_path[3])
-  query = query.filter(graph_data.TestMetadata.deprecated == False)
-  query = query.filter(graph_data.TestMetadata.has_rows == True)
-  return query
+  deferred.defer(_UpdateDescriptorByMaster, test_suite, namespace)
 
 
 @ndb.tasklet
@@ -89,71 +103,75 @@ def _CollectCaseTags(futures, case_tags):
       case_tags.setdefault(tag, []).append(case)
 
 
-DEADLINE_SECONDS = 60 * 9.5
+TESTS_TO_FETCH = 5000
+
+def _GetMastersForSuite(suite):
+  masters = list_tests.GetTestsMatchingPattern('*/*/%s' % suite)
+  masters = list(set([m.split('/')[0] for m in masters]))
+  return masters
 
 
-def _UpdateDescriptor(test_suite, namespace, start_cursor=None,
+def _UpdateDescriptorByMaster(test_suite, namespace):
+  masters = _GetMastersForSuite(test_suite)
+  for m in masters:
+    deferred.defer(_UpdateDescriptor, m, test_suite, namespace)
+
+
+def _UpdateDescriptor(master, test_suite, namespace, start_cursor=None,
                       measurements=(), bots=(), cases=(), case_tags=None):
-  logging.info('%s %s %d %d %d', test_suite, namespace,
+  logging.info('%s %s %s %d %d %d', master, test_suite, namespace,
                len(measurements), len(bots), len(cases))
-
   # This function always runs in the taskqueue as an anonymous user.
   if namespace == datastore_hooks.INTERNAL:
     datastore_hooks.SetPrivilegedRequest()
 
-  start = time.time()
-  deadline = start + DEADLINE_SECONDS
-  key_count = 0
   measurements = set(measurements)
   bots = set(bots)
   cases = set(cases)
   case_tags = case_tags or {}
-
-  # Some test suites have more keys than can fit in memory or can be processed
-  # in 10 minutes, so use an iterator instead of a page limit.
-  query_iter = _QueryTestSuite(test_suite).iter(
-      keys_only=True, produce_cursors=True, start_cursor=start_cursor,
-      use_cache=False, use_memcache=False)
   tags_futures = []
-  parse_error = None
 
-  try:
-    for key in query_iter:
-      test_path = utils.TestPath(key)
-      key_count += 1
+  query = graph_data.TestMetadata.query()
+  query = query.filter(graph_data.TestMetadata.master_name == master)
+  query = query.filter(graph_data.TestMetadata.suite_name == test_suite)
+  query = query.filter(graph_data.TestMetadata.deprecated == False)
+  query = query.filter(graph_data.TestMetadata.has_rows == True)
 
-      try:
-        desc = descriptor.Descriptor.FromTestPathSync(test_path)
-      except ValueError:
-        parse_error = test_path
-        logging.error('DescriptorValueError %s', test_path)
-        break
+  tests, next_cursor, more = query.fetch_page(
+      TESTS_TO_FETCH, start_cursor=start_cursor,
+      use_cache=False, use_memcache=False)
 
-      bots.add(desc.bot)
-      if desc.measurement:
-        measurements.add(desc.measurement)
-      if desc.test_case:
-        if desc.test_case not in cases:
-          cases.add(desc.test_case)
-          tags_futures.append(_QueryCaseTags(test_path, desc.test_case))
-      if time.time() > deadline:
-        break
-  except db.BadRequestError:
-    pass
+  for test in tests:
+    bots.add(test.bot_name)
+
+    try:
+      _, measurement, story = utils.ParseTelemetryMetricParts(
+          test.test_path)
+    except utils.ParseTelemetryMetricFailed as e:
+      # Log the error and process the rest of the test suite.
+      logging.error('Parsing error encounted: %s', e)
+      continue
+
+    if test.unescaped_story_name:
+      story = test.unescaped_story_name
+
+    if measurement:
+      measurements.add(measurement)
+
+    if story and story not in cases:
+      cases.add(story)
+      tags_futures.append(_QueryCaseTags(test.test_path, story))
 
   _CollectCaseTags(tags_futures, case_tags)
 
   logging.info('%d keys, %d measurements, %d bots, %d cases, %d tags',
-               key_count, len(measurements), len(bots), len(cases),
+               len(tests), len(measurements), len(bots), len(cases),
                len(case_tags))
-  if key_count:
-    logging.info('per_key:wall_us=%f',
-                 round(1e6 * (time.time() - start) / key_count))
 
-  if query_iter.probably_has_next():
+  if more:
     logging.info('continuing')
-    deferred.defer(_UpdateDescriptor, test_suite, namespace,
-                   query_iter.cursor_before(), measurements, bots, cases,
+    deferred.defer(_UpdateDescriptor, master, test_suite, namespace,
+                   next_cursor, measurements, bots, cases,
                    case_tags)
     return
 
@@ -163,9 +181,7 @@ def _UpdateDescriptor(test_suite, namespace, start_cursor=None,
       'cases': list(sorted(cases)),
       'caseTags': {tag: sorted(cases) for tag, cases in list(case_tags.items())}
   }
-  if parse_error:
-    desc = {'parseError': parse_error}
 
   key = namespaced_stored_object.NamespaceKey(
-      CacheKey(test_suite), namespace)
+      CacheKey(master, test_suite), namespace)
   stored_object.Set(key, desc)

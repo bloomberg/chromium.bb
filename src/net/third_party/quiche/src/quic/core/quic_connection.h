@@ -134,10 +134,14 @@ class QUIC_EXPORT_PRIVATE QuicConnectionVisitorInterface {
   virtual void OnSuccessfulVersionNegotiation(
       const ParsedQuicVersion& version) = 0;
 
-  // Called when a connectivity probe has been received by the connection.
-  virtual void OnConnectivityProbeReceived(
-      const QuicSocketAddress& self_address,
-      const QuicSocketAddress& peer_address) = 0;
+  // Called when a packet has been received by the connection, after being
+  // validated and parsed. Only called when the client receives a valid packet
+  // or the server receives a connectivity probing packet.
+  // |is_connectivity_probe| is true if the received packet is a connectivity
+  // probe.
+  virtual void OnPacketReceived(const QuicSocketAddress& self_address,
+                                const QuicSocketAddress& peer_address,
+                                bool is_connectivity_probe) = 0;
 
   // Called when a blocked socket becomes writable.
   virtual void OnCanWrite() = 0;
@@ -476,6 +480,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   void OnCoalescedPacket(const QuicEncryptedPacket& packet) override;
+  void OnUndecryptablePacket(const QuicEncryptedPacket& packet,
+                             EncryptionLevel decryption_level,
+                             bool has_decryption_key) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
   bool OnCryptoFrame(const QuicCryptoFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
@@ -526,9 +533,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // ack_frame().
   const QuicFrame GetUpdatedAckFrame();
 
-  // Called by the crypto stream when the handshake completes. In the server's
-  // case this is when the SHLO has been ACKed. Clients call this on receipt of
-  // the SHLO.
+  // Called when the handshake completes. On the client side, handshake
+  // completes on receipt of SHLO. On the server side, handshake completes when
+  // SHLO gets ACKed (or a forward secure packet gets decrypted successfully).
+  // TODO(fayang): Add a guard that this only gets called once.
   void OnHandshakeComplete();
 
   // Accessors
@@ -682,6 +690,10 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Returns the underlying sent packet manager.
   QuicSentPacketManager& sent_packet_manager() { return sent_packet_manager_; }
+
+  UberReceivedPacketManager& received_packet_manager() {
+    return uber_received_packet_manager_;
+  }
 
   bool CanWrite(HasRetransmittableData retransmittable);
 
@@ -961,6 +973,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void TearDownLocalConnectionState(QuicErrorCode error,
                                     const std::string& details,
                                     ConnectionCloseSource source);
+  void TearDownLocalConnectionState(const QuicConnectionCloseFrame& frame,
+                                    ConnectionCloseSource source);
 
   // Writes the given packet to socket, encrypted with packet's
   // encryption_level. Returns true on successful write, and false if the writer
@@ -980,7 +994,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
       const QuicStopWaitingFrame& stop_waiting);
 
   // Sends a version negotiation packet to the peer.
-  void SendVersionNegotiationPacket(bool ietf_quic);
+  void SendVersionNegotiationPacket(bool ietf_quic, bool has_length_prefix);
 
   // Clears any accumulated frames from the last received packet.
   void ClearLastFrames();
@@ -1120,6 +1134,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Whether incoming_connection_ids_ contains connection_id.
   bool HasIncomingConnectionId(QuicConnectionId connection_id);
 
+  // Whether connection enforces anti-amplification limit.
+  bool EnforceAntiAmplificationLimit() const;
+
+  // Whether connection is limited by amplification factor.
+  bool LimitedByAmplificationFactor() const;
+
   QuicFramer framer_;
 
   // Contents received in the current packet, especially used to identify
@@ -1217,6 +1237,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   bool pending_version_negotiation_packet_;
   // Used when pending_version_negotiation_packet_ is true.
   bool send_ietf_version_negotiation_packet_;
+  bool send_version_negotiation_packet_with_prefixed_lengths_;
 
   // When packets could not be sent because the socket was not writable,
   // they are added to this list.  All corresponding frames are in
@@ -1424,6 +1445,24 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Indicates whether a RETRY packet has been parsed.
   bool retry_has_been_parsed_;
+
+  // If max_consecutive_ptos_ > 0, close connection if consecutive PTOs is
+  // greater than max_consecutive_ptos.
+  size_t max_consecutive_ptos_;
+
+  // Bytes received before address validation. Only used when
+  // EnforceAntiAmplificationLimit returns true.
+  size_t bytes_received_before_address_validation_;
+
+  // Bytes sent before address validation. Only used when
+  // EnforceAntiAmplificationLimit returns true.
+  size_t bytes_sent_before_address_validation_;
+
+  // True if peer address has been validated. Address is considered validated
+  // when 1) an address token is received and validated, or 2) a HANDSHAKE
+  // packet has been successfully processed. Only used when
+  // EnforceAntiAmplificationLimit returns true.
+  bool address_validated_;
 };
 
 }  // namespace quic

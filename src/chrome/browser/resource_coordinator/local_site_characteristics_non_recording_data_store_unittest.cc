@@ -9,7 +9,7 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_store_inspector.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -35,13 +35,11 @@ class LocalSiteCharacteristicsNonRecordingDataStoreTest : public testing::Test {
     WaitForAsyncOperationsToComplete();
   }
 
-  void WaitForAsyncOperationsToComplete() {
-    test_browser_thread_bundle_.RunUntilIdle();
-  }
+  void WaitForAsyncOperationsToComplete() { task_environment_.RunUntilIdle(); }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile parent_profile_;
   TestingProfile profile_;
   std::unique_ptr<LocalSiteCharacteristicsDataStore> recording_data_store_;

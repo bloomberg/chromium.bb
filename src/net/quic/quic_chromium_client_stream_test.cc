@@ -16,7 +16,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_session_base.h"
 #include "net/third_party/quiche/src/quic/core/http/quic_spdy_client_stream.h"
 #include "net/third_party/quiche/src/quic/core/http/spdy_utils.h"
@@ -79,7 +79,8 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                void(quic::QuicStreamId stream_id,
                     quic::QuicStringPiece headers_data));
   MOCK_METHOD2(OnStreamHeadersPriority,
-               void(quic::QuicStreamId stream_id, spdy::SpdyPriority priority));
+               void(quic::QuicStreamId stream_id,
+                    const spdy::SpdyStreamPrecedence& precedence));
   MOCK_METHOD3(OnStreamHeadersComplete,
                void(quic::QuicStreamId stream_id, bool fin, size_t frame_len));
   MOCK_METHOD2(OnPromiseHeaders,
@@ -96,17 +97,17 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
       quic::QuicStreamId id,
       spdy::SpdyHeaderBlock headers,
       bool fin,
-      spdy::SpdyPriority priority,
+      const spdy::SpdyStreamPrecedence& precedence,
       quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override {
-    return WriteHeadersOnHeadersStreamMock(id, headers, fin, priority,
+    return WriteHeadersOnHeadersStreamMock(id, headers, fin, precedence,
                                            std::move(ack_listener));
   }
   MOCK_METHOD5(WriteHeadersOnHeadersStreamMock,
                size_t(quic::QuicStreamId id,
                       const spdy::SpdyHeaderBlock& headers,
                       bool fin,
-                      spdy::SpdyPriority priority,
+                      const spdy::SpdyStreamPrecedence& precedence,
                       const quic::QuicReferenceCountedPointer<
                           quic::QuicAckListenerInterface>& ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(quic::QuicTime::Delta delta));
@@ -156,7 +157,7 @@ MockQuicClientSessionBase::~MockQuicClientSessionBase() {}
 
 class QuicChromiumClientStreamTest
     : public ::testing::TestWithParam<quic::QuicTransportVersion>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  public:
   QuicChromiumClientStreamTest()
       : crypto_config_(
@@ -510,11 +511,12 @@ TEST_P(QuicChromiumClientStreamTest, OnDataAvailableWithError) {
   // Start to read the body.
   TestCompletionCallback callback;
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(2 * data_len);
-  EXPECT_EQ(ERR_IO_PENDING,
-            handle_->ReadBody(
-                buffer.get(), 2 * data_len,
-                base::Bind(&QuicChromiumClientStreamTest::ResetStreamCallback,
-                           base::Unretained(this), stream_)));
+  EXPECT_EQ(
+      ERR_IO_PENDING,
+      handle_->ReadBody(
+          buffer.get(), 2 * data_len,
+          base::BindOnce(&QuicChromiumClientStreamTest::ResetStreamCallback,
+                         base::Unretained(this), stream_)));
 
   // Receive the data and close the stream during the callback.
   size_t offset = 0;

@@ -13,18 +13,48 @@
 namespace base {
 namespace internal {
 
+#if DCHECK_IS_ON()
+namespace {
+
+// static
+RepeatingClosure& GetPromiseApiErrorCallback() {
+  static NoDestructor<RepeatingClosure> on_api_error_callback;
+  return *on_api_error_callback;
+}
+
+}  // namespace
+
+// static
+void AbstractPromise::SetApiErrorObserverForTesting(
+    RepeatingClosure on_api_error_callback) {
+  CheckedAutoLock lock(GetCheckedLock());
+  GetPromiseApiErrorCallback() = std::move(on_api_error_callback);
+}
+
+// Like DCHECK except observable via
+// AbstractPromise::SetApiErrorObserverForTesting. Exists to avoid DEATH_TESTs
+// which are flaky with promises.
+#define PROMISE_API_DCHECK(condition)                 \
+  if (!(condition) && GetPromiseApiErrorCallback()) { \
+    GetPromiseApiErrorCallback().Run();               \
+    return;                                           \
+  }                                                   \
+  DCHECK(condition)
+
+#endif  // DCHECK_IS_ON()
+
 AbstractPromise::~AbstractPromise() {
 #if DCHECK_IS_ON()
   {
     CheckedAutoLock lock(GetCheckedLock());
 
-    DCHECK(!must_catch_ancestor_that_could_reject_ ||
-           passed_catch_responsibility_)
+    PROMISE_API_DCHECK(!must_catch_ancestor_that_could_reject_ ||
+                       passed_catch_responsibility_)
         << "Promise chain ending at " << from_here_.ToString()
         << " didn't have a catch for potentially rejecting promise here "
         << must_catch_ancestor_that_could_reject_->from_here().ToString();
 
-    DCHECK(!this_must_catch_ || passed_catch_responsibility_)
+    PROMISE_API_DCHECK(!this_must_catch_ || passed_catch_responsibility_)
         << "Potentially rejecting promise at " << from_here_.ToString()
         << " doesn't have a catch.";
   }
@@ -41,16 +71,6 @@ bool AbstractPromise::IsCanceled() const {
 
   const PromiseExecutor* executor = GetExecutor();
   return executor && executor->IsCancelled();
-}
-
-const AbstractPromise* AbstractPromise::FindNonCurriedAncestor() const {
-  const AbstractPromise* promise = this;
-  while (
-      const scoped_refptr<AbstractPromise>* curried_promise =
-          unique_any_cast<scoped_refptr<AbstractPromise>>(&promise->value_)) {
-    promise = curried_promise->get();
-  }
-  return promise;
 }
 
 void AbstractPromise::AddAsDependentForAllPrerequisites() {
@@ -153,7 +173,7 @@ void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
       return;
 
     case PromiseExecutor::ArgumentPassingType::kNormal:
-      DCHECK(!dependent_move_only_promise_)
+      PROMISE_API_DCHECK(!dependent_move_only_promise_)
           << "Can't mix move only and non-move only " << callback_type_
           << "callback arguments for the same " << callback_type_
           << " prerequisite. See " << new_dependent_location.ToString()
@@ -164,14 +184,15 @@ void AbstractPromise::DoubleMoveDetector::CheckForDoubleMoveErrors(
       return;
 
     case PromiseExecutor::ArgumentPassingType::kMove:
-      DCHECK(!dependent_move_only_promise_ ||
-             *dependent_move_only_promise_ == new_dependent_location)
+      PROMISE_API_DCHECK(!dependent_move_only_promise_ ||
+                         *dependent_move_only_promise_ ==
+                             new_dependent_location)
           << "Can't have multiple move only " << callback_type_
           << " callbacks for same " << callback_type_ << " prerequisite. See "
           << new_dependent_location.ToString() << " and "
           << dependent_move_only_promise_->ToString() << " with common "
           << callback_type_ << " prerequisite " << from_here_.ToString();
-      DCHECK(!dependent_normal_promise_)
+      PROMISE_API_DCHECK(!dependent_normal_promise_)
           << "Can't mix move only and non-move only " << callback_type_
           << " callback arguments for the same " << callback_type_
           << " prerequisite. See " << new_dependent_location.ToString()
@@ -261,16 +282,15 @@ AbstractPromise::DoubleMoveDetector::~DoubleMoveDetector() = default;
 #endif
 
 AbstractPromise* AbstractPromise::GetCurriedPromise() {
-  if (scoped_refptr<AbstractPromise>* curried_promise_refptr =
-          unique_any_cast<scoped_refptr<AbstractPromise>>(&value_)) {
-    return curried_promise_refptr->get();
-  } else {
+  if (!value_.ContainsCurriedPromise())
     return nullptr;
-  }
+  return value_.Get<scoped_refptr<AbstractPromise>>()->get();
 }
 
 const PromiseExecutor* AbstractPromise::GetExecutor() const {
-  return base::unique_any_cast<PromiseExecutor>(&value_);
+  if (!value_.ContainsPromiseExecutor())
+    return nullptr;
+  return value_.Get<internal::PromiseExecutor>();
 }
 
 PromiseExecutor::PrerequisitePolicy AbstractPromise::GetPrerequisitePolicy() {
@@ -287,15 +307,13 @@ PromiseExecutor::PrerequisitePolicy AbstractPromise::GetPrerequisitePolicy() {
 }
 
 AbstractPromise* AbstractPromise::GetFirstSettledPrerequisite() const {
-  if (!prerequisites_)
-    return nullptr;
+  DCHECK(prerequisites_);
   return prerequisites_->GetFirstSettledPrerequisite();
 }
 
 void AbstractPromise::Execute() {
   const PromiseExecutor* executor = GetExecutor();
-  DCHECK(executor || dependents_.IsCanceled())
-      << from_here_.ToString() << " value_ contains " << value_.type();
+  DCHECK(executor || dependents_.IsCanceled()) << from_here_.ToString();
 
   if (!executor || executor->IsCancelled()) {
     OnCanceled();
@@ -313,8 +331,21 @@ void AbstractPromise::Execute() {
 
   DCHECK(!IsResolvedWithPromise());
 
+  // To reduce template bloat the Executor machinery deals with AbstractPromise
+  // raw pointers. This is fine as long as we ensure the reference count doesn't
+  // go to zero when we run the promise callback (which could do anything
+  // including releasing what might otherwise be the last reference to the
+  // AbstractPromise).
+  scoped_refptr<AbstractPromise> protect(this);
+
   // This is likely to delete the executor.
   GetExecutor()->Execute(this);
+
+  if (value_.ContainsRejected()) {
+    OnRejected();
+  } else if (value_.ContainsResolved() || value_.ContainsCurriedPromise()) {
+    OnResolved();
+  }
 }
 
 void AbstractPromise::ReplaceCurriedPrerequisite(
@@ -504,7 +535,7 @@ void AbstractPromise::OnCanceled() {
 
   // The executor could be keeping a promise alive, but it's never going to run
   // so clear it.
-  value_ = unique_any();
+  value_.reset();
 
 #if DCHECK_IS_ON()
   {
@@ -517,9 +548,23 @@ void AbstractPromise::OnCanceled() {
     prerequisites_->Clear();
 }
 
+AbstractPromise* AbstractPromise::FindCurriedAncestor() {
+  AbstractPromise* promise = this;
+  while (promise->IsSettled()) {
+    if (promise->IsCanceled())
+      return nullptr;
+
+    if (!promise->value_.ContainsCurriedPromise())
+      break;
+
+    promise = promise->value_.Get<scoped_refptr<AbstractPromise>>()->get();
+  }
+  return promise;
+}
+
 void AbstractPromise::OnResolved() {
 #if DCHECK_IS_ON()
-  DCHECK(executor_can_resolve_ || IsResolvedWithPromise())
+  PROMISE_API_DCHECK(executor_can_resolve_ || IsResolvedWithPromise())
       << from_here_.ToString();
 #endif
   if (AbstractPromise* curried_promise = GetCurriedPromise()) {
@@ -530,20 +575,10 @@ void AbstractPromise::OnResolved() {
     }
 #endif
 
-    // If there are settled curried ancestors we can skip then do so.
-    while (curried_promise->IsSettled()) {
-      if (curried_promise->IsCanceled()) {
-        OnCanceled();
-        return;
-      }
-      const scoped_refptr<AbstractPromise>* curried_ancestor =
-          unique_any_cast<scoped_refptr<AbstractPromise>>(
-              &curried_promise->value_);
-      if (curried_ancestor) {
-        curried_promise = curried_ancestor->get();
-      } else {
-        break;
-      }
+    curried_promise = curried_promise->FindCurriedAncestor();
+    if (!curried_promise) {
+      OnCanceled();
+      return;
     }
 
     OnResolveMakeDependantsUseCurriedPrerequisite(curried_promise);
@@ -557,7 +592,7 @@ void AbstractPromise::OnResolved() {
 
 void AbstractPromise::OnRejected() {
 #if DCHECK_IS_ON()
-  DCHECK(executor_can_reject_) << from_here_.ToString();
+  PROMISE_API_DCHECK(executor_can_reject_) << from_here_.ToString();
 #endif
 
   if (AbstractPromise* curried_promise = GetCurriedPromise()) {
@@ -568,22 +603,12 @@ void AbstractPromise::OnRejected() {
     }
 #endif
 
-    // If there are settled curried ancestors we can skip then do so.
-    while (curried_promise->IsSettled()) {
-      if (curried_promise->IsCanceled()) {
-        OnCanceled();
-        return;
-      }
-      const scoped_refptr<AbstractPromise>* curried_ancestor =
-          unique_any_cast<scoped_refptr<AbstractPromise>>(
-              &curried_promise->value_);
-      if (curried_ancestor) {
-        curried_promise = curried_ancestor->get();
-      } else {
-        break;
-      }
-    }
+    curried_promise = curried_promise->FindCurriedAncestor();
 
+    // It shouldn't be possible for OnRejected to be called with a canceled
+    // curried promise because AbstractPromise::Execute regards a curried as a
+    // resolved promise.
+    DCHECK(curried_promise);
     OnRejectMakeDependantsUseCurriedPrerequisite(curried_promise);
   } else {
     OnRejectDispatchReadyDependents();

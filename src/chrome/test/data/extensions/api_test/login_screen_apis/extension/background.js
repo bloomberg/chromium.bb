@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 const cannotCreateMultipleWindowsErrorMessage =
-    'Can\'t create more than one window per extension.';
+    'Login screen extension UI already in use.';
 const cannotCloseNoWindowErrorMessage = 'No open window to close.';
 const cannotAccessLocalStorageErrorMessage =
     '"local" is not available for login screen extensions';
@@ -39,6 +39,20 @@ const tests = {
   'LoginScreenUiCannotCloseNoWindow': () => {
     chrome.loginScreenUi.close(() => {
       chrome.test.assertLastError(cannotCloseNoWindowErrorMessage);
+      chrome.test.succeed();
+    });
+  },
+  'LoginScreenUiUserCanCloseWindow': () => {
+    chrome.loginScreenUi.show({url: 'some/path.html',
+        userCanClose: true}, () => {
+      chrome.test.assertNoLastError();
+      chrome.test.succeed();
+    });
+  },
+  'LoginScreenUiUserCannotCloseWindow': () => {
+    chrome.loginScreenUi.show({url: 'some/path.html',
+        userCanClose: false}, () => {
+      chrome.test.assertNoLastError();
       chrome.test.succeed();
     });
   },

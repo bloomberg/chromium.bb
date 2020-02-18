@@ -10,12 +10,12 @@
 
 #include "base/bind.h"
 #include "base/bit_cast.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "components/sync/base/cancelation_signal.h"
@@ -53,7 +53,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
 
   void SetUp() override {
     base::Thread::Options options;
-    options.message_loop_type = base::MessageLoop::TYPE_IO;
+    options.message_pump_type = base::MessagePumpType::IO;
     io_thread_.StartWithOptions(options);
 
     HttpBridge::SetIOCapableTaskRunnerForTest(io_thread_.task_runner());
@@ -108,7 +108,7 @@ class MAYBE_SyncHttpBridgeTest : public testing::Test {
 
   HttpBridge* bridge_for_race_test_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   // Separate thread for IO used by the HttpBridge.
   base::Thread io_thread_;
 };

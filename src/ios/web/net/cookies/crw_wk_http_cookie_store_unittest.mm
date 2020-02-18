@@ -9,7 +9,7 @@
 #include "base/run_loop.h"
 #import "base/test/ios/wait_util.h"
 #include "ios/net/cookies/cookie_store_ios_test_util.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/test/web_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -100,7 +100,7 @@ class CRWWKHTTPCookieStoreTest : public PlatformTest {
   }
 
  protected:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   CRWWKHTTPCookieStore* crw_cookie_store_;
   id mock_http_cookie_store_ = nil;
   NSHTTPCookie* test_cookie_1_ = nil;

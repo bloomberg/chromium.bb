@@ -26,8 +26,8 @@
 namespace {
 
 const std::string SAMPLE_ORIGINAL_URL =
-    "https://www.google.com/url?_placeholder_url=https://drive.google.com/a/"
-    "domain.tld/open?id%3D_0123_ID_4567_&_placeholder_";
+    "https://www.google.com/url?url=https://drive.google.com/a/domain.tld/"
+    "open?id%3D_0123_ID_4567_&_placeholder_";
 
 const std::string SAMPLE_STRIPPED_URL =
     "https://drive.google.com/open?id=_0123_ID_4567_";
@@ -97,7 +97,7 @@ void DocumentProviderTest::SetUp() {
   default_template_url_ = turl_model->Add(std::make_unique<TemplateURL>(data));
   turl_model->SetUserSelectedDefaultSearchProvider(default_template_url_);
 
-  provider_ = DocumentProvider::Create(client_.get(), this);
+  provider_ = DocumentProvider::Create(client_.get(), this, 4);
 }
 
 void DocumentProviderTest::OnProviderUpdate(bool updated_matches) {
@@ -259,8 +259,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResults) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 2u);
 
   EXPECT_EQ(matches[0].contents, base::ASCIIToUTF16("Document 1"));
@@ -320,8 +320,8 @@ TEST_F(DocumentProviderTest, ProductDescriptionStringsAndAccessibleLabels) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // match.destination_url is used as the match's temporary text in the Omnibox.
@@ -376,8 +376,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTies) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1234, 1234, 1234]
@@ -432,8 +432,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesCascade) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1233, 1234, 1233, 1000, 1000]
@@ -490,8 +490,8 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsBreakTiesZeroLimit) {
   ASSERT_TRUE(response);
   ASSERT_TRUE(response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*response, &matches);
+  provider_->input_.UpdateText(base::UTF8ToUTF16("input"), 0, {});
+  ACMatches matches = provider_->ParseDocumentSearchResults(*response);
   EXPECT_EQ(matches.size(), 3u);
 
   // Server is suggesting relevances of [1, 1, 1]
@@ -540,8 +540,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithBackoff) {
   ASSERT_TRUE(backoff_response);
   ASSERT_TRUE(backoff_response->is_dict());
 
-  ACMatches matches;
-  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  ACMatches matches = provider_->ParseDocumentSearchResults(*backoff_response);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }
 
@@ -574,7 +573,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
       kMismatchedMessageJSON, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(bad_response);
   ASSERT_TRUE(bad_response->is_dict());
-  provider_->ParseDocumentSearchResults(*bad_response, &matches);
+  matches = provider_->ParseDocumentSearchResults(*bad_response);
   ASSERT_FALSE(provider_->backoff_for_session_);
 
   // Now parse a response that does trigger backoff.
@@ -582,7 +581,7 @@ TEST_F(DocumentProviderTest, ParseDocumentSearchResultsWithIneligibleFlag) {
       kIneligibleJSONResponse, base::JSON_ALLOW_TRAILING_COMMAS);
   ASSERT_TRUE(backoff_response);
   ASSERT_TRUE(backoff_response->is_dict());
-  provider_->ParseDocumentSearchResults(*backoff_response, &matches);
+  matches = provider_->ParseDocumentSearchResults(*backoff_response);
   ASSERT_TRUE(provider_->backoff_for_session_);
 }
 
@@ -629,61 +628,89 @@ TEST_F(DocumentProviderTest, GetURLForDeduping) {
     const GURL expected_output;
     if (!expected_id.empty()) {
       EXPECT_EQ(got_output,
-                GURL("https://drive.google.com/open?id=" + expected_id));
+                GURL("https://drive.google.com/open?id=" + expected_id))
+          << url_string;
     } else {
-      EXPECT_EQ(got_output, GURL());
+      EXPECT_EQ(got_output, GURL()) << url_string;
     }
   };
 
-  // URLs that represent documents:
-  CheckDeduper("https://drive.google.com/open?id=the_doc-id", "the_doc-id");
-  CheckDeduper("https://drive.google.com/a/domain.com/open?x=3&id=the_doc-id",
-               "the_doc-id");
-  CheckDeduper("https://docs.google.com/document/d/the_doc-id/edit",
-               "the_doc-id");
-  CheckDeduper(
-      "https://docs.google.com/presentation/d/the_doc-id/edit#slide=xyz",
-      "the_doc-id");
-  CheckDeduper(
-      "https://docs.google.com/spreadsheets/d/the_doc-id/preview?x=1#y=2",
-      "the_doc-id");
-  CheckDeduper(
-      "https://docs.google.com/a/domain/spreadsheets/d/the_doc-id/"
-      "preview?x=1#y=2",
-      "the_doc-id");
-  CheckDeduper(
-      "https://www.google.com/"
-      "url?sa=t&rct=j&esrc=s&source=appssearch&uact=8&cd=0&cad=rja&q&sig2=sig&"
-      "url=https://drive.google.com/a/google.com/"
-      "open?id%3D1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE&usg=X",
-      "1fkxx6KYRYnSqljThxShJVliQJLdKzuJBnzogzL3n8rE");
-  CheckDeduper(
-      "https://www.google.com/url?url=https://drive.google.com/a/google.com/"
-      "open?id%3Dthe_doc_id",
-      "the_doc_id");
-  CheckDeduper(
-      "https://www.google.com/url?url=https://drive.google.com/a/foo.edu/"
-      "open?id%3Dthe_doc_id",
-      "the_doc_id");
-  CheckDeduper(
-      "https://www.google.com/url?url=https://drive.google.com/"
-      "open?id%3Dthe_doc_id",
-      "the_doc_id");
-  CheckDeduper(
-      "https://www.google.com/url?url=https://drive.google.com/"
-      "open?id%3Dthe_doc_id%26Dusp%3Dchrome_omnibox",
-      "the_doc_id");
+  // Turning clang-format off to avoid wrapping the URLs which makes them harder
+  // to search, copy/navigate, and edit.
+  // clang-format off
 
-  // URLs that do not represent documents:
-  CheckDeduper("https://drive.google.com/b/domain.com/open?id=the_doc-id", "");
-  CheckDeduper("https://drive.google.com/b/domain.com/open?idx=the_doc-id", "");
-  CheckDeduper("https://docs.google.com/help?id=d123", "");
+  // Various hosts (e.g. docs).
+  CheckDeduper("https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://spreadsheets.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://script.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://sites.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  // Without domain in path (e.g. a/google.com/).
+  CheckDeduper("https://docs.google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  // Non-document paths (e.g. presentation).
+  CheckDeduper("https://docs.google.com/a/google.com/presentation/d/tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/spreadsheets/d/tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/098/d/tH3_d0C-1d", "tH3_d0C-1d");
+  // With various action suffixes (e.g. view).
+  CheckDeduper("https://docs.google.com/a/google.com/forms/d/tH3_d0C-1d/view", "tH3_d0C-1d");
+  CheckDeduper("https://spreadsheets.google.com/spreadsheets/d/tH3_d0C-1d/comment", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/spreadsheets/d/tH3_d0C-1d/view", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/spreadsheets/d/tH3_d0C-1d/089", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/file/d/tH3_d0C-1d", "tH3_d0C-1d");
+  // With query params.
+  CheckDeduper("https://docs.google.com/a/google.com/forms/d/tH3_d0C-1d?usp=drive_web", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/file/d/tH3_d0C-1d/comment?usp=drive_web", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/presentation/d/tH3_d0C-1d/edit?usp=drive_web", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/presentation/d/tH3_d0C-1d/edit#slide=id.abc_0_789", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/file/d/tH3_d0C-1d/789", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/spreadsheets/d/tH3_d0C-1d/preview?x=1#y=2", "tH3_d0C-1d");
+  // With non-google domains.
+  CheckDeduper("https://docs.google.com/a/rand.com/forms/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://sites.google.com/a/rand.om.org/file/d/tH3_d0C-1d/view", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/spreadsheets/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/presentation/d/tH3_d0C-1d/comment", "tH3_d0C-1d");
+  CheckDeduper("https://script.google.com/a/domain/spreadsheets/d/tH3_d0C-1d/preview?x=1#y=2", "tH3_d0C-1d");
+  // Open.
+  CheckDeduper("https://drive.google.com/open?id=tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/a/google.com/open?x=prefix&id=tH3_d0C-1d&y=suffix", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/domain.com/open?id=tH3_d0C-1d&y=suffix/edit", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/open?x=prefix&id=tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://script.google.com/open?id=tH3_d0C-1d", "tH3_d0C-1d");
+  // Viewform examples.
+  CheckDeduper("https://drive.google.com/a/google.com/forms/d/e/tH3_d0C-1d/viewform", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/forms/d/e/tH3_d0C-1d/viewform", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/forms/d/e/tH3_d0C-1d/viewform", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/forms/d/e/tH3_d0C-1d/viewform", "tH3_d0C-1d");
+  // File and folder.
+  CheckDeduper("https://docs.google.com/a/google.com/drive/folders/tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/drive/folders/tH3_d0C-1d", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/file/d/tH3_d0C-1d/view?usp=sharing", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/file/d/tH3_d0C-1d/view?usp=sharing", "tH3_d0C-1d");
+  // Redirects.
+  CheckDeduper("https://www.google.com/url?q=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://www.google.com/url?sa=t&url=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://www.google.com/url?sa=t&q&url=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/accounts?continueUrl=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/a/google.com/accounts?continueUrl=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/accounts?continueUrl=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/accounts?continueUrl=https://docs.google.com/a/google.com/document/d/tH3_d0C-1d/edit", "tH3_d0C-1d");
+  // Redirects encoded.
+  CheckDeduper("https://www.google.com/url?q=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+  CheckDeduper("https://www.google.com/url?sa=t&url=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/accounts?continueUrl=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+  CheckDeduper("https://docs.google.com/a/google.com/accounts?continueUrl=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/a/google.com/accounts?continueUrl=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+  CheckDeduper("https://drive.google.com/accounts?continueUrl=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "tH3_d0C-1d");
+
+  // URLs that do not represent docs and shouldn't be deduped with doc URLs:
+  CheckDeduper("https://support.google.com/a/users/answer/1?id=2", "");
   CheckDeduper("https://www.google.com", "");
-  CheckDeduper("https://docs.google.com/kittens/d/d123/preview?x=1#y=2", "");
-  CheckDeduper(
-      "https://www.google.com/url?url=https://drive.google.com/homepage", "");
-  CheckDeduper("https://www.google.com/url?url=https://www.youtube.com/view",
-               "");
+  CheckDeduper("https://www.google.com/url?url=https://drive.google.com/homepage", "");
+  CheckDeduper("https://www.google.com/url?url=https://www.youtube.com/view", "");
+  CheckDeduper("https://notdrive.google.com/?x=https%3A%2F%2Fdocs.google.com%2Fa%2Fgoogle.com%2Fdocument%2Fd%2FtH3_d0C-1d%2Fedit", "");
+
+  // clang-format on
 }
 
 TEST_F(DocumentProviderTest, Scoring) {
@@ -700,8 +727,7 @@ TEST_F(DocumentProviderTest, Scoring) {
                                                     parameters);
     base::Optional<base::Value> response = base::JSONReader::Read(response_str);
     provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
-    ACMatches matches;
-    provider_->ParseDocumentSearchResults(*response, &matches);
+    ACMatches matches = provider_->ParseDocumentSearchResults(*response);
 
     EXPECT_EQ(matches.size(), expected_scores.size())
         << "invocation " << invocation;
@@ -724,7 +750,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 900, "url": "url"},
           {"title": "Document 3", "score": 900, "url": "url"}
         ]})",
-      "", {1000, 900, 899});
+      "input", {1000, 900, 899});
 
   // Server scoring with rank caps.
   CheckScoring(
@@ -739,7 +765,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 1150, "url": "url"},
           {"title": "Document 3", "score": 1150, "url": "url"}
         ]})",
-      "", {1150, 1100, 900});
+      "input", {1150, 1100, 900});
 
   // Server scoring with owner boosting.
   CheckScoring(
@@ -755,7 +781,7 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"title": "Document 2", "score": 1150, "url": "url"},
           {"title": "Document 3", "score": 1150, "url": "url"}
         ]})",
-      "", {1150, 950, 949});
+      "input", {1150, 950, 949});
 
   // Client scoring should match each input word at most once.
   CheckScoring(
@@ -766,12 +792,12 @@ TEST_F(DocumentProviderTest, Scoring) {
           {"DocumentBoostOwned", "false"},
       },
       R"({"results": [
-          {"title": "rainbow", "score": 1000, "url": "url"},
-          {"title": "rain bow", "score": 900, "url": "url"},
-          {"title": "rain bows bow bow", "score": 900, "url": "bow",
-            "snippet": {"snippet": "bow bow"}}
+          {"title": "rainbows", "score": 1000, "url": "url"},
+          {"title": "rain bows", "score": 900, "url": "url"},
+          {"title": "rain bowss bows bows", "score": 900, "url": "bows",
+            "snippet": {"snippet": "bows bows"}}
         ]})",
-      "bow", {0, 540, 540});
+      "bows", {0, 669, 669});
 
   // Client scoring should consider snippet but not URL matches
   CheckScoring(
@@ -788,4 +814,105 @@ TEST_F(DocumentProviderTest, Scoring) {
             "snippet": {"snippet": "bow bow"}}
         ]})",
       "rain bow", {669, 669, 793});
+}
+
+TEST_F(DocumentProviderTest, Caching) {
+  auto MakeTestResponse = [](const std::vector<std::string>& doc_ids) {
+    std::string results = "";
+    for (auto doc_id : doc_ids)
+      results += base::StringPrintf(
+          R"({
+              "title": "Document %s",
+              "score": 1150,
+              "url": "https://drive.google.com/open?id=%s",
+              "originalUrl": "https://drive.google.com/open?id=%s",
+            },)",
+          doc_id.c_str(), doc_id.c_str(), doc_id.c_str());
+    return base::StringPrintf(R"({"results": [%s]})", results.c_str());
+  };
+
+  auto GetTestProviderMatches = [this](const std::string& input_text,
+                                       const std::string& response_str) {
+    provider_->input_.UpdateText(base::UTF8ToUTF16(input_text), 0, {});
+    provider_->UpdateResults(response_str);
+    return provider_->matches_;
+  };
+
+  // Partially fill the cache as setup for following tests.
+  auto matches =
+      GetTestProviderMatches("input", MakeTestResponse({"0", "1", "2"}));
+  EXPECT_EQ(matches.size(), size_t(3));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 2"));
+
+  // Cache should remove duplicates.
+  matches = GetTestProviderMatches("input", MakeTestResponse({"1", "2", "3"}));
+  EXPECT_EQ(matches.size(), size_t(4));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 2"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 0"));
+
+  // Cache size (4) should not restrict number of matches from the current
+  // response.
+  matches = GetTestProviderMatches("input", MakeTestResponse({"3", "4", "5"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 1"));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 2"));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 0"));
+
+  // Cache size (4) should restrict number of cached matches appended.
+  matches = GetTestProviderMatches("input", MakeTestResponse({"0", "4", "6"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 6"));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 1"));
+
+  // Cached results should update match |additional_info|, |relevance|, and
+  // |contents_class|.
+  matches = GetTestProviderMatches("docum", MakeTestResponse({"5", "4", "7"}));
+  EXPECT_EQ(matches.size(), size_t(6));
+  EXPECT_EQ(matches[0].contents, base::UTF8ToUTF16("Document 5"));
+  EXPECT_EQ(matches[0].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[0].relevance, 1150);
+  EXPECT_THAT(matches[0].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
+  EXPECT_EQ(matches[1].contents, base::UTF8ToUTF16("Document 4"));
+  EXPECT_EQ(matches[1].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[1].relevance, 1149);
+  EXPECT_THAT(matches[1].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
+  EXPECT_EQ(matches[2].contents, base::UTF8ToUTF16("Document 7"));
+  EXPECT_EQ(matches[2].GetAdditionalInfo("from cache"), "");
+  EXPECT_EQ(matches[2].relevance, 1148);
+  EXPECT_THAT(matches[2].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
+  EXPECT_EQ(matches[3].contents, base::UTF8ToUTF16("Document 0"));
+  EXPECT_EQ(matches[3].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[3].relevance, 0);
+  EXPECT_THAT(matches[3].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
+  EXPECT_EQ(matches[4].contents, base::UTF8ToUTF16("Document 6"));
+  EXPECT_EQ(matches[4].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[4].relevance, 0);
+  EXPECT_THAT(matches[4].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
+  EXPECT_EQ(matches[5].contents, base::UTF8ToUTF16("Document 3"));
+  EXPECT_EQ(matches[5].GetAdditionalInfo("from cache"), "true");
+  EXPECT_EQ(matches[5].relevance, 0);
+  EXPECT_THAT(matches[5].contents_class,
+              testing::ElementsAre(ACMatchClassification{0, 2},
+                                   ACMatchClassification{5, 0}));
 }

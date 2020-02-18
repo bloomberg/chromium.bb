@@ -9,7 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/search/background/ntp_background.pb.h"
-#include "chrome/browser/search/background/onboarding_ntp_backgrounds.h"
+#include "chrome/browser/search/background/ntp_backgrounds.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
@@ -104,7 +104,7 @@ void NtpBackgroundService::FetchCollectionInfo() {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = collections_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   collections_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -197,7 +197,7 @@ void NtpBackgroundService::FetchCollectionImageInfo(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = collection_images_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   collections_image_info_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -294,7 +294,7 @@ void NtpBackgroundService::FetchNextCollectionImage(
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = next_image_api_url_;
   resource_request->method = "POST";
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   next_image_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), traffic_annotation);
@@ -348,8 +348,8 @@ void NtpBackgroundService::RemoveObserver(
 }
 
 bool NtpBackgroundService::IsValidBackdropUrl(const GURL& url) const {
-  for (auto& onboarding_background : GetOnboardingNtpBackgrounds()) {
-    if (onboarding_background == url) {
+  for (auto& ntp_background : GetNtpBackgrounds()) {
+    if (ntp_background == url) {
       return true;
     }
   }

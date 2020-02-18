@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "remoting/base/auto_thread.h"
 #include "remoting/base/auto_thread_task_runner.h"
@@ -27,7 +27,7 @@ const uint8_t kDummyAudioData = 0x8B;
 
 class FakeAudioConsumer : public AudioStub {
  public:
-  FakeAudioConsumer(): weak_factory_(this) {}
+  FakeAudioConsumer() {}
   ~FakeAudioConsumer() override = default;
 
   base::WeakPtr<FakeAudioConsumer> GetWeakPtr(){
@@ -42,7 +42,7 @@ class FakeAudioConsumer : public AudioStub {
   }
 
  private:
-  base::WeakPtrFactory<FakeAudioConsumer> weak_factory_;
+  base::WeakPtrFactory<FakeAudioConsumer> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FakeAudioConsumer);
 };
@@ -57,7 +57,7 @@ class AudioDecodeSchedulerTest : public ::testing::Test {
   void TearDown() override;
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
   scoped_refptr<AutoThreadTaskRunner> audio_decode_task_runner_;
   scoped_refptr<AutoThreadTaskRunner> main_task_runner_;
@@ -66,8 +66,7 @@ class AudioDecodeSchedulerTest : public ::testing::Test {
 
 void AudioDecodeSchedulerTest::SetUp() {
   main_task_runner_ = new AutoThreadTaskRunner(
-      scoped_task_environment_.GetMainThreadTaskRunner(),
-      run_loop_.QuitClosure());
+      task_environment_.GetMainThreadTaskRunner(), run_loop_.QuitClosure());
   audio_decode_task_runner_ = AutoThread::Create("decode", main_task_runner_);
   session_config_ = SessionConfig::ForTestWithAudio();
 }

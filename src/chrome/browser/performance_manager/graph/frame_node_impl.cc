@@ -4,12 +4,18 @@
 
 #include "chrome/browser/performance_manager/graph/frame_node_impl.h"
 
+#include <utility>
+
 #include "chrome/browser/performance_manager/graph/graph_impl.h"
 #include "chrome/browser/performance_manager/graph/page_node_impl.h"
 #include "chrome/browser/performance_manager/graph/process_node_impl.h"
+#include "chrome/browser/performance_manager/graph/worker_node_impl.h"
 #include "chrome/browser/performance_manager/performance_manager_clock.h"
+#include "chrome/browser/performance_manager/public/frame_priority/frame_priority.h"
 
 namespace performance_manager {
+
+using PriorityAndReason = frame_priority::PriorityAndReason;
 
 FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
                              ProcessNodeImpl* process_node,
@@ -35,6 +41,7 @@ FrameNodeImpl::FrameNodeImpl(GraphImpl* graph,
 
 FrameNodeImpl::~FrameNodeImpl() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(child_worker_nodes_.empty());
 }
 
 void FrameNodeImpl::Bind(
@@ -66,41 +73,18 @@ void FrameNodeImpl::SetHasNonEmptyBeforeUnload(bool has_nonempty_beforeunload) {
   document_.has_nonempty_beforeunload = has_nonempty_beforeunload;
 }
 
-void FrameNodeImpl::SetInterventionPolicy(
-    resource_coordinator::mojom::PolicyControlledIntervention intervention,
+void FrameNodeImpl::SetOriginTrialFreezePolicy(
     resource_coordinator::mojom::InterventionPolicy policy) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  size_t i = static_cast<size_t>(intervention);
-  DCHECK_LT(i, base::size(intervention_policy_));
-
-  // This can only be called to set a policy, but not to revert a policy to the
-  // unset state.
-  DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown, policy);
-
-  // We expect intervention policies to be initially set in order, and rely on
-  // that as a synchronization primitive. Ensure this is the case.
-  DCHECK(i == 0 ||
-         intervention_policy_[i - 1] !=
-             resource_coordinator::mojom::InterventionPolicy::kUnknown);
-
-  if (policy == intervention_policy_[i])
-    return;
-  // Only notify of actual changes.
-  resource_coordinator::mojom::InterventionPolicy old_policy =
-      intervention_policy_[i];
-  intervention_policy_[i] = policy;
-  page_node_->OnFrameInterventionPolicyChanged(this, intervention, old_policy,
-                                               policy);
+  document_.origin_trial_freeze_policy.SetAndMaybeNotify(this, policy);
 }
 
 void FrameNodeImpl::SetIsAdFrame() {
-  is_ad_frame_ = true;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  is_ad_frame_.SetAndMaybeNotify(this, true);
 }
 
 void FrameNodeImpl::OnNonPersistentNotificationCreated() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (auto& observer : observers())
-    observer.OnNonPersistentNotificationCreated(this);
   for (auto* observer : GetObservers())
     observer->OnNonPersistentNotificationCreated(this);
 }
@@ -108,31 +92,6 @@ void FrameNodeImpl::OnNonPersistentNotificationCreated() {
 bool FrameNodeImpl::IsMainFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return !parent_frame_node_;
-}
-
-bool FrameNodeImpl::AreAllInterventionPoliciesSet() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // The convention is that policies are first set en masse, in order. So if
-  // the last policy is set then they are all considered to be set. Check this
-  // in DEBUG builds.
-#if DCHECK_IS_ON()
-  bool seen_unset_policy = false;
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
-    if (!seen_unset_policy) {
-      seen_unset_policy =
-          intervention_policy_[i] !=
-          resource_coordinator::mojom::InterventionPolicy::kUnknown;
-    } else {
-      // Once a first unset policy is seen, all subsequent policies must be
-      // unset.
-      DCHECK_NE(resource_coordinator::mojom::InterventionPolicy::kUnknown,
-                intervention_policy_[i]);
-    }
-  }
-#endif
-
-  return intervention_policy_[base::size(intervention_policy_) - 1] !=
-         resource_coordinator::mojom::InterventionPolicy::kUnknown;
 }
 
 FrameNodeImpl* FrameNodeImpl::parent_frame_node() const {
@@ -174,6 +133,12 @@ resource_coordinator::mojom::LifecycleState FrameNodeImpl::lifecycle_state()
   return lifecycle_state_.value();
 }
 
+resource_coordinator::mojom::InterventionPolicy
+FrameNodeImpl::origin_trial_freeze_policy() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return document_.origin_trial_freeze_policy.value();
+}
+
 bool FrameNodeImpl::has_nonempty_beforeunload() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return document_.has_nonempty_beforeunload;
@@ -195,7 +160,18 @@ bool FrameNodeImpl::network_almost_idle() const {
 }
 
 bool FrameNodeImpl::is_ad_frame() const {
-  return is_ad_frame_;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return is_ad_frame_.value();
+}
+
+const base::flat_set<WorkerNodeImpl*>& FrameNodeImpl::child_worker_nodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return child_worker_nodes_;
+}
+
+const PriorityAndReason& FrameNodeImpl::priority_and_reason() const {
+  return priority_and_reason_.value();
 }
 
 void FrameNodeImpl::SetIsCurrent(bool is_current) {
@@ -260,15 +236,22 @@ void FrameNodeImpl::OnNavigationCommitted(const GURL& url, bool same_document) {
   document_.Reset(this, url);
 }
 
-void FrameNodeImpl::SetAllInterventionPoliciesForTesting(
-    resource_coordinator::mojom::InterventionPolicy policy) {
+void FrameNodeImpl::AddChildWorker(WorkerNodeImpl* worker_node) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i) {
-    SetInterventionPolicy(
-        static_cast<resource_coordinator::mojom::PolicyControlledIntervention>(
-            i),
-        policy);
-  }
+  bool inserted = child_worker_nodes_.insert(worker_node).second;
+  DCHECK(inserted);
+}
+
+void FrameNodeImpl::RemoveChildWorker(WorkerNodeImpl* worker_node) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  size_t removed = child_worker_nodes_.erase(worker_node);
+  DCHECK_EQ(1u, removed);
+}
+
+void FrameNodeImpl::SetPriorityAndReason(
+    const PriorityAndReason& priority_and_reason) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  priority_and_reason_.SetAndMaybeNotify(this, priority_and_reason);
 }
 
 const FrameNode* FrameNodeImpl::GetParentFrameNode() const {
@@ -321,6 +304,12 @@ FrameNodeImpl::LifecycleState FrameNodeImpl::GetLifecycleState() const {
   return lifecycle_state();
 }
 
+FrameNodeImpl::InterventionPolicy FrameNodeImpl::GetOriginTrialFreezePolicy()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return origin_trial_freeze_policy();
+}
+
 bool FrameNodeImpl::HasNonemptyBeforeUnload() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return has_nonempty_beforeunload();
@@ -344,6 +333,21 @@ bool FrameNodeImpl::GetNetworkAlmostIdle() const {
 bool FrameNodeImpl::IsAdFrame() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return is_ad_frame();
+}
+
+const base::flat_set<const WorkerNode*> FrameNodeImpl::GetChildWorkerNodes()
+    const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  base::flat_set<const WorkerNode*> children;
+  for (auto* child : child_worker_nodes())
+    children.insert(static_cast<const WorkerNode*>(child));
+  DCHECK_EQ(children.size(), child_worker_nodes().size());
+  return children;
+}
+
+const PriorityAndReason& FrameNodeImpl::GetPriorityAndReason() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return priority_and_reason();
 }
 
 void FrameNodeImpl::AddChildFrame(FrameNodeImpl* child_frame_node) {
@@ -372,10 +376,6 @@ void FrameNodeImpl::RemoveChildFrame(FrameNodeImpl* child_frame_node) {
 
 void FrameNodeImpl::JoinGraph() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  for (size_t i = 0; i < base::size(intervention_policy_); ++i)
-    intervention_policy_[i] =
-        resource_coordinator::mojom::InterventionPolicy::kUnknown;
 
   // Wire this up to the other nodes in the graph.
   if (parent_frame_node_)
@@ -436,6 +436,8 @@ void FrameNodeImpl::DocumentProperties::Reset(FrameNodeImpl* frame_node,
   has_nonempty_beforeunload = false;
   // Network is busy on navigation.
   network_almost_idle.SetAndMaybeNotify(frame_node, false);
+  origin_trial_freeze_policy.SetAndMaybeNotify(
+      frame_node, resource_coordinator::mojom::InterventionPolicy::kUnknown);
 }
 
 }  // namespace performance_manager

@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/animation/element_animations.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
-#include "third_party/blink/renderer/core/layout/custom/layout_custom.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_counter.h"
@@ -83,6 +83,7 @@
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/custom/layout_ng_custom.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -254,6 +255,11 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return LayoutObjectFactory::CreateTableCaption(*element, style, legacy);
     case EDisplay::kWebkitBox:
     case EDisplay::kWebkitInlineBox:
+      if (RuntimeEnabledFeatures::WebkitBoxLayoutUsesFlexLayoutEnabled() &&
+          (!style.HasLineClamp() ||
+           style.BoxOrient() == EBoxOrient::kHorizontal)) {
+        return new LayoutFlexibleBox(element);
+      }
       return new LayoutDeprecatedFlexibleBox(*element);
     case EDisplay::kFlex:
     case EDisplay::kInlineFlex:
@@ -265,7 +271,8 @@ LayoutObject* LayoutObject::CreateObject(Element* element,
       return new LayoutGrid(element);
     case EDisplay::kLayoutCustom:
     case EDisplay::kInlineLayoutCustom:
-      return new LayoutCustom(element);
+      DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+      return new LayoutNGCustom(element);
   }
 
   NOTREACHED();
@@ -311,7 +318,7 @@ bool LayoutObject::IsDescendantOf(const LayoutObject* obj) const {
 }
 
 bool LayoutObject::IsHR() const {
-  return IsHTMLHRElement(GetNode());
+  return IsA<HTMLHRElement>(GetNode());
 }
 
 void LayoutObject::SetIsInsideFlowThreadIncludingDescendants(
@@ -366,12 +373,12 @@ void LayoutObject::AddChild(LayoutObject* new_child,
     // Generate an anonymous table or reuse existing one from previous child
     // Per: 17.2.1 Anonymous table objects 3. Generate missing parents
     // http://www.w3.org/TR/CSS21/tables.html#anonymous-boxes
-    LayoutTable* table;
+    LayoutObject* table;
     LayoutObject* after_child =
         before_child ? before_child->PreviousSibling() : children->LastChild();
     if (after_child && after_child->IsAnonymous() && after_child->IsTable() &&
         !after_child->IsBeforeContent()) {
-      table = ToLayoutTable(after_child);
+      table = after_child;
     } else {
       table = LayoutTable::CreateAnonymousWithParent(this);
       children->InsertChildNode(this, table, before_child);
@@ -395,13 +402,6 @@ void LayoutObject::RemoveChild(LayoutObject* old_child) {
     return;
 
   children->RemoveChildNode(this, old_child);
-}
-
-void LayoutObject::SetDangerousOneWayParent(LayoutObject* parent) {
-  DCHECK(!PreviousSibling());
-  DCHECK(!NextSibling());
-  DCHECK(!parent || !parent_);
-  SetParent(parent);
 }
 
 void LayoutObject::RegisterSubtreeChangeListenerOnDescendants(bool value) {
@@ -498,7 +498,7 @@ bool LayoutObject::IsRenderedLegendInternal() const {
       parent = parent->Parent();
   }
   const auto* parent_layout_block = DynamicTo<LayoutBlock>(parent);
-  return parent_layout_block && IsHTMLFieldSetElement(parent->GetNode()) &&
+  return parent_layout_block && IsA<HTMLFieldSetElement>(parent->GetNode()) &&
          LayoutFieldset::FindInFlowLegend(*parent_layout_block) == this;
 }
 
@@ -999,7 +999,8 @@ void LayoutObject::MarkContainerChainForLayout(bool schedule_relayout,
     // element that is actually locked needs its child bits set properly, we
     // need to go one more iteration after that.
     if (!last->SelfNeedsLayout() &&
-        last->LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+        last->LayoutBlockedByDisplayLock(
+            DisplayLockLifecycleTarget::kChildren)) {
       return;
     }
 
@@ -1092,7 +1093,7 @@ void LayoutObject::MarkParentForOutOfFlowPositionedChange() {
 
 #if DCHECK_IS_ON()
 void LayoutObject::CheckBlockPositionedObjectsNeedLayout() {
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     return;
   DCHECK(!NeedsLayout());
 
@@ -1245,7 +1246,12 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   if (!style)
     return false;
   // https://www.w3.org/TR/filter-effects-1/#FilterProperty
-  if (style->HasFilter() && !this->IsDocumentElement())
+  if (style->HasFilter() && !IsDocumentElement())
+    return true;
+  // Backdrop-filter creates a containing block for fixed and absolute
+  // positioned elements:
+  // https://drafts.fxtf.org/filter-effects-2/#backdrop-filter-operation
+  if (style->HasBackdropFilter() && !IsDocumentElement())
     return true;
   // The LayoutView is always a container of fixed positioned descendants. In
   // addition, SVG foreignObjects become such containers, so that descendants
@@ -1253,17 +1259,16 @@ bool LayoutObject::ComputeIsFixedContainer(const ComputedStyle* style) const {
   // select elements inside that are created by user agent shadow DOM, and we
   // have (C++) code that assumes that the elements are indeed contained by the
   // text control. So just make sure this is the case.
-  if (this->IsLayoutView() || this->IsSVGForeignObject() ||
-      this->IsTextControl())
+  if (IsLayoutView() || IsSVGForeignObject() || IsTextControl())
     return true;
   // https://www.w3.org/TR/css-transforms-1/#containing-block-for-all-descendants
   if (style->HasTransformRelatedProperty()) {
-    if (!this->IsInline() || this->IsAtomicInlineLevel())
+    if (!IsInline() || IsAtomicInlineLevel())
       return true;
   }
   // https://www.w3.org/TR/css-contain-1/#containment-layout
-  if (this->ShouldApplyPaintContainment(*style) ||
-      this->ShouldApplyLayoutContainment(*style))
+  if (ShouldApplyPaintContainment(*style) ||
+      ShouldApplyLayoutContainment(*style))
     return true;
   return false;
 }
@@ -1783,7 +1788,7 @@ void LayoutObject::DumpLayoutObject(StringBuilder& string_builder,
     string_builder.Append('\t');
     string_builder.Append(GetNode()->ToString());
   }
-  if (LayoutBlockedByDisplayLock(DisplayLockContext::kChildren))
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
     string_builder.Append(" (display-locked)");
 }
 
@@ -1804,7 +1809,7 @@ void LayoutObject::DumpLayoutTreeAndMark(StringBuilder& string_builder,
   DumpLayoutObject(object_info, true, kShowTreeCharacterOffset);
   string_builder.Append(object_info);
 
-  if (!LayoutBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
     for (const LayoutObject* child = SlowFirstChild(); child;
          child = child->NextSibling()) {
       string_builder.Append('\n');
@@ -1832,6 +1837,26 @@ bool LayoutObject::IsSelected() const {
 bool LayoutObject::IsSelectable() const {
   return !IsInert() && !(StyleRef().UserSelect() == EUserSelect::kNone &&
                          StyleRef().UserModify() == EUserModify::kReadOnly);
+}
+
+const ComputedStyle& LayoutObject::SlowEffectiveStyle(
+    NGStyleVariant style_variant) const {
+  switch (style_variant) {
+    case NGStyleVariant::kStandard:
+      return StyleRef();
+    case NGStyleVariant::kFirstLine:
+      return FirstLineStyleRef();
+    case NGStyleVariant::kEllipsis:
+      // The ellipsis is styled according to the line style.
+      // https://www.w3.org/TR/css-overflow-3/#ellipsing-details
+      // Use first-line style if exists since most cases it is the first line.
+      DCHECK(IsInline());
+      if (LayoutObject* block = ContainingBlock())
+        return block->FirstLineStyleRef();
+      return FirstLineStyleRef();
+  }
+  NOTREACHED();
+  return StyleRef();
 }
 
 // Called when an object that was floating or positioned becomes a normal flow
@@ -2208,7 +2233,8 @@ void LayoutObject::StyleWillChange(StyleDifference diff,
         layer->DirtyVisibleContentStatus();
     }
 
-    if (IsFloating() && (style_->Floating() != new_style.Floating())) {
+    if (IsFloating() &&
+        (style_->UnresolvedFloating() != new_style.UnresolvedFloating())) {
       // For changes in float styles, we need to conceivably remove ourselves
       // from the floating objects list.
       ToLayoutBox(this)->RemoveFloatingOrPositionedChildFromBlockLists();
@@ -2477,16 +2503,6 @@ void LayoutObject::PropagateStyleToAnonymousChildren() {
       child->SetPseudoStyle(Style());
     child = child->NextInPreOrder(this);
   }
-}
-
-void LayoutObject::SetStyleWithWritingModeOfParent(
-    scoped_refptr<ComputedStyle> style) {
-  const LayoutObject* parent = Parent();
-  if (parent) {
-    style->SetWritingMode(parent->StyleRef().GetWritingMode());
-    style->UpdateFontOrientation();
-  }
-  SetStyle(std::move(style));
 }
 
 void LayoutObject::AddAsImageObserver(StyleImage* image) {
@@ -3564,7 +3580,7 @@ Element* LayoutObject::OffsetParent(const Element* base) const {
     if (ancestor->CanContainAbsolutePositionObjects())
       break;
 
-    if (IsHTMLBodyElement(*node))
+    if (IsA<HTMLBodyElement>(*node))
       break;
 
     if (!IsPositioned() &&
@@ -3918,7 +3934,7 @@ void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
   // If we're locked, mark our descendants as needing this change. This is used
   // a signal to ensure we mark the element as needing effective allowed
   // touch action recalculation when the element becomes unlocked.
-  if (PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren)) {
+  if (PrePaintBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
     bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
     return;
   }
@@ -3926,7 +3942,8 @@ void LayoutObject::MarkEffectiveAllowedTouchActionChanged() {
   LayoutObject* obj = ParentCrossingFrames();
   while (obj && !obj->DescendantEffectiveAllowedTouchActionChanged()) {
     obj->bitfields_.SetDescendantEffectiveAllowedTouchActionChanged(true);
-    if (obj->PrePaintBlockedByDisplayLock(DisplayLockContext::kChildren))
+    if (obj->PrePaintBlockedByDisplayLock(
+            DisplayLockLifecycleTarget::kChildren))
       break;
 
     obj = obj->ParentCrossingFrames();
@@ -3996,7 +4013,7 @@ const LayoutObject* AssociatedLayoutObjectOf(const Node& node,
 
 bool LayoutObject::CanBeSelectionLeaf() const {
   if (SlowFirstChild() || StyleRef().Visibility() != EVisibility::kVisible ||
-      DisplayLockUtilities::NearestLockedExclusiveAncestor(*GetNode())) {
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*this)) {
     return false;
   }
   return CanBeSelectionLeafInternal();

@@ -91,18 +91,24 @@ public:
     , fDouble4x2_Type(new Type("double4x2", *fDouble_Type, 4, 2))
     , fDouble4x3_Type(new Type("double4x3", *fDouble_Type, 4, 3))
     , fDouble4x4_Type(new Type("double4x4", *fDouble_Type, 4, 4))
-    , fSampler1D_Type(new Type("sampler1D", SpvDim1D, false, false, false, true))
-    , fSampler2D_Type(new Type("sampler2D", SpvDim2D, false, false, false, true))
-    , fSampler3D_Type(new Type("sampler3D", SpvDim3D, false, false, false, true))
-    , fSamplerExternalOES_Type(new Type("samplerExternalOES", SpvDim2D, false, false,
-                                        false, true))
-    , fSamplerCube_Type(new Type("samplerCube", SpvDimCube, false, false, false, true))
-    , fSampler2DRect_Type(new Type("sampler2DRect", SpvDimRect, false, false, false, true))
+    , fTexture1D_Type(new Type("texture1D", SpvDim1D, false, false, false, true))
+    , fTexture2D_Type(new Type("texture2D", SpvDim2D, false, false, false, true))
+    , fTexture3D_Type(new Type("texture3D", SpvDim3D, false, false, false, true))
+    , fTextureExternalOES_Type(new Type("textureExternalOES", SpvDim2D, false, false, false, true))
+    , fTextureCube_Type(new Type("textureCube", SpvDimCube, false, false, false, true))
+    , fTexture2DRect_Type(new Type("texture2DRect", SpvDimRect, false, false, false, true))
+    , fTextureBuffer_Type(new Type("textureBuffer", SpvDimBuffer, false, false, false, true))
+    , fITexture2D_Type(new Type("itexture2D", SpvDim2D, false, false, false, true))
+    , fSampler1D_Type(new Type("sampler1D", *fTexture1D_Type))
+    , fSampler2D_Type(new Type("sampler2D", *fTexture2D_Type))
+    , fSampler3D_Type(new Type("sampler3D", *fTexture3D_Type))
+    , fSamplerExternalOES_Type(new Type("samplerExternalOES", *fTextureExternalOES_Type))
+    , fSamplerCube_Type(new Type("samplerCube", *fTextureCube_Type))
+    , fSampler2DRect_Type(new Type("sampler2DRect", *fTexture2DRect_Type))
     , fSampler1DArray_Type(new Type("sampler1DArray"))
     , fSampler2DArray_Type(new Type("sampler2DArray"))
     , fSamplerCubeArray_Type(new Type("samplerCubeArray"))
-    , fSamplerBuffer_Type(new Type("samplerBuffer", SpvDimBuffer, false, false, false,
-                                   true))
+    , fSamplerBuffer_Type(new Type("samplerBuffer", *fTextureBuffer_Type))
     , fSampler2DMS_Type(new Type("sampler2DMS"))
     , fSampler2DMSArray_Type(new Type("sampler2DMSArray"))
     , fSampler1DShadow_Type(new Type("sampler1DShadow"))
@@ -114,8 +120,9 @@ public:
     , fSamplerCubeArrayShadow_Type(new Type("samplerCubeArrayShadow"))
 
     // Related to below FIXME, gsampler*s don't currently expand to cover integer case.
-    , fISampler2D_Type(new Type("isampler2D", SpvDim2D, false, false, false, true))
+    , fISampler2D_Type(new Type("isampler2D", *fITexture2D_Type))
 
+    , fSampler_Type(new Type("sampler", Type::kSeparateSampler_Kind))
     // FIXME express these as "gimage2D" that expand to image2D, iimage2D, and uimage2D.
     , fImage2D_Type(new Type("image2D", SpvDim2D, false, false, false, true))
     , fIImage2D_Type(new Type("iimage2D", SpvDim2D, false, false, false, true))
@@ -293,6 +300,15 @@ public:
     const std::unique_ptr<Type> fDouble4x3_Type;
     const std::unique_ptr<Type> fDouble4x4_Type;
 
+    const std::unique_ptr<Type> fTexture1D_Type;
+    const std::unique_ptr<Type> fTexture2D_Type;
+    const std::unique_ptr<Type> fTexture3D_Type;
+    const std::unique_ptr<Type> fTextureExternalOES_Type;
+    const std::unique_ptr<Type> fTextureCube_Type;
+    const std::unique_ptr<Type> fTexture2DRect_Type;
+    const std::unique_ptr<Type> fTextureBuffer_Type;
+    const std::unique_ptr<Type> fITexture2D_Type;
+
     const std::unique_ptr<Type> fSampler1D_Type;
     const std::unique_ptr<Type> fSampler2D_Type;
     const std::unique_ptr<Type> fSampler3D_Type;
@@ -314,6 +330,7 @@ public:
     const std::unique_ptr<Type> fSamplerCubeArrayShadow_Type;
 
     const std::unique_ptr<Type> fISampler2D_Type;
+    const std::unique_ptr<Type> fSampler_Type;
 
     const std::unique_ptr<Type> fImage2D_Type;
     const std::unique_ptr<Type> fIImage2D_Type;

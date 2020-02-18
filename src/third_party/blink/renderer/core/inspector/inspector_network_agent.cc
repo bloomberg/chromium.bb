@@ -861,8 +861,7 @@ void InspectorNetworkAgent::PrepareRequest(
       // inside state_'s kExtraRequestHeaders, somewhere else.
       if (header_name.LowerASCII() == http_names::kReferer.LowerASCII()) {
         request.SetHttpReferrer(
-            Referrer(value, network::mojom::ReferrerPolicy::kAlways),
-            ResourceRequest::SetHttpReferrerLocation::kInspectorNetworkAgent);
+            Referrer(value, network::mojom::ReferrerPolicy::kAlways));
       } else {
         request.SetHttpHeaderField(header_name, AtomicString(value));
       }
@@ -1568,7 +1567,7 @@ void InspectorNetworkAgent::DidCommitLoad(LocalFrame* frame,
 
 void InspectorNetworkAgent::FrameScheduledNavigation(LocalFrame* frame,
                                                      const KURL&,
-                                                     double,
+                                                     base::TimeDelta,
                                                      ClientNavigationReason) {
   // For navigations, we limit async stack trace to depth 1 to avoid the
   // base::Value depth limits with Mojo serialization / parsing.

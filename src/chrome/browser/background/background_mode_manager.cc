@@ -26,6 +26,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/background/background_application_list_model.h"
 #include "chrome/browser/background/background_mode_optimizer.h"
 #include "chrome/browser/browser_process.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/user_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -206,7 +206,7 @@ BackgroundModeManager::BackgroundModeData::GetNewBackgroundApps() {
       current_extensions_.insert(id);
       // If this application has been newly loaded after the initial startup,
       // notify the user.
-      if (applications_->is_ready())
+      if (applications_->startup_done())
         new_apps.insert(application.get());
     }
   }
@@ -340,9 +340,10 @@ void BackgroundModeManager::RegisterProfile(Profile* profile) {
 void BackgroundModeManager::LaunchBackgroundApplication(
     Profile* profile,
     const Extension* extension) {
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
-      extensions::AppLaunchSource::kSourceBackground));
+  apps::LaunchService::Get(profile)->OpenApplication(
+      CreateAppLaunchParamsUserContainer(
+          profile, extension, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+          apps::mojom::AppLaunchSource::kSourceBackground));
 }
 
 // static
@@ -743,6 +744,7 @@ void BackgroundModeManager::OnBackgroundClientInstalled(
   EnableBackgroundMode();
   ResumeBackgroundMode();
 
+  ++client_installed_notifications_;
   // Notify the user that a background client has been installed.
   DisplayClientInstalledNotification(name);
 }

@@ -10,12 +10,12 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "components/viz/common/gpu/context_lost_observer.h"
-#include "components/viz/service/main/viz_compositor_thread_runner.h"
+#include "components/viz/service/main/viz_compositor_thread_runner_impl.h"
 #include "content/browser/compositor/image_transport_factory.h"
 #include "gpu/command_buffer/common/context_result.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
-#include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/public/mojom/compositing/compositor_frame_sink.mojom.h"
 #include "ui/compositor/compositor.h"
 #include "ui/compositor/host/host_context_factory_private.h"
 
@@ -76,7 +76,6 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // ImageTransportFactory implementation.
   void DisableGpuCompositing() override;
-  bool IsGpuCompositingDisabled() override;
   ui::ContextFactory* GetContextFactory() override;
   ui::ContextFactoryPrivate* GetContextFactoryPrivate() override;
 
@@ -89,6 +88,8 @@ class VizProcessTransportFactory : public ui::ContextFactory,
   // creating a new LayerTreeFrameSink for UI compositor it should be passed in
   // as |guilty_compositor| to avoid extra work and reentrancy problems.
   void DisableGpuCompositing(ui::Compositor* guilty_compositor);
+
+  bool IsGpuCompositingDisabled();
 
   // Provided as a callback when the GPU process has crashed.
   void OnGpuProcessLost();
@@ -131,7 +132,7 @@ class VizProcessTransportFactory : public ui::ContextFactory,
 
   // Will start and run the VizCompositorThread for using an in-process display
   // compositor.
-  std::unique_ptr<viz::VizCompositorThreadRunner> viz_compositor_thread_;
+  std::unique_ptr<viz::VizCompositorThreadRunnerImpl> viz_compositor_thread_;
   ui::HostContextFactoryPrivate context_factory_private_;
 
   base::WeakPtrFactory<VizProcessTransportFactory> weak_ptr_factory_{this};

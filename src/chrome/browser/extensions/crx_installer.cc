@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/lazy_instance.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/extensions/webstore_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -42,7 +44,6 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/resource_dispatcher_host.h"
 #include "content/public/browser/system_connector.h"
 #include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extension_prefs.h"
@@ -171,7 +172,9 @@ CrxInstaller::~CrxInstaller() {
 void CrxInstaller::InstallCrx(const base::FilePath& source_file) {
   crx_file::VerifierFormat format =
       off_store_install_allow_reason_ == OffStoreInstallDisallowed
-          ? GetWebstoreVerifierFormat()
+          ? GetWebstoreVerifierFormat(
+                base::CommandLine::ForCurrentProcess()->HasSwitch(
+                    ::switches::kAppsGalleryURL))
           : GetExternalVerifierFormat();
   InstallCrxFile(CRXFileInfo(source_file, format));
 }
@@ -521,9 +524,8 @@ void CrxInstaller::OnUnpackSuccess(
     return;
   }
 
-  if (!base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CrxInstaller::CheckInstall, this)))
+  if (!base::PostTask(FROM_HERE, {BrowserThread::UI},
+                      base::BindOnce(&CrxInstaller::CheckInstall, this)))
     NOTREACHED();
 }
 
@@ -538,9 +540,10 @@ void CrxInstaller::CheckInstall() {
   if (SharedModuleInfo::ImportsModules(extension())) {
     const std::vector<SharedModuleInfo::ImportInfo>& imports =
         SharedModuleInfo::GetImports(extension());
+    ExtensionRegistry* registry = ExtensionRegistry::Get(service->profile());
     for (const auto& import : imports) {
-      const Extension* imported_module =
-          service->GetExtensionById(import.extension_id, true);
+      const Extension* imported_module = registry->GetExtensionById(
+          import.extension_id, ExtensionRegistry::COMPATIBILITY);
       if (!imported_module)
         continue;
 
@@ -867,10 +870,9 @@ void CrxInstaller::ReloadExtensionAfterInstall(
 
 void CrxInstaller::ReportFailureFromFileThread(const CrxInstallError& error) {
   DCHECK(installer_task_runner_->RunsTasksInCurrentSequence());
-  if (!base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::UI},
-          base::BindOnce(&CrxInstaller::ReportFailureFromUIThread, this,
-                         error))) {
+  if (!base::PostTask(FROM_HERE, {BrowserThread::UI},
+                      base::BindOnce(&CrxInstaller::ReportFailureFromUIThread,
+                                     this, error))) {
     NOTREACHED();
   }
 }
@@ -912,7 +914,7 @@ void CrxInstaller::ReportSuccessFromFileThread() {
   if (install_cause() == extension_misc::INSTALL_CAUSE_USER_DOWNLOAD)
     UMA_HISTOGRAM_ENUMERATION("Extensions.ExtensionInstalled", 1, 2);
 
-  if (!base::PostTaskWithTraits(
+  if (!base::PostTask(
           FROM_HERE, {BrowserThread::UI},
           base::BindOnce(&CrxInstaller::ReportSuccessFromUIThread, this)))
     NOTREACHED();
@@ -1006,7 +1008,7 @@ void CrxInstaller::NotifyCrxInstallComplete(
     ConfirmReEnable();
 
   if (!installer_callback_.is_null() &&
-      !base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::UI})
+      !base::CreateSingleThreadTaskRunner({BrowserThread::UI})
            ->PostTask(FROM_HERE,
                       base::BindOnce(std::move(installer_callback_), error))) {
     NOTREACHED();

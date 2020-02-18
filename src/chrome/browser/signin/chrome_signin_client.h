@@ -61,6 +61,7 @@ class ChromeSigninClient
   std::unique_ptr<GaiaAuthFetcher> CreateGaiaAuthFetcher(
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;
+  bool IsNonEnterpriseUser(const std::string& username) override;
 
   // Returns a string describing the chrome version environment. Version format:
   // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
@@ -79,6 +80,7 @@ class ChromeSigninClient
   void OnConnectionChanged(network::mojom::ConnectionType type) override;
 #endif
 
+  void SetDiceMigrationCompleted() override;
   void SetReadyForDiceMigration(bool is_ready) override;
 
   // Used in tests to override the URLLoaderFactory returned by

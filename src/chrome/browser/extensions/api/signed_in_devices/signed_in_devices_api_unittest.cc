@@ -20,7 +20,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_sync_service.h"
 #include "components/sync_device_info/fake_device_info_tracker.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -32,7 +32,7 @@ using testing::Return;
 namespace extensions {
 
 TEST(SignedInDevicesAPITest, GetSignedInDevices) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   FakeDeviceInfoTracker device_tracker;
   TestExtensionPrefs extension_prefs(base::ThreadTaskRunnerHandle::Get().get());

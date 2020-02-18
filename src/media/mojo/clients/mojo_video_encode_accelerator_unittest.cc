@@ -5,10 +5,10 @@
 #include <stddef.h>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "gpu/config/gpu_info.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
-#include "media/mojo/interfaces/video_encode_accelerator.mojom.h"
+#include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -172,7 +172,7 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // This member holds on to the mock implementation of the "service" side.
   mojo::StrongBindingPtr<mojom::VideoEncodeAccelerator> mojo_vea_binding_;
@@ -214,13 +214,18 @@ TEST_F(MojoVideoEncodeAcceleratorTest, EncodeOneFrame) {
   }
 
   {
-    const scoped_refptr<VideoFrame> video_frame = VideoFrame::CreateFrame(
+    base::UnsafeSharedMemoryRegion shmem =
+        base::UnsafeSharedMemoryRegion::Create(
+            VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize) *
+            2);
+    ASSERT_TRUE(shmem.IsValid());
+    base::WritableSharedMemoryMapping mapping = shmem.Map();
+    ASSERT_TRUE(mapping.IsValid());
+    const scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalData(
         PIXEL_FORMAT_I420, kInputVisibleSize, gfx::Rect(kInputVisibleSize),
-        kInputVisibleSize, base::TimeDelta());
-    base::SharedMemory shmem;
-    shmem.CreateAnonymous(
-        VideoFrame::AllocationSize(PIXEL_FORMAT_I420, kInputVisibleSize) * 2);
-    video_frame->AddSharedMemoryHandle(shmem.handle());
+        kInputVisibleSize, mapping.GetMemoryAsSpan<uint8_t>().data(),
+        mapping.size(), base::TimeDelta());
+    video_frame->BackWithSharedMemory(&shmem);
     const bool is_keyframe = true;
 
     // The remote end of the mojo Pipe doesn't receive |video_frame| itself.

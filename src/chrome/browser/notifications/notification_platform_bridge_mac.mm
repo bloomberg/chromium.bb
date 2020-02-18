@@ -123,6 +123,12 @@ base::string16 CreateNotificationTitle(
 
 bool IsPersistentNotification(
     const message_center::Notification& notification) {
+  // TODO(crbug.com/1007418): Remove this and find a way to show alert style
+  // notifications in 10.15 and above. At least show them as banners until then
+  // as a temporary workaround.
+  if (base::mac::IsAtLeastOS10_15())
+    return false;
+
   return notification.never_timeout() ||
          notification.type() == message_center::NOTIFICATION_TYPE_PROGRESS;
 }
@@ -378,7 +384,7 @@ void NotificationPlatformBridgeMac::ProcessNotificationResponse(
     action_index = button_index.intValue;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(DoProcessNotificationResponse,
                      static_cast<NotificationCommon::Operation>(
@@ -594,7 +600,7 @@ getDisplayedAlertsForProfileId:(NSString*)profileId
     for (NSString* alert in alerts)
       displayedNotifications.insert(base::SysNSStringToUTF8(alert));
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(copyable_callback, std::move(displayedNotifications),
                        true /* supports_synchronization */));

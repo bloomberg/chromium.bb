@@ -149,6 +149,10 @@ include_rules = [
     '+absl/types/span.h',
     '+absl/types/variant.h',
 
+    # Similar to abseil, don't include boringssl using root path.  Instead,
+    # explicitly allow 'openssl' where needed.
+    '-third_party/boringssl',
+
     # Test framework includes.
     "-third_party/googletest",
     "+gtest",

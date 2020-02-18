@@ -142,7 +142,8 @@ class TestSession : public QuicSession {
       : QuicSession(connection,
                     session_visitor,
                     DefaultQuicConfig(),
-                    CurrentSupportedVersions()),
+                    CurrentSupportedVersions(),
+                    /*num_expected_unidirectional_static_streams = */ 0),
         crypto_stream_(this),
         writev_consumes_all_data_(false),
         uses_pending_streams_(false),
@@ -153,7 +154,10 @@ class TestSession : public QuicSession {
         QuicMakeUnique<NullEncrypter>(connection->perspective()));
   }
 
-  ~TestSession() override { delete connection(); }
+  ~TestSession() override {
+    EXPECT_TRUE(is_configured());
+    delete connection();
+  }
 
   TestCryptoStream* GetMutableCryptoStream() override {
     return &crypto_stream_;
@@ -237,7 +241,7 @@ class TestSession : public QuicSession {
   }
 
   bool ShouldKeepConnectionAlive() const override {
-    return GetNumOpenDynamicStreams() > 0;
+    return GetNumActiveStreams() > 0;
   }
 
   QuicConsumedData WritevData(QuicStream* stream,
@@ -329,7 +333,13 @@ class QuicSessionTestBase : public QuicTestWithParam<ParsedQuicVersion> {
         kInitialStreamFlowControlWindowForTest);
     session_.config()->SetInitialSessionFlowControlWindowToSend(
         kInitialSessionFlowControlWindowForTest);
+
+    QuicConfigPeer::SetReceivedMaxIncomingBidirectionalStreams(
+        session_.config(), kDefaultMaxStreamsPerConnection);
+    QuicConfigPeer::SetReceivedMaxIncomingUnidirectionalStreams(
+        session_.config(), kDefaultMaxStreamsPerConnection);
     connection_->AdvanceTime(QuicTime::Delta::FromSeconds(1));
+    session_.OnConfigNegotiated();
     TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
     EXPECT_CALL(*crypto_stream, HasPendingRetransmission())
         .Times(testing::AnyNumber());
@@ -890,7 +900,7 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
   // Now let stream 4 do the 2nd of its 3 writes, but add a block for a high
   // priority stream 6.  4 should be preempted.  6 will write but *not* block so
   // will cede back to 4.
-  stream6->SetPriority(kV3HighestPriority);
+  stream6->SetPriority(spdy::SpdyStreamPrecedence(kV3HighestPriority));
   EXPECT_CALL(*stream4, OnCanWrite())
       .WillOnce(Invoke([this, stream4, stream6]() {
         session_.SendLargeFakeData(stream4, 6000);
@@ -914,6 +924,88 @@ TEST_P(QuicSessionTestServer, TestBatchedWrites) {
     session_.SendLargeFakeData(stream2, 6000);
     session_.MarkConnectionLevelWriteBlocked(stream2->id());
   }));
+  session_.OnCanWrite();
+}
+
+TEST_P(QuicSessionTestServer, Http2Priority) {
+  if (VersionHasIetfQuicFrames(GetParam().transport_version)) {
+    return;
+  }
+  SetQuicReloadableFlag(quic_use_http2_priority_write_scheduler, true);
+  QuicTagVector copt;
+  copt.push_back(kH2PR);
+  QuicConfigPeer::SetReceivedConnectionOptions(session_.config(), copt);
+  session_.OnConfigNegotiated();
+  ASSERT_TRUE(session_.use_http2_priority_write_scheduler());
+
+  session_.set_writev_consumes_all_data(true);
+  TestStream* stream2 = session_.CreateOutgoingBidirectionalStream();
+  TestStream* stream4 = session_.CreateOutgoingBidirectionalStream();
+  TestStream* stream6 = session_.CreateOutgoingBidirectionalStream();
+
+  session_.set_writev_consumes_all_data(true);
+  /*
+           0
+          /|\
+         2 4 6
+  */
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+
+  // Verify streams are scheduled round robin.
+  InSequence s;
+  EXPECT_CALL(*stream2, OnCanWrite());
+  EXPECT_CALL(*stream4, OnCanWrite());
+  EXPECT_CALL(*stream6, OnCanWrite());
+  session_.OnCanWrite();
+
+  /*
+           0
+           |
+           4
+          / \
+         2   6
+  */
+  // Update stream 4's priority.
+  stream4->SetPriority(
+      spdy::SpdyStreamPrecedence(0, spdy::kHttp2DefaultStreamWeight, true));
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+
+  EXPECT_CALL(*stream4, OnCanWrite()).WillOnce(Invoke([this, stream4]() {
+    session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  }));
+  EXPECT_CALL(*stream4, OnCanWrite());
+  EXPECT_CALL(*stream2, OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_CALL(*stream6, OnCanWrite());
+  session_.OnCanWrite();
+
+  /*
+         0
+         |
+         6
+         |
+         4
+         |
+         2
+  */
+  // Update stream 6's priority.
+  stream6->SetPriority(
+      spdy::SpdyStreamPrecedence(0, spdy::kHttp2DefaultStreamWeight, true));
+  session_.MarkConnectionLevelWriteBlocked(stream2->id());
+  session_.MarkConnectionLevelWriteBlocked(stream4->id());
+  session_.MarkConnectionLevelWriteBlocked(stream6->id());
+
+  EXPECT_CALL(*stream6, OnCanWrite()).WillOnce(Invoke([this, stream6]() {
+    session_.MarkConnectionLevelWriteBlocked(stream6->id());
+  }));
+  EXPECT_CALL(*stream6, OnCanWrite());
+  EXPECT_CALL(*stream4, OnCanWrite());
+  session_.OnCanWrite();
+  EXPECT_CALL(*stream2, OnCanWrite());
   session_.OnCanWrite();
 }
 
@@ -1168,6 +1260,7 @@ TEST_P(QuicSessionTestServer, SendGoAway) {
     // GoAway frames are not in version 99
     return;
   }
+  connection_->SetDefaultEncryptionLevel(ENCRYPTION_FORWARD_SECURE);
   MockPacketWriter* writer = static_cast<MockPacketWriter*>(
       QuicConnectionPeer::GetWriter(session_.connection()));
   EXPECT_CALL(*writer, WritePacket(_, _, _, _, _))
@@ -1235,8 +1328,8 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbe) {
     connection_->OnPathChallengeFrame(
         QuicPathChallengeFrame(0, path_frame_buffer1_));
   }
-  session_.OnConnectivityProbeReceived(session_.self_address(),
-                                       new_peer_address);
+  session_.OnPacketReceived(session_.self_address(), new_peer_address,
+                            /*is_connectivity_probe=*/true);
   EXPECT_EQ(old_peer_address, session_.peer_address());
 }
 
@@ -1275,8 +1368,8 @@ TEST_P(QuicSessionTestServer, ServerReplyToConnectivityProbes) {
       QuicPathChallengeFrame(0, path_frame_buffer1_));
   connection_->OnPathChallengeFrame(
       QuicPathChallengeFrame(0, path_frame_buffer2_));
-  session_.OnConnectivityProbeReceived(session_.self_address(),
-                                       old_peer_address);
+  session_.OnPacketReceived(session_.self_address(), old_peer_address,
+                            /*is_connectivity_probe=*/true);
 }
 
 TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
@@ -1289,7 +1382,7 @@ TEST_P(QuicSessionTestServer, IncreasedTimeoutAfterCryptoHandshake) {
 }
 
 TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
-  if (connection_->version().DoesNotHaveHeadersStream()) {
+  if (VersionUsesQpack(connection_->transport_version())) {
     return;
   }
   QuicStreamId headers_stream_id =
@@ -1308,7 +1401,7 @@ TEST_P(QuicSessionTestServer, OnStreamFrameFinStaticStreamId) {
 }
 
 TEST_P(QuicSessionTestServer, OnRstStreamStaticStreamId) {
-  if (connection_->version().DoesNotHaveHeadersStream()) {
+  if (VersionUsesQpack(connection_->transport_version())) {
     return;
   }
   QuicStreamId headers_stream_id =
@@ -1712,7 +1805,7 @@ TEST_P(QuicSessionTestServer, NoPendingStreams) {
 }
 
 TEST_P(QuicSessionTestServer, PendingStreams) {
-  if (!VersionHasIetfQuicFrames(transport_version())) {
+  if (!VersionHasStreamType(transport_version())) {
     return;
   }
   session_.set_uses_pending_streams(true);
@@ -1721,15 +1814,17 @@ TEST_P(QuicSessionTestServer, PendingStreams) {
       transport_version(), Perspective::IS_CLIENT);
   QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
 
   QuicStreamFrame data2(stream_id, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data2);
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(1, session_.num_incoming_streams_created());
 }
 
 TEST_P(QuicSessionTestServer, RstPendingStreams) {
-  if (!VersionHasIetfQuicFrames(transport_version())) {
+  if (!VersionHasStreamType(transport_version())) {
     return;
   }
   session_.set_uses_pending_streams(true);
@@ -1738,6 +1833,7 @@ TEST_P(QuicSessionTestServer, RstPendingStreams) {
       transport_version(), Perspective::IS_CLIENT);
   QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
 
@@ -1747,17 +1843,35 @@ TEST_P(QuicSessionTestServer, RstPendingStreams) {
   QuicRstStreamFrame rst1(kInvalidControlFrameId, stream_id,
                           QUIC_ERROR_PROCESSING_STREAM, 12);
   session_.OnRstStream(rst1);
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
 
   QuicStreamFrame data2(stream_id, false, 0, QuicStringPiece("HT"));
   session_.OnStreamFrame(data2);
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
+  EXPECT_EQ(0, session_.num_incoming_streams_created());
+  EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
+}
+
+TEST_P(QuicSessionTestServer, OnFinPendingStreams) {
+  if (!VersionHasStreamType(transport_version())) {
+    return;
+  }
+  session_.set_uses_pending_streams(true);
+
+  QuicStreamId stream_id = QuicUtils::GetFirstUnidirectionalStreamId(
+      transport_version(), Perspective::IS_CLIENT);
+  QuicStreamFrame data(stream_id, true, 0, "");
+  session_.OnStreamFrame(data);
+
+  EXPECT_FALSE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   EXPECT_EQ(0u, session_.GetNumOpenIncomingStreams());
 }
 
 TEST_P(QuicSessionTestServer, PendingStreamOnWindowUpdate) {
-  if (!VersionHasIetfQuicFrames(transport_version())) {
+  if (!VersionHasStreamType(transport_version())) {
     return;
   }
 
@@ -1766,6 +1880,7 @@ TEST_P(QuicSessionTestServer, PendingStreamOnWindowUpdate) {
       transport_version(), Perspective::IS_CLIENT);
   QuicStreamFrame data1(stream_id, true, 10, QuicStringPiece("HT"));
   session_.OnStreamFrame(data1);
+  EXPECT_TRUE(QuicSessionPeer::GetPendingStream(&session_, stream_id));
   EXPECT_EQ(0, session_.num_incoming_streams_created());
   QuicWindowUpdateFrame window_update_frame(kInvalidControlFrameId, stream_id,
                                             0);
@@ -2577,6 +2692,31 @@ TEST_P(QuicSessionTestServer, OnStopSendingInputValidStream) {
   // which closes the stream in the write direction. Ensure this.
   EXPECT_FALSE(QuicStreamPeer::read_side_closed(stream));
   EXPECT_TRUE(stream->write_side_closed());
+}
+
+TEST_P(QuicSessionTestServer, WriteBufferedCryptoFrames) {
+  if (!QuicVersionUsesCryptoFrames(connection_->transport_version())) {
+    return;
+  }
+  std::string data(1350, 'a');
+  TestCryptoStream* crypto_stream = session_.GetMutableCryptoStream();
+  // Only consumed 1000 bytes.
+  EXPECT_CALL(*connection_, SendCryptoData(ENCRYPTION_INITIAL, 1350, 0))
+      .WillOnce(Return(1000));
+  crypto_stream->WriteCryptoData(ENCRYPTION_INITIAL, data);
+  EXPECT_TRUE(session_.HasPendingHandshake());
+  EXPECT_TRUE(session_.WillingAndAbleToWrite());
+
+  EXPECT_CALL(*connection_, SendCryptoData(_, _, _)).Times(0);
+  crypto_stream->WriteCryptoData(ENCRYPTION_ZERO_RTT, data);
+
+  EXPECT_CALL(*connection_, SendCryptoData(ENCRYPTION_INITIAL, 350, 1000))
+      .WillOnce(Return(350));
+  EXPECT_CALL(*connection_, SendCryptoData(ENCRYPTION_ZERO_RTT, 1350, 0))
+      .WillOnce(Return(1350));
+  session_.OnCanWrite();
+  EXPECT_FALSE(session_.HasPendingHandshake());
+  EXPECT_FALSE(session_.WillingAndAbleToWrite());
 }
 
 }  // namespace

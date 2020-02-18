@@ -38,6 +38,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // FidoDevice:
   CancelToken DeviceTransact(std::vector<uint8_t> command,
                              DeviceCallback callback) final;
+  void TryWink(base::OnceClosure callback) final;
   void Cancel(CancelToken token) final;
   std::string GetId() const final;
   FidoTransportProtocol DeviceTransport() const final;
@@ -75,11 +76,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   };
 
   struct COMPONENT_EXPORT(DEVICE_FIDO) PendingTransaction {
-    PendingTransaction(std::vector<uint8_t> command,
+    PendingTransaction(FidoHidDeviceCommand command_type,
+                       std::vector<uint8_t> command,
                        DeviceCallback callback,
                        CancelToken token);
     ~PendingTransaction();
 
+    FidoHidDeviceCommand command_type;
     std::vector<uint8_t> command;
     DeviceCallback callback;
     CancelToken token;
@@ -94,6 +97,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   // Ask device to allocate a unique channel id for this connection.
   void OnAllocateChannel(std::vector<uint8_t> nonce,
                          base::Optional<FidoHidMessage> message);
+  base::Optional<uint32_t> ParseInitReply(const std::vector<uint8_t>& nonce,
+                                          const std::vector<uint8_t>& buf);
   void OnPotentialInitReply(std::vector<uint8_t> nonce,
                             bool success,
                             uint8_t report_id,
@@ -117,6 +122,8 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
+  uint8_t capabilities_ = 0;
+
   // |output_report_size_| is the size of the packets that will be sent to the
   // device. (For HID devices, these are called reports.)
   const uint8_t output_report_size_;
@@ -139,7 +146,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoHidDevice : public FidoDevice {
   device::mojom::HidManager* hid_manager_;
   device::mojom::HidDeviceInfoPtr device_info_;
   device::mojom::HidConnectionPtr connection_;
-  base::WeakPtrFactory<FidoHidDevice> weak_factory_;
+  base::WeakPtrFactory<FidoHidDevice> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FidoHidDevice);
 };

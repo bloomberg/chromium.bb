@@ -23,7 +23,7 @@ namespace content {
 // ResourceDispatcherHost. It is initialized on the UI thread, and then passed
 // to the IO thread by a NavigationRequest object.
 struct CONTENT_EXPORT NavigationRequestInfo {
-  NavigationRequestInfo(const CommonNavigationParams& common_params,
+  NavigationRequestInfo(mojom::CommonNavigationParamsPtr common_params,
                         mojom::BeginNavigationParamsPtr begin_params,
                         const GURL& site_for_cookies,
                         const net::NetworkIsolationKey& network_isolation_key,
@@ -38,11 +38,12 @@ struct CONTENT_EXPORT NavigationRequestInfo {
                         std::unique_ptr<network::SharedURLLoaderFactoryInfo>
                             blob_url_loader_factory,
                         const base::UnguessableToken& devtools_navigation_token,
-                        const base::UnguessableToken& devtools_frame_token);
+                        const base::UnguessableToken& devtools_frame_token,
+                        bool obey_origin_policy);
   NavigationRequestInfo(const NavigationRequestInfo& other) = delete;
   ~NavigationRequestInfo();
 
-  const CommonNavigationParams common_params;
+  mojom::CommonNavigationParamsPtr common_params;
   mojom::BeginNavigationParamsPtr begin_params;
 
   // Usually the URL of the document in the top-level window, which may be
@@ -78,6 +79,11 @@ struct CONTENT_EXPORT NavigationRequestInfo {
   const base::UnguessableToken devtools_navigation_token;
 
   const base::UnguessableToken devtools_frame_token;
+
+  // If set, the network service will attempt to retrieve the appropriate origin
+  // policy, if necessary, and attach it to the ResourceResponseHead.
+  // Spec: https://wicg.github.io/origin-policy/
+  const bool obey_origin_policy;
 };
 
 }  // namespace content

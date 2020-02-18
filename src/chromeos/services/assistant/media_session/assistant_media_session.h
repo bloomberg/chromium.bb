@@ -8,16 +8,13 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "libassistant/shared/public/media_manager.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "services/media_session/public/mojom/audio_focus.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
-
-namespace service_manager {
-class Connector;
-}  // namespace service_manager
 
 namespace assistant_client {
 struct MediaStatus;
@@ -36,7 +33,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   enum class State { ACTIVE, SUSPENDED, INACTIVE };
 
   explicit AssistantMediaSession(
-      service_manager::Connector* connector,
+      mojom::Client* client,
       AssistantManagerServiceImpl* assistant_manager);
   ~AssistantMediaSession() override;
 
@@ -105,17 +102,17 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   media_session::MediaMetadata metadata_;
 
   AssistantManagerServiceImpl* const assistant_manager_service_;
-  service_manager::Connector* connector_;
+  mojom::Client* const client_;
 
   // Binding for Mojo pointer to |this| held by AudioFocusManager.
-  mojo::Binding<media_session::mojom::MediaSession> binding_;
+  mojo::Receiver<media_session::mojom::MediaSession> receiver_{this};
 
   assistant_client::TrackType current_track_;
 
   mojo::RemoteSet<media_session::mojom::MediaSessionObserver> observers_;
 
   // Holds a pointer to the MediaSessionService.
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote_;
 
   // The ducking state of this media session. The initial value is |false|, and
   // is set to |true| after StartDucking(), and will be set to |false| after
@@ -124,7 +121,8 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
 
   // If the media session has acquired audio focus then this will contain a
   // pointer to that requests AudioFocusRequestClient.
-  media_session::mojom::AudioFocusRequestClientPtr request_client_ptr_;
+  mojo::Remote<media_session::mojom::AudioFocusRequestClient>
+      request_client_remote_;
 
   // The last updated |MediaSessionInfo| that was sent to |observers_|.
   media_session::mojom::MediaSessionInfoPtr session_info_;
@@ -137,7 +135,7 @@ class AssistantMediaSession : public media_session::mojom::MediaSession {
   base::UnguessableToken internal_audio_focus_id_ =
       base::UnguessableToken::Null();
 
-  base::WeakPtrFactory<AssistantMediaSession> weak_factory_;
+  base::WeakPtrFactory<AssistantMediaSession> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AssistantMediaSession);
 };

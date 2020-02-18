@@ -116,10 +116,7 @@ void MergeLists(std::vector<base::StringPiece>* dest,
 InputMethodSyncer::InputMethodSyncer(
     sync_preferences::PrefServiceSyncable* prefs,
     scoped_refptr<input_method::InputMethodManager::State> ime_state)
-    : prefs_(prefs),
-      ime_state_(ime_state),
-      merging_(false),
-      weak_factory_(this) {}
+    : prefs_(prefs), ime_state_(ime_state), merging_(false) {}
 
 InputMethodSyncer::~InputMethodSyncer() {
   prefs_->RemoveObserver(this);
@@ -230,8 +227,9 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   std::string languages(AddSupportedInputMethodValues(
       preferred_languages_.GetValue(), preferred_languages_syncable,
       language::prefs::kPreferredLanguages));
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::Bind(&CheckAndResolveLocales, languages),
       base::Bind(&InputMethodSyncer::FinishMerge, weak_factory_.GetWeakPtr()));
 }

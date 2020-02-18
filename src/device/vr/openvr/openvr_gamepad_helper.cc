@@ -10,9 +10,12 @@
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
+#include "base/strings/string_split.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/util/gamepad_builder.h"
+#include "device/vr/util/xr_standard_gamepad_builder.h"
 #include "device/vr/vr_device.h"
 #include "third_party/openvr/src/headers/openvr.h"
 #include "ui/gfx/transform.h"
@@ -23,7 +26,7 @@ namespace device {
 namespace {
 
 // Constants/functions used by both WebXR and WebVR.
-constexpr double kJoystickDeadzone = 0.1;
+constexpr double kJoystickDeadzone = 0.16;
 
 bool TryGetGamepadButton(const vr::VRControllerState_t& controller_state,
                          uint64_t supported_buttons,
@@ -60,21 +63,25 @@ std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> GetAxesButtons(
 
     GamepadBuilder::ButtonData button_data;
 
-    // TODO(https://crbug.com/966060): Determine if inverting the y value here
-    // is necessary.
+    // Invert the y axis because -1 is up in the Gamepad API but down in OpenVR.
     double x_axis = controller_state.rAxis[j].x;
     double y_axis = -controller_state.rAxis[j].y;
 
+    if (axis_type == vr::k_eControllerAxis_Joystick) {
+      button_data.type = GamepadBuilder::ButtonData::Type::kThumbstick;
+
+      // We only want to apply the deadzone to joysticks, since various
+      // runtimes may not have already done that, but touchpads should
+      // be fine.
+      x_axis = std::fabs(x_axis) < kJoystickDeadzone ? 0 : x_axis;
+      y_axis = std::fabs(y_axis) < kJoystickDeadzone ? 0 : y_axis;
+    } else if (axis_type == vr::k_eControllerAxis_TrackPad) {
+      button_data.type = GamepadBuilder::ButtonData::Type::kTouchpad;
+    }
+
     switch (axis_type) {
       case vr::k_eControllerAxis_Joystick:
-        // We only want to apply the deadzone to joysticks, since various
-        // runtimes may not have already done that, but touchpads should
-        // be fine.
-        x_axis = std::fabs(x_axis) < kJoystickDeadzone ? 0 : x_axis;
-        y_axis = std::fabs(y_axis) < kJoystickDeadzone ? 0 : y_axis;
-        FALLTHROUGH;
       case vr::k_eControllerAxis_TrackPad: {
-        button_data.has_both_axes = true;
         button_data.x_axis = x_axis;
         button_data.y_axis = y_axis;
         vr::EVRButtonId button_id = GetAxisId(j);
@@ -121,6 +128,17 @@ constexpr std::array<vr::EVRButtonId, 5> kWebXRButtonOrder = {
     vr::k_EButton_A,          vr::k_EButton_DPad_Left, vr::k_EButton_DPad_Up,
     vr::k_EButton_DPad_Right, vr::k_EButton_DPad_Down,
 };
+
+// To make sure this string fits the requirements of the WebXR spec, separate
+// words/tokens are separated by "-" instead of whitespace and convert it to
+// lowercase.
+std::string FixupProfileString(const std::string& name) {
+  std::vector<std::string> tokens =
+      base::SplitString(name, base::kWhitespaceASCII, base::KEEP_WHITESPACE,
+                        base::SPLIT_WANT_NONEMPTY);
+  std::string result = base::JoinString(tokens, "-");
+  return base::ToLowerASCII(result);
+}
 
 // Constants/functions only used by WebVR.
 constexpr std::array<vr::EVRButtonId, 7> kWebVRButtonOrder = {
@@ -203,7 +221,7 @@ mojom::XRGamepadDataPtr OpenVRGamepadHelper::GetGamepadData(
       GamepadBuilder::ButtonData data = button_data_pair.second;
 
       gamepad->buttons.push_back(GetMojomGamepadButton(data));
-      if (data.has_both_axes) {
+      if (data.type != GamepadBuilder::ButtonData::Type::kButton) {
         gamepad->axes.push_back(data.x_axis);
         gamepad->axes.push_back(data.y_axis);
       }
@@ -248,7 +266,7 @@ mojom::XRGamepadDataPtr OpenVRGamepadHelper::GetGamepadData(
 }
 
 // Helper classes and WebXR Getters
-class OpenVRGamepadBuilder : public GamepadBuilder {
+class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
  public:
   enum class AxesRequirement {
     kOptional = 0,
@@ -259,98 +277,145 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
                        uint32_t controller_id,
                        vr::VRControllerState_t controller_state,
                        device::mojom::XRHandedness handedness)
-      : GamepadBuilder(GetGamepadId(vr_system, controller_id),
-                       GamepadMapping::kXrStandard,
-                       handedness),
+      : XRStandardGamepadBuilder(handedness),
         controller_state_(controller_state) {
     supported_buttons_ = vr_system->GetUint64TrackedDeviceProperty(
         controller_id, vr::Prop_SupportedButtons_Uint64);
 
     axes_data_ = GetAxesButtons(vr_system, controller_state_,
                                 supported_buttons_, controller_id);
-  }
 
-  ~OpenVRGamepadBuilder() override = default;
+    base::Optional<GamepadBuilder::ButtonData> primary_button =
+        TryGetAxesOrTriggerButton(vr::k_EButton_SteamVR_Trigger);
 
-  bool TryAddAxesOrTriggerButton(
-      vr::EVRButtonId button_id,
-      AxesRequirement requirement = AxesRequirement::kOptional) {
-    if (!IsInAxesData(button_id))
-      return false;
-
-    bool require_axes = (requirement == AxesRequirement::kRequireBoth);
-    if (require_axes && !axes_data_[button_id].has_both_axes)
-      return false;
-
-    AddButton(axes_data_[button_id]);
-    used_axes_.insert(button_id);
-
-    return true;
-  }
-
-  bool TryAddNextUnusedButtonWithAxes() {
-    for (const auto& axes_data_pair : axes_data_) {
-      vr::EVRButtonId button_id = axes_data_pair.first;
-      if (IsUsed(button_id))
-        continue;
-
-      if (TryAddAxesOrTriggerButton(button_id, AxesRequirement::kRequireBoth))
-        return true;
+    if (!primary_button) {
+      return;
     }
 
-    return false;
-  }
+    SetPrimaryButton(primary_button.value());
 
-  bool TryAddButton(vr::EVRButtonId button_id) {
-    GamepadButton button;
-    if (TryGetGamepadButton(controller_state_, supported_buttons_, button_id,
-                            &button)) {
-      AddButton(button);
-      return true;
+    base::Optional<GamepadButton> secondary_button =
+        TryGetButton(vr::k_EButton_Grip);
+    if (secondary_button) {
+      SetSecondaryButton(secondary_button.value());
     }
 
-    return false;
-  }
+    base::Optional<GamepadBuilder::ButtonData> touchpad_data =
+        TryGetNextUnusedButtonOfType(
+            GamepadBuilder::ButtonData::Type::kTouchpad);
+    if (touchpad_data) {
+      SetTouchpadData(touchpad_data.value());
+    }
 
-  // This will add any remaining unused values from axes_data to the gamepad.
-  // Returns a bool indicating whether any additional axes were added.
-  bool AddRemainingTriggersAndAxes() {
-    bool added_axes = false;
-    for (const auto& axes_data_pair : axes_data_) {
-      if (!IsUsed(axes_data_pair.first)) {
-        added_axes = true;
-        AddButton(axes_data_pair.second);
+    base::Optional<GamepadBuilder::ButtonData> thumbstick_data =
+        TryGetNextUnusedButtonOfType(
+            GamepadBuilder::ButtonData::Type::kThumbstick);
+    if (thumbstick_data) {
+      SetThumbstickData(thumbstick_data.value());
+    }
+
+    // Now that all of the xr-standard reserved buttons have been filled in, we
+    // add the rest of the buttons in order of decreasing importance.
+    // First add regular buttons.
+    for (const auto& id : kWebXRButtonOrder) {
+      base::Optional<GamepadButton> button = TryGetButton(id);
+      if (button) {
+        AddOptionalButtonData(button.value());
       }
     }
 
-    return added_axes;
-  }
+    // Finally, add any remaining axis buttons (triggers/josysticks/touchpads)
+    AddRemainingTriggersAndAxes();
 
- private:
-  static bool IsControllerHTCVive(vr::IVRSystem* vr_system,
-                                  uint32_t controller_id) {
+    // Find out the model and manufacturer names in case the caller wants this
+    // information for the input profiles array.
     std::string model =
         GetOpenVRString(vr_system, vr::Prop_ModelNumber_String, controller_id);
     std::string manufacturer = GetOpenVRString(
         vr_system, vr::Prop_ManufacturerName_String, controller_id);
 
-    // OpenVR reports different model strings for developer vs released versions
-    // of Vive controllers. In the future, there could be additional iterations
-    // of the Vive controller that we also want to catch here. That's why we
-    // check if the model string contains "Vive" instead of doing an exact match
-    // against specific string(s).
-    return (manufacturer == "HTC") && (model.find("Vive") != std::string::npos);
+    UpdateProfiles(manufacturer, model);
   }
 
-  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
-  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  static std::string GetGamepadId(vr::IVRSystem* vr_system,
-                                  uint32_t controller_id) {
-    if (IsControllerHTCVive(vr_system, controller_id)) {
-      return "htc-vive";
+  ~OpenVRGamepadBuilder() override = default;
+
+  std::vector<std::string> GetProfiles() const { return profiles_; }
+
+ private:
+  void UpdateProfiles(const std::string& manufacturer,
+                      const std::string& model) {
+    // Per the WebXR spec, the first entry in the profiles array should be the
+    // most specific one.
+    std::string name =
+        FixupProfileString(manufacturer) + "-" + FixupProfileString(model);
+    profiles_.push_back(name);
+
+    // Also record information about what this controller actually does in a
+    // more general sense.
+    std::string capabilities = "";
+    if (HasSecondaryButton()) {
+      capabilities += "grip-";
+    }
+    if (HasTouchpad()) {
+      capabilities += "touchpad-";
+    }
+    if (HasThumbstick()) {
+      capabilities += "thumbstick-";
+    }
+    capabilities += "controller";
+    profiles_.push_back(capabilities);
+  }
+
+  base::Optional<GamepadBuilder::ButtonData> TryGetAxesOrTriggerButton(
+      vr::EVRButtonId button_id,
+      AxesRequirement requirement = AxesRequirement::kOptional) {
+    if (!IsInAxesData(button_id))
+      return base::nullopt;
+
+    bool require_axes = (requirement == AxesRequirement::kRequireBoth);
+    if (require_axes &&
+        axes_data_[button_id].type == GamepadBuilder::ButtonData::Type::kButton)
+      return base::nullopt;
+
+    used_axes_.insert(button_id);
+    return axes_data_[button_id];
+  }
+
+  base::Optional<GamepadBuilder::ButtonData> TryGetNextUnusedButtonOfType(
+      GamepadBuilder::ButtonData::Type type) {
+    for (const auto& axes_data_pair : axes_data_) {
+      vr::EVRButtonId button_id = axes_data_pair.first;
+      if (IsUsed(button_id))
+        continue;
+
+      if (axes_data_pair.second.type != type)
+        continue;
+
+      return TryGetAxesOrTriggerButton(button_id,
+                                       AxesRequirement::kRequireBoth);
     }
 
-    return "openvr";
+    return base::nullopt;
+  }
+
+  base::Optional<GamepadButton> TryGetButton(vr::EVRButtonId button_id) {
+    GamepadButton button;
+    if (TryGetGamepadButton(controller_state_, supported_buttons_, button_id,
+                            &button)) {
+      return button;
+    }
+
+    return base::nullopt;
+  }
+
+  // This will add any remaining unused values from axes_data to the gamepad.
+  // Returns a bool indicating whether any additional axes were added.
+  void AddRemainingTriggersAndAxes() {
+    for (const auto& axes_data_pair : axes_data_) {
+      if (!IsUsed(axes_data_pair.first)) {
+        AddOptionalButtonData(axes_data_pair.second);
+      }
+    }
   }
 
   bool IsUsed(vr::EVRButtonId button_id) {
@@ -365,13 +430,19 @@ class OpenVRGamepadBuilder : public GamepadBuilder {
 
   const vr::VRControllerState_t controller_state_;
   uint64_t supported_buttons_;
-  std::map<vr::EVRButtonId, ButtonData> axes_data_;
+  std::map<vr::EVRButtonId, GamepadBuilder::ButtonData> axes_data_;
   std::unordered_set<vr::EVRButtonId> used_axes_;
+  std::vector<std::string> profiles_;
 
   DISALLOW_COPY_AND_ASSIGN(OpenVRGamepadBuilder);
 };
 
-base::Optional<Gamepad> OpenVRGamepadHelper::GetXRGamepad(
+OpenVRInputSourceData::OpenVRInputSourceData() = default;
+OpenVRInputSourceData::~OpenVRInputSourceData() = default;
+OpenVRInputSourceData::OpenVRInputSourceData(
+    const OpenVRInputSourceData& other) = default;
+
+OpenVRInputSourceData OpenVRGamepadHelper::GetXRInputSourceData(
     vr::IVRSystem* vr_system,
     uint32_t controller_id,
     vr::VRControllerState_t controller_state,
@@ -379,59 +450,10 @@ base::Optional<Gamepad> OpenVRGamepadHelper::GetXRGamepad(
   OpenVRGamepadBuilder builder(vr_system, controller_id, controller_state,
                                handedness);
 
-  if (!builder.TryAddAxesOrTriggerButton(vr::k_EButton_SteamVR_Trigger))
-    return base::nullopt;
-
-  if (!builder.TryAddNextUnusedButtonWithAxes())
-    return base::nullopt;
-
-  bool added_placeholder_grip = false;
-  if (!builder.TryAddButton(vr::k_EButton_Grip)) {
-    added_placeholder_grip = true;
-    builder.AddPlaceholderButton();
-  }
-
-  // If we can't find any secondary button with an x and y axis, add a fake
-  // button.  Note that we're not worried about ensuring that the axes data gets
-  // added, because if there were any other axes to add, we would've added them.
-  bool added_placeholder_axes = false;
-  if (!builder.TryAddNextUnusedButtonWithAxes()) {
-    added_placeholder_axes = true;
-    builder.AddPlaceholderButton();
-  }
-
-  // Now that all of the xr-standard reserved buttons have been filled in, we
-  // add the rest of the buttons in order of decreasing importance.
-  // First add regular buttons
-  bool added_optional_buttons = false;
-  for (const auto& button : kWebXRButtonOrder) {
-    added_optional_buttons =
-        builder.TryAddButton(button) || added_optional_buttons;
-  }
-
-  // Finally, add any remaining axis buttons (triggers/josysticks/touchpads)
-  bool added_optional_axes = builder.AddRemainingTriggersAndAxes();
-
-  // If we didn't add any optional buttons, we need to remove our placeholder
-  // buttons.
-  if (!(added_optional_buttons || added_optional_axes)) {
-    // If we didn't add any optional buttons, see if we need to remove the most
-    // recent placeholder (the secondary axes).
-    // Note that if we added a placeholder axes, the only optional axes that
-    // should have been added are triggers, and so we don't need to worry about
-    // the order
-    if (added_placeholder_axes) {
-      builder.RemovePlaceholderButton();
-
-      // Only if the axes button was a placeholder can we remove the grip
-      // if it was also a placeholder.
-      if (added_placeholder_grip) {
-        builder.RemovePlaceholderButton();
-      }
-    }
-  }
-
-  return builder.GetGamepad();
+  OpenVRInputSourceData data;
+  data.gamepad = builder.GetGamepad();
+  data.profiles = builder.GetProfiles();
+  return data;
 }
 
 }  // namespace device

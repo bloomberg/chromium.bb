@@ -13,7 +13,8 @@ fidl_library("cast_fidl") {
   sources = [
     "fidl/cast/api_bindings.fidl",
     "fidl/cast/application_config.fidl",
-    "fidl/cast/queryable_data.fidl",
+    "fidl/cast/application_controller.fidl",
+    "fidl/cast/url_request_rewriter.fidl",
   ]
 
   public_deps = [
@@ -100,9 +101,11 @@ group("gn_all") {
     "engine:web_engine_browsertests",
     "engine:web_engine_unittests",
     "http:http_service_tests",
-    "mojo:fuchsia_mojo_unittests",
+    "mojom:fuchsia_mojo_unittests",
     "runners:cast_runner",
     "runners:cast_runner_browsertests",
+    "runners:cast_runner_integration_tests",
+    "runners:cast_runner_unittests",
     "runners:web_runner",
     "//chromecast/bindings:bindings_manager_fuchsia",
   ]

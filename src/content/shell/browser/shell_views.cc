@@ -231,7 +231,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
                       const ui::KeyEvent& key_event) override {
     if (key_event.type() == ui::ET_KEY_PRESSED && sender == url_entry_ &&
         key_event.key_code() == ui::VKEY_RETURN) {
-      std::string text = base::UTF16ToUTF8(url_entry_->text());
+      std::string text = base::UTF16ToUTF8(url_entry_->GetText());
       GURL url(text);
       if (!url.has_scheme()) {
         url = GURL(std::string("http://") + std::string(text));
@@ -413,7 +413,7 @@ void Shell::PlatformCreateWindow(int width, int height) {
   params.delegate = new ShellWindowDelegateView(this);
   params.wm_class_class = "chromium-content_shell";
   params.wm_class_name = params.wm_class_class;
-  window_widget_->Init(params);
+  window_widget_->Init(std::move(params));
 #endif
 
   content_size_ = gfx::Size(width, height);

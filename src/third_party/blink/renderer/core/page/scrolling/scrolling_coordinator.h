@@ -48,10 +48,8 @@ class LocalFrame;
 class LocalFrameView;
 class GraphicsLayer;
 class Page;
-class PaintLayer;
 class Region;
 class ScrollableArea;
-class WebLayerTreeView;
 
 using MainThreadScrollingReasons = uint32_t;
 using ScrollbarId = uint64_t;
@@ -85,10 +83,8 @@ class CORE_EXPORT ScrollingCoordinator final
   // not null, the host and timeline are attached to the specified
   // LocalFrameView. A LocalFrameView only needs to own them when it is the view
   // for an OOPIF.
-  void LayerTreeViewInitialized(WebLayerTreeView&,
-                                cc::AnimationHost&,
-                                LocalFrameView*);
-  void WillCloseLayerTreeView(WebLayerTreeView&, LocalFrameView*);
+  void AnimationHostInitialized(cc::AnimationHost&, LocalFrameView*);
+  void WillCloseAnimationHost(LocalFrameView*);
 
   void WillBeDestroyed();
 
@@ -98,8 +94,6 @@ class CORE_EXPORT ScrollingCoordinator final
 
   // Called when any frame has done its layout or compositing has changed.
   void NotifyGeometryChanged(LocalFrameView*);
-  // Called when any transform has changed.
-  void NotifyTransformChanged(LocalFrame*);
 
   // Update non-fast scrollable regions, touch event target rects, main thread
   // scrolling reasons, and whether the visual viewport is user scrollable.
@@ -140,14 +134,8 @@ class CORE_EXPORT ScrollingCoordinator final
   void ScrollableAreaScrollLayerDidChange(ScrollableArea*);
   void ScrollableAreaScrollbarLayerDidChange(ScrollableArea*,
                                              ScrollbarOrientation);
-  void UpdateLayerPositionConstraint(PaintLayer*);
   // LocalFrame* must be a local root if non-null.
   void TouchEventTargetRectsDidChange(LocalFrame*);
-
-  void UpdateScrollParentForGraphicsLayer(GraphicsLayer* child,
-                                          const PaintLayer* parent);
-  void UpdateClipParentForGraphicsLayer(GraphicsLayer* child,
-                                        const PaintLayer* parent);
 
   // Computes the NonFastScrollableRegions for the given local root frame. It
   // outputs a separate region for areas that scroll with the viewport and
@@ -164,9 +152,8 @@ class CORE_EXPORT ScrollingCoordinator final
       Region* scrolling_region,
       Region* fixed_region) const;
 
+  void UpdateNonFastScrollableRegions(LocalFrame*);
   void UpdateTouchEventTargetRectsIfNeeded(LocalFrame*);
-
-  void UpdateUserInputScrollable(ScrollableArea*);
 
   cc::AnimationHost* GetCompositorAnimationHost() { return animation_host_; }
   CompositorAnimationTimeline* GetCompositorAnimationTimeline() {
@@ -198,10 +185,6 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void SetShouldUpdateScrollLayerPositionOnMainThread(
-      LocalFrame*,
-      MainThreadScrollingReasons);
-
   void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
                                                       GraphicsLayer*);
 

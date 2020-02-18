@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Attēla izšķirtspēja</translation>
 <translation id="1943097386230153518">Jauna pakalpojuma instalēšana</translation>
 <translation id="1947424002851288782">Vācu valodas tastatūra</translation>
+<translation id="1972984168337863910">Notiek failu atsauksmju paneļu izvēršana</translation>
 <translation id="197560921582345123">Var rediģēt</translation>
 <translation id="1984603991036629094">Armēņu fonētiskā tastatūra</translation>
 <translation id="2001796770603320721">Pārvaldīt Diskā</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Lai piekļūtu šim failam, jums ir jābūt tiešsaistē.</translation>
 <translation id="4212740939091998969">Mape ar nosaukumu “<ph name="FOLDER_NAME" />” jau pastāv. Lūdzu, izvēlieties citu nosaukumu.</translation>
 <translation id="4215448920900139318">Dublēšana: <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Atvērt iestatījumus</translation>
 <translation id="426015154560005552">Arābu tastatūra</translation>
 <translation id="4261901459838235729">Google prezentācija</translation>
 <translation id="4290535918735525311">1 mape kopīgota ar Linux</translation>
-<translation id="42981349822642051">Izvērst</translation>
 <translation id="4298972503445160211">Dāņu valodas tastatūra</translation>
 <translation id="4299729908419173967">Brazīliešu</translation>
 <translation id="4309915981827077375">Vispārīga informācija</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Automātiski labot</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4886021172213954916">Tamilu valodas tastatūra (rakstāmmašīna)</translation>
-<translation id="4892969127351273348">Nevar atvērt, izmantojot lietotni <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Gatavs dublēšanai: <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Fiksēts</translation>
 <translation id="4935975195727477204">Gazānijas zieds</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Šveices franču</translation>
 <translation id="5234764350956374838">Noraidīt</translation>
 <translation id="5241298539944515331">Vjetnamiešu valodas tastatūra (VIQR)</translation>
-<translation id="52446585071384036">Lai atvērtu failus, izmantojot lietotni <ph name="APP_NAME" />, vispirms kopējiet tos uz Linux failu mapi.</translation>
 <translation id="5253070652067921974">Autors:</translation>
 <translation id="5257456363153333584">Spāre</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Piekļūstiet saviem failiem, atrodoties jebkurā vietā, pat bezsaistē.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Korejiešu valoda</translation>
 <translation id="5819442873484330149">Hangils (3 Set, Final)</translation>
 <translation id="5833610766403489739">Šo failu nevar atrast. Lūdzu, pārbaudiet lejupielādes vietas iestatījumu un mēģiniet vēlreiz.</translation>
-<translation id="5838051104334203064">Play veikala lietojumprogrammas nevar piekļūt šai ierīcei</translation>
 <translation id="5838451609423551646">Visi vienumi noņemti no atlases.</translation>
 <translation id="5838825566232597749">Workman (ASV starptautiskā)</translation>
 <translation id="5850516540536751549">Šis faila tips netiek atbalstīts. Lūdzu, apmeklējiet <ph name="BEGIN_LINK" />Chrome interneta veikalu<ph name="END_LINK" />, lai atrastu lietotni, ar kuru var atvērt šo failu.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Lai saglabātu šos failus izmantošanai bezsaistē, aktivizējiet tiešsaistes režīmu, ar peles labo pogu noklikšķiniet uz failiem un atlasiet opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Priekšlaikus pārtraukt</translation>
 <translation id="8261506727792406068">Dzēst</translation>
+<translation id="8269755669432358899">Notiek failu atsauksmju paneļu sakļaušana</translation>
 <translation id="8279388322240498158">Uz angļu valodu balstīta kurdu (Sorani) tastatūra</translation>
 <translation id="8280151743281770066">Armēņu fonētiskā</translation>
 <translation id="8294431847097064396">Avots</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Atlasīt atveramo failu</translation>
 <translation id="8579285237314169903">Notiek <ph name="NUMBER_OF_FILES" /> vienumu sinhronizēšana...</translation>
 <translation id="8600173386174225982">Failu saraksts ir mainīts uz sīktēlu skatu.</translation>
+<translation id="8601932370724196034">Crostini attēla fails</translation>
 <translation id="8669949407341943408">Notiek pārvietošana...</translation>
 <translation id="8671210955687109937">Var komentēt</translation>
 <translation id="8686213429977032554">Šis Diska fails vēl nav kopīgots</translation>

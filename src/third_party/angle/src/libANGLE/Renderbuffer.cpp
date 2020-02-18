@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2012 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -63,8 +63,8 @@ void RenderbufferState::update(GLsizei width,
 }
 
 // Renderbuffer implementation.
-Renderbuffer::Renderbuffer(rx::GLImplFactory *implFactory, GLuint id)
-    : RefCountObject(id),
+Renderbuffer::Renderbuffer(rx::GLImplFactory *implFactory, RenderbufferID id)
+    : RefCountObject(id.value),
       mState(),
       mImplementation(implFactory->createRenderbuffer(mState)),
       mLabel()

@@ -31,6 +31,7 @@ namespace http://www.w3.org/1999/xhtml
     property append
     property appendChild
     property ariaActiveDescendant
+    property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
     property ariaBusy
@@ -42,8 +43,10 @@ namespace http://www.w3.org/1999/xhtml
     property ariaCurrent
     property ariaDescribedBy
     property ariaDetails
+    property ariaDetailsElement
     property ariaDisabled
     property ariaErrorMessage
+    property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
     property ariaHasPopup
@@ -278,6 +281,7 @@ namespace http://www.w3.org/1999/xhtml
     property removeAttributeNode
     property removeChild
     property removeEventListener
+    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
@@ -664,7 +668,6 @@ html element img
     property height
     property hspace
     property importance
-    property intrinsicSize
     property isMap
     property loading
     property longDesc
@@ -1150,7 +1153,6 @@ html element video
     property error
     property getVideoPlaybackQuality
     property height
-    property intrinsicSize
     property load
     property loop
     property mediaKeys
@@ -1225,6 +1227,7 @@ namespace http://www.w3.org/2000/svg
     property append
     property appendChild
     property ariaActiveDescendant
+    property ariaActiveDescendantElement
     property ariaAtomic
     property ariaAutoComplete
     property ariaBusy
@@ -1236,8 +1239,10 @@ namespace http://www.w3.org/2000/svg
     property ariaCurrent
     property ariaDescribedBy
     property ariaDetails
+    property ariaDetailsElement
     property ariaDisabled
     property ariaErrorMessage
+    property ariaErrorMessageElement
     property ariaExpanded
     property ariaFlowTo
     property ariaHasPopup
@@ -1454,6 +1459,7 @@ namespace http://www.w3.org/2000/svg
     property removeAttributeNode
     property removeChild
     property removeEventListener
+    property renderSubtree
     property replaceChild
     property replaceWith
     property requestFullscreen
@@ -1924,7 +1930,6 @@ svg element image
     property getScreenCTM
     property height
     property href
-    property intrinsicSize
     property nearestViewportElement
     property preserveAspectRatio
     property requiredExtensions

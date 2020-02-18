@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/grpc_support/grpc_async_unary_request.h"
@@ -53,7 +53,7 @@ class GrpcAuthenticatedExecutorTest : public testing::Test {
  private:
   FakeOAuthTokenGetter token_getter_{OAuthTokenGetter::Status::SUCCESS,
                                      "fake_user", "fake_token"};
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 void GrpcAuthenticatedExecutorTest::SetUp() {

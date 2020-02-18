@@ -22,10 +22,10 @@ from chromite.lib import portage_util
 
 def FindCandidateBoards():
   """Find candidate local boards to grab prebuilts from."""
-  portageq_prefix = "/usr/local/bin/portageq-"
-  for path in sorted(glob.glob("%s*" % portageq_prefix)):
+  portageq_prefix = '/usr/local/bin/portageq-'
+  for path in sorted(glob.glob('%s*' % portageq_prefix)):
     # Strip off the portageq prefix, leaving only the board.
-    yield path.replace(portageq_prefix, "")
+    yield path.replace(portageq_prefix, '')
 
 
 def SummarizeCompatibility(board):
@@ -37,8 +37,8 @@ def SummarizeCompatibility(board):
 def GenerateBinhostLine(build_root, compatible_boards):
   """Generate a binhost line pulling binaries from the specified boards."""
   # TODO(davidjames): Prioritize binhosts with more matching use flags.
-  local_binhosts = " ".join([
-      "file://localhost" + os.path.join(build_root, x, "packages")
+  local_binhosts = ' '.join([
+      'file://localhost' + os.path.join(build_root, x, 'packages')
       for x in sorted(compatible_boards)])
   return "LOCAL_BINHOST='%s'" % local_binhosts
 

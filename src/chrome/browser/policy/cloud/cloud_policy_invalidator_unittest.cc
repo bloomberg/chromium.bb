@@ -18,8 +18,8 @@
 #include "base/metrics/statistics_recorder.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -202,7 +202,7 @@ class CloudPolicyInvalidatorTestBase : public testing::Test {
   // Returns the object id of the given policy object.
   const invalidation::ObjectId& GetPolicyObjectId(PolicyObject object) const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
   // Fake feature list with custom values.
   base::test::ScopedFeatureList feature_list_;
@@ -240,7 +240,7 @@ CloudPolicyInvalidatorTestBase::CloudPolicyInvalidatorTestBase(
     : core_(dm_protocol::kChromeUserPolicyType,
             std::string(),
             &store_,
-            scoped_task_environment_.GetMainThreadTaskRunner(),
+            task_environment_.GetMainThreadTaskRunner(),
             network::TestNetworkConnectionTracker::CreateGetter()),
       client_(nullptr),
       task_runner_(new base::TestSimpleTaskRunner()),

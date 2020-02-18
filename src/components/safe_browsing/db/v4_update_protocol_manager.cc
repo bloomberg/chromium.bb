@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/rand_util.h"
 #include "base/timer/timer.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/db/safebrowsing.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
@@ -20,7 +21,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 
-#if !defined(FULL_SAFE_BROWSING)
+#if !BUILDFLAG(FULL_SAFE_BROWSING)
 #include "base/system/sys_info.h"
 #endif
 
@@ -62,10 +63,6 @@ void RecordUpdateResult(safe_browsing::V4OperationResult result) {
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.V4Update.Result", result,
       safe_browsing::V4OperationResult::OPERATION_RESULT_MAX);
-}
-
-void RecordTimedOut(bool timed_out) {
-  UMA_HISTOGRAM_BOOLEAN("SafeBrowsing.V4Update.TimedOut", timed_out);
 }
 
 }  // namespace
@@ -256,7 +253,7 @@ std::string V4UpdateProtocolManager::GetBase64SerializedUpdateRequestProto() {
     list_update_request->mutable_constraints()->add_supported_compressions(
         RICE);
 
-#if !defined(FULL_SAFE_BROWSING)
+#if !BUILDFLAG(FULL_SAFE_BROWSING)
     if (base::SysInfo::IsLowEndDevice()) {
       list_update_request->mutable_constraints()->set_max_database_entries(
           GetLowEndDBEntryCount(list_update_request->threat_type()));
@@ -390,7 +387,6 @@ void V4UpdateProtocolManager::IssueUpdateRequest() {
 }
 
 void V4UpdateProtocolManager::HandleTimeout() {
-  RecordTimedOut(true);
   request_.reset();
   ScheduleNextUpdateWithBackoff(true);
 }
@@ -419,7 +415,6 @@ void V4UpdateProtocolManager::OnURLLoaderCompleteInternal(
   last_response_code_ = response_code;
   V4ProtocolManagerUtil::RecordHttpResponseOrErrorCode(
       "SafeBrowsing.V4Update.Network.Result", net_error, last_response_code_);
-  RecordTimedOut(false);
 
   last_response_time_ = Time::Now();
 

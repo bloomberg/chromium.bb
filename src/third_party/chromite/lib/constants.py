@@ -38,6 +38,13 @@ PATH_TO_CBUILDBOT = os.path.join(CHROMITE_BIN_SUBDIR, 'cbuildbot')
 DEFAULT_CHROOT_DIR = 'chroot'
 DEFAULT_CHROOT_PATH = os.path.join(SOURCE_ROOT, DEFAULT_CHROOT_DIR)
 
+# These constants are defined and used in the die_hook that logs failed
+# packages: 'cros_log_failed_packages' in profiles/base/profile.bashrc in
+# chromiumos-overlay. The status file is generated in CROS_METRICS_DIR, and
+# only if that environment variable is defined.
+CROS_METRICS_DIR_ENVVAR = 'CROS_METRICS_DIR'
+DIE_HOOK_STATUS_FILE_NAME = 'FAILED_PACKAGES'
+
 CHROMEOS_CONFIG_FILE = os.path.join(CHROMITE_DIR, 'config', 'config_dump.json')
 WATERFALL_CONFIG_FILE = os.path.join(
     CHROMITE_DIR, 'config', 'waterfall_layout_dump.txt')
@@ -280,7 +287,7 @@ PRODUCT_TOOLCHAIN_STAGE = 'Product-Toolchain'
 # Major is used for tracking heavy API breakage- for example, no longer
 # supporting the --resume option.
 REEXEC_API_MAJOR = 0
-REEXEC_API_MINOR = 10
+REEXEC_API_MINOR = 11
 REEXEC_API_VERSION = '%i.%i' % (REEXEC_API_MAJOR, REEXEC_API_MINOR)
 
 # Support --master-build-id
@@ -299,6 +306,8 @@ REEXEC_API_PREVIOUS_BUILD_STATE = 8
 REEXEC_API_WORKSPACE = 9
 # Support --master-buildbucket-id
 REEXEC_API_MASTER_BUILDBUCKET_ID = 10
+# Support --chromeos_goma_dir
+REEXEC_API_CHROMEOS_GOMA_DIR = 11
 
 # We rely on the (waterfall, builder name, build number) to uniquely identify
 # a build. However, future migrations or state wipes of the buildbot master may
@@ -656,7 +665,6 @@ PRE_CQ_DEFAULT_CONFIGS = [
     'eve-no-vmtest-pre-cq',           # kabylake    cheets_64 vulkan(Intel)
     'fizz-no-vmtest-pre-cq',          # kabylake
     'grunt-no-vmtest-pre-cq',         # stoneyridge vulkan(AMD)
-    'guado_moblab-no-vmtest-pre-cq',  # broadwell   moblab
     'kevin-arcnext-no-vmtest-pre-cq', # arm64       arcnext
     'lakitu-no-vmtest-pre-cq',        # container
     'nyan_blaze-no-vmtest-pre-cq',    # arm32
@@ -1054,7 +1062,7 @@ ENV_PASSTHRU = ('CROS_SUDO_KEEP_ALIVE', SHARED_CACHE_ENVVAR,
 
 # List of variables to proxy into the chroot from the host, and to
 # have sudo export if existent. Anytime this list is modified, a new
-# chroot_version_hooks.d upgrade script that symlinks to 45_rewrite_sudoers.d
+# chroot_version_hooks.d upgrade script that symlinks to 153_rewrite_sudoers.d
 # should be created.
 CHROOT_ENVIRONMENT_WHITELIST = (
     'CHROMEOS_OFFICIAL',

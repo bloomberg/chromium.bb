@@ -14,9 +14,9 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
@@ -204,7 +204,7 @@ class AutomaticRebootManagerBasicTest : public testing::Test {
 
   bool reboot_after_update_ = false;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedClosureRunner reset_main_thread_task_runner_;
 
   TestingPrefServiceSimple local_state_;

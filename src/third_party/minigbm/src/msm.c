@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <drm_fourcc.h>
 #include <errno.h>
+#include <inttypes.h>
 #include <msm_drm.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -165,6 +166,13 @@ static int msm_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, texture_use_flags);
 
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
+
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
@@ -204,7 +212,7 @@ static int msm_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t he
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MSM_GEM_NEW, &req);
 	if (ret) {
 		drv_log("DRM_IOCTL_MSM_GEM_NEW failed with %s\n", strerror(errno));
-		return ret;
+		return -errno;
 	}
 
 	/*
@@ -240,7 +248,7 @@ static int msm_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_
 	struct combination *combo = drv_get_combination(bo->drv, format, flags);
 
 	if (!combo) {
-		drv_log("invalid format = %d, flags = %llx combination\n", format, flags);
+		drv_log("invalid format = %d, flags = %" PRIx64 " combination\n", format, flags);
 		return -EINVAL;
 	}
 

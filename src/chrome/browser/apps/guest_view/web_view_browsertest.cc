@@ -29,6 +29,7 @@
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/devtools/devtools_window_testing.h"
 #include "chrome/browser/download/download_core_service.h"
 #include "chrome/browser/download/download_core_service_factory.h"
 #include "chrome/browser/download/download_history.h"
@@ -2799,10 +2800,16 @@ class DownloadHistoryWaiter : public DownloadHistory::Observer {
 
 }  // namespace
 
+// TODO(crbug.com/994789): Flaky on MSan.
+#if defined(MEMORY_SANITIZER)
+#define MAYBE_DownloadCookieIsolation DISABLED_DownloadCookieIsolation
+#else
+#define MAYBE_DownloadCookieIsolation DownloadCookieIsolation
+#endif  // !defined(MEMORY_SANITIZER)
 // Downloads initiated from isolated guest parititons should use their
 // respective cookie stores. In addition, if those downloads are resumed, they
 // should continue to use their respective cookie stores.
-IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation) {
+IN_PROC_BROWSER_TEST_F(WebViewTest, MAYBE_DownloadCookieIsolation) {
   embedded_test_server()->RegisterRequestHandler(
       base::BindRepeating(&HandleDownloadRequestWithCookie));
   ASSERT_TRUE(StartEmbeddedTestServer());  // For serving guest pages.
@@ -2943,7 +2950,17 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, PRE_DownloadCookieIsolation_CrossSession) {
   content::EnsureCookiesFlushed(profile());
 }
 
-IN_PROC_BROWSER_TEST_F(WebViewTest, DownloadCookieIsolation_CrossSession) {
+// TODO(crbug.com/994789): Flaky on ChromeOS. Fix and re-enable the test.
+#if defined(OS_CHROMEOS)
+#define MAYBE_DownloadCookieIsolation_CrossSession \
+  DISABLED_DownloadCookieIsolation_CrossSession
+#else
+#define MAYBE_DownloadCookieIsolation_CrossSession \
+  DownloadCookieIsolation_CrossSession
+#endif  // !defined(OS_CHROMEOS)
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       MAYBE_DownloadCookieIsolation_CrossSession) {
   base::test::ScopedFeatureList feature_list;
   feature_list.InitAndDisableFeature(
       download::features::kDownloadDBForNewDownloads);
@@ -4407,4 +4424,14 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, TouchpadPinchSyntheticWheelEvents) {
                                         blink::WebGestureDevice::kTouchpad);
 
   ASSERT_TRUE(synthetic_wheel_listener.WaitUntilSatisfied());
+}
+
+// Tests that we can open and close a devtools window that inspects a contents
+// containing a guest view without crashing.
+IN_PROC_BROWSER_TEST_F(WebViewTest, OpenAndCloseDevTools) {
+  LoadAppWithGuest("web_view/simple");
+  content::WebContents* embedder = GetEmbedderWebContents();
+  DevToolsWindow* devtools = DevToolsWindowTesting::OpenDevToolsWindowSync(
+      embedder, false /* is_docked */);
+  DevToolsWindowTesting::CloseDevToolsWindowSync(devtools);
 }

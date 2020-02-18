@@ -13,7 +13,7 @@
 #include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/network/managed_network_configuration_handler_impl.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_profile_handler.h"
@@ -28,8 +28,8 @@ namespace chromeos {
 class ProhibitedTechnologiesHandlerTest : public testing::Test {
  public:
   ProhibitedTechnologiesHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     LoginState::Initialize();
@@ -111,7 +111,7 @@ class ProhibitedTechnologiesHandlerTest : public testing::Test {
       prohibited_technologies_handler_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
 
   std::unique_ptr<NetworkConfigurationHandler> network_config_handler_;

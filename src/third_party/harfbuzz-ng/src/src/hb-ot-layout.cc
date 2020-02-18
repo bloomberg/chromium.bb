@@ -43,7 +43,6 @@
 #include "hb-map.hh"
 
 #include "hb-ot-kern-table.hh"
-#include "hb-ot-gasp-table.hh" // Just so we compile it; unused otherwise.
 #include "hb-ot-layout-gdef-table.hh"
 #include "hb-ot-layout-gsub-table.hh"
 #include "hb-ot-layout-gpos-table.hh"
@@ -55,6 +54,7 @@
 #include "hb-aat-layout-lcar-table.hh"
 #include "hb-aat-layout-morx-table.hh"
 
+#include "hb-aat-layout-opbd-table.hh" // Just so we compile it; unused otherwise.
 
 /**
  * SECTION:hb-ot-layout
@@ -109,7 +109,7 @@ hb_ot_layout_has_machine_kerning (hb_face_t *face)
  *
  * Tests whether a face has any cross-stream kerning (i.e., kerns
  * that make adjustments perpendicular to the direction of the text
- * flow: Y adjustments in horizontal text or X adjustments in 
+ * flow: Y adjustments in horizontal text or X adjustments in
  * vertical text) in the 'kern' table.
  *
  * Does NOT examine the GPOS table.
@@ -286,7 +286,7 @@ hb_ot_layout_has_glyph_classes (hb_face_t *face)
  *
  * Fetches the GDEF class of the requested glyph in the specified face.
  *
- * Return value: The #hb_ot_layout_glyph_class_t glyph class of the given code 
+ * Return value: The #hb_ot_layout_glyph_class_t glyph class of the given code
  * point in the GDEF table of the face.
  *
  * Since: 0.9.7
@@ -330,7 +330,7 @@ hb_ot_layout_get_glyphs_in_class (hb_face_t                  *face,
  * @point_array: (out) (array length=point_count): The array of attachment points found for the query
  *
  * Fetches a list of all attachment points for the specified glyph in the GDEF
- * table of the face. The list returned will begin at the offset provided. 
+ * table of the face. The list returned will begin at the offset provided.
  *
  * Useful if the client program wishes to cache the list.
  *
@@ -375,10 +375,14 @@ hb_ot_layout_get_ligature_carets (hb_font_t      *font,
   {
     if (caret_count) *caret_count = result_caret_count;
   }
-#ifndef HB_NO_AAT
   else
+  {
+#ifndef HB_NO_AAT
     result = font->face->table.lcar->get_lig_carets (font, direction, glyph, start_offset, caret_count, caret_array);
+#else
+    if (caret_count) *caret_count = 0;
 #endif
+  }
   return result;
 }
 #endif
@@ -980,7 +984,7 @@ hb_ot_layout_feature_get_lookups (hb_face_t    *face,
  * @face: #hb_face_t to work upon
  * @table_tag: HB_OT_TAG_GSUB or HB_OT_TAG_GPOS
  *
- * Fetches the total number of lookups enumerated in the specified 
+ * Fetches the total number of lookups enumerated in the specified
  * face's GSUB table or GPOS table.
  *
  * Since: 0.9.22
@@ -1188,7 +1192,7 @@ hb_ot_layout_collect_features (hb_face_t      *face,
  * table or GPOS table, underneath the specified scripts, languages, and
  * features. If no list of scripts is provided, all scripts will be queried.
  * If no list of languages is provided, all languages will be queried. If no
- * list of features is provided, all features will be queried. 
+ * list of features is provided, all features will be queried.
  *
  * Since: 0.9.8
  **/
@@ -1582,7 +1586,7 @@ hb_ot_layout_position_finish_offsets (hb_font_t *font, hb_buffer_t *buffer)
  * as used here are defined as pertaining only to fonts within a font family that differ
  * specifically in their respective size ranges; other ways to differentiate fonts within
  * a subfamily are not covered by the `size` feature.
- * 
+ *
  * For more information on this distinction, see the `size` documentation at
  * https://docs.microsoft.com/en-us/typography/opentype/spec/features_pt#tag-39size39
  *
@@ -1724,7 +1728,7 @@ hb_ot_layout_feature_get_name_ids (hb_face_t       *face,
  *       returned. This function can be called with incrementally larger start_offset
  *       until the char_count output value is lower than its input value, or the size
  *       of the characters array can be increased.</note>
- * 
+ *
  * Return value: Number of total sample characters in the cvXX feature.
  *
  * Since: 2.0.0
@@ -1941,73 +1945,36 @@ hb_ot_layout_substitute_lookup (OT::hb_ot_apply_context_t *c,
   apply_string<GSUBProxy> (c, lookup, accel);
 }
 
-#if 0
+#ifndef HB_NO_BASE
+/**
+ * hb_ot_layout_get_baseline:
+ * @font: a font
+ * @baseline: a baseline tag
+ * @direction: text direction.
+ * @script_tag:  script tag.
+ * @language_tag: language tag.
+ * @coord: (out): baseline value if found.
+ *
+ * Fetches a baseline value from the face.
+ *
+ * Return value: if found baseline value in the the font.
+ *
+ * Since: 2.6.0
+ **/
 hb_bool_t
-hb_ot_layout_get_baseline (hb_font_t               *font,
-			   hb_ot_layout_baseline_t  baseline,
-			   hb_direction_t           direction,
-			   hb_tag_t                 script_tag,
-			   hb_tag_t                 language_tag,
-			   hb_position_t           *coord        /* OUT.  May be NULL. */)
+hb_ot_layout_get_baseline (hb_font_t                   *font,
+			   hb_ot_layout_baseline_tag_t  baseline_tag,
+			   hb_direction_t               direction,
+			   hb_tag_t                     script_tag,
+			   hb_tag_t                     language_tag,
+			   hb_position_t               *coord        /* OUT.  May be NULL. */)
 {
-  bool result = font->face->table.BASE->get_baseline (font, baseline, direction, script_tag,
-						      language_tag, coord);
+  bool result = font->face->table.BASE->get_baseline (font, baseline_tag, direction, script_tag, language_tag, coord);
 
-  /* TODO: Simulate https://docs.microsoft.com/en-us/typography/opentype/spec/baselinetags#ideographic-em-box */
-  if (!result && coord) *coord = 0;
-
-  if (coord) *coord = font->em_scale_dir (*coord, direction);
+  if (result && coord)
+    *coord = HB_DIRECTION_IS_HORIZONTAL (direction) ? font->em_scale_y (*coord) : font->em_scale_x (*coord);
 
   return result;
 }
-
-/* To be moved to public header */
-/*
- * BASE
- */
-
-/**
- * hb_ot_layout_baseline_t:
- *
- * https://docs.microsoft.com/en-us/typography/opentype/spec/baselinetags
- *
- * Since: DONTREPLACEME
- */
-typedef enum {
-  HB_OT_LAYOUT_BASELINE_HANG = HB_TAG('h','a','n','g'),
-  HB_OT_LAYOUT_BASELINE_ICFB = HB_TAG('i','c','f','b'),
-  HB_OT_LAYOUT_BASELINE_ICFT = HB_TAG('i','c','f','t'),
-  HB_OT_LAYOUT_BASELINE_IDEO = HB_TAG('i','d','e','o'),
-  HB_OT_LAYOUT_BASELINE_IDTB = HB_TAG('i','d','t','b'),
-  HB_OT_LAYOUT_BASELINE_MATH = HB_TAG('m','a','t','h'),
-  HB_OT_LAYOUT_BASELINE_ROMN = HB_TAG('r','o','m','n')
-} hb_ot_layout_baseline_t;
-
-
-/**
- * hb_ot_layout_get_baseline:
- * @font: The #hb_font_t to work upon
- * @baseline: The #hb_ot_layout_baseline_t to query
- * @direction: The #hb_direction_t text direction to use (horizontal or vertical)
- * @script_tag:  #hb_tag_t of the script to use
- * @language_tag: #hb_tag_t of the language to use
- * @coord: (out): The position of the requested baseline
- *
- * Fetches the coordinates of the specified baseline in the face, underneath
- * the specified script and language and in the specified text direction.
- *
- * Return value: true if the baseline is found for the settings queried, false otherwise
- *
- **/
-HB_EXTERN hb_bool_t
-hb_ot_layout_get_baseline (hb_font_t               *font,
-			   hb_ot_layout_baseline_t  baseline,
-			   hb_direction_t           direction,
-			   hb_tag_t                 script_tag,
-			   hb_tag_t                 language_tag,
-			   hb_position_t           *coord        /* OUT.  May be NULL. */);
-
 #endif
-
-
 #endif

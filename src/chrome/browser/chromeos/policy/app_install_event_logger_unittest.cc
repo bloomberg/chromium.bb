@@ -23,7 +23,7 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -96,10 +96,9 @@ void SetPolicy(policy::PolicyMap* map,
 class AppInstallEventLoggerTest : public testing::Test {
  protected:
   AppInstallEventLoggerTest()
-      : browser_thread_bundle_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::
-                QUEUED) {}
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED) {}
 
   void SetUp() override {
     RegisterLocalState(pref_service_.registry());
@@ -125,7 +124,7 @@ class AppInstallEventLoggerTest : public testing::Test {
 
   void TearDown() override {
     logger_.reset();
-    browser_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     chromeos::PowerManagerClient::Shutdown();
     chromeos::NetworkHandler::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
@@ -163,7 +162,7 @@ class AppInstallEventLoggerTest : public testing::Test {
     event_.set_event_type(em::AppInstallReportLogEvent::SUCCESS);
   }
 
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingPrefServiceSimple pref_service_;
 
@@ -255,7 +254,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsDiskSpaceInfo) {
   EXPECT_CALL(*disk_mount_manager_, disks());
   EXPECT_CALL(delegate_,
               Add(std::set<std::string>{kPackageName}, MatchProto(event_)));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 // Adds an event without a timestamp, requesting that disk space information be
@@ -287,7 +286,7 @@ TEST_F(AppInstallEventLoggerTest, AddSetsTimestampAndDiskSpaceInfo) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName},
                              MatchEventExceptTimestamp(event_)))
       .WillOnce(SaveTimestamp<1>(&timestamp));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_LE(before, timestamp);
   EXPECT_GE(after, timestamp);
@@ -346,7 +345,7 @@ TEST_F(AppInstallEventLoggerTest, UpdatePolicy) {
   EXPECT_CALL(delegate_, Add(std::set<std::string>{kPackageName, kPackageName3},
                              MatchEventExceptTimestamp(event_)));
   EXPECT_CALL(*disk_mount_manager_, disks());
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
   // To avoid extra logging.

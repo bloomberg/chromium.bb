@@ -20,7 +20,7 @@
 <translation id="1087788677726983142">Filter für Ereignisstreams ausblenden</translation>
 <translation id="1088219014394087294">Keine Überschriften</translation>
 <translation id="1106741348836243114">Akustisches Feedback (Earcons) aktivieren bzw. deaktivieren</translation>
-<translation id="1120743664840974483">{"a": "Anton", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius","k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto","p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "t": "Theodor", "u": "Ulrich", "v": "Viktor", "w": "Wilhelm","x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
+<translation id="1120743664840974483">{"a": "Anton", "ä": "Ärger", "b": "Berta", "c": "Cäsar", "d": "Dora", "e": "Emil", "f": "Friedrich", "g": "Gustav", "h": "Heinrich", "i": "Ida", "j": "Julius", "k": "Kaufmann", "l": "Ludwig", "m": "Martha", "n": "Nordpol", "o": "Otto", "ö": "Ökonom", "p": "Paula", "q": "Quelle", "r": "Richard", "s": "Samuel", "ß": "Eszett", "t": "Theodor", "u": "Ulrich", "ü": "Übermut", "v": "Viktor", "w": "Wilhelm", "x": "Xanthippe", "y": "Ypsilon", "z": "Zacharias"}</translation>
 <translation id="1120938014254001895">Mit zwei Fingern nach oben wischen</translation>
 <translation id="1124771028211010580">Die aktuelle Displaydarstellung ist "Nebeneinander".</translation>
 <translation id="1126928665165112660">Nicht kursiv</translation>
@@ -69,7 +69,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="1383876407941801731">Suchen</translation>
 <translation id="1385214448885562192">Drücken Sie zum Bestätigen die Eingabetaste, zum Abbrechen die Esc-Taste, zum Aufrufen des nächsten Ergebnisses den Abwärtspfeil und des vorherigen Ergebnisses den Aufwärtspfeil.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Rich-Text-Attribute ansagen</translation>
 <translation id="1405567553485452995">Hellgrün</translation>
 <translation id="1417889266572670458">Marineblau</translation>
 <translation id="1431911867058218151">Pflaume</translation>
@@ -169,6 +168,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="2220529011494928058">Problem melden</translation>
 <translation id="2223693656926968778">Aktion für aktuelles Element durchführen</translation>
 <translation id="225732394367814946">Sprechgeschwindigkeit erhöhen</translation>
+<translation id="2267538686624070261">Rechtschreibfehler wird verlassen</translation>
 <translation id="2267945578749931355">Nächstes Zeichen</translation>
 <translation id="2278490101488436824">Mit drei Fingern nach links wischen</translation>
 <translation id="2281234842553884450">Vorheriger Schieberegler</translation>
@@ -207,6 +207,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="257674075312929031">Gruppe</translation>
 <translation id="2582407057977008361">Aside-Element</translation>
 <translation id="2592212930811759050">Zum Bearbeiten doppeltippen</translation>
+<translation id="2598495320872286378">Grammatikfehler</translation>
 <translation id="2606210917827248971">mit {COUNT,plural, =1{# Eintrag}other{# Einträgen}}</translation>
 <translation id="2614981083756825552">MathML-Layout</translation>
 <translation id="2624431853467395961">Lernmodus öffnen</translation>
@@ -422,7 +423,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4039983576244166038">Zeilenüberschrift leer</translation>
 <translation id="4042843249978639960">Keine nächste Überschrift der Ebene 2</translation>
 <translation id="4043348641337972076">Keine vorherige ARIA-Markierung</translation>
-<translation id="4045764028670444336">Anfang Rechtschreibfehler</translation>
 <translation id="4047216625641135770">Mark-Element</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Gelbgrün</translation>
@@ -484,6 +484,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4372705107434148843">Sprachausgabe anhalten</translation>
 <translation id="4373197658375206385">Kein vorheriges Element, das kein Link ist</translation>
 <translation id="4376316291247992553">Grafik als Braille anzeigen</translation>
+<translation id="437809255587011096">Textstil ansagen</translation>
 <translation id="4378308539633073595">Weiterscrollen</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -504,7 +505,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="4547556996012970016">Nächste Überschrift der Ebene 5</translation>
 <translation id="4562381607973973258">Header-Element</translation>
 <translation id="4569941707103739422">Zum Auswählen von Elementen die Pfeiltaste nach oben oder unten drücken und zum Öffnen des Elements mit der Eingabetaste bestätigen.</translation>
-<translation id="4570424871453628777">Ende Rechtschreibfehler</translation>
 <translation id="4591507479202817876">, ausgewählt</translation>
 <translation id="4597532268155981612">Formular</translation>
 <translation id="4597896406374528575">April</translation>
@@ -727,7 +727,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6037602951055904232">Nach vorn verschieben</translation>
 <translation id="6042826534790431634">Zum Aktivieren Suchtaste + Leertaste drücken.</translation>
 <translation id="6044160928851315051">Bildschirm abdunkeln</translation>
-<translation id="6065293622157674001">Anfang Grammatikfehler</translation>
 <translation id="6082768461603900813">Grundlegende Navigation</translation>
 <translation id="6118126368611144850">Android-Apps für Chrome. Wenn Sie den Play Store auf Ihrem Gerät installiert haben, können Sie vorab einen Blick auf ChromeVox mit Android-Apps werfen. Um die experimentelle Unterstützung auszuprobieren, laden Sie Google Chrome Canary aus dem Play Store herunter.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -760,7 +759,6 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6348869651006731065">Mattes Grau</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{Aufzählungspunkt}other{# Aufzählungspunkte}}</translation>
 <translation id="6355910664415701303">Kein vorheriges Listenelement</translation>
-<translation id="6360318852623800555">Rich-Text-Attribute</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Vorherige Überschrift</translation>
 <translation id="6376999910001533545">Kastanienbraun</translation>
@@ -824,6 +822,7 @@ Wenn Sie die Anleitung abgeschlossen haben, navigieren Sie mit ChromeVox zur Sch
 <translation id="6833103209700200188">Footer-Element</translation>
 <translation id="6858047746862060282">Prolog</translation>
 <translation id="6859876496651143278">Mit einem Finger nach links wischen</translation>
+<translation id="6865519907510167493">Rechtschreibfehler</translation>
 <translation id="6871161210040114857">Groß- und Kleinschreibung wird nicht beachtet.</translation>
 <translation id="6877435256196695200">Keine nächste Grafik</translation>
 <translation id="6897341342232909480">Nach links</translation>
@@ -869,7 +868,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="7143207342074048698">Verbindung wird hergestellt.</translation>
 <translation id="7153618581592392745">Lavendel</translation>
 <translation id="7157306005867877619">Zusammenfassung</translation>
-<translation id="7161425887892204659">Ende Textübereinstimmung</translation>
 <translation id="7161771961008409533">Pop-up-Schaltfläche</translation>
 <translation id="7165714724802225287">Die aktuelle Displaydarstellung ist "Überlappen".</translation>
 <translation id="7167657087543110">Zeichenecho</translation>
@@ -907,7 +905,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Tabelle wird verlassen.</translation>
 <translation id="738899727977260036">Schieferblau</translation>
-<translation id="7392145451309930991">Anfang Textübereinstimmung</translation>
 <translation id="739763518212184081">Vorherige Zeile</translation>
 <translation id="7400575256015741911">Rechtschreibfehler gefunden</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1086,7 +1083,6 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8153880621934657047">Nicht in der Tabelle</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{Unterstrich}other{# Unterstriche}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">ChromeVox-Sprache automatisch erkennen und wechseln.</translation>
 <translation id="8184828902145951186">Zeile</translation>
 <translation id="8186185314313222077">Vollbildmodus an oder aus</translation>
 <translation id="8199231515320852133">Überschriften der aktuellen Zelle ansagen</translation>
@@ -1117,12 +1113,13 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="8446884382197647889">Weitere Informationen</translation>
 <translation id="8455868257606149352">Max.: <ph name="X" /></translation>
 <translation id="84575901236241018">verfügt über den Zugriffsschlüssel <ph name="KEY" />.</translation>
+<translation id="8463645336674919227">Grammatikfehler wird verlassen</translation>
 <translation id="847154984256717791">beschäftigt</translation>
 <translation id="8476408756881832830">Wiedergabe pausieren, wenn eine Sprachausgabe durch ChromeVox stattfindet</translation>
 <translation id="8476508772960940536">Fensterübersicht</translation>
 <translation id="8503360654911991865">Navigationsgenauigkeit verringern</translation>
-<translation id="8504695234784218301">Ende Grammatikfehler</translation>
 <translation id="8520472399088452386">Drehfeld</translation>
+<translation id="8534394844575788431">Formatierung</translation>
 <translation id="8538744478902126321">Zeilenüberschrift für aktuelle Zelle vorschlagen</translation>
 <translation id="8540054775867439484">Umbruch am Seitenanfang</translation>
 <translation id="8542271685829952264">Um alle Befehle und Tastenkombinationen in ChromeVox zu erkunden, drücken Sie "Suche + Punkt" und navigieren Sie dann mit den Pfeiltasten in den Menüs. Mit der Eingabetaste aktivieren Sie einen Befehl. Durch "Suche + o" und anschließend "t" können Sie wieder hierher zurückkehren.</translation>
@@ -1202,6 +1199,7 @@ Um das Chrome-Browsermenü zu öffnen, drücken Sie Alt + F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Kurze Beschreibung der aktuellen Position ansagen</translation>
+<translation id="9151249085738989067">ChromeVox-Stimme je nach Sprache automatisch wechseln</translation>
 <translation id="9153606228985488238">Tonhöhe: <ph name="PERCENT" /> %</translation>
 <translation id="9160096769946561184">Zum Ende der aktuellen Spalte gehen</translation>
 <translation id="9173115498289768110">Lautstärke: <ph name="PERCENT" /> %</translation>

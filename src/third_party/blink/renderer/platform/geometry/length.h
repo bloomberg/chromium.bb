@@ -181,6 +181,11 @@ class PLATFORM_EXPORT Length {
 
   CalculationValue& GetCalculationValue() const;
 
+  // If |this| is calculated, returns the underlying |CalculationValue|. If not,
+  // returns a |CalculationValue| constructed from |GetPixelsAndPercent()|. Hits
+  // a DCHECK if |this| is not a specified value (e.g., 'auto').
+  scoped_refptr<CalculationValue> AsCalculationValue() const;
+
   Length::Type GetType() const { return static_cast<Length::Type>(type_); }
   bool Quirk() const { return quirk_; }
 
@@ -214,8 +219,12 @@ class PLATFORM_EXPORT Length {
     return GetFloatValue() < 0;
   }
 
+  // For the layout purposes, if this |Length| is a block-axis size, see
+  // |IsIntrinsicOrAuto()|, it is usually a better choice.
   bool IsAuto() const { return GetType() == kAuto; }
   bool IsFixed() const { return GetType() == kFixed; }
+  // For the block axis, intrinsic sizes such as `min-content` behave the same
+  // as `auto`. https://www.w3.org/TR/css-sizing-3/#valdef-width-min-content
   bool IsIntrinsicOrAuto() const { return GetType() == kAuto || IsIntrinsic(); }
   bool IsIntrinsic() const {
     return GetType() == kMinContent || GetType() == kMaxContent ||

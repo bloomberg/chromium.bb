@@ -36,15 +36,12 @@ struct ServiceWorkerNavigationLoaderInterceptorParams {
   int process_id = ChildProcessHost::kInvalidUniqueID;
 };
 
-// This class is a work in progress for https://crbug.com/824858. It is used
-// only when NavigationLoaderOnUI is enabled.
-//
 // Handles navigations for service worker clients (windows and web workers).
 // Lives on the UI thread.
 //
 // The corresponding legacy class is ServiceWorkerControlleeRequestHandler which
-// lives on the IO thread. Currently, this class just delegates to the
-// legacy class by posting tasks to it on the IO thread.
+// lives on the service worker context core thread. Currently, this class just
+// delegates to the legacy class by posting tasks to it on the core thread.
 class ServiceWorkerNavigationLoaderInterceptor final
     : public NavigationLoaderInterceptor {
  public:
@@ -60,7 +57,6 @@ class ServiceWorkerNavigationLoaderInterceptor final
   // to the request to the next request handler)
   void MaybeCreateLoader(const network::ResourceRequest& tentative_request,
                          BrowserContext* browser_context,
-                         ResourceContext* resource_context,
                          LoaderCallback callback,
                          FallbackCallback fallback_callback) override;
   // Returns params with the ControllerServiceWorkerInfoPtr if we have found
@@ -69,11 +65,11 @@ class ServiceWorkerNavigationLoaderInterceptor final
   base::Optional<SubresourceLoaderParams> MaybeCreateSubresourceLoaderParams()
       override;
 
-  // These are called back from the IO thread helper functions:
+  // These are called back from the core thread helper functions:
   void LoaderCallbackWrapper(
       base::Optional<SubresourceLoaderParams> subresource_loader_params,
       LoaderCallback loader_callback,
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_io);
+      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread);
   void FallbackCallbackWrapper(FallbackCallback fallback_callback,
                                bool reset_subresource_loader_params);
 
@@ -82,7 +78,7 @@ class ServiceWorkerNavigationLoaderInterceptor final
  private:
   // Given as a callback to NavigationURLLoaderImpl.
   void RequestHandlerWrapper(
-      SingleRequestURLLoaderFactory::RequestHandler handler_on_io,
+      SingleRequestURLLoaderFactory::RequestHandler handler_on_core_thread,
       const network::ResourceRequest& resource_request,
       network::mojom::URLLoaderRequest request,
       network::mojom::URLLoaderClientPtr client);

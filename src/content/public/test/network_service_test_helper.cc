@@ -225,6 +225,11 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     std::move(callback).Run(value);
   }
 
+  void Log(const std::string& message, LogCallback callback) override {
+    LOG(ERROR) << message;
+    std::move(callback).Run();
+  }
+
   void BindRequest(network::mojom::NetworkServiceTestRequest request) {
     bindings_.AddBinding(this, std::move(request));
     if (!registered_as_destruction_observer_) {
@@ -266,9 +271,6 @@ NetworkServiceTestHelper::~NetworkServiceTestHelper() = default;
 
 void NetworkServiceTestHelper::RegisterNetworkBinders(
     service_manager::BinderRegistry* registry) {
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return;
-
   registry->AddInterface(
       base::Bind(&NetworkServiceTestHelper::BindNetworkServiceTestRequest,
                  base::Unretained(this)));

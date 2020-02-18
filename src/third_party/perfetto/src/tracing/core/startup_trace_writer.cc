@@ -23,7 +23,8 @@
 #include "perfetto/ext/base/metatrace.h"
 #include "perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "perfetto/protozero/proto_utils.h"
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
+#include "src/tracing/core/null_trace_writer.h"
 #include "src/tracing/core/patch_list.h"
 #include "src/tracing/core/shared_memory_arbiter_impl.h"
 
@@ -36,12 +37,11 @@ namespace {
 
 static constexpr ChunkID kFirstChunkId = 0;
 
-SharedMemoryABI::Chunk NewChunk(
-    SharedMemoryArbiterImpl* arbiter,
-    WriterID writer_id,
-    ChunkID chunk_id,
-    bool fragmenting_packet,
-    SharedMemoryArbiter::BufferExhaustedPolicy buffer_exhausted_policy) {
+SharedMemoryABI::Chunk NewChunk(SharedMemoryArbiterImpl* arbiter,
+                                WriterID writer_id,
+                                ChunkID chunk_id,
+                                bool fragmenting_packet,
+                                BufferExhaustedPolicy buffer_exhausted_policy) {
   ChunkHeader::Packets packets = {};
   if (fragmenting_packet) {
     packets.count = 1;
@@ -133,15 +133,14 @@ class LocalBufferReader {
 // commit before continuing with the remaining data.
 class LocalBufferCommitter {
  public:
-  LocalBufferCommitter(
-      std::unique_ptr<LocalBufferReader> local_buffer_reader,
-      std::unique_ptr<std::vector<uint32_t>> packet_sizes,
-      base::WeakPtr<SharedMemoryArbiterImpl> arbiter,
-      WriterID writer_id,
-      BufferID target_buffer,
-      size_t chunks_per_batch,
-      SharedMemoryArbiter::BufferExhaustedPolicy buffer_exhausted_policy,
-      SharedMemoryABI::Chunk first_chunk)
+  LocalBufferCommitter(std::unique_ptr<LocalBufferReader> local_buffer_reader,
+                       std::unique_ptr<std::vector<uint32_t>> packet_sizes,
+                       base::WeakPtr<SharedMemoryArbiterImpl> arbiter,
+                       WriterID writer_id,
+                       BufferID target_buffer,
+                       size_t chunks_per_batch,
+                       BufferExhaustedPolicy buffer_exhausted_policy,
+                       SharedMemoryABI::Chunk first_chunk)
       : local_buffer_reader_(std::move(local_buffer_reader)),
         packet_sizes_(std::move(packet_sizes)),
         arbiter_(arbiter),
@@ -340,7 +339,7 @@ class LocalBufferCommitter {
   const WriterID writer_id_;
   const BufferID target_buffer_;
   const size_t chunks_per_batch_;
-  SharedMemoryArbiter::BufferExhaustedPolicy buffer_exhausted_policy_;
+  BufferExhaustedPolicy buffer_exhausted_policy_;
   SharedMemoryABI::Chunk cur_chunk_;
   // We receive the first chunk in the constructor, thus the next chunk will be
   // the second one.
@@ -354,9 +353,11 @@ class LocalBufferCommitter {
 
 StartupTraceWriter::StartupTraceWriter(
     std::shared_ptr<StartupTraceWriterRegistryHandle> registry_handle,
-    SharedMemoryArbiter::BufferExhaustedPolicy buffer_exhausted_policy)
+    BufferExhaustedPolicy buffer_exhausted_policy,
+    size_t max_buffer_size_bytes)
     : registry_handle_(std::move(registry_handle)),
       buffer_exhausted_policy_(buffer_exhausted_policy),
+      max_buffer_size_bytes_(max_buffer_size_bytes),
       memory_buffer_(new protozero::ScatteredHeapBuffer()),
       memory_stream_writer_(
           new protozero::ScatteredStreamWriter(memory_buffer_.get())),
@@ -474,6 +475,28 @@ TraceWriter::TracePacketHandle StartupTraceWriter::NewTracePacket() {
       lock.unlock();
       return trace_writer_->NewTracePacket();
     }
+
+    // Check if we already exceeded the maximum size of the local buffer, and if
+    // so, write into nowhere.
+    if (null_trace_writer_ ||
+        memory_buffer_->GetTotalSize() >= max_buffer_size_bytes_) {
+      if (!null_trace_writer_) {
+        null_trace_writer_.reset(new NullTraceWriter());
+
+        // Write a packet that marks data loss.
+        std::unique_ptr<protos::pbzero::TracePacket> packet(
+            new protos::pbzero::TracePacket());
+        packet->Reset(memory_stream_writer_.get());
+        {
+          TraceWriter::TracePacketHandle handle(packet.get());
+          handle->set_previous_packet_dropped(true);
+        }
+        uint32_t packet_size = packet->Finalize();
+        packet_sizes_->push_back(packet_size);
+      }
+      return null_trace_writer_->NewTracePacket();
+    }
+
     // Not bound. Make sure it stays this way until the TracePacketHandle goes
     // out of scope by setting |write_in_progress_|.
     PERFETTO_DCHECK(!write_in_progress_);
@@ -488,6 +511,7 @@ TraceWriter::TracePacketHandle StartupTraceWriter::NewTracePacket() {
   } else {
     cur_packet_.reset(new protos::pbzero::TracePacket());
   }
+
   cur_packet_->Reset(memory_stream_writer_.get());
   TraceWriter::TracePacketHandle handle(cur_packet_.get());
   // |this| outlives the packet handle.

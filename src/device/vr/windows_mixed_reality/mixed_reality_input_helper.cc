@@ -18,6 +18,7 @@
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/util/gamepad_builder.h"
+#include "device/vr/util/xr_standard_gamepad_builder.h"
 #include "device/vr/windows_mixed_reality/mixed_reality_renderloop.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_location.h"
 #include "device/vr/windows_mixed_reality/wrappers/wmr_input_manager.h"
@@ -53,10 +54,10 @@ MixedRealityInputHelper::ControllerState::~ControllerState() = default;
 namespace {
 
 // Helpers for WebVR Gamepad
-constexpr double kDeadzoneMinimum = 0.1;
+constexpr double kThumbstickDeadzone = 0.15;
 
-double ApplyAxisDeadzone(double value) {
-  return std::fabs(value) < kDeadzoneMinimum ? 0 : value;
+double ApplyAxisDeadzone(double value, double deadzone) {
+  return std::fabs(value) < deadzone ? 0 : value;
 }
 
 void AddButton(mojom::XRGamepadPtr& gamepad,
@@ -77,8 +78,12 @@ void AddButton(mojom::XRGamepadPtr& gamepad,
 // have an X and Y.
 void AddAxes(mojom::XRGamepadPtr& gamepad,
              const GamepadBuilder::ButtonData& data) {
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis));
-  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis));
+  const double deadzone =
+      data.type == GamepadBuilder::ButtonData::Type::kThumbstick
+          ? kThumbstickDeadzone
+          : 0.0;
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.x_axis, deadzone));
+  gamepad->axes.push_back(ApplyAxisDeadzone(data.y_axis, deadzone));
 }
 
 void AddButtonWithAxes(mojom::XRGamepadPtr& gamepad,
@@ -235,21 +240,17 @@ base::Optional<Gamepad> GetWebXRGamepad(ParsedInputState& input_state) {
   if (input_state.source_state && input_state.source_state->description)
     handedness = input_state.source_state->description->handedness;
 
-  // TODO(https://crbug.com/942201): Get correct ID string once WebXR spec issue
-  // #550 (https://github.com/immersive-web/webxr/issues/550) is resolved.
-  GamepadBuilder builder("windows-mixed-reality", GamepadMapping::kXrStandard,
-                         handedness);
+  XRStandardGamepadBuilder builder(handedness);
+  builder.SetPrimaryButton(input_state.button_data[ButtonName::kSelect]);
+  builder.SetSecondaryButton(input_state.button_data[ButtonName::kGrip]);
 
-  builder.SetAxisDeadzone(kDeadzoneMinimum);
+  // button_data will either have both kTouchpad and kThumbstick, or neither.
+  if (input_state.button_data.find(ButtonName::kTouchpad) !=
+      input_state.button_data.end()) {
+    builder.SetTouchpadData(input_state.button_data[ButtonName::kTouchpad]);
+    builder.SetThumbstickData(input_state.button_data[ButtonName::kThumbstick]);
+  }
 
-  // The order of these buttons is dictated by the xr-standard Gamepad mapping.
-  // Thumbstick is considered the primary 2D input axis, while the touchpad is
-  // the secondary 2D input axis.  If any of these are missing, map will give
-  // us a default version, which is fine.
-  builder.AddButton(input_state.button_data[ButtonName::kSelect]);
-  builder.AddButton(input_state.button_data[ButtonName::kThumbstick]);
-  builder.AddButton(input_state.button_data[ButtonName::kGrip]);
-  builder.AddButton(input_state.button_data[ButtonName::kTouchpad]);
   return builder.GetGamepad();
 }
 
@@ -264,7 +265,7 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.pressed = source_state->IsSelectPressed();
   data.touched = data.pressed;
   data.value = source_state->SelectPressedValue();
-  data.has_both_axes = false;
+  data.type = GamepadBuilder::ButtonData::Type::kButton;
   button_map[ButtonName::kSelect] = data;
 
   // Add the grip button
@@ -272,7 +273,7 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.pressed = source_state->IsGrasped();
   data.touched = data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
-  data.has_both_axes = false;
+  data.type = GamepadBuilder::ButtonData::Type::kButton;
   button_map[ButtonName::kGrip] = data;
 
   // Select and grip are the only two required buttons, if we can't get the
@@ -286,9 +287,8 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.touched = data.pressed;
   data.value = data.pressed ? 1.0 : 0.0;
 
-  // TODO(https://crbug.com/966060): Determine if inverting the y value here is
-  // necessary.
-  data.has_both_axes = true;
+  // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
+  data.type = GamepadBuilder::ButtonData::Type::kThumbstick;
   data.x_axis = source_state->ThumbstickX();
   data.y_axis = -source_state->ThumbstickY();
 
@@ -301,10 +301,9 @@ std::unordered_map<ButtonName, GamepadBuilder::ButtonData> ParseButtonState(
   data.value = data.pressed ? 1.0 : 0.0;
 
   // The Touchpad does have Axes, but if it's not touched, they are 0.
-  data.has_both_axes = true;
+  data.type = GamepadBuilder::ButtonData::Type::kTouchpad;
   if (data.touched) {
-    // TODO(https://crbug.com/966060): Determine if inverting the y value here
-    // is necessary.
+    // Invert the y axis because -1 is up in the Gamepad API, but down in WMR.
     data.x_axis = source_state->TouchpadX();
     data.y_axis = -source_state->TouchpadY();
   } else {
@@ -392,6 +391,10 @@ uint32_t GetSourceId(const WMRInputSource* source) {
 
   return id;
 }
+
+const unsigned short kSamsungVendorId = 1118;
+const unsigned short kSamsungOdysseyProductId = 1629;
+
 }  // namespace
 
 MixedRealityInputHelper::MixedRealityInputHelper(
@@ -399,8 +402,7 @@ MixedRealityInputHelper::MixedRealityInputHelper(
     const base::WeakPtr<MixedRealityRenderLoop>& weak_render_loop)
     : hwnd_(hwnd),
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_render_loop_(weak_render_loop),
-      weak_ptr_factory_(this) {}
+      weak_render_loop_(weak_render_loop) {}
 
 MixedRealityInputHelper::~MixedRealityInputHelper() {
   // Dispose must be called before destruction, which ensures that we're
@@ -560,16 +562,28 @@ ParsedInputState MixedRealityInputHelper::ParseWindowsSourceState(
   } else if (is_controller) {
     description->target_ray_mode = device::mojom::XRTargetRayMode::POINTING;
     description->handedness = WindowsToMojoHandedness(source->Handedness());
+
+    // If we know the particular headset/controller model, add this to the
+    // profiles array.
+    if (input_state.vendor_id == kSamsungVendorId &&
+        input_state.product_id == kSamsungOdysseyProductId) {
+      description->profiles.push_back("samsung-odyssey");
+    }
+
+    description->profiles.push_back("windows-mixed-reality");
+
+    // This makes it clear that the controller actually has a grip button and
+    // touchpad and thumbstick input. Otherwise, it's ambiguous whether slots
+    // like the touchpad buttons + axes are hooked up vs just placeholders.
+    description->profiles.push_back("grip-touchpad-thumbstick-controller");
+
+    source_state->gamepad = GetWebXRGamepad(input_state);
   } else {
     NOTREACHED();
   }
 
   source_state->description = std::move(description);
-
   input_state.source_state = std::move(source_state);
-
-  input_state.source_state->gamepad = GetWebXRGamepad(input_state);
-
   return input_state;
 }
 

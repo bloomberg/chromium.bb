@@ -48,6 +48,11 @@ public interface ContactsPickerListener {
      * Called when the user has selected an action. For possible actions see above.
      *
      * @param contacts The list of contacts selected.
+     * @param percentageShared How big a percentage of the full contact list was shared (for metrics
+     *         purposes).
+     * @param propertiesRequested The properties requested by the website (names, emails,
+     *         telephones).
      */
-    void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts);
+    void onContactsPickerUserAction(@ContactsPickerAction int action, List<Contact> contacts,
+            int percentageShared, int propertiesRequested);
 }

@@ -6,7 +6,9 @@
 #define UI_VIEWS_TEST_WIDGET_TEST_H_
 
 #include <memory>
+#include <utility>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"
@@ -44,7 +46,14 @@ class WidgetTest : public ViewsTestBase {
 
   using WidgetAutoclosePtr = std::unique_ptr<Widget, WidgetCloser>;
 
-  WidgetTest();
+  // Constructs an AshTestBase with |traits| being forwarded to its
+  // TaskEnvironment. |ViewsTestBase::SubclassManagesTaskEnvironment()|
+  // can also be passed as a sole trait to indicate that this WidgetTest's
+  // subclass will manage the task environment.
+  template <typename... TaskEnvironmentTraits>
+  NOINLINE explicit WidgetTest(TaskEnvironmentTraits&&... traits)
+      : ViewsTestBase(std::forward<TaskEnvironmentTraits>(traits)...) {}
+
   ~WidgetTest() override;
 
   // Create Widgets with |native_widget| in InitParams set to an instance of

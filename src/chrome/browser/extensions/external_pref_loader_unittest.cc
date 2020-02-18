@@ -14,7 +14,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/sync/driver/test_sync_service.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -67,8 +67,8 @@ class TestExternalPrefLoader : public ExternalPrefLoader {
         load_callback_(std::move(load_callback)) {}
 
   void LoadOnFileThread() override {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                             std::move(load_callback_));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   std::move(load_callback_));
   }
 
  private:
@@ -90,7 +90,7 @@ class ExternalPrefLoaderTest : public testing::Test {
   Profile* profile() { return profile_.get(); }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestingProfile> profile_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalPrefLoaderTest);

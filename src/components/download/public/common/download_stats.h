@@ -267,21 +267,10 @@ COMPONENTS_DOWNLOAD_EXPORT void RecordDownloadInterrupted(
     int64_t total,
     bool is_parallelizable,
     bool is_parallel_download_enabled,
-    DownloadSource download_source,
-    bool post_content_length_mismatch);
-
-// Record that a download has been classified as malicious.
-COMPONENTS_DOWNLOAD_EXPORT void RecordMaliciousDownloadClassified(
-    DownloadDangerType danger_type);
+    DownloadSource download_source);
 
 // Record a dangerous download accept event.
 COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadAccept(
-    DownloadDangerType danger_type,
-    const base::FilePath& file_path);
-
-// Record a dangerous download discard event.
-COMPONENTS_DOWNLOAD_EXPORT void RecordDangerousDownloadDiscard(
-    DownloadDiscardReason reason,
     DownloadDangerType danger_type,
     const base::FilePath& file_path);
 

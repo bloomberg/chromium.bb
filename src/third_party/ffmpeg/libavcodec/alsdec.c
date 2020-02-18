@@ -507,7 +507,7 @@ static void parcor_to_lpc(unsigned int k, const int32_t *par, int32_t *cof)
     int i, j;
 
     for (i = 0, j = k - 1; i < j; i++, j--) {
-        int tmp1 = ((MUL64(par[k], cof[j]) + (1 << 19)) >> 20);
+        unsigned tmp1 = ((MUL64(par[k], cof[j]) + (1 << 19)) >> 20);
         cof[j]  += ((MUL64(par[k], cof[i]) + (1 << 19)) >> 20);
         cof[i]  += tmp1;
     }
@@ -980,7 +980,7 @@ static int decode_var_block_data(ALSDecContext *ctx, ALSBlockData *bd)
         y = 1 << 19;
 
         for (sb = -opt_order; sb < 0; sb++)
-            y += MUL64(lpc_cof[sb], raw_samples[sb]);
+            y += (uint64_t)MUL64(lpc_cof[sb], raw_samples[sb]);
 
         *raw_samples -= y >> 20;
     }
@@ -1416,7 +1416,7 @@ static SoftFloat_IEEE754 multiply(SoftFloat_IEEE754 a, SoftFloat_IEEE754 b) {
         return_val = 0x80000000U;
     }
 
-    return_val |= (a.exp + b.exp + bit_count - 47) << 23;
+    return_val |= ((unsigned)av_clip(a.exp + b.exp + bit_count - 47, -126, 127) << 23) & 0x7F800000;
     return_val |= mantissa;
     return av_bits2sf_ieee754(return_val);
 }

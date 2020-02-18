@@ -32,6 +32,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_custom_extension_provider.h"
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
@@ -212,7 +213,8 @@ bool ExtensionService::OnExternalExtensionUpdateUrlFound(
         info.extension_id);
   }
 
-  const Extension* extension = GetExtensionById(info.extension_id, true);
+  const Extension* extension = registry_->GetExtensionById(
+      info.extension_id, ExtensionRegistry::COMPATIBILITY);
   if (extension) {
     // Already installed. Skip this install if the current location has higher
     // priority than |info.download_location|, and we aren't doing a
@@ -321,9 +323,9 @@ ExtensionService::ExtensionService(Profile* profile,
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_TERMINATED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED,
-                 content::Source<Profile>(profile_));
+  // The ProfileManager may be null in unit tests.
+  if (g_browser_process->profile_manager())
+    profile_manager_observer_.Add(g_browser_process->profile_manager());
 
   UpgradeDetector::GetInstance()->AddObserver(this);
 
@@ -376,22 +378,8 @@ ExtensionService::~ExtensionService() {
 }
 
 void ExtensionService::Shutdown() {
-  ExtensionManagementFactory::GetInstance()
-      ->GetForBrowserContext(profile())
-      ->RemoveObserver(this);
-}
-
-const Extension* ExtensionService::GetExtensionById(
-    const std::string& id, bool include_disabled) const {
-  int include_mask = ExtensionRegistry::ENABLED;
-  if (include_disabled) {
-    // Include blacklisted and blocked extensions here because there are
-    // hundreds of callers of this function, and many might assume that this
-    // includes those that have been disabled due to blacklisting or blocking.
-    include_mask |= ExtensionRegistry::DISABLED |
-                    ExtensionRegistry::BLACKLISTED | ExtensionRegistry::BLOCKED;
-  }
-  return registry_->GetExtensionById(id, include_mask);
+  ExtensionManagementFactory::GetForBrowserContext(profile())->RemoveObserver(
+      this);
 }
 
 void ExtensionService::Init() {
@@ -770,7 +758,8 @@ void ExtensionService::DisableExtensionWithSource(
            Manifest::IsComponentLocation(source_extension->location()));
   }
 
-  const Extension* extension = GetExtensionById(extension_id, true);
+  const Extension* extension = registry_->GetExtensionById(
+      extension_id, ExtensionRegistry::COMPATIBILITY);
   CHECK(system_->management_policy()->ExtensionMayModifySettings(
       source_extension, extension, nullptr));
   extension_registrar_.DisableExtension(extension_id, disable_reasons);
@@ -1155,7 +1144,7 @@ void ExtensionService::UnloadExtension(const std::string& extension_id,
 void ExtensionService::RemoveComponentExtension(
     const std::string& extension_id) {
   scoped_refptr<const Extension> extension(
-      GetExtensionById(extension_id, false));
+      registry_->GetExtensionById(extension_id, ExtensionRegistry::ENABLED));
   UnloadExtension(extension_id, UnloadedExtensionReason::UNINSTALL);
   if (extension.get()) {
     ExtensionRegistry::Get(profile_)->TriggerOnUninstalled(
@@ -1704,7 +1693,8 @@ bool ExtensionService::OnExternalExtensionFileFound(
   // Before even bothering to unpack, check and see if we already have this
   // version. This is important because these extensions are going to get
   // installed on every startup.
-  const Extension* existing = GetExtensionById(info.extension_id, true);
+  const Extension* existing = registry_->GetExtensionById(
+      info.extension_id, ExtensionRegistry::COMPATIBILITY);
 
   if (existing) {
     // The default apps will have the location set as INTERNAL. Since older
@@ -1750,12 +1740,10 @@ bool ExtensionService::OnExternalExtensionFileFound(
   installer->set_install_immediately(info.install_immediately);
   installer->set_creation_flags(info.creation_flags);
 
-  CRXFileInfo file_info(
-      info.path,
-      info.crx_location == Manifest::EXTERNAL_POLICY
-          ? GetPolicyVerifierFormat(ExtensionPrefs::Get(profile_)
-                                        ->InsecureExtensionUpdatesEnabled())
-          : GetExternalVerifierFormat());
+  CRXFileInfo file_info(info.path,
+                        info.crx_location == Manifest::EXTERNAL_POLICY
+                            ? GetPolicyVerifierFormat()
+                            : GetExternalVerifierFormat());
 #if defined(OS_CHROMEOS)
   InstallLimiter::Get(profile_)->Add(installer, file_info);
 #else
@@ -1822,7 +1810,8 @@ void ExtensionService::Observe(int type,
         // idle to update.  Check all imports of these extensions, too.
         std::set<std::string> import_ids;
         for (auto it = extension_ids.begin(); it != extension_ids.end(); ++it) {
-          const Extension* extension = GetExtensionById(*it, true);
+          const Extension* extension = registry_->GetExtensionById(
+              *it, ExtensionRegistry::COMPATIBILITY);
           if (!extension)
             continue;
           const std::vector<SharedModuleInfo::ImportInfo>& imports =
@@ -1849,14 +1838,9 @@ void ExtensionService::Observe(int type,
       }
 
       process_map->RemoveAllFromProcess(process->GetID());
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
-                         system_->info_map(), process->GetID()));
-      break;
-    }
-    case chrome::NOTIFICATION_PROFILE_DESTRUCTION_STARTED: {
-      OnProfileDestructionStarted();
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(&InfoMap::UnregisterAllExtensionsInProcess,
+                                    system_->info_map(), process->GetID()));
       break;
     }
 
@@ -2010,6 +1994,15 @@ bool ExtensionService::ShouldBlockExtension(const Extension* extension) {
   // Extension object. If |extension| is not loaded, assume it should be
   // blocked.
   return !extension || CanBlockExtension(extension);
+}
+
+void ExtensionService::OnProfileMarkedForPermanentDeletion(Profile* profile) {
+  if (profile != profile_)
+    return;
+
+  ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
+  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it)
+    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
 }
 
 void ExtensionService::ManageBlacklist(
@@ -2177,13 +2170,6 @@ void ExtensionService::UnloadAllExtensionsInternal() {
   // TODO(erikkay) should there be a notification for this?  We can't use
   // EXTENSION_UNLOADED since that implies that the extension has
   // been disabled or uninstalled.
-}
-
-void ExtensionService::OnProfileDestructionStarted() {
-  ExtensionIdSet ids_to_unload = registry_->enabled_extensions().GetIDs();
-  for (auto it = ids_to_unload.begin(); it != ids_to_unload.end(); ++it) {
-    UnloadExtension(*it, UnloadedExtensionReason::PROFILE_SHUTDOWN);
-  }
 }
 
 void ExtensionService::OnInstalledExtensionsLoaded() {

@@ -29,9 +29,9 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -248,7 +248,7 @@ class VisitedLinkTest : public testing::Test {
 
   std::unique_ptr<VisitedLinkMaster> master_;
   TestVisitedLinkDelegate delegate_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 // This test creates and reads some databases to make sure the data is
@@ -653,9 +653,9 @@ class VisitedLinkEventsTest : public content::RenderViewHostTestHarness {
     RenderViewHostTestHarness::TearDown();
   }
 
-  content::BrowserContext* CreateBrowserContext() override {
-    content::BrowserContext* context = new content::TestBrowserContext();
-    CreateVisitedLinkMaster(context);
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override {
+    auto context = std::make_unique<content::TestBrowserContext>();
+    CreateVisitedLinkMaster(context.get());
     return context;
   }
 
@@ -848,10 +848,10 @@ TEST_F(VisitedLinkEventsTest, IgnoreRendererCreationFromDifferentContext) {
 
 class VisitedLinkCompletelyResetEventTest : public VisitedLinkEventsTest {
  public:
-  content::BrowserContext* CreateBrowserContext() override {
-    content::BrowserContext* context = new content::TestBrowserContext();
-    CreateVisitedLinkFile(context);
-    CreateVisitedLinkMaster(context);
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override {
+    auto context = std::make_unique<content::TestBrowserContext>();
+    CreateVisitedLinkFile(context.get());
+    CreateVisitedLinkMaster(context.get());
     return context;
   }
 

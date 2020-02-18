@@ -34,7 +34,6 @@
 #include <memory>
 
 #include "base/containers/span.h"
-#include "base/files/file.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/string_piece.h"
@@ -43,6 +42,8 @@
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_renderer_sink.h"
+#include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -61,11 +62,12 @@
 #include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_rtc_api_name.h"
 #include "third_party/blink/public/platform/web_size.h"
-#include "third_party/blink/public/platform/web_speech_synthesizer.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_error.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
 #include "third_party/blink/public/platform/web_url_loader_factory.h"
+#include "third_party/webrtc/api/video/video_codec_type.h"
+#include "ui/base/resource/scale_factor.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -90,7 +92,6 @@ class Thread;
 }
 
 namespace service_manager {
-class Connector;
 class InterfaceProvider;
 }
 
@@ -111,32 +112,32 @@ class AsyncResolverFactory;
 
 namespace blink {
 
+class ThreadSafeBrowserInterfaceBrokerProxy;
 class InterfaceProvider;
 class Thread;
 struct ThreadCreationParams;
 class WebAudioBus;
 class WebAudioLatencyHint;
-class WebBlobRegistry;
 class WebCrypto;
 class WebDedicatedWorker;
 class WebGraphicsContext3DProvider;
 class WebLocalFrame;
 class WebMediaCapabilitiesClient;
-class WebMediaStreamCenter;
 class WebPrescientNetworking;
 class WebPublicSuffixList;
+class WebRtcAudioDeviceImpl;
 class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
 class WebSecurityOrigin;
-class WebSpeechSynthesizer;
-class WebSpeechSynthesizerClient;
 class WebThemeEngine;
 class WebTransmissionEncodingInfoHandler;
 class WebURLLoaderMockFactory;
 class WebURLResponse;
 class WebURLResponse;
+class WebUserMediaRequest;
+class WebVideoCaptureImplManager;
 
 namespace scheduler {
 class WebThreadScheduler;
@@ -161,6 +162,10 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Used to switch the current platform only for testing.
   // You should not pass in a Platform object that is not fully instantiated.
+  //
+  // NOTE: Instead of calling this directly, us a ScopedTestingPlatformSupport
+  // which will restore the previous platform on exit, preventing tests from
+  // clobbering each other.
   static void SetCurrentPlatformForTesting(Platform*);
 
   // This sets up a minimally viable implementation of blink::Thread without
@@ -170,13 +175,13 @@ class BLINK_PLATFORM_EXPORT Platform {
   static void CreateMainThreadForTesting();
 
   // These are dirty workaround for tests requiring the main thread task runner
-  // from a non-main thread. If your test needs base::ScopedTaskEnvironment
+  // from a non-main thread. If your test needs base::TaskEnvironment
   // and a non-main thread may call MainThread()->GetTaskRunner(), call
   // SetMainThreadTaskRunnerForTesting() in your test fixture's SetUp(), and
   // call UnsetMainThreadTaskRunnerForTesting() in TearDown().
   //
   // TODO(yutak): Ideally, these should be packed in a custom test fixture
-  // along with ScopedTaskEnvironment for reusability.
+  // along with TaskEnvironment for reusability.
   static void SetMainThreadTaskRunnerForTesting();
   static void UnsetMainThreadTaskRunnerForTesting();
 
@@ -188,12 +193,6 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // May return null on some platforms.
   virtual WebThemeEngine* ThemeEngine() { return nullptr; }
-
-  // May return null.
-  virtual std::unique_ptr<WebSpeechSynthesizer> CreateSpeechSynthesizer(
-      WebSpeechSynthesizerClient*) {
-    return nullptr;
-  }
 
   // AppCache  ----------------------------------------------------------
 
@@ -216,11 +215,6 @@ class BLINK_PLATFORM_EXPORT Platform {
       const WebString& device_id) {
     return nullptr;
   }
-
-  // Blob ----------------------------------------------------------------
-
-  // Must return non-null.
-  virtual WebBlobRegistry* GetBlobRegistry() { return nullptr; }
 
   // Database (WebSQL) ---------------------------------------------------
 
@@ -336,7 +330,7 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // A request to fetch contents associated with this URL from metadata cache.
   using FetchCachedCodeCallback =
-      base::OnceCallback<void(base::Time, base::span<const uint8_t>)>;
+      base::OnceCallback<void(base::Time, mojo_base::BigBuffer)>;
   virtual void FetchCachedCode(blink::mojom::CodeCacheType cache_type,
                                const GURL&,
                                FetchCachedCodeCallback) {}
@@ -361,14 +355,14 @@ class BLINK_PLATFORM_EXPORT Platform {
   // Resources -----------------------------------------------------------
 
   // Returns a localized string resource (with substitution parameters).
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name) {
+  virtual WebString QueryLocalizedString(int resource_id) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter) {
     return WebString();
   }
-  virtual WebString QueryLocalizedString(WebLocalizedString::Name,
+  virtual WebString QueryLocalizedString(int resource_id,
                                          const WebString& parameter1,
                                          const WebString& parameter2) {
     return WebString();
@@ -407,8 +401,18 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Resources -----------------------------------------------------------
 
-  // Returns a blob of data corresponding to the named resource.
-  virtual WebData GetDataResource(const char* name) { return WebData(); }
+  // Returns a blob of data corresponding to |resource_id|. This should not be
+  // used for resources which have compress="gzip" in *.grd.
+  virtual WebData GetDataResource(
+      int resource_id,
+      ui::ScaleFactor scale_factor = ui::SCALE_FACTOR_NONE) {
+    return WebData();
+  }
+
+  // Gets a blob of data resource corresponding to |resource_id|, then
+  // uncompresses it. This should be used for resources which have
+  // compress="gzip" in *.grd.
+  virtual WebData UncompressDataResource(int resource_id) { return WebData(); }
 
   // Decodes the in-memory audio file data and returns the linear PCM audio data
   // in the |destination_bus|.
@@ -578,10 +582,6 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual std::unique_ptr<WebRTCCertificateGenerator>
   CreateRTCCertificateGenerator();
 
-  // May return null if WebRTC functionality is not available or out of
-  // resources.
-  virtual std::unique_ptr<WebMediaStreamCenter> CreateMediaStreamCenter();
-
   // Returns the SingleThreadTaskRunner suitable for running WebRTC networking.
   // An rtc::Thread will have already been created.
   // May return null if WebRTC functionality is not implemented.
@@ -593,6 +593,11 @@ class BLINK_PLATFORM_EXPORT Platform {
   // TODO(bugs.webrtc.org/9419): Remove once WebRTC can be built as a component.
   // May return null if WebRTC functionality is not implemented.
   virtual rtc::Thread* GetWebRtcWorkerThreadRtcThread() { return nullptr; }
+
+  virtual scoped_refptr<base::SingleThreadTaskRunner>
+  GetWebRtcSignalingTaskRunner() {
+    return nullptr;
+  }
 
   // May return null if WebRTC functionality is not implemented.
   virtual std::unique_ptr<cricket::PortAllocator> CreateWebRtcPortAllocator(
@@ -611,6 +616,8 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   virtual void UpdateWebRTCAPICount(WebRTCAPIName api_name) {}
 
+  // Checks if the default minimum starting volume value for the AGC is
+  // overridden on the command line.
   virtual base::Optional<double> GetWebRtcMaxCaptureFrameRate() {
     return base::nullopt;
   }
@@ -624,6 +631,32 @@ class BLINK_PLATFORM_EXPORT Platform {
   virtual media::AudioLatency::LatencyType GetAudioSourceLatencyType(
       blink::WebAudioDeviceSourceType source_type) {
     return media::AudioLatency::LATENCY_PLAYBACK;
+  }
+
+  virtual blink::WebRtcAudioDeviceImpl* GetWebRtcAudioDevice() {
+    return nullptr;
+  }
+
+  virtual base::Optional<std::string> GetWebRTCAudioProcessingConfiguration() {
+    return base::nullopt;
+  }
+
+  virtual base::Optional<int> GetAgcStartupMinimumVolume() {
+    return base::nullopt;
+  }
+
+  virtual void TrackGetUserMedia(
+      const blink::WebUserMediaRequest& web_request) {}
+
+  virtual bool IsWebRtcHWH264DecodingEnabled(
+      webrtc::VideoCodecType video_coded_type) {
+    return true;
+  }
+
+  // VideoCapture -------------------------------------------------------
+
+  virtual WebVideoCaptureImplManager* GetVideoCaptureImplManager() {
+    return nullptr;
   }
 
   // WebWorker ----------------------------------------------------------
@@ -651,11 +684,24 @@ class BLINK_PLATFORM_EXPORT Platform {
 
   // Mojo ---------------------------------------------------------------
 
-  virtual service_manager::Connector* GetConnector();
-
+  // DEPRECATED: Use |GetBrowserInterfaceBrokerProxy()| instead. The same
+  // interfaces are reachable through either method.
   virtual InterfaceProvider* GetInterfaceProvider();
 
-  virtual const char* GetBrowserServiceName() const { return ""; }
+  // Callable from any thread. Asks the browser to bind an interface receiver on
+  // behalf of this renderer.
+  //
+  // Note that all GetInterface requests made on this object will hop to the IO
+  // thread before being passed to the browser process.
+  //
+  // Callers should consider scoping their interfaces to a more specific context
+  // before resorting to use of process-scoped interface bindings. Frames and
+  // workers have their own contexts, and their BrowserInterfaceBrokerProxy
+  // instances have less overhead since they don't need to be thread-safe.
+  // Using a more narrowly defined scope when possible is also generally better
+  // for security.
+  virtual ThreadSafeBrowserInterfaceBrokerProxy*
+  GetBrowserInterfaceBrokerProxy();
 
   // Media Capabilities --------------------------------------------------
 

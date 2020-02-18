@@ -26,6 +26,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/drive/test_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/network/test/test_network_connection_tracker.h"
 
 namespace drive {
@@ -62,7 +63,7 @@ OperationTestBase::~OperationTestBase() = default;
 
 void OperationTestBase::SetUp() {
   blocking_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
 
   pref_service_ = std::make_unique<TestingPrefServiceSimple>();
   test_util::RegisterDrivePrefs(pref_service_->registry());
@@ -79,7 +80,7 @@ void OperationTestBase::SetUp() {
   scheduler_ = std::make_unique<JobScheduler>(
       pref_service_.get(), logger_.get(), fake_drive_service_.get(),
       network::TestNetworkConnectionTracker::GetInstance(),
-      blocking_task_runner_.get(), nullptr);
+      blocking_task_runner_.get(), mojo::NullRemote());
 
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       temp_dir_.GetPath(), blocking_task_runner_.get()));
@@ -188,8 +189,8 @@ FileError OperationTestBase::CheckForUpdates() {
 }
 
 OperationTestBase::OperationTestBase(
-    std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle)
-    : thread_bundle_(std::move(thread_bundle)) {}
+    std::unique_ptr<content::BrowserTaskEnvironment> task_environment)
+    : task_environment_(std::move(task_environment)) {}
 
 }  // namespace file_system
 }  // namespace drive

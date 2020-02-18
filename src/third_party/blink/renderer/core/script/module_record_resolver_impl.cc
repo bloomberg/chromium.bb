@@ -13,36 +13,42 @@ namespace blink {
 void ModuleRecordResolverImpl::RegisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
-  if (module_script->Record().IsNull())
+  v8::Local<v8::Module> module = module_script->V8Module();
+  if (module.IsEmpty())
     return;
 
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+  BoxedV8Module* record = MakeGarbageCollected<BoxedV8Module>(isolate, module);
   DVLOG(1) << "ModuleRecordResolverImpl::RegisterModuleScript(url="
            << module_script->BaseURL().GetString()
-           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
-           << ")";
+           << ", hash=" << BoxedV8ModuleHash::GetHash(record) << ")";
 
-  auto result =
-      record_to_module_script_map_.Set(module_script->Record(), module_script);
+  auto result = record_to_module_script_map_.Set(record, module_script);
+
   DCHECK(result.is_new_entry);
 }
 
 void ModuleRecordResolverImpl::UnregisterModuleScript(
     const ModuleScript* module_script) {
   DCHECK(module_script);
-  if (module_script->Record().IsNull())
+  v8::Local<v8::Module> module = module_script->V8Module();
+  if (module.IsEmpty())
     return;
 
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+  BoxedV8Module* record = MakeGarbageCollected<BoxedV8Module>(isolate, module);
   DVLOG(1) << "ModuleRecordResolverImpl::UnregisterModuleScript(url="
            << module_script->BaseURL().GetString()
-           << ", hash=" << ModuleRecordHash::GetHash(module_script->Record())
-           << ")";
+           << ", hash=" << BoxedV8ModuleHash::GetHash(record) << ")";
 
-  record_to_module_script_map_.erase(module_script->Record());
+  record_to_module_script_map_.erase(record);
 }
 
 const ModuleScript* ModuleRecordResolverImpl::GetModuleScriptFromModuleRecord(
-    const ModuleRecord& record) const {
-  const auto it = record_to_module_script_map_.find(record);
+    v8::Local<v8::Module> module) const {
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
+  const auto it = record_to_module_script_map_.find(
+      MakeGarbageCollected<BoxedV8Module>(isolate, module));
   CHECK_NE(it, record_to_module_script_map_.end())
       << "Failed to find ModuleScript corresponding to the "
          "record.[[HostDefined]]";
@@ -52,12 +58,17 @@ const ModuleScript* ModuleRecordResolverImpl::GetModuleScriptFromModuleRecord(
 
 // <specdef
 // href="https://html.spec.whatwg.org/C/#hostresolveimportedmodule(referencingscriptormodule,-specifier)">
-ModuleRecord ModuleRecordResolverImpl::Resolve(
+v8::Local<v8::Module> ModuleRecordResolverImpl::Resolve(
     const String& specifier,
-    const ModuleRecord& referrer,
+    v8::Local<v8::Module> referrer,
     ExceptionState& exception_state) {
+  v8::Isolate* isolate = modulator_->GetScriptState()->GetIsolate();
   DVLOG(1) << "ModuleRecordResolverImpl::resolve(specifier=\"" << specifier
-           << ", referrer.hash=" << ModuleRecordHash::GetHash(referrer) << ")";
+           << ", referrer.hash="
+           << BoxedV8ModuleHash::GetHash(
+                  MakeGarbageCollected<BoxedV8Module>(isolate, referrer))
+           << ")";
+
   // <spec step="3">If referencingScriptOrModule is not null, then:</spec>
   //
   // Currently this function implements the spec before
@@ -96,10 +107,11 @@ ModuleRecord ModuleRecordResolverImpl::Resolve(
   //
   // <spec step="9">Assert: resolved module script's record is not null.</spec>
   DCHECK(module_script);
-  CHECK(!module_script->Record().IsNull());
+  v8::Local<v8::Module> record = module_script->V8Module();
+  CHECK(!record.IsEmpty());
 
   // <spec step="10">Return resolved module script's record.</spec>
-  return module_script->Record();
+  return record;
 }
 
 void ModuleRecordResolverImpl::ContextDestroyed(ExecutionContext*) {

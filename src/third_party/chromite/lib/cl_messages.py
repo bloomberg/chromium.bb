@@ -13,10 +13,15 @@ from chromite.lib import gob_util
 from chromite.lib import patch as cros_patch
 
 
-def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
-                                   sanity=True, infra_fail=False,
-                                   lab_fail=False, no_stat=None,
-                                   retry=False, cl_status_url=None):
+def CreateValidationFailureMessage(pre_cq_trybot,
+                                   change,
+                                   suspects,
+                                   messages,
+                                   sanity=True,
+                                   infra_fail=False,
+                                   lab_fail=False,
+                                   no_stat=None,
+                                   retry=False):
   """Create a message explaining why a validation failure occurred.
 
   Args:
@@ -33,7 +38,6 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
     no_stat: A list of builders which failed prematurely without reporting
       status.
     retry: Whether we should retry automatically.
-    cl_status_url: URL of the CL status viewer for the change.
 
   Returns:
     A string that communicates what happened.
@@ -46,7 +50,7 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
   if messages:
     # Build a list of error messages. We don't want to build a ridiculously
     # long comment, as Gerrit will reject it. See https://crbug.com/236831
-    max_error_len = 20000 / max(1, len(messages))
+    max_error_len = 20000 // max(1, len(messages))
     msg.append('The following build(s) failed:')
     for message in [str(x) for x in messages]:
       if len(message) > max_error_len:
@@ -97,11 +101,6 @@ def CreateValidationFailureMessage(pre_cq_trybot, change, suspects, messages,
                    % other_suspects_str)
 
       assert retry
-
-  if pre_cq_trybot and cl_status_url:
-    msg.append(
-        'We notify the first failure only. Please find the full status at %s.'
-        % cl_status_url)
 
   if retry:
     bot = 'The Pre-Commit Queue' if pre_cq_trybot else 'The Commit Queue'

@@ -7,19 +7,16 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/constants.mojom.h"
 #include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/unguessable_token.h"
-#include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/assistant/internal/proto/google3/assistant/api/client_input/warmer_welcome_input.pb.h"
@@ -37,10 +34,8 @@
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
 #include "libassistant/shared/public/media_manager.h"
 #include "mojo/public/mojom/base/time.mojom.h"
-#include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/media_session/public/mojom/media_session.mojom.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
@@ -131,12 +126,13 @@ ash::mojom::AssistantTimerState GetTimerState(
 }  // namespace
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
-    service_manager::Connector* connector,
+    mojom::Client* client,
     device::mojom::BatteryMonitorPtr battery_monitor,
     Service* service,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo>
         url_loader_factory_info)
-    : media_session_(std::make_unique<AssistantMediaSession>(connector, this)),
+    : client_(client),
+      media_session_(std::make_unique<AssistantMediaSession>(client_, this)),
       action_module_(std::make_unique<action::CrosActionModule>(
           this,
           assistant::features::IsAppSupportEnabled(),
@@ -150,14 +146,15 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       weak_factory_(this) {
   background_thread_.Start();
   platform_api_ = std::make_unique<PlatformApiImpl>(
-      connector, media_session_.get(), std::move(battery_monitor),
+      client_, media_session_.get(), std::move(battery_monitor),
       service_->main_task_runner(), background_thread_.task_runner(),
       service->assistant_state()->locale().value());
 
-  media_session::mojom::MediaControllerManagerPtr controller_manager_ptr;
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&controller_manager_ptr));
-  controller_manager_ptr->CreateActiveMediaController(
+  mojo::Remote<media_session::mojom::MediaControllerManager>
+      media_controller_manager;
+  client->RequestMediaControllerManager(
+      media_controller_manager.BindNewPipeAndPassReceiver());
+  media_controller_manager->CreateActiveMediaController(
       mojo::MakeRequest(&media_controller_));
 }
 
@@ -408,6 +405,13 @@ void AssistantManagerServiceImpl::StartTextInteraction(const std::string& query,
         assistant_client::VoicelessOptions::Modality::TYPING_MODALITY;
   }
 
+  // Cache metadata about this interaction that can be resolved when the
+  // associated conversation turn starts in LibAssistant.
+  options.conversation_turn_id = base::NumberToString(next_interaction_id_++);
+  pending_interactions_[options.conversation_turn_id] =
+      mojom::AssistantInteractionMetadata::New(
+          /*type=*/mojom::AssistantInteractionType::kText, /*query=*/query);
+
   if (base::FeatureList::IsEnabled(
           assistant::features::kEnableTextQueriesWithClientDiscourseContext) &&
       assistant_extra_ && assistant_tree_) {
@@ -468,12 +472,13 @@ void AssistantManagerServiceImpl::DismissNotification(
       dismissed_interaction, "DismissNotification", options, [](auto) {});
 }
 
-void AssistantManagerServiceImpl::OnConversationTurnStarted(bool is_mic_open) {
+void AssistantManagerServiceImpl::OnConversationTurnStartedInternal(
+    const assistant_client::ConversationTurnMetadata& metadata) {
   service_->main_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(
           &AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread,
-          weak_factory_.GetWeakPtr(), is_mic_open));
+          weak_factory_.GetWeakPtr(), metadata));
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnFinished(
@@ -1159,24 +1164,10 @@ void AssistantManagerServiceImpl::OnAndroidAppListRefreshed(
 
 void AssistantManagerServiceImpl::UpdateInternalOptions(
     assistant_client::AssistantManagerInternal* assistant_manager_internal) {
-  // Build user agent string.
-  std::string user_agent;
-  base::StringAppendF(&user_agent,
-                      "Mozilla/5.0 (X11; CrOS %s %s; %s) "
-                      "AppleWebKit/%d.%d (KHTML, like Gecko)",
-                      base::SysInfo::OperatingSystemArchitecture().c_str(),
-                      base::SysInfo::OperatingSystemVersion().c_str(),
-                      base::SysInfo::GetLsbReleaseBoard().c_str(),
-                      WEBKIT_VERSION_MAJOR, WEBKIT_VERSION_MINOR);
-
-  std::string arc_version = chromeos::version_loader::GetARCVersion();
-  if (!arc_version.empty())
-    base::StringAppendF(&user_agent, " ARC/%s", arc_version.c_str());
-
   // Build internal options
   auto* internal_options =
       assistant_manager_internal->CreateDefaultInternalOptions();
-  SetAssistantOptions(internal_options, user_agent,
+  SetAssistantOptions(internal_options,
                       service_->assistant_state()->locale().value(),
                       spoken_feedback_enabled_);
 
@@ -1216,13 +1207,27 @@ void AssistantManagerServiceImpl::MediaSessionMetadataChanged(
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread(
-    bool is_mic_open) {
+    const assistant_client::ConversationTurnMetadata& metadata) {
   platform_api_->GetAudioInputProvider()
       .GetAudioInput()
       .OnConversationTurnStarted();
 
-  interaction_subscribers_.ForAllPtrs([is_mic_open](auto* ptr) {
-    ptr->OnInteractionStarted(/*is_voice_interaction=*/is_mic_open);
+  // Retrieve the cached interaction metadata associated with this conversation
+  // turn or construct a new instance if there's no match in the cache.
+  mojom::AssistantInteractionMetadataPtr metadata_ptr;
+  auto it = pending_interactions_.find(metadata.id);
+  if (it != pending_interactions_.end()) {
+    metadata_ptr = std::move(it->second);
+    pending_interactions_.erase(it);
+  } else {
+    metadata_ptr = mojom::AssistantInteractionMetadata::New();
+    metadata_ptr->type = metadata.is_mic_open
+                             ? mojom::AssistantInteractionType::kVoice
+                             : mojom::AssistantInteractionType::kText;
+  }
+
+  interaction_subscribers_.ForAllPtrs([&metadata_ptr](auto* ptr) {
+    ptr->OnInteractionStarted(metadata_ptr->Clone());
   });
 }
 
@@ -1603,14 +1608,22 @@ void AssistantManagerServiceImpl::SendAssistantFeedback(
 }
 
 void AssistantManagerServiceImpl::UpdateMediaState() {
-  if (media_session_info_ptr_ &&
-      media_session_info_ptr_->state ==
-          media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
-      media_session_info_ptr_->playback_state ==
-          media_session::mojom::MediaPlaybackState::kPlaying) {
-    // It is a intermediate state caused by some providers override the playback
-    // state. We considered it as invalid and skip reporting the state.
-    return;
+  if (media_session_info_ptr_) {
+    if (media_session_info_ptr_->is_sensitive) {
+      // Do not update media state if the session is considered to be sensitive
+      // (off the record profile).
+      return;
+    }
+
+    if (media_session_info_ptr_->state ==
+            media_session::mojom::MediaSessionInfo::SessionState::kSuspended &&
+        media_session_info_ptr_->playback_state ==
+            media_session::mojom::MediaPlaybackState::kPlaying) {
+      // It is an intermediate state caused by some providers override the
+      // playback state. We considered it as invalid and skip reporting the
+      // state.
+      return;
+    }
   }
 
   // MediaSession Integrated providers (include the libassistant internal

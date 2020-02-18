@@ -41,6 +41,12 @@
 #define V4L2_CID_JPEG_CHROMA_QUANTIZATION (V4L2_CID_JPEG_CLASS_BASE + 6)
 #endif
 
+// TODO(b/132589320): remove this once V4L2 header is updated.
+#ifndef V4L2_PIX_FMT_MM21
+// MTK 8-bit block mode, two non-contiguous planes.
+#define V4L2_PIX_FMT_MM21 v4l2_fourcc('M', 'M', '2', '1')
+#endif
+
 namespace media {
 
 class V4L2Queue;
@@ -94,6 +100,10 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   size_t PlanesCount() const;
   // Returns the size of the requested |plane|, in bytes.
   size_t GetPlaneSize(const size_t plane) const;
+  // Set the size of the requested |plane|, in bytes. It is only valid for
+  // USERPTR and DMABUF buffers. When using MMAP buffer, this method triggers a
+  // DCHECK and is a no-op for release builds.
+  void SetPlaneSize(const size_t plane, const size_t size);
   // This method can only be used with MMAP buffers.
   // It will return a pointer to the data of the |plane|th plane.
   // In case of error (invalid plane index or mapping failed), a nullptr is
@@ -107,6 +117,8 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   void SetPlaneBytesUsed(const size_t plane, const size_t bytes_used);
   // Returns the previously-set number of bytes used for |plane|.
   size_t GetPlaneBytesUsed(const size_t plane) const;
+  // Set the data offset for |plane|, in bytes.
+  void SetPlaneDataOffset(const size_t plane, const size_t data_offset);
 
   // Return the VideoFrame underlying this buffer. The VideoFrame's layout
   // will match that of the V4L2 format. This method will *always* return the
@@ -120,7 +132,7 @@ class MEDIA_GPU_EXPORT V4L2WritableBufferRef {
   // Add the request or config store information to |surface|.
   // TODO(acourbot): This method is a temporary hack. Implement proper config
   // store/request API support.
-  void PrepareQueueBuffer(scoped_refptr<V4L2DecodeSurface> surface);
+  void PrepareQueueBuffer(const V4L2DecodeSurface& surface);
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately
@@ -160,12 +172,21 @@ class MEDIA_GPU_EXPORT V4L2ReadableBuffer
  public:
   // Returns whether the V4L2_BUF_FLAG_LAST flag is set for this buffer.
   bool IsLast() const;
+  // Returns whether the V4L2_BUF_FLAG_KEYFRAME flag is set for this buffer.
+  bool IsKeyframe() const;
   // Return the timestamp set by the driver on this buffer.
   struct timeval GetTimeStamp() const;
   // Returns the number of planes in this buffer.
   size_t PlanesCount() const;
   // Returns the number of bytes used for |plane|.
   size_t GetPlaneBytesUsed(size_t plane) const;
+  // Returns the data offset for |plane|.
+  size_t GetPlaneDataOffset(size_t plane) const;
+  // This method can only be used with MMAP buffers.
+  // It will return a pointer to the data of the |plane|th plane.
+  // In case of error (invalid plane index or mapping failed), a nullptr is
+  // returned.
+  const void* GetPlaneMapping(const size_t plane) const;
 
   // Return the V4L2 buffer ID of the underlying buffer.
   // TODO(acourbot) This is used for legacy clients but should be ultimately

@@ -30,7 +30,7 @@ class GenLuciSchedulerTest(cros_test_lib.MockTestCase):
         schedule='funky schedule'
     )
 
-    expected = '''
+    expected = """
 job {
   id: "amd64-generic-paladin"
   acl_sets: "default"
@@ -48,7 +48,7 @@ job {
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerJob(build_config)
     self.assertEqual(result, expected)
@@ -60,7 +60,7 @@ job {
     refs = ['refs/path']
     builds = ['test_build']
 
-    expected = '''
+    expected = """
 trigger {
   id: "simple"
   acl_sets: "default"
@@ -71,7 +71,7 @@ trigger {
   }
   triggers: "test_build"
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerTrigger(
         trigger_name, repo, refs, builds)
@@ -85,7 +85,7 @@ trigger {
     refs = ['refs/path', 'refs/other_path']
     builds = ['test_build_a', 'test_build_b']
 
-    expected = '''
+    expected = """
 trigger {
   id: "complex"
   acl_sets: "default"
@@ -98,7 +98,7 @@ trigger {
   triggers: "test_build_a"
   triggers: "test_build_b"
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerTrigger(
         trigger_name, repo, refs, builds)
@@ -113,7 +113,7 @@ trigger {
         schedule='funky schedule',
     )
 
-    expected = '''
+    expected = """
 job {
   id: "mock_branch-amd64-generic-paladin"
   acl_sets: "default"
@@ -131,7 +131,7 @@ job {
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerJob(build_config)
     self.assertEqual(result, expected)
@@ -143,7 +143,7 @@ job {
         schedule='funky schedule',
     )
 
-    expected = '''
+    expected = """
 job {
   id: "amd64-generic-paladin"
   acl_sets: "default"
@@ -163,7 +163,7 @@ job {
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerJob(build_config)
     self.assertEqual(result, expected)
@@ -175,7 +175,7 @@ job {
         schedule='funky schedule',
     )
 
-    expected = '''
+    expected = """
 job {
   id: "amd64-generic-paladin"
   acl_sets: "default"
@@ -195,7 +195,7 @@ job {
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
-'''
+"""
 
     result = gen_luci_scheduler.genSchedulerJob(build_config)
     self.assertEqual(result, expected)
@@ -272,7 +272,7 @@ job {
         ),
     ]
 
-    expected = '''# Defines buckets on luci-scheduler.appspot.com.
+    expected = """# Defines buckets on luci-scheduler.appspot.com.
 #
 # For schema of this file and documentation see ProjectConfig message in
 # https://github.com/luci/luci-go/blob/master/scheduler/appengine/messages/config.proto
@@ -430,7 +430,7 @@ job {
     properties: "cbb_extra_args:[\\"--buildbot\\"]"
   }
 }
-'''
+"""
     result = gen_luci_scheduler.genLuciSchedulerConfig(
         site_config, branch_configs)
 

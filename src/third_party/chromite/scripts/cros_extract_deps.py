@@ -9,11 +9,12 @@ This produces JSON output for other tools to process.
 """
 
 from __future__ import print_function
+from __future__ import absolute_import
 
 import json
 import os
 
-from parallel_emerge import DepGraphGenerator
+from chromite.lib.depgraph import DepGraphGenerator
 
 from chromite.lib import commandline
 from chromite.lib import cros_build_lib

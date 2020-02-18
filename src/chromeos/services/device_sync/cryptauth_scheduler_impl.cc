@@ -241,6 +241,7 @@ void CryptAuthSchedulerImpl::HandleEnrollmentResult(
 
 void CryptAuthSchedulerImpl::HandleDeviceSyncResult(
     const CryptAuthDeviceSyncResult& device_sync_result) {
+  // Note: "Success" for DeviceSync means no errors, not even non-fatal errors.
   HandleResult(RequestType::kDeviceSync, device_sync_result.IsSuccess(),
                device_sync_result.client_directive());
 }
@@ -428,7 +429,7 @@ base::Optional<base::TimeDelta> CryptAuthSchedulerImpl::GetTimeToNextRequest(
 
   // Recover from failure using immediate retry.
   DCHECK(retry_count > 0);
-  if (retry_count <= client_directive_.retry_attempts()) {
+  if (retry_count < client_directive_.retry_attempts()) {
     return std::max(kZeroTimeDelta,
                     kImmediateRetryDelay - time_since_last_attempt);
   }

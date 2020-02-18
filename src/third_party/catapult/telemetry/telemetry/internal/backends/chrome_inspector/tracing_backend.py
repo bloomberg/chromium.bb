@@ -104,11 +104,16 @@ class TracingBackend(object):
 
   _TRACING_DOMAIN = 'Tracing'
 
-  def __init__(self, inspector_socket, is_tracing_running=False):
+  def __init__(self, inspector_socket, config=None):
     self._inspector_websocket = inspector_socket
     self._inspector_websocket.RegisterDomain(
         self._TRACING_DOMAIN, self._NotificationHandler)
-    self._is_tracing_running = is_tracing_running
+    # If we have a config at this point it means that startup tracing has
+    # already started.
+    self._is_tracing_running = config is not None
+    self._trace_format = None
+    if self._is_tracing_running:
+      self._trace_format = config.chrome_trace_config.trace_format
     self._start_issued = False
     self._can_collect_data = False
     self._has_received_all_tracing_data = False
@@ -136,13 +141,9 @@ class TracingBackend(object):
       raise TracingUnsupportedException(
           'Chrome tracing not supported for this app.')
 
-    # Using 'gzip' compression reduces the amount of data transferred over
-    # websocket. This reduces the time waiting for all data to be received,
-    # especially when the test is running on an android device. Using
-    # compression can save upto 10 seconds (or more) for each story.
-    req = {'method': 'Tracing.start', 'params': {
-        'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip',
-        'traceConfig': chrome_trace_config.GetChromeTraceConfigForDevTools()}}
+    req = _MakeTracingStartRequest(
+        trace_config=chrome_trace_config.GetChromeTraceConfigForDevTools(),
+        trace_format=chrome_trace_config.trace_format)
     logging.info('Start Tracing Request: %r', req)
     response = self._inspector_websocket.SyncRequest(req, timeout)
 
@@ -179,10 +180,7 @@ class TracingBackend(object):
       if not self._start_issued:
         # Tracing is running but start was not issued so, startup tracing must
         # be in effect. Issue another Tracing.start to update the transfer mode.
-        # TODO(caseq): get rid of it when streaming is the default.
-        params = {'transferMode': 'ReturnAsStream', 'streamCompression': 'gzip',
-                  'traceConfig': {}}
-        req = {'method': 'Tracing.start', 'params': params}
+        req = _MakeTracingStartRequest(trace_format=self._trace_format)
         self._inspector_websocket.SendAndIgnoreResponse(req)
 
       req = {'method': 'Tracing.end'}
@@ -324,9 +322,9 @@ class TracingBackend(object):
       if not stream_handle:
         self._has_received_all_tracing_data = True
         return
-      compressed = params.get('streamCompression') == 'gzip'
       trace_handle = self._trace_data_builder.OpenTraceHandleFor(
-          trace_data_module.CHROME_TRACE_PART, compressed=compressed)
+          trace_data_module.CHROME_TRACE_PART,
+          suffix=_GetTraceFileSuffix(params))
       reader = _DevToolsStreamReader(
           self._inspector_websocket, stream_handle, trace_handle)
       reader.Read(self._ReceivedAllTraceDataFromStream)
@@ -343,3 +341,40 @@ class TracingBackend(object):
     req = {'method': 'Tracing.hasCompleted'}
     res = self._inspector_websocket.SyncRequest(req, timeout=10)
     return not res.get('response')
+
+
+def _MakeTracingStartRequest(trace_config=None, trace_format=None):
+  """Build a Tracing.start request with suitable parameters.
+
+  Args:
+    trace_config: A dictionary speficying to Chrome what should be traced.
+      For example: {'recordMode': 'recordUntilFull', 'includedCategories':
+      ['x', 'y'], ...}. It is required to start tracing via DevTools, and
+      should be omitted if startup tracing was already started.
+    trace_format: An optional string identifying the requested format in which
+      to stream the recorded trace back to the client. Chrome currently
+      defaults to JSON if omitted.
+
+  Returns:
+    A dictionary suitable to pass as a DevTools request.
+  """
+  # Using 'gzip' compression reduces the amount of data transferred over
+  # websocket. This reduces the time waiting for all data to be received,
+  # especially when the test is running on an android device. Using
+  # compression can save upto 10 seconds (or more) for each story.
+  params = {
+      'transferMode': 'ReturnAsStream',
+      'streamCompression': 'gzip',
+      'traceConfig': trace_config or {}}
+  if trace_format is not None:
+    params['streamFormat'] = trace_format
+  return  {'method': 'Tracing.start', 'params': params}
+
+
+def _GetTraceFileSuffix(params):
+  suffix = '.' + params.get('traceFormat', 'json')
+  if suffix == '.proto':
+    suffix = '.pb'
+  if params.get('streamCompression') == 'gzip':
+    suffix += '.gz'
+  return suffix

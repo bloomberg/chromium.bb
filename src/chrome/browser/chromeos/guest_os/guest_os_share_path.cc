@@ -67,7 +67,7 @@ void OnVmRestartedForSeneschal(
 }
 
 void OnSeneschalUnsharePathResponse(
-    base::OnceCallback<void(bool, std::string)> callback,
+    guest_os::SuccessCallback callback,
     base::Optional<vm_tools::seneschal::UnsharePathResponse> response) {
   if (!response) {
     std::move(callback).Run(false, "System error");
@@ -81,7 +81,7 @@ void LogErrorResult(const std::string& operation,
                     const base::FilePath& cros_path,
                     const base::FilePath& container_path,
                     bool result,
-                    std::string failure_reason) {
+                    const std::string& failure_reason) {
   if (!result) {
     LOG(WARNING) << "Error " << operation << " " << cros_path << ": "
                  << failure_reason;
@@ -91,8 +91,7 @@ void LogErrorResult(const std::string& operation,
 // Barrier Closure that captures the first instance of error.
 class ErrorCapture {
  public:
-  ErrorCapture(int num_callbacks_left,
-               base::OnceCallback<void(bool, std::string)> callback)
+  ErrorCapture(int num_callbacks_left, guest_os::SuccessCallback callback)
       : num_callbacks_left_(num_callbacks_left),
         callback_(std::move(callback)) {
     DCHECK_GE(num_callbacks_left, 0);
@@ -103,7 +102,7 @@ class ErrorCapture {
   void Run(const base::FilePath& cros_path,
            const base::FilePath& container_path,
            bool success,
-           std::string failure_reason) {
+           const std::string& failure_reason) {
     if (!success) {
       LOG(WARNING) << "Error SharePath=" << cros_path.value()
                    << ", FailureReason=" << failure_reason;
@@ -119,7 +118,7 @@ class ErrorCapture {
 
  private:
   int num_callbacks_left_;
-  base::OnceCallback<void(bool, std::string)> callback_;
+  guest_os::SuccessCallback callback_;
   bool success_ = true;
   std::string first_failure_reason_;
 };  // class
@@ -165,9 +164,10 @@ GuestOsSharePath* GuestOsSharePath::GetForProfile(Profile* profile) {
 
 GuestOsSharePath::GuestOsSharePath(Profile* profile)
     : profile_(profile),
-      sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
-      mount_event_seneschal_callback_(base::BindRepeating(LogErrorResult)) {
+      sequenced_task_runner_(
+          base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                           base::TaskPriority::USER_VISIBLE})),
+      seneschal_callback_(base::BindRepeating(LogErrorResult)) {
   if (auto* vmgr = file_manager::VolumeManager::Get(profile_)) {
     vmgr->AddObserver(this);
   }
@@ -219,7 +219,7 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   base::FilePath drivefs_mount_point_path;
   base::FilePath drivefs_mount_name;
 
-  // Allow MyFiles|Downloads directory and subdirs.
+  // Allow MyFiles directory and subdirs.
   bool allowed_path = false;
   base::FilePath my_files =
       file_manager::util::GetMyFilesFolderForProfile(profile_);
@@ -227,13 +227,8 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
   base::FilePath removable_media(file_manager::util::kRemovableMediaPath);
   if (my_files == path || my_files.AppendRelativePath(path, &relative_path)) {
     allowed_path = true;
-    if (base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume)) {
-      request.set_storage_location(
-          vm_tools::seneschal::SharePathRequest::MY_FILES);
-    } else {
-      request.set_storage_location(
-          vm_tools::seneschal::SharePathRequest::DOWNLOADS);
-    }
+    request.set_storage_location(
+        vm_tools::seneschal::SharePathRequest::MY_FILES);
     request.set_owner_id(crostini::CryptohomeIdForProfile(profile_));
   } else if (base::FeatureList::IsEnabled(chromeos::features::kDriveFs) &&
              integration_service &&
@@ -337,10 +332,9 @@ void GuestOsSharePath::CallSeneschalSharePath(const std::string& vm_name,
       base::BindOnce(&OnSeneschalSharePathResponse, std::move(callback)));
 }
 
-void GuestOsSharePath::CallSeneschalUnsharePath(
-    const std::string& vm_name,
-    const base::FilePath& path,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::CallSeneschalUnsharePath(const std::string& vm_name,
+                                                const base::FilePath& path,
+                                                SuccessCallback callback) {
   vm_tools::seneschal::UnsharePathRequest request;
 
   // Return success if VM is not currently running.
@@ -398,13 +392,12 @@ void GuestOsSharePath::SharePath(const std::string& vm_name,
   CallSeneschalSharePath(vm_name, path, persist, std::move(callback));
 }
 
-void GuestOsSharePath::SharePaths(
-    const std::string& vm_name,
-    std::vector<base::FilePath> paths,
-    bool persist,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::SharePaths(const std::string& vm_name,
+                                  std::vector<base::FilePath> paths,
+                                  bool persist,
+                                  SuccessCallback callback) {
   base::RepeatingCallback<void(const base::FilePath&, const base::FilePath&,
-                               bool, std::string)>
+                               bool, const std::string&)>
       barrier = base::BindRepeating(
           &ErrorCapture::Run,
           base::Owned(new ErrorCapture(paths.size(), std::move(callback))));
@@ -414,11 +407,10 @@ void GuestOsSharePath::SharePaths(
   }
 }
 
-void GuestOsSharePath::UnsharePath(
-    const std::string& vm_name,
-    const base::FilePath& path,
-    bool unpersist,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::UnsharePath(const std::string& vm_name,
+                                   const base::FilePath& path,
+                                   bool unpersist,
+                                   SuccessCallback callback) {
   if (auto* info = FindSharedPathInfo(path)) {
     info->vm_names.erase(vm_name);
     if (info->vm_names.empty()) {
@@ -470,9 +462,8 @@ std::vector<base::FilePath> GuestOsSharePath::GetPersistedSharedPaths(
   return result;
 }
 
-void GuestOsSharePath::SharePersistedPaths(
-    const std::string& vm_name,
-    base::OnceCallback<void(bool, std::string)> callback) {
+void GuestOsSharePath::SharePersistedPaths(const std::string& vm_name,
+                                           SuccessCallback callback) {
   SharePaths(vm_name, GetPersistedSharedPaths(vm_name),
              /*persist=*/false, std::move(callback));
 }
@@ -552,9 +543,9 @@ void GuestOsSharePath::OnVolumeMounted(chromeos::MountError error_code,
       RegisterSharedPath(vm.GetString(), path);
       if (crostini::CrostiniManager::GetForProfile(profile_)->IsVmRunning(
               vm.GetString())) {
-        CallSeneschalSharePath(vm.GetString(), path, false,
-                               base::BindOnce(mount_event_seneschal_callback_,
-                                              "share-on-mount", path));
+        CallSeneschalSharePath(
+            vm.GetString(), path, false,
+            base::BindOnce(seneschal_callback_, "share-on-mount", path));
       }
     }
   }
@@ -575,9 +566,9 @@ void GuestOsSharePath::OnVolumeUnmounted(chromeos::MountError error_code,
       for (auto& vm_name : vm_names) {
         // Unshare with unpersist=false since we still want the path
         // to be persisted when volume is next mounted.
-        UnsharePath(vm_name, path, false /* unpersist */,
-                    base::BindOnce(mount_event_seneschal_callback_,
-                                   "unshare-on-unmount", path, path));
+        UnsharePath(vm_name, path, /*unpersist=*/false,
+                    base::BindOnce(seneschal_callback_, "unshare-on-unmount",
+                                   path, path));
       }
     } else {
       ++it;
@@ -607,49 +598,57 @@ void GuestOsSharePath::RegisterSharedPath(const std::string& vm_name,
   }
 
   shared_paths_.emplace(path, SharedPathInfo(vm_name));
-  if (!no_file_watchers_for_testing_) {
     sequenced_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&GuestOsSharePath::StartFileWatcher,
                                   base::Unretained(this), path));
-  }
 }
 
 void GuestOsSharePath::OnFileChanged(const base::FilePath& path, bool error) {
-  if (shared_paths_.find(path) == shared_paths_.end()) {
+  // Ignore and return if
+  //  * we get error which is set when there are too many inotify watchers.
+  //  * path is no longer registered as shared.
+  //  * path still exists, watcher must have triggered from a modification.
+  if (error || shared_paths_.count(path) == 0 || base::PathExists(path)) {
     return;
   }
-  if (error) {
-    shared_paths_.erase(path);
-    return;
-  }
-  base::PostTaskWithTraits(FROM_HERE, {base::MayBlock()},
-                           base::BindOnce(&GuestOsSharePath::CheckIfPathDeleted,
-                                          base::Unretained(this), path));
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {content::BrowserThread::UI},
+      base::BindOnce(&GuestOsSharePath::GetVolumeMountOnUIThread,
+                     base::Unretained(this), path),
+      base::BindOnce(&GuestOsSharePath::CheckIfVolumeMountRemoved,
+                     base::Unretained(this), path));
 }
 
-void GuestOsSharePath::CheckIfPathDeleted(const base::FilePath& path) {
-  if (base::PathExists(path)) {
-    return;
-  }
-
-  // VolumeManager will be nullptr if running inside a test.
+base::FilePath GuestOsSharePath::GetVolumeMountOnUIThread(
+    const base::FilePath& path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* vmgr = file_manager::VolumeManager::Get(profile_);
   if (!vmgr) {
-    return;
+    return {};
   }
-  // If we can't find the path, check if the volume was unmounted.
-  // FileWatchers may fire before VolumeManager::OnVolumeUnmounted.
   const auto volume_list = vmgr->GetVolumeList();
-  const bool volume_still_mounted = std::any_of(
-      volume_list.begin(), volume_list.end(), [&path](const auto& volume) {
-        return (path == volume->mount_path() ||
-                volume->mount_path().IsParent(path)) &&
-               base::PathExists(volume->mount_path());
-      });
-  if (!volume_still_mounted) {
+  for (const auto& volume : volume_list) {
+    if ((path == volume->mount_path() || volume->mount_path().IsParent(path))) {
+      return volume->mount_path();
+    }
+  }
+  return {};
+}
+
+void GuestOsSharePath::CheckIfVolumeMountRemoved(
+    const base::FilePath& path,
+    const base::FilePath& mount_path) {
+  // If the Volume mount does not exist, then we assume that the path was
+  // not deleted, but the volume was unmounted.  We call seneschal_callback_
+  // for our tests, but otherwise do nothing and assume an UnmountEvent is
+  // coming.
+  if (mount_path.empty() || !base::PathExists(mount_path)) {
+    base::PostTask(
+        FROM_HERE, {content::BrowserThread::UI},
+        base::BindOnce(seneschal_callback_, "ignore-delete-before-unmount",
+                       path, path, true, ""));
     return;
   }
-
   base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
                            base::BindOnce(&GuestOsSharePath::PathDeleted,
                                           base::Unretained(this), path));
@@ -665,9 +664,9 @@ void GuestOsSharePath::PathDeleted(const base::FilePath& path) {
   // Defensive copy of vm_names since unsharing modifies shared_paths_.
   const std::set<std::string> vm_names(info->vm_names);
   for (auto& vm_name : vm_names) {
-    UnsharePath(vm_name, path, true /* unpersist */,
-                base::BindOnce(mount_event_seneschal_callback_,
-                               "unshare-on-delete", path, path));
+    UnsharePath(
+        vm_name, path, /*unpersist=*/true,
+        base::BindOnce(seneschal_callback_, "unshare-on-delete", path, path));
   }
 }
 

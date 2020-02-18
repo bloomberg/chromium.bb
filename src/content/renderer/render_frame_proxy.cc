@@ -11,7 +11,6 @@
 
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
-#include "components/viz/common/features.h"
 #include "components/viz/common/surfaces/local_surface_id_allocation.h"
 #include "content/common/content_switches_internal.h"
 #include "content/common/frame_message_structs.h"
@@ -253,8 +252,6 @@ void RenderFrameProxy::Init(blink::WebRemoteFrame* web_frame,
       g_frame_proxy_map.Get().insert(std::make_pair(web_frame_, this));
   CHECK(result.second) << "Inserted a duplicate item.";
 
-  enable_surface_synchronization_ = features::IsSurfaceSynchronizationEnabled();
-
   if (parent_is_local)
     compositing_helper_ = std::make_unique<ChildFrameCompositingHelper>(this);
 
@@ -389,8 +386,6 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(RenderFrameProxy, msg)
     IPC_MESSAGE_HANDLER(FrameMsg_ChildFrameProcessGone, OnChildFrameProcessGone)
-    IPC_MESSAGE_HANDLER(FrameMsg_FirstSurfaceActivation,
-                        OnFirstSurfaceActivation)
     IPC_MESSAGE_HANDLER(FrameMsg_IntrinsicSizingInfoOfChildChanged,
                         OnIntrinsicSizingInfoOfChildChanged)
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateOpener, OnUpdateOpener)
@@ -455,21 +450,6 @@ void RenderFrameProxy::OnChildFrameProcessGone() {
   crashed_ = true;
   compositing_helper_->ChildFrameGone(local_frame_size(),
                                       screen_info().device_scale_factor);
-}
-
-void RenderFrameProxy::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
-  DCHECK(!enable_surface_synchronization_);
-
-  // If this WebFrame has already been detached, its parent will be null. This
-  // can happen when swapping a WebRemoteFrame with a WebLocalFrame, where this
-  // message may arrive after the frame was removed from the frame tree, but
-  // before the frame has been destroyed. http://crbug.com/446575.
-  if (!web_frame()->Parent())
-    return;
-
-  compositing_helper_->SetSurfaceId(surface_info.id(), local_frame_size(),
-                                    cc::DeadlinePolicy::UseDefaultDeadline());
 }
 
 void RenderFrameProxy::OnIntrinsicSizingInfoOfChildChanged(
@@ -644,6 +624,11 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       sent_visual_properties_->capture_sequence_number !=
           pending_visual_properties_.capture_sequence_number;
 
+  if (web_frame_) {
+    pending_visual_properties_.compositor_viewport =
+        web_frame_->GetCompositingRect();
+  }
+
   bool synchronized_props_changed =
       !sent_visual_properties_ ||
       sent_visual_properties_->auto_resize_enabled !=
@@ -664,6 +649,8 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
           pending_visual_properties_.page_scale_factor ||
       sent_visual_properties_->is_pinch_gesture_active !=
           pending_visual_properties_.is_pinch_gesture_active ||
+      sent_visual_properties_->compositor_viewport !=
+          pending_visual_properties_.compositor_viewport ||
       capture_sequence_number_changed;
 
   if (synchronized_props_changed) {
@@ -673,16 +660,15 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
             ->GetCurrentLocalSurfaceIdAllocation();
   }
 
-  if (enable_surface_synchronization_) {
-    // If we're synchronizing surfaces, then use an infinite deadline to ensure
-    // everything is synchronized.
-    cc::DeadlinePolicy deadline =
-        capture_sequence_number_changed
-            ? cc::DeadlinePolicy::UseInfiniteDeadline()
-            : cc::DeadlinePolicy::UseDefaultDeadline();
-    viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
-    compositing_helper_->SetSurfaceId(surface_id, local_frame_size(), deadline);
-  }
+  // If we're synchronizing surfaces, then use an infinite deadline to ensure
+  // everything is synchronized.
+  cc::DeadlinePolicy deadline = capture_sequence_number_changed
+                                    ? cc::DeadlinePolicy::UseInfiniteDeadline()
+                                    : cc::DeadlinePolicy::UseDefaultDeadline();
+  viz::SurfaceId surface_id(frame_sink_id_, GetLocalSurfaceId());
+  compositing_helper_->SetSurfaceId(
+      surface_id, pending_visual_properties_.compositor_viewport.size(),
+      deadline);
 
   bool rect_changed = !sent_visual_properties_ ||
                       sent_visual_properties_->screen_space_rect !=
@@ -707,14 +693,6 @@ void RenderFrameProxy::SynchronizeVisualProperties() {
       "FrameHostMsg_SynchronizeVisualProperties", "local_surface_id",
       pending_visual_properties_.local_surface_id_allocation.local_surface_id()
           .ToString());
-
-  // The visible rect that the OOPIF needs to raster depends partially on
-  // parameters that might have changed. If they affect the raster area, resend
-  // the intersection rects.
-  gfx::Rect new_compositor_visible_rect = web_frame_->GetCompositingRect();
-  if (new_compositor_visible_rect != last_compositor_visible_rect_)
-    UpdateRemoteViewportIntersection(last_intersection_rect_,
-                                     last_occlusion_state_);
 }
 
 void RenderFrameProxy::OnSetHasReceivedUserGestureBeforeNavigation(bool value) {
@@ -768,14 +746,12 @@ void RenderFrameProxy::ForwardPostMessage(
     blink::WebLocalFrame* source_frame,
     blink::WebRemoteFrame* target_frame,
     blink::WebSecurityOrigin target_origin,
-    blink::WebDOMMessageEvent event,
-    bool has_user_gesture) {
+    blink::WebDOMMessageEvent event) {
   DCHECK(!web_frame_ || web_frame_ == target_frame);
 
   FrameMsg_PostMessage_Params params;
   params.message =
       new base::RefCountedData<blink::TransferableMessage>(event.AsMessage());
-  params.message->data.has_user_gesture = has_user_gesture;
   params.source_origin = event.Origin().Utf16();
   if (!target_origin.IsNull())
     params.target_origin = target_origin.ToString().Utf16();
@@ -854,12 +830,22 @@ void RenderFrameProxy::FrameRectsChanged(
 void RenderFrameProxy::UpdateRemoteViewportIntersection(
     const blink::WebRect& viewport_intersection,
     blink::FrameOcclusionState occlusion_state) {
-  last_intersection_rect_ = viewport_intersection;
-  last_compositor_visible_rect_ = web_frame_->GetCompositingRect();
-  last_occlusion_state_ = occlusion_state;
+  // If the remote viewport intersection has changed, then we should check if
+  // the compositing rect has also changed: if it has, then we should update the
+  // visible properties.
+  // TODO(wjmaclean): Maybe we should always call SynchronizeVisualProperties()
+  // here? If nothing has changed, it will early out, and it avoids duplicate
+  // checks here.
+  gfx::Rect compositor_visible_rect = web_frame_->GetCompositingRect();
+  bool compositor_visible_rect_changed =
+      compositor_visible_rect != pending_visual_properties_.compositor_viewport;
+
+  if (compositor_visible_rect_changed)
+    SynchronizeVisualProperties();
+
   Send(new FrameHostMsg_UpdateViewportIntersection(
-      routing_id_, gfx::Rect(viewport_intersection),
-      last_compositor_visible_rect_, last_occlusion_state_));
+      routing_id_, gfx::Rect(viewport_intersection), compositor_visible_rect,
+      occlusion_state));
 }
 
 void RenderFrameProxy::VisibilityChanged(
@@ -906,7 +892,7 @@ void RenderFrameProxy::AdvanceFocus(blink::WebFocusType type,
 }
 
 void RenderFrameProxy::FrameFocused() {
-  Send(new FrameHostMsg_FrameFocused(routing_id_));
+  GetFrameProxyHost()->FrameFocused();
 }
 
 base::UnguessableToken RenderFrameProxy::GetDevToolsFrameToken() {
@@ -955,6 +941,26 @@ const viz::LocalSurfaceId& RenderFrameProxy::GetLocalSurfaceId() const {
   return parent_local_surface_id_allocator_
       ->GetCurrentLocalSurfaceIdAllocation()
       .local_surface_id();
+}
+
+mojom::RenderFrameProxyHost* RenderFrameProxy::GetFrameProxyHost() {
+  if (!frame_proxy_host_ptr_.is_bound())
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_proxy_host_ptr_);
+  return frame_proxy_host_ptr_.get();
+}
+
+blink::AssociatedInterfaceProvider*
+RenderFrameProxy::GetRemoteAssociatedInterfaces() {
+  if (!remote_associated_interfaces_) {
+    ChildThreadImpl* thread = ChildThreadImpl::current();
+    blink::mojom::AssociatedInterfaceProviderAssociatedPtr remote_interfaces;
+    thread->GetRemoteRouteProvider()->GetRoute(
+        routing_id_, mojo::MakeRequest(&remote_interfaces));
+    remote_associated_interfaces_ =
+        std::make_unique<blink::AssociatedInterfaceProvider>(
+            std::move(remote_interfaces));
+  }
+  return remote_associated_interfaces_.get();
 }
 
 void RenderFrameProxy::WasEvicted() {

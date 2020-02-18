@@ -36,12 +36,15 @@
 #include "cc/input/event_listener_properties.h"
 #include "cc/input/layer_selection_bound.h"
 #include "cc/input/overscroll_behavior.h"
+#include "cc/layers/layer.h"
+#include "cc/paint/paint_worklet_layer_painter.h"
+#include "cc/trees/layer_tree_host.h"
+#include "components/viz/common/surfaces/frame_sink_id.h"
 #include "services/network/public/mojom/referrer_policy.mojom-shared.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -54,6 +57,7 @@ class SkBitmap;
 
 namespace cc {
 struct ElementId;
+class LayerTreeMutator;
 class ScopedDeferMainFrameUpdate;
 class PaintImage;
 struct ViewportLayers;
@@ -121,8 +125,6 @@ class WebWidgetClient {
   // WebMeaningfulLayout for details.)
   virtual void DidMeaningfulLayout(WebMeaningfulLayout) {}
 
-  virtual void DidFirstLayoutAfterFinishedParsing() {}
-
   // Called when the cursor for the widget changes.
   virtual void DidChangeCursor(const WebCursorInfo&) {}
 
@@ -151,7 +153,8 @@ class WebWidgetClient {
   // returned via a single call to WebWidget::didAcquirePointerLock() or
   // WebWidget::didNotAcquirePointerLock().
   // If false, the request has been denied synchronously.
-  virtual bool RequestPointerLock(WebLocalFrame* requester_frame) {
+  virtual bool RequestPointerLock(WebLocalFrame* requester_frame,
+                                  bool request_unadjusted_movement) {
     return false;
   }
 
@@ -289,7 +292,7 @@ class WebWidgetClient {
   virtual void StartPageScaleAnimation(const gfx::Vector2d& destination,
                                        bool use_anchor,
                                        float new_page_scale,
-                                       double duration_sec) {}
+                                       base::TimeDelta duration) {}
 
   // For when the embedder itself change scales on the page (e.g. devtools)
   // and wants all of the content at the new scale to be crisp.
@@ -348,6 +351,32 @@ class WebWidgetClient {
   virtual void StartDeferringCommits(base::TimeDelta timeout) {}
   // Immediately stop deferring commits.
   virtual void StopDeferringCommits(cc::PaintHoldingCommitTrigger) {}
+
+  // Enable or disable BeginMainFrameNotExpected signals from the compositor,
+  // which are consumed by the blink scheduler.
+  virtual void RequestBeginMainFrameNotExpected(bool request) {}
+
+  // A stable numeric Id for the local root's compositor. For tracing/debugging
+  // purposes.
+  virtual int GetLayerTreeId() const { return 0; }
+
+  // Sets the amount that the browser controls are showing, from 0 (hidden) to 1
+  // (fully shown).
+  virtual void SetBrowserControlsShownRatio(float) {}
+
+  // Set browser controls height. If |shrink_viewport| is set to true, then
+  // Blink shrunk the viewport clip layers by the top and bottom browser
+  // controls height. Top controls will translate the web page down and do not
+  // immediately scroll when hiding. The bottom controls scroll immediately and
+  // never translate the content (only clip it).
+  virtual void SetBrowserControlsHeight(float top_height,
+                                        float bottom_height,
+                                        bool shrink_viewport) {}
+
+  virtual viz::FrameSinkId GetFrameSinkId() {
+    NOTREACHED();
+    return viz::FrameSinkId();
+  }
 };
 
 }  // namespace blink

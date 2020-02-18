@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/url_util.h"
 #include "storage/browser/quota/usage_tracker.h"
@@ -228,7 +228,7 @@ class UsageTrackerTest : public testing::Test {
     return client_list;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   MockQuotaClient quota_client_;

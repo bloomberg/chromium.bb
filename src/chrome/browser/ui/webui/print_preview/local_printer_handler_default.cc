@@ -31,14 +31,17 @@ namespace {
 scoped_refptr<base::TaskRunner> CreatePrinterHandlerTaskRunner() {
   // USER_VISIBLE because the result is displayed in the print preview dialog.
   static constexpr base::TaskTraits kTraits = {
-      base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+      base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE};
 
-#if defined(OS_WIN)
-  // Windows drivers are likely not thread-safe.
-  return base::CreateSingleThreadTaskRunnerWithTraits(kTraits);
-#elif defined(USE_CUPS)
+#if defined(USE_CUPS)
   // CUPS is thread safe.
-  return base::CreateTaskRunnerWithTraits(kTraits);
+  return base::CreateTaskRunner(kTraits);
+#elif defined(OS_WIN)
+  // Windows drivers are likely not thread-safe.
+  return base::CreateSingleThreadTaskRunner(kTraits);
+#else
+  // Be conservative on unsupported platforms.
+  return base::CreateSingleThreadTaskRunner(kTraits);
 #endif
 }
 
@@ -67,14 +70,11 @@ base::Value FetchCapabilitiesAsync(const std::string& device_name) {
 
   VLOG(1) << "Get printer capabilities start for " << device_name;
 
-  if (!print_backend->IsValidPrinter(device_name)) {
+  PrinterBasicInfo basic_info;
+  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info)) {
     LOG(WARNING) << "Invalid printer " << device_name;
     return base::Value();
   }
-
-  PrinterBasicInfo basic_info;
-  if (!print_backend->GetPrinterBasicInfo(device_name, &basic_info))
-    return base::Value();
 
   return GetSettingsOnBlockingPool(device_name, basic_info, additional_papers,
                                    /* has_secure_protocol */ false,

@@ -101,7 +101,7 @@ private:
         uint32_t extraSamplerKey = gpu->getExtraSamplerKeyForProgram(samplerState,
                                                                      proxy->backendFormat());
 
-        fSampler.reset(proxy->textureType(), proxy->config(), samplerState, proxy->textureSwizzle(),
+        fSampler.reset(proxy->textureType(), samplerState, proxy->textureSwizzle(),
                        extraSamplerKey);
         this->setTextureSamplerCnt(1);
         fInPosition = {"position", kFloat2_GrVertexAttribType, kFloat2_GrSLType};
@@ -404,13 +404,20 @@ GR_DRAW_OP_TEST_DEFINE(NonAALatticeOp) {
     desc.fConfig = kRGBA_8888_GrPixelConfig;
     desc.fWidth = random->nextRangeU(1, 1000);
     desc.fHeight = random->nextRangeU(1, 1000);
-    GrSurfaceOrigin origin =
-            random->nextBool() ? kTopLeft_GrSurfaceOrigin : kBottomLeft_GrSurfaceOrigin;
+    GrSurfaceOrigin origin = random->nextBool() ? kTopLeft_GrSurfaceOrigin
+                                                : kBottomLeft_GrSurfaceOrigin;
     const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
-    auto proxy = context->priv().proxyProvider()->createProxy(format, desc, GrRenderable::kNo, 1,
-                                                              origin, SkBackingFit::kExact,
-                                                              SkBudgeted::kYes, GrProtected::kNo);
+            context->priv().caps()->getDefaultBackendFormat(GrColorType::kRGBA_8888,
+                                                            GrRenderable::kNo);
+    auto proxy = context->priv().proxyProvider()->createProxy(format,
+                                                              desc,
+                                                              GrRenderable::kNo,
+                                                              1,
+                                                              origin,
+                                                              GrMipMapped::kNo,
+                                                              SkBackingFit::kExact,
+                                                              SkBudgeted::kYes,
+                                                              GrProtected::kNo);
 
     do {
         if (random->nextBool()) {

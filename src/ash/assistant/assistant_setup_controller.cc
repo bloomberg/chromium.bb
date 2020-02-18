@@ -8,8 +8,7 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/i18n_util.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/voice_interaction_controller.mojom.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -27,7 +26,7 @@ namespace ash {
 
 AssistantSetupController::AssistantSetupController(
     AssistantController* assistant_controller)
-    : assistant_controller_(assistant_controller), weak_ptr_factory_(this) {
+    : assistant_controller_(assistant_controller) {
   assistant_controller_->AddObserver(this);
 }
 
@@ -58,8 +57,8 @@ void AssistantSetupController::OnDeepLinkReceived(
 }
 
 void AssistantSetupController::OnOptInButtonPressed() {
-  if (assistant_controller_->prefs_controller()->prefs()->GetInteger(
-          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+  if (AssistantState::Get()->consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kUnauthorized) {
     assistant_controller_->OpenUrl(assistant::util::CreateLocalizedGURL(
         kGSuiteAdministratorInstructionsUrl));

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/scoped_observer.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/about_signin_internals.h"
@@ -27,7 +27,7 @@
 #include "components/signin/public/identity_manager/identity_test_environment.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -94,9 +94,9 @@ class DiceResponseHandlerTest : public testing::Test,
 
  protected:
   DiceResponseHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO,
-            base::test::ScopedTaskEnvironment::TimeSource::
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::IO,
+            base::test::SingleThreadTaskEnvironment::TimeSource::
                 MOCK_TIME),  // URLRequestContext requires IO.
         signin_client_(&pref_service_),
         identity_test_env_(/*test_url_loader_factory=*/nullptr,
@@ -115,7 +115,8 @@ class DiceResponseHandlerTest : public testing::Test,
     AboutSigninInternals::RegisterPrefs(pref_service_.registry());
     auto account_reconcilor_delegate =
         std::make_unique<signin::DiceAccountReconcilorDelegate>(
-            &signin_client_, signin::AccountConsistencyMethod::kDiceMigration);
+            &signin_client_, signin::AccountConsistencyMethod::kDiceMigration,
+            /*migration_completed=*/false);
     account_reconcilor_ = std::make_unique<AccountReconcilor>(
         identity_test_env_.identity_manager(), &signin_client_,
         std::move(account_reconcilor_delegate));
@@ -178,7 +179,7 @@ class DiceResponseHandlerTest : public testing::Test,
     return identity_test_env_.identity_manager();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   DiceTestSigninClient signin_client_;
@@ -245,7 +246,8 @@ TEST_F(DiceResponseHandlerTest, Signin) {
   // Check that the AccountInfo::is_under_advanced_protection is set.
   EXPECT_TRUE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value()
           .is_under_advanced_protection);
 }
@@ -305,7 +307,8 @@ TEST_F(DiceResponseHandlerTest, SigninRepeatedWithSameAccount) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id));
   EXPECT_FALSE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id)
           .value()
           .is_under_advanced_protection);
 }
@@ -346,7 +349,8 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_1));
   EXPECT_TRUE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_1)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_1)
           .value()
           .is_under_advanced_protection);
   // Simulate GaiaAuthFetcher success for the second request.
@@ -357,7 +361,8 @@ TEST_F(DiceResponseHandlerTest, SigninWithTwoAccounts) {
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account_id_2));
   EXPECT_FALSE(
       identity_manager()
-          ->FindAccountInfoForAccountWithRefreshTokenByAccountId(account_id_2)
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_2)
           .value()
           .is_under_advanced_protection);
   // Check that the reconcilor was blocked and unblocked exactly once.
@@ -444,7 +449,7 @@ TEST_F(DiceResponseHandlerTest, Timeout) {
   EXPECT_EQ(
       1u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
   // Force a timeout.
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       base::TimeDelta::FromSeconds(kDiceTokenFetchTimeoutSeconds + 1));
   EXPECT_EQ(
       0u, dice_response_handler_->GetPendingDiceTokenFetchersCountForTesting());
@@ -693,7 +698,7 @@ TEST_F(DiceResponseHandlerTest, SigninSignoutDifferentAccount) {
 // Tests that the DiceResponseHandler is created for a normal profile but not
 // for an incognito profile.
 TEST(DiceResponseHandlerFactoryTest, NotInIncognito) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   TestingProfile profile;
   EXPECT_THAT(DiceResponseHandler::GetForProfile(&profile), testing::NotNull());
   EXPECT_THAT(

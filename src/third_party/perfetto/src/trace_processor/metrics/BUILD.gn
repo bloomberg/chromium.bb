@@ -13,9 +13,10 @@
 # limitations under the License.
 
 import("../../../gn/perfetto.gni")
+import("../../../gn/test.gni")
 
 sql_files = [
-  "error_statistics.sql",
+  "trace_metadata.sql",
   "android/android_batt.sql",
   "android/android_cpu.sql",
   "android/android_cpu_agg.sql",
@@ -30,7 +31,7 @@ sql_files = [
   "android/android_startup.sql",
   "android/android_startup_cpu.sql",
   "android/android_package_list.sql",
-  "android/heap_profile.sql",
+  "android/heap_profile_callsite_stats.sql",
   "android/process_unagg_mem_view.sql",
   "android/process_mem.sql",
   "android/mem_stats_priority_breakdown.sql",
@@ -65,8 +66,8 @@ source_set("lib") {
     "metrics.h",
   ]
   deps = [
-    "../:sqlite",
     "../../../gn:default_deps",
+    "../../../gn:sqlite",
     "../../../include/perfetto/trace_processor",
     "../../../protos/perfetto/common:zero",
     "../../../protos/perfetto/metrics:zero",
@@ -74,13 +75,14 @@ source_set("lib") {
     "../../../protos/perfetto/trace_processor:metrics_impl_zero",
     "../../base",
     "../../protozero:protozero",
+    "../sqlite",
   ]
   public_deps = [
     ":gen_merged_sql_metrics",
   ]
 }
 
-source_set("unittests") {
+perfetto_unittest_source_set("unittests") {
   testonly = true
   sources = [
     "metrics_unittest.cc",

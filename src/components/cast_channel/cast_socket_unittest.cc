@@ -32,7 +32,7 @@
 #include "components/cast_channel/cast_transport.h"
 #include "components/cast_channel/logger.h"
 #include "components/cast_channel/proto/cast_channel.pb.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "crypto/rsa_private_key.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -371,7 +371,7 @@ class TestSocketFactory : public net::ClientSocketFactory {
 class CastSocketTestBase : public testing::Test {
  protected:
   CastSocketTestBase()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         url_request_context_(true),
         logger_(new Logger()),
         observer_(new MockCastSocketObserver()),
@@ -400,7 +400,7 @@ class CastSocketTestBase : public testing::Test {
 
   TestSocketFactory* client_socket_factory() { return &client_socket_factory_; }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   net::TestURLRequestContext url_request_context_;
   std::unique_ptr<network::NetworkContext> network_context_;
   network::mojom::NetworkContextPtr network_context_ptr_;

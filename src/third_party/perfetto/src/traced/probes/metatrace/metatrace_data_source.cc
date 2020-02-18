@@ -24,7 +24,7 @@
 #include "perfetto/ext/tracing/core/trace_writer.h"
 #include "src/tracing/core/metatrace_writer.h"
 
-#include "perfetto/trace/trace_packet.pbzero.h"
+#include "protos/perfetto/trace/trace_packet.pbzero.h"
 
 namespace perfetto {
 
@@ -49,6 +49,9 @@ void MetatraceDataSource::Start() {
                             metatrace::TAG_ANY);
 }
 
+// This method is also called from StopDataSource with a dummy FlushRequestID
+// (zero), to ensure that the metatrace commits the events recorded during the
+// final flush of the tracing session.
 void MetatraceDataSource::Flush(FlushRequestID,
                                 std::function<void()> callback) {
   metatrace_writer_->WriteAllAndFlushTraceWriter(std::move(callback));

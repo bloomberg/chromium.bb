@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.customtabs;
 
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
-import static android.support.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK;
+import static androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT;
 
 import static org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController.FinishReason.USER_NAVIGATION;
 
@@ -24,15 +24,16 @@ import android.provider.Browser;
 import android.support.annotation.IntDef;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
-import android.support.customtabs.CustomTabsService;
-import android.support.customtabs.CustomTabsSessionToken;
 import android.text.TextUtils;
 import android.util.Pair;
 import android.view.KeyEvent;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.RemoteViews;
+
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsService;
+import androidx.browser.customtabs.CustomTabsSessionToken;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
@@ -51,6 +52,7 @@ import org.chromium.chrome.browser.KeyboardShortcuts;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.appmenu.AppMenuPropertiesDelegate;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantFacade;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.OriginVerifier;
 import org.chromium.chrome.browser.browserservices.SessionDataHolder;
@@ -59,6 +61,8 @@ import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigatio
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabProvider;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler.IntentIgnoringCriterion;
 import org.chromium.chrome.browser.customtabs.content.TabCreationMode;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityComponent;
 import org.chromium.chrome.browser.customtabs.dependency_injection.CustomTabActivityModule;
@@ -71,8 +75,10 @@ import org.chromium.chrome.browser.gsa.GSAState;
 import org.chromium.chrome.browser.incognito.IncognitoTabHost;
 import org.chromium.chrome.browser.incognito.IncognitoTabHostRegistry;
 import org.chromium.chrome.browser.infobar.InfoBarContainer;
-import org.chromium.chrome.browser.net.spdyproxy.DataReductionProxySettings;
 import org.chromium.chrome.browser.night_mode.NightModeStateProvider;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.night_mode.PowerSavingModeMonitor;
+import org.chromium.chrome.browser.night_mode.SystemNightModeMonitor;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabAssociatedApp;
@@ -118,6 +124,7 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     private CustomTabStatusBarColorProvider mCustomTabStatusBarColorProvider;
     private CustomTabToolbarCoordinator mToolbarCoordinator;
     private SessionDataHolder mSessionDataHolder;
+    private CustomTabIntentHandler mCustomTabIntentHandler;
 
     // This is to give the right package name while using the client's resources during an
     // overridePendingTransition call.
@@ -285,7 +292,10 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
     @Override
     protected NightModeStateProvider createNightModeStateProvider() {
-        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher());
+        // This is called before Dagger component is created, so using getInstance() directly.
+        mNightModeStateController = new CustomTabNightModeStateController(getLifecycleDispatcher(),
+                SystemNightModeMonitor.getInstance(),
+                PowerSavingModeMonitor.getInstance());
         return mNightModeStateController;
     }
 
@@ -363,19 +373,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
 
             @Override
             public boolean handleIntent(Intent intent) {
-                if (mIntentHandler.shouldIgnoreIntent(intent)) {
-                    Log.w(TAG, "Incoming intent to Custom Tab was ignored.");
-                    return false;
-                }
-                String url = IntentHandler.getUrlFromIntent(intent);
-                if (TextUtils.isEmpty(url)) return false;
-                LoadUrlParams params = new LoadUrlParams(url);
-
-                params.setUrl(DataReductionProxySettings.getInstance()
-                        .maybeRewriteWebliteUrl(params.getUrl()));
-                mNavigationController.navigate(params,
-                        IntentHandler.getTimestampFromIntent(intent));
-                return true;
+                // This method exists only for legacy reasons, see LaunchIntentDispatcher#
+                // clearTopIntentsForCustomTabsEnabled.
+                return handleNewIntent(intent);
             }
 
             @Override
@@ -409,23 +409,22 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     }
 
     @Override
-    protected void onNewIntent(Intent intent) {
+    public void onNewIntent(Intent intent) {
         Intent originalIntent = getIntent();
         super.onNewIntent(intent);
         // Currently we can't handle arbitrary updates of intent parameters, so make sure
         // getIntent() returns the same intent as before.
         setIntent(originalIntent);
+
+        handleNewIntent(intent);
     }
 
-    @Override
-    public void onNewIntentWithNative(Intent intent) {
-        super.onNewIntentWithNative(intent);
-        mSessionDataHolder.setActiveHandler(mSessionHandler);
-        if (!mSessionDataHolder.handleIntent(intent)) {
-            int flagsToRemove = Intent.FLAG_ACTIVITY_SINGLE_TOP | Intent.FLAG_ACTIVITY_CLEAR_TOP;
-            intent.setFlags(intent.getFlags() & ~flagsToRemove);
-            startActivity(intent);
-        }
+    private boolean handleNewIntent(Intent intent) {
+        // Color scheme doesn't matter here: currently we don't support updating UI using Intents.
+        CustomTabIntentDataProvider dataProvider = new CustomTabIntentDataProvider(intent, this,
+                CustomTabsIntent.COLOR_SCHEME_LIGHT);
+
+        return mCustomTabIntentHandler.onNewIntent(dataProvider);
     }
 
     private void resetPostMessageHandlersForCurrentSession() {
@@ -443,7 +442,6 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public void initializeCompositor() {
         super.initializeCompositor();
         getTabModelSelector().onNativeLibraryReady(getTabContentManager());
-        mBottomBarDelegate.addOverlayPanelManagerObserver();
     }
 
     @Override
@@ -699,19 +697,18 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     public static void showInfoPage(Context context, String url) {
         // TODO(xingliu): The title text will be the html document title, figure out if we want to
         // use Chrome strings here as EmbedContentViewActivity does.
-        CustomTabsIntent customTabIntent = new CustomTabsIntent.Builder()
-                .setShowTitle(true)
-                .setToolbarColor(ApiCompatibilityUtils.getColor(
-                        context.getResources(),
-                        R.color.dark_action_bar_color))
-                .build();
+        CustomTabsIntent customTabIntent =
+                new CustomTabsIntent.Builder()
+                        .setShowTitle(true)
+                        .setColorScheme(NightModeUtils.isInNightMode(context) ? COLOR_SCHEME_DARK
+                                                                              : COLOR_SCHEME_LIGHT)
+                        .build();
         customTabIntent.intent.setData(Uri.parse(url));
 
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 context, customTabIntent.intent);
         intent.setPackage(context.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.INFO_PAGE);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.INFO_PAGE);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
         if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         IntentHandler.addTrustedIntentExtras(intent);
@@ -768,8 +765,13 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
     @Override
     protected CustomTabActivityComponent createComponent(
             ChromeActivityCommonsModule commonsModule) {
+        // mIntentHandler comes from the base class.
+        IntentIgnoringCriterion intentIgnoringCriterion =
+                (intent) -> mIntentHandler.shouldIgnoreIntent(intent);
+
         CustomTabActivityModule customTabsModule =
-                new CustomTabActivityModule(mIntentDataProvider, mNightModeStateController);
+                new CustomTabActivityModule(mIntentDataProvider, mNightModeStateController,
+                        intentIgnoringCriterion);
         CustomTabActivityComponent component =
                 ChromeApplication.getComponent().createCustomTabActivityComponent(
                         commonsModule, customTabsModule);
@@ -785,8 +787,9 @@ public class CustomTabActivity extends ChromeActivity<CustomTabActivityComponent
             if (reason == USER_NAVIGATION) recordClientConnectionStatus();
             handleFinishAndClose();
         });
-        component.resolveInitialPageLoader();
+        mCustomTabIntentHandler = component.resolveIntentHandler();
         mSessionDataHolder = component.getParent().resolveSessionDataHolder();
+        component.resolveCompositorContentInitializer();
 
         if (mIntentDataProvider.isTrustedWebActivity()) {
             component.resolveTrustedWebActivityCoordinator();

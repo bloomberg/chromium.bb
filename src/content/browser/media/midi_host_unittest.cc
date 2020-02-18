@@ -11,11 +11,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "media/midi/midi_manager.h"
 #include "media/midi/midi_service.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -131,13 +134,12 @@ class MidiHostTest : public testing::Test {
     factory_ = factory->GetWeakPtr();
     service_ = std::make_unique<midi::MidiService>(std::move(factory));
     host_ = std::make_unique<MidiHostForTesting>(rph_->GetID(), service_.get());
-    midi::mojom::MidiSessionClientPtr ptr;
-    midi::mojom::MidiSessionClientRequest request = mojo::MakeRequest(&ptr);
-    mojo::MakeStrongBinding(std::make_unique<MidiSessionClientForTesting>(),
-                            std::move(request));
+    mojo::PendingRemote<midi::mojom::MidiSessionClient> client_remote;
+    mojo::MakeSelfOwnedReceiver(std::make_unique<MidiSessionClientForTesting>(),
+                                client_remote.InitWithNewPipeAndPassReceiver());
     midi::mojom::MidiSessionRequest session_request =
         mojo::MakeRequest(&session_);
-    host_->StartSession(std::move(session_request), std::move(ptr));
+    host_->StartSession(std::move(session_request), std::move(client_remote));
   }
   ~MidiHostTest() override {
     session_.reset();
@@ -184,7 +186,7 @@ class MidiHostTest : public testing::Test {
   int GetNumberOfBadMessages() { return rph_->bad_msg_count(); }
 
  private:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> rph_;
 

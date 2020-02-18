@@ -148,7 +148,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
       // serializing DOM.
       param->skip_meta_element = element;
       *need_skip = true;
-    } else if (IsHTMLHtmlElement(*element)) {
+    } else if (IsA<HTMLHtmlElement>(element)) {
       // Check something before processing the open tag of HEAD element.
       // First we add doc type declaration if original document has it.
       if (!param->have_seen_doc_type) {
@@ -160,7 +160,7 @@ String WebFrameSerializerImpl::PreActionBeforeSerializeOpenTag(
       // See http://msdn2.microsoft.com/en-us/library/ms537628(VS.85).aspx.
       result.Append(
           WebFrameSerializer::GenerateMarkOfTheWebDeclaration(param->url));
-    } else if (IsHTMLBaseElement(*element)) {
+    } else if (IsA<HTMLBaseElement>(*element)) {
       // Comment the BASE tag when serializing dom.
       result.Append("<!--");
     }
@@ -200,7 +200,8 @@ String WebFrameSerializerImpl::PostActionAfterSerializeOpenTag(
   if (!param->is_html_document)
     return result.ToString();
   // Check after processing the open tag of HEAD element
-  if (!param->have_added_charset_declaration && IsHTMLHeadElement(*element)) {
+  if (!param->have_added_charset_declaration &&
+      IsA<HTMLHeadElement>(*element)) {
     param->have_added_charset_declaration = true;
     // Check meta element. WebKit only pre-parse the first 512 bytes of the
     // document. If the whole <HEAD> is larger and meta is the end of head
@@ -249,7 +250,7 @@ String WebFrameSerializerImpl::PostActionAfterSerializeEndTag(
   if (!param->is_html_document)
     return result.ToString();
   // Comment the BASE tag when serializing DOM.
-  if (IsHTMLBaseElement(*element)) {
+  if (IsA<HTMLBaseElement>(*element)) {
     result.Append("-->");
     // Append a new base tag declaration.
     result.Append(GenerateBaseTagDeclaration(param->document->BaseTarget()));
@@ -362,7 +363,7 @@ void WebFrameSerializerImpl::OpenTagToString(Element* element,
   // is written even if the original document didn't have that attribute
   // (mainly needed for iframes with srcdoc, but with no src attribute).
   if (should_rewrite_frame_src && !did_rewrite_frame_src &&
-      IsHTMLIFrameElement(element)) {
+      IsA<HTMLIFrameElement>(element)) {
     AppendAttribute(result, param->is_html_document,
                     html_names::kSrcAttr.ToString(), rewritten_frame_link);
   }

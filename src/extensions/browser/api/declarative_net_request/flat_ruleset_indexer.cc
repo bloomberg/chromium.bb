@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "extensions/browser/api/declarative_net_request/indexed_rule.h"
+#include "net/base/escape.h"
 
 namespace extensions {
 namespace declarative_net_request {
@@ -28,17 +29,18 @@ using FlatStringOffset = FlatOffset<flatbuffers::String>;
 using FlatStringListOffset = FlatVectorOffset<flatbuffers::String>;
 
 // Writes to |builder| a flatbuffer vector of shared strings corresponding to
-// |vec| and returns the offset to it. If |vec| is empty, returns an empty
-// offset.
+// |container| and returns the offset to it. If |container| is empty, returns an
+// empty offset.
+template <typename T>
 FlatStringListOffset BuildVectorOfSharedStrings(
     flatbuffers::FlatBufferBuilder* builder,
-    const std::vector<std::string>& vec) {
-  if (vec.empty())
+    const T& container) {
+  if (container.empty())
     return FlatStringListOffset();
 
   std::vector<FlatStringOffset> offsets;
-  offsets.reserve(vec.size());
-  for (const auto& str : vec)
+  offsets.reserve(container.size());
+  for (const std::string& str : container)
     offsets.push_back(builder->CreateSharedString(str));
   return builder->CreateVector(offsets);
 }
@@ -52,6 +54,101 @@ CreateIndexBuilders(flatbuffers::FlatBufferBuilder* builder) {
         std::make_unique<url_pattern_index::UrlPatternIndexBuilder>(builder);
   }
   return result;
+}
+
+FlatOffset<flat::UrlTransform> BuildTransformOffset(
+    flatbuffers::FlatBufferBuilder* builder,
+    const dnr_api::URLTransform& transform) {
+  auto create_string_offset =
+      [builder](const std::unique_ptr<std::string>& str) {
+        if (!str)
+          return FlatStringOffset();
+
+        return builder->CreateSharedString(*str);
+      };
+
+  auto skip_separator_and_create_string_offset =
+      [builder](const std::unique_ptr<std::string>& str, char separator) {
+        if (!str)
+          return FlatStringOffset();
+
+        DCHECK(!str->empty());
+        DCHECK_EQ(separator, str->at(0));
+
+        return builder->CreateSharedString(str->c_str() + 1, str->length() - 1);
+      };
+
+  auto should_clear_component = [](const std::unique_ptr<std::string>& str) {
+    return str && str->empty();
+  };
+
+  const FlatStringOffset kNullOffset;
+
+  FlatStringOffset scheme = create_string_offset(transform.scheme);
+  FlatStringOffset host = create_string_offset(transform.host);
+
+  bool clear_port = should_clear_component(transform.port);
+  FlatStringOffset port =
+      clear_port ? kNullOffset : create_string_offset(transform.port);
+
+  // Don't skip separator for path. Not all paths begin with '/'.
+  bool clear_path = should_clear_component(transform.path);
+  FlatStringOffset path =
+      clear_path ? kNullOffset : create_string_offset(transform.path);
+
+  bool clear_query = should_clear_component(transform.query);
+  FlatStringOffset query =
+      clear_query
+          ? kNullOffset
+          : skip_separator_and_create_string_offset(transform.query, '?');
+
+  bool clear_fragment = should_clear_component(transform.fragment);
+  FlatStringOffset fragment =
+      clear_fragment
+          ? kNullOffset
+          : skip_separator_and_create_string_offset(transform.fragment, '#');
+
+  FlatStringOffset username = create_string_offset(transform.username);
+  FlatStringOffset password = create_string_offset(transform.password);
+
+  FlatStringListOffset remove_query_params;
+  const bool use_plus = true;
+  if (transform.query_transform && transform.query_transform->remove_params) {
+    // Escape, sort and remove duplicates.
+    std::set<std::string> remove_params_escaped;
+    for (const std::string& remove_param :
+         *transform.query_transform->remove_params) {
+      remove_params_escaped.insert(
+          net::EscapeQueryParamValue(remove_param, use_plus));
+    }
+
+    remove_query_params =
+        BuildVectorOfSharedStrings(builder, remove_params_escaped);
+  }
+
+  FlatVectorOffset<flat::QueryKeyValue> add_or_replace_params;
+  if (transform.query_transform &&
+      transform.query_transform->add_or_replace_params &&
+      !transform.query_transform->add_or_replace_params->empty()) {
+    std::vector<FlatOffset<flat::QueryKeyValue>> add_or_replace_queries;
+    add_or_replace_queries.reserve(
+        transform.query_transform->add_or_replace_params->size());
+    for (const dnr_api::QueryKeyValue& query_pair :
+         *transform.query_transform->add_or_replace_params) {
+      FlatStringOffset key = builder->CreateSharedString(
+          net::EscapeQueryParamValue(query_pair.key, use_plus));
+      FlatStringOffset value = builder->CreateSharedString(
+          net::EscapeQueryParamValue(query_pair.value, use_plus));
+      add_or_replace_queries.push_back(
+          flat::CreateQueryKeyValue(*builder, key, value));
+    }
+    add_or_replace_params = builder->CreateVector(add_or_replace_queries);
+  }
+
+  return flat::CreateUrlTransform(*builder, scheme, host, clear_port, port,
+                                  clear_path, path, clear_query, query,
+                                  remove_query_params, add_or_replace_params,
+                                  clear_fragment, fragment, username, password);
 }
 
 }  // namespace
@@ -87,11 +184,22 @@ void FlatRulesetIndexer::AddUrlRule(const IndexedRule& indexed_rule) {
 
   // Store additional metadata required for a redirect rule.
   if (indexed_rule.action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
-    DCHECK(!indexed_rule.redirect_url.empty());
-    FlatStringOffset redirect_url_offset =
-        builder_.CreateSharedString(indexed_rule.redirect_url);
-    metadata_.push_back(flat::CreateUrlRuleMetadata(builder_, indexed_rule.id,
-                                                    redirect_url_offset));
+    DCHECK(indexed_rule.redirect_url || indexed_rule.url_transform);
+
+    if (indexed_rule.redirect_url) {
+      DCHECK(!indexed_rule.redirect_url->empty());
+      FlatStringOffset redirect_url_offset =
+          builder_.CreateSharedString(*indexed_rule.redirect_url);
+      metadata_.push_back(flat::CreateUrlRuleMetadata(
+          builder_, indexed_rule.id, redirect_url_offset,
+          FlatOffset<flat::UrlTransform>()));
+    } else {
+      FlatOffset<flat::UrlTransform> transform_offset =
+          BuildTransformOffset(&builder_, *indexed_rule.url_transform);
+      metadata_.push_back(flat::CreateUrlRuleMetadata(
+          builder_, indexed_rule.id, FlatStringOffset() /* redirect_url */,
+          transform_offset));
+    }
   }
 }
 

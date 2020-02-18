@@ -27,7 +27,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
     case UserSelectableType::kPreferences:
       return {"preferences",
               PREFERENCES,
-              {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES}};
+              {PREFERENCES, DICTIONARY, PRIORITY_PREFERENCES, SEARCH_ENGINES,
+               PRINTERS}};
     case UserSelectableType::kPasswords:
       return {"passwords", PASSWORDS, {PASSWORDS}};
     case UserSelectableType::kAutofill:
@@ -56,6 +57,8 @@ UserSelectableTypeInfo GetUserSelectableTypeInfo(UserSelectableType type) {
               PROXY_TABS,
               {PROXY_TABS, SESSIONS, FAVICON_IMAGES, FAVICON_TRACKING,
                SEND_TAB_TO_SELF}};
+    case UserSelectableType::kWifiConfigurations:
+      return {"wifiConfigurations", WIFI_CONFIGURATIONS, {WIFI_CONFIGURATIONS}};
   }
   NOTREACHED();
   return {nullptr, UNSPECIFIED};

@@ -26,6 +26,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_permission_manager.h"
+#include "content/shell/browser/web_test/web_test_content_index_provider.h"
 #include "content/shell/common/shell_switches.h"
 #include "content/test/mock_background_sync_controller.h"
 
@@ -81,12 +82,6 @@ ShellBrowserContext::~ShellBrowserContext() {
       BrowserThread::IO, FROM_HERE, resource_context_.release());
   }
   ShutdownStoragePartitions();
-  if (url_request_getter_) {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&ShellURLRequestContextGetter::NotifyContextShuttingDown,
-                       url_request_getter_));
-  }
 }
 
 void ShellBrowserContext::InitWhileIOAllowed() {
@@ -169,31 +164,6 @@ DownloadManagerDelegate* ShellBrowserContext::GetDownloadManagerDelegate()  {
   return download_manager_delegate_.get();
 }
 
-ShellURLRequestContextGetter*
-ShellBrowserContext::CreateURLRequestContextGetter(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  return new ShellURLRequestContextGetter(
-      ignore_certificate_errors_, off_the_record_, GetPath(),
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-      protocol_handlers, std::move(request_interceptors));
-}
-
-net::URLRequestContextGetter* ShellBrowserContext::CreateRequestContext(
-    ProtocolHandlerMap* protocol_handlers,
-    URLRequestInterceptorScopedVector request_interceptors) {
-  DCHECK(!url_request_getter_.get());
-  url_request_getter_ = CreateURLRequestContextGetter(
-      protocol_handlers, std::move(request_interceptors));
-  return url_request_getter_.get();
-}
-
-net::URLRequestContextGetter*
-    ShellBrowserContext::CreateMediaRequestContext()  {
-  DCHECK(url_request_getter_.get());
-  return url_request_getter_.get();
-}
-
 ResourceContext* ShellBrowserContext::GetResourceContext()  {
   return resource_context_.get();
 }
@@ -239,6 +209,12 @@ BackgroundSyncController* ShellBrowserContext::GetBackgroundSyncController() {
 BrowsingDataRemoverDelegate*
 ShellBrowserContext::GetBrowsingDataRemoverDelegate() {
   return nullptr;
+}
+
+ContentIndexProvider* ShellBrowserContext::GetContentIndexProvider() {
+  if (!content_index_provider_)
+    content_index_provider_ = std::make_unique<WebTestContentIndexProvider>();
+  return content_index_provider_.get();
 }
 
 }  // namespace content

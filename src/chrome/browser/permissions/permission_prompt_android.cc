@@ -22,21 +22,28 @@ PermissionPromptAndroid::PermissionPromptAndroid(
     Delegate* delegate)
     : web_contents_(web_contents),
       delegate_(delegate),
+      permission_request_notification_(nullptr),
       weak_factory_(this) {
   DCHECK(web_contents);
 
-  if (PermissionDialogDelegate::ShouldShowDialog()) {
-    PermissionDialogDelegate::Create(web_contents_, this);
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents_);
+  if (infobar_service &&
+      GroupedPermissionInfoBarDelegate::ShouldShowMiniInfobar(
+          GetContentSettingType(0u /* position */))) {
+    GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
+                                             infobar_service);
     return;
   }
 
-  InfoBarService* infobar_service =
-      InfoBarService::FromWebContents(web_contents_);
-  if (!infobar_service)
+  if (PermissionRequestNotificationAndroid::ShouldShowAsNotification(
+          GetContentSettingType(0u /* position */))) {
+    permission_request_notification_ =
+        PermissionRequestNotificationAndroid::Create(web_contents_, delegate_);
     return;
+  }
 
-  GroupedPermissionInfoBarDelegate::Create(weak_factory_.GetWeakPtr(),
-                                           infobar_service);
+  PermissionDialogDelegate::Create(web_contents_, this);
 }
 
 PermissionPromptAndroid::~PermissionPromptAndroid() {}
@@ -48,6 +55,12 @@ void PermissionPromptAndroid::UpdateAnchorPosition() {
 gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
   NOTREACHED() << "GetNativeWindow is not implemented";
   return nullptr;
+}
+
+bool PermissionPromptAndroid::ShouldDestroyOnTabSwitching() {
+  if (permission_request_notification_)
+    return true;
+  return false;
 }
 
 void PermissionPromptAndroid::Closing() {
@@ -69,7 +82,7 @@ size_t PermissionPromptAndroid::PermissionCount() const {
 ContentSettingsType PermissionPromptAndroid::GetContentSettingType(
     size_t position) const {
   const std::vector<PermissionRequest*>& requests = delegate_->Requests();
-  DCHECK_LT(position, requests.size());
+  CHECK_LT(position, requests.size());
   return requests[position]->GetContentSettingsType();
 }
 

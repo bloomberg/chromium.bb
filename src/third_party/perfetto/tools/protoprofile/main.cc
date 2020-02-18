@@ -10,20 +10,21 @@
 #include "perfetto/protozero/field.h"
 #include "perfetto/protozero/proto_decoder.h"
 #include "perfetto/protozero/proto_utils.h"
-#include "third_party/pprof/profile.pb.h"
+
+#include "protos/third_party/pprof/profile.pb.h"
 
 namespace perfetto {
 namespace protoprofile {
 namespace {
 
 using protozero::proto_utils::ProtoWireType;
-using GLine = ::perftools::profiles::Line;
-using GMapping = ::perftools::profiles::Mapping;
-using GLocation = ::perftools::profiles::Location;
-using GProfile = ::perftools::profiles::Profile;
-using GValueType = ::perftools::profiles::ValueType;
-using GFunction = ::perftools::profiles::Function;
-using GSample = ::perftools::profiles::Sample;
+using GLine = ::perfetto::third_party::perftools::profiles::Line;
+using GMapping = ::perfetto::third_party::perftools::profiles::Mapping;
+using GLocation = ::perfetto::third_party::perftools::profiles::Location;
+using GProfile = ::perfetto::third_party::perftools::profiles::Profile;
+using GValueType = ::perfetto::third_party::perftools::profiles::ValueType;
+using GFunction = ::perfetto::third_party::perftools::profiles::Function;
+using GSample = ::perfetto::third_party::perftools::profiles::Sample;
 using ::google::protobuf::Descriptor;
 using ::google::protobuf::DynamicMessageFactory;
 using ::google::protobuf::FieldDescriptor;
@@ -325,11 +326,11 @@ int Main(int argc, const char** argv) {
 
   const Descriptor* descriptor;
   DiskSourceTree dst;
-  dst.MapPath("perfetto", "protos/perfetto");
+  dst.MapPath("", "");
   MultiFileErrorCollectorImpl mfe;
   Importer importer(&dst, &mfe);
   const FileDescriptor* parsed_file =
-      importer.Import("perfetto/trace/trace.proto");
+      importer.Import("protos/perfetto/trace/trace.proto");
   DynamicMessageFactory dmf;
   descriptor = parsed_file->message_type(0);
 

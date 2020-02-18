@@ -24,12 +24,13 @@ WebGPUTest::WebGPUTest() = default;
 WebGPUTest::~WebGPUTest() = default;
 
 bool WebGPUTest::WebGPUSupported() const {
+  DCHECK(is_initialized_);  // Did you call WebGPUTest::Initialize?
   return context_ != nullptr;
 }
 
 bool WebGPUTest::WebGPUSharedImageSupported() const {
-  // Currently WebGPUSharedImage is only implemented on Mac
-#if defined(OS_MACOSX) && BUILDFLAG(USE_DAWN)
+  // Currently WebGPUSharedImage is only implemented on Mac and Linux
+#if (defined(OS_MACOSX) || defined(OS_LINUX)) && BUILDFLAG(USE_DAWN)
   return true;
 #else
   return false;
@@ -39,6 +40,9 @@ bool WebGPUTest::WebGPUSharedImageSupported() const {
 void WebGPUTest::SetUp() {
   gpu::GpuPreferences gpu_preferences;
   gpu_preferences.enable_webgpu = true;
+#if defined(OS_LINUX) && BUILDFLAG(USE_DAWN)
+  gpu_preferences.use_vulkan = gpu::VulkanImplementationName::kNative;
+#endif
   gpu_service_holder_ =
       std::make_unique<viz::TestGpuServiceHolder>(gpu_preferences);
 }
@@ -48,6 +52,8 @@ void WebGPUTest::TearDown() {
 }
 
 void WebGPUTest::Initialize(const Options& options) {
+  is_initialized_ = true;
+
   // crbug.com(941685): Vulkan driver crashes on Linux FYI Release (AMD R7 240).
   if (GPUTestBotConfig::CurrentConfigMatches("Linux AMD")) {
     return;
@@ -106,12 +112,13 @@ void WebGPUTest::WaitForCompletion(dawn::Device device) {
 }
 
 TEST_F(WebGPUTest, FlushNoCommands) {
+  Initialize(WebGPUTest::Options());
+
   if (!WebGPUSupported()) {
     LOG(ERROR) << "Test skipped because WebGPU isn't supported";
     return;
   }
 
-  Initialize(WebGPUTest::Options());
   webgpu()->FlushCommands();
 }
 

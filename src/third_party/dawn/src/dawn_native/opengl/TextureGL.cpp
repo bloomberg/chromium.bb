@@ -66,9 +66,9 @@ namespace dawn_native { namespace opengl {
             return handle;
         }
 
-        bool UsageNeedsTextureView(dawn::TextureUsageBit usage) {
-            constexpr dawn::TextureUsageBit kUsageNeedingTextureView =
-                dawn::TextureUsageBit::Storage | dawn::TextureUsageBit::Sampled;
+        bool UsageNeedsTextureView(dawn::TextureUsage usage) {
+            constexpr dawn::TextureUsage kUsageNeedingTextureView =
+                dawn::TextureUsage::Storage | dawn::TextureUsage::Sampled;
             return usage & kUsageNeedingTextureView;
         }
 
@@ -187,6 +187,11 @@ namespace dawn_native { namespace opengl {
                                GLint baseArrayLayer,
                                uint32_t layerCount) {
         const OpenGLFunctions& gl = ToBackend(GetDevice())->gl;
+        // TODO(jiawei.shao@intel.com): initialize the textures with compressed formats.
+        if (GetFormat().isCompressed) {
+            return;
+        }
+
         if (GetFormat().HasDepthOrStencil()) {
             bool doDepthClear = GetFormat().HasDepth();
             bool doStencilClear = GetFormat().HasStencil();
@@ -221,19 +226,24 @@ namespace dawn_native { namespace opengl {
                                     nullptr);
             }
         }
-        SetIsSubresourceContentInitialized(baseMipLevel, levelCount, baseArrayLayer, layerCount);
     }
 
     void Texture::EnsureSubresourceContentInitialized(uint32_t baseMipLevel,
                                                       uint32_t levelCount,
                                                       uint32_t baseArrayLayer,
-                                                      uint32_t layerCount) {
+                                                      uint32_t layerCount,
+                                                      bool isLazyClear) {
         if (!GetDevice()->IsToggleEnabled(Toggle::LazyClearResourceOnFirstUse)) {
             return;
         }
         if (!IsSubresourceContentInitialized(baseMipLevel, levelCount, baseArrayLayer,
                                              layerCount)) {
             ClearTexture(baseMipLevel, levelCount, baseArrayLayer, layerCount);
+            if (isLazyClear) {
+                GetDevice()->IncrementLazyClearCountForTesting();
+            }
+            SetIsSubresourceContentInitialized(baseMipLevel, levelCount, baseArrayLayer,
+                                               layerCount);
         }
     }
 

@@ -8,7 +8,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -21,32 +21,30 @@ using ::testing::Invoke;
 class MultipartUploadRequestTest : public testing::Test {
  public:
   MultipartUploadRequestTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 class MockMultipartUploadRequest : public MultipartUploadRequest {
  public:
-  MockMultipartUploadRequest(const std::string& metadata,
-                             const std::string& data,
-                             Callback callback)
+  MockMultipartUploadRequest()
       : MultipartUploadRequest(nullptr,
                                GURL(),
-                               metadata,
-                               data,
+                               "",
+                               "",
                                TRAFFIC_ANNOTATION_FOR_TESTS,
-                               std::move(callback)) {}
+                               base::DoNothing()) {}
 
-  MOCK_METHOD(void, SendRequest, (), (override));
+  MOCK_METHOD0(SendRequest, void());
 };
 
 TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
-  MultipartUploadRequest request(nullptr, GURL(), "metadata", "data",
-                                 TRAFFIC_ANNOTATION_FOR_TESTS,
-                                 base::DoNothing());
+  std::unique_ptr<MultipartUploadRequest> request =
+      MultipartUploadRequest::Create(nullptr, GURL(), "metadata", "data",
+                                     TRAFFIC_ANNOTATION_FOR_TESTS,
+                                     base::DoNothing());
 
   std::string expected_body =
       "--boundary\r\n"
@@ -59,14 +57,14 @@ TEST_F(MultipartUploadRequestTest, GeneratesCorrectBody) {
       "file data\r\n"
       "--boundary--\r\n";
 
-  request.set_boundary("boundary");
-  EXPECT_EQ(request.GenerateRequestBody("metadata", "file data"),
+  request->set_boundary("boundary");
+  EXPECT_EQ(request->GenerateRequestBody("metadata", "file data"),
             expected_body);
 }
 
 TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
-  MockMultipartUploadRequest mock_request("metadata", "data",
-                                          base::DoNothing());
+  MockMultipartUploadRequest mock_request;
+
   EXPECT_CALL(mock_request, SendRequest())
       .Times(3)
       .WillRepeatedly(Invoke([&mock_request]() {
@@ -74,7 +72,7 @@ TEST_F(MultipartUploadRequestTest, RetriesCorrectly) {
                                    std::make_unique<std::string>("response"));
       }));
   mock_request.Start();
-  thread_bundle_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 }  // namespace safe_browsing

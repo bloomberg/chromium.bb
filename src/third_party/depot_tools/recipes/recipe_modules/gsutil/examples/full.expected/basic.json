@@ -190,6 +190,20 @@
     "name": "gsutil cat"
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "----",
+      "stat",
+      "gs://example/foo"
+    ],
+    "infra_step": true,
+    "name": "gsutil stat"
+  },
+  {
     "name": "$result"
   }
 ]

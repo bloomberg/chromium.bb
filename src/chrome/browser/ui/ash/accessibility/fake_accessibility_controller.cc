@@ -39,9 +39,6 @@ void FakeAccessibilityController::SetSelectToSpeakEventHandlerDelegate(
 void FakeAccessibilityController::SetSwitchAccessEventHandlerDelegate(
     ash::SwitchAccessEventHandlerDelegate* delegate) {}
 
-void FakeAccessibilityController::SetSwitchAccessKeysToCapture(
-    const std::vector<int>& keys_to_capture) {}
-
 void FakeAccessibilityController::SetDictationActive(bool is_active) {}
 
 void FakeAccessibilityController::ToggleDictationFromSource(
@@ -60,3 +57,11 @@ base::string16 FakeAccessibilityController::GetBatteryDescription() const {
 void FakeAccessibilityController::SetVirtualKeyboardVisible(bool is_visible) {}
 
 void FakeAccessibilityController::NotifyAccessibilityStatusChanged() {}
+
+bool FakeAccessibilityController::IsAccessibilityFeatureVisibleInTrayMenu(
+    const std::string& path) {
+  return true;
+}
+
+void FakeAccessibilityController::
+    SetSwitchAccessIgnoreVirtualKeyEventForTesting(bool should_ignore) {}

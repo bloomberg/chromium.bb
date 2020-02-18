@@ -90,12 +90,34 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
 
-  // WindowTreeHostPlatform:
+  // WindowTreeHost:
+  gfx::Transform GetRootTransform() const override;
+
+  // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnCloseRequest() override;
   void OnActivationChanged(bool active) override;
+  base::Optional<gfx::Size> GetMinimumSizeForWindow() override;
+  base::Optional<gfx::Size> GetMaximumSizeForWindow() override;
+
+ protected:
+  // TODO(https://crbug.com/990756): move these methods back to private
+  // once DWTHX11 stops using them.
+  internal::NativeWidgetDelegate* native_widget_delegate() {
+    return native_widget_delegate_;
+  }
+  DesktopNativeWidgetAura* desktop_native_widget_aura() {
+    return desktop_native_widget_aura_;
+  }
+  // Accessor for DesktopNativeWidgetAura::content_window().
+  aura::Window* content_window();
+
+  // These are not general purpose methods and must be used with care. Please
+  // make sure you understand the rounding direction before using.
+  gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
+  gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostPlatformTest, HitTest);
@@ -105,9 +127,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   void RemoveNonClientEventFilter();
 
   Widget* GetWidget();
+  const Widget* GetWidget() const;
 
-  gfx::Rect ToDIPRect(const gfx::Rect& rect_in_pixels) const;
-  gfx::Rect ToPixelRect(const gfx::Rect& rect_in_dip) const;
+  // There are platform specific properties that Linux may want to add.
+  virtual void AddAdditionalInitProperties(
+      const Widget::InitParams& params,
+      ui::PlatformWindowInitProperties* properties);
 
   internal::NativeWidgetDelegate* const native_widget_delegate_;
   DesktopNativeWidgetAura* const desktop_native_widget_aura_;
@@ -118,6 +143,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   bool got_on_closed_ = false;
 
   bool is_active_ = false;
+
+  base::string16 window_title_;
 
 #if defined(OS_LINUX)
   // A handler for events intended for non client area.

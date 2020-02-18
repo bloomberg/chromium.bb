@@ -5,7 +5,7 @@
 #include "jingle/glue/task_pump.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "jingle/glue/mock_task.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -17,7 +17,7 @@ using ::testing::Return;
 
 class TaskPumpTest : public testing::Test {
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(TaskPumpTest, Basic) {

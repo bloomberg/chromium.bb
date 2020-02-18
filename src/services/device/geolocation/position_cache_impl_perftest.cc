@@ -9,7 +9,7 @@
 
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "services/device/geolocation/position_cache_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,8 +20,7 @@ namespace device {
 class PositionCacheImplPerfTest : public ::testing::Test {
  public:
   PositionCacheImplPerfTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         cache_(task_environment_.GetMockTickClock()) {}
 
   void SetUp() override {
@@ -34,7 +33,7 @@ class PositionCacheImplPerfTest : public ::testing::Test {
  protected:
   static constexpr size_t kBatchSize = 5000;
   std::vector<std::pair<WifiData, mojom::Geoposition>> data_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   PositionCacheImpl cache_;
 };
 

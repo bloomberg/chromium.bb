@@ -10,7 +10,6 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "services/network/public/cpp/features.h"
 
 using content::BrowserThread;
 
@@ -48,18 +47,13 @@ AwBrowserProcess::~AwBrowserProcess() {
 }
 
 void AwBrowserProcess::PreMainMessageLoopRun() {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    pref_change_registrar_.Init(local_state());
-    auto auth_pref_callback = base::BindRepeating(
-        &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
-    pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
-    pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
-                               auth_pref_callback);
-  }
+  pref_change_registrar_.Init(local_state());
+  auto auth_pref_callback = base::BindRepeating(
+      &AwBrowserProcess::OnAuthPrefsChanged, base::Unretained(this));
+  pref_change_registrar_.Add(prefs::kAuthServerWhitelist, auth_pref_callback);
+  pref_change_registrar_.Add(prefs::kAuthAndroidNegotiateAccountType,
+                             auth_pref_callback);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    CreateURLRequestContextGetter();
-  }
   InitSafeBrowsing();
 }
 
@@ -76,22 +70,35 @@ void AwBrowserProcess::CreateLocalState() {
   DCHECK(local_state_);
 }
 
+AwBrowserPolicyConnector* AwBrowserProcess::browser_policy_connector() {
+  if (!browser_policy_connector_)
+    CreateBrowserPolicyConnector();
+  return browser_policy_connector_.get();
+}
+
+void AwBrowserProcess::CreateBrowserPolicyConnector() {
+  DCHECK(!browser_policy_connector_);
+
+  browser_policy_connector_ =
+      aw_feature_list_creator_->TakeBrowserPolicyConnector();
+  DCHECK(browser_policy_connector_);
+}
+
 void AwBrowserProcess::InitSafeBrowsing() {
   CreateSafeBrowsingUIManager();
   CreateSafeBrowsingWhitelistManager();
 }
 
 void AwBrowserProcess::CreateSafeBrowsingUIManager() {
-  safe_browsing_ui_manager_ =
-      new AwSafeBrowsingUIManager(AwBrowserProcess::GetAwURLRequestContext());
+  safe_browsing_ui_manager_ = new AwSafeBrowsingUIManager();
 }
 
 void AwBrowserProcess::CreateSafeBrowsingWhitelistManager() {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                       base::TaskPriority::BEST_EFFORT});
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
   safe_browsing_whitelist_manager_ =
       std::make_unique<AwSafeBrowsingWhitelistManager>(background_task_runner,
                                                        io_task_runner);
@@ -154,7 +161,7 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
-  auth_dynamic_params->server_whitelist =
+  auth_dynamic_params->server_allowlist =
       local_state()->GetString(prefs::kAuthServerWhitelist);
   auth_dynamic_params->android_negotiate_account_type =
       local_state()->GetString(prefs::kAuthAndroidNegotiateAccountType);
@@ -167,36 +174,6 @@ AwBrowserProcess::CreateHttpAuthDynamicParams() {
 void AwBrowserProcess::OnAuthPrefsChanged() {
   content::GetNetworkService()->ConfigureHttpAuthPrefs(
       CreateHttpAuthDynamicParams());
-}
-
-namespace {
-std::unique_ptr<net::ProxyConfigServiceAndroid> CreateProxyConfigService() {
-  std::unique_ptr<net::ProxyConfigServiceAndroid> config_service_android =
-      std::make_unique<net::ProxyConfigServiceAndroid>(
-          base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}),
-          base::ThreadTaskRunnerHandle::Get());
-
-  config_service_android->set_exclude_pac_url(true);
-  return config_service_android;
-}
-}  // namespace
-
-// Default profile reuses global URLRequestGetter
-void AwBrowserProcess::CreateURLRequestContextGetter() {
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  base::FilePath cache_path;
-  if (!base::PathService::Get(base::DIR_CACHE, &cache_path)) {
-    NOTREACHED() << "Failed to get app cache directory for Android WebView";
-  }
-  cache_path =
-      cache_path.Append(FILE_PATH_LITERAL("org.chromium.android_webview"));
-
-  url_request_context_getter_ = new AwURLRequestContextGetter(
-      cache_path, CreateProxyConfigService(), local_state(), new net::NetLog());
-}
-
-AwURLRequestContextGetter* AwBrowserProcess::GetAwURLRequestContext() {
-  return url_request_context_getter_.get();
 }
 
 }  // namespace android_webview

@@ -7,6 +7,5 @@ include_rules = [
     '+json',
 
     # BoringSSL includes
-    '-third_party/boringssl',
     '+openssl'
 ]

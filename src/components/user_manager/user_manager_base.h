@@ -79,7 +79,6 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   base::string16 GetUserDisplayName(const AccountId& account_id) const override;
   void SaveUserDisplayEmail(const AccountId& account_id,
                             const std::string& display_email) override;
-  std::string GetUserDisplayEmail(const AccountId& account_id) const override;
   void SaveUserType(const User* user) override;
   void UpdateUserAccountData(const AccountId& account_id,
                              const UserAccountData& account_data) override;
@@ -169,7 +168,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
       std::set<AccountId>* device_local_accounts_set) = 0;
 
   // Notifies observers that active user has changed.
-  void NotifyActiveUserChanged(const User* active_user);
+  void NotifyActiveUserChanged(User* active_user);
 
   // Notifies that user has logged in.
   virtual void NotifyOnLogin();
@@ -389,7 +388,7 @@ class USER_MANAGER_EXPORT UserManagerBase : public UserManager {
   // TaskRunner for UI thread.
   scoped_refptr<base::TaskRunner> task_runner_;
 
-  base::WeakPtrFactory<UserManagerBase> weak_factory_;
+  base::WeakPtrFactory<UserManagerBase> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(UserManagerBase);
 };

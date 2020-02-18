@@ -263,7 +263,7 @@ void ScrollbarThemeAura::PaintTrackPiece(GraphicsContext& gc,
       scrollbar.Orientation() == kHorizontalScrollbar
           ? WebThemeEngine::kPartScrollbarHorizontalTrack
           : WebThemeEngine::kPartScrollbarVerticalTrack,
-      state, WebRect(rect), &extra_params);
+      state, WebRect(rect), &extra_params, scrollbar.UsedColorScheme());
 }
 
 void ScrollbarThemeAura::PaintButton(GraphicsContext& gc,
@@ -279,8 +279,14 @@ void ScrollbarThemeAura::PaintButton(GraphicsContext& gc,
   if (!params.should_paint)
     return;
   DrawingRecorder recorder(gc, scrollbar, display_item_type);
+
+  WebThemeEngine::ExtraParams extra_params;
+  extra_params.scrollbar_button.zoom = scrollbar.EffectiveZoom();
+  extra_params.scrollbar_button.right_to_left =
+      scrollbar.ContainerIsRightToLeft();
   Platform::Current()->ThemeEngine()->Paint(
-      gc.Canvas(), params.part, params.state, WebRect(rect), nullptr);
+      gc.Canvas(), params.part, params.state, WebRect(rect), &extra_params,
+      scrollbar.UsedColorScheme());
 }
 
 void ScrollbarThemeAura::PaintThumb(GraphicsContext& gc,
@@ -306,7 +312,7 @@ void ScrollbarThemeAura::PaintThumb(GraphicsContext& gc,
       scrollbar.Orientation() == kHorizontalScrollbar
           ? WebThemeEngine::kPartScrollbarHorizontalThumb
           : WebThemeEngine::kPartScrollbarVerticalThumb,
-      state, WebRect(rect), nullptr);
+      state, WebRect(rect), nullptr, scrollbar.UsedColorScheme());
 }
 
 bool ScrollbarThemeAura::ShouldRepaintAllPartsOnInvalidation() const {

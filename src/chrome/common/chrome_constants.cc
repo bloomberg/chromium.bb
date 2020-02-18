@@ -123,6 +123,9 @@ const base::FilePath::CharType kFrameworkExecutableName[] =
 
 #if defined(OS_WIN)
 const base::FilePath::CharType kBrowserResourcesDll[] = FPL("chrome.dll");
+// Only relevant if building with is_multi_dll_chrome=true.
+const base::FilePath::CharType kChildDll[] = FPL("chrome_child.dll");
+const base::FilePath::CharType kElfDll[] = FPL("chrome_elf.dll");
 const base::FilePath::CharType kStatusTrayWindowClass[] =
     FPL("Chrome_StatusTrayWindow");
 #endif  // defined(OS_WIN)
@@ -149,6 +152,8 @@ const base::FilePath::CharType kFeatureEngagementTrackerStorageDirname[] =
     FPL("Feature Engagement Tracker");
 const base::FilePath::CharType kFirstRunSentinel[] = FPL("First Run");
 const base::FilePath::CharType kGCMStoreDirname[] = FPL("GCM Store");
+const base::FilePath::CharType kHeavyAdInterventionOptOutDBFilename[] =
+    FPL("heavy_ad_intervention_opt_out.db");
 const base::FilePath::CharType kLocalStateFilename[] = FPL("Local State");
 const base::FilePath::CharType kMediaCacheDirname[] = FPL("Media Cache");
 const base::FilePath::CharType kNetworkPersistentStateFilename[] =
@@ -212,6 +217,7 @@ const int kHighestRendererOomScore = 1000;
 const char kProfileDirPrefix[] = "u-";
 const char kLegacyProfileDir[] = "user";
 const char kTestUserProfileDir[] = "test-user";
+const char kLockScreenAppProfile[] = "LockScreenAppsProfile";
 #endif
 
 // This GUID is associated with any 'don't ask me again' settings that the

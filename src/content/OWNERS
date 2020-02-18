@@ -9,7 +9,6 @@ jochen@chromium.org
 kinuko@chromium.org
 nasko@chromium.org
 pfeldman@chromium.org
-piman@chromium.org
 
 # per-file rules:
 # These are for the common case of adding or renaming files. If you're doing
@@ -18,6 +17,7 @@ per-file BUILD.gn=*
 
 # For threading (BrowserThread, BrowserMainLoop, ThreadPool, etc.)
 per-file *browser_main_loop*=gab@chromium.org
+per-file *browser_task_environment*=gab@chromium.org
 per-file *browser_thread*=gab@chromium.org
 
 # Mac Sandbox profiles.

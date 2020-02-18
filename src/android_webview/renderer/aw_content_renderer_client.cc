@@ -39,9 +39,8 @@
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/features.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_error.h"
@@ -69,9 +68,9 @@ constexpr char kThrottledErrorDescription[] =
     "information.";
 }  // namespace
 
-AwContentRendererClient::AwContentRendererClient() {}
+AwContentRendererClient::AwContentRendererClient() = default;
 
-AwContentRendererClient::~AwContentRendererClient() {}
+AwContentRendererClient::~AwContentRendererClient() = default;
 
 void AwContentRendererClient::RenderThreadStarted() {
   RenderThread* thread = RenderThread::Get();
@@ -79,6 +78,9 @@ void AwContentRendererClient::RenderThreadStarted() {
   thread->AddObserver(aw_render_thread_observer_.get());
 
   visited_link_slave_.reset(new visitedlink::VisitedLinkSlave);
+
+  browser_interface_broker_ =
+      blink::Platform::Current()->GetBrowserInterfaceBrokerProxy();
 
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(visited_link_slave_->GetBindCallback(),
@@ -266,13 +268,15 @@ void AwContentRendererClient::AddSupportedKeySystems(
 
 std::unique_ptr<content::WebSocketHandshakeThrottleProvider>
 AwContentRendererClient::CreateWebSocketHandshakeThrottleProvider() {
-  return std::make_unique<AwWebSocketHandshakeThrottleProvider>();
+  return std::make_unique<AwWebSocketHandshakeThrottleProvider>(
+      browser_interface_broker_.get());
 }
 
 std::unique_ptr<content::URLLoaderThrottleProvider>
 AwContentRendererClient::CreateURLLoaderThrottleProvider(
     content::URLLoaderThrottleProviderType provider_type) {
-  return std::make_unique<AwURLLoaderThrottleProvider>(provider_type);
+  return std::make_unique<AwURLLoaderThrottleProvider>(
+      browser_interface_broker_.get(), provider_type);
 }
 
 void AwContentRendererClient::GetInterface(
@@ -281,10 +285,8 @@ void AwContentRendererClient::GetInterface(
   // A dirty hack to make SpellCheckHost requests work on WebView.
   // TODO(crbug.com/806394): Use a WebView-specific service for SpellCheckHost
   // and SafeBrowsing, instead of |content_browser|.
-  RenderThread::Get()->GetConnector()->BindInterface(
-      service_manager::ServiceFilter::ByName(
-          content::mojom::kBrowserServiceName),
-      interface_name, std::move(interface_pipe));
+  RenderThread::Get()->BindHostReceiver(
+      mojo::GenericPendingReceiver(interface_name, std::move(interface_pipe)));
 }
 
 }  // namespace android_webview

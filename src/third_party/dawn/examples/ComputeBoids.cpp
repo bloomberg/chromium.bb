@@ -64,10 +64,12 @@ void initBuffers() {
         {0.01, -0.02},
         {0.00, 0.02},
     };
-    modelBuffer = utils::CreateBufferFromData(device, model, sizeof(model), dawn::BufferUsageBit::Vertex);
+    modelBuffer =
+        utils::CreateBufferFromData(device, model, sizeof(model), dawn::BufferUsage::Vertex);
 
     SimParams params = { 0.04f, 0.1f, 0.025f, 0.025f, 0.02f, 0.05f, 0.005f, kNumParticles };
-    updateParams = utils::CreateBufferFromData(device, &params, sizeof(params), dawn::BufferUsageBit::Uniform);
+    updateParams =
+        utils::CreateBufferFromData(device, &params, sizeof(params), dawn::BufferUsage::Uniform);
 
     std::vector<Particle> initialParticles(kNumParticles);
     {
@@ -83,8 +85,8 @@ void initBuffers() {
     for (size_t i = 0; i < 2; i++) {
         dawn::BufferDescriptor descriptor;
         descriptor.size = sizeof(Particle) * kNumParticles;
-        descriptor.usage = dawn::BufferUsageBit::CopyDst | dawn::BufferUsageBit::Vertex |
-                           dawn::BufferUsageBit::Storage;
+        descriptor.usage =
+            dawn::BufferUsage::CopyDst | dawn::BufferUsage::Vertex | dawn::BufferUsage::Storage;
         particleBuffers[i] = device.CreateBuffer(&descriptor);
 
         particleBuffers[i].SetSubData(0,
@@ -94,7 +96,8 @@ void initBuffers() {
 }
 
 void initRender() {
-    dawn::ShaderModule vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+    dawn::ShaderModule vsModule =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
         #version 450
         layout(location = 0) in vec2 a_particlePos;
         layout(location = 1) in vec2 a_particleVel;
@@ -108,7 +111,7 @@ void initRender() {
     )");
 
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(location = 0) out vec4 fragColor;
         void main() {
@@ -119,7 +122,7 @@ void initRender() {
     depthStencilView = CreateDefaultDepthStencilView(device);
 
     utils::ComboRenderPipelineDescriptor descriptor(device);
-    descriptor.cVertexStage.module = vsModule;
+    descriptor.vertexStage.module = vsModule;
     descriptor.cFragmentStage.module = fsModule;
 
     descriptor.cVertexInput.bufferCount = 2;
@@ -144,7 +147,8 @@ void initRender() {
 }
 
 void initSim() {
-    dawn::ShaderModule module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, R"(
+    dawn::ShaderModule module =
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, R"(
         #version 450
 
         struct Particle {
@@ -235,21 +239,17 @@ void initSim() {
 
     auto bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStageBit::Compute, dawn::BindingType::UniformBuffer},
-                    {1, dawn::ShaderStageBit::Compute, dawn::BindingType::StorageBuffer},
-                    {2, dawn::ShaderStageBit::Compute, dawn::BindingType::StorageBuffer},
+                    {0, dawn::ShaderStage::Compute, dawn::BindingType::UniformBuffer},
+                    {1, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
+                    {2, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
                 });
 
     dawn::PipelineLayout pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
     csDesc.layout = pl;
-
-    dawn::PipelineStageDescriptor computeStage;
-    computeStage.module = module;
-    computeStage.entryPoint = "main";
-    csDesc.computeStage = &computeStage;
-
+    csDesc.computeStage.module = module;
+    csDesc.computeStage.entryPoint = "main";
     updatePipeline = device.CreateComputePipeline(&csDesc);
 
     for (uint32_t i = 0; i < 2; ++i) {
@@ -275,8 +275,7 @@ dawn::CommandBuffer createCommandBuffer(const dawn::Texture backbuffer, size_t i
     }
 
     {
-        utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateDefaultView()},
-                                                    depthStencilView);
+        utils::ComboRenderPassDescriptor renderPass({backbuffer.CreateView()}, depthStencilView);
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
         pass.SetPipeline(renderPipeline);
         pass.SetVertexBuffers(0, 1, &bufferDst, zeroOffsets);
@@ -293,8 +292,8 @@ void init() {
 
     queue = device.CreateQueue();
     swapchain = GetSwapChain(device);
-    swapchain.Configure(GetPreferredSwapChainTextureFormat(),
-                        dawn::TextureUsageBit::OutputAttachment, 640, 480);
+    swapchain.Configure(GetPreferredSwapChainTextureFormat(), dawn::TextureUsage::OutputAttachment,
+                        640, 480);
 
     initBuffers();
     initRender();

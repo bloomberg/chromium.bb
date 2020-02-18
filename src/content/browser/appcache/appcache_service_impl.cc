@@ -19,11 +19,10 @@
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/browser/appcache/appcache.h"
-#include "content/browser/appcache/appcache_backend_impl.h"
 #include "content/browser/appcache/appcache_entry.h"
 #include "content/browser/appcache/appcache_histograms.h"
 #include "content/browser/appcache/appcache_host.h"
-#include "content/browser/appcache/appcache_navigation_handle_core.h"
+#include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_policy.h"
 #include "content/browser/appcache/appcache_quota_client.h"
 #include "content/browser/appcache/appcache_response.h"
@@ -375,12 +374,12 @@ AppCacheStorageReference::~AppCacheStorageReference() {}
 AppCacheServiceImpl::AppCacheServiceImpl(
     storage::QuotaManagerProxy* quota_manager_proxy,
     base::WeakPtr<StoragePartitionImpl> partition)
-    : db_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+    : db_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       appcache_policy_(nullptr),
       quota_manager_proxy_(quota_manager_proxy),
-      request_context_(nullptr),
       force_keep_session_state_(false),
       partition_(std::move(partition)) {
   if (quota_manager_proxy_.get()) {
@@ -394,7 +393,6 @@ AppCacheServiceImpl::AppCacheServiceImpl(
 }
 
 AppCacheServiceImpl::~AppCacheServiceImpl() {
-  DCHECK(backends_.empty());
   hosts_.clear();
   for (auto& observer : observers_)
     observer.OnServiceDestructionImminent(this);
@@ -402,15 +400,9 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
     helper.first->Cancel();
   pending_helpers_.clear();
   if (quota_manager_proxy_.get()) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      if (quota_client_)
-        quota_client_->NotifyAppCacheDestroyed();
-    } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
-                         quota_client_));
-    }
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheDestroyed,
+                                  quota_client_));
   }
 
   // Destroy storage_ first; ~AppCacheStorageImpl accesses other data members
@@ -419,8 +411,7 @@ AppCacheServiceImpl::~AppCacheServiceImpl() {
 }
 
 void AppCacheServiceImpl::Initialize(const base::FilePath& cache_directory) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!storage_.get());
   cache_directory_ = cache_directory;
   auto storage = std::make_unique<AppCacheStorageImpl>(this);
@@ -429,8 +420,7 @@ void AppCacheServiceImpl::Initialize(const base::FilePath& cache_directory) {
 }
 
 void AppCacheServiceImpl::ScheduleReinitialize() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (reinit_timer_.IsRunning())
     return;
 
@@ -458,8 +448,7 @@ void AppCacheServiceImpl::ScheduleReinitialize() {
 }
 
 void AppCacheServiceImpl::Reinitialize() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AppCacheHistograms::CountReinitAttempt(!last_reinit_time_.is_null());
   last_reinit_time_ = base::Time::Now();
 
@@ -475,8 +464,7 @@ void AppCacheServiceImpl::Reinitialize() {
 
 void AppCacheServiceImpl::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
                                              OnceCompletionCallback callback) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(collection);
   GetInfoHelper* helper =
       new GetInfoHelper(this, collection, std::move(callback));
@@ -486,8 +474,7 @@ void AppCacheServiceImpl::GetAllAppCacheInfo(AppCacheInfoCollection* collection,
 void AppCacheServiceImpl::DeleteAppCacheGroup(
     const GURL& manifest_url,
     net::CompletionOnceCallback callback) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeleteHelper* helper =
       new DeleteHelper(this, manifest_url, std::move(callback));
   helper->Start();
@@ -496,8 +483,7 @@ void AppCacheServiceImpl::DeleteAppCacheGroup(
 void AppCacheServiceImpl::DeleteAppCachesForOrigin(
     const url::Origin& origin,
     net::CompletionOnceCallback callback) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DeleteOriginHelper* helper =
       new DeleteOriginHelper(this, origin, std::move(callback));
   helper->Start();
@@ -506,8 +492,7 @@ void AppCacheServiceImpl::DeleteAppCachesForOrigin(
 void AppCacheServiceImpl::CheckAppCacheResponse(const GURL& manifest_url,
                                                 int64_t cache_id,
                                                 int64_t response_id) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   CheckResponseHelper* helper = new CheckResponseHelper(
       this, manifest_url, cache_id, response_id);
   helper->Start();
@@ -515,61 +500,30 @@ void AppCacheServiceImpl::CheckAppCacheResponse(const GURL& manifest_url,
 
 void AppCacheServiceImpl::set_special_storage_policy(
     storage::SpecialStoragePolicy* policy) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   special_storage_policy_ = policy;
-}
-
-void AppCacheServiceImpl::RegisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
-  DCHECK(backends_.find(backend_impl->process_id()) == backends_.end());
-  backends_.insert({backend_impl->process_id(), backend_impl});
-}
-
-void AppCacheServiceImpl::UnregisterBackend(
-    AppCacheBackendImpl* backend_impl) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
-  backends_.erase(backend_impl->process_id());
 }
 
 AppCacheHost* AppCacheServiceImpl::GetHost(
     const base::UnguessableToken& host_id) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto it = hosts_.find(host_id);
   return (it != hosts_.end()) ? (it->second.get()) : nullptr;
 }
 
 bool AppCacheServiceImpl::EraseHost(const base::UnguessableToken& host_id) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return (hosts_.erase(host_id) != 0);
 }
 
-void AppCacheServiceImpl::RegisterHostForFrame(
+void AppCacheServiceImpl::RegisterHost(
     mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
     mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
     const base::UnguessableToken& host_id,
     int32_t render_frame_id,
     int process_id,
     mojo::ReportBadMessageCallback bad_message_callback) {
-  RegisterHostInternal(std::move(host_receiver), std::move(frontend_remote),
-                       host_id, render_frame_id, process_id,
-                       std::move(bad_message_callback));
-}
-
-void AppCacheServiceImpl::RegisterHostInternal(
-    mojo::PendingReceiver<blink::mojom::AppCacheHost> host_receiver,
-    mojo::PendingRemote<blink::mojom::AppCacheFrontend> frontend_remote,
-    const base::UnguessableToken& host_id,
-    int32_t render_frame_id,
-    int process_id,
-    mojo::ReportBadMessageCallback bad_message_callback) {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetHost(host_id)) {
     std::move(bad_message_callback).Run("ACSI_REGISTER");
     return;
@@ -578,7 +532,7 @@ void AppCacheServiceImpl::RegisterHostInternal(
   // The AppCacheHost could have been precreated in which case we want to
   // register it with the backend here.
   std::unique_ptr<AppCacheHost> host =
-      AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
+      AppCacheNavigationHandle::TakePrecreatedHost(host_id);
   if (host) {
     // Switch the frontend proxy so that the host can make IPC calls from
     // here on.

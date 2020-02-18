@@ -5,6 +5,7 @@
 #include "chrome/browser/previews/previews_offline_helper.h"
 
 #include <stdint.h>
+
 #include <string>
 #include <vector>
 
@@ -105,13 +106,6 @@ void RemoveStaleOfflinePageEntries(base::DictionaryValue* dict) {
   }
 }
 
-bool IsOfflinePageItemFreshForPreviews(
-    const offline_pages::OfflinePageItem& item) {
-  return base::Time::Now() <=
-         item.creation_time +
-             previews::params::OfflinePreviewFreshnessDuration();
-}
-
 void AddSingleOfflineItemEntry(
     base::DictionaryValue* available_pages,
     const offline_pages::OfflinePageItem& added_page) {
@@ -152,14 +146,12 @@ PreviewsOfflineHelper::PreviewsOfflineHelper(
       offline_pages::OfflinePageModelFactory::GetForBrowserContext(
           browser_context);
 
-  if (offline_page_model_ &&
-      base::FeatureList::IsEnabled(
-          previews::features::kOfflinePreviewsFalsePositivePrevention)) {
+  if (offline_page_model_) {
     offline_page_model_->AddObserver(this);
     // Schedule a low priority task with a slight delay to ensure that the
     // expensive DB query doesn't occur during startup or during other user
     // visible actions.
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE,
         {base::MayBlock(), content::BrowserThread::UI,
          base::TaskPriority::LOWEST,
@@ -232,11 +224,8 @@ void PreviewsOfflineHelper::Shutdown() {
 
 void PreviewsOfflineHelper::RequestDBUpdate() {
   offline_pages::PageCriteria criteria;
-  criteria.exclude_tab_bound_pages = true;
   criteria.maximum_matches =
       previews::params::OfflinePreviewsHelperMaxPrefSize();
-  criteria.additional_criteria =
-      base::BindRepeating(&IsOfflinePageItemFreshForPreviews);
 
   offline_page_model_->GetPagesWithCriteria(
       criteria, base::BindOnce(&PreviewsOfflineHelper::UpdateAllPrefEntries,
@@ -252,6 +241,7 @@ void PreviewsOfflineHelper::UpdateAllPrefEntries(
   available_pages_->Clear();
   for (const offline_pages::OfflinePageItem& page : pages)
     AddSingleOfflineItemEntry(available_pages_.get(), page);
+  RemoveStaleOfflinePageEntries(available_pages_.get());
   UpdatePref();
 
   UMA_HISTOGRAM_COUNTS_100("Previews.Offline.FalsePositivePrevention.PrefSize",

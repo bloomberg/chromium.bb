@@ -8,7 +8,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/animation/css_interpolation_type.h"
 #include "third_party/blink/renderer/core/animation/interpolation_types_map.h"
-#include "third_party/blink/renderer/core/css/css_syntax_descriptor.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -18,7 +18,7 @@ namespace blink {
 
 class ExceptionState;
 class ExecutionContext;
-class PropertyDescriptor;
+class PropertyDefinition;
 class StyleRuleProperty;
 
 using CSSInterpolationTypes = Vector<std::unique_ptr<CSSInterpolationType>>;
@@ -31,19 +31,19 @@ class CORE_EXPORT PropertyRegistration
                                            StyleRuleProperty&);
 
   static void registerProperty(ExecutionContext*,
-                               const PropertyDescriptor*,
+                               const PropertyDefinition*,
                                ExceptionState&);
 
   static const PropertyRegistration* From(const ExecutionContext*,
                                           const AtomicString& property_name);
 
   PropertyRegistration(const AtomicString& name,
-                       const CSSSyntaxDescriptor&,
+                       const CSSSyntaxDefinition&,
                        bool inherits,
                        const CSSValue* initial,
                        scoped_refptr<CSSVariableData> initial_variable_data);
 
-  const CSSSyntaxDescriptor& Syntax() const { return syntax_; }
+  const CSSSyntaxDefinition& Syntax() const { return syntax_; }
   bool Inherits() const { return inherits_; }
   const CSSValue* Initial() const { return initial_; }
   CSSVariableData* InitialVariableData() const {
@@ -58,7 +58,7 @@ class CORE_EXPORT PropertyRegistration
  private:
   friend class ::blink::PropertyRegistry;
 
-  const CSSSyntaxDescriptor syntax_;
+  const CSSSyntaxDefinition syntax_;
   const bool inherits_;
   const Member<const CSSValue> initial_;
   const scoped_refptr<CSSVariableData> initial_variable_data_;

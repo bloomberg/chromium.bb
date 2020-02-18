@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate_impl.h"
@@ -21,7 +22,7 @@
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_test_util.h"
@@ -137,8 +138,10 @@ class TestNetworkDelegateImpl : public NetworkDelegateImpl {
     return false;
   }
 
-  bool OnForcePrivacyMode(const GURL& url,
-                          const GURL& site_for_cookies) const override {
+  bool OnForcePrivacyMode(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const override {
     IncrementAndCompareCounter("on_force_privacy_mode_count");
     return false;
   }
@@ -211,7 +214,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_FALSE(
         OnCanSetCookie(*request, net::CanonicalCookie(), nullptr, true));
     EXPECT_FALSE(OnCanAccessFile(*request, base::FilePath(), base::FilePath()));
-    EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL()));
+    EXPECT_FALSE(OnForcePrivacyMode(GURL(), GURL(), base::nullopt));
     EXPECT_FALSE(OnCancelURLRequestWithPolicyViolatingReferrerHeader(
         *request, GURL(), GURL()));
   }
@@ -325,8 +328,10 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
     EXPECT_EQ(1, (*counters_)["on_can_access_file_count"]);
   }
 
-  bool OnForcePrivacyModeInternal(const GURL& url,
-                                  const GURL& site_for_cookies) const override {
+  bool OnForcePrivacyModeInternal(
+      const GURL& url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) const override {
     ++(*counters_)["on_force_privacy_mode_count"];
     EXPECT_EQ(1, (*counters_)["on_force_privacy_mode_count"]);
     return false;
@@ -379,7 +384,7 @@ class TestLayeredNetworkDelegate : public LayeredNetworkDelegate {
 
 }  // namespace
 
-class LayeredNetworkDelegateTest : public TestWithScopedTaskEnvironment {
+class LayeredNetworkDelegateTest : public TestWithTaskEnvironment {
  public:
   LayeredNetworkDelegateTest() {
     std::unique_ptr<TestNetworkDelegateImpl> test_network_delegate(

@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/events/mouse_event.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_data_list_options_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
@@ -93,7 +94,7 @@ InputType::ValueMode RangeInputType::GetValueMode() const {
 void RangeInputType::CountUsage() {
   CountUsageIfVisible(WebFeature::kInputTypeRange);
   if (const ComputedStyle* style = GetElement().GetComputedStyle()) {
-    if (style->Appearance() == kSliderVerticalPart) {
+    if (style->EffectiveAppearance() == kSliderVerticalPart) {
       UseCounter::Count(GetElement().GetDocument(),
                         WebFeature::kInputTypeRangeVerticalAppearance);
     }
@@ -195,7 +196,8 @@ void RangeInputType::HandleKeydownEvent(KeyboardEvent& event) {
   bool is_vertical = false;
   if (GetElement().GetLayoutObject()) {
     dir = ComputedTextDirection();
-    ControlPart part = GetElement().GetLayoutObject()->Style()->Appearance();
+    ControlPart part =
+        GetElement().GetLayoutObject()->Style()->EffectiveAppearance();
     is_vertical = part == kSliderVerticalPart;
   }
 

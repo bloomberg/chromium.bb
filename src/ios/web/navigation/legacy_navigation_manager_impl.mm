@@ -18,7 +18,6 @@
 #import "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/reload_type.h"
 #import "ios/web/public/web_client.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "ui/base/page_transition_types.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -60,8 +59,7 @@ void LegacyNavigationManagerImpl::OnNavigationItemCommitted() {
   delegate_->OnNavigationItemCommitted(item);
 }
 
-void LegacyNavigationManagerImpl::OnRendererInitiatedNavigationStarted(
-    const GURL& url) {}
+void LegacyNavigationManagerImpl::OnNavigationStarted(const GURL& url) {}
 
 CRWSessionController* LegacyNavigationManagerImpl::GetSessionController()
     const {

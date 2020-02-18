@@ -33,14 +33,17 @@
 
 #include "base/macros.h"
 #include "base/time/default_tick_clock.h"
-#include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "third_party/blink/public/common/frame/occlusion_state.h"
-#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink.h"
-#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink.h"
-#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
+#include "third_party/blink/public/mojom/ad_tagging/ad_frame.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/frame/lifecycle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom-blink-forward.h"
+#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink-forward.h"
 #include "third_party/blink/public/mojom/reporting/reporting.mojom-blink.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink-forward.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
@@ -69,6 +72,7 @@ namespace blink {
 
 class AdTracker;
 class AssociatedInterfaceProvider;
+class BrowserInterfaceBrokerProxy;
 class Color;
 class ContentCaptureManager;
 class Document;
@@ -98,19 +102,12 @@ class PerformanceMonitor;
 class PluginData;
 class ResourceRequest;
 class ScriptController;
-class SharedBuffer;
 class SmoothScrollSequencer;
 class SpellChecker;
 class TextSuggestionController;
 class WebContentSettingsClient;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
-
-namespace mojom {
-namespace blink {
-class DocumentInterfaceBroker;
-}  // namespace blink
-}  // namespace mojom
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<LocalFrame>;
 
@@ -147,6 +144,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void DidChangeVisibilityState() override;
   void DidFreeze() override;
   void DidResume() override;
+  void HookBackForwardCacheEviction() override;
+  void RemoveBackForwardCacheEviction() override;
   // This sets the is_inert_ flag and also recurses through this frame's
   // subtree, updating the inert bit on all descendant frames.
   void SetIsInert(bool) override;
@@ -204,7 +203,8 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // that contains a |UserGestureToken| with the given status.
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
       LocalFrame*,
-      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture);
+      UserGestureToken::Status = UserGestureToken::kPossiblyExistingGesture,
+      bool need_browser_verification = false);
 
   // Similar to above, but used only in old UAv1-specific code.
   static std::unique_ptr<UserGestureIndicator> NotifyUserActivation(
@@ -294,6 +294,9 @@ class CORE_EXPORT LocalFrame final : public Frame,
   mojom::blink::DocumentInterfaceBroker& GetDocumentInterfaceBroker();
   mojo::ScopedMessagePipeHandle SetDocumentInterfaceBrokerForTesting(
       mojo::ScopedMessagePipeHandle blink_handle);
+
+  BrowserInterfaceBrokerProxy& GetBrowserInterfaceBroker();
+
   InterfaceRegistry* GetInterfaceRegistry() { return interface_registry_; }
 
   // Returns an AssociatedInterfaceProvider the frame can use to request
@@ -390,10 +393,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // Updates the frame color overlay to match the highlight ad setting.
   void UpdateAdHighlight();
 
-  // Binds |request| and prevents resource loading until either the frame is
-  // navigated or the request pipe is closed.
+  // Binds |receiver| and prevents resource loading until either the frame is
+  // navigated or the receiver pipe is closed.
   void PauseSubresourceLoading(
-      blink::mojom::blink::PauseSubresourceLoadingHandleRequest request);
+      mojo::PendingReceiver<blink::mojom::blink::PauseSubresourceLoadingHandle>
+          receiver);
 
   void ResumeSubresourceLoading();
 
@@ -403,12 +407,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
     return client_hints_preferences_;
   }
 
-  void BindPreviewsResourceLoadingHintsRequest(
-      blink::mojom::blink::PreviewsResourceLoadingHintsReceiverRequest request);
+  void BindPreviewsResourceLoadingHintsReceiver(
+      mojo::PendingReceiver<
+          blink::mojom::blink::PreviewsResourceLoadingHintsReceiver> receiver);
 
   SmoothScrollSequencer& GetSmoothScrollSequencer();
 
-  const mojom::blink::ReportingServiceProxyPtr& GetReportingService() const;
+  const mojo::Remote<mojom::blink::ReportingServiceProxy>& GetReportingService()
+      const;
 
   // Overlays a color on top of this LocalFrameView if it is associated with
   // the main frame. Should not have multiple consumers.
@@ -449,7 +455,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
       mojom::WebFeature blocked_cross_origin,
       mojom::WebFeature blocked_same_origin);
 
-  void FinishedLoading();
+  void FinishedLoading(FrameLoader::NavigationFinishState);
+
+  using IsCapturingMediaCallback = base::RepeatingCallback<bool()>;
+  void SetIsCapturingMediaCallback(IsCapturingMediaCallback callback);
+  bool IsCapturingMedia() const;
 
  private:
   friend class FrameNavigationDisabler;
@@ -485,7 +495,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void UpdateActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
 
   // Activates the user activation states of this frame and all its ancestors.
-  void NotifyUserActivation();
+  void NotifyUserActivation(bool need_browser_verification);
 
   // Returns the transient user activation state of this frame
   bool HasTransientUserActivation();
@@ -499,12 +509,14 @@ class CORE_EXPORT LocalFrame final : public Frame,
   void PauseContext();
   void UnpauseContext();
 
+  void EvictFromBackForwardCache();
+
   std::unique_ptr<FrameScheduler> frame_scheduler_;
 
   // Holds all PauseSubresourceLoadingHandles allowing either |this| to delete
   // them explicitly or the pipe closing to delete them.
-  mojo::StrongBindingSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
-      pause_handle_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::blink::PauseSubresourceLoadingHandle>
+      pause_handle_receivers_;
 
   mutable FrameLoader loader_;
 
@@ -539,7 +551,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // for advertising purposes. It's per-frame (as opposed to per-document)
   // because when an iframe is created on behalf of ad script that same frame is
   // not typically reused for non-ad purposes.
-  blink::mojom::AdFrameType ad_frame_type_ = blink::mojom::AdFrameType::kNonAd;
+  mojom::AdFrameType ad_frame_type_;
 
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
@@ -555,7 +567,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   InterfaceRegistry* const interface_registry_;
   // This is declared mutable so that the service endpoint can be cached by
   // const methods.
-  mutable mojom::blink::ReportingServiceProxyPtr reporting_service_;
+  mutable mojo::Remote<mojom::blink::ReportingServiceProxy> reporting_service_;
 
   IntRect remote_viewport_intersection_;
   FrameOcclusionState occlusion_state_ = FrameOcclusionState::kUnknown;
@@ -578,10 +590,11 @@ class CORE_EXPORT LocalFrame final : public Frame,
   // field would be no longer necessary.
   const bool is_save_data_enabled_;
 
+  IsCapturingMediaCallback is_capturing_media_callback_;
+
   std::unique_ptr<FrameOverlay> frame_color_overlay_;
 
-  mojom::FrameLifecycleState lifecycle_state_ =
-      mojom::FrameLifecycleState::kRunning;
+  mojom::FrameLifecycleState lifecycle_state_;
   base::Optional<mojom::FrameLifecycleState> pending_lifecycle_state_;
 };
 

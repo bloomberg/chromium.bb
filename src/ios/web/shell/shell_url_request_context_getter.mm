@@ -25,7 +25,7 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_persister.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log.h"
@@ -78,8 +78,9 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =
         new net::SQLitePersistentCookieStore(
             cookie_path, network_task_runner_,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+            base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                             base::MayBlock(),
+                                             base::TaskPriority::BEST_EFFORT}),
             true, nullptr);
     std::unique_ptr<net::CookieStoreIOS> cookie_store(
         new net::CookieStoreIOSPersistent(persistent_store.get(),
@@ -108,11 +109,11 @@ net::URLRequestContext* ShellURLRequestContextGetter::GetURLRequestContext() {
     transport_security_persister_ =
         std::make_unique<net::TransportSecurityPersister>(
             url_request_context_->transport_security_state(), base_path_,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+            base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                             base::MayBlock(),
+                                             base::TaskPriority::BEST_EFFORT}));
     storage_->set_http_server_properties(
-        std::unique_ptr<net::HttpServerProperties>(
-            new net::HttpServerPropertiesImpl()));
+        std::make_unique<net::HttpServerProperties>());
 
     std::unique_ptr<net::HostResolver> host_resolver(
         net::HostResolver::CreateStandaloneResolver(

@@ -6,13 +6,49 @@
 
 #include <algorithm>
 
+#include "net/third_party/quiche/src/quic/core/quic_types.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_flags.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 
 namespace quic {
-BandwidthSampler::BandwidthSampler()
+
+QuicByteCount MaxAckHeightTracker::Update(QuicBandwidth bandwidth_estimate,
+                                          QuicRoundTripCount round_trip_count,
+                                          QuicTime ack_time,
+                                          QuicByteCount bytes_acked) {
+  if (aggregation_epoch_start_time_ == QuicTime::Zero()) {
+    aggregation_epoch_bytes_ = bytes_acked;
+    aggregation_epoch_start_time_ = ack_time;
+    return 0;
+  }
+
+  // Compute how many bytes are expected to be delivered, assuming max bandwidth
+  // is correct.
+  QuicByteCount expected_bytes_acked =
+      bandwidth_estimate * (ack_time - aggregation_epoch_start_time_);
+  // Reset the current aggregation epoch as soon as the ack arrival rate is less
+  // than or equal to the max bandwidth.
+  if (aggregation_epoch_bytes_ <= expected_bytes_acked) {
+    // Reset to start measuring a new aggregation epoch.
+    aggregation_epoch_bytes_ = bytes_acked;
+    aggregation_epoch_start_time_ = ack_time;
+    return 0;
+  }
+
+  aggregation_epoch_bytes_ += bytes_acked;
+
+  // Compute how many extra bytes were delivered vs max bandwidth.
+  QuicByteCount extra_bytes_acked =
+      aggregation_epoch_bytes_ - expected_bytes_acked;
+  max_ack_height_filter_.Update(extra_bytes_acked, round_trip_count);
+  return extra_bytes_acked;
+}
+
+BandwidthSampler::BandwidthSampler(
+    const QuicUnackedPacketMap* unacked_packet_map,
+    QuicRoundTripCount max_height_tracker_window_length)
     : total_bytes_sent_(0),
       total_bytes_acked_(0),
       total_bytes_lost_(0),
@@ -21,7 +57,16 @@ BandwidthSampler::BandwidthSampler()
       last_acked_packet_ack_time_(QuicTime::Zero()),
       is_app_limited_(false),
       connection_state_map_(),
-      max_tracked_packets_(GetQuicFlag(FLAGS_quic_max_tracked_packet_count)) {}
+      max_tracked_packets_(GetQuicFlag(FLAGS_quic_max_tracked_packet_count)),
+      unacked_packet_map_(unacked_packet_map),
+      max_ack_height_tracker_(max_height_tracker_window_length),
+      total_bytes_acked_after_last_ack_event_(0),
+      quic_track_ack_height_in_bandwidth_sampler_(
+          GetQuicReloadableFlag(quic_track_ack_height_in_bandwidth_sampler2)) {
+  if (quic_track_ack_height_in_bandwidth_sampler_) {
+    QUIC_RELOADABLE_FLAG_COUNT(quic_track_ack_height_in_bandwidth_sampler2);
+  }
+}
 
 BandwidthSampler::~BandwidthSampler() {}
 
@@ -57,9 +102,18 @@ void BandwidthSampler::OnPacketSent(
   if (!connection_state_map_.IsEmpty() &&
       packet_number >
           connection_state_map_.last_packet() + max_tracked_packets_) {
-    QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
-                "number "
-                "of tracked packets.";
+    if (unacked_packet_map_ != nullptr) {
+      QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
+                  "number of tracked packets.  First tracked: "
+               << connection_state_map_.first_packet()
+               << "; last tracked: " << connection_state_map_.last_packet()
+               << "; least unacked: " << unacked_packet_map_->GetLeastUnacked()
+               << "; largest observed: "
+               << unacked_packet_map_->largest_acked();
+    } else {
+      QUIC_BUG << "BandwidthSampler in-flight packet map has exceeded maximum "
+                  "number of tracked packets.";
+    }
   }
 
   bool success =
@@ -67,6 +121,22 @@ void BandwidthSampler::OnPacketSent(
   QUIC_BUG_IF(!success) << "BandwidthSampler failed to insert the packet "
                            "into the map, most likely because it's already "
                            "in it.";
+}
+
+QuicByteCount BandwidthSampler::OnAckEventEnd(
+    QuicBandwidth bandwidth_estimate,
+    QuicRoundTripCount round_trip_count) {
+  const QuicByteCount newly_acked_bytes =
+      total_bytes_acked_ - total_bytes_acked_after_last_ack_event_;
+
+  if (newly_acked_bytes == 0) {
+    return 0;
+  }
+  total_bytes_acked_after_last_ack_event_ = total_bytes_acked_;
+
+  return max_ack_height_tracker_.Update(bandwidth_estimate, round_trip_count,
+                                        last_acked_packet_ack_time_,
+                                        newly_acked_bytes);
 }
 
 BandwidthSample BandwidthSampler::OnPacketAcknowledged(
@@ -96,7 +166,8 @@ BandwidthSample BandwidthSampler::OnPacketAcknowledgedInner(
 
   // Exit app-limited phase once a packet that was sent while the connection is
   // not app-limited is acknowledged.
-  if (is_app_limited_ && packet_number > end_of_app_limited_phase_) {
+  if (is_app_limited_ && end_of_app_limited_phase_.IsInitialized() &&
+      packet_number > end_of_app_limited_phase_) {
     is_app_limited_ = false;
   }
 

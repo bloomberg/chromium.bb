@@ -172,7 +172,7 @@ HTMLFormElement* ListedElement::FindAssociatedForm(
     // 3.2. Abort the "reset the form owner" steps.
     Element* new_form_candidate =
         element->GetTreeScope().getElementById(form_id);
-    return ToHTMLFormElementOrNull(new_form_candidate);
+    return DynamicTo<HTMLFormElement>(new_form_candidate);
   }
   // 4. Otherwise, if the form-associated element in question has an ancestor
   // form element, then associate the form-associated element with the nearest
@@ -570,7 +570,7 @@ void ListedElement::UpdateAncestorDisabledState() const {
   ContainerNode* last_legend_ancestor = nullptr;
   for (auto* ancestor = Traversal<HTMLElement>::FirstAncestor(ToHTMLElement());
        ancestor; ancestor = Traversal<HTMLElement>::FirstAncestor(*ancestor)) {
-    if (IsHTMLLegendElement(*ancestor)) {
+    if (IsA<HTMLLegendElement>(*ancestor)) {
       last_legend_ancestor = ancestor;
       continue;
     }
@@ -578,7 +578,7 @@ void ListedElement::UpdateAncestorDisabledState() const {
       continue;
     may_have_field_set_ancestor_ = true;
     if (ancestor->IsDisabledFormControl()) {
-      auto* fieldset = ToHTMLFieldSetElement(ancestor);
+      auto* fieldset = To<HTMLFieldSetElement>(ancestor);
       if (last_legend_ancestor && last_legend_ancestor == fieldset->Legend())
         continue;
       disabled_fieldset_ancestor = fieldset;

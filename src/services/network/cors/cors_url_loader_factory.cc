@@ -13,12 +13,14 @@
 #include "net/base/load_flags.h"
 #include "services/network/cors/cors_url_loader.h"
 #include "services/network/cors/preflight_controller.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/initiator_lock_compatibility.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_context.h"
 #include "services/network/public/cpp/cors/cors.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/header_util.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/resource_scheduler/resource_scheduler_client.h"
@@ -36,6 +38,7 @@ CorsURLLoaderFactory::CorsURLLoaderFactory(
     const OriginAccessList* origin_access_list,
     std::unique_ptr<mojom::URLLoaderFactory> network_loader_factory_for_testing)
     : context_(context),
+      is_trusted_(params->is_trusted),
       disable_web_security_(params->disable_web_security),
       process_id_(params->process_id),
       request_initiator_site_lock_(params->request_initiator_site_lock),
@@ -133,8 +136,7 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
                                   const ResourceRequest& request) {
   // CORS needs a proper origin (including a unique opaque origin). If the
   // request doesn't have one, CORS cannot work.
-  if (!request.request_initiator &&
-      request.mode != mojom::RequestMode::kNavigate &&
+  if (!request.request_initiator && !IsNavigationRequestMode(request.mode) &&
       request.mode != mojom::RequestMode::kNoCors) {
     LOG(WARNING) << "|mode| is " << request.mode
                  << ", but |request_initiator| is not set.";
@@ -142,21 +144,26 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     return false;
   }
 
-  const auto load_flags_pattern = net::LOAD_DO_NOT_SAVE_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_COOKIES |
-                                  net::LOAD_DO_NOT_SEND_AUTH_DATA;
-  // The Fetch credential mode and lower-level options should match. If the
-  // Fetch mode is kOmit, then either |allow_credentials| must be false or
-  // all three load flags must be set. https://crbug.com/799935 tracks
-  // unifying |LOAD_DO_NOT_*| into |allow_credentials|.
-  if (request.credentials_mode == mojom::CredentialsMode::kOmit &&
-      request.allow_credentials &&
-      (request.load_flags & load_flags_pattern) != load_flags_pattern) {
-    LOG(WARNING) << "|credentials_mode| and |allow_credentials| or "
-                    "|load_flags| contradict each "
-                    "other.";
+  // Reject request with trusted params if factory is not for a trusted
+  // consumer.
+  if (request.trusted_params && !is_trusted_) {
     mojo::ReportBadMessage(
-        "CorsURLLoaderFactory: omit-credentials vs load_flags");
+        "CorsURLLoaderFactory: Untrusted caller making trusted request");
+    return false;
+  }
+
+  // Reject request if the restricted prefetch load flag is set but the
+  // request's NetworkIsolationKey is not present. This is because the
+  // restricted prefetch flag is only used when the browser sets the request's
+  // NetworkIsolationKey to correctly cache-partition the resource.
+  bool request_network_isolation_key_present =
+      request.trusted_params &&
+      !request.trusted_params->network_isolation_key.IsEmpty();
+  if (request.load_flags & net::LOAD_RESTRICTED_PREFETCH &&
+      !request_network_isolation_key_present) {
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: Request with LOAD_RESTRICTED_PREFETCH flag is "
+        "not trusted");
     return false;
   }
 
@@ -164,6 +171,8 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
   if (process_id_ != mojom::kBrowserProcessId) {
     switch (request.mode) {
       case mojom::RequestMode::kNavigate:
+      case mojom::RequestMode::kNavigateNestedFrame:
+      case mojom::RequestMode::kNavigateNestedObject:
         // Only the browser process can initiate navigations.  This helps ensure
         // that a malicious/compromised renderer cannot bypass CORB by issuing
         // kNavigate, rather than kNoCors requests.  (CORB should apply only to
@@ -185,22 +194,46 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
     }
   }
 
+  // Compare |request_initiator| and |request_initiator_site_lock_|.
   InitiatorLockCompatibility initiator_lock_compatibility =
-      process_id_ == mojom::kBrowserProcessId
-          ? InitiatorLockCompatibility::kBrowserProcess
-          : VerifyRequestInitiatorLock(request_initiator_site_lock_,
-                                       request.request_initiator);
+      VerifyRequestInitiatorLock(process_id_, request_initiator_site_lock_,
+                                 request.request_initiator);
   UMA_HISTOGRAM_ENUMERATION(
       "NetworkService.URLLoader.RequestInitiatorOriginLockCompatibility",
       initiator_lock_compatibility);
-  // TODO(lukasza): Enforce the origin lock.
-  // - https://crbug.com/766694: In the long-term kIncorrectLock should trigger
-  //   a renderer kill, but this can't be done until HTML Imports are gone.
-  // - https://crbug.com/515309: The lock should apply to Origin header (and
-  //   SameSite cookies) in addition to CORB (which was taken care of in
-  //   https://crbug.com/871827).  Here enforcement most likely would mean
-  //   setting |url_request_|'s initiator to something other than
-  //   |request.request_initiator| (opaque origin?  lock origin?).
+  switch (initiator_lock_compatibility) {
+    case InitiatorLockCompatibility::kCompatibleLock:
+    case InitiatorLockCompatibility::kBrowserProcess:
+    case InitiatorLockCompatibility::kExcludedScheme:
+    case InitiatorLockCompatibility::kExcludedUniversalAccessPlugin:
+      break;
+
+    case InitiatorLockCompatibility::kNoLock:
+      // TODO(lukasza): https://crbug.com/891872: Browser process should always
+      // specify the request_initiator_site_lock in URLLoaderFactories given to
+      // a renderer process.  Once https://crbug.com/891872 is fixed, the case
+      // below should return |false| (i.e. = bad message).
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      break;
+
+    case InitiatorLockCompatibility::kNoInitiator:
+      // Requests from the renderer need to always specify an initiator.
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      mojo::ReportBadMessage(
+          "CorsURLLoaderFactory: no initiator in a renderer request");
+      return false;
+
+    case InitiatorLockCompatibility::kIncorrectLock:
+      // Requests from the renderer need to always specify a correct initiator.
+      DCHECK_NE(process_id_, mojom::kBrowserProcessId);
+      // TODO(lukasza): Report this as a bad message (or use the lock instead
+      // of the renderer-reported value).  Before we can do this, we need to
+      // ensure via UMA that this rarely happens or has low impact.  One known
+      // case are probably non-universal-access plugins (like PNaCl) which
+      // wouldn't be covered by the kExcludedUniversalAccessPlugin exception
+      // above.
+      break;
+  }
 
   if (context) {
     net::HttpRequestHeaders::Iterator header_iterator(
@@ -224,6 +257,26 @@ bool CorsURLLoaderFactory::IsSane(const NetworkContext* context,
 
   LogConcerningRequestHeaders(request.headers,
                               false /* added_during_redirect */);
+
+  // Specifying CredentialsMode::kSameOrigin without an initiator origin doesn't
+  // make sense.
+  if (request.credentials_mode == mojom::CredentialsMode::kSameOrigin &&
+      !request.request_initiator) {
+    LOG(WARNING) << "same-origin credentials mode without initiator";
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: same-origin credentials mode without initiator");
+    return false;
+  }
+
+  // We only support |kInclude| credentials mode with navigations. See also:
+  // a note at https://fetch.spec.whatwg.org/#concept-request-credentials-mode.
+  if (request.credentials_mode != mojom::CredentialsMode::kInclude &&
+      IsNavigationRequestMode(request.mode)) {
+    LOG(WARNING) << "unsupported credentials mode on a navigation request";
+    mojo::ReportBadMessage(
+        "CorsURLLoaderFactory: unsupported credentials mode on navigation");
+    return false;
+  }
 
   // TODO(yhirano): If the request mode is "no-cors", the redirect mode should
   // be "follow".

@@ -79,7 +79,7 @@ struct DataSourceState {
   // This is to prevent that accessing the data source on an arbitrary embedder
   // thread races with the internal IPC thread destroying the data source
   // because of a end-of-tracing notification from the service.
-  std::mutex lock;
+  std::recursive_mutex lock;
   std::unique_ptr<DataSourceBase> data_source;
 };
 
@@ -92,7 +92,8 @@ struct DataSourceStateStorage {
 
 // Per-DataSource-type global state.
 struct DataSourceStaticState {
-  uint32_t index = 0;  // Unique ID, assigned at registration time.
+  uint32_t index =
+      kMaxDataSources;  // Unique ID, assigned at registration time.
 
   // A bitmap that tells about the validity of each |instances| entry. When the
   // i-th bit of the bitmap it's set, instances[i] is valid.
@@ -118,13 +119,17 @@ struct DataSourceStaticState {
 
 // Per-DataSource-instance thread-local state.
 struct DataSourceInstanceThreadLocalState {
+  using IncrementalStatePointer = std::unique_ptr<void, void (*)(void*)>;
+
   void Reset() {
     trace_writer.reset();
+    incremental_state.reset();
     backend_id = 0;
     buffer_id = 0;
   }
 
   std::unique_ptr<TraceWriterBase> trace_writer;
+  IncrementalStatePointer incremental_state = {nullptr, [](void*) {}};
   TracingBackendId backend_id;
   BufferId buffer_id;
 };

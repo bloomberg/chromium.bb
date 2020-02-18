@@ -14,10 +14,13 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/ptr_util.h"
-#include "base/memory/shared_memory.h"
+#include "base/memory/unsafe_shared_memory_region.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "components/chromeos_camera/common/dmabuf.mojom.h"
+#include "components/chromeos_camera/dmabuf_utils.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -30,45 +33,6 @@ namespace chromeos_camera {
 namespace {
 
 const int kJpegQuality = 90;
-
-scoped_refptr<media::VideoFrame> ConstructVideoFrame(
-    std::vector<chromeos_camera::mojom::DmaBufPlanePtr> dma_buf_planes,
-    media::VideoPixelFormat pixel_format,
-    int32_t width,
-    int32_t height) {
-  size_t num_planes = media::VideoFrame::NumPlanes(pixel_format);
-  if (num_planes != dma_buf_planes.size()) {
-    DLOG(ERROR) << "The amount of DMA buf planes does not match the format.";
-    return nullptr;
-  }
-  if (width <= 0 || height <= 0) {
-    DLOG(ERROR) << "Width and height should > 0: " << width << ", " << height;
-    return nullptr;
-  }
-  gfx::Size coded_size(width, height);
-  gfx::Rect visible_rect(coded_size);
-
-  std::vector<base::ScopedFD> dma_buf_fds(num_planes);
-  std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
-
-  for (size_t i = 0; i < num_planes; ++i) {
-    dma_buf_fds[i] =
-        mojo::UnwrapPlatformHandle(std::move(dma_buf_planes[i]->fd_handle))
-            .TakeFD();
-    planes[i].stride = dma_buf_planes[i]->stride;
-    planes[i].offset = dma_buf_planes[i]->offset;
-    planes[i].size = dma_buf_planes[i]->size;
-  }
-  auto layout = media::VideoFrameLayout::CreateWithPlanes(
-      pixel_format, coded_size, std::move(planes));
-
-  return media::VideoFrame::WrapExternalDmabufs(
-      *layout,                 // layout
-      visible_rect,            // visible_rect
-      coded_size,              // natural_size
-      std::move(dma_buf_fds),  // dmabuf_fds
-      base::TimeDelta());      // timestamp
-}
 
 media::VideoPixelFormat ToVideoPixelFormat(uint32_t fourcc_fmt) {
   switch (fourcc_fmt) {
@@ -197,14 +161,16 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
     return;
   }
 
-  base::UnguessableToken input_guid = base::UnguessableToken::Create();
-  base::SharedMemoryHandle input_shm_handle(
-      base::FileDescriptor(input_fd, true), input_buffer_size, input_guid);
+  base::UnsafeSharedMemoryRegion input_region =
+      base::UnsafeSharedMemoryRegion::Deserialize(
+          base::subtle::PlatformSharedMemoryRegion::Take(
+              base::ScopedFD(input_fd),
+              base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
+              input_buffer_size, base::UnguessableToken::Create()));
 
   base::subtle::PlatformSharedMemoryRegion output_shm_region =
       base::subtle::PlatformSharedMemoryRegion::Take(
-          base::subtle::ScopedFDPair(base::ScopedFD(output_fd),
-                                     base::ScopedFD()),
+          base::ScopedFD(output_fd),
           base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,
           output_buffer_size, base::UnguessableToken::Create());
 
@@ -236,8 +202,8 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
       task_id, std::move(callback));
   encode_cb_map_.emplace(task_id, std::move(wrapped_callback));
 
-  auto input_shm = std::make_unique<base::SharedMemory>(input_shm_handle, true);
-  if (!input_shm->Map(input_buffer_size)) {
+  base::WritableSharedMemoryMapping input_mapping = input_region.Map();
+  if (!input_mapping.IsValid()) {
     DLOG(ERROR) << "Could not map input shared memory for buffer id "
                 << task_id;
     NotifyEncodeStatus(
@@ -246,18 +212,15 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
     return;
   }
 
-  uint8_t* input_shm_memory = static_cast<uint8_t*>(input_shm->memory());
-  scoped_refptr<media::VideoFrame> frame =
-      media::VideoFrame::WrapExternalSharedMemory(
-          media::PIXEL_FORMAT_I420,  // format
-          coded_size,                // coded_size
-          gfx::Rect(coded_size),     // visible_rect
-          coded_size,                // natural_size
-          input_shm_memory,          // data
-          input_buffer_size,         // data_size
-          input_shm_handle,          // handle
-          0,                         // data_offset
-          base::TimeDelta());        // timestamp
+  uint8_t* input_shm_memory = input_mapping.GetMemoryAsSpan<uint8_t>().data();
+  scoped_refptr<media::VideoFrame> frame = media::VideoFrame::WrapExternalData(
+      media::PIXEL_FORMAT_I420,  // format
+      coded_size,                // coded_size
+      gfx::Rect(coded_size),     // visible_rect
+      coded_size,                // natural_size
+      input_shm_memory,          // data
+      input_buffer_size,         // data_size
+      base::TimeDelta());        // timestamp
   if (!frame.get()) {
     LOG(ERROR) << "Could not create VideoFrame for buffer id " << task_id;
     NotifyEncodeStatus(
@@ -265,10 +228,8 @@ void MojoJpegEncodeAcceleratorService::EncodeWithFD(
         ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
-  // Keep |input_shm| referenced until |frame| is destructed.
-  frame->AddDestructionObserver(base::BindOnce(
-      base::DoNothing::Once<std::unique_ptr<base::SharedMemory>>(),
-      base::Passed(&input_shm)));
+  frame->BackWithOwnedSharedMemory(std::move(input_region),
+                                   std::move(input_mapping));
 
   DCHECK(accelerator_);
   accelerator_->Encode(frame, kJpegQuality, exif_buffer.get(),
@@ -286,7 +247,9 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
     int32_t coded_size_height,
     EncodeWithDmaBufCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  if (coded_size_width <= 0 || coded_size_height <= 0) {
+
+  const gfx::Size coded_size(coded_size_width, coded_size_height);
+  if (coded_size.IsEmpty()) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::INVALID_ARGUMENT);
     return;
@@ -305,16 +268,14 @@ void MojoJpegEncodeAcceleratorService::EncodeWithDmaBuf(
   }
 
   auto input_video_frame = ConstructVideoFrame(
-      std::move(input_planes), ToVideoPixelFormat(input_format),
-      coded_size_width, coded_size_height);
+      std::move(input_planes), ToVideoPixelFormat(input_format), coded_size);
   if (!input_video_frame) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);
     return;
   }
-  auto output_video_frame =
-      ConstructVideoFrame(std::move(output_planes), media::PIXEL_FORMAT_MJPEG,
-                          coded_size_width, coded_size_height);
+  auto output_video_frame = ConstructVideoFrame(
+      std::move(output_planes), media::PIXEL_FORMAT_MJPEG, coded_size);
   if (!output_video_frame) {
     std::move(callback).Run(
         0, ::chromeos_camera::JpegEncodeAccelerator::Status::PLATFORM_FAILURE);

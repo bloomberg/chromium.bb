@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2013 The ANGLE Project Authors. All rights reserved.
+// Copyright 2013 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -159,11 +159,14 @@ class VertexArray final : public angle::ObserverInterface,
     using DirtyAttribBitsArray  = std::array<DirtyAttribBits, gl::MAX_VERTEX_ATTRIBS>;
     using DirtyBindingBitsArray = std::array<DirtyBindingBits, gl::MAX_VERTEX_ATTRIB_BINDINGS>;
 
-    VertexArray(rx::GLImplFactory *factory, GLuint id, size_t maxAttribs, size_t maxAttribBindings);
+    VertexArray(rx::GLImplFactory *factory,
+                VertexArrayID id,
+                size_t maxAttribs,
+                size_t maxAttribBindings);
 
     void onDestroy(const Context *context);
 
-    GLuint id() const { return mId; }
+    VertexArrayID id() const { return mId; }
 
     void setLabel(const Context *context, const std::string &label) override;
     const std::string &getLabel() const override;
@@ -326,7 +329,7 @@ class VertexArray final : public angle::ObserverInterface,
                               GLintptr offset,
                               GLsizei stride);
 
-    GLuint mId;
+    VertexArrayID mId;
 
     VertexArrayState mState;
     DirtyBits mDirtyBits;

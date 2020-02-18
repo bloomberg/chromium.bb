@@ -17,7 +17,7 @@
 #include "base/location.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
@@ -25,7 +25,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -175,7 +175,7 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
 
   // Initialize the IO and FILE threads.
   base::Thread::Options options;
-  options.message_loop_type = base::MessageLoop::TYPE_IO;
+  options.message_pump_type = base::MessagePumpType::IO;
   io_thread_.reset(new ServiceIOThread("ServiceProcess_IO"));
   if (!io_thread_->StartWithOptions(options)) {
     NOTREACHED();
@@ -196,10 +196,10 @@ bool ServiceProcess::Initialize(base::OnceClosure quit_closure,
   base::FilePath pref_path =
       user_data_dir.Append(chrome::kServiceStateFileName);
   service_prefs_ = std::make_unique<ServiceProcessPrefs>(
-      pref_path,
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
-          .get());
+      pref_path, base::CreateSequencedTaskRunner(
+                     {base::ThreadPool(), base::MayBlock(),
+                      base::TaskShutdownBehavior::BLOCK_SHUTDOWN})
+                     .get());
   service_prefs_->ReadPrefs();
 
   // This switch it required to run connector with test gaia.

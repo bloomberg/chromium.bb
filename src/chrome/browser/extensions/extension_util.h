@@ -17,14 +17,12 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class WebContents;
 }
 
 namespace gfx {
 class ImageSkia;
 }
 
-class Browser;
 class GURL;
 class Profile;
 
@@ -33,6 +31,13 @@ namespace extensions {
 class Extension;
 
 namespace util {
+
+// Returns true if the site URL corresponds to an extension or app which
+// has isolated storage. This can be either because it is an app that
+// requested this in its manifest, or because it is a policy-installed app or
+// extension running on the Chrome OS sign-in profile.
+bool SiteHasIsolatedStorage(const GURL& extension_site_url,
+                            content::BrowserContext* context);
 
 // Sets whether |extension_id| can run in an incognito window. Reloads the
 // extension if it's enabled since this permission is applied at loading time
@@ -106,14 +111,6 @@ const Extension* GetInstalledPwaForUrl(
     content::BrowserContext* context,
     const GURL& url,
     base::Optional<LaunchContainer> launch_container_filter = base::nullopt);
-
-// Finds the first PWA with the active tab's url in its scope, returns nullptr
-// if there are none or the tab's is not secure.
-const Extension* GetPwaForSecureActiveTab(Browser* browser);
-
-// Returns true if the |web_contents| belongs to a browser that is a windowed
-// app.
-bool IsWebContentsInAppWindow(content::WebContents* web_contents);
 
 }  // namespace util
 }  // namespace extensions

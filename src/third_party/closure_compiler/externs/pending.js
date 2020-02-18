@@ -141,7 +141,6 @@ TtsEvent.prototype.length;
  * @param {number=} opt_length
  * @extends {ArrayBufferView}
  * @constructor
- * @noalias
  * @throws {Error}
  * @modifies {arguments}
  */
@@ -169,3 +168,33 @@ BigInt64Array.prototype.set = function(array, opt_offset) {};
  * @nosideeffects
  */
 BigInt64Array.prototype.subarray = function(begin, opt_end) {};
+
+/**
+ * @see https://drafts.css-houdini.org/css-typed-om/#stylepropertymap
+ * @typedef {{set: function(string, *):void,
+ *            append: function(string, *):void,
+ *            delete: function(string):void,
+ *            clear: function():void }}
+ * TODO(rbpotter): Remove this once it is added to Closure Compiler itself.
+ */
+class StylePropertyMap {
+  /**
+   * @param {string} property
+   * @param {*} values
+   */
+  set(property, values) {}
+
+  /**
+   * @param {string} property
+   * @param {*} values
+   */
+  append(property, values) {}
+
+  /** @param {string} property */
+  delete(property) {}
+
+  clear() {}
+}
+
+/** @type {!StylePropertyMap} */
+HTMLElement.prototype.attributeStyleMap;

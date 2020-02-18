@@ -104,11 +104,6 @@ class ProfileSyncServiceHarness {
   // Starts the sync service after a previous stop.
   bool StartSyncService();
 
-  // Returns whether this client has unsynced items. Avoid verifying false
-  // return values, because tests typically shouldn't make assumptions about
-  // other datatypes.
-  bool HasUnsyncedItems();
-
   // Calling this acts as a barrier and blocks the caller until |this| and
   // |partner| have both completed a sync cycle.  When calling this method,
   // the |partner| should be the passive responder who responds to the actions
@@ -154,8 +149,8 @@ class ProfileSyncServiceHarness {
   // all corresponding datatypes). Returns true on success.
   bool DisableSyncForType(syncer::UserSelectableType type);
 
-  // Enables sync for all sync datatypes. Returns true on success.
-  bool EnableSyncForAllDatatypes();
+  // Enables sync for all registered sync datatypes. Returns true on success.
+  bool EnableSyncForRegisteredDatatypes();
 
   // Disables sync for all sync datatypes. Returns true on success.
   bool DisableSyncForAllDatatypes();

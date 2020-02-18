@@ -60,7 +60,8 @@ bool ControllerVisibleToListener(WindowController* window_controller,
 }
 
 bool WillDispatchWindowEvent(WindowController* window_controller,
-                             BrowserContext* context,
+                             BrowserContext* browser_context,
+                             Feature::Context target_context,
                              const Extension* extension,
                              Event* event,
                              const base::DictionaryValue* listener_filter) {
@@ -88,7 +89,8 @@ bool WillDispatchWindowEvent(WindowController* window_controller,
 
 bool WillDispatchWindowFocusedEvent(
     WindowController* window_controller,
-    BrowserContext* context,
+    BrowserContext* browser_context,
+    Feature::Context target_context,
     const Extension* extension,
     Event* event,
     const base::DictionaryValue* listener_filter) {
@@ -123,9 +125,9 @@ bool WillDispatchWindowFocusedEvent(
   // dispatch WINDOW_ID_NONE to extensions whose profile lost focus that
   // can't see the new focused window across the incognito boundary.
   // See crbug.com/46610.
-  bool cant_cross_incognito = new_active_context &&
-                              new_active_context != context &&
-                              !util::CanCrossIncognito(extension, context);
+  bool cant_cross_incognito =
+      new_active_context && new_active_context != browser_context &&
+      !util::CanCrossIncognito(extension, browser_context);
   // If the window is not visible by the listener, we also need to
   // clear out the window id from the event.
   bool visible_to_listener = ControllerVisibleToListener(
@@ -214,9 +216,13 @@ void WindowsEventRouter::OnWindowControllerAdded(
     return;
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
+  // Since we don't populate tab info here, the context type doesn't matter.
+  constexpr ExtensionTabUtil::PopulateTabBehavior populate_behavior =
+      ExtensionTabUtil::kDontPopulateTabs;
+  constexpr Feature::Context context_type = Feature::UNSPECIFIED_CONTEXT;
   args->Append(ExtensionTabUtil::CreateWindowValueForExtension(
-      *window_controller->GetBrowser(), nullptr,
-      ExtensionTabUtil::kDontPopulateTabs));
+      *window_controller->GetBrowser(), nullptr, populate_behavior,
+      context_type));
   DispatchEvent(events::WINDOWS_ON_CREATED, windows::OnCreated::kEventName,
                 window_controller, std::move(args));
 }

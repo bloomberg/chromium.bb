@@ -39,7 +39,9 @@ typedef void (*PDFEnsureTypefaceCharactersAccessible)(const LOGFONT* font,
                                                       size_t text_length);
 #endif
 
+struct PP_PdfAccessibilityActionData;
 struct PP_PdfPrintSettings_Dev;
+struct PP_PrivateAccessibilityTextRunInfo;
 
 namespace gfx {
 class Rect;
@@ -54,7 +56,9 @@ class VarDictionary;
 namespace chrome_pdf {
 
 // Do one time initialization of the SDK.
-bool InitializeSDK();
+// If |enable_v8| is false, then the PDFEngine will not be able to run
+// JavaScript.
+bool InitializeSDK(bool enable_v8);
 // Tells the SDK that we're shutting down.
 void ShutdownSDK();
 
@@ -322,6 +326,9 @@ class PDFEngine {
   virtual bool CanRedo() = 0;
   virtual void Undo() = 0;
   virtual void Redo() = 0;
+  // Handles actions invoked by Accessibility clients.
+  virtual void HandleAccessibilityAction(
+      const PP_PdfAccessibilityActionData& action_data) = 0;
   virtual std::string GetLinkAtPosition(const pp::Point& point) = 0;
   // Checks the permissions associated with this document.
   virtual bool HasPermission(DocumentPermission permission) const = 0;
@@ -354,13 +361,12 @@ class PDFEngine {
   // Get a given unicode character on a given page.
   virtual uint32_t GetCharUnicode(int page_index, int char_index) = 0;
   // Given a start char index, find the longest continuous run of text that's
-  // in a single direction and with the same style and font size. Return the
-  // length of that sequence and its font size and bounding box.
-  virtual void GetTextRunInfo(int page_index,
-                              int start_char_index,
-                              uint32_t* out_len,
-                              double* out_font_size,
-                              pp::FloatRect* out_bounds) = 0;
+  // in a single direction and with the same style and font size. Return a
+  // filled out PP_PrivateAccessibilityTextRunInfo on success or base::nullopt
+  // on failure. e.g. When |start_char_index| is out of bounds.
+  virtual base::Optional<PP_PrivateAccessibilityTextRunInfo> GetTextRunInfo(
+      int page_index,
+      int start_char_index) = 0;
   // Gets the PDF document's print scaling preference. True if the document can
   // be scaled to fit.
   virtual bool GetPrintScaling() = 0;
@@ -381,7 +387,7 @@ class PDFEngine {
 
   // Append blank pages to make a 1-page document to a |num_pages| document.
   // Always retain the first page data.
-  virtual void AppendBlankPages(int num_pages) = 0;
+  virtual void AppendBlankPages(size_t num_pages) = 0;
   // Append the first page of the document loaded with the |engine| to this
   // document at page |index|.
   virtual void AppendPage(PDFEngine* engine, int index) = 0;

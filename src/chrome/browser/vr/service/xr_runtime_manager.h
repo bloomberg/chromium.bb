@@ -9,11 +9,13 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/optional.h"
 #include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/vr/service/vr_service_impl.h"
@@ -32,7 +34,7 @@ namespace vr {
 class BrowserXRRuntime;
 class XRRuntimeManagerTest;
 
-// Singleton used to provide the platform's VR devices to VRServiceImpl
+// Singleton used to provide the platform's XR Runtimes to VRServiceImpl
 // instances.
 class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
  public:
@@ -70,20 +72,21 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   void RemoveService(VRServiceImpl* service);
 
   BrowserXRRuntime* GetRuntime(device::mojom::XRDeviceId id);
+  bool HasRuntime(device::mojom::XRDeviceId id);
   BrowserXRRuntime* GetRuntimeForOptions(
       device::mojom::XRSessionOptions* options);
   BrowserXRRuntime* GetImmersiveRuntime();
-  device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(XRDeviceImpl* device);
-  void OnRendererDeviceRemoved(XRDeviceImpl* device);
+  device::mojom::VRDisplayInfoPtr GetCurrentVRDisplayInfo(
+      VRServiceImpl* service);
 
-  // Returns true if another device is presenting. Returns false if this device
-  // is presenting, or if nobody is presenting.
-  bool IsOtherDevicePresenting(XRDeviceImpl* device);
+  // Returns true if another service is presenting. Returns false if this
+  // service is presenting, or if nobody is presenting.
+  bool IsOtherClientPresenting(VRServiceImpl* service);
   bool HasAnyRuntime();
 
   void SupportsSession(
       device::mojom::XRSessionOptionsPtr options,
-      device::mojom::XRDevice::SupportsSessionCallback callback);
+      device::mojom::VRService::SupportsSessionCallback callback);
 
   template <typename Fn>
   void ForEachRuntime(Fn&& fn) {
@@ -98,7 +101,7 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
   // Constructor also used by tests to supply an arbitrary list of providers
   static scoped_refptr<XRRuntimeManager> CreateInstance(ProviderList providers);
 
-  // Used by tests to check on device state.
+  // Used by tests to check on runtime state.
   device::mojom::XRRuntime* GetRuntimeForTest(device::mojom::XRDeviceId id);
 
   // Used by tests
@@ -119,7 +122,7 @@ class VR_EXPORT XRRuntimeManager : public base::RefCounted<XRRuntimeManager> {
 
   ProviderList providers_;
 
-  // VRDevices are owned by their providers, each correspond to a
+  // XRRuntimes are owned by their providers, each correspond to a
   // BrowserXRRuntime that is owned by XRRuntimeManager.
   using DeviceRuntimeMap = base::small_map<
       std::map<device::mojom::XRDeviceId, std::unique_ptr<BrowserXRRuntime>>>;

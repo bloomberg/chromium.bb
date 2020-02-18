@@ -13,7 +13,10 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 #include "services/device/usb/usb_device.h"
 #include "services/device/usb/usb_device_handle.h"
@@ -27,14 +30,14 @@ namespace usb {
 class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
  public:
   static void Create(scoped_refptr<device::UsbDevice> device,
-                     mojom::UsbDeviceRequest request,
-                     mojom::UsbDeviceClientPtr client);
+                     mojo::PendingReceiver<mojom::UsbDevice> receiver,
+                     mojo::PendingRemote<mojom::UsbDeviceClient> client);
 
   ~DeviceImpl() override;
 
  private:
   DeviceImpl(scoped_refptr<device::UsbDevice> device,
-             mojom::UsbDeviceClientPtr client);
+             mojo::PendingRemote<mojom::UsbDeviceClient> client);
 
   // Closes the device if it's open. This will always set |device_handle_| to
   // null.
@@ -104,8 +107,8 @@ class DeviceImpl : public mojom::UsbDevice, public device::UsbDevice::Observer {
   // has been closed.
   scoped_refptr<UsbDeviceHandle> device_handle_;
 
-  mojo::StrongBindingPtr<mojom::UsbDevice> binding_;
-  device::mojom::UsbDeviceClientPtr client_;
+  mojo::SelfOwnedReceiverRef<mojom::UsbDevice> receiver_;
+  mojo::Remote<device::mojom::UsbDeviceClient> client_;
   base::WeakPtrFactory<DeviceImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DeviceImpl);

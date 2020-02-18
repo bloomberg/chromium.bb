@@ -8,8 +8,11 @@
 #include <memory>
 #include <vector>
 
+#include "content/public/renderer/plugin_ax_tree_source.h"
 #include "ppapi/c/pp_instance.h"
 #include "ppapi/c/private/ppb_pdf.h"
+#include "ppapi/c/private/ppp_pdf.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 #include "ui/accessibility/ax_node.h"
 #include "ui/accessibility/ax_tree.h"
 #include "ui/accessibility/ax_tree_source.h"
@@ -27,14 +30,17 @@ class Transform;
 
 namespace pdf {
 
-class PdfAccessibilityTree
-    : public ui::AXTreeSource<const ui::AXNode*,
-                              ui::AXNodeData,
-                              ui::AXTreeData> {
+class PdfAccessibilityTree : public content::PluginAXTreeSource {
  public:
   PdfAccessibilityTree(content::RendererPpapiHost* host,
                        PP_Instance instance);
   ~PdfAccessibilityTree() override;
+
+  static bool IsDataFromPluginValid(
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
 
   void SetAccessibilityViewportInfo(
       const PP_PrivateAccessibilityViewportInfo& viewport_info);
@@ -43,9 +49,12 @@ class PdfAccessibilityTree
   void SetAccessibilityPageInfo(
       const PP_PrivateAccessibilityPageInfo& page_info,
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
-      const std::vector<PP_PrivateAccessibilityCharInfo>& chars);
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
+  void HandleAction(const PP_PdfAccessibilityActionData& action_data);
 
-  // AXTreeSource implementation.
+  // PluginAXTreeSource implementation.
   bool GetTreeData(ui::AXTreeData* tree_data) const override;
   ui::AXNode* GetRoot() const override;
   ui::AXNode* GetFromId(int32_t id) const override;
@@ -59,6 +68,8 @@ class PdfAccessibilityTree
   const ui::AXNode* GetNull() const override;
   void SerializeNode(const ui::AXNode* node, ui::AXNodeData* out_data)
       const override;
+  std::unique_ptr<ui::AXActionTarget> CreateActionTarget(
+      const ui::AXNode& target_node) override;
 
  private:
   // Update the AXTreeData when the selected range changed.
@@ -78,10 +89,25 @@ class PdfAccessibilityTree
   // onto the host tree.
   void Finish();
 
+  void AddPageContent(
+      ui::AXNodeData* page_node,
+      const gfx::RectF& page_bounds,
+      uint32_t page_index,
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const std::vector<ppapi::PdfAccessibilityLinkInfo>& links,
+      const std::vector<ppapi::PdfAccessibilityImageInfo>& images);
+  void AddRemainingAnnotations(
+      ui::AXNodeData* page_node,
+      const gfx::RectF& page_bounds,
+      base::span<const ppapi::PdfAccessibilityLinkInfo> links,
+      base::span<const ppapi::PdfAccessibilityImageInfo> images,
+      ui::AXNodeData* para_node);
+
   void ComputeParagraphAndHeadingThresholds(
       const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
       double* out_heading_font_size_threshold,
-      double* out_line_spacing_threshold);
+      double* out_paragraph_spacing_threshold);
   std::string GetTextRunCharsAsUTF8(
       const PP_PrivateAccessibilityTextRunInfo& text_run,
       const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
@@ -93,6 +119,26 @@ class PdfAccessibilityTree
   gfx::Vector2dF ToVector2dF(const PP_Point& p);
   gfx::RectF ToRectF(const PP_Rect& r);
   ui::AXNodeData* CreateNode(ax::mojom::Role role);
+  ui::AXNodeData* CreateParagraphNode(double font_size,
+                                      double heading_font_size_threshold);
+  ui::AXNodeData* CreateStaticTextNode(uint32_t char_index);
+  ui::AXNodeData* CreateInlineTextBoxNode(
+      const PP_PrivateAccessibilityTextRunInfo& text_run,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      uint32_t char_index,
+      const gfx::RectF& page_bounds);
+  ui::AXNodeData* CreateLinkNode(const ppapi::PdfAccessibilityLinkInfo& link,
+                                 const gfx::RectF& page_bounds);
+  ui::AXNodeData* CreateImageNode(const ppapi::PdfAccessibilityImageInfo& image,
+                                  const gfx::RectF& page_bounds);
+  void AddTextToLinkNode(
+      uint32_t start_text_run_index,
+      uint32_t end_text_run_index,
+      const std::vector<PP_PrivateAccessibilityTextRunInfo>& text_runs,
+      const std::vector<PP_PrivateAccessibilityCharInfo>& chars,
+      const gfx::RectF& page_bounds,
+      uint32_t* char_index,
+      ui::AXNodeData* link_node);
   float GetDeviceScaleFactor() const;
   content::RenderAccessibility* GetRenderAccessibility();
   gfx::Transform* MakeTransformFromViewInfo();
@@ -116,6 +162,7 @@ class PdfAccessibilityTree
   // character within its page. Used to find the node associated with
   // the start or end of a selection.
   std::map<int32_t, uint32_t> node_id_to_char_index_in_page_;
+  bool invalid_plugin_message_received_ = false;
 };
 
 }  // namespace pdf;

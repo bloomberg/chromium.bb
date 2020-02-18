@@ -20,7 +20,6 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/env_input_state_controller.h"
-#include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_event_dispatcher_observer.h"
 #include "ui/aura/window_targeter.h"
@@ -118,11 +117,12 @@ void WindowEventDispatcher::RepostEvent(const ui::LocatedEvent* event) {
   // We allow for only one outstanding repostable event. This is used
   // in exiting context menus.  A dropped repost request is allowed.
   if (event->type() == ui::ET_MOUSE_PRESSED) {
-    held_repostable_event_.reset(new ui::MouseEvent(
+    held_repostable_event_ = std::make_unique<ui::MouseEvent>(
         *event->AsMouseEvent(), static_cast<aura::Window*>(event->target()),
-        window()));
+        window());
   } else if (event->type() == ui::ET_TOUCH_PRESSED) {
-    held_repostable_event_.reset(new ui::TouchEvent(*event->AsTouchEvent()));
+    held_repostable_event_ =
+        std::make_unique<ui::TouchEvent>(*event->AsTouchEvent());
   } else {
     DCHECK(event->type() == ui::ET_GESTURE_TAP_DOWN);
     held_repostable_event_.reset();
@@ -890,7 +890,8 @@ DispatchDetails WindowEventDispatcher::PreDispatchMouseEvent(
 
   if (IsEventCandidateForHold(*event) && !dispatching_held_event_) {
     if (move_hold_count_) {
-      held_move_event_.reset(new ui::MouseEvent(*event, target, window()));
+      held_move_event_ =
+          std::make_unique<ui::MouseEvent>(*event, target, window());
       event->SetHandled();
       return DispatchDetails();
     } else {
@@ -996,7 +997,8 @@ DispatchDetails WindowEventDispatcher::PreDispatchTouchEvent(
     ui::TouchEvent* event) {
   if (event->type() == ui::ET_TOUCH_MOVED && move_hold_count_ &&
       !dispatching_held_event_) {
-    held_move_event_.reset(new ui::TouchEvent(*event, target, window()));
+    held_move_event_ =
+        std::make_unique<ui::TouchEvent>(*event, target, window());
     event->SetHandled();
     return DispatchDetails();
   }

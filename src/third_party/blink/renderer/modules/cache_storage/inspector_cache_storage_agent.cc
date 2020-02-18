@@ -29,13 +29,12 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/network/http_header_map.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 using blink::protocol::Array;
@@ -122,11 +121,11 @@ ProtocolResponse AssertCacheStorage(
   auto it = caches->find(security_origin);
 
   if (it == caches->end()) {
-    mojom::blink::CacheStoragePtr cache_storage_ptr;
+    mojo::Remote<mojom::blink::CacheStorage> cache_storage_remote;
     context->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&cache_storage_ptr));
-    *result = cache_storage_ptr.get();
-    caches->Set(security_origin, std::move(cache_storage_ptr));
+        cache_storage_remote.BindNewPipeAndPassReceiver());
+    *result = cache_storage_remote.get();
+    caches->Set(security_origin, std::move(cache_storage_remote));
   } else {
     *result = it->value.get();
   }

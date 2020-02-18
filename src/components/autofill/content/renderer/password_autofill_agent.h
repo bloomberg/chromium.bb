@@ -7,6 +7,7 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -225,8 +226,18 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   std::unique_ptr<PasswordForm> GetPasswordFormFromWebForm(
       const blink::WebFormElement& web_form);
 
+  // Creates a |PasswordForm| from |web_form|, that contains only the
+  // |form_data|, the origin and the gaia flags.
+  std::unique_ptr<PasswordForm> GetSimplifiedPasswordFormFromWebForm(
+      const blink::WebFormElement& web_form);
+
   // Creates a |PasswordForm| of fields that are not enclosed in any <form> tag.
   std::unique_ptr<PasswordForm> GetPasswordFormFromUnownedInputElements();
+
+  // Creates a |PasswordForm| containing only the |form_data|, origin and gaia
+  // flags, for fields that are not enclosed in any <form> tag.
+  std::unique_ptr<PasswordForm>
+  GetSimplifiedPasswordFormFromUnownedInputElements();
 
   bool logging_state_active() const { return logging_state_active_; }
 
@@ -392,34 +403,16 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // This function attempts to fill |username_element| and |password_element|
   // with values from |fill_data|. The |username_element| and |password_element|
   // will only have the suggestedValue set. If a match is found, return true and
-  // |field_data_manager| will be modified with the autofilled credentials and
-  // |FieldPropertiesFlags::AUTOFILLED| flag.
-  // If |username_may_use_prefilled_placeholder| then this function may
-  // overwrite the value of username field.
-  bool FillUserNameAndPassword(blink::WebInputElement* username_element,
-                               blink::WebInputElement* password_element,
+  // Returns true if the password is filled.
+  bool FillUserNameAndPassword(blink::WebInputElement username_element,
+                               blink::WebInputElement password_element,
                                const PasswordFormFillData& fill_data,
-                               bool exact_username_match,
-                               bool username_may_use_prefilled_placeholder,
-                               FieldDataManager* field_data_manager,
                                RendererSavePasswordProgressLogger* logger);
 
   // Logs whether a username value that was prefilled by the website was
   // overridden when trying to fill with an existing credential. This logs
   // only one value per |PasswordAutofillAgent| instance.
   void LogPrefilledUsernameFillOutcome(PrefilledUsernameFillOutcome outcome);
-
-  // Attempts to fill |username_element| and |password_element| with the
-  // |fill_data|. Will use the data corresponding to the preferred username,
-  // unless the |username_element| already has a value set. In that case,
-  // attempts to fill the password matching the already filled username, if
-  // such a password exists. The |password_element| will have the
-  // |suggestedValue| set. Returns true if the password is filled.
-  bool FillFormOnPasswordReceived(const PasswordFormFillData& fill_data,
-                                  blink::WebInputElement username_element,
-                                  blink::WebInputElement password_element,
-                                  FieldDataManager* field_data_manager,
-                                  RendererSavePasswordProgressLogger* logger);
 
   // Helper function called when form submission is successful.
   void FireSubmissionIfFormDisappear(mojom::SubmissionIndicatorEvent event);
@@ -467,6 +460,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // Tries to restore |control_elements| values with cached values.
   void TryFixAutofilledForm(
       std::vector<blink::WebFormControlElement>* control_elements) const;
+
+  // Autofills |field| with |value| and updates |gatekeeper_|,
+  // |field_data_manager_|, |autofilled_elements_cache_|. |field| should be
+  // non-null.
+  void AutofillField(const base::string16& value, blink::WebInputElement field);
 
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;

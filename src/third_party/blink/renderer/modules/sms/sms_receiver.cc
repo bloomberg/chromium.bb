@@ -10,11 +10,11 @@
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/modules/sms/sms.h"
 #include "third_party/blink/renderer/modules/sms/sms_metrics.h"
-#include "third_party/blink/renderer/modules/sms/sms_receiver_options.h"
 #include "third_party/blink/renderer/platform/bindings/name_client.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
@@ -22,11 +22,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
-namespace {
-
-const uint32_t kDefaultTimeoutSeconds = 60;
-
-}  // namespace
 
 SMSReceiver::SMSReceiver(ExecutionContext* context) : ContextClient(context) {}
 
@@ -36,21 +31,11 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
   DCHECK(context->IsContextThread());
 
   LocalFrame* frame = GetFrame();
-  if (!frame->IsMainFrame()) {
+  if (!frame->IsMainFrame() && frame->IsCrossOriginSubframe()) {
     return ScriptPromise::RejectWithDOMException(
         script_state, MakeGarbageCollected<DOMException>(
                           DOMExceptionCode::kNotAllowedError,
-                          "Must be in top-level browsing context."));
-  }
-
-  int32_t timeout_seconds =
-      options->hasTimeout() ? options->timeout() : kDefaultTimeoutSeconds;
-
-  if (timeout_seconds <= 0) {
-    return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(DOMExceptionCode::kNotSupportedError,
-                                           "Invalid timeout."));
+                          "Must have the same origin as the top-level frame."));
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
@@ -62,13 +47,12 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
 
   if (!service_) {
     GetExecutionContext()->GetInterfaceProvider()->GetInterface(
-        mojo::MakeRequest(&service_, task_runner));
-    service_.set_connection_error_handler(WTF::Bind(
+        service_.BindNewPipeAndPassReceiver(task_runner));
+    service_.set_disconnect_handler(WTF::Bind(
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));
   }
 
   service_->Receive(
-      base::TimeDelta::FromSeconds(timeout_seconds),
       WTF::Bind(&SMSReceiver::OnReceive, WrapPersistent(this),
                 WrapPersistent(resolver), base::TimeTicks::Now()));
 
@@ -83,22 +67,24 @@ void SMSReceiver::OnReceive(ScriptPromiseResolver* resolver,
                             const WTF::String& sms) {
   requests_.erase(resolver);
 
+  ukm::SourceId source_id = GetDocument()->UkmSourceID();
+  ukm::UkmRecorder* recorder = GetDocument()->UkmRecorder();
+
   if (status == mojom::blink::SmsStatus::kTimeout) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kTimeoutError, "SMSReceiver timed out."));
-    RecordSMSTimeoutExceededTime(base::TimeTicks::Now() - start_time);
-    RecordSMSOutcome(SMSReceiverOutcome::kTimeout);
+    RecordSMSOutcome(SMSReceiverOutcome::kTimeout, source_id, recorder);
     return;
   } else if (status == mojom::blink::SmsStatus::kCancelled) {
     resolver->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kAbortError, "SMSReceiver was aborted."));
     RecordSMSCancelTime(base::TimeTicks::Now() - start_time);
-    RecordSMSOutcome(SMSReceiverOutcome::kCancelled);
+    RecordSMSOutcome(SMSReceiverOutcome::kCancelled, source_id, recorder);
     return;
   }
 
   RecordSMSSuccessTime(base::TimeTicks::Now() - start_time);
-  RecordSMSOutcome(SMSReceiverOutcome::kSuccess);
+  RecordSMSOutcome(SMSReceiverOutcome::kSuccess, source_id, recorder);
 
   resolver->Resolve(MakeGarbageCollected<blink::SMS>(sms));
 }
@@ -108,7 +94,9 @@ void SMSReceiver::OnSMSReceiverConnectionError() {
   for (ScriptPromiseResolver* request : requests_) {
     request->Reject(MakeGarbageCollected<DOMException>(
         DOMExceptionCode::kNotFoundError, "SMSReceiver not available."));
-    RecordSMSOutcome(SMSReceiverOutcome::kConnectionError);
+    RecordSMSOutcome(SMSReceiverOutcome::kConnectionError,
+                     GetDocument()->UkmSourceID(),
+                     GetDocument()->UkmRecorder());
   }
   requests_.clear();
 }

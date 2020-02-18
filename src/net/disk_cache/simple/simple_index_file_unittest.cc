@@ -30,7 +30,7 @@
 #include "net/disk_cache/simple/simple_util.h"
 #include "net/disk_cache/simple/simple_version_upgrade.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -176,7 +176,7 @@ class WrappedSimpleIndexFile : public SimpleIndexFile {
   }
 };
 
-class SimpleIndexFileTest : public net::TestWithScopedTaskEnvironment {
+class SimpleIndexFileTest : public net::TestWithTaskEnvironment {
  public:
   bool CompareTwoEntryMetadata(const EntryMetadata& a, const EntryMetadata& b) {
     return a.last_used_time_seconds_since_epoch_ ==
@@ -591,8 +591,9 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
-  rv = simple_cache->index()->ExecuteWhenReady(cb.callback());
-  EXPECT_THAT(cb.GetResult(rv), IsOk());
+  simple_cache->index()->ExecuteWhenReady(cb.callback());
+  rv = cb.WaitForResult();
+  EXPECT_THAT(rv, IsOk());
   delete simple_cache;
   cleanup_tracker = nullptr;
 

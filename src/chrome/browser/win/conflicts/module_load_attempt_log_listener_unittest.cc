@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/chrome_elf/sha1/sha1.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -57,7 +57,7 @@ class ModuleLoadAttemptLogListenerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool notified_ = false;
 

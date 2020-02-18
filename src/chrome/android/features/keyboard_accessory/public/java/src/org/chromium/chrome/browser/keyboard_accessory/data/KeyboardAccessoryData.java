@@ -175,7 +175,7 @@ public class KeyboardAccessoryData {
      * (username + password), to be shown on the manual fallback UI.
      */
     public final static class UserInfo {
-        private final String mTitle;
+        private final String mOrigin;
         private final List<UserInfoField> mFields = new ArrayList<>();
         private final @Nullable FaviconProvider mFaviconProvider;
 
@@ -184,15 +184,30 @@ public class KeyboardAccessoryData {
          */
         public interface FaviconProvider {
             /**
+             * Data object containing the result of a {@link FaviconProvider#fetchFavicon} calls.
+             */
+            class FaviconResult {
+                public final String mOrigin;
+                public final Bitmap mFavicon;
+
+                public FaviconResult(String origin, Bitmap favicon) {
+                    mOrigin = origin;
+                    mFavicon = favicon;
+                }
+            }
+
+            /**
              * Starts a request for a favicon. The callback can be called either asynchronously or
              * synchronously (depending on whether the icon was cached).
-             * @param favicon The icon to be used for this Item. If null, use the default icon.
+             * @param origin The origin the icon should be requested for.
+             * @param desiredSize The size the icon should have. Used for height and width.
+             * @param favicon The callback that will be called once the icon was fetched.
              */
-            void fetchFavicon(@Px int desiredSize, Callback<Bitmap> favicon);
+            void fetchFavicon(String origin, @Px int desiredSize, Callback<FaviconResult> favicon);
         }
 
-        public UserInfo(String title, @Nullable FaviconProvider faviconProvider) {
-            mTitle = title;
+        public UserInfo(String origin, @Nullable FaviconProvider faviconProvider) {
+            mOrigin = origin;
             mFaviconProvider = faviconProvider;
         }
 
@@ -212,10 +227,10 @@ public class KeyboardAccessoryData {
         }
 
         /**
-         * @return A string to be used as title. May be empty but not null.
+         * @return A string indicating the origin. May be empty but not null.
          */
-        public String getTitle() {
-            return mTitle;
+        public String getOrigin() {
+            return mOrigin;
         }
 
         /**
@@ -267,6 +282,7 @@ public class KeyboardAccessoryData {
      */
     public final static class AccessorySheetData {
         private final String mTitle;
+        private final String mWarning;
         private final @AccessoryTabType int mSheetType;
         private final List<UserInfo> mUserInfoList = new ArrayList<>();
         private final List<FooterCommand> mFooterCommands = new ArrayList<>();
@@ -274,10 +290,12 @@ public class KeyboardAccessoryData {
         /**
          * Creates the AccessorySheetData object.
          * @param title The title of accessory sheet tab.
+         * @param warning An optional warning to be displayed the beginning of the sheet.
          */
-        public AccessorySheetData(@AccessoryTabType int sheetType, String title) {
+        public AccessorySheetData(@AccessoryTabType int sheetType, String title, String warning) {
             mSheetType = sheetType;
             mTitle = title;
+            mWarning = warning;
         }
 
         public @AccessoryTabType int getSheetType() {
@@ -289,6 +307,13 @@ public class KeyboardAccessoryData {
          */
         public String getTitle() {
             return mTitle;
+        }
+
+        /**
+         * Returns a warning to be displayed at the beginning of the sheet. Empty string otherwise.
+         */
+        public String getWarning() {
+            return mWarning;
         }
 
         /**

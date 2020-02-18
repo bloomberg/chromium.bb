@@ -7,6 +7,7 @@
 #ifdef DRV_MEDIATEK
 
 // clang-format off
+#include <errno.h>
 #include <fcntl.h>
 #include <poll.h>
 #include <stdio.h>
@@ -33,8 +34,14 @@ static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMA
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
 
+#ifdef MTK_MT8183
+static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8,     DRM_FORMAT_NV21,
+						   DRM_FORMAT_NV12,   DRM_FORMAT_YUYV,
+						   DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID };
+#else
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_R8, DRM_FORMAT_YVU420,
-						   DRM_FORMAT_YVU420_ANDROID };
+						   DRM_FORMAT_YVU420_ANDROID, DRM_FORMAT_NV12 };
+#endif
 
 static int mediatek_init(struct driver *drv)
 {
@@ -46,6 +53,13 @@ static int mediatek_init(struct driver *drv)
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
 
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &LINEAR_METADATA, BO_USE_HW_VIDEO_ENCODER);
+
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &LINEAR_METADATA, BO_USE_SW_MASK);
 
@@ -55,17 +69,39 @@ static int mediatek_init(struct driver *drv)
 	metadata.modifier = DRM_FORMAT_MOD_LINEAR;
 	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_DECODER);
 	drv_modify_combination(drv, DRM_FORMAT_YVU420_ANDROID, &metadata, BO_USE_HW_VIDEO_DECODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_DECODER);
+
+#ifdef MTK_MT8183
+	/* Only for MT8183 Camera subsystem */
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_NV21, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_YUYV, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+	drv_modify_combination(drv, DRM_FORMAT_R8, &metadata,
+			       BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE);
+#endif
 
 	return drv_modify_linear_combinations(drv);
 }
 
-static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
-			      uint64_t use_flags)
+static int mediatek_bo_create_with_modifiers(struct bo *bo, uint32_t width, uint32_t height,
+					     uint32_t format, const uint64_t *modifiers,
+					     uint32_t count)
 {
 	int ret;
 	size_t plane;
 	uint32_t stride;
 	struct drm_mtk_gem_create gem_create;
+
+	if (!drv_has_modifier(modifiers, count, DRM_FORMAT_MOD_LINEAR)) {
+		errno = EINVAL;
+		drv_log("no usable modifier found\n");
+		return -EINVAL;
+	}
 
 	/*
 	 * Since the ARM L1 cache line size is 64 bytes, align to that as a
@@ -81,13 +117,21 @@ static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, ui
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MTK_GEM_CREATE, &gem_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_MTK_GEM_CREATE failed (size=%llu)\n", gem_create.size);
-		return ret;
+		return -errno;
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++)
 		bo->handles[plane].u32 = gem_create.handle;
 
 	return 0;
+}
+
+static int mediatek_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
+			      uint64_t use_flags)
+{
+	uint64_t modifiers[] = { DRM_FORMAT_MOD_LINEAR };
+	return mediatek_bo_create_with_modifiers(bo, width, height, format, modifiers,
+						 ARRAY_SIZE(modifiers));
 }
 
 static void *mediatek_bo_map(struct bo *bo, struct vma *vma, size_t plane, uint32_t map_flags)
@@ -182,13 +226,23 @@ static int mediatek_bo_flush(struct bo *bo, struct mapping *mapping)
 	return 0;
 }
 
-static uint32_t mediatek_resolve_format(uint32_t format, uint64_t use_flags)
+static uint32_t mediatek_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:
+#ifdef MTK_MT8183
+		/* Only for MT8183 Camera subsystem requires NV12. */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
+#endif
 		/*HACK: See b/28671744 */
 		return DRM_FORMAT_XBGR8888;
 	case DRM_FORMAT_FLEX_YCbCr_420_888:
+#ifdef MTK_MT8183
+		/* Only for MT8183 Camera subsystem requires NV12 */
+		if (use_flags & (BO_USE_CAMERA_READ | BO_USE_CAMERA_WRITE))
+			return DRM_FORMAT_NV12;
+#endif
 		return DRM_FORMAT_YVU420;
 	default:
 		return format;
@@ -199,6 +253,7 @@ const struct backend backend_mediatek = {
 	.name = "mediatek",
 	.init = mediatek_init,
 	.bo_create = mediatek_bo_create,
+	.bo_create_with_modifiers = mediatek_bo_create_with_modifiers,
 	.bo_destroy = drv_gem_bo_destroy,
 	.bo_import = drv_prime_bo_import,
 	.bo_map = mediatek_bo_map,

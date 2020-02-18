@@ -21,9 +21,9 @@
 
 #include "perfetto/base/build_config.h"
 
-#if (PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||    \
-     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)) && \
-    !PERFETTO_BUILDFLAG(PERFETTO_EMBEDDER_BUILD)
+// The POSIX watchdog is only supported on Linux and Android in non-embedder
+// builds.
+#if PERFETTO_BUILDFLAG(PERFETTO_WATCHDOG)
 #include "perfetto/ext/base/watchdog_posix.h"
 #else
 #include "perfetto/ext/base/watchdog_noop.h"

@@ -424,6 +424,13 @@ DevToolsWindow::~DevToolsWindow() {
     close_callback_.Run();
     close_callback_ = base::Closure();
   }
+  // Defer deletion of the main web contents, since we could get here
+  // via RenderFrameHostImpl method that expects WebContents to live
+  // for some time. See http://crbug.com/997299 for details.
+  if (owned_main_web_contents_) {
+    base::SequencedTaskRunnerHandle::Get()->DeleteSoon(
+        FROM_HERE, std::move(owned_main_web_contents_));
+  }
 }
 
 // static
@@ -600,7 +607,7 @@ void DevToolsWindow::ToggleDevToolsWindow(
     Browser* browser,
     const DevToolsToggleAction& action) {
   if (action.type() == DevToolsToggleAction::kToggle &&
-      browser->is_devtools()) {
+      browser->is_type_devtools()) {
     browser->tab_strip_model()->CloseAllTabs();
     return;
   }
@@ -888,7 +895,7 @@ bool DevToolsWindow::NeedsToInterceptBeforeUnload(
 // static
 bool DevToolsWindow::HasFiredBeforeUnloadEventForDevToolsBrowser(
     Browser* browser) {
-  DCHECK(browser->is_devtools());
+  DCHECK(browser->is_type_devtools());
   // When FastUnloadController is used, devtools frontend will be detached
   // from the browser window at this point which means we've already fired
   // beforeunload.
@@ -1006,9 +1013,9 @@ DevToolsWindow* DevToolsWindow::Create(
     // Check for a place to dock.
     Browser* browser = nullptr;
     int tab;
-    if (!FindInspectedBrowserAndTabIndex(inspected_web_contents,
-                                         &browser, &tab) ||
-        browser->is_type_popup()) {
+    if (!FindInspectedBrowserAndTabIndex(inspected_web_contents, &browser,
+                                         &tab) ||
+        !browser->is_type_normal()) {
       can_dock = false;
     }
   }

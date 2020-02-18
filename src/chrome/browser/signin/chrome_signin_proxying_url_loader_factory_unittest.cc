@@ -14,7 +14,7 @@
 #include "base/test/mock_callback.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/signin/header_modification_delegate.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -52,7 +52,7 @@ class MockDelegate : public HeaderModificationDelegate {
   DISALLOW_COPY_AND_ASSIGN(MockDelegate);
 };
 
-content::ResourceRequestInfo::WebContentsGetter NullWebContentsGetter() {
+content::WebContents::Getter NullWebContentsGetter() {
   return base::BindRepeating([]() -> content::WebContents* { return nullptr; });
 }
 
@@ -108,7 +108,7 @@ class ChromeSigninProxyingURLLoaderFactoryTest : public testing::Test {
     proxying_factory_.reset();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<network::SimpleURLLoader> loader_;
   std::unique_ptr<ProxyingURLLoaderFactory> proxying_factory_;
   network::TestURLLoaderFactory test_factory_;

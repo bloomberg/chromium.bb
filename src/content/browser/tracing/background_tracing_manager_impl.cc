@@ -75,7 +75,7 @@ void BackgroundTracingManagerImpl::ActivateForProcess(
       base::BindOnce(&BackgroundTracingAgentClientImpl::Create,
                      child_process_id, std::move(pending_provider));
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BackgroundTracingManagerImpl::AddPendingAgentConstructor,
                      std::move(constructor)));
@@ -133,9 +133,12 @@ bool BackgroundTracingManagerImpl::SetActiveScenario(
     data_filtering = DataFiltering::ANONYMIZE_DATA;
     RecordMetric(Metrics::STARTUP_SCENARIO_TRIGGERED);
   } else {
-    // If startup config was not set and tracing was enabled, then do not set
-    // any scenario.
-    if (base::trace_event::TraceLog::GetInstance()->IsEnabled()) {
+    // If startup config was not set and we're not a SYSTEM scenario (system
+    // might already have started a trace in the background) but tracing was
+    // enabled, then do not set any scenario.
+    if (base::trace_event::TraceLog::GetInstance()->IsEnabled() &&
+        config_impl &&
+        config_impl->tracing_mode() != BackgroundTracingConfigImpl::SYSTEM) {
       return false;
     }
   }
@@ -325,7 +328,7 @@ void BackgroundTracingManagerImpl::TriggerNamedEvent(
     BackgroundTracingManagerImpl::TriggerHandle handle,
     StartedFinalizingCallback callback) {
   if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&BackgroundTracingManagerImpl::TriggerNamedEvent,
                        base::Unretained(this), handle, std::move(callback)));
@@ -418,7 +421,8 @@ BackgroundTracingManagerImpl::GenerateMetadataDict() {
 }
 
 void BackgroundTracingManagerImpl::GenerateMetadataProto(
-    perfetto::protos::pbzero::ChromeMetadataPacket* metadata) {
+    perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
+    bool privacy_filtering_enabled) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (active_scenario_) {
     active_scenario_->GenerateMetadataProto(metadata);

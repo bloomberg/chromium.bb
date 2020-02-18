@@ -248,7 +248,7 @@ class DeployChrome(object):
     if effective_free < staging_size:
       raise DeployFailure(
           'Not enough free space on the device.  Required: %s MiB, '
-          'actual: %s MiB.' % (staging_size / 1024, effective_free / 1024))
+          'actual: %s MiB.' % (staging_size // 1024, effective_free // 1024))
     if device_info.target_fs_free < (100 * 1024):
       logging.warning('The device has less than 100MB free.  deploy_chrome may '
                       'hang during the transfer.')
@@ -276,6 +276,12 @@ class DeployChrome(object):
                              compress=self._ShouldUseCompression(),
                              debug_level=logging.INFO,
                              verbose=self.options.verbose)
+
+    # Set the security context on the default Chrome dir if that's where it's
+    # getting deployed, and only on SELinux supported devices.
+    if (self.device.IsSELinuxAvailable() and
+        _CHROME_DIR in (self.options.target_dir, self.options.mount_dir)):
+      self.device.RunCommand(['restorecon', '-R', _CHROME_DIR])
 
     for p in self.copy_paths:
       if p.mode:
@@ -406,9 +412,9 @@ def _CreateParser():
                            'machine being rebooted.')
   sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
   parser.add_argument('--board', default=sdk_board_env,
-                      help="The board the Chrome build is targeted for.  When "
+                      help='The board the Chrome build is targeted for.  When '
                            "in a 'cros chrome-sdk' shell, defaults to the SDK "
-                           "board.")
+                           'board.')
   parser.add_argument('--build-dir', type='path',
                       help='The directory with Chrome build artifacts to '
                            'deploy from. Typically of format '
@@ -463,7 +469,7 @@ def _CreateParser():
                           'files.')
   group.add_argument('--strip-flags', default=None,
                      help="Flags to call the 'strip' binutil tool with.  "
-                          "Overrides the default arguments.")
+                          'Overrides the default arguments.')
   group.add_argument('--ping', action='store_true', default=False,
                      help='Ping the device before connection attempt.')
   group.add_argument('--process-timeout', type=int,

@@ -64,6 +64,7 @@ class TestAutofillClient : public AutofillClient {
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
+  void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(
@@ -159,6 +160,10 @@ class TestAutofillClient : public AutofillClient {
     return offer_to_save_credit_card_bubble_was_shown_.value();
   }
 
+  SaveCreditCardOptions get_save_credit_card_options() {
+    return save_credit_card_options_.value();
+  }
+
   MockAutocompleteHistoryManager* GetMockAutocompleteHistoryManager() {
     return &mock_autocomplete_history_manager_;
   }
@@ -199,6 +204,9 @@ class TestAutofillClient : public AutofillClient {
   // Populated if name fix flow was offered. True if bubble was shown, false
   // otherwise.
   base::Optional<bool> credit_card_name_fix_flow_bubble_was_shown_;
+
+  // Populated if local save or upload was offered.
+  base::Optional<SaveCreditCardOptions> save_credit_card_options_;
 
   std::vector<std::string> migration_card_selection_;
 

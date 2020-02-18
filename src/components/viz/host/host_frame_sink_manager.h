@@ -25,7 +25,7 @@
 #include "components/viz/host/viz_host_export.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support_manager.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -291,8 +291,6 @@ class VIZ_HOST_EXPORT HostFrameSinkManager
   bool connection_was_lost_ = false;
 
   base::RepeatingClosure connection_lost_callback_;
-
-  base::RepeatingClosure bad_message_received_from_gpu_callback_;
 
   DisplayHitTestQueryMap display_hit_test_query_;
 

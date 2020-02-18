@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Tanggal harus <ph name="MINIMUM_DATE_OR_TIME" /> atau setelahnya.</translation>
 <translation id="2759744352195237655">tombol pop-up</translation>
 <translation id="2761667185364618470">Centang kotak ini jika Anda ingin melanjutkan.</translation>
+<translation id="2844350028562914727">detail</translation>
 <translation id="2896972712917208084">grup radio</translation>
 <translation id="2908441821576996758">Masukkan daftar alamat email yang dipisahkan dengan koma.</translation>
 <translation id="2940813599313844715">objek</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Nilai harus lebih kecil atau sama dengan <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definisi</translation>
 <translation id="3557673793733683882">judul <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">pemilih minggu</translation>
 <translation id="3685101356851116974">Gambar tidak berlabel</translation>
 <translation id="3706100364254443312">saklar</translation>
 <translation id="3732799496749320381">bb</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">bilah gulir</translation>
 <translation id="4103419683916926126">Milidetik</translation>
 <translation id="4151657705144244502">grafis</translation>
+<translation id="4160057747563657758">telepon</translation>
 <translation id="4193965531860883258">kata pengantar</translation>
 <translation id="4201051445878709314">Tampilkan bulan sebelumnya</translation>
 <translation id="421884353938374759">pemilih warna</translation>
 <translation id="4248100235867064564">bilah menu</translation>
-<translation id="4254339807215791271">info konten</translation>
 <translation id="4360991593054037559">Masukkan nilai yang valid. Dua nilai valid terdekat adalah <ph name="VALID_VALUE_LOW" /> dan <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Tanya Jawab</translation>
 <translation id="4413860115965805769">tombol menu</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Nonaktif</translation>
 <translation id="588258955323874662">Layar Penuh</translation>
 <translation id="5888666972993069672">Sedang melakukan cast ke <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">kotak penelusuran</translation>
 <translation id="5939518447894949180">Setel ulang</translation>
 <translation id="5966707198760109579">Minggu</translation>
 <translation id="5987525920412732405">tombol putar</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">penutup</translation>
 <translation id="6209276755895393898">Muncul sebagai: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosarium</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Keluar dari Mode Picture-in-Picture</translation>
 <translation id="6398862346408813489">Tampilkan panel pilihan bulan</translation>
 <translation id="6404546809543547843">scrubber waktu audio</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Sesuaikan dengan format yang diminta.</translation>
 <translation id="7118469954320184356">Deskripsi tidak tersedia.</translation>
 <translation id="7139483182332611405">kata pengantar</translation>
+<translation id="7214187073215825913">informasi konten</translation>
 <translation id="7263440858009898357">Pilih item pada daftar.</translation>
 <translation id="727747134524199931">judul kolom</translation>
 <translation id="7320576522385648310">buffering</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Mendapatkan deskripsi...</translation>
 <translation id="8117451130807776954">Minggu ini</translation>
 <translation id="8199524924445686405">tttt</translation>
+<translation id="8208673686607688524">pemilih tanggal dan waktu lokal</translation>
 <translation id="8261464734335370856">Ejaan tidak valid</translation>
 <translation id="8284326494547611709">Teks</translation>
 <translation id="835897206747267392">Nilai tidak valid.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">daftar isi</translation>
 <translation id="8613126697340063924">kontrol pemutaran jarak jauh</translation>
 <translation id="862370744433916922">subjudul</translation>
+<translation id="8711688047404765493">keluaran</translation>
 <translation id="8750798805984357768">Pilih salah satu opsi berikut.</translation>
 <translation id="8808573423886751634">bab</translation>
 <translation id="8845239796550121995">Sekarang sedang mentransmisi ke TV Anda</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Bulan</translation>
 <translation id="901493112792887934">waktu saat ini dalam detik</translation>
+<translation id="901834265349196618">email</translation>
 <translation id="9048119486235211610">navigasi</translation>
 <translation id="9062295712474918030">dokumen</translation>
 <translation id="9062307380734144336">pilih untuk mengalihkan putar jeda</translation>

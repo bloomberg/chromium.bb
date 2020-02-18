@@ -158,7 +158,6 @@ const char kSpellcheckDictionaryLocale[] = "dictionary_locale";
 const char kSpellcheckDictionaryPath[] = "dictionary_path";
 const char kStorageManagedSchema[] = "storage.managed_schema";
 const char kSuggestedKey[] = "suggested_key";
-const char kSynthesizeExtensionAction[] = "_synthesize_extension_action";
 const char kSystemIndicator[] = "system_indicator";
 const char kTheme[] = "theme";
 const char kThemeColors[] = "colors";
@@ -270,6 +269,9 @@ const char kBackgroundPersistentInvalidForPlatformApps[] =
     "The key 'background.persistent' is not supported for packaged apps.";
 const char kBackgroundRequiredForPlatformApps[] =
     "Packaged apps must have a background page or background scripts.";
+const char kBackgroundSpecificationInvalidForManifestV3[] =
+    "The \"*\" key cannot be used with manifest_version 3. Use the "
+    "\"background.service_worker\" key instead.";
 const char kCannotAccessAboutUrl[] =
     "Cannot access \"*\" at origin \"*\". Extension must have permission to "
     "access the frame's origin, and matchAboutBlank must be true.";

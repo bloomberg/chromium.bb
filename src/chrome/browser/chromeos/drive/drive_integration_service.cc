@@ -66,10 +66,11 @@
 #include "content/public/common/user_agent.h"
 #include "google_apis/drive/auth_service.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
+#include "services/identity/public/mojom/identity_service.mojom.h"
 #include "services/network/public/cpp/network_connection_tracker.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -334,7 +335,6 @@ std::vector<base::FilePath> GetPinnedAndDirtyFiles(
           GetFullPath(metadata_storage.get(), value), value.local_id()));
     }
   }
-  UMA_HISTOGRAM_COUNTS("Drive.MigrateDirtyFilesCount", dirty_files.size());
   // Destructing |metadata_storage| requires a posted task to run, so defer
   // deleting its data until after it's been destructed. This also returns the
   // list of files to pin to the UI thread without waiting for the remaining
@@ -402,9 +402,7 @@ class DriveIntegrationService::PreferenceWatcher
       public chromeos::NetworkPortalDetector::Observer {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
-      : pref_service_(pref_service),
-        integration_service_(nullptr),
-        weak_ptr_factory_(this) {
+      : pref_service_(pref_service), integration_service_(nullptr) {
     DCHECK(pref_service);
     pref_change_registrar_.Init(pref_service);
     pref_change_registrar_.Add(
@@ -502,7 +500,7 @@ class DriveIntegrationService::PreferenceWatcher
   chromeos::NetworkPortalDetector::CaptivePortalStatus last_portal_status_ =
       chromeos::NetworkPortalDetector::CAPTIVE_PORTAL_STATUS_UNKNOWN;
 
-  base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_;
+  base::WeakPtrFactory<PreferenceWatcher> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PreferenceWatcher);
 };
 
@@ -534,8 +532,12 @@ class DriveIntegrationService::DriveFsHolder
     return profile_->GetURLLoaderFactory();
   }
 
-  service_manager::Connector* GetConnector() override {
-    return content::BrowserContext::GetConnectorFor(profile_);
+  void BindIdentityAccessor(
+      mojo::PendingReceiver<identity::mojom::IdentityAccessor> receiver)
+      override {
+    auto* service = profile_->GetIdentityService();
+    if (service)
+      service->BindIdentityAccessor(std::move(receiver));
   }
 
   const AccountId& GetAccountId() override {
@@ -659,14 +661,13 @@ DriveIntegrationService::DriveIntegrationService(
                                 std::move(test_drivefs_mojo_listener_factory))
                           : nullptr),
       preference_watcher_(preference_watcher),
-      power_manager_observer_(this),
-      weak_ptr_factory_(this) {
+      power_manager_observer_(this) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
 
   logger_ = std::make_unique<EventLogger>();
-  blocking_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
+  blocking_task_runner_ = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
 
   if (preference_watcher_)
@@ -712,9 +713,10 @@ DriveIntegrationService::DriveIntegrationService(
         GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET);
   }
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+  mojo::PendingRemote<device::mojom::WakeLockProvider> wake_lock_provider;
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      wake_lock_provider.InitWithNewPipeAndPassReceiver());
 
   scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),
@@ -1284,6 +1286,47 @@ void DriveIntegrationService::SuspendDone(
   if (is_enabled()) {
     AddDriveMountPoint();
   }
+}
+
+void DriveIntegrationService::GetQuickAccessItems(
+    int max_number,
+    GetQuickAccessItemsCallback callback) {
+  if (!GetDriveFsHost()) {
+    std::move(callback).Run(drive::FileError::FILE_ERROR_SERVICE_UNAVAILABLE,
+                            {});
+    return;
+  }
+
+  auto query = drivefs::mojom::QueryParameters::New();
+  query->page_size = max_number;
+  query->query_kind = drivefs::mojom::QueryKind::kQuickAccess;
+
+  auto on_response =
+      base::BindOnce(&DriveIntegrationService::OnGetQuickAccessItems,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback));
+
+  GetDriveFsHost()->PerformSearch(
+      std::move(query),
+      mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+          std::move(on_response), drive::FileError::FILE_ERROR_ABORT,
+          base::Optional<std::vector<drivefs::mojom::QueryItemPtr>>()));
+}
+
+void DriveIntegrationService::OnGetQuickAccessItems(
+    GetQuickAccessItemsCallback callback,
+    drive::FileError error,
+    base::Optional<std::vector<drivefs::mojom::QueryItemPtr>> items) {
+  if (error != drive::FILE_ERROR_OK || !items.has_value()) {
+    std::move(callback).Run(error, {});
+    return;
+  }
+
+  std::vector<QuickAccessItem> result;
+  result.reserve(items->size());
+  for (const auto& item : *items) {
+    result.push_back({item->path, item->metadata->quick_access->score});
+  }
+  std::move(callback).Run(error, std::move(result));
 }
 
 //===================== DriveIntegrationServiceFactory =======================

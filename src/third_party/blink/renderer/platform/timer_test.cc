@@ -7,7 +7,7 @@
 #include <memory>
 #include <queue>
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -84,7 +84,7 @@ class TimerTest : public testing::Test {
       platform_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 class OnHeapTimerOwner final
@@ -673,7 +673,7 @@ TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
 
 namespace {
 
-class TaskObserver : public base::MessageLoop::TaskObserver {
+class TaskObserver : public base::TaskObserver {
  public:
   TaskObserver(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                Vector<scoped_refptr<base::SingleThreadTaskRunner>>* run_order)

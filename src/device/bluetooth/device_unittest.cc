@@ -13,7 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
 #include "device/bluetooth/test/mock_bluetooth_device.h"
 #include "device/bluetooth/test/mock_bluetooth_gatt_characteristic.h"
@@ -72,8 +72,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
                 kTestLeDeviceName0,
                 kTestLeDeviceAddress0,
                 false,
-                true),
-        weak_factory_(this) {
+                true) {
     ON_CALL(*adapter_, GetDevice(kTestLeDeviceAddress0))
         .WillByDefault(Return(&device_));
 
@@ -174,7 +173,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
 
   scoped_refptr<NiceMockBluetoothAdapter> adapter_;
   NiceMockBluetoothDevice device_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   mojom::DevicePtr proxy_;
   mojo::StrongBindingPtr<mojom::Device> binding_ptr_;
 
@@ -185,7 +184,7 @@ class BluetoothInterfaceDeviceTest : public testing::Test {
   int actual_callback_count_ = 0;
   int expected_callback_count_ = 0;
 
-  base::WeakPtrFactory<BluetoothInterfaceDeviceTest> weak_factory_;
+  base::WeakPtrFactory<BluetoothInterfaceDeviceTest> weak_factory_{this};
 };
 }  // namespace
 

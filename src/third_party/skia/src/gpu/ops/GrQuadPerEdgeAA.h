@@ -10,10 +10,10 @@
 
 #include "include/core/SkPoint.h"
 #include "include/core/SkPoint3.h"
-#include "include/gpu/GrSamplerState.h"
 #include "include/private/GrTypesPriv.h"
 #include "src/gpu/GrColor.h"
 #include "src/gpu/GrGeometryProcessor.h"
+#include "src/gpu/GrSamplerState.h"
 #include "src/gpu/geometry/GrQuad.h"
 #include "src/gpu/ops/GrMeshDrawOp.h"
 
@@ -81,8 +81,8 @@ namespace GrQuadPerEdgeAA {
 
     sk_sp<GrGeometryProcessor> MakeProcessor(const VertexSpec& spec);
 
-    sk_sp<GrGeometryProcessor> MakeTexturedProcessor(const VertexSpec& spec,
-            const GrShaderCaps& caps, GrTextureType textureType, GrPixelConfig textureConfig,
+    sk_sp<GrGeometryProcessor> MakeTexturedProcessor(
+            const VertexSpec& spec, const GrShaderCaps& caps, GrTextureType textureType,
             const GrSamplerState& samplerState, const GrSwizzle& swizzle, uint32_t extraSamplerKey,
             sk_sp<GrColorSpaceXform> textureColorSpaceXform);
 

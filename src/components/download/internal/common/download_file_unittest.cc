@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -26,7 +26,6 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/mock_input_stream.h"
 #include "net/base/net_errors.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -397,7 +396,7 @@ class DownloadFileTest : public testing::Test {
       case RENAME_AND_ANNOTATE:
         download_file_->RenameAndAnnotate(
             full_path, "12345678-ABCD-1234-DCBA-123456789ABC", GURL(), GURL(),
-            nullptr, completion_callback);
+            mojo::NullRemote(), completion_callback);
         break;
     }
   }
@@ -501,7 +500,7 @@ class DownloadFileTest : public testing::Test {
     closure.Run();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 // DownloadFile::RenameAndAnnotate and DownloadFile::RenameAndUniquify have a

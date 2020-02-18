@@ -257,9 +257,9 @@ void QuicChromiumClientStream::Handle::
 }
 
 void QuicChromiumClientStream::Handle::SetPriority(
-    spdy::SpdyPriority priority) {
+    const spdy::SpdyStreamPrecedence& precedence) {
   if (stream_)
-    stream_->SetPriority(priority);
+    stream_->SetPriority(precedence);
 }
 
 void QuicChromiumClientStream::Handle::Reset(
@@ -542,8 +542,8 @@ size_t QuicChromiumClientStream::WriteHeaders(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CHROMIUM_CLIENT_STREAM_SEND_REQUEST_HEADERS,
       [&](NetLogCaptureMode capture_mode) {
-        return QuicRequestNetLogParams(id(), &header_block, priority(),
-                                       capture_mode);
+        return QuicRequestNetLogParams(
+            id(), &header_block, precedence().spdy3_priority(), capture_mode);
       });
   size_t len = quic::QuicSpdyStream::WriteHeaders(std::move(header_block), fin,
                                                   std::move(ack_listener));
@@ -709,6 +709,10 @@ void QuicChromiumClientStream::DisableConnectionMigrationToCellularNetwork() {
 }
 
 bool QuicChromiumClientStream::IsFirstStream() {
+  if (VersionUsesQpack(quic_version_)) {
+    return id() == quic::QuicUtils::GetFirstBidirectionalStreamId(
+                       quic_version_, quic::Perspective::IS_CLIENT);
+  }
   return id() == quic::QuicUtils::GetHeadersStreamId(quic_version_) +
                      quic::QuicUtils::StreamIdDelta(quic_version_);
 }

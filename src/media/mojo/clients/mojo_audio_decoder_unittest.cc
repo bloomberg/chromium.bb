@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -20,7 +20,7 @@
 #include "media/base/test_helpers.h"
 #include "media/base/waiting.h"
 #include "media/mojo/clients/mojo_audio_decoder.h"
-#include "media/mojo/interfaces/audio_decoder.mojom.h"
+#include "media/mojo/mojom/audio_decoder.mojom.h"
 #include "media/mojo/services/mojo_audio_decoder_service.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
@@ -66,7 +66,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
                        base::Unretained(this),
                        base::Passed(mojo::MakeRequest(&remote_audio_decoder))));
     mojo_audio_decoder_.reset(
-        new MojoAudioDecoder(scoped_task_environment_.GetMainThreadTaskRunner(),
+        new MojoAudioDecoder(task_environment_.GetMainThreadTaskRunner(),
                              std::move(remote_audio_decoder)));
   }
 
@@ -219,7 +219,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
     RunLoop();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   // The MojoAudioDecoder that we are testing.

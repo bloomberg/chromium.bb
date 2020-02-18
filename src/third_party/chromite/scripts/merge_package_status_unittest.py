@@ -7,7 +7,6 @@
 
 from __future__ import print_function
 
-import exceptions
 import os
 import tempfile
 
@@ -231,7 +230,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       # Running with --help should exit with code==0
       try:
         mps.main(['--help'])
-      except exceptions.SystemExit as e:
+      except SystemExit as e:
         self.assertEquals(e.args[0], 0)
 
     # Verify that a message beginning with "Usage: " was printed
@@ -246,7 +245,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       # Running without --out should exit with code!=0
       try:
         mps.main(['pkg'])
-      except exceptions.SystemExit as e:
+      except SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.
@@ -259,7 +258,7 @@ class MainTest(cros_test_lib.MockOutputTestCase):
       # Running without a package should exit with code!=0
       try:
         mps.main(['--out=any-out'])
-      except exceptions.SystemExit as e:
+      except SystemExit as e:
         self.assertNotEquals(e.args[0], 0)
 
     # Verify that output ends in error.

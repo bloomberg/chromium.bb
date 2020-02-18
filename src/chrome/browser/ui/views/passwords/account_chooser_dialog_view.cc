@@ -10,8 +10,8 @@
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/passwords/credential_manager_dialog_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
-#include "chrome/browser/ui/passwords/password_dialog_controller.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
 #include "chrome/browser/ui/views/passwords/credentials_item_view.h"
@@ -41,7 +41,7 @@ constexpr double kMaxHeightAccounts = 3.5;
 
 // Creates a list view of credentials in |forms|.
 views::ScrollView* CreateCredentialsView(
-    const PasswordDialogController::FormsVector& forms,
+    const CredentialManagerDialogController::FormsVector& forms,
     views::ButtonListener* button_listener,
     network::mojom::URLLoaderFactory* loader_factory) {
   auto list_view = std::make_unique<views::View>();
@@ -74,7 +74,7 @@ views::ScrollView* CreateCredentialsView(
 }  // namespace
 
 AccountChooserDialogView::AccountChooserDialogView(
-    PasswordDialogController* controller,
+    CredentialManagerDialogController* controller,
     content::WebContents* web_contents)
     : controller_(controller),
       web_contents_(web_contents),
@@ -150,7 +150,8 @@ std::unique_ptr<views::View> AccountChooserDialogView::CreateFootnoteView() {
     return nullptr;
   auto label = std::make_unique<views::Label>(
       l10n_util::GetStringUTF16(IDS_SAVE_PASSWORD_FOOTER),
-      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL, STYLE_SECONDARY);
+      ChromeTextContext::CONTEXT_BODY_TEXT_SMALL,
+      views::style::STYLE_SECONDARY);
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   return label;
@@ -179,6 +180,7 @@ void AccountChooserDialogView::InitWindow() {
 }
 
 AccountChooserPrompt* CreateAccountChooserPromptView(
-    PasswordDialogController* controller, content::WebContents* web_contents) {
+    CredentialManagerDialogController* controller,
+    content::WebContents* web_contents) {
   return new AccountChooserDialogView(controller, web_contents);
 }

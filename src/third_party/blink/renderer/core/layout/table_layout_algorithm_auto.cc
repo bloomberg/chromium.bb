@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/layout/layout_table_col.h"
 #include "third_party/blink/renderer/core/layout/layout_table_section.h"
 #include "third_party/blink/renderer/core/layout/text_autosizer.h"
+#include "third_party/blink/renderer/platform/geometry/calculation_value.h"
 
 namespace blink {
 
@@ -52,7 +53,7 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
       // mark it's ancestors as dirty.
       ToLayoutTableCol(child)->ClearPreferredLogicalWidthsDirtyBits();
     } else if (child->IsTableSection()) {
-      LayoutTableSection* section = ToLayoutTableSection(child);
+      LayoutTableSection* section = To<LayoutTableSection>(child);
       unsigned num_rows = section->NumRows();
       for (unsigned i = 0; i < num_rows; i++) {
         if (eff_col >= section->NumCols(i))
@@ -84,14 +85,14 @@ void TableLayoutAlgorithmAuto::RecalcColumn(unsigned eff_col) {
           // FIXME: Other browsers have a lower limit for the cell's max width.
           const int kCCellMaxWidth = 32760;
           Length cell_logical_width = cell->StyleOrColLogicalWidth();
-          // FIXME: calc() on tables should be handled consistently with other
-          // lengths.
-          // Currently, only calc(% + 0px) case is handled as calc(%).
-          // See bug: https://crbug.com/382725
+          // TODO(crbug.com/382725): CSS math function results on tables should
+          // be handled consistently with other lengths. Currently, only calc(%
+          // + 0px) case is handled as calc(%).
           if (cell_logical_width.IsCalculated()) {
-            if (!cell_logical_width.GetPixelsAndPercent().pixels) {
-              cell_logical_width = Length::Percent(
-                  cell_logical_width.GetPixelsAndPercent().percent);
+            const CalculationValue& calc =
+                cell_logical_width.GetCalculationValue();
+            if (!calc.IsExpression() && !calc.Pixels()) {
+              cell_logical_width = Length::Percent(calc.Percent());
             } else {
               cell_logical_width = Length();  // Make it Auto
             }
@@ -265,7 +266,7 @@ static bool ShouldScaleColumnsForSelf(LayoutTable* table) {
                                !cb->StyleRef().Width().IsPercentOrCalc()))
       return true;
 
-    LayoutTableCell* cell = ToLayoutTableCell(cb);
+    LayoutTableCell* cell = To<LayoutTableCell>(cb);
     table = cell->Table();
     if (cell->ColSpan() > 1 || table->IsLogicalWidthAuto())
       return false;

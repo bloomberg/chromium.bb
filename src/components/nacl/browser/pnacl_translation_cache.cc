@@ -99,9 +99,12 @@ class PnaclTranslationCacheEntry
   void CloseEntry(int rv);
   // Call the user callback, and signal to the cache to delete this.
   void Finish(int rv);
-  // Used as the callback for all operations to the backend. Handle state
-  // transitions, track bytes transferred, and call the other helper methods.
+  // Used as the callback for all operations to the backend except those that
+  // first open/create entries. Handle state transitions, track bytes
+  // transferred, and call the other helper methods.
   void DispatchNext(int rv);
+  // Like above but for first opening or creating of |entry_|.
+  void SaveEntryAndDispatchNext(disk_cache::EntryResult result);
 
   base::WeakPtr<PnaclTranslationCache> cache_;
   std::string key_;
@@ -153,13 +156,12 @@ PnaclTranslationCacheEntry::~PnaclTranslationCacheEntry() {
   // Ensure we have called the user's callback
   if (step_ != FINISHED) {
     if (!read_callback_.is_null()) {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(read_callback_, net::ERR_ABORTED,
-                         scoped_refptr<net::DrainableIOBuffer>()));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(read_callback_, net::ERR_ABORTED,
+                                    scoped_refptr<net::DrainableIOBuffer>()));
     }
     if (!write_callback_.is_null()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(std::move(write_callback_), net::ERR_ABORTED));
     }
@@ -175,19 +177,21 @@ void PnaclTranslationCacheEntry::Start() {
 // OpenEntry, CreateEntry, WriteEntry, ReadEntry and CloseEntry are only called
 // from DispatchNext, so they know that cache_ is still valid.
 void PnaclTranslationCacheEntry::OpenEntry() {
-  int rv = cache_->backend()->OpenEntry(
-      key_, net::HIGHEST, &entry_,
-      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
-  if (rv != net::ERR_IO_PENDING)
-    DispatchNext(rv);
+  disk_cache::EntryResult result = cache_->backend()->OpenEntry(
+      key_, net::HIGHEST,
+      base::BindOnce(&PnaclTranslationCacheEntry::SaveEntryAndDispatchNext,
+                     this));
+  if (result.net_error() != net::ERR_IO_PENDING)
+    SaveEntryAndDispatchNext(std::move(result));
 }
 
 void PnaclTranslationCacheEntry::CreateEntry() {
-  int rv = cache_->backend()->CreateEntry(
-      key_, net::HIGHEST, &entry_,
-      base::BindOnce(&PnaclTranslationCacheEntry::DispatchNext, this));
-  if (rv != net::ERR_IO_PENDING)
-    DispatchNext(rv);
+  disk_cache::EntryResult result = cache_->backend()->CreateEntry(
+      key_, net::HIGHEST,
+      base::BindOnce(&PnaclTranslationCacheEntry::SaveEntryAndDispatchNext,
+                     this));
+  if (result.net_error() != net::ERR_IO_PENDING)
+    SaveEntryAndDispatchNext(std::move(result));
 }
 
 void PnaclTranslationCacheEntry::WriteEntry(int offset, int len) {
@@ -213,8 +217,8 @@ void PnaclTranslationCacheEntry::CloseEntry(int rv) {
     LOG(ERROR) << "Failed to close entry: " << net::ErrorToString(rv);
     entry_->Doom();
   }
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&CloseDiskCacheEntry, entry_));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&CloseDiskCacheEntry, entry_));
   Finish(rv);
 }
 
@@ -222,13 +226,13 @@ void PnaclTranslationCacheEntry::Finish(int rv) {
   step_ = FINISHED;
   if (is_read_) {
     if (!read_callback_.is_null()) {
-      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                               base::BindOnce(read_callback_, rv, io_buf_));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(read_callback_, rv, io_buf_));
     }
   } else {
     if (!write_callback_.is_null()) {
-      base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                               base::BindOnce(std::move(write_callback_), rv));
+      base::PostTask(FROM_HERE, {BrowserThread::IO},
+                     base::BindOnce(std::move(write_callback_), rv));
     }
   }
   cache_->OpComplete(this);
@@ -315,6 +319,13 @@ void PnaclTranslationCacheEntry::DispatchNext(int rv) {
   }
 }
 
+void PnaclTranslationCacheEntry::SaveEntryAndDispatchNext(
+    disk_cache::EntryResult result) {
+  int rv = result.net_error();
+  entry_ = result.ReleaseEntry();
+  DispatchNext(rv);
+}
+
 //////////////////////////////////////////////////////////////////////
 void PnaclTranslationCache::OpComplete(PnaclTranslationCacheEntry* entry) {
   open_entries_.erase(entry);
@@ -348,8 +359,8 @@ void PnaclTranslationCache::OnCreateBackendComplete(int rv) {
   }
   // Invoke our client's callback function.
   if (!init_callback_.is_null()) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                             base::BindOnce(std::move(init_callback_), rv));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(std::move(init_callback_), rv));
   }
 }
 

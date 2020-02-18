@@ -7,9 +7,9 @@
 
 #include "src/gpu/glsl/GrGLSLProgramBuilder.h"
 
-#include "include/gpu/GrRenderTarget.h"
 #include "src/gpu/GrCaps.h"
 #include "src/gpu/GrPipeline.h"
+#include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/GrTexturePriv.h"
 #include "src/gpu/glsl/GrGLSLFragmentProcessor.h"
@@ -106,7 +106,6 @@ void GrGLSLProgramBuilder::emitAndInstallPrimProc(SkString* outputColor,
         const auto& sampler = proc.textureSampler(i);
         const GrTexture* texture = primProcProxies[i]->peekTexture();
         SkASSERT(sampler.textureType() == texture->texturePriv().textureType());
-        SkASSERT(sampler.config() == texture->config());
         texSamplers[i] = this->emitSampler(texture,
                                            sampler.samplerState(),
                                            sampler.swizzle(),
@@ -197,7 +196,8 @@ SkString GrGLSLProgramBuilder::emitAndInstallFragProc(
         }
     }
 
-    const GrShaderVar* coordVars = fTransformedCoordVars.begin() + transformedCoordVarsIdx;
+    const GrGLSLPrimitiveProcessor::TransformVar* coordVars = fTransformedCoordVars.begin() +
+                                                              transformedCoordVarsIdx;
     GrGLSLFragmentProcessor::TransformedCoordVars coords(&fp, coordVars);
     GrGLSLFragmentProcessor::TextureSamplers textureSamplers(&fp, texSamplers.begin());
     GrGLSLFragmentProcessor::EmitArgs args(&fFS,

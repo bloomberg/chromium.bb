@@ -37,11 +37,12 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_frame.h"
 #include "third_party/blink/renderer/platform/image-decoders/segment_reader.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/blink/renderer/platform/wtf/vector.h"
+#include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/third_party/skcms/skcms.h"
 
 class SkColorSpace;
@@ -234,6 +235,14 @@ class PLATFORM_EXPORT ImageDecoder {
     return 0;
   }
 
+  // Image decoders that support YUV decoding must override this to
+  // return the SkYUVColorSpace that is used to convert from YUV
+  // to RGB.
+  virtual SkYUVColorSpace GetYUVColorSpace() const {
+    NOTREACHED();
+    return SkYUVColorSpace::kIdentity_SkYUVColorSpace;
+  }
+
   // This will only differ from size() for ICO (where each frame is a
   // different icon) or other formats where different frames are different
   // sizes. This does NOT differ from size() for GIF or WebP, since
@@ -310,6 +319,8 @@ class PLATFORM_EXPORT ImageDecoder {
   AlphaOption GetAlphaOption() const {
     return premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
   }
+
+  size_t GetMaxDecodedBytes() const { return max_decoded_bytes_; }
 
   // Sets the "decode failure" flag.  For caller convenience (since so
   // many callers want to return false after calling this), returns false

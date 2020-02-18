@@ -27,13 +27,13 @@ std::vector<uint64_t> ComputeDomainNameSubhashes(const DomainName& name) {
     return b;
   };
 
+  const std::vector<std::string>& labels = name.labels();
   // Use a large prime between 2^63 and 2^64 as a starting value.
   // This is taken from absl::Hash implementation.
   uint64_t hash_value = UINT64_C(0xc3a5c85c97cb3127);
-  std::vector<uint64_t> subhashes(name.label_count());
-  for (size_t i = name.label_count(); i-- > 0;) {
-    hash_value =
-        hash_combiner(hash_value, absl::AsciiStrToLower(name.Label(i)));
+  std::vector<uint64_t> subhashes(labels.size());
+  for (size_t i = labels.size(); i-- > 0;) {
+    hash_value = hash_combiner(hash_value, absl::AsciiStrToLower(labels[i]));
     subhashes[i] = hash_value;
   }
   return subhashes;
@@ -84,8 +84,9 @@ bool MdnsWriter::Write(const DomainName& name) {
   // Tentative dictionary contains label pointer entries to be added to the
   // compression dictionary after successfully writing the domain name.
   std::unordered_map<uint64_t, uint16_t> tentative_dictionary;
-  for (size_t i = 0; i < name.label_count(); ++i) {
-    OSP_DCHECK(IsValidDomainLabel(name.Label(i)));
+  const std::vector<std::string>& labels = name.labels();
+  for (size_t i = 0; i < labels.size(); ++i) {
+    OSP_DCHECK(IsValidDomainLabel(labels[i]));
     // We only need to do a look up in the compression dictionary and not in the
     // tentative dictionary. The tentative dictionary cannot possibly contain a
     // valid label pointer as all the entries previously added to it are for
@@ -106,9 +107,8 @@ bool MdnsWriter::Write(const DomainName& name) {
       tentative_dictionary.insert(
           std::make_pair(subhashes[i], MakePointerLabel(current() - begin())));
     }
-    const std::string& label = name.Label(i);
-    if (!Write(MakeDirectLabel(label.size())) ||
-        !Write(label.data(), label.size())) {
+    if (!Write(MakeDirectLabel(labels[i].size())) ||
+        !Write(labels[i].data(), labels[i].size())) {
       return false;
     }
   }
@@ -204,8 +204,8 @@ bool MdnsWriter::Write(const TxtRecordRdata& rdata) {
 
 bool MdnsWriter::Write(const MdnsRecord& record) {
   Cursor cursor(this);
-  if (Write(record.name()) && Write(static_cast<uint16_t>(record.type())) &&
-      Write(MakeRecordClass(record.record_class(), record.cache_flush())) &&
+  if (Write(record.name()) && Write(static_cast<uint16_t>(record.dns_type())) &&
+      Write(MakeRecordClass(record.record_class(), record.record_type())) &&
       Write(record.ttl()) && Write(record.rdata())) {
     cursor.Commit();
     return true;
@@ -215,9 +215,10 @@ bool MdnsWriter::Write(const MdnsRecord& record) {
 
 bool MdnsWriter::Write(const MdnsQuestion& question) {
   Cursor cursor(this);
-  if (Write(question.name()) && Write(static_cast<uint16_t>(question.type())) &&
+  if (Write(question.name()) &&
+      Write(static_cast<uint16_t>(question.dns_type())) &&
       Write(MakeQuestionClass(question.record_class(),
-                              question.unicast_response()))) {
+                              question.response_type()))) {
     cursor.Commit();
     return true;
   }
@@ -228,7 +229,7 @@ bool MdnsWriter::Write(const MdnsMessage& message) {
   Cursor cursor(this);
   Header header;
   header.id = message.id();
-  header.flags = message.flags();
+  header.flags = MakeFlags(message.type());
   header.question_count = message.questions().size();
   header.answer_count = message.answers().size();
   header.authority_record_count = message.authority_records().size();

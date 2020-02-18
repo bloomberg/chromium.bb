@@ -246,7 +246,10 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
   initializer->setClientX(client_point.X());
   initializer->setClientY(client_point.Y());
 
-  if (!RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
+  // TODO(crbug.com/982379): We need to merge the code path of raw movement
+  // events and regular events so that we can remove the block below.
+  if (web_pointer_properties.is_raw_movement_event ||
+      !RuntimeEnabledFeatures::ConsolidatedMovementXYEnabled()) {
     // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we
     // do that here and round it to the int again it causes inconsistencies
     // between screenX/Y and cumulative movementX/Y.
@@ -516,21 +519,13 @@ void MouseEvent::ComputeRelativePosition() {
     if (LocalFrameView* view = n->GetLayoutObject()->View()->GetFrameView())
       layer_location_ = view->DocumentToFrame(scaled_page_location);
 
-    // FIXME: Does this differ from PaintLayer::ConvertToLayerCoords?
     PaintLayer* layer = n->GetLayoutObject()->EnclosingLayer();
-    while (layer) {
-      PhysicalOffset physical_offset = layer->Location();
-      if (layer->GetLayoutObject().IsInFlowPositioned())
-        physical_offset += layer->GetLayoutObject().OffsetForInFlowPosition();
-      PaintLayer* containing_layer = layer->ContainingLayer();
-      if (containing_layer) {
-        physical_offset -=
-            PhysicalOffset(containing_layer->ScrolledContentOffset());
-      }
-      layer_location_ -= DoubleSize(physical_offset.left.ToDouble(),
-                                    physical_offset.top.ToDouble());
-      layer = containing_layer;
-    }
+
+    PhysicalOffset physical_offset;
+    layer->ConvertToLayerCoords(nullptr, physical_offset);
+    layer_location_ -= DoubleSize(physical_offset.left.ToDouble(),
+                                  physical_offset.top.ToDouble());
+
     if (inverse_zoom_factor != 1.0f)
       layer_location_.Scale(inverse_zoom_factor, inverse_zoom_factor);
   }

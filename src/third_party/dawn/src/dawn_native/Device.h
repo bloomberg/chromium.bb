@@ -17,6 +17,7 @@
 
 #include "common/Serial.h"
 #include "dawn_native/Error.h"
+#include "dawn_native/Extensions.h"
 #include "dawn_native/Format.h"
 #include "dawn_native/Forward.h"
 #include "dawn_native/ObjectBase.h"
@@ -32,6 +33,8 @@ namespace dawn_native {
     using ErrorCallback = void (*)(const char* errorMessage, void* userData);
 
     class AdapterBase;
+    class AttachmentState;
+    class AttachmentStateBlueprint;
     class FenceSignalTracker;
     class DynamicUploader;
     class StagingBufferBase;
@@ -41,7 +44,7 @@ namespace dawn_native {
         DeviceBase(AdapterBase* adapter, const DeviceDescriptor* descriptor);
         virtual ~DeviceBase();
 
-        void HandleError(const char* message);
+        void HandleError(dawn::ErrorType type, const char* message);
 
         bool ConsumedError(MaybeError maybeError) {
             if (DAWN_UNLIKELY(maybeError.IsError())) {
@@ -54,6 +57,7 @@ namespace dawn_native {
         MaybeError ValidateObject(const ObjectBase* object) const;
 
         AdapterBase* GetAdapter() const;
+        dawn_platform::Platform* GetPlatform() const;
 
         FenceSignalTracker* GetFenceSignalTracker() const;
 
@@ -113,6 +117,13 @@ namespace dawn_native {
             const ShaderModuleDescriptor* descriptor);
         void UncacheShaderModule(ShaderModuleBase* obj);
 
+        Ref<AttachmentState> GetOrCreateAttachmentState(AttachmentStateBlueprint* blueprint);
+        Ref<AttachmentState> GetOrCreateAttachmentState(
+            const RenderBundleEncoderDescriptor* descriptor);
+        Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPipelineDescriptor* descriptor);
+        Ref<AttachmentState> GetOrCreateAttachmentState(const RenderPassDescriptor* descriptor);
+        void UncacheAttachmentState(AttachmentState* obj);
+
         // Dawn API
         BindGroupBase* CreateBindGroup(const BindGroupDescriptor* descriptor);
         BindGroupLayoutBase* CreateBindGroupLayout(const BindGroupLayoutDescriptor* descriptor);
@@ -125,6 +136,8 @@ namespace dawn_native {
         ComputePipelineBase* CreateComputePipeline(const ComputePipelineDescriptor* descriptor);
         PipelineLayoutBase* CreatePipelineLayout(const PipelineLayoutDescriptor* descriptor);
         QueueBase* CreateQueue();
+        RenderBundleEncoderBase* CreateRenderBundleEncoder(
+            const RenderBundleEncoderDescriptor* descriptor);
         RenderPipelineBase* CreateRenderPipeline(const RenderPipelineDescriptor* descriptor);
         SamplerBase* CreateSampler(const SamplerDescriptor* descriptor);
         ShaderModuleBase* CreateShaderModule(const ShaderModuleDescriptor* descriptor);
@@ -135,7 +148,10 @@ namespace dawn_native {
 
         void Tick();
 
-        void SetErrorCallback(dawn::DeviceErrorCallback callback, void* userdata);
+        void SetUncapturedErrorCallback(dawn::ErrorCallback callback, void* userdata);
+        void PushErrorScope(dawn::ErrorFilter filter);
+        bool PopErrorScope(dawn::ErrorCallback callback, void* userdata);
+
         void Reference();
         void Release();
 
@@ -149,8 +165,12 @@ namespace dawn_native {
 
         ResultOrError<DynamicUploader*> GetDynamicUploader() const;
 
+        std::vector<const char*> GetEnabledExtensions() const;
         std::vector<const char*> GetTogglesUsed() const;
+        bool IsExtensionEnabled(Extension extension) const;
         bool IsToggleEnabled(Toggle toggle) const;
+        size_t GetLazyClearCountForTesting();
+        void IncrementLazyClearCountForTesting();
 
       protected:
         void SetToggle(Toggle toggle, bool isEnabled);
@@ -193,6 +213,9 @@ namespace dawn_native {
         MaybeError CreatePipelineLayoutInternal(PipelineLayoutBase** result,
                                                 const PipelineLayoutDescriptor* descriptor);
         MaybeError CreateQueueInternal(QueueBase** result);
+        MaybeError CreateRenderBundleEncoderInternal(
+            RenderBundleEncoderBase** result,
+            const RenderBundleEncoderDescriptor* descriptor);
         MaybeError CreateRenderPipelineInternal(RenderPipelineBase** result,
                                                 const RenderPipelineDescriptor* descriptor);
         MaybeError CreateSamplerInternal(SamplerBase** result, const SamplerDescriptor* descriptor);
@@ -204,6 +227,8 @@ namespace dawn_native {
         MaybeError CreateTextureViewInternal(TextureViewBase** result,
                                              TextureBase* texture,
                                              const TextureViewDescriptor* descriptor);
+
+        void ApplyExtensions(const DeviceDescriptor* deviceDescriptor);
 
         void ConsumeError(ErrorData* error);
         void SetDefaultToggles();
@@ -225,13 +250,16 @@ namespace dawn_native {
         std::unique_ptr<FenceSignalTracker> mFenceSignalTracker;
         std::vector<DeferredCreateBufferMappedAsync> mDeferredCreateBufferMappedAsyncResults;
 
-        dawn::DeviceErrorCallback mErrorCallback = nullptr;
+        dawn::ErrorCallback mErrorCallback = nullptr;
         void* mErrorUserdata = 0;
         uint32_t mRefCount = 1;
 
         FormatTable mFormatTable;
 
         TogglesSet mTogglesSet;
+        size_t mLazyClearCountForTesting = 0;
+
+        ExtensionsSet mEnabledExtensions;
     };
 
 }  // namespace dawn_native

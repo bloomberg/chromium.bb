@@ -152,7 +152,7 @@ TEST_F(CommandBufferValidationTest, CallsAfterASuccessfulFinish) {
     // A buffer that can be used in CopyBufferToBuffer
     dawn::BufferDescriptor copyBufferDesc;
     copyBufferDesc.size = 16;
-    copyBufferDesc.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
+    copyBufferDesc.usage = dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst;
     dawn::Buffer copyBuffer = device.CreateBuffer(&copyBufferDesc);
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -166,13 +166,13 @@ TEST_F(CommandBufferValidationTest, CallsAfterAFailedFinish) {
     // A buffer that can be used in CopyBufferToBuffer
     dawn::BufferDescriptor copyBufferDesc;
     copyBufferDesc.size = 16;
-    copyBufferDesc.usage = dawn::BufferUsageBit::CopySrc | dawn::BufferUsageBit::CopyDst;
+    copyBufferDesc.usage = dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst;
     dawn::Buffer copyBuffer = device.CreateBuffer(&copyBufferDesc);
 
     // A buffer that can't be used in CopyBufferToBuffer
     dawn::BufferDescriptor bufferDesc;
     bufferDesc.size = 16;
-    bufferDesc.usage = dawn::BufferUsageBit::Uniform;
+    bufferDesc.usage = dawn::BufferUsage::Uniform;
     dawn::Buffer buffer = device.CreateBuffer(&bufferDesc);
 
     dawn::CommandEncoder encoder = device.CreateCommandEncoder();
@@ -186,7 +186,7 @@ TEST_F(CommandBufferValidationTest, CallsAfterAFailedFinish) {
 TEST_F(CommandBufferValidationTest, BufferWithMultipleReadUsage) {
     // Create a buffer used as both vertex and index buffer.
     dawn::BufferDescriptor bufferDescriptor;
-    bufferDescriptor.usage = dawn::BufferUsageBit::Vertex | dawn::BufferUsageBit::Index;
+    bufferDescriptor.usage = dawn::BufferUsage::Vertex | dawn::BufferUsage::Index;
     bufferDescriptor.size = 4;
     dawn::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
@@ -205,14 +205,13 @@ TEST_F(CommandBufferValidationTest, BufferWithMultipleReadUsage) {
 TEST_F(CommandBufferValidationTest, BufferWithReadAndWriteUsage) {
     // Create a buffer that will be used as an index buffer and as a storage buffer
     dawn::BufferDescriptor bufferDescriptor;
-    bufferDescriptor.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::Index;
+    bufferDescriptor.usage = dawn::BufferUsage::Storage | dawn::BufferUsage::Index;
     bufferDescriptor.size = 4;
     dawn::Buffer buffer = device.CreateBuffer(&bufferDescriptor);
 
     // Create the bind group to use the buffer as storage
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(device, {{
-        0, dawn::ShaderStageBit::Vertex, dawn::BindingType::StorageBuffer
-    }});
+    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+        device, {{0, dawn::ShaderStage::Vertex, dawn::BindingType::StorageBuffer}});
     dawn::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, buffer, 0, 4}});
 
     // Use the buffer as both index and storage in the same pass
@@ -229,7 +228,7 @@ TEST_F(CommandBufferValidationTest, BufferWithReadAndWriteUsage) {
 TEST_F(CommandBufferValidationTest, TextureWithReadAndWriteUsage) {
     // Create a texture that will be used both as a sampled texture and a render target
     dawn::TextureDescriptor textureDescriptor;
-    textureDescriptor.usage = dawn::TextureUsageBit::Sampled | dawn::TextureUsageBit::OutputAttachment;
+    textureDescriptor.usage = dawn::TextureUsage::Sampled | dawn::TextureUsage::OutputAttachment;
     textureDescriptor.format = dawn::TextureFormat::RGBA8Unorm;
     textureDescriptor.dimension = dawn::TextureDimension::e2D;
     textureDescriptor.size = {1, 1, 1};
@@ -237,12 +236,11 @@ TEST_F(CommandBufferValidationTest, TextureWithReadAndWriteUsage) {
     textureDescriptor.sampleCount = 1;
     textureDescriptor.mipLevelCount = 1;
     dawn::Texture texture = device.CreateTexture(&textureDescriptor);
-    dawn::TextureView view = texture.CreateDefaultView();
+    dawn::TextureView view = texture.CreateView();
 
     // Create the bind group to use the texture as sampled
-    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(device, {{
-        0, dawn::ShaderStageBit::Vertex, dawn::BindingType::SampledTexture
-    }});
+    dawn::BindGroupLayout bgl = utils::MakeBindGroupLayout(
+        device, {{0, dawn::ShaderStage::Vertex, dawn::BindingType::SampledTexture}});
     dawn::BindGroup bg = utils::MakeBindGroup(device, bgl, {{0, view}});
 
     // Create the render pass that will use the texture as an output attachment

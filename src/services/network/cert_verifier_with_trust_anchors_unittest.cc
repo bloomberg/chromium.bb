@@ -13,7 +13,7 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "crypto/nss_util_internal.h"
 #include "crypto/scoped_test_nss_chromeos_user.h"
 #include "net/base/test_completion_callback.h"
@@ -35,8 +35,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   CertVerifierWithTrustAnchorsTest()
       : trust_anchor_used_(false),
         test_nss_user_("user1"),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   ~CertVerifierWithTrustAnchorsTest() override {}
 
@@ -71,7 +70,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
   }
 
   void TearDown() override {
-    // Destroy |cert_verifier_| before destroying the ThreadBundle, otherwise
+    // Destroy |cert_verifier_| before destroying the TaskEnvironment, otherwise
     // BrowserThread::CurrentlyOn checks fail.
     cert_verifier_.reset();
   }
@@ -132,7 +131,7 @@ class CertVerifierWithTrustAnchorsTest : public testing::Test {
 
   bool trust_anchor_used_;
   crypto::ScopedTestNSSChromeOSUser test_nss_user_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(CertVerifierWithTrustAnchorsTest, VerifyUntrustedCert) {

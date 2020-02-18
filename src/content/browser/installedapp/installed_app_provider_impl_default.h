@@ -27,7 +27,7 @@ class InstalledAppProviderImplDefault
       FilterInstalledAppsCallback callback) override;
 
   static void Create(
-      mojo::InterfaceRequest<blink::mojom::InstalledAppProvider> request);
+      mojo::PendingReceiver<blink::mojom::InstalledAppProvider> receiver);
 };
 
 }  // namespace content

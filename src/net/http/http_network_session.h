@@ -27,6 +27,7 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/http/http_auth_cache.h"
+#include "net/http/http_auth_preferences.h"
 #include "net/http/http_stream_factory.h"
 #include "net/net_buildflags.h"
 #include "net/quic/quic_stream_factory.h"
@@ -34,7 +35,6 @@
 #include "net/socket/next_proto.h"
 #include "net/socket/websocket_endpoint_lock_manager.h"
 #include "net/spdy/spdy_session_pool.h"
-#include "net/ssl/ssl_client_auth_cache.h"
 #include "net/ssl/ssl_client_session_cache.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
 
@@ -106,6 +106,8 @@ class NET_EXPORT HttpNetworkSession {
     bool enable_spdy_ping_based_connection_checking;
     bool enable_http2;
     size_t spdy_session_max_recv_window_size;
+    // Maximum number of capped frames that can be queued at any time.
+    int spdy_session_max_queued_capped_frames;
     // HTTP/2 connection settings.
     // Unknown settings will still be sent to the server.
     // Might contain unknown setting identifiers from a predefined set that
@@ -140,7 +142,7 @@ class NET_EXPORT HttpNetworkSession {
     QuicParams quic_params;
 
     // If non-empty, QUIC will only be spoken to hosts in this list.
-    base::flat_set<std::string> quic_host_whitelist;
+    base::flat_set<std::string> quic_host_allowlist;
 
     // Enable HTTP/0.9 for HTTP/HTTPS on ports other than the default one for
     // each protocol.
@@ -148,6 +150,10 @@ class NET_EXPORT HttpNetworkSession {
 
     // If true, idle sockets won't be closed when memory pressure happens.
     bool disable_idle_sockets_close_on_memory_pressure;
+
+    // If authentication APIs that support ambient authentication are allowed
+    // to use the default credentials.
+    HttpAuthPreferences::DefaultCredentials allow_default_credentials;
   };
 
   // Structure with pointers to the dependencies of the HttpNetworkSession.
@@ -195,9 +201,7 @@ class NET_EXPORT HttpNetworkSession {
   ~HttpNetworkSession();
 
   HttpAuthCache* http_auth_cache() { return &http_auth_cache_; }
-  SSLClientAuthCache* ssl_client_auth_cache() {
-    return &ssl_client_auth_cache_;
-  }
+  SSLClientContext* ssl_client_context() { return &ssl_client_context_; }
 
   void AddResponseDrainer(std::unique_ptr<HttpResponseBodyDrainer> drainer);
 
@@ -258,18 +262,13 @@ class NET_EXPORT HttpNetworkSession {
   // Returns the original Context used to construct this session.
   const Context& context() const { return context_; }
 
-  bool IsProtocolEnabled(NextProto protocol) const;
-
   void SetServerPushDelegate(std::unique_ptr<ServerPushDelegate> push_delegate);
 
   // Populates |*alpn_protos| with protocols to be used with ALPN.
   void GetAlpnProtos(NextProtoVector* alpn_protos) const;
 
-  // Populates |server_config| and |proxy_config| based on this session and
-  // |request|.
-  void GetSSLConfig(const HttpRequestInfo& request,
-                    SSLConfig* server_config,
-                    SSLConfig* proxy_config) const;
+  // Populates |server_config| and |proxy_config| based on this session.
+  void GetSSLConfig(SSLConfig* server_config, SSLConfig* proxy_config) const;
 
   // Dumps memory allocation stats. |parent_dump_absolute_name| is the name
   // used by the parent MemoryAllocatorDump in the memory dump hierarchy.
@@ -315,7 +314,6 @@ class NET_EXPORT HttpNetworkSession {
   SSLConfigService* const ssl_config_service_;
 
   HttpAuthCache http_auth_cache_;
-  SSLClientAuthCache ssl_client_auth_cache_;
   SSLClientSessionCache ssl_client_session_cache_;
   SSLClientContext ssl_client_context_;
   WebSocketEndpointLockManager websocket_endpoint_lock_manager_;

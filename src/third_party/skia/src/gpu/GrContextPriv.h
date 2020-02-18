@@ -73,14 +73,14 @@ public:
      */
     void addOnFlushCallbackObject(GrOnFlushCallbackObject*);
 
-    sk_sp<GrSurfaceContext> makeWrappedSurfaceContext(sk_sp<GrSurfaceProxy>,
-                                                      GrColorType,
-                                                      SkAlphaType,
-                                                      sk_sp<SkColorSpace> = nullptr,
-                                                      const SkSurfaceProps* = nullptr);
+    std::unique_ptr<GrSurfaceContext> makeWrappedSurfaceContext(sk_sp<GrSurfaceProxy>,
+                                                                GrColorType,
+                                                                SkAlphaType,
+                                                                sk_sp<SkColorSpace> = nullptr,
+                                                                const SkSurfaceProps* = nullptr);
 
     /** Create a new texture context backed by a deferred-style GrTextureProxy. */
-    sk_sp<GrTextureContext> makeDeferredTextureContext(
+    std::unique_ptr<GrTextureContext> makeDeferredTextureContext(
             SkBackingFit,
             int width,
             int height,
@@ -97,7 +97,7 @@ public:
      * GrRenderTargetProxy. We guarantee that "asTextureProxy" will succeed for
      * renderTargetContexts created via this entry point.
      */
-    sk_sp<GrRenderTargetContext> makeDeferredRenderTargetContext(
+    std::unique_ptr<GrRenderTargetContext> makeDeferredRenderTargetContext(
             SkBackingFit fit,
             int width,
             int height,
@@ -116,7 +116,7 @@ public:
      * converted to 8888). It may also swizzle the channels (e.g., BGRA -> RGBA).
      * SRGB-ness will be preserved.
      */
-    sk_sp<GrRenderTargetContext> makeDeferredRenderTargetContextWithFallback(
+    std::unique_ptr<GrRenderTargetContext> makeDeferredRenderTargetContextWithFallback(
             SkBackingFit fit,
             int width,
             int height,
@@ -135,17 +135,17 @@ public:
      */
     static sk_sp<GrContext> MakeDDL(const sk_sp<GrContextThreadSafeProxy>&);
 
-    sk_sp<GrTextureContext> makeBackendTextureContext(const GrBackendTexture&,
-                                                      GrSurfaceOrigin,
-                                                      GrColorType,
-                                                      SkAlphaType,
-                                                      sk_sp<SkColorSpace>);
+    std::unique_ptr<GrTextureContext> makeBackendTextureContext(const GrBackendTexture&,
+                                                                GrSurfaceOrigin,
+                                                                GrColorType,
+                                                                SkAlphaType,
+                                                                sk_sp<SkColorSpace>);
 
     // These match the definitions in SkSurface & GrSurface.h, for whence they came
     typedef void* ReleaseContext;
     typedef void (*ReleaseProc)(ReleaseContext);
 
-    sk_sp<GrRenderTargetContext> makeBackendTextureRenderTargetContext(
+    std::unique_ptr<GrRenderTargetContext> makeBackendTextureRenderTargetContext(
             const GrBackendTexture& tex,
             GrSurfaceOrigin origin,
             int sampleCnt,
@@ -155,7 +155,7 @@ public:
             ReleaseProc = nullptr,
             ReleaseContext = nullptr);
 
-    sk_sp<GrRenderTargetContext> makeBackendRenderTargetRenderTargetContext(
+    std::unique_ptr<GrRenderTargetContext> makeBackendRenderTargetRenderTargetContext(
             const GrBackendRenderTarget&,
             GrSurfaceOrigin origin,
             GrColorType,
@@ -164,7 +164,7 @@ public:
             ReleaseProc = nullptr,
             ReleaseContext = nullptr);
 
-    sk_sp<GrRenderTargetContext> makeBackendTextureAsRenderTargetRenderTargetContext(
+    std::unique_ptr<GrRenderTargetContext> makeBackendTextureAsRenderTargetRenderTargetContext(
             const GrBackendTexture& tex,
             GrSurfaceOrigin origin,
             int sampleCnt,
@@ -172,7 +172,7 @@ public:
             sk_sp<SkColorSpace> colorSpace,
             const SkSurfaceProps* = nullptr);
 
-    sk_sp<GrRenderTargetContext> makeVulkanSecondaryCBRenderTargetContext(
+    std::unique_ptr<GrRenderTargetContext> makeVulkanSecondaryCBRenderTargetContext(
             const SkImageInfo&, const GrVkDrawableInfo&, const SkSurfaceProps* = nullptr);
 
     /**
@@ -219,18 +219,13 @@ public:
         return fContext->onGetAtlasManager();
     }
 
-    void moveOpListsToDDL(SkDeferredDisplayList*);
-    void copyOpListsFromDDL(const SkDeferredDisplayList*, GrRenderTargetProxy* newDest);
+    void moveRenderTasksToDDL(SkDeferredDisplayList*);
+    void copyRenderTasksFromDDL(const SkDeferredDisplayList*, GrRenderTargetProxy* newDest);
 
     GrContextOptions::PersistentCache* getPersistentCache() { return fContext->fPersistentCache; }
     GrContextOptions::ShaderErrorHandler* getShaderErrorHandler() const {
         return fContext->fShaderErrorHandler;
     }
-
-#ifdef SK_ENABLE_DUMP_GPU
-    /** Returns a string with detailed information about the context & GPU, in JSON format. */
-    SkString dump() const;
-#endif
 
 #if GR_TEST_UTILS
     /** Reset GPU stats */

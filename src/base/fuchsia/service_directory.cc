@@ -16,6 +16,17 @@
 namespace base {
 namespace fuchsia {
 
+namespace {
+
+std::unique_ptr<ServiceDirectory> CreateDefaultServiceDirectory() {
+  sys::OutgoingDirectory* outgoing =
+      ComponentContextForCurrentProcess()->outgoing().get();
+  outgoing->ServeFromStartupInfo();
+  return std::make_unique<ServiceDirectory>(outgoing);
+}
+
+}  // namespace
+
 ServiceDirectory::ServiceDirectory(
     fidl::InterfaceRequest<::fuchsia::io::Directory> request) {
   Initialize(std::move(request));
@@ -29,9 +40,9 @@ ServiceDirectory::~ServiceDirectory() = default;
 
 // static
 ServiceDirectory* ServiceDirectory::GetDefault() {
-  static NoDestructor<ServiceDirectory> directory(
-      ComponentContextForCurrentProcess()->outgoing().get());
-  return directory.get();
+  static NoDestructor<std::unique_ptr<ServiceDirectory>> directory(
+      CreateDefaultServiceDirectory());
+  return directory.get()->get();
 }
 
 void ServiceDirectory::Initialize(

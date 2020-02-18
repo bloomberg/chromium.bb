@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/public/browser/navigation_controller.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/base/window_open_disposition.h"
 
@@ -33,7 +34,6 @@ class FrameNavigationEntry;
 class FrameTreeNode;
 class PrefetchedSignedExchangeCache;
 class RenderFrameHostImpl;
-struct CommonNavigationParams;
 
 // Implementations of this interface are responsible for performing navigations
 // in a node of the FrameTree. Its lifetime is bound to all FrameTreeNode
@@ -147,11 +147,12 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // BeginNavigation IPC from the renderer.
   virtual void OnBeginNavigation(
       FrameTreeNode* frame_tree_node,
-      const CommonNavigationParams& common_params,
+      mojom::CommonNavigationParamsPtr common_params,
       mojom::BeginNavigationParamsPtr begin_params,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       mojom::NavigationClientAssociatedPtrInfo navigation_client,
-      blink::mojom::NavigationInitiatorPtr navigation_initiator,
+      mojo::PendingRemote<blink::mojom::NavigationInitiator>
+          navigation_initiator,
       scoped_refptr<PrefetchedSignedExchangeCache>
           prefetched_signed_exchange_cache);
 
@@ -174,9 +175,8 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Called when the network stack started handling the navigation request
   // so that the |timestamp| when it happened can be recorded into an histogram.
   // The |url| is used to verify we're tracking the correct navigation.
-  // TODO(carlosk): once PlzNavigate is the only navigation implementation
-  // remove the URL parameter and rename this method to better suit its naming
-  // conventions.
+  // TODO(carlosk): Remove the URL parameter and rename this method to better
+  // suit naming conventions.
   virtual void LogResourceRequestTime(base::TimeTicks timestamp,
                                       const GURL& url) {}
 

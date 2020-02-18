@@ -5,9 +5,9 @@
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/document_init.h"
 #include "third_party/blink/renderer/core/frame/csp/csp_directive_list.h"
 #include "third_party/blink/renderer/core/html/html_script_element.h"
 #include "third_party/blink/renderer/core/testing/null_execution_context.h"
@@ -97,30 +97,6 @@ TEST_F(ContentSecurityPolicyTest, ParseInsecureRequestPolicy) {
     EXPECT_FALSE(execution_context->InsecureNavigationsToUpgrade().Contains(
         secure_origin->Host().Impl()->GetHash()));
   }
-}
-
-TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressDisabled) {
-  ScopedCorsRFC1918ForTest cors_rfc1918(false);
-  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
-
-  csp->DidReceiveHeader("treat-as-public-address",
-                        kContentSecurityPolicyHeaderTypeEnforce,
-                        kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
-}
-
-TEST_F(ContentSecurityPolicyTest, ParseEnforceTreatAsPublicAddressEnabled) {
-  ScopedCorsRFC1918ForTest cors_rfc1918(true);
-  execution_context->SetAddressSpace(mojom::IPAddressSpace::kPrivate);
-  EXPECT_EQ(mojom::IPAddressSpace::kPrivate, execution_context->AddressSpace());
-
-  csp->DidReceiveHeader("treat-as-public-address",
-                        kContentSecurityPolicyHeaderTypeEnforce,
-                        kContentSecurityPolicyHeaderSourceHTTP);
-  csp->BindToDelegate(execution_context->GetContentSecurityPolicyDelegate());
-  EXPECT_EQ(mojom::IPAddressSpace::kPublic, execution_context->AddressSpace());
 }
 
 TEST_F(ContentSecurityPolicyTest, CopyStateFrom) {
@@ -1006,8 +982,6 @@ TEST_F(ContentSecurityPolicyTest, DirectiveType) {
       {ContentSecurityPolicy::DirectiveType::kStyleSrc, "style-src"},
       {ContentSecurityPolicy::DirectiveType::kStyleSrcAttr, "style-src-attr"},
       {ContentSecurityPolicy::DirectiveType::kStyleSrcElem, "style-src-elem"},
-      {ContentSecurityPolicy::DirectiveType::kTreatAsPublicAddress,
-       "treat-as-public-address"},
       {ContentSecurityPolicy::DirectiveType::kUpgradeInsecureRequests,
        "upgrade-insecure-requests"},
       {ContentSecurityPolicy::DirectiveType::kWorkerSrc, "worker-src"},

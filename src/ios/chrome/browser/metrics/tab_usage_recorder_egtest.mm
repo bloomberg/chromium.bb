@@ -26,12 +26,14 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/chrome/test/scoped_eg_synchronization_disabler.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/http_server/delayed_response_provider.h"
 #include "ios/web/public/test/http_server/html_response_provider.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
+#import "ios/web/public/web_state.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "url/gurl.h"
 
@@ -43,6 +45,8 @@ using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SettingsDoneButton;
 using chrome_test_util::SettingsMenuButton;
 using chrome_test_util::SettingsMenuPrivacyButton;
+using chrome_test_util::WebViewMatcher;
+
 using tab_usage_recorder_test_util::OpenNewIncognitoTabUsingUIAndEvictMainTabs;
 using tab_usage_recorder_test_util::SwitchToNormalMode;
 
@@ -112,13 +116,6 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 @end
 
 @implementation TabUsageRecorderTestCase
-
-- (void)tearDown {
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  [super tearDown];
-}
 
 // Tests that the recorder actual recorde tab state.
 // TODO(crbug.com/934228) The test is flaky.
@@ -389,20 +386,16 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
       std::make_unique<HtmlResponseProvider>(responses), kSlowURLDelay));
 
   SwitchToNormalMode();
-
-  // Turn off synchronization of GREYAssert to test the pending states.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  GREYAssert(
-      [[GREYCondition conditionWithName:@"Wait for tab to restart loading."
-                                  block:^BOOL() {
-                                    return [ChromeEarlGrey isLoading];
-                                  }] waitWithTimeout:kWaitElementTimeout],
-      @"Tab did not start loading.");
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+  {
+    // Turn off synchronization of GREYAssert to test the pending states.
+    ScopedSynchronizationDisabler disabler;
+    GREYAssert(
+        [[GREYCondition conditionWithName:@"Wait for tab to restart loading."
+                                    block:^BOOL() {
+                                      return [ChromeEarlGrey isLoading];
+                                    }] waitWithTimeout:kWaitElementTimeout],
+        @"Tab did not start loading.");
+  }
 
   // This method is not synced on EarlGrey.
   [ChromeEarlGrey selectTabAtIndex:0];
@@ -443,19 +436,16 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   // TODO(crbug.com/640977): EarlGrey synchronize on some animations when a
   // page is loading. Need to handle synchronization manually for this test.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  // Make sure the button is here and displayed before tapping it.
-  id<GREYMatcher> toolMenuMatcher =
-      grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
-                 grey_sufficientlyVisible(), nil);
-  Wait(toolMenuMatcher, @"Tool Menu");
+  {
+    ScopedSynchronizationDisabler disabler;
+    // Make sure the button is here and displayed before tapping it.
+    id<GREYMatcher> toolMenuMatcher =
+        grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
+                   grey_sufficientlyVisible(), nil);
+    Wait(toolMenuMatcher, @"Tool Menu");
 
-  [ChromeEarlGrey openNewTab];
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    [ChromeEarlGrey openNewTab];
+  }
   histogramTester.ExpectBucketCount(kDidUserWaitForEvictedTabReload,
                                     TabUsageRecorder::USER_DID_NOT_WAIT, 1,
                                     failureBlock);
@@ -520,18 +510,15 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   // TODO(crbug.com/640977): EarlGrey synchronize on some animations when a
   // page is loading. Need to handle synchronization manually for this test.
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  id<GREYMatcher> toolMenuMatcher =
-      grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
-                 grey_sufficientlyVisible(), nil);
-  Wait(toolMenuMatcher, @"Tool Menu");
+  {
+    ScopedSynchronizationDisabler disabler;
+    id<GREYMatcher> toolMenuMatcher =
+        grey_allOf(grey_accessibilityID(kToolbarToolsMenuButtonIdentifier),
+                   grey_sufficientlyVisible(), nil);
+    Wait(toolMenuMatcher, @"Tool Menu");
 
-  [ChromeEarlGrey simulateTabsBackgrounding];
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    [ChromeEarlGrey simulateTabsBackgrounding];
+  }
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);
@@ -555,17 +542,14 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
 
   // We need two tabs to be able to switch.
   [ChromeEarlGrey openNewTab];
-  [[GREYConfiguration sharedInstance]
-          setValue:@(NO)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
-  [ChromeEarlGrey loadURL:slowURL waitForCompletion:NO];
+  {
+    ScopedSynchronizationDisabler disabler;
+    [ChromeEarlGrey loadURL:slowURL waitForCompletion:NO];
 
-  // Ensure loading starts but is not finished.
-  base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSeconds(1));
-  [ChromeEarlGrey selectTabAtIndex:0];
-  [[GREYConfiguration sharedInstance]
-          setValue:@(YES)
-      forConfigKey:kGREYConfigKeySynchronizationEnabled];
+    // Ensure loading starts but is not finished.
+    base::test::ios::SpinRunLoopWithMaxDelay(base::TimeDelta::FromSeconds(1));
+    [ChromeEarlGrey selectTabAtIndex:0];
+  }
 
   FailureBlock failureBlock = ^(NSString* error) {
     GREYFail(error);
@@ -691,9 +675,7 @@ void CloseTabAtIndexAndSync(NSUInteger i) {
   NewMainTabWithURL(initialURL, "link");
 
   int numberOfTabs = [ChromeEarlGrey mainTabCount];
-  id<GREYMatcher> webViewMatcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:webViewMatcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:"link"],
                         true /* menu should appear */)];

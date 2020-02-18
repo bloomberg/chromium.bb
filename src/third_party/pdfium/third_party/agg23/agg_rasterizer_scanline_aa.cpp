@@ -495,4 +495,23 @@ void outline_aa::sort_cells()
     }
     m_sorted = true;
 }
+// static
+int rasterizer_scanline_aa::calculate_area(int cover, int shift)
+{
+    unsigned int result = cover;
+    result <<= shift;
+    return result;
+}
+// static
+bool rasterizer_scanline_aa::safe_add(int* op1, int op2)
+{
+    pdfium::base::CheckedNumeric<int> safeOp1 = *op1;
+    safeOp1 += op2;
+    if(!safeOp1.IsValid()) {
+        return false;
+    }
+
+    *op1 = safeOp1.ValueOrDie();
+    return true;
+}
 }

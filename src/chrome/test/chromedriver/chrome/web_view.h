@@ -64,6 +64,11 @@ class WebView {
   virtual Status SendCommand(const std::string& cmd,
                              const base::DictionaryValue& params) = 0;
 
+  // Send a command to the DevTools debugger. Received from WebSocket
+  virtual Status SendCommandFromWebSocket(const std::string& cmd,
+                                          const base::DictionaryValue& params,
+                                          const int client_cmd_id) = 0;
+
   // Send a command to the DevTools debugger and wait for the result
   virtual Status SendCommandAndGetResult(
           const std::string& cmd,
@@ -137,16 +142,20 @@ class WebView {
 
   // Dispatch a sequence of mouse events.
   virtual Status DispatchMouseEvents(const std::list<MouseEvent>& events,
-                                     const std::string& frame) = 0;
+                                     const std::string& frame,
+                                     bool async_dispatch_events) = 0;
 
   // Dispatch a single touch event.
-  virtual Status DispatchTouchEvent(const TouchEvent& event) = 0;
+  virtual Status DispatchTouchEvent(const TouchEvent& event,
+                                    bool async_dispatch_events) = 0;
 
   // Dispatch a sequence of touch events.
-  virtual Status DispatchTouchEvents(const std::list<TouchEvent>& events) = 0;
+  virtual Status DispatchTouchEvents(const std::list<TouchEvent>& events,
+                                     bool async_dispatch_events) = 0;
 
   // Dispatch a sequence of key events.
-  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events) = 0;
+  virtual Status DispatchKeyEvents(const std::list<KeyEvent>& events,
+                                   bool async_dispatch_events) = 0;
 
   // Return all the cookies visible to the current page.
   virtual Status GetCookies(std::unique_ptr<base::ListValue>* cookies,
@@ -232,6 +241,8 @@ class WebView {
                                          int y,
                                          int xoffset,
                                          int yoffset) = 0;
+
+  virtual bool IsNonBlocking() = 0;
 
   virtual bool IsOOPIF(const std::string& frame_id) = 0;
 

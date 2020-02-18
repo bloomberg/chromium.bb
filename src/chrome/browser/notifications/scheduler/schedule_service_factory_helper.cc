@@ -10,6 +10,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/notifications/scheduler/internal/background_task_coordinator.h"
 #include "chrome/browser/notifications/scheduler/internal/display_decider.h"
 #include "chrome/browser/notifications/scheduler/internal/icon_store.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
@@ -19,8 +20,10 @@
 #include "chrome/browser/notifications/scheduler/internal/notification_schedule_service_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler_context.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_store.h"
+#include "chrome/browser/notifications/scheduler/internal/png_icon_converter_impl.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduled_notification_manager.h"
 #include "chrome/browser/notifications/scheduler/internal/scheduler_config.h"
+#include "chrome/browser/notifications/scheduler/internal/scheduler_utils.h"
 #include "chrome/browser/notifications/scheduler/internal/webui_client.h"
 #include "chrome/browser/notifications/scheduler/public/display_agent.h"
 #include "chrome/browser/notifications/scheduler/public/features.h"
@@ -51,8 +54,8 @@ KeyedService* CreateNotificationScheduleService(
     return static_cast<KeyedService*>(new NoopNotificationScheduleService());
 
   auto config = SchedulerConfig::Create();
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT});
   client_registrar->RegisterClient(SchedulerClientType::kWebUI,
                                    std::make_unique<WebUIClient>());
 
@@ -61,7 +64,8 @@ KeyedService* CreateNotificationScheduleService(
   auto icon_db = db_provider->GetDB<proto::Icon, IconEntry>(
       leveldb_proto::ProtoDbType::NOTIFICATION_SCHEDULER_ICON_STORE,
       icon_store_dir, task_runner);
-  auto icon_store = std::make_unique<IconProtoDbStore>(std::move(icon_db));
+  auto icon_store = std::make_unique<IconProtoDbStore>(
+      std::move(icon_db), std::make_unique<PngIconConverterImpl>());
 
   // Build impression tracker.
   base::FilePath impression_store_dir = storage_dir.Append(kImpressionDBName);
@@ -85,14 +89,21 @@ KeyedService* CreateNotificationScheduleService(
       notification_store_dir, task_runner);
   auto notification_store =
       std::make_unique<NotificationStore>(std::move(notification_db));
+
   auto notification_manager = ScheduledNotificationManager::Create(
       std::move(notification_store), std::move(icon_store), registered_clients,
       *config.get());
 
+  auto background_task_coordinator = BackgroundTaskCoordinator::Create(
+      std::move(background_task_scheduler), config.get(),
+      base::DefaultClock::GetInstance());
+
+  auto display_decider = DisplayDecider::Create(
+      config.get(), registered_clients, base::DefaultClock::GetInstance());
   auto context = std::make_unique<NotificationSchedulerContext>(
-      std::move(client_registrar), std::move(background_task_scheduler),
+      std::move(client_registrar), std::move(background_task_coordinator),
       std::move(impression_tracker), std::move(notification_manager),
-      std::move(display_agent), DisplayDecider::Create(), std::move(config));
+      std::move(display_agent), std::move(display_decider), std::move(config));
 
   auto scheduler = NotificationScheduler::Create(std::move(context));
   auto init_aware_scheduler =

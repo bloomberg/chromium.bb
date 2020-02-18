@@ -14,27 +14,13 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 
 namespace content {
 
-namespace {
-
-void CreateOnIO(blink::mojom::ContentIndexServiceRequest request,
-                const url::Origin& origin,
-                scoped_refptr<ContentIndexContextImpl> content_index_context) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  mojo::MakeStrongBinding(std::make_unique<ContentIndexServiceImpl>(
-                              origin, std::move(content_index_context)),
-                          std::move(request));
-}
-
-}  // namespace
-
 // static
 void ContentIndexServiceImpl::Create(
-    blink::mojom::ContentIndexServiceRequest request,
+    mojo::PendingReceiver<blink::mojom::ContentIndexService> receiver,
     RenderProcessHost* render_process_host,
     const url::Origin& origin) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -42,34 +28,45 @@ void ContentIndexServiceImpl::Create(
   auto* storage_partition = static_cast<StoragePartitionImpl*>(
       render_process_host->GetStoragePartition());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(
-          &CreateOnIO, std::move(request), origin,
-          base::WrapRefCounted(storage_partition->GetContentIndexContext())));
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<ContentIndexServiceImpl>(
+          origin, storage_partition->GetContentIndexContext()),
+      std::move(receiver));
 }
 
 ContentIndexServiceImpl::ContentIndexServiceImpl(
     const url::Origin& origin,
     scoped_refptr<ContentIndexContextImpl> content_index_context)
     : origin_(origin),
-      content_index_context_(std::move(content_index_context)) {}
+      content_index_context_(std::move(content_index_context)) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
 
 ContentIndexServiceImpl::~ContentIndexServiceImpl() = default;
+
+void ContentIndexServiceImpl::GetIconSizes(
+    blink::mojom::ContentCategory category,
+    GetIconSizesCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  content_index_context_->GetIconSizes(category, std::move(callback));
+}
 
 void ContentIndexServiceImpl::Add(
     int64_t service_worker_registration_id,
     blink::mojom::ContentDescriptionPtr description,
-    const SkBitmap& icon,
+    const std::vector<SkBitmap>& icons,
     const GURL& launch_url,
     AddCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (icon.isNull() || icon.width() > kMaxIconDimension ||
-      icon.height() > kMaxIconDimension) {
-    mojo::ReportBadMessage("Invalid icon");
-    std::move(callback).Run(blink::mojom::ContentIndexError::INVALID_PARAMETER);
-    return;
+  for (const auto& icon : icons) {
+    if (icon.isNull() || icon.width() * icon.height() > kMaxIconResolution) {
+      mojo::ReportBadMessage("Invalid icon");
+      std::move(callback).Run(
+          blink::mojom::ContentIndexError::INVALID_PARAMETER);
+      return;
+    }
   }
 
   if (!launch_url.is_valid() ||
@@ -80,14 +77,14 @@ void ContentIndexServiceImpl::Add(
   }
 
   content_index_context_->database().AddEntry(
-      service_worker_registration_id, origin_, std::move(description), icon,
+      service_worker_registration_id, origin_, std::move(description), icons,
       launch_url, std::move(callback));
 }
 
 void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,
                                      const std::string& content_id,
                                      DeleteCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content_index_context_->database().DeleteEntry(
       service_worker_registration_id, origin_, content_id, std::move(callback));
@@ -96,7 +93,7 @@ void ContentIndexServiceImpl::Delete(int64_t service_worker_registration_id,
 void ContentIndexServiceImpl::GetDescriptions(
     int64_t service_worker_registration_id,
     GetDescriptionsCallback callback) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content_index_context_->database().GetDescriptions(
       service_worker_registration_id, std::move(callback));

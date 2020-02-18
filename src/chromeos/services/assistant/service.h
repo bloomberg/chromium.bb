@@ -8,11 +8,8 @@
 #include <memory>
 #include <string>
 
-#include "ash/public/cpp/assistant/assistant_state_proxy.h"
-#include "ash/public/cpp/assistant/default_voice_interaction_observer.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
-#include "ash/public/interfaces/assistant_controller.mojom.h"
-#include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "ash/public/mojom/assistant_controller.mojom.h"
 #include "base/callback.h"
 #include "base/cancelable_callback.h"
 #include "base/component_export.h"
@@ -23,24 +20,17 @@
 #include "base/single_thread_task_runner.h"
 #include "base/time/time.h"
 #include "chromeos/dbus/power/power_manager_client.h"
-#include "chromeos/services/assistant/pref_connection_delegate.h"
+#include "chromeos/services/assistant/assistant_state_proxy.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/assistant/public/mojom/settings.mojom.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_registry_simple.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
-#include "services/preferences/public/cpp/pref_service_factory.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/service.h"
-#include "services/service_manager/public/cpp/service_binding.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
 
 class GoogleServiceAuthError;
-class PrefChangeRegistrar;
-class PrefService;
 
 namespace base {
 class OneShotTimer;
@@ -58,6 +48,8 @@ namespace chromeos {
 namespace assistant {
 
 class AssistantManagerService;
+class AssistantSettingsManager;
+class PrefConnectionDelegate;
 
 // |AssistantManagerService|'s state won't update if it's currently in the
 // process of starting up. This is the delay before we will try to update
@@ -65,22 +57,25 @@ class AssistantManagerService;
 constexpr auto kUpdateAssistantManagerDelay = base::TimeDelta::FromSeconds(1);
 
 class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
-    : public service_manager::Service,
+    : public mojom::AssistantService,
       public chromeos::PowerManagerClient::Observer,
       public ash::SessionActivationObserver,
-      public mojom::AssistantPlatform,
-      public ash::DefaultVoiceInteractionObserver {
+      public ash::AssistantStateObserver {
  public:
-  Service(service_manager::mojom::ServiceRequest request,
+  Service(mojo::PendingReceiver<mojom::AssistantService> receiver,
           std::unique_ptr<network::SharedURLLoaderFactoryInfo>
               url_loader_factory_info);
   ~Service() override;
+
+  // Allows tests to override the AssistantSettingsManager bound by the service.
+  static void OverrideSettingsManagerForTesting(
+      AssistantSettingsManager* manager);
 
   mojom::Client* client() { return client_.get(); }
 
   mojom::DeviceActions* device_actions() { return device_actions_.get(); }
 
-  ash::mojom::AssistantController* assistant_controller() {
+  mojom::AssistantController* assistant_controller() {
     return assistant_controller_.get();
   }
 
@@ -122,16 +117,18 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void SetPrefConnectionDelegateForTesting(
       std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate);
 
+  AssistantStateProxy* GetAssistantStateProxyForTesting();
+
  private:
   friend class AssistantServiceTest;
 
-  // service_manager::Service overrides
-  void OnStart() override;
-  void OnConnect(const service_manager::BindSourceInfo& source_info,
-                 const std::string& interface_name,
-                 mojo::ScopedMessagePipeHandle interface_pipe) override;
-  void BindAssistantConnection(mojom::AssistantRequest request);
-  void BindAssistantPlatformConnection(mojom::AssistantPlatformRequest request);
+  // mojom::AssistantService overrides
+  void Init(mojom::ClientPtr client,
+            mojom::DeviceActionsPtr device_actions,
+            bool is_test) override;
+  void BindAssistant(mojo::PendingReceiver<mojom::Assistant> receiver) override;
+  void BindSettingsManager(
+      mojo::PendingReceiver<mojom::AssistantSettingsManager> receiver) override;
 
   // chromeos::PowerManagerClient::Observer overrides:
   void PowerChanged(const power_manager::PowerSupplyProperties& prop) override;
@@ -141,26 +138,15 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   void OnSessionActivated(bool activated) override;
   void OnLockStateChanged(bool locked) override;
 
-  // Called when the hotword always on status is changed from the pref service.
-  void OnAssistantHotwordAlwaysOn();
-
-  // ash::mojom::VoiceInteractionObserver:
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
-  void OnVoiceInteractionHotwordEnabled(bool enabled) override;
+  // ash::AssistantStateObserver:
+  void OnAssistantHotwordAlwaysOn(bool hotword_always_on) override;
+  void OnAssistantSettingsEnabled(bool enabled) override;
+  void OnAssistantHotwordEnabled(bool enabled) override;
   void OnLocaleChanged(const std::string& locale) override;
   void OnArcPlayStoreEnabledChanged(bool enabled) override;
   void OnLockedFullScreenStateChanged(bool enabled) override;
 
   void UpdateAssistantManagerState();
-  void BindAssistantSettingsManager(
-      mojom::AssistantSettingsManagerRequest request);
-
-  // mojom::AssistantPlatform overrides:
-  void Init(mojom::ClientPtr client,
-            mojom::DeviceActionsPtr device_actions,
-            bool is_test) override;
-
-  void OnPrefServiceConnected(std::unique_ptr<::PrefService> pref_service);
 
   identity::mojom::IdentityAccessor* GetIdentityAccessor();
 
@@ -185,11 +171,9 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   void UpdateListeningState();
 
-  service_manager::ServiceBinding service_binding_;
-  service_manager::BinderRegistry registry_;
+  mojo::Receiver<mojom::AssistantService> receiver_;
+  mojo::ReceiverSet<mojom::Assistant> assistant_receivers_;
 
-  mojo::BindingSet<mojom::Assistant> bindings_;
-  mojo::Binding<mojom::AssistantPlatform> platform_binding_;
   bool observing_ash_session_ = false;
   mojom::ClientPtr client_;
   mojom::DeviceActionsPtr device_actions_;
@@ -203,7 +187,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
   scoped_refptr<base::SequencedTaskRunner> main_task_runner_;
   ScopedObserver<chromeos::PowerManagerClient,
                  chromeos::PowerManagerClient::Observer>
-      power_manager_observer_;
+      power_manager_observer_{this};
 
   // Whether running inside a test environment.
   bool is_test_ = false;
@@ -219,30 +203,24 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) Service
 
   base::Optional<std::string> access_token_;
 
-  ash::mojom::AssistantControllerPtr assistant_controller_;
+  mojom::AssistantControllerPtr assistant_controller_;
+
   ash::mojom::AssistantAlarmTimerControllerPtr
       assistant_alarm_timer_controller_;
   ash::mojom::AssistantNotificationControllerPtr
       assistant_notification_controller_;
   ash::mojom::AssistantScreenContextControllerPtr
       assistant_screen_context_controller_;
-  ash::AssistantStateProxy assistant_state_;
+  AssistantStateProxy assistant_state_;
 
   // non-null until |assistant_manager_service_| is created.
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory_info_;
-
-  std::unique_ptr<PrefService> pref_service_;
-
-  std::unique_ptr<PrefConnectionDelegate> pref_connection_delegate_;
-
-  // Observes user profile prefs for the Assistant.
-  std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 
   base::CancelableOnceClosure update_assistant_manager_callback_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 
-  base::WeakPtrFactory<Service> weak_ptr_factory_;
+  base::WeakPtrFactory<Service> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

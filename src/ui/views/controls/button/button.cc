@@ -70,6 +70,56 @@ void Button::WidgetObserverButtonBridge::OnWidgetDestroying(Widget* widget) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// ButtonControllerDelegate:
+Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
+    Button* button)
+    : ButtonControllerDelegate(button) {}
+
+Button::DefaultButtonControllerDelegate::~DefaultButtonControllerDelegate() =
+    default;
+
+void Button::DefaultButtonControllerDelegate::RequestFocusFromEvent() {
+  button()->RequestFocusFromEvent();
+}
+
+void Button::DefaultButtonControllerDelegate::NotifyClick(
+    const ui::Event& event) {
+  button()->NotifyClick(event);
+}
+
+void Button::DefaultButtonControllerDelegate::OnClickCanceled(
+    const ui::Event& event) {
+  button()->OnClickCanceled(event);
+}
+
+bool Button::DefaultButtonControllerDelegate::IsTriggerableEvent(
+    const ui::Event& event) {
+  return button()->IsTriggerableEvent(event);
+}
+
+bool Button::DefaultButtonControllerDelegate::ShouldEnterPushedState(
+    const ui::Event& event) {
+  return button()->ShouldEnterPushedState(event);
+}
+
+bool Button::DefaultButtonControllerDelegate::ShouldEnterHoveredState() {
+  return button()->ShouldEnterHoveredState();
+}
+
+InkDrop* Button::DefaultButtonControllerDelegate::GetInkDrop() {
+  return button()->GetInkDrop();
+}
+
+int Button::DefaultButtonControllerDelegate::GetDragOperations(
+    const gfx::Point& press_pt) {
+  return button()->GetDragOperations(press_pt);
+}
+
+bool Button::DefaultButtonControllerDelegate::InDrag() {
+  return button()->InDrag();
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 // static
 const Button* Button::AsButton(const views::View* view) {
@@ -220,6 +270,21 @@ void Button::RemoveButtonObserver(ButtonObserver* observer) {
   button_observers_.RemoveObserver(observer);
 }
 
+Button::KeyClickAction Button::GetKeyClickActionForEvent(
+    const ui::KeyEvent& event) {
+  if (event.key_code() == ui::VKEY_SPACE)
+    return PlatformStyle::kKeyClickActionOnSpace;
+  if (event.key_code() == ui::VKEY_RETURN &&
+      PlatformStyle::kReturnClicksFocusedControl)
+    return CLICK_ON_KEY_PRESS;
+  return CLICK_NONE;
+}
+
+void Button::SetButtonController(
+    std::unique_ptr<ButtonController> button_controller) {
+  button_controller_ = std::move(button_controller);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // Button, View overrides:
 
@@ -231,7 +296,10 @@ bool Button::OnMouseDragged(const ui::MouseEvent& event) {
   if (state_ != STATE_DISABLED) {
     const bool should_enter_pushed = ShouldEnterPushedState(event);
     const bool should_show_pending =
-        should_enter_pushed && notify_action_ == NOTIFY_ON_RELEASE && !InDrag();
+        should_enter_pushed &&
+        button_controller_->notify_action() ==
+            ButtonController::NotifyAction::NOTIFY_ON_RELEASE &&
+        !InDrag();
     if (HitTestPoint(event.location())) {
       SetState(should_enter_pushed ? STATE_PRESSED : STATE_HOVERED);
       if (should_show_pending && GetInkDrop()->GetTargetInkDropState() ==
@@ -423,55 +491,7 @@ void Button::AnimationProgressed(const gfx::Animation* animation) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// ButtonControllerDelegate, protected:
-
-Button::DefaultButtonControllerDelegate::DefaultButtonControllerDelegate(
-    Button* button)
-    : ButtonControllerDelegate(button) {}
-
-Button::DefaultButtonControllerDelegate::~DefaultButtonControllerDelegate() =
-    default;
-
-void Button::DefaultButtonControllerDelegate::RequestFocusFromEvent() {
-  button()->RequestFocusFromEvent();
-}
-void Button::DefaultButtonControllerDelegate::NotifyClick(
-    const ui::Event& event) {
-  button()->NotifyClick(event);
-}
-void Button::DefaultButtonControllerDelegate::OnClickCanceled(
-    const ui::Event& event) {
-  button()->OnClickCanceled(event);
-}
-bool Button::DefaultButtonControllerDelegate::IsTriggerableEvent(
-    const ui::Event& event) {
-  return button()->IsTriggerableEvent(event);
-}
-bool Button::DefaultButtonControllerDelegate::ShouldEnterPushedState(
-    const ui::Event& event) {
-  return button()->ShouldEnterPushedState(event);
-}
-bool Button::DefaultButtonControllerDelegate::ShouldEnterHoveredState() {
-  return button()->ShouldEnterHoveredState();
-}
-InkDrop* Button::DefaultButtonControllerDelegate::GetInkDrop() {
-  return button()->GetInkDrop();
-}
-int Button::DefaultButtonControllerDelegate::GetDragOperations(
-    const gfx::Point& press_pt) {
-  return button()->GetDragOperations(press_pt);
-}
-bool Button::DefaultButtonControllerDelegate::InDrag() {
-  return button()->InDrag();
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // Button, protected:
-
-std::unique_ptr<ButtonControllerDelegate>
-Button::CreateButtonControllerDelegate() {
-  return std::make_unique<Button::DefaultButtonControllerDelegate>(this);
-}
 
 Button::Button(ButtonListener* listener)
     : AnimationDelegateViews(this),
@@ -482,17 +502,7 @@ Button::Button(ButtonListener* listener)
   hover_animation_.SetSlideDuration(kHoverFadeDurationMs);
   SetInstallFocusRingOnFocus(PlatformStyle::kPreferFocusRings);
   button_controller_ = std::make_unique<ButtonController>(
-      this, CreateButtonControllerDelegate());
-}
-
-Button::KeyClickAction Button::GetKeyClickActionForEvent(
-    const ui::KeyEvent& event) {
-  if (event.key_code() == ui::VKEY_SPACE)
-    return PlatformStyle::kKeyClickActionOnSpace;
-  if (event.key_code() == ui::VKEY_RETURN &&
-      PlatformStyle::kReturnClicksFocusedControl)
-    return CLICK_ON_KEY_PRESS;
-  return CLICK_NONE;
+      this, std::make_unique<DefaultButtonControllerDelegate>(this));
 }
 
 void Button::RequestFocusFromEvent() {
@@ -534,11 +544,6 @@ void Button::StateChanged(ButtonState old_state) {
 
 bool Button::IsTriggerableEvent(const ui::Event& event) {
   return button_controller_->IsTriggerableEvent(event);
-}
-
-void Button::SetButtonController(
-    std::unique_ptr<ButtonController> button_controller) {
-  button_controller_ = std::move(button_controller);
 }
 
 bool Button::ShouldUpdateInkDropOnClickCanceled() const {

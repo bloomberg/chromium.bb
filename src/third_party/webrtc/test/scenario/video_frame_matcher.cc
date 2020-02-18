@@ -128,6 +128,16 @@ void VideoFrameMatcher::Finalize() {
   }
 }
 
+CapturedFrameTap::CapturedFrameTap(Clock* clock, VideoFrameMatcher* matcher)
+    : clock_(clock), matcher_(matcher) {}
+
+void CapturedFrameTap::OnFrame(const VideoFrame& frame) {
+  matcher_->OnCapturedFrame(frame, clock_->CurrentTime());
+}
+void CapturedFrameTap::OnDiscardedFrame() {
+  discarded_count_++;
+}
+
 ForwardingCapturedFrameTap::ForwardingCapturedFrameTap(
     Clock* clock,
     VideoFrameMatcher* matcher,
@@ -148,7 +158,9 @@ void ForwardingCapturedFrameTap::OnDiscardedFrame() {
 void ForwardingCapturedFrameTap::AddOrUpdateSink(
     VideoSinkInterface<VideoFrame>* sink,
     const rtc::VideoSinkWants& wants) {
-  sink_ = sink;
+  if (!sink_)
+    sink_ = sink;
+  RTC_DCHECK_EQ(sink_, sink);
   source_->AddOrUpdateSink(this, wants);
 }
 void ForwardingCapturedFrameTap::RemoveSink(

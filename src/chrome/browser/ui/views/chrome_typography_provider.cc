@@ -49,7 +49,7 @@ bool ShouldIgnoreHarmonySpec(const ui::NativeTheme& theme) {
 #else
   if (theme.UsesHighContrastColors())
     return true;
-  if (theme.SystemDarkModeEnabled())
+  if (theme.ShouldUseDarkColors())
     return false;
 
   // TODO(pbos): Revisit this check. Both GG900 and black are considered
@@ -154,14 +154,14 @@ const gfx::FontList& ChromeTypographyProvider::GetFont(int context,
     font_weight = gfx::Font::Weight::SEMIBOLD;
   }
 
-  // Use a bold style for emphasized text in body contexts, and ignore |style|
-  // otherwise.
+  // Use a semibold style for emphasized text in body contexts, and ignore
+  // |style| otherwise.
   if (style == STYLE_EMPHASIZED || style == STYLE_EMPHASIZED_SECONDARY) {
     switch (context) {
       case CONTEXT_BODY_TEXT_SMALL:
       case CONTEXT_BODY_TEXT_LARGE:
       case views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT:
-        font_weight = gfx::Font::Weight::BOLD;
+        font_weight = gfx::Font::Weight::SEMIBOLD;
         break;
 
       default:
@@ -194,20 +194,20 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
   if (context == views::style::CONTEXT_BUTTON_MD) {
     switch (style) {
       case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
-        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey900
-                                                     : SK_ColorWHITE;
+        return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey900
+                                                   : SK_ColorWHITE;
       case views::style::STYLE_DISABLED:
         return gfx::kGoogleGrey600;
       default:
-        return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleBlue300
-                                                     : gfx::kGoogleBlue600;
+        return native_theme->ShouldUseDarkColors() ? gfx::kGoogleBlue300
+                                                   : gfx::kGoogleBlue600;
     }
   }
 
   // Use the secondary style instead of primary for message box body text.
   if (context == views::style::CONTEXT_MESSAGE_BOX_BODY_TEXT) {
     if (style == views::style::STYLE_PRIMARY) {
-      style = STYLE_SECONDARY;
+      style = views::style::STYLE_SECONDARY;
     } else if (style == STYLE_PRIMARY_MONOSPACED) {
       style = STYLE_SECONDARY_MONOSPACED;
     }
@@ -217,29 +217,27 @@ SkColor ChromeTypographyProvider::GetColor(const views::View& view,
     case views::style::STYLE_DIALOG_BUTTON_DEFAULT:
       return SK_ColorWHITE;
     case views::style::STYLE_DISABLED:
-      return native_theme->SystemDarkModeEnabled()
+      return native_theme->ShouldUseDarkColors()
                  ? gfx::kGoogleGrey800
                  : SkColorSetRGB(0x9e, 0x9e, 0x9e);
     case views::style::STYLE_LINK:
       return gfx::kGoogleBlue700;
-    case STYLE_SECONDARY:
+    case views::style::STYLE_SECONDARY:
     case STYLE_SECONDARY_MONOSPACED:
-    case STYLE_EMPHASIZED_SECONDARY:
     case STYLE_HINT:
-      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGrey500
-                                                   : gfx::kGoogleGrey700;
+      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGrey500
+                                                 : gfx::kGoogleGrey700;
     case STYLE_RED:
-      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleRed300
-                                                   : gfx::kGoogleRed700;
+      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleRed300
+                                                 : gfx::kGoogleRed600;
     case STYLE_GREEN:
-      return native_theme->SystemDarkModeEnabled() ? gfx::kGoogleGreen300
-                                                   : gfx::kGoogleGreen700;
+      return native_theme->ShouldUseDarkColors() ? gfx::kGoogleGreen300
+                                                 : gfx::kGoogleGreen700;
   }
 
   // Use default primary color for everything else.
-  return native_theme->SystemDarkModeEnabled()
-             ? SkColorSetA(SK_ColorWHITE, 0xDD)
-             : gfx::kGoogleGrey900;
+  return native_theme->ShouldUseDarkColors() ? SkColorSetA(SK_ColorWHITE, 0xDD)
+                                             : gfx::kGoogleGrey900;
 }
 
 int ChromeTypographyProvider::GetLineHeight(int context, int style) const {

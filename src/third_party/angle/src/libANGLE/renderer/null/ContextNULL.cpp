@@ -12,6 +12,7 @@
 #include "common/debug.h"
 
 #include "libANGLE/Context.h"
+#include "libANGLE/renderer/OverlayImpl.h"
 #include "libANGLE/renderer/null/BufferNULL.h"
 #include "libANGLE/renderer/null/CompilerNULL.h"
 #include "libANGLE/renderer/null/DisplayNULL.h"
@@ -139,6 +140,16 @@ angle::Result ContextNULL::drawArraysInstanced(const gl::Context *context,
     return angle::Result::Continue;
 }
 
+angle::Result ContextNULL::drawArraysInstancedBaseInstance(const gl::Context *context,
+                                                           gl::PrimitiveMode mode,
+                                                           GLint first,
+                                                           GLsizei count,
+                                                           GLsizei instanceCount,
+                                                           GLuint baseInstance)
+{
+    return angle::Result::Continue;
+}
+
 angle::Result ContextNULL::drawElements(const gl::Context *context,
                                         gl::PrimitiveMode mode,
                                         GLsizei count,
@@ -154,6 +165,18 @@ angle::Result ContextNULL::drawElementsInstanced(const gl::Context *context,
                                                  gl::DrawElementsType type,
                                                  const void *indices,
                                                  GLsizei instances)
+{
+    return angle::Result::Continue;
+}
+
+angle::Result ContextNULL::drawElementsInstancedBaseVertexBaseInstance(const gl::Context *context,
+                                                                       gl::PrimitiveMode mode,
+                                                                       GLsizei count,
+                                                                       gl::DrawElementsType type,
+                                                                       const void *indices,
+                                                                       GLsizei instances,
+                                                                       GLint baseVertex,
+                                                                       GLuint baseInstance)
 {
     return angle::Result::Continue;
 }
@@ -403,6 +426,11 @@ SemaphoreImpl *ContextNULL::createSemaphore()
 {
     UNREACHABLE();
     return nullptr;
+}
+
+OverlayImpl *ContextNULL::createOverlay(const gl::OverlayState &state)
+{
+    return new OverlayImpl(state);
 }
 
 angle::Result ContextNULL::dispatchCompute(const gl::Context *context,

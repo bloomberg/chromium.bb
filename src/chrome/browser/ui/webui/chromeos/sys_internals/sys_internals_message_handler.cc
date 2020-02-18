@@ -198,8 +198,7 @@ base::Value GetSysInfo() {
 
 }  // namespace
 
-SysInternalsMessageHandler::SysInternalsMessageHandler()
-    : weak_ptr_factory_(this) {}
+SysInternalsMessageHandler::SysInternalsMessageHandler() {}
 
 SysInternalsMessageHandler::~SysInternalsMessageHandler() {}
 
@@ -222,8 +221,9 @@ void SysInternalsMessageHandler::HandleGetSysInfo(const base::ListValue* args) {
   }
 
   base::Value callback_id = list[0].Clone();
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, base::MayBlock(), base::BindOnce(&GetSysInfo),
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE, {base::ThreadPool(), base::MayBlock()},
+      base::BindOnce(&GetSysInfo),
       base::BindOnce(&SysInternalsMessageHandler::ReplySysInfo,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback_id)));
 }

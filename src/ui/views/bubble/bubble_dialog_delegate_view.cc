@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -106,7 +107,7 @@ Widget* CreateBubbleWidget(BubbleDialogDelegateView* bubble) {
                                   ? Widget::InitParams::ACTIVATABLE_YES
                                   : Widget::InitParams::ACTIVATABLE_NO;
   bubble->OnBeforeBubbleWidgetInit(&bubble_params, bubble_widget);
-  bubble_widget->Init(bubble_params);
+  bubble_widget->Init(std::move(bubble_params));
 #if !defined(OS_MACOSX)
   // On Mac, having a parent window creates a permanent stacking order, so
   // there's no need to do this. Also, calling StackAbove() on Mac shows the

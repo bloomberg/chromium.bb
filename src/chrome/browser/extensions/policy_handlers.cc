@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/external_policy_loader.h"
@@ -306,16 +307,13 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
           std::string unparsed_url;
           unparsed_urls->GetString(i, &unparsed_url);
           URLPattern pattern(extension_scheme_mask);
-          URLPattern::ParseResult parse_result = pattern.Parse(
-              unparsed_url, URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+          URLPattern::ParseResult parse_result = pattern.Parse(unparsed_url);
           // These keys don't support paths due to how we track the initiator
           // of a webRequest and cookie security policy. We expect a valid
           // pattern to return a PARSE_ERROR_EMPTY_PATH.
           if (parse_result == URLPattern::ParseResult::kEmptyPath) {
             // Add a wildcard path to the URL as it should match any path.
-            parse_result =
-                pattern.Parse(unparsed_url + "/*",
-                              URLPattern::DENY_WILDCARD_FOR_EFFECTIVE_TLD);
+            parse_result = pattern.Parse(unparsed_url + "/*");
           } else if (parse_result == URLPattern::ParseResult::kSuccess) {
             // The user supplied a path, notify them that this is not supported.
             if (!pattern.match_all_urls()) {
@@ -336,6 +334,28 @@ bool ExtensionSettingsPolicyHandler::CheckPolicySettings(
           }
         }
       }
+    }
+
+    const base::ListValue* runtime_blocked_hosts = nullptr;
+    if (sub_dict->GetList(schema_constants::kPolicyBlockedHosts,
+                          &runtime_blocked_hosts) &&
+        runtime_blocked_hosts->GetList().size() >
+            schema_constants::kMaxItemsURLPatternSet) {
+      errors->AddError(
+          policy_name(), it.key() + "." + schema_constants::kPolicyBlockedHosts,
+          IDS_POLICY_EXTENSION_SETTINGS_ORIGIN_LIMIT_WARNING,
+          base::NumberToString(schema_constants::kMaxItemsURLPatternSet));
+    }
+
+    const base::ListValue* runtime_allowed_hosts = nullptr;
+    if (sub_dict->GetList(schema_constants::kPolicyAllowedHosts,
+                          &runtime_allowed_hosts) &&
+        runtime_allowed_hosts->GetList().size() >
+            schema_constants::kMaxItemsURLPatternSet) {
+      errors->AddError(
+          policy_name(), it.key() + "." + schema_constants::kPolicyAllowedHosts,
+          IDS_POLICY_EXTENSION_SETTINGS_ORIGIN_LIMIT_WARNING,
+          base::NumberToString(schema_constants::kMaxItemsURLPatternSet));
     }
   }
 

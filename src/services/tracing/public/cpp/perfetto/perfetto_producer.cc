@@ -26,9 +26,16 @@ void PerfettoProducer::BindStartupTraceWriterRegistry(
 }
 
 std::unique_ptr<perfetto::TraceWriter> PerfettoProducer::CreateTraceWriter(
-    perfetto::BufferID target_buffer) {
+    perfetto::BufferID target_buffer,
+    perfetto::BufferExhaustedPolicy buffer_exhausted_policy) {
   DCHECK(GetSharedMemoryArbiter());
-  return GetSharedMemoryArbiter()->CreateTraceWriter(target_buffer);
+  // Chromium uses BufferExhaustedPolicy::kDrop to avoid stalling trace writers
+  // when the chunks in the SMB are exhausted. Stalling could otherwise lead to
+  // deadlocks in chromium, because a stalled mojo IPC thread could prevent
+  // CommitRequest messages from reaching the perfetto service.
+  buffer_exhausted_policy = perfetto::BufferExhaustedPolicy::kDrop;
+  return GetSharedMemoryArbiter()->CreateTraceWriter(target_buffer,
+                                                     buffer_exhausted_policy);
 }
 
 PerfettoTaskRunner* PerfettoProducer::task_runner() {

@@ -239,10 +239,9 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::YVU_420;
     case YUV_420_BIPLANAR:
       return gfx::BufferFormat::YUV_420_BIPLANAR;
-    case UYVY_422:
-      return gfx::BufferFormat::UYVY_422;
     case P010:
       return gfx::BufferFormat::P010;
+    case UYVY_422:
     case ETC1:
     case ALPHA_8:
     case LUMINANCE_8:
@@ -393,8 +392,6 @@ ResourceFormat GetResourceFormat(gfx::BufferFormat format) {
       return YVU_420;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
       return YUV_420_BIPLANAR;
-    case gfx::BufferFormat::UYVY_422:
-      return UYVY_422;
     case gfx::BufferFormat::P010:
       return P010;
   }
@@ -450,9 +447,11 @@ VkFormat ToVkFormat(ResourceFormat format) {
       return VK_FORMAT_R8_UNORM;
     case LUMINANCE_8:
       return VK_FORMAT_R8_UNORM;
-    case LUMINANCE_F16:
     case YVU_420:
+      return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
     case YUV_420_BIPLANAR:
+      return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
+    case LUMINANCE_F16:
     case UYVY_422:
     case ETC1:
     case P010:

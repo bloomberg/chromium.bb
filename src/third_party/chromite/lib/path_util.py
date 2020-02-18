@@ -333,7 +333,7 @@ def FindCacheDir():
     if os.path.exists(old_path):
       logging.warning(
           "The location of Chrome's cache dir has changed. The old path at %s "
-          "can safely be removed.", old_path)
+          'can safely be removed.', old_path)
   elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
     path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
   else:

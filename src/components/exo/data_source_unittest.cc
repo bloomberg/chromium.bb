@@ -8,7 +8,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/exo/data_source_delegate.h"
 #include "components/exo/test/exo_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,9 +20,9 @@ constexpr char kTestData[] = "Test Data";
 
 class DataSourceTest : public testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_ = {
-      base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-      base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::DEFAULT,
+      base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC};
 };
 
 class TestDataSourceDelegate : public DataSourceDelegate {
@@ -32,7 +32,7 @@ class TestDataSourceDelegate : public DataSourceDelegate {
 
   // Overridden from DataSourceDelegate:
   void OnDataSourceDestroying(DataSource* source) override {}
-  void OnTarget(const std::string& mime_type) override {}
+  void OnTarget(const base::Optional<std::string>& mime_type) override {}
   void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
     ASSERT_TRUE(
         base::WriteFileDescriptor(fd.get(), kTestData, strlen(kTestData)));
@@ -52,6 +52,15 @@ void CheckMimeType(const std::string& expected,
   std::move(counter).Run();
 }
 
+void CheckTextMimeType(const std::string& expected,
+                       base::OnceClosure counter,
+                       const std::string& mime_type,
+                       base::string16 data) {
+  EXPECT_FALSE(expected.empty());
+  EXPECT_EQ(mime_type, expected);
+  std::move(counter).Run();
+}
+
 void IncrementCounter(base::RepeatingClosure counter) {
   std::move(counter).Run();
 }
@@ -65,9 +74,9 @@ void CheckMimeTypesRecieved(DataSource* data_source,
   base::RepeatingClosure counter =
       base::BarrierClosure(4, run_loop.QuitClosure());
   data_source->GetDataForPreferredMimeTypes(
-      base::BindOnce(&CheckMimeType, text_mime, counter),
+      base::BindOnce(&CheckTextMimeType, text_mime, counter),
       base::BindOnce(&CheckMimeType, rtf_mime, counter),
-      base::BindOnce(&CheckMimeType, html_mime, counter),
+      base::BindOnce(&CheckTextMimeType, html_mime, counter),
       base::BindOnce(&CheckMimeType, image_mime, counter),
       base::BindRepeating(&IncrementCounter, counter));
   run_loop.Run();
@@ -85,7 +94,7 @@ TEST_F(DataSourceTest, ReadData) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(std::string(kTestData), string_data);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadDataArbitraryMimeType) {
@@ -100,7 +109,7 @@ TEST_F(DataSourceTest, ReadDataArbitraryMimeType) {
         std::string string_data(data.begin(), data.end());
         EXPECT_EQ(std::string(kTestData), string_data);
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_UnknownMimeType) {
@@ -115,7 +124,7 @@ TEST_F(DataSourceTest, ReadData_UnknownMimeType) {
         FAIL() << "Callback should not be invoked when known "
                   "mimetype is not offerred";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_Destroyed) {
@@ -132,7 +141,7 @@ TEST_F(DataSourceTest, ReadData_Destroyed) {
                     "data source is destroyed";
         }));
   }
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, ReadData_Cancelled) {
@@ -147,7 +156,7 @@ TEST_F(DataSourceTest, ReadData_Cancelled) {
         FAIL() << "Callback should not be invoked after cancelled";
       }));
   data_source.Cancelled();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 TEST_F(DataSourceTest, PreferredMimeTypeUTF16) {

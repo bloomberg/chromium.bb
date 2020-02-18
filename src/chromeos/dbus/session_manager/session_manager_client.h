@@ -25,7 +25,12 @@ namespace dbus {
 class Bus;
 }
 
+namespace enterprise_management {
+class SignedData;
+}
+
 namespace login_manager {
+class LoginScreenStorageMetadata;
 class PolicyDescriptor;
 class StartArcMiniContainerRequest;
 class UpgradeArcContainerRequest;
@@ -141,6 +146,48 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
   // Sends the user's password to the session manager.
   virtual void SaveLoginPassword(const std::string& password) = 0;
 
+  // Used to report errors from |LoginScreenStorageStore()|. |error| should
+  // contain an error message if an error occurred.
+  using LoginScreenStorageStoreCallback =
+      DBusMethodCallback<std::string /* error */>;
+
+  // Stores data to the login screen storage. login screen storage is a D-Bus
+  // API that is used by the custom login screen implementations to inject
+  // credentials into the session and store persistent data across the login
+  // screen restarts.
+  virtual void LoginScreenStorageStore(
+      const std::string& key,
+      const login_manager::LoginScreenStorageMetadata& metadata,
+      const std::string& data,
+      LoginScreenStorageStoreCallback callback) = 0;
+
+  // Used for |LoginScreenStorageRetrieve()| method. |data| argument is the data
+  // returned by the session manager. |error| contains an error message if an
+  // error occurred, otherwise empty.
+  using LoginScreenStorageRetrieveCallback =
+      base::OnceCallback<void(base::Optional<std::string> /* data */,
+                              base::Optional<std::string> /* error */)>;
+
+  // Retrieve data stored earlier with the |LoginScreenStorageStore()| method.
+  virtual void LoginScreenStorageRetrieve(
+      const std::string& key,
+      LoginScreenStorageRetrieveCallback callback) = 0;
+
+  // Used for |LoginScreenStorageListKeys()| method. |keys| argument is the list
+  // of keys currently stored in the login screen storage. In case of error,
+  // |keys| is empty and |error| contains the error message.
+  using LoginScreenStorageListKeysCallback =
+      base::OnceCallback<void(std::vector<std::string> /* keys */,
+                              base::Optional<std::string> /* error */)>;
+
+  // List all keys currently stored in the login screen storage.
+  virtual void LoginScreenStorageListKeys(
+      LoginScreenStorageListKeysCallback callback) = 0;
+
+  // Delete a key and the value associated with it from the login screen
+  // storage.
+  virtual void LoginScreenStorageDelete(const std::string& key) = 0;
+
   // Starts the session for the user.
   virtual void StartSession(
       const cryptohome::AccountIdentifier& cryptohome_id) = 0;
@@ -151,6 +198,11 @@ class COMPONENT_EXPORT(SESSION_MANAGER) SessionManagerClient {
 
   // Starts the factory reset.
   virtual void StartDeviceWipe() = 0;
+
+  // Starts a remotely initiated factory reset, similar to |StartDeviceWipe|
+  // above, but also performs additional checks on Chrome OS side.
+  virtual void StartRemoteDeviceWipe(
+      const enterprise_management::SignedData& signed_command) = 0;
 
   // Set the block_demode and check_enrollment flags to 0 in the VPD.
   virtual void ClearForcedReEnrollmentVpd(VoidDBusMethodCallback callback) = 0;

@@ -15,8 +15,8 @@
 #include "base/metrics/histogram_samples.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
@@ -129,8 +129,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
       data_reduction_proxy::switches::kDataReductionProxyHttpProxies,
       kHttpsProxy.ToURI() + ";" + kHttpProxy.ToURI());
 
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   struct TestCase {
     const char* response_headers;
     const char* response_body;
@@ -200,8 +200,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -210,8 +210,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
           .Build();
 
   NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
-      drp_test_context->task_runner());
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
   drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -233,8 +232,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestOnProxyEnabledPrefChange) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -243,8 +242,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
           .Build();
 
   NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
-      drp_test_context->task_runner());
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
   drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
   drp_test_context->InitSettings();
@@ -275,8 +273,8 @@ TEST(DataReductionProxySettingsStandaloneTest, TestIsProxyEnabledOrManaged) {
 }
 
 TEST(DataReductionProxySettingsStandaloneTest, TestCanUseDataReductionProxy) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -285,8 +283,7 @@ TEST(DataReductionProxySettingsStandaloneTest, TestCanUseDataReductionProxy) {
           .Build();
 
   NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
-      drp_test_context->task_runner());
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
   drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
   drp_test_context->InitSettings();
@@ -319,8 +316,7 @@ TEST_F(DataReductionProxySettingsTest, TestMaybeActivateDataReductionProxy) {
   // so it won't trigger MaybeActivateDataReductionProxy when the pref value
   // is set.
   NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), test_context_->pref_service(),
-      test_context_->task_runner());
+      base::DefaultClock::GetInstance(), test_context_->pref_service());
   test_context_->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -387,9 +383,6 @@ TEST_F(DataReductionProxySettingsTest, TestSettingsEnabledStateHistograms) {
   const char kUMAEnabledState[] = "DataReductionProxy.EnabledState";
   base::HistogramTester histogram_tester;
 
-  settings_->data_reduction_proxy_service_->SetIOData(
-      test_context_->io_data()->GetWeakPtr());
-
   // No settings state histograms should be recorded during startup.
   test_context_->RunUntilIdle();
   histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
@@ -423,8 +416,6 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
 
   {
     base::HistogramTester histogram_tester;
-    settings_->data_reduction_proxy_service_->SetIOData(
-        test_context_->io_data()->GetWeakPtr());
 
     test_context_->RunUntilIdle();
     histogram_tester.ExpectTotalCount(kUMAEnabledState, 0);
@@ -484,8 +475,8 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceEnabledWithTestClock) {
 // that already have data reduction proxy on.
 TEST(DataReductionProxySettingsStandaloneTest,
      TestDaysSinceEnabledExistingUser) {
-  base::test::ScopedTaskEnvironment task_environment{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::SingleThreadTaskEnvironment task_environment{
+      base::test::SingleThreadTaskEnvironment::MainThreadType::IO};
   std::unique_ptr<DataReductionProxyTestContext> drp_test_context =
       DataReductionProxyTestContext::Builder()
           .WithMockConfig()
@@ -494,8 +485,7 @@ TEST(DataReductionProxySettingsStandaloneTest,
           .Build();
 
   NetworkPropertiesManager network_properties_manager(
-      base::DefaultClock::GetInstance(), drp_test_context->pref_service(),
-      drp_test_context->task_runner());
+      base::DefaultClock::GetInstance(), drp_test_context->pref_service());
   drp_test_context->config()->SetNetworkPropertiesManagerForTesting(
       &network_properties_manager);
 
@@ -524,8 +514,6 @@ TEST_F(DataReductionProxySettingsTest, TestDaysSinceSavingsCleared) {
       prefs::kDataReductionProxySavingsClearedNegativeSystemClock,
       clock.Now().ToInternalValue());
 
-  settings_->data_reduction_proxy_service_->SetIOData(
-      test_context_->io_data()->GetWeakPtr());
   test_context_->RunUntilIdle();
 
   clock.Advance(base::TimeDelta::FromDays(100));

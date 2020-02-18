@@ -317,8 +317,7 @@ class OpenSystemSettingsHelper {
   OpenSystemSettingsHelper(const wchar_t* const protocols[],
                            const base::Closure& on_finished_callback)
       : scoped_user_protocol_entry_(protocols[0]),
-        on_finished_callback_(on_finished_callback),
-        weak_ptr_factory_(this) {
+        on_finished_callback_(on_finished_callback) {
     static const wchar_t kUrlAssociationFormat[] =
         L"SOFTWARE\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"
         L"%ls\\UserChoice";
@@ -418,7 +417,7 @@ class OpenSystemSettingsHelper {
   // Weak ptrs are used to bind this class to the callbacks of the timer and the
   // registry watcher. This makes it possible to self-delete after one of the
   // callbacks is executed to cancel the remaining ones.
-  base::WeakPtrFactory<OpenSystemSettingsHelper> weak_ptr_factory_;
+  base::WeakPtrFactory<OpenSystemSettingsHelper> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(OpenSystemSettingsHelper);
 };
@@ -491,16 +490,6 @@ void IsPinnedToTaskbarHelper::OnIsPinnedToTaskbarResult(
 
   result_callback_.Run(succeeded, is_pinned_to_taskbar);
   delete this;
-}
-
-void MigrateChromeAndChromeProxyShortcuts(
-    const base::FilePath& chrome_exe,
-    const base::FilePath& chrome_proxy_path,
-    const base::FilePath& shortcut_path) {
-  win::MigrateShortcutsInPathInternal(chrome_exe, shortcut_path);
-
-  // Migrate any pinned PWA shortcuts in taskbar directory.
-  win::MigrateShortcutsInPathInternal(chrome_proxy_path, shortcut_path);
 }
 
 }  // namespace
@@ -711,44 +700,28 @@ void MigrateTaskbarPins() {
   // This needs to happen (e.g. so that the appid is fixed and the
   // run-time Chrome icon is merged with the taskbar shortcut), but it is not an
   // urgent task.
-  base::FilePath taskbar_path;
-  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &taskbar_path)) {
+  base::FilePath pins_path;
+  if (!base::PathService::Get(base::DIR_TASKBAR_PINS, &pins_path)) {
     NOTREACHED();
     return;
   }
 
-  // Migrate any pinned shortcuts in ImplicitApps sub-directories.
-  base::FilePath implicit_apps_path;
-  if (!base::PathService::Get(base::DIR_IMPLICIT_APP_SHORTCUTS,
-                              &implicit_apps_path)) {
-    NOTREACHED();
-    return;
-  }
-
-  base::CreateCOMSTATaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT})
-      ->PostTask(FROM_HERE, base::BindOnce(&MigrateTaskbarPinsCallback,
-                                           taskbar_path, implicit_apps_path));
+  base::CreateCOMSTATaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT})
+      ->PostTask(FROM_HERE,
+                 base::BindOnce(&MigrateTaskbarPinsCallback, pins_path));
 }
 
-void MigrateTaskbarPinsCallback(const base::FilePath& taskbar_path,
-                                const base::FilePath& implicit_apps_path) {
+void MigrateTaskbarPinsCallback(const base::FilePath& pins_path) {
   // Get full path of chrome.
   base::FilePath chrome_exe;
   if (!base::PathService::Get(base::FILE_EXE, &chrome_exe))
     return;
-  base::FilePath chrome_proxy_path(web_app::GetChromeProxyPath());
 
-  MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
-                                       taskbar_path);
-  base::FileEnumerator directory_enum(implicit_apps_path, /*recursive=*/false,
-                                      base::FileEnumerator::DIRECTORIES);
-  for (base::FilePath implicit_app_sub_directory = directory_enum.Next();
-       !implicit_app_sub_directory.empty();
-       implicit_app_sub_directory = directory_enum.Next()) {
-    MigrateChromeAndChromeProxyShortcuts(chrome_exe, chrome_proxy_path,
-                                         implicit_app_sub_directory);
-  }
+  win::MigrateShortcutsInPathInternal(chrome_exe, pins_path);
+
+  // Migrate any pinned PWA shortcuts.
+  win::MigrateShortcutsInPathInternal(web_app::GetChromeProxyPath(), pins_path);
 }
 
 void GetIsPinnedToTaskbarState(

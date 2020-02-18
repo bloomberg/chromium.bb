@@ -9,12 +9,14 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "net/base/features.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
 #include "net/http/http_util.h"
@@ -120,11 +122,14 @@ bool GetCookieDomainWithString(const GURL& url,
                                std::string* result) {
   const std::string url_host(url.host());
 
+  url::CanonHostInfo ignored;
+  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
+
   // If no domain was specified in the domain string, default to a host cookie.
   // We match IE/Firefox in allowing a domain=IPADDR if it matches the url
   // ip address hostname exactly.  It should be treated as a host cookie.
   if (domain_string.empty() ||
-      (url.HostIsIPAddress() && url_host == domain_string)) {
+      (url.HostIsIPAddress() && url_host == cookie_domain)) {
     *result = url_host;
     DCHECK(DomainIsHostOnly(*result));
     return true;
@@ -137,8 +142,6 @@ bool GetCookieDomainWithString(const GURL& url,
   }
 
   // Get the normalized domain specified in cookie line.
-  url::CanonHostInfo ignored;
-  std::string cookie_domain(CanonicalizeHost(domain_string, &ignored));
   if (cookie_domain.empty())
     return false;
   if (cookie_domain[0] != '.')
@@ -416,24 +419,25 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
   //   target a top-level browsing context.
   //
   // * Include both "strict" and "lax" same-site cookies if the request is
-  //   tagged with a flag allowing it and "lax" would have been allowed had
-  //   |http_method| been safe.
+  //   tagged with a flag allowing it.
   //
   //   Note that this can be the case for requests initiated by extensions,
   //   which need to behave as though they are made by the document itself,
   //   but appear like cross-site ones.
   //
   // * Otherwise, do not include same-site cookies.
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+
   CookieOptions::SameSiteCookieContext same_site_context =
       ComputeSameSiteContext(url, site_for_cookies, initiator);
+
+  // If the method is safe, the context is Lax. Otherwise, make a note that
+  // the method is unsafe.
   if (same_site_context ==
-      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
-    if (attach_same_site_cookies) {
-      same_site_context =
-          CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
-    } else if (!net::HttpUtil::IsMethodSafe(http_method)) {
-      same_site_context = CookieOptions::SameSiteCookieContext::CROSS_SITE;
-    }
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX &&
+      !net::HttpUtil::IsMethodSafe(http_method)) {
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE;
   }
   return same_site_context;
 }
@@ -478,48 +482,14 @@ ComputeSameSiteContextForSubresource(const GURL& url,
     return CookieOptions::SameSiteCookieContext::CROSS_SITE;
 }
 
-CanonicalCookie::CookieInclusionStatus CookieWouldBeExcludedDueToSameSite(
-    const CanonicalCookie& cookie,
-    const CookieOptions& options) {
-  // Check if cookie would be excluded under SameSiteByDefaultCookies.
-  bool cross_site_context = options.same_site_cookie_context() ==
-                            CookieOptions::SameSiteCookieContext::CROSS_SITE;
-  if (cross_site_context && cookie.SameSite() == CookieSameSite::UNSPECIFIED) {
-    DCHECK_EQ(CookieSameSite::NO_RESTRICTION, cookie.GetEffectiveSameSite());
-    return CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_UNSPECIFIED_TREATED_AS_LAX;
-  }
-
-  // Check if cookie would be excluded under CookiesWithoutSameSiteMustBeSecure.
-  if (cookie.SameSite() == CookieSameSite::NO_RESTRICTION &&
-      !cookie.IsSecure()) {
-    return CanonicalCookie::CookieInclusionStatus::
-        EXCLUDE_SAMESITE_NONE_INSECURE;
-  }
-
-  return CanonicalCookie::CookieInclusionStatus::INCLUDE;
+bool IsSameSiteByDefaultCookiesEnabled() {
+  return base::FeatureList::IsEnabled(features::kSameSiteByDefaultCookies);
 }
 
-base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(const CookieList&)> callback,
-         const CookieList& cookies, const CookieStatusList& excluded_list) {
-        std::move(callback).Run(cookies);
-      },
-      std::move(callback));
-}
-
-base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
-    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-        callback) {
-  return base::BindOnce(
-      [](base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-             inner_callback,
-         const CookieList& cookies) {
-        std::move(inner_callback).Run(cookies, net::CookieStatusList());
-      },
-      std::move(callback));
+bool IsCookiesWithoutSameSiteMustBeSecureEnabled() {
+  return IsSameSiteByDefaultCookiesEnabled() &&
+         base::FeatureList::IsEnabled(
+             features::kCookiesWithoutSameSiteMustBeSecure);
 }
 
 base::OnceCallback<void(net::CanonicalCookie::CookieInclusionStatus)>
@@ -527,11 +497,18 @@ AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback) {
   return base::BindOnce(
       [](base::OnceCallback<void(bool)> inner_callback,
          const net::CanonicalCookie::CookieInclusionStatus status) {
-        bool success =
-            (status == net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+        bool success = status.IsInclude();
         std::move(inner_callback).Run(success);
       },
       std::move(callback));
+}
+
+CookieList StripStatuses(const CookieStatusList& cookie_status_list) {
+  CookieList cookies;
+  for (const CookieWithStatus& cookie_with_status : cookie_status_list) {
+    cookies.push_back(cookie_with_status.cookie);
+  }
+  return cookies;
 }
 
 }  // namespace cookie_util

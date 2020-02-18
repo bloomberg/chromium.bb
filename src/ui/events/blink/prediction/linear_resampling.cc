@@ -88,4 +88,11 @@ bool LinearResampling::GeneratePrediction(base::TimeTicks frame_time,
   return true;
 }
 
+base::TimeDelta LinearResampling::TimeInterval() const {
+  if (events_queue_.size() == kNumEventsForResampling) {
+    return events_dt_;
+  }
+  return kTimeInterval;
+}
+
 }  // namespace ui

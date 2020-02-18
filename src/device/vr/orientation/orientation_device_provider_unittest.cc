@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "device/base/features.h"
@@ -53,19 +53,19 @@ class VROrientationDeviceProviderTest : public testing::Test {
 
     provider_ = std::make_unique<VROrientationDeviceProvider>(connector_.get());
 
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {}
 
   void InitializeDevice(mojom::SensorInitParamsPtr params) {
     // Be sure GetSensor goes through so the callback is set.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     fake_sensor_provider_->CallCallback(std::move(params));
 
     // Allow the callback call to go through.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   mojom::SensorInitParamsPtr FakeInitParams() {
@@ -133,7 +133,7 @@ class VROrientationDeviceProviderTest : public testing::Test {
   }
 
   // Needed for MakeRequest to work.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<VROrientationDeviceProvider> provider_;
 

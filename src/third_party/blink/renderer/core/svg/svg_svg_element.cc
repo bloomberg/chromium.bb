@@ -343,6 +343,13 @@ bool SVGSVGElement::CheckIntersectionOrEnclosure(
   return result;
 }
 
+void SVGSVGElement::DidMoveToNewDocument(Document& old_document) {
+  SVGGraphicsElement::DidMoveToNewDocument(old_document);
+  if (TimeContainer()->IsStarted()) {
+    TimeContainer()->ResetDocumentTime();
+  }
+}
+
 StaticNodeList* SVGSVGElement::CollectIntersectionOrEnclosureList(
     const FloatRect& rect,
     SVGElement* reference_element,

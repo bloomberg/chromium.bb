@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#include "ios/public/provider/chrome/browser/ui/text_field_styling.h"
 
 namespace ios {
 
@@ -26,13 +25,11 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   void SetChromeIdentityServiceForTesting(
       std::unique_ptr<ChromeIdentityService> service) override;
   ChromeIdentityService* GetChromeIdentityService() override;
-  UITextField<TextFieldStyling>* CreateStyledTextField(
-      CGRect frame) const override NS_RETURNS_RETAINED;
+  UITextField* CreateStyledTextField() const override NS_RETURNS_RETAINED;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;
   AppDistributionProvider* GetAppDistributionProvider() const override;
   OmahaServiceProvider* GetOmahaServiceProvider() const override;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
-  SpecialUserProvider* GetSpecialUserProvider() const override;
   SpotlightProvider* GetSpotlightProvider() const override;
   FullscreenProvider* GetFullscreenProvider() const override;
   BrandedImageProvider* GetBrandedImageProvider() const override;
@@ -46,7 +43,6 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<SigninResourcesProvider> signin_resources_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
   std::unique_ptr<UserFeedbackProvider> user_feedback_provider_;
-  std::unique_ptr<SpecialUserProvider> special_user_provider_;
   std::unique_ptr<SpotlightProvider> spotlight_provider_;
   std::unique_ptr<MailtoHandlerProvider> mailto_handler_provider_;
   std::unique_ptr<FullscreenProvider> fullscreen_provider_;

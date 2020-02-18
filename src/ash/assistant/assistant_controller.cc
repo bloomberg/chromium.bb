@@ -12,15 +12,17 @@
 #include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/new_window_delegate.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
+#include "ash/shell_delegate.h"
 #include "ash/utility/screenshot_controller.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "services/content/public/mojom/constants.mojom.h"
+#include "services/content/public/mojom/navigable_contents_factory.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace ash {
@@ -35,16 +37,14 @@ constexpr char kAndroidIntentScheme[] = "intent";
 AssistantController::AssistantController()
     : assistant_volume_control_binding_(this),
       assistant_alarm_timer_controller_(this),
-      assistant_cache_controller_(this),
       assistant_interaction_controller_(this),
       assistant_notification_controller_(this),
-      assistant_prefs_controller_(),
       assistant_screen_context_controller_(this),
       assistant_setup_controller_(this),
+      assistant_suggestions_controller_(this),
       assistant_ui_controller_(this),
-      view_delegate_(this),
-      weak_factory_(this) {
-  VoiceInteractionController::Get()->AddLocalObserver(this);
+      view_delegate_(this) {
+  assistant_state_controller_.AddObserver(this);
   chromeos::CrasAudioHandler::Get()->AddAudioObserver(this);
   AddObserver(this);
 
@@ -56,7 +56,7 @@ AssistantController::~AssistantController() {
 
   chromeos::CrasAudioHandler::Get()->RemoveAudioObserver(this);
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
-  VoiceInteractionController::Get()->RemoveLocalObserver(this);
+  assistant_state_controller_.RemoveObserver(this);
   RemoveObserver(this);
 }
 
@@ -66,7 +66,7 @@ void AssistantController::RegisterProfilePrefs(PrefRegistrySimple* registry) {
 }
 
 void AssistantController::BindRequest(
-    mojom::AssistantControllerRequest request) {
+    chromeos::assistant::mojom::AssistantControllerRequest request) {
   assistant_controller_bindings_.AddBinding(this, std::move(request));
 }
 
@@ -85,8 +85,8 @@ void AssistantController::RemoveObserver(
 }
 
 void AssistantController::SetAssistant(
-    chromeos::assistant::mojom::AssistantPtr assistant) {
-  assistant_ = std::move(assistant);
+    mojo::PendingRemote<chromeos::assistant::mojom::Assistant> assistant) {
+  assistant_.Bind(std::move(assistant));
 
   // Provide reference to sub-controllers.
   assistant_alarm_timer_controller_.SetAssistant(assistant_.get());
@@ -119,8 +119,8 @@ void AssistantController::SendAssistantFeedback(
 }
 
 void AssistantController::StartSpeakerIdEnrollmentFlow() {
-  if (prefs_controller()->prefs()->GetInteger(
-          chromeos::assistant::prefs::kAssistantConsentStatus) ==
+  if (assistant_state_controller_.consent_status().value_or(
+          chromeos::assistant::prefs::ConsentStatus::kUnknown) ==
       chromeos::assistant::prefs::ConsentStatus::kActivityControlAccepted) {
     // If activity control has been accepted, launch the enrollment flow.
     setup_controller()->StartOnboarding(false /* relaunch */,
@@ -323,7 +323,7 @@ void AssistantController::NotifyUrlOpened(const GURL& url, bool from_server) {
     observer.OnUrlOpened(url, from_server);
 }
 
-void AssistantController::OnVoiceInteractionStatusChanged(
+void AssistantController::OnAssistantStatusChanged(
     mojom::VoiceInteractionState state) {
   if (state == mojom::VoiceInteractionState::NOT_READY)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
@@ -332,6 +332,42 @@ void AssistantController::OnVoiceInteractionStatusChanged(
 void AssistantController::OnLockedFullScreenStateChanged(bool enabled) {
   if (enabled)
     assistant_ui_controller_.CloseUi(AssistantExitPoint::kUnspecified);
+}
+
+void AssistantController::BindController(
+    mojo::PendingReceiver<chromeos::assistant::mojom::AssistantController>
+        receiver) {
+  BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindAlarmTimerController(
+    mojo::PendingReceiver<mojom::AssistantAlarmTimerController> receiver) {
+  Shell::Get()->assistant_controller()->alarm_timer_controller()->BindRequest(
+      std::move(receiver));
+}
+
+void AssistantController::BindNotificationController(
+    mojo::PendingReceiver<mojom::AssistantNotificationController> receiver) {
+  Shell::Get()->assistant_controller()->notification_controller()->BindRequest(
+      std::move(receiver));
+}
+
+void AssistantController::BindScreenContextController(
+    mojo::PendingReceiver<mojom::AssistantScreenContextController> receiver) {
+  Shell::Get()
+      ->assistant_controller()
+      ->screen_context_controller()
+      ->BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindStateController(
+    mojo::PendingReceiver<mojom::AssistantStateController> receiver) {
+  assistant_state_controller_.BindRequest(std::move(receiver));
+}
+
+void AssistantController::BindVolumeControl(
+    mojo::PendingReceiver<mojom::AssistantVolumeControl> receiver) {
+  Shell::Get()->assistant_controller()->BindRequest(std::move(receiver));
 }
 
 base::WeakPtr<AssistantController> AssistantController::GetWeakPtr() {

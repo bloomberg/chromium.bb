@@ -12,29 +12,74 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+import {ungzip} from 'pako';
+import {Message, Method, rpc, RPCImplCallback} from 'protobufjs';
+
+import {Actions} from '../common/actions';
 import {
   AndroidLogConfig,
   AndroidLogId,
   AndroidPowerConfig,
   BufferConfig,
   ChromeConfig,
+  ConsumerPort,
   DataSourceConfig,
   FtraceConfig,
   ProcessStatsConfig,
   SysStatsConfig,
-  TraceConfig
+  TraceConfig,
 } from '../common/protos';
 import {MeminfoCounters, VmstatCounters} from '../common/protos';
-import {MAX_TIME, RecordConfig} from '../common/state';
+import {
+  isAndroidTarget,
+  isChromeTarget,
+  MAX_TIME,
+  RecordConfig
+} from '../common/state';
 
+import {AdbOverWebUsb} from './adb';
+import {AdbRecordController} from './adb_record_controller';
+import {
+  ConsumerPortResponse,
+  GetTraceStatsResponse,
+  isEnableTracingResponse,
+  isGetTraceStatsResponse,
+  isReadBuffersResponse,
+  Typed,
+} from './consumer_port_types';
 import {Controller} from './controller';
-import {App} from './globals';
+import {App, globals} from './globals';
+
+type RPCImplMethod = (Method|rpc.ServiceMethod<Message<{}>, Message<{}>>);
+
+export interface RecordControllerError extends Typed {
+  message: string;
+}
+
+export interface RecordControllerStatus extends Typed {
+  status: string;
+}
+
+export type RecordControllerMessage =
+    RecordControllerError|RecordControllerStatus;
+
+function isError(obj: Typed): obj is RecordControllerError {
+  return obj.type === 'RecordControllerError';
+}
+
+function isStatus(obj: Typed): obj is RecordControllerStatus {
+  return obj.type === 'RecordControllerStatus';
+}
 
 export function uint8ArrayToBase64(buffer: Uint8Array): string {
   return btoa(String.fromCharCode.apply(null, Array.from(buffer)));
 }
 
 export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
+  return TraceConfig.encode(genConfig(uiCfg)).finish();
+}
+
+export function genConfig(uiCfg: RecordConfig): TraceConfig {
   const protoCfg = new TraceConfig();
   protoCfg.durationMs = uiCfg.durationMs;
 
@@ -76,6 +121,7 @@ export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
   const atraceCats = new Set<string>(uiCfg.atrace ? uiCfg.atraceCats : []);
   const atraceApps = new Set<string>();
   const chromeCategories = new Set<string>();
+  uiCfg.chromeCategoriesSelected.forEach(it => chromeCategories.add(it));
 
   let procThreadAssociationPolling = false;
   let procThreadAssociationFtrace = false;
@@ -102,6 +148,12 @@ export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
 
   if (uiCfg.gpuFreq) {
     ftraceEvents.add('power/gpu_frequency');
+  }
+
+  if (uiCfg.gpuSched) {
+    ftraceEvents.add('gpu/gpu_sched_enqueue');
+    ftraceEvents.add('gpu/gpu_sched_submit');
+    ftraceEvents.add('gpu/gpu_sched_complete');
   }
 
   if (uiCfg.cpuSyscall) {
@@ -287,6 +339,10 @@ export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
     protoCfg.dataSources.push(metadataDs);
   }
 
+  if (uiCfg.screenRecord) {
+    atraceCats.add('gfx');
+  }
+
   // Keep these last. The stages above can enrich them.
 
   if (sysStatsCfg !== undefined) {
@@ -326,8 +382,7 @@ export function genConfigProto(uiCfg: RecordConfig): Uint8Array {
     protoCfg.dataSources.push(ds);
   }
 
-  const buffer = TraceConfig.encode(protoCfg).finish();
-  return buffer;
+  return protoCfg;
 }
 
 export function toPbtxt(configBuffer: Uint8Array): string {
@@ -338,11 +393,20 @@ export function toPbtxt(configBuffer: Uint8Array): string {
   }
   // With the ahead of time compiled protos we can't seem to tell which
   // fields are enums.
-  function looksLikeEnum(value: string): boolean {
+  function isEnum(value: string): boolean {
     return value.startsWith('MEMINFO_') || value.startsWith('VMSTAT_') ||
         value.startsWith('STAT_') || value.startsWith('LID_') ||
         value.startsWith('BATTERY_COUNTER_') || value === 'DISCARD' ||
         value === 'RING_BUFFER';
+  }
+  // Since javascript doesn't have 64 bit numbers when converting protos to
+  // json the proto library encodes them as strings. This is lossy since
+  // we can't tell which strings that look like numbers are actually strings
+  // and which are actually numbers. Ideally we would reflect on the proto
+  // definition somehow but for now we just hard code keys which have this
+  // problem in the config.
+  function is64BitNumber(key: string): boolean {
+    return key === 'maxFileSizeBytes';
   }
   function* message(msg: {}, indent: number): IterableIterator<string> {
     for (const [key, value] of Object.entries(msg)) {
@@ -351,9 +415,11 @@ export function toPbtxt(configBuffer: Uint8Array): string {
       for (const entry of (isRepeated ? value as Array<{}> : [value])) {
         yield ' '.repeat(indent) + `${snakeCase(key)}${isNested ? '' : ':'} `;
         if (typeof entry === 'string') {
-          yield looksLikeEnum(entry) ?
-              entry :
-              `"${entry.replace(new RegExp('"', 'g'), '\\"')}"`;
+          if (isEnum(entry) || is64BitNumber(key)) {
+            yield entry;
+          } else {
+            yield `"${entry.replace(new RegExp('"', 'g'), '\\"')}"`;
+          }
         } else if (typeof entry === 'number') {
           yield entry.toString();
         } else if (typeof entry === 'boolean') {
@@ -373,15 +439,29 @@ export function toPbtxt(configBuffer: Uint8Array): string {
 export class RecordController extends Controller<'main'> {
   private app: App;
   private config: RecordConfig|null = null;
+  private extensionPort: MessagePort;
+  private recordingInProgress = false;
+  private consumerPort: ConsumerPort;
+  private traceBuffer = '';
+  private bufferUpdateInterval: ReturnType<typeof setTimeout>|undefined;
 
-  constructor(args: {app: App}) {
+  private adbRecordController = new AdbRecordController(
+      new AdbOverWebUsb(), this.onConsumerPortMessage.bind(this));
+  constructor(args: {app: App, extensionPort: MessagePort}) {
     super('main');
     this.app = args.app;
+    this.consumerPort = ConsumerPort.create(this.rpcImpl.bind(this));
+    this.extensionPort = args.extensionPort;
+    this.extensionPort.onmessage = this.onConsumerPortMessage.bind(this);
   }
 
   run() {
-    if (this.app.state.recordConfig === this.config) return;
+    if (this.app.state.recordConfig === this.config &&
+        this.app.state.recordingInProgress === this.recordingInProgress) {
+      return;
+    }
     this.config = this.app.state.recordConfig;
+
     const configProto = genConfigProto(this.config);
     const configProtoText = toPbtxt(configProto);
     const commandline = `
@@ -390,13 +470,134 @@ export class RecordController extends Controller<'main'> {
       adb shell "perfetto -c - -o /data/misc/perfetto-traces/trace" &&
       adb pull /data/misc/perfetto-traces/trace /tmp/trace
     `;
+    const traceConfig = genConfig(this.config);
     // TODO(hjd): This should not be TrackData after we unify the stores.
     this.app.publish('TrackData', {
       id: 'config',
-      data: {
-        commandline,
-        pbtxt: configProtoText,
-      }
+      data: {commandline, pbtxt: configProtoText, traceConfig}
     });
+
+    // If the recordingInProgress boolean state is different, it means that we
+    // have to start or stop recording a trace.
+    if (this.app.state.recordingInProgress === this.recordingInProgress) return;
+    this.recordingInProgress = this.app.state.recordingInProgress;
+
+    if (this.recordingInProgress) {
+      this.startRecordTrace(traceConfig);
+    } else {
+      this.stopRecordTrace();
+    }
+  }
+
+  startRecordTrace(traceConfig: TraceConfig) {
+    this.scheduleBufferUpdateRequests();
+    this.consumerPort.enableTracing({traceConfig});
+  }
+
+  stopRecordTrace() {
+    if (this.bufferUpdateInterval) clearInterval(this.bufferUpdateInterval);
+    this.consumerPort.disableTracing({});
+  }
+
+  scheduleBufferUpdateRequests() {
+    if (this.bufferUpdateInterval) clearInterval(this.bufferUpdateInterval);
+    this.bufferUpdateInterval = setInterval(() => {
+      this.consumerPort.getTraceStats({});
+    }, 200);
+  }
+
+  readBuffers() {
+    this.consumerPort.readBuffers({});
+  }
+
+  onConsumerPortMessage({data}: {
+    data: ConsumerPortResponse|RecordControllerMessage
+  }) {
+    if (data === undefined) return;
+
+    if (isReadBuffersResponse(data)) {
+      if (!data.slices) return;
+      this.traceBuffer += data.slices[0].data;
+      // TODO(nicomazz): Stream the chunks directly in the trace processor.
+      if (data.slices[0].lastSliceForPacket) this.openTraceInUI();
+    } else if (isEnableTracingResponse(data)) {
+      this.readBuffers();
+    } else if (isGetTraceStatsResponse(data)) {
+      const percentage = this.getBufferUsagePercentage(data);
+      if (percentage) {
+        globals.publish('BufferUsage', {percentage});
+      }
+    } else if (isError(data)) {
+      this.handleError(data.message);
+    } else if (isStatus(data)) {
+      this.handleStatus(data.status);
+    }
+  }
+
+  openTraceInUI() {
+    this.consumerPort.freeBuffers({});
+    globals.dispatch(Actions.setRecordingStatus({status: undefined}));
+    const trace = ungzip(this.stringToArrayBuffer(this.traceBuffer));
+    globals.dispatch(Actions.openTraceFromBuffer({buffer: trace.buffer}));
+    this.traceBuffer = '';
+  }
+
+  stringToArrayBuffer(str: string): Uint8Array {
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return bufView;
+  }
+
+
+  getBufferUsagePercentage(data: GetTraceStatsResponse): number {
+    if (!data.traceStats || !data.traceStats.bufferStats) return 0.0;
+    let used = 0.0, total = 0.0;
+    for (const buffer of data.traceStats.bufferStats) {
+      used += buffer.bytesWritten as number;
+      total += buffer.bufferSize as number;
+    }
+    if (total === 0.0) return 0;
+    return used / total;
+  }
+
+  handleError(message: string) {
+    globals.dispatch(
+        Actions.setLastRecordingError({error: message.substr(0, 150)}));
+    globals.dispatch(Actions.stopRecording({}));
+  }
+
+  handleStatus(message: string) {
+    globals.dispatch(Actions.setRecordingStatus({status: message}));
+  }
+
+  // Depending on the recording target, different implementation of the
+  // consumer_port will be used.
+  // - Chrome target: This forwards the messages that have to be sent
+  // to the extension to the frontend. This is necessary because this controller
+  // is running in a separate worker, that can't directly send messages to the
+  // extension.
+  // - Android device target: WebUSB is used to communicate using the adb
+  // protocol. Actually, there is no full consumer_port implementation, but only
+  // the support to start tracing and fetch the file.
+  private rpcImpl(
+      method: RPCImplMethod, requestData: Uint8Array,
+      _callback: RPCImplCallback) {
+    const target = this.app.state.recordConfig.targetOS;
+    if (isChromeTarget(target) && method !== null && method.name !== null &&
+        this.config !== null) {
+      this.extensionPort.postMessage(
+          {method: method.name, traceConfig: requestData});
+    } else if (isAndroidTarget(target)) {
+      // TODO(nicomazz): In theory requestData should contain the configuration
+      // proto, but in practice there are missing fields. As a temporary
+      // workaround I'm directly passing the configuration.
+      this.adbRecordController.handleCommand(
+          method.name, genConfigProto(this.config!));
+    } else {
+      console.error(`Target ${target} not supported!`);
+    }
   }
 }

@@ -6,7 +6,7 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/omnibox/browser/location_bar_model_delegate.h"
 #include "components/omnibox/browser/test_omnibox_client.h"
 #include "components/omnibox/common/omnibox_features.h"
@@ -88,7 +88,7 @@ class LocationBarModelImplTest : public testing::Test {
   LocationBarModelImpl* model() { return &model_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   FakeLocationBarModelDelegate delegate_;
   LocationBarModelImpl model_;
 };

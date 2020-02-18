@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/inspector/worker_thread_debugger.h"
+#include "third_party/blink/renderer/core/loader/appcache/application_cache_host_for_worker.h"
 #include "third_party/blink/renderer/core/origin_trials/origin_trial_context.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/shared_worker_thread.h"
@@ -46,55 +47,18 @@
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
 #include "third_party/blink/renderer/platform/loader/fetch/fetch_client_settings_object_snapshot.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
-
-// static
-SharedWorkerGlobalScope* SharedWorkerGlobalScope::Create(
-    std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    SharedWorkerThread* thread,
-    base::TimeTicks time_origin) {
-  // Off-the-main-thread worker script fetch:
-  // Initialize() is called after script fetch.
-  if (creation_params->off_main_thread_fetch_option ==
-      OffMainThreadWorkerScriptFetchOption::kEnabled) {
-    return MakeGarbageCollected<SharedWorkerGlobalScope>(
-        std::move(creation_params), thread, time_origin);
-  }
-
-  // Legacy on-the-main-thread worker script fetch (to be removed):
-  KURL response_script_url = creation_params->script_url;
-  network::mojom::ReferrerPolicy response_referrer_policy =
-      creation_params->referrer_policy;
-  mojom::IPAddressSpace response_address_space =
-      *creation_params->response_address_space;
-  // Contrary to the name, |outside_content_security_policy_headers| contains
-  // worker script's response CSP headers in this case.
-  // TODO(nhiroki): Introduce inside's csp headers field in
-  // GlobalScopeCreationParams or deprecate this code path by enabling
-  // off-the-main-thread worker script fetch by default.
-  Vector<CSPHeaderAndType> response_csp_headers =
-      creation_params->outside_content_security_policy_headers;
-  std::unique_ptr<Vector<String>> response_origin_trial_tokens =
-      std::move(creation_params->origin_trial_tokens);
-  auto* global_scope = MakeGarbageCollected<SharedWorkerGlobalScope>(
-      std::move(creation_params), thread, time_origin);
-  global_scope->Initialize(response_script_url, response_referrer_policy,
-                           response_address_space, response_csp_headers,
-                           response_origin_trial_tokens.get());
-  return global_scope;
-}
 
 SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
-    base::TimeTicks time_origin)
+    base::TimeTicks time_origin,
+    const base::UnguessableToken& appcache_host_id)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
-  // When off-the-main-thread script fetch is enabled, ReadyToRunWorkerScript()
-  // will be called after an app cache is selected.
-  if (!features::IsOffMainThreadSharedWorkerScriptFetchEnabled())
-    ReadyToRunWorkerScript();
+  appcache_host_ = MakeGarbageCollected<ApplicationCacheHostForWorker>(
+      appcache_host_id, GetBrowserInterfaceBroker(),
+      GetTaskRunner(TaskType::kInternalLoading));
 }
 
 SharedWorkerGlobalScope::~SharedWorkerGlobalScope() = default;
@@ -107,9 +71,10 @@ const AtomicString& SharedWorkerGlobalScope::InterfaceName() const {
 void SharedWorkerGlobalScope::Initialize(
     const KURL& response_url,
     network::mojom::ReferrerPolicy response_referrer_policy,
-    mojom::IPAddressSpace response_address_space,
+    network::mojom::IPAddressSpace response_address_space,
     const Vector<CSPHeaderAndType>& response_csp_headers,
-    const Vector<String>* response_origin_trial_tokens) {
+    const Vector<String>* response_origin_trial_tokens,
+    int64_t appcache_id) {
   // Step 12.3. "Set worker global scope's url to response's url."
   InitializeURL(response_url);
 
@@ -136,6 +101,11 @@ void SharedWorkerGlobalScope::Initialize(
   // This should be called after OriginTrialContext::AddTokens() to install
   // origin trial features in JavaScript's global object.
   ScriptController()->PrepareForEvaluation();
+
+  DCHECK(appcache_host_);
+  appcache_host_->SelectCacheForWorker(
+      appcache_id, WTF::Bind(&SharedWorkerGlobalScope::OnAppCacheSelected,
+                             WrapWeakPersistent(this)));
 }
 
 // https://html.spec.whatwg.org/C/#worker-processing-model
@@ -144,7 +114,6 @@ void SharedWorkerGlobalScope::FetchAndRunClassicScript(
     const FetchClientSettingsObjectSnapshot& outside_settings_object,
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   DCHECK(!IsContextPaused());
 
   // Step 12. "Fetch a classic worker script given url, outside settings,
@@ -207,14 +176,12 @@ void SharedWorkerGlobalScope::Connect(MessagePortChannel channel) {
 
 void SharedWorkerGlobalScope::OnAppCacheSelected() {
   DCHECK(IsContextThread());
-  DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   ReadyToRunWorkerScript();
 }
 
 void SharedWorkerGlobalScope::DidReceiveResponseForClassicScript(
     WorkerClassicScriptLoader* classic_script_loader) {
   DCHECK(IsContextThread());
-  DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
   probe::DidReceiveScriptResponse(this, classic_script_loader->Identifier());
 }
 
@@ -223,7 +190,6 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     WorkerClassicScriptLoader* classic_script_loader,
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
-  DCHECK(features::IsOffMainThreadSharedWorkerScriptFetchEnabled());
 
   // Step 12. "If the algorithm asynchronously completes with null, then:"
   if (classic_script_loader->Failed()) {
@@ -233,7 +199,7 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
     ReportingProxy().DidFailToFetchClassicScript();
     return;
   }
-  ReportingProxy().DidFetchScript(classic_script_loader->AppCacheID());
+  ReportingProxy().DidFetchScript();
   probe::ScriptImported(this, classic_script_loader->Identifier(),
                         classic_script_loader->SourceText());
 
@@ -250,7 +216,8 @@ void SharedWorkerGlobalScope::DidFetchClassicScript(
              classic_script_loader->GetContentSecurityPolicy()
                  ? classic_script_loader->GetContentSecurityPolicy()->Headers()
                  : Vector<CSPHeaderAndType>(),
-             classic_script_loader->OriginTrialTokens());
+             classic_script_loader->OriginTrialTokens(),
+             classic_script_loader->AppCacheID());
 
   // Step 12.7. "Asynchronously complete the perform the fetch steps with
   // response."
@@ -267,6 +234,7 @@ void SharedWorkerGlobalScope::ExceptionThrown(ErrorEvent* event) {
 }
 
 void SharedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+  visitor->Trace(appcache_host_);
   WorkerGlobalScope::Trace(visitor);
 }
 

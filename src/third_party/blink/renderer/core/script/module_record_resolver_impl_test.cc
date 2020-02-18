@@ -73,7 +73,7 @@ ModuleScript* ModuleRecordResolverImplTestModulator::GetFetchedModuleScript(
 ModuleScript* CreateReferrerModuleScript(Modulator* modulator,
                                          V8TestingScope& scope) {
   KURL js_url("https://example.com/referrer.js");
-  ModuleRecord referrer_record = ModuleRecord::Compile(
+  v8::Local<v8::Module> referrer_record = ModuleRecord::Compile(
       scope.GetIsolate(), "import './target.js'; export const a = 42;", js_url,
       js_url, ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -87,7 +87,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
                                        V8TestingScope& scope,
                                        bool has_parse_error = false) {
   KURL js_url("https://example.com/target.js");
-  ModuleRecord record = ModuleRecord::Compile(
+  v8::Local<v8::Module> record = ModuleRecord::Compile(
       scope.GetIsolate(), "export const pi = 3.14;", js_url, js_url,
       ScriptFetchOptions(), TextPosition::MinimumPosition(),
       ASSERT_NO_EXCEPTION);
@@ -138,11 +138,11 @@ TEST_F(ModuleRecordResolverImplTest, RegisterResolveSuccess) {
       CreateTargetModuleScript(modulator_, scope);
   Modulator()->SetModuleScript(target_module_script);
 
-  ModuleRecord resolved =
-      resolver->Resolve("./target.js", referrer_module_script->Record(),
+  v8::Local<v8::Module> resolved =
+      resolver->Resolve("./target.js", referrer_module_script->V8Module(),
                         scope.GetExceptionState());
   EXPECT_FALSE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(resolved, target_module_script->Record());
+  EXPECT_EQ(resolved, target_module_script->V8Module());
   EXPECT_EQ(1, modulator_->GetFetchedModuleScriptCalled());
   EXPECT_EQ(modulator_->FetchedUrl(), target_module_script->BaseURL())
       << "Unexpectedly fetched URL: " << modulator_->FetchedUrl().GetString();

@@ -73,7 +73,7 @@ import java.util.HashSet;
  */
 class ManualFillingMediator extends EmptyTabObserver
         implements KeyboardAccessoryCoordinator.VisibilityDelegate, View.OnLayoutChangeListener {
-    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 80; // in DP.
+    static private final int MINIMAL_AVAILABLE_VERTICAL_SPACE = 128; // in DP.
     static private final int MINIMAL_AVAILABLE_HORIZONTAL_SPACE = 180; // in DP.
 
     private PropertyModel mModel = ManualFillingProperties.createFillingModel();
@@ -183,6 +183,8 @@ class ManualFillingMediator extends EmptyTabObserver
         if (!isSoftKeyboardShowing(view)) {
             if (is(WAITING_TO_REPLACE)) mModel.set(KEYBOARD_EXTENSION_STATE, REPLACING_KEYBOARD);
             if (is(EXTENDING_KEYBOARD)) mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
+            // Cancel animations if the keyboard suddenly closes so the bar doesn't linger.
+            if (is(HIDDEN)) mKeyboardAccessory.skipClosingAnimationOnce();
             // Layout changes when entering/resizing/leaving MultiWindow. Ensure a consistent state:
             updateKeyboard(mModel.get(KEYBOARD_EXTENSION_STATE));
             return;
@@ -263,11 +265,15 @@ class ManualFillingMediator extends EmptyTabObserver
 
     void hide() {
         mModel.set(SHOW_WHEN_VISIBLE, false);
-        pause();
+        if (!isInitialized()) return;
+        mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
     }
 
     void pause() {
         if (!isInitialized()) return;
+        // When pause is called, the accessory needs to disappear fast since some UI forced it to
+        // close (e.g. a scene changed or the screen was turned off).
+        mKeyboardAccessory.skipClosingAnimationOnce();
         mModel.set(KEYBOARD_EXTENSION_STATE, HIDDEN);
     }
 
@@ -382,6 +388,8 @@ class ManualFillingMediator extends EmptyTabObserver
         if (extensionState == EXTENDING_KEYBOARD) mKeyboardAccessory.prepareUserEducation();
         if (requiresVisibleSheet(extensionState)) {
             mAccessorySheet.show();
+            // TODO(crbug.com/853768): Enable animation that works with sheet (if possible).
+            mKeyboardAccessory.skipClosingAnimationOnce();
         } else if (requiresHiddenSheet(extensionState)) {
             mKeyboardAccessory.closeActiveTab();
             mAccessorySheet.hide();
@@ -574,16 +582,9 @@ class ManualFillingMediator extends EmptyTabObserver
         int maxHeight = mKeyboardExtensionViewResizer.getHeight();
         maxHeight += Math.round(density * webContents.getHeight());
         maxHeight -= Math.round(density * MINIMAL_AVAILABLE_VERTICAL_SPACE);
-        maxHeight -= calculateAccessoryBarHeight();
         if (mAccessorySheet.getHeight() <= maxHeight) return; // Sheet height needs no adjustment!
         mAccessorySheet.setHeight(maxHeight);
         changeBottomControlSpaceForState(mModel.get(KEYBOARD_EXTENSION_STATE));
-    }
-
-    private @Px int calculateAccessoryBarHeight() {
-        if (!mKeyboardAccessory.isShown()) return 0;
-        return mActivity.getResources().getDimensionPixelSize(
-                R.dimen.keyboard_accessory_suggestion_height);
     }
 
     private void refreshTabs() {

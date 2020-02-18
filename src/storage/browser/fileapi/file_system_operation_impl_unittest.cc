@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -58,9 +58,7 @@ class FileSystemOperationImplTest
     : public testing::Test {
  public:
   FileSystemOperationImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
-        weak_factory_(this) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
  protected:
   void SetUp() override {
@@ -255,7 +253,7 @@ class FileSystemOperationImplTest
             quota_manager_.get(),
             url::Origin::Create(sandbox_file_system_.origin()),
             sandbox_file_system_.type(), usage, quota);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     ASSERT_EQ(blink::mojom::QuotaStatusCode::kOk, status);
   }
 
@@ -461,7 +459,7 @@ class FileSystemOperationImplTest
     return status;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
  private:
   scoped_refptr<QuotaManager> quota_manager_;
@@ -483,7 +481,7 @@ class FileSystemOperationImplTest
   storage::MockFileUpdateObserver update_observer_;
   storage::UpdateObserverList update_observers_;
 
-  base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_;
+  base::WeakPtrFactory<FileSystemOperationImplTest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationImplTest);
 };

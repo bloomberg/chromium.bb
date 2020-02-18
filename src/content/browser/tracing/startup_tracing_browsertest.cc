@@ -136,7 +136,7 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
     TRACE_EVENT1("toplevel", "bar", "data", std::move(data));
   }
 
-  config.SetTraceBufferSizeInKb(12);
+  config.SetTraceBufferSizeInKb(32);
 
   base::RunLoop wait_for_tracing;
   TracingControllerImpl::GetInstance()->StartTracing(
@@ -164,7 +164,7 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
     auto* startup_config = tracing::TraceStartupConfig::GetInstance();
     startup_config->enable_background_tracing_for_testing_ = true;
     startup_config->EnableFromBackgroundTracing();
-    startup_config->startup_duration_ = 3;
+    startup_config->startup_duration_in_seconds_ = 3;
     tracing::EnableStartupTracingIfNeeded();
     command_line->AppendSwitchASCII(switches::kPerfettoOutputFile,
                                     temp_file_path_.AsUTF8Unsafe());

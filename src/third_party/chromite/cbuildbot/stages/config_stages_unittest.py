@@ -8,7 +8,9 @@
 from __future__ import print_function
 
 import os
+
 import mock
+from six.moves import builtins
 
 from chromite.cbuildbot import repository
 from chromite.cbuildbot.stages import config_stages
@@ -165,7 +167,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     template = 'build_config.ToT.json'
     stage = self.ConstructStage(template)
 
-    with mock.patch('__builtin__.open'):
+    with mock.patch.object(builtins, 'open'):
       config_change_patch = stage._CreateConfigPatch()
       self.assertEqual(
           os.path.basename(config_change_patch), 'config_change.patch')
@@ -175,7 +177,7 @@ class UpdateConfigStageTest(generic_stages_unittest.AbstractStageTestCase):
     template = 'build_config.ToT.json'
     stage = self.ConstructStage(template, new_config=False)
 
-    with mock.patch('__builtin__.open'):
+    with mock.patch.object(builtins, 'open'):
       config_change_patch = stage._CreateConfigPatch()
       self.assertEqual(
           os.path.basename(config_change_patch), 'config_change.patch')

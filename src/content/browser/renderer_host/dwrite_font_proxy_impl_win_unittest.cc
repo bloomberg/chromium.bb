@@ -17,11 +17,11 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "content/public/common/content_features.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -69,7 +69,7 @@ class DWriteFontProxyImplUnitTest : public testing::Test {
     return lookup_mode == blink::mojom::UniqueFontLookupMode::kSingleLookups;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   blink::mojom::DWriteFontProxyPtr dwrite_font_proxy_;
   DWriteFontProxyImpl impl_;
   mojo::Binding<blink::mojom::DWriteFontProxy> binding_;
@@ -95,15 +95,22 @@ class DWriteFontProxyLocalMatchingTest : public DWriteFontProxyImplUnitTest {
 class DWriteFontProxyTableMatchingTest
     : public DWriteFontProxyLocalMatchingTest {
  public:
-  DWriteFontProxyTableMatchingTest() {
+  void SetUp() override {
     DWriteFontLookupTableBuilder* table_builder_instance =
         DWriteFontLookupTableBuilder::GetInstance();
-    DCHECK(scoped_temp_dir_.CreateUniqueTempDir());
+    bool temp_dir_success = scoped_temp_dir_.CreateUniqueTempDir();
+    ASSERT_TRUE(temp_dir_success);
     table_builder_instance->OverrideDWriteVersionChecksForTesting();
     table_builder_instance->SetCacheDirectoryForTesting(
         scoped_temp_dir_.GetPath());
     table_builder_instance->ResetLookupTableForTesting();
     table_builder_instance->SchedulePrepareFontUniqueNameTableIfNeeded();
+  }
+
+  void TearDown() override {
+    DWriteFontLookupTableBuilder* table_builder_instance =
+        DWriteFontLookupTableBuilder::GetInstance();
+    table_builder_instance->ResetStateForTesting();
   }
 
  private:
@@ -307,7 +314,7 @@ TEST_F(DWriteFontProxyTableMatchingTest, TestFindUniqueFont) {
   bool lookup_table_results_were_tested = false;
   dwrite_font_proxy().GetUniqueNameLookupTable(base::BindOnce(
       &TestWhenLookupTableReady, &lookup_table_results_were_tested));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(lookup_table_results_were_tested);
 }
 

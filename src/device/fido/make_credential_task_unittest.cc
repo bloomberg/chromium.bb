@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "device/base/features.h"
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
@@ -62,7 +62,7 @@ class FidoMakeCredentialTaskTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestMakeCredentialTaskCallback callback_receiver_;
 };
 
@@ -102,6 +102,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestRegisterSuccessWithFake) {
 
 TEST_F(FidoMakeCredentialTaskTest, FallbackToU2fRegisterSuccess) {
   auto device = MockFidoDevice::MakeU2f();
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -123,6 +124,7 @@ TEST_F(FidoMakeCredentialTaskTest, DefaultToU2fWhenClientPinSet) {
   device_info.options = std::move(options);
 
   auto device = MockFidoDevice::MakeCtap(std::move(device_info));
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);
@@ -168,6 +170,7 @@ TEST_F(FidoMakeCredentialTaskTest, TestU2fOnly) {
   // request, because the task is instantiated in U2F-only mode.
   auto device = MockFidoDevice::MakeCtap();
 
+  device->ExpectWinkedAtLeastOnce();
   device->ExpectRequestAndRespondWith(
       test_data::kU2fRegisterCommandApdu,
       test_data::kApduEncodedNoErrorRegisterResponse);

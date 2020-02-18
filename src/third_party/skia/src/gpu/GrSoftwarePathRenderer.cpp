@@ -16,7 +16,6 @@
 #include "src/gpu/GrDeferredProxyUploader.h"
 #include "src/gpu/GrGpuResourcePriv.h"
 #include "src/gpu/GrOpFlushState.h"
-#include "src/gpu/GrOpList.h"
 #include "src/gpu/GrProxyProvider.h"
 #include "src/gpu/GrRecordingContextPriv.h"
 #include "src/gpu/GrRenderTargetContextPriv.h"
@@ -118,26 +117,26 @@ void GrSoftwarePathRenderer::DrawAroundInvPath(GrRenderTargetContext* renderTarg
 
     SkRect rect;
     if (devClipBounds.fTop < devPathBounds.fTop) {
-        rect.iset(devClipBounds.fLeft, devClipBounds.fTop,
-                  devClipBounds.fRight, devPathBounds.fTop);
+        rect.setLTRB(SkIntToScalar(devClipBounds.fLeft),  SkIntToScalar(devClipBounds.fTop),
+                     SkIntToScalar(devClipBounds.fRight), SkIntToScalar(devPathBounds.fTop));
         DrawNonAARect(renderTargetContext, GrPaint::Clone(paint), userStencilSettings, clip,
                       SkMatrix::I(), rect, invert);
     }
     if (devClipBounds.fLeft < devPathBounds.fLeft) {
-        rect.iset(devClipBounds.fLeft, devPathBounds.fTop,
-                  devPathBounds.fLeft, devPathBounds.fBottom);
+        rect.setLTRB(SkIntToScalar(devClipBounds.fLeft), SkIntToScalar(devPathBounds.fTop),
+                     SkIntToScalar(devPathBounds.fLeft), SkIntToScalar(devPathBounds.fBottom));
         DrawNonAARect(renderTargetContext, GrPaint::Clone(paint), userStencilSettings, clip,
                       SkMatrix::I(), rect, invert);
     }
     if (devClipBounds.fRight > devPathBounds.fRight) {
-        rect.iset(devPathBounds.fRight, devPathBounds.fTop,
-                  devClipBounds.fRight, devPathBounds.fBottom);
+        rect.setLTRB(SkIntToScalar(devPathBounds.fRight), SkIntToScalar(devPathBounds.fTop),
+                     SkIntToScalar(devClipBounds.fRight), SkIntToScalar(devPathBounds.fBottom));
         DrawNonAARect(renderTargetContext, GrPaint::Clone(paint), userStencilSettings, clip,
                       SkMatrix::I(), rect, invert);
     }
     if (devClipBounds.fBottom > devPathBounds.fBottom) {
-        rect.iset(devClipBounds.fLeft, devPathBounds.fBottom,
-                  devClipBounds.fRight, devClipBounds.fBottom);
+        rect.setLTRB(SkIntToScalar(devClipBounds.fLeft),  SkIntToScalar(devPathBounds.fBottom),
+                     SkIntToScalar(devClipBounds.fRight), SkIntToScalar(devClipBounds.fBottom));
         DrawNonAARect(renderTargetContext, std::move(paint), userStencilSettings, clip,
                       SkMatrix::I(), rect, invert);
     }
@@ -175,17 +174,18 @@ static sk_sp<GrTextureProxy> make_deferred_mask_texture_proxy(GrRecordingContext
                                                               SkBackingFit fit,
                                                               int width, int height) {
     GrProxyProvider* proxyProvider = context->priv().proxyProvider();
+    const GrCaps* caps = context->priv().caps();
 
     GrSurfaceDesc desc;
     desc.fWidth = width;
     desc.fHeight = height;
     desc.fConfig = kAlpha_8_GrPixelConfig;
 
-    const GrBackendFormat format =
-            context->priv().caps()->getBackendFormatFromColorType(GrColorType::kAlpha_8);
+    const GrBackendFormat format = caps->getDefaultBackendFormat(GrColorType::kAlpha_8,
+                                                                 GrRenderable::kNo);
 
     return proxyProvider->createProxy(format, desc, GrRenderable::kNo, 1, kTopLeft_GrSurfaceOrigin,
-                                      fit, SkBudgeted::kYes, GrProtected::kNo);
+                                      GrMipMapped::kNo, fit, SkBudgeted::kYes, GrProtected::kNo);
 }
 
 namespace {
@@ -323,7 +323,8 @@ bool GrSoftwarePathRenderer::onDrawPath(const DrawPathArgs& args) {
 
     sk_sp<GrTextureProxy> proxy;
     if (useCache) {
-        proxy = fProxyProvider->findOrCreateProxyByUniqueKey(maskKey, kTopLeft_GrSurfaceOrigin);
+        proxy = fProxyProvider->findOrCreateProxyByUniqueKey(maskKey, GrColorType::kAlpha_8,
+                                                             kTopLeft_GrSurfaceOrigin);
     }
     if (!proxy) {
         SkBackingFit fit = useCache ? SkBackingFit::kExact : SkBackingFit::kApprox;

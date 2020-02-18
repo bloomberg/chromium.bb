@@ -85,8 +85,7 @@ AndroidSmsAppSetupControllerImpl::AndroidSmsAppSetupControllerImpl(
     : profile_(profile),
       pending_app_manager_(pending_app_manager),
       host_content_settings_map_(host_content_settings_map),
-      pwa_delegate_(std::make_unique<PwaDelegate>()),
-      weak_ptr_factory_(this) {}
+      pwa_delegate_(std::make_unique<PwaDelegate>()) {}
 
 AndroidSmsAppSetupControllerImpl::~AndroidSmsAppSetupControllerImpl() = default;
 
@@ -183,7 +182,7 @@ void AndroidSmsAppSetupControllerImpl::OnSetRememberDeviceByDefaultCookieResult(
     const GURL& install_url,
     SuccessCallback callback,
     net::CanonicalCookie::CookieInclusionStatus status) {
-  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+  if (!status.IsInclude()) {
     PA_LOG(WARNING)
         << "AndroidSmsAppSetupControllerImpl::"
         << "OnSetRememberDeviceByDefaultCookieResult(): Failed to set "
@@ -253,9 +252,7 @@ void AndroidSmsAppSetupControllerImpl::OnAppInstallResult(
     const GURL& install_url,
     web_app::InstallResultCode code) {
   UMA_HISTOGRAM_ENUMERATION("AndroidSms.PWAInstallationResult", code);
-  bool install_succeeded =
-      code == web_app::InstallResultCode::kSuccess ||
-      code == web_app::InstallResultCode::kAlreadyInstalled;
+  const bool install_succeeded = web_app::IsSuccess(code);
 
   if (!install_succeeded && num_attempts_so_far < kMaxInstallRetryCount) {
     base::TimeDelta retry_delay =
@@ -331,7 +328,7 @@ void AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(
     const GURL& app_url,
     SuccessCallback callback,
     net::CanonicalCookie::CookieInclusionStatus status) {
-  if (status != net::CanonicalCookie::CookieInclusionStatus::INCLUDE) {
+  if (!status.IsInclude()) {
     PA_LOG(ERROR)
         << "AndroidSmsAppSetupControllerImpl::OnSetMigrationCookieResult(): "
         << "Failed to set migration cookie for " << app_url << ". Proceeding "

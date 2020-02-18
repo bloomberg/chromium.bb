@@ -71,9 +71,10 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
         type_(type),
         status_(status),
         flags_(0),
-        ignore_floats_(false),
         is_break_before_(false),
-        has_last_resort_break_(false) {
+        is_forced_break_(false),
+        has_last_resort_break_(false),
+        has_seen_all_children_(false) {
     DCHECK_EQ(type, static_cast<NGBreakTokenType>(node.Type()));
   }
 
@@ -90,20 +91,26 @@ class CORE_EXPORT NGBreakToken : public RefCounted<NGBreakToken> {
   // defined here to save memory, since that class has no bitfields).
 
   unsigned flags_ : 2;  // NGInlineBreakTokenFlags
-  unsigned ignore_floats_ : 1;
 
   // The following bitfields are only to be used by NGBlockBreakToken (it's
   // defined here to save memory, since that class has no bitfields).
 
   unsigned is_break_before_ : 1;
 
+  unsigned is_forced_break_ : 1;
+
   // We're attempting to break at an undesirable place. Sometimes that's
   // unavoidable, but we should only break here if we cannot find a better break
   // point further up in the ancestry.
   unsigned has_last_resort_break_ : 1;
+
+  // All children of this container have been "seen" at this point. This means
+  // that all children have been fully laid out, or have break tokens. No more
+  // children left to discover.
+  unsigned has_seen_all_children_ : 1;
 };
 
-typedef Vector<scoped_refptr<NGBreakToken>> NGBreakTokenVector;
+typedef Vector<scoped_refptr<const NGBreakToken>> NGBreakTokenVector;
 
 }  // namespace blink
 

@@ -318,10 +318,6 @@ class ExtensionPrefs : public KeyedService {
   // to use Blacklist::GetBlacklistedIDs rather than this method.
   bool IsExtensionBlacklisted(const std::string& id) const;
 
-  // Returns whether insecure algorithms like SHA1 are trusted for the
-  // purpose of updating the extension.
-  bool InsecureExtensionUpdatesEnabled() const;
-
   // Increment the count of how many times we prompted the user to acknowledge
   // the given extension, and return the new count.
   int IncrementAcknowledgePromptCount(const std::string& extension_id);
@@ -397,6 +393,14 @@ class ExtensionPrefs : public KeyedService {
   // Sets the active |permissions| for the extension with |extension_id|.
   void SetActivePermissions(const std::string& extension_id,
                             const PermissionSet& permissions);
+
+  // Sets/Gets the value indicating if an extension should be granted all the
+  // requested host permissions without requiring explicit runtime-granted
+  // permissions from the user.
+  void SetShouldWithholdPermissions(const ExtensionId& extension_id,
+                                    bool should_withhold);
+  base::Optional<bool> GetShouldWithholdPermissions(
+      const ExtensionId& extension_id) const;
 
   // Returns the set of runtime-granted permissions. These are permissions that
   // the user explicitly approved at runtime, rather than install time (such

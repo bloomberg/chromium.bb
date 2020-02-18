@@ -40,7 +40,7 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_animation.h"
 #include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
+
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace blink {
@@ -101,6 +101,10 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
     decoder_ = std::move(decoder);
   }
 
+  DarkModeClassification CheckTypeSpecificConditionsForDarkMode(
+      const FloatRect& src_rect,
+      DarkModeImageClassifier* classifier) override;
+
  protected:
   bool IsSizeAvailable() override;
 
@@ -143,9 +147,6 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   void NotifyMemoryChanged();
 
   int RepetitionCount();
-
-  DarkModeClassification ClassifyImageForDarkMode(
-      const FloatRect& src_rect) override;
 
   // Whether we are ready to record UMAs related to the number of bytes in
   // images.

@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/format_macros.h"
+#include "base/json/json_reader.h"
 #include "base/macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/stl_util.h"
@@ -32,6 +33,12 @@ constexpr const char* kTestExtensionId = "extensionid";
 
 GURL GetBaseURL() {
   return Extension::GetBaseURLFromExtensionId(kTestExtensionId);
+}
+
+std::unique_ptr<dnr_api::Redirect> MakeRedirectUrl(const char* redirect_url) {
+  auto redirect = std::make_unique<dnr_api::Redirect>();
+  redirect->url = std::make_unique<std::string>(redirect_url);
+  return redirect;
 }
 
 dnr_api::Rule CreateGenericParsedRule() {
@@ -112,8 +119,7 @@ TEST_F(IndexedRuleTest, PriorityParsing) {
     rule.action.type = cases[i].action_type;
 
     if (cases[i].action_type == dnr_api::RULE_ACTION_TYPE_REDIRECT) {
-      rule.action.redirect_url =
-          std::make_unique<std::string>("http://google.com");
+      rule.action.redirect = MakeRedirectUrl("http://google.com");
     }
 
     IndexedRule indexed_rule;
@@ -410,25 +416,20 @@ TEST_F(IndexedRuleTest, DomainsParsing) {
 
 TEST_F(IndexedRuleTest, RedirectUrlParsing) {
   struct {
-    std::unique_ptr<std::string> redirect_url;
+    const char* redirect_url;
     const ParseResult expected_result;
     // Only valid if |expected_result| is SUCCESS.
     const std::string expected_redirect_url;
   } cases[] = {
-      {std::make_unique<std::string>(""), ParseResult::ERROR_EMPTY_REDIRECT_URL,
-       ""},
-      {nullptr, ParseResult::ERROR_EMPTY_REDIRECT_URL, ""},
-      {std::make_unique<std::string>("http://google.com"), ParseResult::SUCCESS,
-       "http://google.com"},
-      {std::make_unique<std::string>("/relative/url"), ParseResult::SUCCESS,
-       "chrome-extension://" + std::string(kTestExtensionId) + "/relative/url"},
-      {std::make_unique<std::string>("abc"),
-       ParseResult::ERROR_INVALID_REDIRECT_URL, ""}};
+      {"", ParseResult::ERROR_INVALID_REDIRECT_URL, ""},
+      {"http://google.com", ParseResult::SUCCESS, "http://google.com"},
+      {"/relative/url?q=1", ParseResult::ERROR_INVALID_REDIRECT_URL, ""},
+      {"abc", ParseResult::ERROR_INVALID_REDIRECT_URL, ""}};
 
   for (size_t i = 0; i < base::size(cases); ++i) {
     SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
     dnr_api::Rule rule = CreateGenericParsedRule();
-    rule.action.redirect_url = std::move(cases[i].redirect_url);
+    rule.action.redirect = MakeRedirectUrl(cases[i].redirect_url);
     rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
     rule.priority = std::make_unique<int>(kMinValidPriority);
 
@@ -436,7 +437,7 @@ TEST_F(IndexedRuleTest, RedirectUrlParsing) {
     ParseResult result = IndexedRule::CreateIndexedRule(
         std::move(rule), GetBaseURL(), &indexed_rule);
 
-    EXPECT_EQ(cases[i].expected_result, result);
+    EXPECT_EQ(cases[i].expected_result, result) << static_cast<int>(result);
     if (result == ParseResult::SUCCESS)
       EXPECT_EQ(cases[i].expected_redirect_url, indexed_rule.redirect_url);
   }
@@ -483,6 +484,156 @@ TEST_F(IndexedRuleTest, RemoveHeadersParsing) {
     EXPECT_EQ(dnr_api::RULE_ACTION_TYPE_REMOVEHEADERS,
               indexed_rule.action_type);
     EXPECT_EQ(cases[i].expected_types, indexed_rule.remove_headers_set);
+  }
+}
+
+TEST_F(IndexedRuleTest, RedirectParsing) {
+  struct {
+    std::string redirect_dictionary_json;
+    ParseResult expected_result;
+    base::Optional<std::string> expected_redirect_url;
+  } cases[] = {
+      // clang-format off
+    {
+      "{}",
+      ParseResult::ERROR_INVALID_REDIRECT,
+      base::nullopt
+    },
+    {
+      R"({"url": "xyz"})",
+      ParseResult::ERROR_INVALID_REDIRECT_URL,
+      base::nullopt
+    },
+    {
+      R"({"url": "javascript:window.alert(\"hello,world\");"})",
+      ParseResult::ERROR_JAVASCRIPT_REDIRECT,
+      base::nullopt
+    },
+    {
+      R"({"url": "http://google.com"})",
+      ParseResult::SUCCESS,
+      std::string("http://google.com")
+    },
+    {
+      R"({"extensionPath": "foo/xyz/"})",
+      ParseResult::ERROR_INVALID_EXTENSION_PATH,
+      base::nullopt
+    },
+    {
+      R"({"extensionPath": "/foo/xyz?q=1"})",
+      ParseResult::SUCCESS,
+      GetBaseURL().Resolve("/foo/xyz?q=1").spec()
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "",
+          "host": "foo.com"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_SCHEME, base::nullopt
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "javascript",
+          "host": "foo.com"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_SCHEME, base::nullopt
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "port": "-1"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_PORT, base::nullopt
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "query": "abc"
+        }
+      })", ParseResult::ERROR_INVALID_TRANSFORM_QUERY, base::nullopt
+    },
+    {
+      R"({"transform": {"path": "abc"}})",
+      ParseResult::SUCCESS,
+      base::nullopt
+    },
+    {
+      R"({"transform": {"fragment": "abc"}})",
+      ParseResult::ERROR_INVALID_TRANSFORM_FRAGMENT,
+      base::nullopt
+    },
+    {
+      R"({"transform": {"path": ""}})",
+      ParseResult::SUCCESS,
+      base::nullopt
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "http",
+          "query": "?abc",
+          "queryTransform": {
+            "removeParams": ["abc"]
+          }
+        }
+      })", ParseResult::ERROR_QUERY_AND_TRANSFORM_BOTH_SPECIFIED, base::nullopt
+    },
+    {
+      R"(
+      {
+        "transform": {
+          "scheme": "https",
+          "host": "foo.com",
+          "port": "80",
+          "path": "/foo",
+          "queryTransform": {
+            "removeParams": ["x1", "x2"],
+            "addOrReplaceParams": [
+              {"key": "y1", "value": "foo"}
+            ]
+          },
+          "fragment": "",
+          "username": "user"
+        }
+      })", ParseResult::SUCCESS, base::nullopt
+    }
+  };
+  // clang-format on
+
+  for (size_t i = 0; i < base::size(cases); ++i) {
+    SCOPED_TRACE(base::StringPrintf("Testing case[%" PRIuS "]", i));
+    dnr_api::Rule rule = CreateGenericParsedRule();
+    rule.action.type = dnr_api::RULE_ACTION_TYPE_REDIRECT;
+    rule.priority = std::make_unique<int>(kMinValidPriority);
+
+    base::Optional<base::Value> redirect_val =
+        base::JSONReader::Read(cases[i].redirect_dictionary_json);
+    ASSERT_TRUE(redirect_val);
+
+    base::string16 error;
+    rule.action.redirect = dnr_api::Redirect::FromValue(*redirect_val, &error);
+    ASSERT_TRUE(rule.action.redirect);
+    ASSERT_TRUE(error.empty());
+
+    IndexedRule indexed_rule;
+    ParseResult result = IndexedRule::CreateIndexedRule(
+        std::move(rule), GetBaseURL(), &indexed_rule);
+    EXPECT_EQ(cases[i].expected_result, result) << static_cast<int>(result);
+    if (result != ParseResult::SUCCESS)
+      continue;
+
+    EXPECT_TRUE(indexed_rule.url_transform || indexed_rule.redirect_url);
+    EXPECT_FALSE(indexed_rule.url_transform && indexed_rule.redirect_url);
+    EXPECT_EQ(cases[i].expected_redirect_url, indexed_rule.redirect_url);
   }
 }
 

@@ -20,7 +20,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/values.h"
 #include "components/component_updater/component_updater_service_internal.h"
@@ -165,7 +165,7 @@ class ComponentUpdaterTest : public testing::Test {
                 const UpdateScheduler::UserTask& user_task,
                 const UpdateScheduler::OnStopTaskCallback& on_stop);
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::RunLoop runloop_;
 
   scoped_refptr<TestConfigurator> config_ =
@@ -257,7 +257,7 @@ void ComponentUpdaterTest::RunThreads() {
 
 void ComponentUpdaterTest::RunUpdateTask(
     const UpdateScheduler::UserTask& user_task) {
-  scoped_task_environment_.GetMainThreadTaskRunner()->PostTask(
+  task_environment_.GetMainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindRepeating(
                      [](const UpdateScheduler::UserTask& user_task,
                         ComponentUpdaterTest* test) {

@@ -32,11 +32,13 @@
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/aom/accessible_node_list.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
+#include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/html_dialog_element.h"
@@ -661,7 +663,9 @@ void AXObject::GetSparseAXAttributes(
   AXSparseAttributeSetterMap& ax_sparse_attribute_setter_map =
       GetSparseAttributeSetterMap();
   AttributeCollection attributes = element->AttributesWithoutUpdate();
+  HashSet<QualifiedName> set_attributes;
   for (const Attribute& attr : attributes) {
+    set_attributes.insert(attr.GetName());
     if (shadowed_aria_attributes.Contains(attr.GetName()))
       continue;
 
@@ -669,6 +673,19 @@ void AXObject::GetSparseAXAttributes(
         ax_sparse_attribute_setter_map.at(attr.GetName());
     if (setter)
       setter->Run(*this, sparse_attribute_client, attr.Value());
+  }
+  if (!element->DidAttachInternals())
+    return;
+  const auto& internals_attributes =
+      element->EnsureElementInternals().GetAttributes();
+  for (const QualifiedName& attr : internals_attributes.Keys()) {
+    if (set_attributes.Contains(attr))
+      continue;
+    AXSparseAttributeSetter* setter = ax_sparse_attribute_setter_map.at(attr);
+    if (setter) {
+      setter->Run(*this, sparse_attribute_client,
+                  internals_attributes.at(attr));
+    }
   }
 }
 
@@ -1023,7 +1040,7 @@ bool AXObject::ComputeIsInertOrAriaHidden(
 }
 
 bool AXObject::IsVisible() const {
-  return !IsInertOrAriaHidden();
+  return !IsInertOrAriaHidden() && !IsHiddenForTextAlternativeCalculation();
 }
 
 bool AXObject::IsDescendantOfLeafNode() const {
@@ -1178,14 +1195,35 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (!GetNode())
     return false;
 
+  // Disallow inert nodes from the tree to ensure the dialog is always the
+  // first child of the root.
+  if (GetNode()->IsInert())
+    return false;
+
+  // If the node is part of the user agent shadow dom, or has the explicit
+  // internal Role::kIgnored, they aren't interesting for paragraph navigation
+  // or LabelledBy/DescribedBy relationships.
+  if (RoleValue() == ax::mojom::Role::kIgnored ||
+      GetNode()->IsInUserAgentShadowRoot()) {
+    return false;
+  }
+
   // Always pass through Line Breaking objects, this is necessary to
   // detect paragraph edges, which are defined as hard-line breaks.
-  //
-  // Though if the node is part of the shadow dom, or has the explicit
-  // internal Role::kIgnored, they aren't interesting for paragraph
-  // navigation so exclude those cases.
-  return RoleValue() != ax::mojom::Role::kIgnored &&
-         !GetNode()->IsInUserAgentShadowRoot() && IsLineBreakingObject();
+  if (IsLineBreakingObject())
+    return true;
+
+  // Allow the browser side ax tree to access aria-hidden="true", "visibility:
+  // hidden", and "visibility: collapse" nodes. This is useful for APIs that
+  // return the node referenced by aria-labeledby and aria-describedby
+  if (GetLayoutObject()) {
+    if (GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
+      return true;
+    if (AriaHiddenRoot())
+      return true;
+  }
+
+  return false;
 }
 
 const AXObject* AXObject::DatetimeAncestor(int max_levels_to_check) const {
@@ -1395,7 +1433,7 @@ bool AXObject::AncestorExposesActiveDescendant() const {
 }
 
 bool AXObject::HasIndirectChildren() const {
-  return IsTableCol() || RoleValue() == ax::mojom::Role::kTableHeaderContainer;
+  return RoleValue() == ax::mojom::Role::kTableHeaderContainer;
 }
 
 bool AXObject::CanSetSelectedAttribute() const {
@@ -1491,12 +1529,19 @@ String AXObject::GetName(ax::mojom::NameFrom& name_from,
                          AXObject::AXObjectVector* name_objects) const {
   HeapHashSet<Member<const AXObject>> visited;
   AXRelatedObjectVector related_objects;
-  String text = TextAlternative(false, false, visited, name_from,
-                                &related_objects, nullptr);
+  // For purposes of computing a text alternative, if an ignored node is
+  // included in the tree, assume that it is the target of aria-labelledby or
+  // aria-describedby, since we can't tell yet whether that's the case. If it
+  // isn't exposed, the AT will never see the name anyways.
+  bool hidden_and_ignored_but_included_in_tree =
+      IsHiddenForTextAlternativeCalculation() &&
+      AccessibilityIsIgnoredButIncludedInTree();
+  String text = TextAlternative(false, hidden_and_ignored_but_included_in_tree,
+                                visited, name_from, &related_objects, nullptr);
 
   ax::mojom::Role role = RoleValue();
   if (!GetNode() ||
-      (!IsHTMLBRElement(GetNode()) && role != ax::mojom::Role::kStaticText &&
+      (!IsA<HTMLBRElement>(GetNode()) && role != ax::mojom::Role::kStaticText &&
        role != ax::mojom::Role::kInlineTextBox))
     text = CollapseWhitespace(text);
 
@@ -1513,8 +1558,16 @@ String AXObject::GetName(NameSources* name_sources) const {
   AXObjectSet visited;
   ax::mojom::NameFrom tmp_name_from;
   AXRelatedObjectVector tmp_related_objects;
-  String text = TextAlternative(false, false, visited, tmp_name_from,
-                                &tmp_related_objects, name_sources);
+  // For purposes of computing a text alternative, if an ignored node is
+  // included in the tree, assume that it is the target of aria-labelledby or
+  // aria-describedby, since we can't tell yet whether that's the case. If it
+  // isn't exposed, the AT will never see the name anyways.
+  bool hidden_and_ignored_but_included_in_tree =
+      IsHiddenForTextAlternativeCalculation() &&
+      AccessibilityIsIgnoredButIncludedInTree();
+  String text =
+      TextAlternative(false, hidden_and_ignored_but_included_in_tree, visited,
+                      tmp_name_from, &tmp_related_objects, name_sources);
   text = text.SimplifyWhiteSpace(IsHTMLSpace<UChar>);
   return text;
 }
@@ -1822,6 +1875,7 @@ bool AXObject::SupportsARIAExpanded() const {
     case ax::mojom::Role::kDisclosureTriangle:
     case ax::mojom::Role::kListBox:
     case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kPopUpButton:
     case ax::mojom::Role::kMenuButton:
     case ax::mojom::Role::kMenuItem:
     case ax::mojom::Role::kMenuItemCheckBox:
@@ -1844,59 +1898,74 @@ bool AXObject::SupportsARIAExpanded() const {
   }
 }
 
+bool IsGlobalARIAAttribute(const AtomicString& name) {
+  if (!name.StartsWith("ARIA"))
+    return false;
+  if (name.StartsWith("ARIA-ATOMIC"))
+    return true;
+  if (name.StartsWith("ARIA-BUSY"))
+    return true;
+  if (name.StartsWith("ARIA-CONTROLS"))
+    return true;
+  if (name.StartsWith("ARIA-CURRENT"))
+    return true;
+  if (name.StartsWith("ARIA-DESCRIBEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-DETAILS"))
+    return true;
+  if (name.StartsWith("ARIA-DISABLED"))
+    return true;
+  if (name.StartsWith("ARIA-DROPEFFECT"))
+    return true;
+  if (name.StartsWith("ARIA-ERRORMESSAGE"))
+    return true;
+  if (name.StartsWith("ARIA-FLOWTO"))
+    return true;
+  if (name.StartsWith("ARIA-GRABBED"))
+    return true;
+  if (name.StartsWith("ARIA-HASPOPUP"))
+    return true;
+  if (name.StartsWith("ARIA-HIDDEN"))
+    return true;
+  if (name.StartsWith("ARIA-INVALID"))
+    return true;
+  if (name.StartsWith("ARIA-KEYSHORTCUTS"))
+    return true;
+  if (name.StartsWith("ARIA-LABEL"))
+    return true;
+  if (name.StartsWith("ARIA-LABELEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-LABELLEDBY"))
+    return true;
+  if (name.StartsWith("ARIA-LIVE"))
+    return true;
+  if (name.StartsWith("ARIA-OWNS"))
+    return true;
+  if (name.StartsWith("ARIA-RELEVANT"))
+    return true;
+  if (name.StartsWith("ARIA-ROLEDESCRIPTION"))
+    return true;
+  return false;
+}
+
 bool AXObject::HasGlobalARIAAttribute() const {
-  if (!GetElement())
+  auto* element = GetElement();
+  if (!element)
     return false;
 
-  AttributeCollection attributes = GetElement()->AttributesWithoutUpdate();
+  AttributeCollection attributes = element->AttributesWithoutUpdate();
   for (const Attribute& attr : attributes) {
     // Attributes cache their uppercase names.
     auto name = attr.GetName().LocalNameUpper();
-    if (!name.StartsWith("ARIA"))
-      continue;
-    if (name.StartsWith("ARIA-ATOMIC"))
+    if (IsGlobalARIAAttribute(name))
       return true;
-    if (name.StartsWith("ARIA-BUSY"))
-      return true;
-    if (name.StartsWith("ARIA-CONTROLS"))
-      return true;
-    if (name.StartsWith("ARIA-CURRENT"))
-      return true;
-    if (name.StartsWith("ARIA-DESCRIBEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-DETAILS"))
-      return true;
-    if (name.StartsWith("ARIA-DISABLED"))
-      return true;
-    if (name.StartsWith("ARIA-DROPEFFECT"))
-      return true;
-    if (name.StartsWith("ARIA-ERRORMESSAGE"))
-      return true;
-    if (name.StartsWith("ARIA-FLOWTO"))
-      return true;
-    if (name.StartsWith("ARIA-GRABBED"))
-      return true;
-    if (name.StartsWith("ARIA-HASPOPUP"))
-      return true;
-    if (name.StartsWith("ARIA-HIDDEN"))
-      return true;
-    if (name.StartsWith("ARIA-INVALID"))
-      return true;
-    if (name.StartsWith("ARIA-KEYSHORTCUTS"))
-      return true;
-    if (name.StartsWith("ARIA-LABEL"))
-      return true;
-    if (name.StartsWith("ARIA-LABELEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-LABELLEDBY"))
-      return true;
-    if (name.StartsWith("ARIA-LIVE"))
-      return true;
-    if (name.StartsWith("ARIA-OWNS"))
-      return true;
-    if (name.StartsWith("ARIA-RELEVANT"))
-      return true;
-    if (name.StartsWith("ARIA-ROLEDESCRIPTION"))
+  }
+  if (!element->DidAttachInternals())
+    return false;
+  const auto& internals_attributes =
+      element->EnsureElementInternals().GetAttributes();
+  for (const QualifiedName& attr : internals_attributes.Keys()) {
+    if (IsGlobalARIAAttribute(attr.LocalNameUpper()))
       return true;
   }
   return false;
@@ -2537,16 +2606,38 @@ AtomicString AXObject::Language() const {
 }
 
 bool AXObject::HasAttribute(const QualifiedName& attribute) const {
-  if (Element* element = GetElement())
-    return element->FastHasAttribute(attribute);
-  return false;
+  Element* element = GetElement();
+  if (!element)
+    return false;
+  if (element->FastHasAttribute(attribute))
+    return true;
+  return HasInternalsAttribute(*element, attribute);
 }
 
 const AtomicString& AXObject::GetAttribute(
     const QualifiedName& attribute) const {
-  if (Element* element = GetElement())
-    return element->FastGetAttribute(attribute);
-  return g_null_atom;
+  Element* element = GetElement();
+  if (!element)
+    return g_null_atom;
+  const AtomicString& value = element->FastGetAttribute(attribute);
+  if (!value.IsNull())
+    return value;
+  return GetInternalsAttribute(*element, attribute);
+}
+
+bool AXObject::HasInternalsAttribute(Element& element,
+                                     const QualifiedName& attribute) const {
+  if (!element.DidAttachInternals())
+    return false;
+  return element.EnsureElementInternals().HasAttribute(attribute);
+}
+
+const AtomicString& AXObject::GetInternalsAttribute(
+    Element& element,
+    const QualifiedName& attribute) const {
+  if (!element.DidAttachInternals())
+    return g_null_atom;
+  return element.EnsureElementInternals().FastGetAttribute(attribute);
 }
 
 //
@@ -3067,7 +3158,12 @@ bool AXObject::InternalSetAccessibilityFocusAction() {
 
 bool AXObject::OnNativeScrollToMakeVisibleAction() const {
   Node* node = GetNode();
-  LayoutObject* layout_object = node ? node->GetLayoutObject() : nullptr;
+  if (!node)
+    return false;
+  if (Element* locked_ancestor =
+          DisplayLockUtilities::NearestLockedInclusiveAncestor(*node))
+    locked_ancestor->ActivateDisplayLockIfNeeded();
+  LayoutObject* layout_object = node->GetLayoutObject();
   if (!layout_object || !node->isConnected())
     return false;
   PhysicalRect target_rect(layout_object->AbsoluteBoundingBoxRect());

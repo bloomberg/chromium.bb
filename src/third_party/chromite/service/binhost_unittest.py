@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+import mock
+
 from chromite.lib import binpkg
 from chromite.lib import build_target_util
 from chromite.lib import chroot_lib
@@ -244,6 +246,7 @@ CPV: package/prebuilt
         actual.packages,
         [{'CPV': 'package/prebuilt', 'PATH': 'target/package/prebuilt.tbz2'}])
 
+
 class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
   """Unittests for RegenBuildCache."""
 
@@ -256,6 +259,83 @@ class RegenBuildCacheTest(cros_test_lib.MockTempDirTestCase):
         portage_util, 'FindOverlays', return_value=overlays_found)
     run_tasks = self.PatchObject(parallel, 'RunTasksInProcessPool')
 
-    binhost.RegenBuildCache(None)
+    binhost.RegenBuildCache(chroot_lib.Chroot, None)
     find_overlays.assert_called_once_with(None)
-    run_tasks.assert_called_once_with(portage_util.RegenCache, [overlays_found])
+    run_tasks.assert_called_once_with(mock.ANY, [overlays_found])
+
+
+class ReadDevInstallPackageFileTest(cros_test_lib.MockTempDirTestCase):
+  """Unittests for ReadDevInstallPackageFile."""
+
+  def setUp(self):
+    self.root = os.path.join(
+        self.tempdir,
+        'chroot/build/target/build/dev-install/')
+    self.packages_file = os.path.join(
+        self.root, 'package.installable')
+    osutils.SafeMakedirs(self.root)
+    package_file_content = """\
+x11-apps/intel-gpu-tools-1.22
+x11-libs/gdk-pixbuf-2.36.12-r1
+x11-misc/read-edid-1.4.2
+virtual/acl-0-r1
+"""
+    osutils.WriteFile(self.packages_file, package_file_content)
+
+
+  def testReadDevInstallPackageFile(self):
+    """Test that parsing valid file works."""
+    packages = binhost.ReadDevInstallPackageFile(self.packages_file)
+    expected_packages = ['x11-apps/intel-gpu-tools-1.22',
+                         'x11-libs/gdk-pixbuf-2.36.12-r1',
+                         'x11-misc/read-edid-1.4.2',
+                         'virtual/acl-0-r1']
+    self.assertEqual(packages, expected_packages)
+
+
+class CreateDevInstallPackageFileTest(cros_test_lib.MockTempDirTestCase):
+  """Unittests for CreateDevInstallPackageFile."""
+
+  def setUp(self):
+    self.PatchObject(constants, 'SOURCE_ROOT', new=self.tempdir)
+    self.root = os.path.join(self.tempdir, 'chroot/build/target/packages')
+    osutils.SafeMakedirs(self.root)
+    self.devinstall_package_list = ['virtual/python-enum34-1']
+    self.devinstall_packages_filename = os.path.join(self.root,
+                                                     'package.installable')
+    packages_content = """\
+ARCH: amd64
+TTL: 0
+
+CPV: package/prebuilt
+
+CPV: virtual/python-enum34-1
+
+    """
+    osutils.WriteFile(os.path.join(self.root, 'Packages'), packages_content)
+
+    devinstall_packages_content = """\
+virtual/python-enum34-1
+    """
+    osutils.WriteFile(self.devinstall_packages_filename,
+                      devinstall_packages_content)
+    self.upload_dir = os.path.join(self.root, 'upload_dir')
+    osutils.SafeMakedirs(self.upload_dir)
+    self.upload_packages_file = os.path.join(self.upload_dir, 'Packages')
+
+
+  def testCreateFilteredPackageIndex(self):
+    """CreateDevInstallPackageFile writes updated file to disk."""
+    binhost.CreateFilteredPackageIndex(self.root,
+                                       self.devinstall_package_list,
+                                       self.upload_packages_file,
+                                       'gs://chromeos-prebuilt', 'target/')
+
+    # We need to verify that a file was created at self.devinstall_package_list
+    actual = binpkg.GrabLocalPackageIndex(self.upload_dir)
+    self.assertEqual(actual.header['URI'], 'gs://chromeos-prebuilt')
+    self.assertEqual(int(actual.header['TTL']), 60 * 60 * 24 * 365)
+    self.assertEqual(
+        actual.packages,
+        [{'CPV': 'virtual/python-enum34-1',
+          'PATH': 'target/virtual/python-enum34-1.tbz2'}])

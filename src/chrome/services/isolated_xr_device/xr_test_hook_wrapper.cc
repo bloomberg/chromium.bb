@@ -17,6 +17,8 @@ ControllerRole MojoToDeviceControllerRole(
       return device::kControllerRoleLeft;
     case device_test::mojom::ControllerRole::kControllerRoleRight:
       return device::kControllerRoleRight;
+    case device_test::mojom::ControllerRole::kControllerRoleVoice:
+      return device::kControllerRoleVoice;
   }
   return device::kControllerRoleInvalid;
 }
@@ -162,6 +164,15 @@ ControllerFrameData XRTestHookWrapper::WaitGetControllerData(
   }
 
   return {};
+}
+
+bool XRTestHookWrapper::WaitGetSessionStateStopping() {
+  if (hook_) {
+    bool stopping = false;
+    hook_->WaitGetSessionStateStopping(&stopping);
+    return stopping;
+  }
+  return false;
 }
 
 void XRTestHookWrapper::AttachCurrentThread() {

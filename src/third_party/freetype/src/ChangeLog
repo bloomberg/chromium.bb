@@ -1,3 +1,452 @@
+2019-09-05  Werner Lemberg  <wl@gnu.org>
+
+	[cmake] Add brotli support.
+
+	* CMakeLists.txt (FT_WITH_BROTLI): New option.
+
+	* builds/cmake/FindBrotliDec.cmake: New file.
+
+2019-09-05  Werner Lemberg  <wl@gnu.org>
+
+	Fix handling of `AF_CONFIG_OPTION_INDIC'.
+
+	* devel/ftoption.h, include/freetype/config/ftoption.h:
+	`AF_CONFIG_OPTION_INDIC' needs `AF_CONFIG_OPTION_CJK'.
+
+2019-09-05  Werner Lemberg  <wl@gnu.org>
+
+	CMakeLists.txt: Fix generation of DLL related stuff (#56852).
+
+	Extract `version_info' variable from `builds/unix/configure.raw' and
+	use the data to correctly set `LIBRARY_VERSION' and
+	`LIBRARY_SOVERSION'.
+
+	Also use the data to set `ft_version' field in `freetype2.pc'.
+	Also fix the needed minimum version of HarfBuzz in `freetype2.pc'.
+
+2019-09-03  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (compute_ULong_sum): Fix undefined shift.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=16933
+
+2019-09-01  Werner Lemberg  <wl@gnu.org>
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Add sanity check.
+
+	Don't trust `totalSfntSize' unconditionally.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=16893
+
+2019-08-27  Dominik Röttsches  <drott@chromium.org>
+
+	[woff2] Don't use `FT_UInt64' (#56815).
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Use `FT_UInt32' for
+	`file_offset'.  This fixes builds on platforms where `FT_LONG64' is
+	not defined while still being sufficient to store a file offset.
+
+2019-08-27  Werner Lemberg  <wl@gnu.org>
+
+	[truetype] Prevent crash in `TT_Set_Named_Instance' (#56813).
+
+	* src/truetype/ttgxvar.c (TT_Set_Named_Instance): Fix error
+	handling.
+
+2019-08-27  Werner Lemberg  <wl@gnu.org>
+
+	[woff2] Fix compiler warnings.
+
+	* src/sfnt/sfwoff2.c (read_num_hmetrics): Remove unused argument
+	`table_len'.
+	Update caller.
+	(triplet_decode, compute_bbox, store_loca, reconstruct_glyf): Make
+	`i' variable unsigned.
+	(reconstruct_glyph): Remove condition which is always false.
+	(reconstruct_html): Removed unused argument `transformed_size'.
+	Update caller.
+
+	* src/sfnt/woff2tags.c (woff2_known_tags): Remove condition which is
+	always false.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Check whether known tag is in array bounds.
+
+	If table tag is not 0x3f, we expect a value between 0 and 62.  If
+	this is not the case, exit with errors.
+
+	* src/sfnt/sfwoff2/c: Check whether table tag makes sense.
+
+	* src/sfnt/woff2tags.c: Return 0 if tag is out of bounds.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	* src/sfnt/sfwoff2.c: Improve trace comments.
+
+	Adjust tracing levels for comments, and more formatting.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Support `hmtx' reconstruction when `glyf' is untransformed.
+
+	`reconstruct_hmtx' requires `info->x_mins' and `info->num_glyphs' to
+	reconstruct the hmtx table.  In case glyf is not transformed, we
+	call `get_x_mins' which does the necessary work.
+
+	* src/sfnt/sfwoff2.c (get_x_mins): New function.
+	(reconstruct_font): Call get_x_mins.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[sfnt] Support `face->num_faces' for WOFF2 fonts.
+
+	Set correct value of `face->num_faces' for WOFF2 fonts.  This is
+	being handled separately because we only load the tables for the
+	requested font face in `woff2_open_font' and create a single-face
+	sfnt stream.
+
+	The full discussion is at:
+
+	  https://lists.gnu.org/archive/html/freetype-devel/2019-08/msg00000.html
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Add parameter
+	`woff2_num_faces'.
+	(sfnt_init_face): Introduce variable `woff2_num_faces', and change
+	`face->root.num_faces' if `woff2_num_faces' is set.
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Validate requested face
+	index and handle negative face indices.
+
+	* src/sfnt/sfwoff2.h (woff2_open_font): Add parameter `num_faces' to
+	declaration.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Improve memory and error handling.
+
+	Free up memory after use, and improve error handling.
+
+	* src/sfnt/sfwoff2.c (reconstruct_font, woff2_open_font): Implement
+	changes.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Avoid too many calls to `FT_REALLOC'.
+
+	We do this by using `totalSfntSize' as an initial reference, and
+	extending the buffer when required.  This reduces rendering time
+	considerably.
+
+	* include/freetype/internal/wofftypes.h (WOFF2_HeaderRec): Add
+	`totalSfntSize', rename `total_sfnt_size' to `actual_sfnt_size'.
+
+	* src/sfnt/sfwoff2.c (write_buf): Add parameter `dst_size' to keep
+	track of and update total size of stream.
+
+	(WRITE_SFNT_BUF, WRITE_SFNT_BUF_AT): Modify macros accordingly.
+
+	(pad4, store_loca, reconstruct_glyf, reconstruct_hmtx,
+	reconstruct_font): Update parameters to accept `sfnt_size'.
+
+	(woff2_open_font): Add variable `sfnt_size'.  Use WOFF2 header field
+	`totalSfntSize' as initial reference (if value makes sense) and
+	allocate `totalSfntSize' bytes for the sfnt stream.  `write_buf'
+	handles reallocation if and when required.  Also resize the stream
+	to `actual_sfnt_size' after reconstruction.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Reconstruct `loca', `hmtx', and swap out stream.
+
+	Add necessary functions to reconstruct loca and hmtx tables (the two
+	remaining tables that can have a transform).  `woff2_open_font' is
+	now capable of loading a woff2 font face.  This code may still need
+	more refining and better memory management.
+
+	* include/freetype/internal/wofftypes.h (WOFF2_HeaderRec): Add total
+	(final) size of sfnt stream.
+
+	(WOFF2_InfoRec): Add header checksum value.
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Change `face_instance_index'
+	parameter to its pointer so its value can be modified by
+	`woff2_open_font'.
+
+	* src/sfnt/sfwoff2.c: (WRITE_SFNT_BUF_AT): New macro to write into
+	sfnt buffer at given position.
+
+	(write_buf): Add parameter `extend_buf' which allows caller to
+	specify whether buffer should be reallocated before copying data.
+
+	(WRITE_SFNT_BUF): Updated.
+
+	(pad4, store_loca, reconstruct_htmx): New functions.
+
+	(reconstruct_glyf): Calculate loca values and store them.
+
+	(reconstruct_font): Call `reconstruct_hmtx', write table record
+	entries, and calculate table checksums.  Also calculate font
+	checksum and update `checksumAdjustment' entry in head table.
+
+	(woff2_open_font): Open stream for sfnt buffer, swap out input
+	stream and return.
+
+	* src/sfnt/sfwoff2.h (woff2_open_font): Modify parameter to accept
+	pointer to `face_index'.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Reconstruct transformed `glyf' table.
+
+	Reconstruct `glyf' table if it is transformed in the uncompressed
+	table stream.  Also add necessary structures, macros and functions.
+
+	* include/freetype/internal/wofftypes.h (WOFF2_InfoRec,
+	WOFF2_SubstreamRec, WOFF2_PointRec): New structures.
+	(WOFF2_TableRec): s/OrigLength/dst_length/.
+
+	* src/sfnt/sfwoff2.c (READ_255USHORT, READ_BASE128): Use
+	`FT_SET_ERROR' to set implicit `error' variable.
+
+	(WRITE_SHORT): New macro.
+
+	(N_CONTOUR_STREAM, N_POINTS_STREAM, FLAG_STREAM, GLYPH_STREAM,
+	COMPOSITE_STREAM, BBOX_STREAM, INSTRUCTION_STREAM): New macros to
+	refer to substreams of the transformed `glyf' tables.
+
+	(Read255UShort, ReadBase128): Return errors set by `FT_READ_XXX'
+	macros.
+
+	(with_sign, safe_int_addition): New functions to add sign to values
+	based on a flag and perform safe addition respectively.
+
+	(triplet_decode): Decode variable-length (flag, xCoordinate,
+	yCoordinate) triplet for a simple glyph.   See
+
+	  https://www.w3.org/TR/WOFF2/#triplet_decoding
+
+	(store_points, compute_bbox, composteGlyph_size, reconstruct_glyf):
+	New functions.
+
+	(reconstruct_font): Call `reconstruct_glyf'.
+
+	* src/sfnt/sfwoff2.h: Add required constants.
+
+	* src/sfnt/woff2tags.h: Move out constants to `sfwoff2.h'.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Copy un-transformed tables to sfnt stream.
+
+	Copy un-transformed tables to the sfnt stream.
+
+	* src/sfnt/sfwoff2.c: (WRITE_SFNT_BUF): New macro.
+	(write_buf): New function.  Extend memory of `dst' buffer and copy
+	bytes from `src'.
+	(compute_ULong_sum): New function.  Calculate checksum of table.
+	(reconstruct_font): Change `FT_Byte* sfnt' to `FT_Byte**
+	sfnt_bytes'.  This has been done because we reallocate memory to
+	`sfnt' multiple times, which may change the pointer value of `sfnt'.
+	This new pointer must be propogated back to the caller.  Same reason
+	for using a double pointer in `write_buf'.
+
+	* src/sfnt/woff2tags.h (WOFF2_DEFAULT_MAX_SIZE): New macro used for
+	overflow checking.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Create stream for uncompressed buffer.
+
+	Uncompressed buffer is now an `FT_Stream'.
+
+	Perform basic checks and start iterating over tables.
+
+	* src/sfnt/sfwoff2.c (stream_close, find_table, read_num_hmetrics):
+	New functions.
+	(reconstruct_font): Modify parameters and iterate over tables.
+	(woff2_open_font): Updated.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Handle TTCs and start reconstructing font.
+
+	We `handle' TTCs by modifying the `indices' array to point to only
+	those tables that are part of the requested `face_index'.
+
+	Set and use `num_tables' in `WOFF2_TtcFont'.
+
+	* src/sfnt/sfwoff2.c (reconstruct_font): New function.
+	(woff2_open_font): Start reconstruction of font.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Get known tags from function.
+
+	Change `KnownTags' to a function (`woff2_known_tags').  This avoids
+	introducing a global constant array.  This function returns the
+	specified index without *any* checks.  The caller must ensure that
+	`index' is within array limits.
+
+	* src/sfnt/sfwoff2.c (woff2_open_font): Change `KnownTags[...]'
+	notation to `woff2_known_tags( ...  )'.
+
+	* src/sfnt/woff2tags.c: Perform changes.
+
+	* src/sfnt/woff2tags.h: Update definitions.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Minor.
+
+	* src/sfnt/sfwoff2.c (woff2_uncompress): Add error message
+	(woff2_open_font): Free `uncompressed_buf'.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Uncompress Brotli streams and `face_index' support.
+
+	WOFF2 compressed stream is now uncompressed if Brotli is available.
+	This data is stored in a separate buffer (uncompressed_buf) because
+	it does not contain direct table data.  Certain tables have
+	transformations applied to them, and they must be reconstructed
+	before we can write those tables to the SFNT stream.
+
+	`face_index' is now being passed as a parameter to
+	`woff2_open_font'.
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Add parameter
+	`face_instance_index'.
+
+	* src/sfnt/sfwoff2.c (woff2_uncompress): New function.
+	(woff2_open_font): Call `woff2_uncompress'.
+	(compute_first_table_offset): Fix return type.
+
+	* src/sfnt/sfwoff2.h (woff2_open_font): Modify declaration.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	* builds/unix/configure.raw: Change argument name to `brotli'.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	Add Brotli dependency and required checks.
+
+	Brotli is required for decompressing WOFF2 font directory streams.
+	The library is thus being added as an optional dependency for
+	FreeType.
+
+	* builds/unix/configure.raw: Add checks for `libbrotlidec'.
+	(REQUIRES_PRIVATE, LIBS_PRIVATE, LIBSSTATIC_CONFIG): Updated.
+
+	* devel/ftoption.h, include/freetype/config/ftoption.h
+	(FT_CONFIG_OPTION_USE_BROTLI): New macro.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Write SFNT Offset table.
+
+	* src/sfnt/sfwoff2.c (WRITE_USHORT, WRITE_ULONG): New macros.
+	(compare_tags): New function.
+	(woff2_open_font): Implement it.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	* src/sfnt/sfwoff2.c: #undef macros.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[woff2] Read table and collection directory.
+
+	* include/freetype/internal/wofftypes.h (WOFF2_TtcFontRec): New
+	structure.
+	(WOFF2_HeaderRec): Add more fields.
+
+	* src/sfnt/sfwoff2.c (READ_255USHORT, READ_BASE128, ROUND4): New
+	macros.
+	(Read255UShort, CollectionHeaderSize, compute_first_table_offset):
+	New functions.
+	(ReadBase128): Use `FT_READ_BYTE'.
+	(woff2_open_font): Add functionality to read table directory and
+	collection directory (if present).
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[sfnt] Include `woff2tags.c' for building.
+
+	* src/sfnt/rules.mk (SFNT_DRV_SRC): Add `woff2tags.c'.
+
+	* src/sfnt/sfnt.c: Include `woff2tags.c'.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[sfnt] Add WOFF2 constants.
+
+	Add constants required for WOFF2, and known table tags as defined in
+	the specification.  See
+
+	  https://www.w3.org/TR/WOFF2/#table_dir_format
+
+	for details.
+
+	* src/sfnt/woff2tags.c, src/sfnt/woff2tags.h: New files.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	[sfnt] Read WOFF 2 header.
+
+	Check for WOFF2 tag, call `woff2_open_font', and implement it to read
+	header according to specification.
+
+	* include/freetype/internal/fttrace.h: Add `sfwoff2.c'.
+
+	* src/sfnt/rules.mk (SFNT_DRV_SRC): Add `sfwoff2.c'.
+
+	* src/sfnt/sfnt.c: Include `sfwoff2.c'.
+
+	* src/sfnt/sfobjs.c (sfnt_open_font): Check for `wOF2' tag and call
+	`woff2_open_font'.
+
+	* src/sfnt/sfwoff2.c, src/sfnt/sfwoff2.h: New files.
+
+2019-08-27  Nikhil Ramakrishnan  <ramakrishnan.nikhil@gmail.com>
+
+	Add structures for WOFF2.
+
+	Add structures and macro for WOFF 2 header and table directory.
+
+	* include/freetype/internal/wofftypes.h (WOFF2_HeaderRec,
+	WOFF2_TableRec_): New structures.
+
+	* include/freetype/tttags.h (TTAG_wOF2): New macro.
+
+2019-08-26  Werner Lemberg  <wl@gnu.org>
+
+	* src/psaux/cffdecode.c (cff_operator_seac): Fix numeric overflow.
+
+	Reported as
+
+	  https://bugs.chromium.org/p/oss-fuzz/issues/detail?id=16470
+
+2019-08-26  Werner Lemberg  <wl@gnu.org>
+
+	[type1] Fix `FT_Get_Var_Axis_Flags' (#56804).
+
+	* src/type1/t1load.c (T1_Get_MM_Var): Allocate space for axis flags.
+	Also remove redundant assignment.
+
+2019-07-24  Alexei Podtelezhnikov  <apodtele@gmail.com>
+
+	* src/base/ftbbox.c (cubic_peak): Sanitize left shift (#56586).
+
+2019-07-22  Weiyi Wu  <w1w2y3@gmail.com>
+
+	* src/cid/cidload.c (cid_hex_to_binary): Fix typo (#56653).
+
 2019-07-12  Werner Lemberg  <wl@gnu.org>
 
 	[sfnt, winfonts] Avoid memory leaks in case of error (#56587).
@@ -133,7 +582,7 @@
 	* include/freetype/ftmodapi.h (FT_DebugHook_Func): Return error.
 
 	Fix a warning by adding a return value as in `TT_RunIns',
-	which should not be a compatibility issue. 
+	which should not be a compatibility issue.
 
 2019-06-11  Alexei Podtelezhnikov  <apodtele@gmail.com>
 
@@ -144,7 +593,7 @@
 	[gzip] Add support for `gzip' encoded header.
 
 	* src/gzip/ftgzip.c (FT_Gzip_Uncompress): Modify the the call to
-	`inflateInit2' to enable support for `gzip' encoded headers. 
+	`inflateInit2' to enable support for `gzip' encoded headers.
 
 2019-06-10  Alexei Podtelezhnikov  <apodtele@gmail.com>
 

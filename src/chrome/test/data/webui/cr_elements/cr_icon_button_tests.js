@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
+
+// #import {downAndUp, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {eventToPromise} from 'chrome://test/test_util.m.js';
+// #import {flushTasks} from 'chrome://test/test_util.m.js';
+// clang-format on
+
 suite('cr-icon-button', function() {
   let button;
 
@@ -9,7 +17,7 @@ suite('cr-icon-button', function() {
     PolymerTest.clearBody();
     button = document.createElement('cr-icon-button');
     document.body.appendChild(button);
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
   });
 
   test('enabled/disabled', () => {
@@ -52,28 +60,28 @@ suite('cr-icon-button', function() {
     button.addEventListener('click', clickHandler);
 
     button.disabled = true;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], 'Enter');
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], ' ');
     MockInteractions.downAndUp(button);
     button.click();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals(0, clickCount);
 
     button.disabled = false;
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], 'Enter');
     MockInteractions.pressAndReleaseKeyOn(button, -1, [], ' ');
     MockInteractions.downAndUp(button);
     button.click();
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     assertEquals(4, clickCount);
     button.removeEventListener('click', clickHandler);
   });
 
   test('when tabindex is -1, it stays -1', async () => {
     document.body.innerHTML = '<cr-icon-button tabindex="-1"></cr-icon-button>';
-    await PolymerTest.flushTasks();
+    await test_util.flushTasks();
     button = document.body.querySelector('cr-icon-button');
     assertEquals('-1', button.getAttribute('tabindex'));
   });

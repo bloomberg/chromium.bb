@@ -17,7 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_piece.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/ip_address.h"
 #include "net/log/net_log_source.h"
 #include "net/socket/socket_test_util.h"
@@ -79,7 +79,7 @@ class GCMSocketStreamTest : public testing::Test {
   void ResetInputStream();
   void ResetOutputStream();
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // SocketStreams and their data providers.
   ReadList mock_reads_;
@@ -103,8 +103,7 @@ class GCMSocketStreamTest : public testing::Test {
 };
 
 GCMSocketStreamTest::GCMSocketStreamTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
       network_change_notifier_(net::NetworkChangeNotifier::CreateMock()),
       network_service_(network::NetworkService::CreateForTesting()),
       url_request_context_(true /* delay_initialization */) {

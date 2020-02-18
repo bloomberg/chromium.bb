@@ -39,6 +39,20 @@ cca.views.camera.Preview = function(onNewStreamNeeded) {
   this.video_ = document.querySelector('#preview-video');
 
   /**
+   * Element that shows the preview metadata.
+   * @type {HTMLElement}
+   * @private
+   */
+  this.metadata_ = document.querySelector('#preview-metadata');
+
+  /**
+   * The observer id for preview metadata.
+   * @type {?number}
+   * @private
+   */
+  this.metadataObserverId_ = null;
+
+  /**
    * Current active stream.
    * @type {MediaStream}
    * @private
@@ -79,6 +93,10 @@ cca.views.camera.Preview = function(onNewStreamNeeded) {
   var inner = chrome.app.window.current().innerBounds;
   this.aspectRatio_ = inner.width / inner.height;
   window.addEventListener('resize', this.onWindowResize_.bind(this, null));
+
+  ['expert', 'show-metadata'].forEach((state) => {
+    cca.state.addObserver(state, this.updateShowMetadata_.bind(this));
+  });
 
   this.video_.cleanup = () => {};
 };
@@ -146,6 +164,7 @@ cca.views.camera.Preview.prototype.start = function(stream) {
       }
     }, 100);
     this.stream_ = stream;
+    this.updateShowMetadata_();
     cca.state.set('streaming', true);
   });
 };
@@ -186,6 +205,137 @@ cca.views.camera.Preview.prototype.toImage = function() {
       }
     }, 'image/jpeg');
   });
+};
+
+/**
+ * Checks preview whether to show preview metadata or not.
+ * @private
+ */
+cca.views.camera.Preview.prototype.updateShowMetadata_ = function() {
+  if (cca.state.get('expert') && cca.state.get('show-metadata')) {
+    this.enableShowMetadata_();
+  } else {
+    this.disableShowMetadata_();
+  }
+};
+
+/**
+ * Displays preview metadata on preview screen.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Preview.prototype.enableShowMetadata_ = async function() {
+  if (!this.stream_) {
+    return;
+  }
+
+  document.querySelectorAll('.metadata-value').forEach((element) => {
+    element.style.display = 'none';
+  });
+
+  const displayCategory = (selector, enabled) => {
+    document.querySelector(selector).classList.toggle('mode-on', enabled);
+  };
+
+  const showValue = (selector, val) => {
+    const element = document.querySelector(selector);
+    element.style.display = '';
+    element.textContent = val;
+  };
+
+  const tag = cros.mojom.CameraMetadataTag;
+  const metadataEntryHandlers = {
+    [tag.ANDROID_LENS_FOCUS_DISTANCE]: ([value]) => {
+      if (value === 0) {
+        // Fixed-focus camera
+        return;
+      }
+      const focusDistance = (100 / value).toFixed(1);
+      showValue('#preview-focus-distance', `${focusDistance} cm`);
+    },
+    [tag.ANDROID_LENS_FOCAL_LENGTH]: ([value]) => {
+      const focalLength = value.toFixed(1);
+      showValue('#preview-focal-length', `${focalLength} mm`);
+    },
+    [tag.ANDROID_LENS_APERTURE]: ([value]) => {
+      const aperture = value.toFixed(1);
+      showValue('#preview-aperture', `f/${aperture}`);
+    },
+    [tag.ANDROID_SENSOR_SENSITIVITY]: ([value]) => {
+      const sensitivity = value;
+      showValue('#preview-sensitivity', `ISO ${sensitivity}`);
+    },
+    [tag.ANDROID_SENSOR_EXPOSURE_TIME]: ([value]) => {
+      const shutterSpeed = Math.round(1e9 / value).toFixed(0);
+      showValue('#preview-exposure-time', `1/${shutterSpeed}`);
+    },
+    [tag.ANDROID_SENSOR_FRAME_DURATION]: ([value]) => {
+      const frameFrequency = Math.round(1e9 / value);
+      showValue('#preview-frame-duration', `${frameFrequency} Hz`);
+    },
+    [tag.ANDROID_COLOR_CORRECTION_GAINS]: ([valueRed, , , valueBlue]) => {
+      const wbGainRed = valueRed.toFixed(2);
+      showValue('#preview-wb-gain-red', `${wbGainRed}x`);
+      const wbGainBlue = valueBlue.toFixed(2);
+      showValue('#preview-wb-gain-blue', `${wbGainBlue}x`);
+    },
+    [tag.ANDROID_CONTROL_AF_MODE]: ([value]) => {
+      displayCategory('#preview-af', value !== tag.CONTROL_AF_MODE_OFF);
+    },
+    [tag.ANDROID_CONTROL_AE_MODE]: ([value]) => {
+      displayCategory('#preview-ae', value !== tag.CONTROL_AE_MODE_OFF);
+    },
+    [tag.ANDROID_CONTROL_AWB_MODE]: ([value]) => {
+      displayCategory('#preview-awb', value !== tag.CONTROL_AWB_MODE_OFF);
+    },
+  };
+
+  const callback = (metadata) => {
+    for (const entry of metadata.entries) {
+      if (entry.count === 0) {
+        continue;
+      }
+      const handler = metadataEntryHandlers[entry.tag];
+      if (handler === undefined) {
+        continue;
+      }
+      handler(cca.mojo.parseMetadataData(entry));
+    }
+  };
+
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  this.metadataObserverId_ = await deviceOperator.addMetadataObserver(
+      deviceId, callback, cros.mojom.StreamType.PREVIEW_OUTPUT);
+};
+
+/**
+ * Hide display preview metadata on preview screen.
+ * @return {!Promise} Promise for the operation.
+ * @private
+ */
+cca.views.camera.Preview.prototype.disableShowMetadata_ = async function() {
+  if (!this.stream_ || this.metadataObserverId_ === null) {
+    return;
+  }
+
+  const deviceOperator = await cca.mojo.DeviceOperator.getInstance();
+  if (!deviceOperator) {
+    return;
+  }
+
+  const deviceId = this.stream_.getVideoTracks()[0].getSettings().deviceId;
+  const isSuccess = await deviceOperator.removeMetadataObserver(
+      deviceId, this.metadataObserverId_);
+  if (!isSuccess) {
+    console.error(`Failed to remove metadata observer with id: ${
+        this.metadataObserverId_}`);
+  }
+  this.metadataObserverId_ = null;
 };
 
 /**

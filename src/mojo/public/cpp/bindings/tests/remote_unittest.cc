@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -258,7 +258,7 @@ TEST_P(EndToEndRemoteTest, EndToEnd) {
 }
 
 TEST_P(EndToEndRemoteTest, EndToEndOnSequence) {
-  RunTest(base::CreateSequencedTaskRunnerWithTraits({}));
+  RunTest(base::CreateSequencedTaskRunner({base::ThreadPool()}));
 }
 
 TEST_P(RemoteTest, Movable) {
@@ -502,7 +502,7 @@ class StrongMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(StrongConnectorTest, Math) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   bool disconnected = false;
   bool destroyed = false;
@@ -578,7 +578,7 @@ class WeakMathCalculatorImpl : public math::Calculator {
 };
 
 TEST(WeakConnectorTest, Math) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::SingleThreadTaskEnvironment task_environment;
 
   bool disconnected = false;
   bool destroyed = false;
@@ -877,7 +877,8 @@ TEST_P(RemoteTest, SharedRemote) {
 
   // Send a message on |thread_safe_remote| from a different sequence.
   auto main_task_runner = base::SequencedTaskRunnerHandle::Get();
-  auto sender_task_runner = base::CreateSequencedTaskRunnerWithTraits({});
+  auto sender_task_runner =
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
   sender_task_runner->PostTask(
       FROM_HERE, base::BindLambdaForTesting([&] {
         shared_remote->Add(
@@ -894,7 +895,7 @@ TEST_P(RemoteTest, SharedRemote) {
 
 TEST_P(RemoteTest, SharedRemoteWithTaskRunner) {
   const scoped_refptr<base::SequencedTaskRunner> other_thread_task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({});
+      base::CreateSequencedTaskRunner({base::ThreadPool()});
 
   PendingRemote<math::Calculator> remote;
   auto receiver = remote.InitWithNewPipeAndPassReceiver();

@@ -6,18 +6,20 @@
 
 #include <stdint.h>
 
-#include <memory>
+#include <algorithm>
+#include <map>
 #include <string>
 #include <tuple>
-#include <utility>
-#include <vector>
 
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "build/build_config.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check.h"
+#include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory.h"
 #include "components/password_manager/core/browser/password_manager.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -25,6 +27,7 @@
 #include "components/password_manager/core/common/password_manager_pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/testing_pref_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -32,6 +35,7 @@
 
 using testing::_;
 using testing::ElementsAre;
+using testing::Pair;
 using testing::Pointee;
 using testing::UnorderedElementsAre;
 
@@ -42,6 +46,20 @@ namespace {
 const char kTestWebOrigin[] = "https://example.com/";
 const char kTestAndroidRealm1[] = "android://hash@com.example.one.android/";
 const char kTestAndroidRealm2[] = "android://hash@com.example.two.android/";
+
+class MockLeakDetectionCheck : public LeakDetectionCheck {
+ public:
+  MOCK_METHOD3(Start, void(const GURL&, base::string16, base::string16));
+};
+
+class MockLeakDetectionCheckFactory : public LeakDetectionCheckFactory {
+ public:
+  MOCK_CONST_METHOD3(TryCreateLeakCheck,
+                     std::unique_ptr<LeakDetectionCheck>(
+                         LeakDetectionDelegateInterface*,
+                         signin::IdentityManager*,
+                         scoped_refptr<network::SharedURLLoaderFactory>));
+};
 
 class MockPasswordManagerClient : public StubPasswordManagerClient {
  public:
@@ -58,6 +76,11 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                bool(const std::vector<autofill::PasswordForm*>& local_forms,
                     const GURL& origin,
                     const CredentialsCallback& callback));
+  MOCK_METHOD3(
+      PasswordWasAutofilled,
+      void(const std::map<base::string16, const autofill::PasswordForm*>&,
+           const GURL&,
+           const std::vector<const autofill::PasswordForm*>*));
 
   explicit MockPasswordManagerClient(PasswordStore* store)
       : store_(store), password_manager_(this) {
@@ -66,6 +89,8 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
                                             true);
     prefs_->registry()->RegisterBooleanPref(
         prefs::kWasAutoSignInFirstRunExperienceShown, true);
+    prefs_->registry()->RegisterBooleanPref(
+        prefs::kPasswordLeakDetectionEnabled, true);
   }
   ~MockPasswordManagerClient() override {}
 
@@ -327,10 +352,10 @@ class CredentialManagerImplTest : public testing::Test {
                           std::move(callback));
   }
 
-  void RunAllPendingTasks() { scoped_task_environment_.RunUntilIdle(); }
+  void RunAllPendingTasks() { task_environment_.RunUntilIdle(); }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   autofill::PasswordForm form_;
   autofill::PasswordForm affiliated_form1_;
   autofill::PasswordForm affiliated_form2_;
@@ -450,6 +475,8 @@ TEST_F(CredentialManagerImplTest, StoreFederatedAfterPassword) {
   EXPECT_THAT(passwords["https://example.com/"], ElementsAre(form_));
   federated.date_created =
       passwords["federation://example.com/google.com"][0].date_created;
+  federated.date_last_used =
+      passwords["federation://example.com/google.com"][0].date_last_used;
   EXPECT_THAT(passwords["federation://example.com/google.com"],
               ElementsAre(federated));
 }
@@ -964,7 +991,6 @@ TEST_F(CredentialManagerImplTest,
   std::vector<GURL> federations;
 
   EXPECT_CALL(*client_, NotifyUserCouldBeAutoSignedInPtr(_)).Times(0);
-
   ExpectZeroClickSignInFailure(CredentialMediationRequirement::kSilent, false,
                                federations);
 }
@@ -1614,5 +1640,73 @@ TEST_F(CredentialManagerImplTest, RespectBlacklistingFederatedCredential) {
   ASSERT_TRUE(client_->pending_manager());
   EXPECT_TRUE(client_->pending_manager()->IsBlacklisted());
 }
+
+TEST_F(CredentialManagerImplTest,
+       ManagePasswordsUICredentialsUpdatedUnconditionallyInSilentMediation) {
+  autofill::PasswordForm federated = origin_path_form_;
+  federated.federation_origin =
+      url::Origin::Create(GURL("https://google.com/"));
+  federated.signon_realm =
+      "federation://" + federated.origin.host() + "/google.com";
+  store_->AddLogin(federated);
+
+  form_.username_value = base::ASCIIToUTF16("username_value");
+  store_->AddLogin(form_);
+
+  EXPECT_CALL(*client_,
+              PasswordWasAutofilled(
+                  ElementsAre(Pair(form_.username_value, Pointee(form_))), _,
+                  Pointee(ElementsAre(Pointee(federated)))));
+
+  bool called = false;
+  CredentialManagerError error;
+  base::Optional<CredentialInfo> credential;
+  std::vector<GURL> federations;
+  federations.push_back(GURL("https://google.com/"));
+
+  CallGet(CredentialMediationRequirement::kSilent, true, federations,
+          base::BindOnce(&GetCredentialCallback, &called, &error, &credential));
+
+  RunAllPendingTasks();
+}
+
+#if !defined(OS_IOS)
+// Check that following a call to store() a federated credential is not checked
+// for leaks.
+TEST_F(CredentialManagerImplTest,
+       StoreFederatedCredentialDoesNotStartLeakDetection) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  EXPECT_CALL(*mock_factory, TryCreateLeakCheck).Times(0);
+  cm_service_impl()->set_leak_factory(std::move(mock_factory));
+
+  form_.federation_origin = url::Origin::Create(GURL("https://example.com/"));
+  form_.password_value = base::string16();
+  form_.signon_realm = "federation://example.com/example.com";
+  CallStore({form_, CredentialType::CREDENTIAL_TYPE_FEDERATED},
+            base::DoNothing());
+
+  RunAllPendingTasks();
+}
+
+// Check that following a call to store() a password credential is checked for
+// leaks.
+TEST_F(CredentialManagerImplTest, StorePasswordCredentialStartsLeakDetection) {
+  auto mock_factory =
+      std::make_unique<testing::StrictMock<MockLeakDetectionCheckFactory>>();
+  auto* weak_factory = mock_factory.get();
+  cm_service_impl()->set_leak_factory(std::move(mock_factory));
+
+  auto check_instance = std::make_unique<MockLeakDetectionCheck>();
+  EXPECT_CALL(*check_instance,
+              Start(form_.origin, form_.username_value, form_.password_value));
+  EXPECT_CALL(*weak_factory, TryCreateLeakCheck)
+      .WillOnce(testing::Return(testing::ByMove(std::move(check_instance))));
+  CallStore({form_, CredentialType::CREDENTIAL_TYPE_PASSWORD},
+            base::DoNothing());
+
+  RunAllPendingTasks();
+}
+#endif  // !defined(OS_IOS)
 
 }  // namespace password_manager

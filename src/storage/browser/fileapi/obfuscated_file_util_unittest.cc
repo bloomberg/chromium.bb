@@ -21,7 +21,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
@@ -169,14 +169,12 @@ class ObfuscatedFileUtilTest : public testing::Test,
                                public ::testing::WithParamInterface<TestMode> {
  public:
   ObfuscatedFileUtilTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         origin_(GURL("http://www.example.com")),
         type_(storage::kFileSystemTypeTemporary),
         sandbox_file_system_(origin_, type_),
         quota_status_(blink::mojom::QuotaStatusCode::kUnknown),
-        usage_(-1),
-        weak_factory_(this) {
+        usage_(-1) {
     if (GetParam() == TestMode::kRegular) {
       is_incognito_ = false;
       return;
@@ -235,7 +233,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
       ASSERT_TRUE(IsDirectoryEmpty(data_dir_.GetPath()));
 
     quota_manager_ = nullptr;
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     sandbox_file_system_.TearDown();
   }
 
@@ -334,7 +332,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   }
 
   int64_t SizeInUsageFile() {
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
     int64_t usage = 0;
     return usage_cache()->GetUsage(
         sandbox_file_system_.GetUsageCachePath(), &usage) ? usage : -1;
@@ -475,7 +473,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
           test_(test) {}
 
     ~UsageVerifyHelper() {
-      test_->scoped_task_environment_.RunUntilIdle();
+      test_->task_environment_.RunUntilIdle();
       Check();
     }
 
@@ -751,7 +749,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     // still alive.
     file_util->db_flush_delay_seconds_ = 0;
     file_util->MarkUsed();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
     ASSERT_TRUE(file_util->origin_database_ == nullptr);
   }
@@ -768,7 +766,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
     }
 
     // At this point the callback is still in the message queue but OFU is gone.
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void DestroyDirectoryDatabase_IsolatedTestBody() {
@@ -836,7 +834,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   bool is_incognito_;
   base::test::ScopedFeatureList feature_list_;
   std::unique_ptr<leveldb::Env> incognito_leveldb_environment_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   scoped_refptr<MockSpecialStoragePolicy> storage_policy_;
   scoped_refptr<storage::QuotaManager> quota_manager_;
@@ -848,7 +846,7 @@ class ObfuscatedFileUtilTest : public testing::Test,
   int64_t usage_;
   storage::MockFileChangeObserver change_observer_;
   storage::ChangeObserverList change_observers_;
-  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_;
+  base::WeakPtrFactory<ObfuscatedFileUtilTest> weak_factory_{this};
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ObfuscatedFileUtilTest);

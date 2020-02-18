@@ -39,6 +39,10 @@ std::unique_ptr<GrDrawOpAtlas> GrDrawOpAtlas::Make(GrProxyProvider* proxyProvide
                                                    int height, int plotWidth, int plotHeight,
                                                    AllowMultitexturing allowMultitexturing,
                                                    GrDrawOpAtlas::EvictionFunc func, void* data) {
+    if (!format.isValid()) {
+        return nullptr;
+    }
+
     std::unique_ptr<GrDrawOpAtlas> atlas(new GrDrawOpAtlas(proxyProvider, format, colorType, width,
                                                            height, plotWidth, plotHeight,
                                                            allowMultitexturing));
@@ -125,7 +129,7 @@ bool GrDrawOpAtlas::Plot::addSubImage(int width, int height, const void* image, 
         }
     }
 
-    fDirtyRect.join(loc->fX, loc->fY, loc->fX + width, loc->fY + height);
+    fDirtyRect.join({loc->fX, loc->fY, loc->fX + width, loc->fY + height});
 
     loc->fX += fOffset.fX;
     loc->fY += fOffset.fY;
@@ -522,14 +526,13 @@ bool GrDrawOpAtlas::createPages(GrProxyProvider* proxyProvider) {
     int numPlotsY = fTextureHeight/fPlotHeight;
 
     for (uint32_t i = 0; i < this->maxPages(); ++i) {
-        fProxies[i] = proxyProvider->createProxy(fFormat, desc, GrRenderable::kNo, 1,
-                                                 kTopLeft_GrSurfaceOrigin, SkBackingFit::kExact,
-                                                 SkBudgeted::kYes, GrProtected::kNo);
+        fProxies[i] = proxyProvider->createProxy(
+                fFormat, desc, GrRenderable::kNo, 1, kTopLeft_GrSurfaceOrigin, GrMipMapped::kNo,
+                SkBackingFit::kExact, SkBudgeted::kYes, GrProtected::kNo,
+                GrInternalSurfaceFlags::kNone, GrSurfaceProxy::UseAllocator::kNo);
         if (!fProxies[i]) {
             return false;
         }
-
-        fProxies[i]->priv().setIgnoredByResourceAllocator();
 
         // set up allocated plots
         fPages[i].fPlotArray.reset(new sk_sp<Plot>[ numPlotsX * numPlotsY ]);

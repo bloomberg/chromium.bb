@@ -657,7 +657,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         'AFDO_FILE["benchmark"]="chromeos-chrome-amd64-67.0.3379.0_rc-r1.afdo"',
         'AFDO_FILE["silvermont"]="R67-3359.31-1522059092.afdo"',
         'AFDO_FILE["airmont"]="airmont_before.afdo"',
-        'AFDO_FILE["haswell"]="haswell_before.afdo"',
         'AFDO_FILE["broadwell"]="broadwell_before.afdo"',
         'It should be changed.'
     ]
@@ -666,7 +665,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
         'AFDO_FILE["benchmark"]="chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo"',
         'AFDO_FILE["silvermont"]="R67-3360.42-153456789.afdo"',
         'AFDO_FILE["airmont"]="airmont_after.afdo"',
-        'AFDO_FILE["haswell"]="haswell_after.afdo"',
         'AFDO_FILE["broadwell"]="broadwell_after.afdo"', 'It should be changed.'
     ]
 
@@ -677,7 +675,6 @@ class AfdoTest(cros_test_lib.MockTempDirTestCase):
     afdo.PatchChromeEbuildAFDOFile(
         tf, {
             'benchmark': 'chromeos-chrome-amd64-67.0.3388.0_rc-r1.afdo',
-            'haswell': 'haswell_after.afdo',
             'broadwell': 'broadwell_after.afdo',
             'airmont': 'airmont_after.afdo',
             'silvermont': 'R67-3360.42-153456789.afdo'

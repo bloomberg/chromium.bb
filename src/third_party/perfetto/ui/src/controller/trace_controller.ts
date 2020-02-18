@@ -25,13 +25,14 @@ import {
 import {Engine} from '../common/engine';
 import {NUM, NUM_NULL, rawQueryToRows, STR_NULL} from '../common/protos';
 import {SCROLLING_TRACK_GROUP} from '../common/state';
+import {toNs, toNsCeil, toNsFloor} from '../common/time';
 import {TimeSpan} from '../common/time';
 import {QuantizedLoad, ThreadDesc} from '../frontend/globals';
 import {ANDROID_LOGS_TRACK_KIND} from '../tracks/android_log/common';
 import {SLICE_TRACK_KIND} from '../tracks/chrome_slices/common';
 import {CPU_FREQ_TRACK_KIND} from '../tracks/cpu_freq/common';
-import {GPU_FREQ_TRACK_KIND} from '../tracks/gpu_freq/common';
 import {CPU_SLICE_TRACK_KIND} from '../tracks/cpu_slices/common';
+import {GPU_FREQ_TRACK_KIND} from '../tracks/gpu_freq/common';
 import {
   PROCESS_SCHEDULING_TRACK_KIND
 } from '../tracks/process_scheduling/common';
@@ -42,6 +43,7 @@ import {Child, Children, Controller} from './controller';
 import {globals} from './globals';
 import {LogsController} from './logs_controller';
 import {QueryController, QueryControllerArgs} from './query_controller';
+import {SearchController} from './search_controller';
 import {
   SelectionController,
   SelectionControllerArgs
@@ -122,6 +124,11 @@ export class TraceController extends Controller<States> {
         const selectionArgs: SelectionControllerArgs = {engine};
         childControllers.push(
           Child('selection', SelectionController, selectionArgs));
+
+        childControllers.push(Child('search', SearchController, {
+          engine,
+          app: globals,
+        }));
 
         childControllers.push(Child('logs', LogsController, {
           engine,
@@ -208,12 +215,10 @@ export class TraceController extends Controller<States> {
       Actions.navigate({route: '/viewer'}),
     ];
 
-    if (globals.state.frontendLocalState.lastUpdate === 0) {
-      actions.push(Actions.setVisibleTraceTime({
-        time: traceTimeState,
-        lastUpdate: Date.now() / 1000,
-      }));
-    }
+    // We don't know the resolution at this point. However this will be
+    // replaced in 50ms so a guess is fine.
+    actions.push(Actions.setVisibleTraceTime(
+        {...traceTimeState, lastUpdate: Date.now() / 1000, resolution: 0.008}));
 
     globals.dispatchMultiple(actions);
 
@@ -233,7 +238,6 @@ export class TraceController extends Controller<States> {
     this.updateStatus('Loading tracks');
 
     const engine = assertExists<Engine>(this.engine);
-    const numCpus = await engine.getNumberOfCpus();
     const numGpus = await engine.getNumberOfGpus();
     const tracksToAdd: AddTrackArgs[] = [];
 
@@ -262,7 +266,9 @@ export class TraceController extends Controller<States> {
      where name = 'cpufreq';
     `);
 
-    for (let cpu = 0; cpu < numCpus; cpu++) {
+    const cpus = await engine.getCpus();
+
+    for (const cpu of cpus) {
       tracksToAdd.push({
         engineId: this.engineId,
         kind: CPU_SLICE_TRACK_KIND,
@@ -274,7 +280,7 @@ export class TraceController extends Controller<States> {
       });
     }
 
-    for (let cpu = 0; cpu < numCpus; cpu++) {
+    for (const cpu of cpus) {
       // Only add a cpu freq track if we have
       // cpu freq data.
       // TODO(taylori): Find a way to display cpu idle
@@ -571,9 +577,9 @@ export class TraceController extends Controller<States> {
           'Loading overview ' +
           `${Math.round((step + 1) / numSteps * 1000) / 10}%`);
       const startSec = traceTime.start + step * stepSec;
-      const startNs = Math.floor(startSec * 1e9);
+      const startNs = toNsFloor(startSec);
       const endSec = startSec + stepSec;
-      const endNs = Math.ceil(endSec * 1e9);
+      const endNs = toNsCeil(endSec);
 
       // Sched overview.
       const schedRows = await engine.query(
@@ -595,8 +601,8 @@ export class TraceController extends Controller<States> {
     }
 
     // Slices overview.
-    const traceStartNs = traceTime.start * 1e9;
-    const stepSecNs = stepSec * 1e9;
+    const traceStartNs = toNs(traceTime.start);
+    const stepSecNs = toNs(stepSec);
     const sliceSummaryQuery = await engine.query(
         `select bucket, upid, sum(utid_sum) / cast(${stepSecNs} as float) ` +
         `as upid_sum from thread inner join ` +

@@ -35,8 +35,8 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "crypto/symmetric_key.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
@@ -47,14 +47,13 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_handle.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/test/fake_blob.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
-#include "storage/common/blob_storage/blob_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "url/origin.h"
@@ -76,14 +75,6 @@ const GURL kBodyUrlWithQuery("http://example.com/body.html?query=test");
 const GURL kNoBodyUrl("http://example.com/no_body.html");
 const FetchAPIRequestHeadersMap kHeaders({{"a", "a"}, {"b", "b"}});
 
-// Returns a BlobProtocolHandler that uses |blob_storage_context|. Caller owns
-// the memory.
-std::unique_ptr<storage::BlobProtocolHandler> CreateMockBlobProtocolHandler(
-    storage::BlobStorageContext* blob_storage_context) {
-  return base::WrapUnique(
-      new storage::BlobProtocolHandler(blob_storage_context));
-}
-
 void SizeCallback(base::RunLoop* run_loop,
                   bool* callback_called,
                   int64_t* out_size,
@@ -100,8 +91,9 @@ class SlowBlob : public storage::FakeBlob {
   explicit SlowBlob(base::OnceClosure quit_closure)
       : FakeBlob("foo"), quit_closure_(std::move(quit_closure)) {}
 
-  void ReadAll(mojo::ScopedDataPipeProducerHandle producer_handle,
-               blink::mojom::BlobReaderClientPtr client) override {
+  void ReadAll(
+      mojo::ScopedDataPipeProducerHandle producer_handle,
+      mojo::PendingRemote<blink::mojom::BlobReaderClient> client) override {
     // Don't respond, forcing the consumer to wait forever.
     std::move(quit_closure_).Run();
   }
@@ -120,28 +112,30 @@ class DelayableBackend : public disk_cache::Backend {
 
   // disk_cache::Backend overrides
   int32_t GetEntryCount() const override { return backend_->GetEntryCount(); }
-  net::Error OpenEntry(const std::string& key,
-                       net::RequestPriority request_priority,
-                       disk_cache::Entry** entry,
-                       CompletionOnceCallback callback) override {
+  EntryResult OpenEntry(const std::string& key,
+                        net::RequestPriority request_priority,
+                        EntryResultCallback callback) override {
     if (delay_open_entry_ && open_entry_callback_.is_null()) {
-      open_entry_callback_ = base::BindOnce(
-          &DelayableBackend::OpenEntryDelayedImpl, base::Unretained(this), key,
-          base::Unretained(entry), std::move(callback));
+      open_entry_callback_ =
+          base::BindOnce(&DelayableBackend::OpenEntryDelayedImpl,
+                         base::Unretained(this), key, std::move(callback));
       if (open_entry_started_callback_)
         std::move(open_entry_started_callback_).Run();
-      return net::ERR_IO_PENDING;
+      return EntryResult::MakeError(net::ERR_IO_PENDING);
     }
-    return backend_->OpenEntry(key, request_priority, entry,
-                               std::move(callback));
+    return backend_->OpenEntry(key, request_priority, std::move(callback));
   }
 
-  net::Error CreateEntry(const std::string& key,
-                         net::RequestPriority request_priority,
-                         disk_cache::Entry** entry,
-                         CompletionOnceCallback callback) override {
-    return backend_->CreateEntry(key, request_priority, entry,
-                                 std::move(callback));
+  EntryResult CreateEntry(const std::string& key,
+                          net::RequestPriority request_priority,
+                          EntryResultCallback callback) override {
+    return backend_->CreateEntry(key, request_priority, std::move(callback));
+  }
+  EntryResult OpenOrCreateEntry(const std::string& key,
+                                net::RequestPriority request_priority,
+                                EntryResultCallback callback) override {
+    return backend_->OpenOrCreateEntry(key, request_priority,
+                                       std::move(callback));
   }
   net::Error DoomEntry(const std::string& key,
                        net::RequestPriority request_priority,
@@ -201,13 +195,13 @@ class DelayableBackend : public disk_cache::Backend {
 
  private:
   void OpenEntryDelayedImpl(const std::string& key,
-                            disk_cache::Entry** entry,
-                            CompletionOnceCallback callback) {
+                            EntryResultCallback callback) {
     auto copyable_callback =
         base::AdaptCallbackForRepeating(std::move(callback));
-    int rv = backend_->OpenEntry(key, net::HIGHEST, entry, copyable_callback);
-    if (rv != net::ERR_IO_PENDING)
-      copyable_callback.Run(rv);
+    EntryResult result =
+        backend_->OpenEntry(key, net::HIGHEST, copyable_callback);
+    if (result.net_error() != net::ERR_IO_PENDING)
+      copyable_callback.Run(std::move(result));
   }
 
   std::unique_ptr<disk_cache::Backend> backend_;
@@ -234,7 +228,7 @@ class DataPipeDrainerClient : public mojo::DataPipeDrainer::Client {
 std::string CopyBody(blink::mojom::Blob* actual_blob) {
   std::string output;
   mojo::DataPipe pipe;
-  actual_blob->ReadAll(std::move(pipe.producer_handle), nullptr);
+  actual_blob->ReadAll(std::move(pipe.producer_handle), mojo::NullRemote());
   DataPipeDrainerClient client(&output);
   mojo::DataPipeDrainer drainer(&client, std::move(pipe.consumer_handle));
   client.Run();
@@ -433,7 +427,7 @@ class MockLegacyCacheStorage : public LegacyCacheStorage {
 class CacheStorageCacheTest : public testing::Test {
  public:
   CacheStorageCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ChromeBlobStorageContext* blob_storage_context =
@@ -850,7 +844,7 @@ class CacheStorageCacheTest : public testing::Test {
 
  protected:
   base::ScopedTempDir temp_dir_;
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   TestBrowserContext browser_context_;
   scoped_refptr<MockSpecialStoragePolicy> quota_policy_;
   scoped_refptr<MockQuotaManager> mock_quota_manager_;
@@ -2287,7 +2281,7 @@ TEST_P(CacheStorageCacheTestP, BlobReferenceDelaysClose) {
   cache_->Close(base::BindOnce(&CacheStorageCacheTest::CloseCallback,
                                base::Unretained(this),
                                base::Unretained(&loop)));
-  browser_thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   // If MemoryOnly closing does succeed right away.
   EXPECT_EQ(MemoryOnly(), callback_closed_);
 

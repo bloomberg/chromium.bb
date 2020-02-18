@@ -33,7 +33,6 @@ const uint32_t kSsrc = 725242;
 const uint8_t kAudioLevel = 0x5a;
 const uint64_t kStartTime = 123456789;
 
-using ::testing::_;
 using ::testing::ElementsAreArray;
 
 class LoopbackTransportTest : public webrtc::Transport {
@@ -70,7 +69,7 @@ class RtpSenderAudioTest : public ::testing::Test {
           config.audio = true;
           config.clock = &fake_clock_;
           config.outgoing_transport = &transport_;
-          config.media_send_ssrc = kSsrc;
+          config.local_media_ssrc = kSsrc;
           return config;
         }()),
         rtp_sender_audio_(&fake_clock_, &rtp_sender_) {

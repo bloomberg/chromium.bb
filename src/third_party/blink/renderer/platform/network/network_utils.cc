@@ -15,8 +15,8 @@
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_response.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_utf8_adaptor.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "url/gurl.h"
@@ -66,7 +66,8 @@ String GetDomainAndRegistry(const String& host, PrivateRegistryFilter filter) {
 }
 
 std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
-    const KURL& url) {
+    const KURL& url,
+    const String& method) {
   // The following code contains duplication of GetInfoFromDataURL() and
   // WebURLLoaderImpl::PopulateURLResponse() in
   // content/child/web_url_loader_impl.cc. Merge them once content/child is
@@ -77,7 +78,8 @@ std::tuple<int, ResourceResponse, scoped_refptr<SharedBuffer>> ParseDataURL(
   auto headers = base::MakeRefCounted<net::HttpResponseHeaders>(std::string());
 
   int result = net::URLRequestDataJob::BuildResponse(
-      GURL(url), &utf8_mime_type, &utf8_charset, &data_string, headers.get());
+      GURL(url), method.Ascii(), &utf8_mime_type, &utf8_charset, &data_string,
+      headers.get());
   if (result != net::OK)
     return std::make_tuple(result, ResourceResponse(), nullptr);
 

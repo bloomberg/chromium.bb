@@ -654,8 +654,8 @@ int QuicChromiumClientSession::StreamRequest::DoWaitForConfirmation() {
   next_state_ = STATE_WAIT_FOR_CONFIRMATION_COMPLETE;
   if (requires_confirmation_) {
     return session_->WaitForHandshakeConfirmation(
-        base::Bind(&QuicChromiumClientSession::StreamRequest::OnIOComplete,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&QuicChromiumClientSession::StreamRequest::OnIOComplete,
+                       weak_factory_.GetWeakPtr()));
   }
 
   return OK;
@@ -700,6 +700,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     NetworkChangeNotifier::NetworkHandle default_network,
     quic::QuicTime::Delta retransmittable_on_wire_timeout,
     bool migrate_idle_session,
+    bool allow_port_migration,
     base::TimeDelta idle_migration_period,
     base::TimeDelta max_time_on_non_default_network,
     int max_migrations_to_non_default_network_on_write_error,
@@ -730,6 +731,7 @@ QuicChromiumClientSession::QuicChromiumClientSession(
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
       migrate_idle_session_(migrate_idle_session),
+      allow_port_migration_(allow_port_migration),
       idle_migration_period_(idle_migration_period),
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_write_error_(
@@ -939,7 +941,7 @@ size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
     quic::QuicStreamId id,
     spdy::SpdyHeaderBlock headers,
     bool fin,
-    spdy::SpdyPriority priority,
+    const spdy::SpdyStreamPrecedence& precedence,
     quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
         ack_listener) {
   spdy::SpdyStreamId parent_stream_id = 0;
@@ -947,10 +949,11 @@ size_t QuicChromiumClientSession::WriteHeadersOnHeadersStream(
   bool exclusive = false;
 
   if (headers_include_h2_stream_dependency_) {
-    priority_dependency_state_.OnStreamCreation(id, priority, &parent_stream_id,
-                                                &weight, &exclusive);
+    priority_dependency_state_.OnStreamCreation(id, precedence.spdy3_priority(),
+                                                &parent_stream_id, &weight,
+                                                &exclusive);
   } else {
-    weight = spdy::Spdy3PriorityToHttp2Weight(priority);
+    weight = spdy::Spdy3PriorityToHttp2Weight(precedence.spdy3_priority());
   }
 
   return WriteHeadersOnHeadersStreamImpl(id, std::move(headers), fin,
@@ -968,10 +971,11 @@ void QuicChromiumClientSession::UnregisterStreamPriority(quic::QuicStreamId id,
 
 void QuicChromiumClientSession::UpdateStreamPriority(
     quic::QuicStreamId id,
-    spdy::SpdyPriority new_priority) {
+    const spdy::SpdyStreamPrecedence& new_precedence) {
   if (headers_include_h2_stream_dependency_ ||
       VersionHasStreamType(connection()->transport_version())) {
-    auto updates = priority_dependency_state_.OnStreamUpdate(id, new_priority);
+    auto updates = priority_dependency_state_.OnStreamUpdate(
+        id, new_precedence.spdy3_priority());
     for (auto update : updates) {
       if (!VersionHasStreamType(connection()->transport_version())) {
         WritePriority(update.id, update.parent_stream_id, update.weight,
@@ -988,7 +992,7 @@ void QuicChromiumClientSession::UpdateStreamPriority(
       }
     }
   }
-  quic::QuicSpdySession::UpdateStreamPriority(id, new_priority);
+  quic::QuicSpdySession::UpdateStreamPriority(id, new_precedence);
 }
 
 void QuicChromiumClientSession::OnStreamFrame(
@@ -1511,7 +1515,7 @@ void QuicChromiumClientSession::OnCryptoHandshakeEvent(
     CryptoHandshakeEvent event) {
   if (!callback_.is_null() &&
       (!require_confirmation_ || event == HANDSHAKE_CONFIRMED ||
-       event == ENCRYPTION_REESTABLISHED)) {
+       event == ENCRYPTION_ESTABLISHED)) {
     // TODO(rtenneti): Currently for all CryptoHandshakeEvent events, callback_
     // could be called because there are no error events in CryptoHandshakeEvent
     // enum. If error events are added to CryptoHandshakeEvent, then the
@@ -1738,14 +1742,13 @@ void QuicChromiumClientSession::OnSuccessfulVersionNegotiation(
   quic::QuicSpdySession::OnSuccessfulVersionNegotiation(version);
 }
 
-void QuicChromiumClientSession::OnConnectivityProbeReceived(
+void QuicChromiumClientSession::OnPacketReceived(
     const quic::QuicSocketAddress& self_address,
-    const quic::QuicSocketAddress& peer_address) {
-  DVLOG(1) << "Speculative probing response from ip:port: "
-           << peer_address.ToString()
-           << " to ip:port: " << self_address.ToString() << " is received";
-  // Notify the probing manager that a connectivity probing packet is received.
-  probing_manager_.OnConnectivityProbingReceived(self_address, peer_address);
+    const quic::QuicSocketAddress& peer_address,
+    bool is_connectivity_probe) {
+  // Notify the probing manager that a new packet is received.
+  probing_manager_.OnPacketReceived(self_address, peer_address,
+                                    is_connectivity_probe);
 }
 
 int QuicChromiumClientSession::HandleWriteError(
@@ -1954,20 +1957,10 @@ void QuicChromiumClientSession::OnProbeSucceeded(
                                                        /*is_success=*/true);
                     });
 
-  if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
-    OnProbeNetworkSucceeded(network, peer_address, self_address,
-                            std::move(socket), std::move(writer),
-                            std::move(reader));
-  }
-}
+  if (!allow_port_migration_ &&
+      network == NetworkChangeNotifier::kInvalidNetworkHandle)
+    return;
 
-void QuicChromiumClientSession::OnProbeNetworkSucceeded(
-    NetworkChangeNotifier::NetworkHandle network,
-    const quic::QuicSocketAddress& peer_address,
-    const quic::QuicSocketAddress& self_address,
-    std::unique_ptr<DatagramClientSocket> socket,
-    std::unique_ptr<QuicChromiumPacketWriter> writer,
-    std::unique_ptr<QuicChromiumPacketReader> reader) {
   LogProbeResultToHistogram(current_connection_migration_cause_, true);
 
   // Remove |this| as the old packet writer's delegate. Write error on old
@@ -2008,7 +2001,8 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_SUCCESS_AFTER_PROBING,
       "migrate_to_network", network);
   if (network == default_network_) {
-    DVLOG(1) << "Client successfully migrated to default network.";
+    DVLOG(1) << "Client successfully migrated to default network: "
+             << default_network_;
     CancelMigrateBackToDefaultNetworkTimer();
     return;
   }
@@ -2034,21 +2028,17 @@ void QuicChromiumClientSession::OnProbeFailed(
                                                        /*is_success=*/false);
                     });
 
-  if (network != NetworkChangeNotifier::kInvalidNetworkHandle)
-    OnProbeNetworkFailed(network, peer_address);
-}
-
-void QuicChromiumClientSession::OnProbeNetworkFailed(
-    NetworkChangeNotifier::NetworkHandle network,
-    const quic::QuicSocketAddress& peer_address) {
   LogProbeResultToHistogram(current_connection_migration_cause_, false);
-  // Probing failure can be ignored.
-  DVLOG(1) << "Connectivity probing failed on <network: " << network
-           << ", peer_address: " << peer_address.ToString() << ">.";
-  DVLOG_IF(1, network == default_network_ &&
-                  GetDefaultSocket()->GetBoundNetwork() != default_network_)
-      << "Client probing failed on the default network, still using "
-         "non-default network.";
+
+  if (network != NetworkChangeNotifier::kInvalidNetworkHandle) {
+    // Probing failure can be ignored.
+    DVLOG(1) << "Connectivity probing failed on <network: " << network
+             << ", peer_address: " << peer_address.ToString() << ">.";
+    DVLOG_IF(1, network == default_network_ &&
+                    GetDefaultSocket()->GetBoundNetwork() != default_network_)
+        << "Client probing failed on the default network, still using "
+           "non-default network.";
+  }
 }
 
 bool QuicChromiumClientSession::OnSendConnectivityProbingPacket(
@@ -2290,52 +2280,17 @@ void QuicChromiumClientSession::OnPathDegrading() {
 
   current_connection_migration_cause_ = ON_PATH_DEGRADING;
 
-  if (!migrate_session_early_v2_) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED, connection_id(),
-        "Migration on path degrading not enabled");
+  if (migrate_session_early_v2_) {
+    MaybeMigrateToAlternateNetworkOnPathDegrading();
     return;
   }
 
-  if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
-      current_migrations_to_non_default_network_on_path_degrading_ >=
-          max_migrations_to_non_default_network_on_path_degrading_) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED, connection_id(),
-        "Exceeds maximum number of migrations on path degrading");
-    return;
-  }
+  HistogramAndLogMigrationFailure(
+      net_log_, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED, connection_id(),
+      "Migration on path degrading not enabled");
 
-  NetworkChangeNotifier::NetworkHandle alternate_network =
-      stream_factory_->FindAlternateNetwork(
-          GetDefaultSocket()->GetBoundNetwork());
-  if (alternate_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_NO_ALTERNATE_NETWORK, connection_id(),
-        "No alternative network on path degrading");
-    return;
-  }
-
-  LogHandshakeStatusOnConnectionMigrationSignal();
-
-  if (!IsCryptoHandshakeConfirmed()) {
-    HistogramAndLogMigrationFailure(
-        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
-        connection_id(), "Path degrading before handshake confirmed");
-    return;
-  }
-
-  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-  migration_net_log.BeginEventWithStringParams(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
-      "PathDegrading");
-  // Probe the alternative network, session will migrate to the probed
-  // network and decide whether it wants to migrate back to the default
-  // network on success.
-  StartProbeNetwork(alternate_network, peer_address(), migration_net_log);
-  migration_net_log.EndEvent(
-      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  if (allow_port_migration_)
+    MaybeMigrateToDifferentPortOnPathDegrading();
 }
 
 bool QuicChromiumClientSession::ShouldKeepConnectionAlive() const {
@@ -2473,7 +2428,78 @@ void QuicChromiumClientSession::NotifyRequestsOfConfirmation(int net_error) {
   waiting_for_confirmation_callbacks_.clear();
 }
 
-ProbingResult QuicChromiumClientSession::StartProbeNetwork(
+void QuicChromiumClientSession::MaybeMigrateToDifferentPortOnPathDegrading() {
+  DCHECK(allow_port_migration_ && !migrate_session_early_v2_);
+
+  // Migration before handshake is not allowed.
+  if (!IsCryptoHandshakeConfirmed()) {
+    // TODO(zhongyi): add histogram and net log entries.
+    return;
+  }
+
+  // TODO(zhongyi): replace with port migration net log.
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEventWithStringParams(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
+      "port migration on PathDegrading");
+
+  if (!stream_factory_)
+    return;
+
+  // Probe a different port, session will migrate to the probed port on success.
+  // TODO(zhongyi): maybe pass in the network handle current socket is on?
+  StartProbing(default_network_, peer_address(), migration_net_log);
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+}
+
+void QuicChromiumClientSession::
+    MaybeMigrateToAlternateNetworkOnPathDegrading() {
+  DCHECK(migrate_session_early_v2_);
+
+  if (GetDefaultSocket()->GetBoundNetwork() == default_network_ &&
+      current_migrations_to_non_default_network_on_path_degrading_ >=
+          max_migrations_to_non_default_network_on_path_degrading_) {
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_ON_PATH_DEGRADING_DISABLED, connection_id(),
+        "Exceeds maximum number of migrations on path degrading");
+    return;
+  }
+
+  NetworkChangeNotifier::NetworkHandle alternate_network =
+      stream_factory_->FindAlternateNetwork(
+          GetDefaultSocket()->GetBoundNetwork());
+  if (alternate_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_NO_ALTERNATE_NETWORK, connection_id(),
+        "No alternative network on path degrading");
+    return;
+  }
+
+  LogHandshakeStatusOnConnectionMigrationSignal();
+
+  if (!IsCryptoHandshakeConfirmed()) {
+    HistogramAndLogMigrationFailure(
+        net_log_, MIGRATION_STATUS_PATH_DEGRADING_BEFORE_HANDSHAKE_CONFIRMED,
+        connection_id(), "Path degrading before handshake confirmed");
+    return;
+  }
+
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEventWithStringParams(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED, "trigger",
+      "PathDegrading");
+  // Probe the alternative network, session will migrate to the probed
+  // network and decide whether it wants to migrate back to the default
+  // network on success.
+  MaybeStartProbing(alternate_network, peer_address(), migration_net_log);
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+}
+
+ProbingResult QuicChromiumClientSession::MaybeStartProbing(
     NetworkChangeNotifier::NetworkHandle network,
     const quic::QuicSocketAddress& peer_address,
     const NetLogWithSource& migration_net_log) {
@@ -2507,6 +2533,13 @@ ProbingResult QuicChromiumClientSession::StartProbeNetwork(
     return ProbingResult::DISABLED_BY_CONFIG;
   }
 
+  return StartProbing(network, peer_address, migration_net_log);
+}
+
+ProbingResult QuicChromiumClientSession::StartProbing(
+    NetworkChangeNotifier::NetworkHandle network,
+    const quic::QuicSocketAddress& peer_address,
+    const NetLogWithSource& migration_net_log) {
   // Check if probing manager is probing the same path.
   if (probing_manager_.IsUnderProbing(network, peer_address))
     return ProbingResult::PENDING;
@@ -2556,7 +2589,7 @@ void QuicChromiumClientSession::StartMigrateBackToDefaultNetworkTimer(
   // Post a task to try migrate back to default network after |delay|.
   migrate_back_to_default_timer_.Start(
       FROM_HERE, delay,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork,
           weak_factory_.GetWeakPtr()));
 }
@@ -2581,7 +2614,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
   // will be cancelled and manager starts to probe |default_network_|
   // immediately.
   ProbingResult result =
-      StartProbeNetwork(default_network_, peer_address(), net_log_);
+      MaybeStartProbing(default_network_, peer_address(), net_log_);
 
   if (result == ProbingResult::DISABLED_WITH_IDLE_SESSION)
     return;
@@ -2597,7 +2630,7 @@ void QuicChromiumClientSession::TryMigrateBackToDefaultNetwork(
   retry_migrate_back_count_++;
   migrate_back_to_default_timer_.Start(
       FROM_HERE, timeout,
-      base::Bind(
+      base::BindOnce(
           &QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork,
           weak_factory_.GetWeakPtr()));
 }

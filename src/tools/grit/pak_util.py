@@ -16,6 +16,11 @@ import hashlib
 import os
 import sys
 
+# Import grit first to get local third_party modules.
+import grit  # pylint: disable=ungrouped-imports,unused-import
+
+import six
+
 from grit.format import data_pack
 
 
@@ -74,7 +79,7 @@ def _PrintMain(args):
     desc = '<data>'
     if try_decode:
       try:
-        desc = unicode(data, encoding)
+        desc = six.text_type(data, encoding)
         if len(desc) > 60:
           desc = desc[:60] + u'...'
         desc = desc.replace('\n', '\\n')
@@ -95,7 +100,11 @@ def _ListMain(args):
 def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawTextHelpFormatter)
-  sub_parsers = parser.add_subparsers()
+  # Subparsers are required by default under Python 2.  Python 3 changed to
+  # not required, but didn't include a required option until 3.7.  Setting
+  # the required member works in all versions (and setting dest name).
+  sub_parsers = parser.add_subparsers(dest='action')
+  sub_parsers.required = True
 
   sub_parser = sub_parsers.add_parser('repack',
       help='Combines several .pak files into one.')

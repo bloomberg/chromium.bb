@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2014 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -30,8 +30,7 @@ ShShaderSpec SelectShaderSpec(GLint majorVersion,
     // For Desktop GL
     if (clientType == EGL_OPENGL_API)
     {
-        ASSERT(majorVersion == 3 && minorVersion == 3);
-        return SH_GL3_3_SPEC;
+        return SH_GL_COMPATIBILITY_SPEC;
     }
 
     if (majorVersion >= 3)
@@ -66,8 +65,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
       mOutputType(mImplementation->getTranslatorOutputType()),
       mResources()
 {
+    // TODO(http://anglebug.com/3819): Update for GL version specific validation
     ASSERT(state.getClientMajorVersion() == 1 || state.getClientMajorVersion() == 2 ||
-           state.getClientMajorVersion() == 3);
+           state.getClientMajorVersion() == 3 || state.getClientMajorVersion() == 4);
 
     const gl::Caps &caps             = state.getCaps();
     const gl::Extensions &extensions = state.getExtensions();
@@ -111,6 +111,9 @@ Compiler::Compiler(rx::GLImplFactory *implFactory, const State &state)
     // OVR_multiview2 state
     mResources.OVR_multiview2 = extensions.multiview2;
     mResources.MaxViewsOVR    = extensions.maxViews;
+
+    // EXT_multisampled_render_to_texture
+    mResources.EXT_multisampled_render_to_texture = extensions.multisampledRenderToTexture;
 
     // GLSL ES 3.0 constants
     mResources.MaxVertexOutputVectors  = caps.maxVertexOutputComponents / 4;

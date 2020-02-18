@@ -28,28 +28,24 @@ class ComputeSharedMemoryTests : public DawnTest {
 void ComputeSharedMemoryTests::BasicTest(const char* shader) {
     auto bgl = utils::MakeBindGroupLayout(
         device, {
-                    {0, dawn::ShaderStageBit::Compute, dawn::BindingType::StorageBuffer},
+                    {0, dawn::ShaderStage::Compute, dawn::BindingType::StorageBuffer},
                 });
 
     // Set up shader and pipeline
-    auto module = utils::CreateShaderModule(device, utils::ShaderStage::Compute, shader);
+    auto module = utils::CreateShaderModule(device, utils::SingleShaderStage::Compute, shader);
     auto pl = utils::MakeBasicPipelineLayout(device, &bgl);
 
     dawn::ComputePipelineDescriptor csDesc;
     csDesc.layout = pl;
-
-    dawn::PipelineStageDescriptor computeStage;
-    computeStage.module = module;
-    computeStage.entryPoint = "main";
-    csDesc.computeStage = &computeStage;
-
+    csDesc.computeStage.module = module;
+    csDesc.computeStage.entryPoint = "main";
     dawn::ComputePipeline pipeline = device.CreateComputePipeline(&csDesc);
 
     // Set up dst storage buffer
     dawn::BufferDescriptor dstDesc;
     dstDesc.size = sizeof(uint32_t);
-    dstDesc.usage = dawn::BufferUsageBit::Storage | dawn::BufferUsageBit::CopySrc |
-                    dawn::BufferUsageBit::CopyDst;
+    dstDesc.usage =
+        dawn::BufferUsage::Storage | dawn::BufferUsage::CopySrc | dawn::BufferUsage::CopyDst;
     dawn::Buffer dst = device.CreateBuffer(&dstDesc);
 
     const uint32_t zero = 0;

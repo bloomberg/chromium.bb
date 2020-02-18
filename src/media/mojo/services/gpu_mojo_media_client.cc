@@ -21,7 +21,7 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/gpu/ipc/service/vda_video_decoder.h"
-#include "media/mojo/interfaces/video_decoder.mojom.h"
+#include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
 
 #if defined(OS_ANDROID)
@@ -34,8 +34,8 @@
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/media_codec_video_decoder.h"
 #include "media/gpu/android/video_frame_factory_impl.h"
-#include "media/mojo/interfaces/media_drm_storage.mojom.h"
-#include "media/mojo/interfaces/provision_fetcher.mojom.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
+#include "media/mojo/mojom/provision_fetcher.mojom.h"
 #include "media/mojo/services/mojo_media_drm_storage.h"
 #include "media/mojo/services/mojo_provision_fetcher.h"
 #include "services/service_manager/public/cpp/connect.h"
@@ -221,11 +221,10 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
               MaybeRenderEarlyManager::Create(gpu_task_runner_)));
 
 #elif defined(OS_CHROMEOS)
-      std::unique_ptr<VideoDecoder> cros_video_decoder;
       if (base::FeatureList::IsEnabled(kChromeosVideoDecoder)) {
 #if BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
         auto frame_pool = std::make_unique<PlatformVideoFramePool>();
-        auto frame_converter = std::make_unique<MailboxVideoFrameConverter>(
+        auto frame_converter = MailboxVideoFrameConverter::Create(
             base::BindRepeating(&DmabufVideoFramePool::UnwrapFrame,
                                 base::Unretained(frame_pool.get())),
             gpu_task_runner_,
@@ -233,13 +232,9 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
                            media_gpu_channel_manager_,
                            command_buffer_id->channel_token,
                            command_buffer_id->route_id));
-        cros_video_decoder = ChromeosVideoDecoderFactory::Create(
+        video_decoder = ChromeosVideoDecoderFactory::Create(
             task_runner, std::move(frame_pool), std::move(frame_converter));
 #endif  // BUILDFLAG(USE_V4L2_CODEC) || BUILDFLAG(USE_VAAPI)
-      }
-
-      if (cros_video_decoder) {
-        video_decoder = std::move(cros_video_decoder);
       } else {
         video_decoder = VdaVideoDecoder::Create(
             task_runner, gpu_task_runner_, media_log->Clone(),

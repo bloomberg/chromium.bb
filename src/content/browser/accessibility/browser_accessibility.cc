@@ -20,7 +20,6 @@
 #include "content/public/common/content_client.h"
 #include "ui/accessibility/ax_node_position.h"
 #include "ui/accessibility/ax_role_properties.h"
-#include "ui/accessibility/ax_text_utils.h"
 #include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/rect_conversions.h"
@@ -42,8 +41,37 @@ BrowserAccessibility::~BrowserAccessibility() {}
 
 namespace {
 
+const BrowserAccessibility* GetTextContainerForPlainTextField(
+    const BrowserAccessibility& text_field) {
+  DCHECK(text_field.IsPlainTextField());
+  DCHECK(text_field.InternalChildCount() == 1);
+  // Text fields wrap their static text and inline text boxes in generic
+  // containers, and some, like input type=search, wrap the wrapper as well.
+  // Structure is like this:
+  // Text field
+  // -- Generic container
+  // ---- Generic container  (optional, only occurs in some controls)
+  // ------ Static text   <-- (optional, does not exist if field is empty)
+  // -------- Inline text box children (can be multiple)
+  // This method will return the lowest generic container.
+  const BrowserAccessibility* child = text_field.InternalGetFirstChild();
+  DCHECK_EQ(child->GetRole(), ax::mojom::Role::kGenericContainer);
+  DCHECK(child->InternalChildCount() <= 1);
+  if (child->InternalChildCount() == 1) {
+    const BrowserAccessibility* grand_child = child->InternalGetFirstChild();
+    if (grand_child->GetRole() == ax::mojom::Role::kGenericContainer) {
+      DCHECK_EQ(grand_child->InternalGetFirstChild()->GetRole(),
+                ax::mojom::Role::kStaticText);
+      return grand_child;
+    }
+    DCHECK_EQ(child->InternalGetFirstChild()->GetRole(),
+              ax::mojom::Role::kStaticText);
+  }
+  return child;
+}
+
 int GetBoundaryTextOffsetInsideBaseAnchor(
-    ui::TextBoundaryDirection direction,
+    ui::AXTextBoundaryDirection direction,
     const BrowserAccessibilityPosition::AXPositionInstance& base,
     const BrowserAccessibilityPosition::AXPositionInstance& position) {
   if (base->GetAnchor() == position->GetAnchor())
@@ -52,9 +80,9 @@ int GetBoundaryTextOffsetInsideBaseAnchor(
   // If the position is outside the anchor of the base position, then return
   // the first or last position in the same direction.
   switch (direction) {
-    case ui::BACKWARDS_DIRECTION:
+    case ui::AXTextBoundaryDirection::kBackwards:
       return base->CreatePositionAtStartOfAnchor()->text_offset();
-    case ui::FORWARDS_DIRECTION:
+    case ui::AXTextBoundaryDirection::kForwards:
       return base->CreatePositionAtEndOfAnchor()->text_offset();
   }
 }
@@ -144,26 +172,11 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetLastChild() const {
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetNextSibling() const {
-  BrowserAccessibility* next_sibling = InternalGetNextSibling();
-  if (next_sibling)
-    return next_sibling;
-
-  ui::AXNode* parent = node_->GetUnignoredParent();
-  if (!parent) {
-    BrowserAccessibility* parent_tree_parent =
-        manager_->GetParentNodeFromParentTree();
-    if (parent_tree_parent)
-      return parent_tree_parent->PlatformGetChild(1);
-  }
-  return nullptr;
+  return InternalGetNextSibling();
 }
 
 BrowserAccessibility* BrowserAccessibility::PlatformGetPreviousSibling() const {
-  BrowserAccessibility* previous_sibling = InternalGetPreviousSibling();
-  if (!previous_sibling)
-    previous_sibling = PlatformGetRootOfChildTree();
-
-  return previous_sibling;
+  return InternalGetPreviousSibling();
 }
 
 BrowserAccessibility::PlatformChildIterator
@@ -209,6 +222,10 @@ bool BrowserAccessibility::IsDocument() const {
          GetRole() == ax::mojom::Role::kWebArea;
 }
 
+bool BrowserAccessibility::IsIgnored() const {
+  return node()->IsIgnored();
+}
+
 bool BrowserAccessibility::IsTextOnlyObject() const {
   return node_ && node_->IsText();
 }
@@ -221,9 +238,12 @@ BrowserAccessibility* BrowserAccessibility::PlatformGetChild(
     uint32_t child_index) const {
   BrowserAccessibility* result = nullptr;
 
-  if (child_index == 0 &&
-      HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
-    result = PlatformGetRootOfChildTree();
+  if (HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId)) {
+    // A node should not have both children and a child tree.
+    DCHECK_EQ(node_->children().size(), 0u);
+    // child_trees do not have siblings.
+    if (child_index == 0)
+      result = PlatformGetRootOfChildTree();
   } else {
     result = InternalGetChild(child_index);
   }
@@ -560,8 +580,9 @@ gfx::Rect BrowserAccessibility::GetRootFrameHypertextRangeBoundsRect(
   // holds all the text.
   // TODO(nektar): This is fragile! Replace with code that flattens tree.
   if (IsPlainTextField() && InternalChildCount() == 1) {
-    return InternalGetFirstChild()->GetRootFrameHypertextRangeBoundsRect(
-        start, len, clipping_behavior, offscreen_result);
+    return GetTextContainerForPlainTextField(*this)
+        ->GetRootFrameHypertextRangeBoundsRect(start, len, clipping_behavior,
+                                               offscreen_result);
   }
 
   if (GetRole() != ax::mojom::Role::kStaticText) {
@@ -738,9 +759,8 @@ gfx::Rect BrowserAccessibility::GetInnerTextRangeBoundsRectInSubtree(
         coordinate_system, clipping_behavior, offscreen_result);
   }
 
-  const uint32_t internal_child_count = InternalChildCount();
-  if (IsPlainTextField() && internal_child_count == 1) {
-    return InternalGetFirstChild()->RelativeToAbsoluteBounds(
+  if (IsPlainTextField() && InternalChildCount() == 1) {
+    return GetTextContainerForPlainTextField(*this)->RelativeToAbsoluteBounds(
         GetInlineTextRect(start_offset, end_offset, GetInnerText().length()),
         coordinate_system, clipping_behavior, offscreen_result);
   }
@@ -1120,7 +1140,7 @@ std::string BrowserAccessibility::ComputeAccessibleNameFromDescendants() const {
 }
 
 std::string BrowserAccessibility::GetLiveRegionText() const {
-  if (GetRole() == ax::mojom::Role::kIgnored)
+  if (IsIgnored())
     return "";
 
   std::string text = GetStringAttribute(ax::mojom::StringAttribute::kName);
@@ -1324,70 +1344,35 @@ const ui::AXUniqueId& BrowserAccessibility::GetUniqueId() const {
 base::Optional<int> BrowserAccessibility::FindTextBoundary(
     ui::AXTextBoundary boundary,
     int offset,
-    ui::TextBoundaryDirection direction,
+    ui::AXTextBoundaryDirection direction,
     ax::mojom::TextAffinity affinity) const {
-  switch (boundary) {
-    case ui::AXTextBoundary::kWordStart: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextWordStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
-      }
-    }
-    case ui::AXTextBoundary::kWordStartOrEnd: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousWordStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextWordEndPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-      }
-    }
-    case ui::AXTextBoundary::kLineStart: {
-      BrowserAccessibilityPositionInstance position =
-          CreatePositionAt(static_cast<int>(offset), affinity);
-      switch (direction) {
-        case ui::BACKWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreatePreviousLineStartPosition(
-                  ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary));
-        case ui::FORWARDS_DIRECTION:
-          return GetBoundaryTextOffsetInsideBaseAnchor(
-              direction, position,
-              position->CreateNextLineStartPosition(
-                  ui::AXBoundaryBehavior::StopAtAnchorBoundary));
-      }
-    }
-    default:
-      // TODO(nektar): |AXPosition| can handle other types of boundaries as
-      // well.
-      return ui::FindAccessibleTextBoundary(GetHypertext(),
-                                            GetLineStartOffsets(), boundary,
-                                            offset, direction, affinity);
+  BrowserAccessibilityPositionInstance position =
+      CreatePositionAt(offset, affinity);
+
+  // On Windows and Linux ATK, searching for a text boundary should always stop
+  // at the boundary of the current object.
+  auto boundary_behavior = ui::AXBoundaryBehavior::StopAtAnchorBoundary;
+  // On Windows and Linux ATK, it is standard text navigation behavior to stop
+  // if we are searching in the backwards direction and the current position is
+  // already at the required text boundary.
+  if (direction == ui::AXTextBoundaryDirection::kBackwards) {
+    // AXPosition disallows ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary when
+    // used on character boundaries because it would be non-sensical.
+    if (boundary == ui::AXTextBoundary::kCharacter)
+      return offset;
+    boundary_behavior = ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary;
   }
+
+  return GetBoundaryTextOffsetInsideBaseAnchor(
+      direction, position,
+      position->CreatePositionAtTextBoundary(boundary, direction,
+                                             boundary_behavior));
 }
 
 const std::vector<gfx::NativeViewAccessible>
 BrowserAccessibility::GetDescendants() const {
   std::vector<gfx::NativeViewAccessible> descendants;
-  if (!HasState(ax::mojom::State::kIgnored) && PlatformChildCount() > 0) {
+  if (!IsIgnored() && PlatformChildCount() > 0) {
     BrowserAccessibility* next_sibling_node = PlatformGetNextSibling();
     BrowserAccessibility* next_descendant_node =
         BrowserAccessibilityManager::NextInTreeOrder(this);
@@ -1443,12 +1428,11 @@ const ui::AXTree::Selection BrowserAccessibility::GetUnignoredSelection()
 }
 
 ui::AXNodePosition::AXPositionInstance
-BrowserAccessibility::CreateTextPositionAt(
-    int offset,
-    ax::mojom::TextAffinity affinity) const {
+BrowserAccessibility::CreateTextPositionAt(int offset) const {
   DCHECK(manager_);
-  return ui::AXNodePosition::CreateTextPosition(manager_->ax_tree_id(), GetId(),
-                                                offset, affinity);
+  return ui::AXNodePosition::CreateTextPosition(
+      manager_->ax_tree_id(), GetId(), offset,
+      ax::mojom::TextAffinity::kDownstream);
 }
 
 gfx::NativeViewAccessible BrowserAccessibility::GetNSWindow() {
@@ -1861,6 +1845,79 @@ base::string16 BrowserAccessibility::GetLocalizedStringForLandmarkType() const {
   }
 }
 
+base::string16 BrowserAccessibility::GetLocalizedStringForRoleDescription()
+    const {
+  ContentClient* content_client = content::GetContentClient();
+  const ui::AXNodeData& data = GetData();
+
+  switch (data.role) {
+    case ax::mojom::Role::kArticle:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE);
+
+    case ax::mojom::Role::kAudio:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_AUDIO);
+
+    case ax::mojom::Role::kColorWell:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_COLOR_WELL);
+
+    case ax::mojom::Role::kContentInfo:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_CONTENT_INFO);
+
+    case ax::mojom::Role::kDate:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DATE);
+
+    case ax::mojom::Role::kDateTime: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "datetime-local") {
+          return content_client->GetLocalizedString(
+              IDS_AX_ROLE_DATE_TIME_LOCAL);
+        } else if (input_type == "week") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_WEEK);
+        }
+      }
+      return {};
+    }
+
+    case ax::mojom::Role::kDetails:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_DETAILS);
+
+    case ax::mojom::Role::kFigure:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_FIGURE);
+
+    case ax::mojom::Role::kMeter:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_METER);
+
+    case ax::mojom::Role::kSearchBox:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_SEARCH_BOX);
+
+    case ax::mojom::Role::kStatus:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_OUTPUT);
+
+    case ax::mojom::Role::kTextField: {
+      std::string input_type;
+      if (data.GetStringAttribute(ax::mojom::StringAttribute::kInputType,
+                                  &input_type)) {
+        if (input_type == "email") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_EMAIL);
+        } else if (input_type == "tel") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_TELEPHONE);
+        } else if (input_type == "url") {
+          return content_client->GetLocalizedString(IDS_AX_ROLE_URL);
+        }
+      }
+      return {};
+    }
+
+    case ax::mojom::Role::kTime:
+      return content_client->GetLocalizedString(IDS_AX_ROLE_TIME);
+
+    default:
+      return {};
+  }
+}
+
 base::string16 BrowserAccessibility::GetStyleNameAttributeAsLocalizedString()
     const {
   const BrowserAccessibility* current_node = this;
@@ -1907,7 +1964,6 @@ bool BrowserAccessibility::SetHypertextSelection(int start_offset,
 BrowserAccessibility* BrowserAccessibility::PlatformGetRootOfChildTree() const {
   if (!HasStringAttribute(ax::mojom::StringAttribute::kChildTreeId))
     return nullptr;
-
   AXTreeID child_tree_id = AXTreeID::FromString(
       GetStringAttribute(ax::mojom::StringAttribute::kChildTreeId));
   BrowserAccessibilityManager* child_manager =

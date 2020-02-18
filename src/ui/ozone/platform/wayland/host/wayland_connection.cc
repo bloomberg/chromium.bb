@@ -14,7 +14,6 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -100,92 +99,35 @@ bool WaylandConnection::StartProcessingEvents() {
     return true;
 
   DCHECK(display_);
+
+  MaybePrepareReadQueue();
+
+  // Displatch event from display to server.
   wl_display_flush(display_.get());
 
-  DCHECK(base::MessageLoopCurrentForUI::IsSet());
-  if (!base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
-          wl_display_get_fd(display_.get()), true,
-          base::MessagePumpLibevent::WATCH_READ, &controller_, this))
-    return false;
+  return BeginWatchingFd(base::MessagePumpLibevent::WATCH_READ);
+}
 
-  watching_ = true;
-  return true;
+void WaylandConnection::MaybePrepareReadQueue() {
+  if (prepared_)
+    return;
+
+  if (wl_display_prepare_read(display()) != -1) {
+    prepared_ = true;
+    return;
+  }
+  // Nothing to read, send events to the queue.
+  wl_display_dispatch_pending(display());
 }
 
 void WaylandConnection::ScheduleFlush() {
-  if (scheduled_flush_ || !watching_)
+  if (scheduled_flush_)
     return;
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&WaylandConnection::Flush, base::Unretained(this)));
   scheduled_flush_ = true;
-}
-
-WaylandWindow* WaylandConnection::GetWindow(
-    gfx::AcceleratedWidget widget) const {
-  auto it = window_map_.find(widget);
-  return it == window_map_.end() ? nullptr : it->second;
-}
-
-WaylandWindow* WaylandConnection::GetWindowWithLargestBounds() const {
-  WaylandWindow* window_with_largest_bounds = nullptr;
-  for (auto entry : window_map_) {
-    if (!window_with_largest_bounds) {
-      window_with_largest_bounds = entry.second;
-      continue;
-    }
-    WaylandWindow* window = entry.second;
-    if (window_with_largest_bounds->GetBounds() < window->GetBounds())
-      window_with_largest_bounds = window;
-  }
-  return window_with_largest_bounds;
-}
-
-WaylandWindow* WaylandConnection::GetCurrentFocusedWindow() const {
-  for (auto entry : window_map_) {
-    WaylandWindow* window = entry.second;
-    if (window->has_pointer_focus())
-      return window;
-  }
-  return nullptr;
-}
-
-WaylandWindow* WaylandConnection::GetCurrentKeyboardFocusedWindow() const {
-  for (auto entry : window_map_) {
-    WaylandWindow* window = entry.second;
-    if (window->has_keyboard_focus())
-      return window;
-  }
-  return nullptr;
-}
-
-std::vector<WaylandWindow*> WaylandConnection::GetWindowsOnOutput(
-    uint32_t output_id) {
-  std::vector<WaylandWindow*> result;
-  for (auto entry : window_map_) {
-    if (entry.second->entered_outputs_ids().count(output_id) > 0)
-      result.push_back(entry.second);
-  }
-  return result;
-}
-
-void WaylandConnection::AddWindow(gfx::AcceleratedWidget widget,
-                                  WaylandWindow* window) {
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowAdded(window);
-
-  window_map_[widget] = window;
-}
-
-void WaylandConnection::RemoveWindow(gfx::AcceleratedWidget widget) {
-  if (touch_)
-    touch_->RemoveTouchPoints(window_map_[widget]);
-
-  DCHECK(buffer_manager_host_);
-  buffer_manager_host_->OnWindowRemoved(window_map_[widget]);
-
-  window_map_.erase(widget);
 }
 
 void WaylandConnection::SetCursorBitmap(const std::vector<SkBitmap>& bitmaps,
@@ -259,12 +201,38 @@ void WaylandConnection::DispatchUiEvent(Event* event) {
 }
 
 void WaylandConnection::OnFileCanReadWithoutBlocking(int fd) {
-  wl_display_dispatch(display_.get());
-  for (const auto& window : window_map_)
-    window.second->ApplyPendingBounds();
+  if (prepared_) {
+    prepared_ = false;
+    if (wl_display_read_events(display()) == -1)
+      return;
+    wl_display_dispatch_pending(display());
+  }
+
+  MaybePrepareReadQueue();
+
+  if (!prepared_)
+    return;
+
+  // Automatic Flush.
+  int ret = wl_display_flush(display_.get());
+  if (ret != -1 || errno != EAGAIN)
+    return;
+
+  // if all data could not be written, errno will be set to EAGAIN and -1
+  // returned. In that case, use poll on the display file descriptor to wait for
+  // it to become writable again.
+  BeginWatchingFd(base::MessagePumpLibevent::WATCH_WRITE);
 }
 
-void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {}
+void WaylandConnection::OnFileCanWriteWithoutBlocking(int fd) {
+  int ret = wl_display_flush(display_.get());
+  if (ret != -1 || errno != EAGAIN)
+    BeginWatchingFd(base::MessagePumpLibevent::WATCH_READ);
+  else if (ret < 0 && errno != EPIPE && prepared_)
+    wl_display_cancel_read(display());
+
+  // Otherwise just continue watching in the same mode.
+}
 
 void WaylandConnection::EnsureDataDevice() {
   if (!data_device_manager_ || !seat_)
@@ -274,6 +242,20 @@ void WaylandConnection::EnsureDataDevice() {
   data_device_ = std::make_unique<WaylandDataDevice>(this, data_device);
   clipboard_ = std::make_unique<WaylandClipboard>(data_device_manager_.get(),
                                                   data_device_.get());
+}
+
+bool WaylandConnection::BeginWatchingFd(
+    base::WatchableIOMessagePumpPosix::Mode mode) {
+  if (watching_) {
+    // Stop watching first.
+    watching_ = !controller_.StopWatchingFileDescriptor();
+    DCHECK(!watching_);
+  }
+
+  DCHECK(base::MessageLoopCurrentForUI::IsSet());
+  watching_ = base::MessageLoopCurrentForUI::Get()->WatchFileDescriptor(
+      wl_display_get_fd(display_.get()), true, mode, &controller_, this);
+  return watching_;
 }
 
 // static
@@ -372,8 +354,9 @@ void WaylandConnection::Global(void* data,
       LOG(ERROR) << "Failed to bind to wl_data_device_manager global";
       return;
     }
-    connection->data_device_manager_.reset(new WaylandDataDeviceManager(
-        data_device_manager.release(), connection));
+    connection->data_device_manager_ =
+        std::make_unique<WaylandDataDeviceManager>(
+            data_device_manager.release(), connection);
     connection->EnsureDataDevice();
   } else if (!connection->zwp_dmabuf_ &&
              (strcmp(interface, "zwp_linux_dmabuf_v1") == 0)) {
@@ -464,7 +447,7 @@ void WaylandConnection::Capabilities(void* data,
       connection->touch_ = std::make_unique<WaylandTouch>(
           touch, base::BindRepeating(&WaylandConnection::DispatchUiEvent,
                                      base::Unretained(connection)));
-      connection->touch_->set_connection(connection);
+      connection->touch_->SetConnection(connection);
     }
   } else if (connection->touch_) {
     connection->touch_.reset();

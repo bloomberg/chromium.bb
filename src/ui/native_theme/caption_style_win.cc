@@ -29,6 +29,14 @@ void LogCapStyleWinError(int line, HRESULT hr) {
   TRACE_EVENT2("ui", "LogWindowsCaptionStyleError", "line", line, "hr", hr);
 }
 
+// Adds !important to all captions styles. They should always override any
+// styles added by the video author or by a user stylesheet. This is because on
+// Windows, there is an option to turn off captions styles, so any time the
+// captions are on, the styles should take priority.
+std::string AddCSSImportant(std::string css_string) {
+  return css_string + " !important";
+}
+
 // Translates a Windows::Media::ClosedCaptioning::ClosedCaptionStyle to a
 // CSS FontFamily value.
 // These fonts were chosen to satisfy the characteristics represented by values
@@ -61,7 +69,7 @@ void GetFontFamilyString(ClosedCaptionStyle closed_caption_style,
       *css_font_variant = "small-caps";
       break;
     case ClosedCaptionStyle_Default:
-      *css_font_family = std::string();
+      *css_font_family = "";
       break;
   }
 }
@@ -85,7 +93,7 @@ std::string GetEdgeEffectString(ClosedCaptionEdgeEffect edge_effect) {
     case ClosedCaptionEdgeEffect_DropShadow:
       return "3px 3px 3px 2px black";
     case ClosedCaptionEdgeEffect_Default:
-      return std::string();
+      return "";
   }
 }
 
@@ -102,7 +110,7 @@ std::string GetCaptionSizeString(ClosedCaptionSize caption_size) {
     case ClosedCaptionSize_TwoHundredPercent:
       return "200%";
     case ClosedCaptionSize_Default:
-      return std::string();
+      return "";
   }
 }
 
@@ -125,8 +133,9 @@ std::string GetCssColor(ClosedCaptionColor caption_color) {
     case ClosedCaptionColor_Cyan:
       return "cyan";
     case ClosedCaptionColor_White:
-    case ClosedCaptionColor_Default:
       return "white";
+    case ClosedCaptionColor_Default:
+      return "";
   }
 }
 
@@ -209,10 +218,13 @@ base::Optional<CaptionStyle> InitializeFromSystemSettings() {
   CaptionStyle caption_style;
   GetFontFamilyString(font_family, &(caption_style.font_family),
                       &(caption_style.font_variant));
-  caption_style.text_size = GetCaptionSizeString(font_size);
-  caption_style.text_shadow = GetEdgeEffectString(edge_effect);
-  caption_style.text_color = GetCssColor(font_color);
-  caption_style.background_color = GetCssColor(background_color);
+  caption_style.font_family = AddCSSImportant(caption_style.font_family);
+  caption_style.font_variant = AddCSSImportant(caption_style.font_variant);
+  caption_style.text_size = AddCSSImportant(GetCaptionSizeString(font_size));
+  caption_style.text_shadow = AddCSSImportant(GetEdgeEffectString(edge_effect));
+  caption_style.text_color = AddCSSImportant(GetCssColor(font_color));
+  caption_style.background_color =
+      AddCSSImportant(GetCssColor(background_color));
 
   return caption_style;
 }

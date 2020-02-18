@@ -11,6 +11,7 @@
 #include "base/no_destructor.h"
 #include "base/optional.h"
 #include "base/time/default_clock.h"
+#include "base/token.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -32,7 +33,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace chromeos {
 
@@ -219,15 +219,15 @@ DeviceSyncImpl::Factory::~Factory() = default;
 std::unique_ptr<DeviceSyncBase> DeviceSyncImpl::Factory::BuildInstance(
     signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<base::OneShotTimer> timer) {
   return base::WrapUnique(new DeviceSyncImpl(
-      identity_manager, gcm_driver, connector, gcm_device_info_provider,
-      client_app_metadata_provider, std::move(url_loader_factory),
-      base::DefaultClock::GetInstance(),
+      identity_manager, gcm_driver, std::move(pref_store_connector),
+      gcm_device_info_provider, client_app_metadata_provider,
+      std::move(url_loader_factory), base::DefaultClock::GetInstance(),
       std::make_unique<PrefConnectionDelegate>(), std::move(timer)));
 }
 
@@ -239,13 +239,13 @@ DeviceSyncImpl::PrefConnectionDelegate::CreatePrefRegistry() {
 }
 
 void DeviceSyncImpl::PrefConnectionDelegate::ConnectToPrefService(
-    service_manager::Connector* connector,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     scoped_refptr<PrefRegistrySimple> pref_registry,
     prefs::ConnectCallback callback) {
-  prefs::mojom::PrefStoreConnectorPtr pref_store_connector;
-  connector->BindInterface(prefs::mojom::kServiceName, &pref_store_connector);
-  prefs::ConnectToPrefService(std::move(pref_store_connector),
-                              std::move(pref_registry), std::move(callback));
+  prefs::ConnectToPrefService(
+      prefs::mojom::PrefStoreConnectorPtr(std::move(pref_store_connector)),
+      std::move(pref_registry), base::Token::CreateRandom(),
+      std::move(callback));
 }
 
 DeviceSyncImpl::PendingSetSoftwareFeatureRequest::
@@ -302,7 +302,7 @@ void DeviceSyncImpl::PendingSetSoftwareFeatureRequest::InvokeCallback(
 DeviceSyncImpl::DeviceSyncImpl(
     signin::IdentityManager* identity_manager,
     gcm::GCMDriver* gcm_driver,
-    service_manager::Connector* connector,
+    mojo::PendingRemote<prefs::mojom::PrefStoreConnector> pref_store_connector,
     const GcmDeviceInfoProvider* gcm_device_info_provider,
     ClientAppMetadataProvider* client_app_metadata_provider,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -312,15 +312,14 @@ DeviceSyncImpl::DeviceSyncImpl(
     : DeviceSyncBase(),
       identity_manager_(identity_manager),
       gcm_driver_(gcm_driver),
-      connector_(connector),
+      pref_store_connector_(std::move(pref_store_connector)),
       gcm_device_info_provider_(gcm_device_info_provider),
       client_app_metadata_provider_(client_app_metadata_provider),
       url_loader_factory_(std::move(url_loader_factory)),
       clock_(clock),
       pref_connection_delegate_(std::move(pref_connection_delegate)),
       set_software_feature_timer_(std::move(timer)),
-      status_(Status::FETCHING_ACCOUNT_INFO),
-      weak_ptr_factory_(this) {
+      status_(Status::FETCHING_ACCOUNT_INFO) {
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Initializing.";
   ProcessPrimaryAccountInfo(identity_manager_->GetPrimaryAccountInfo());
 }
@@ -515,7 +514,6 @@ void DeviceSyncImpl::Shutdown() {
 
   identity_manager_ = nullptr;
   gcm_driver_ = nullptr;
-  connector_ = nullptr;
   gcm_device_info_provider_ = nullptr;
   client_app_metadata_provider_ = nullptr;
   url_loader_factory_ = nullptr;
@@ -546,7 +544,7 @@ void DeviceSyncImpl::ConnectToPrefStore() {
 
   PA_LOG(VERBOSE) << "DeviceSyncImpl: Connecting to pref service.";
   pref_connection_delegate_->ConnectToPrefService(
-      connector_, std::move(pref_registry),
+      std::move(pref_store_connector_), std::move(pref_registry),
       base::Bind(&DeviceSyncImpl::OnConnectedToPrefService,
                  weak_ptr_factory_.GetWeakPtr()));
 }

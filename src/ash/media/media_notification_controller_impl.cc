@@ -11,9 +11,9 @@
 #include "ash/session/session_observer.h"
 #include "ash/shell.h"
 #include "base/bind.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/media_message_center/media_notification_item.h"
+#include "components/media_message_center/media_notification_util.h"
 #include "services/media_session/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/message_center/message_center.h"
@@ -35,11 +35,6 @@ std::unique_ptr<message_center::MessageView> CreateCustomMediaNotificationView(
     return controller->CreateMediaNotification(notification);
   return nullptr;
 }
-
-// The maximum number of media notifications to count when recording the
-// Media.Notification.Count histogram. 20 was chosen because it would be very
-// unlikely to see a user with 20+ things playing at once.
-const int kMediaNotificationCountHistogramMax = 20;
 
 // MediaNotificationBlocker will block media notifications if the screen is
 // locked.
@@ -101,10 +96,6 @@ class MediaNotificationBlocker : public message_center::NotificationBlocker,
 
 }  // namespace
 
-// static
-const char MediaNotificationControllerImpl::kCountHistogramName[] =
-    "Media.Notification.Count";
-
 MediaNotificationControllerImpl::MediaNotificationControllerImpl(
     service_manager::Connector* connector)
     : blocker_(std::make_unique<MediaNotificationBlocker>(
@@ -121,13 +112,13 @@ MediaNotificationControllerImpl::MediaNotificationControllerImpl(
   if (!connector)
     return;
 
-  media_session::mojom::AudioFocusManagerPtr audio_focus_ptr;
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&audio_focus_ptr));
-  connector->BindInterface(media_session::mojom::kServiceName,
-                           mojo::MakeRequest(&controller_manager_ptr_));
+  mojo::Remote<media_session::mojom::AudioFocusManager> audio_focus_remote;
+  connector->Connect(media_session::mojom::kServiceName,
+                     audio_focus_remote.BindNewPipeAndPassReceiver());
+  connector->Connect(media_session::mojom::kServiceName,
+                     controller_manager_remote.BindNewPipeAndPassReceiver());
 
-  audio_focus_ptr->AddObserver(
+  audio_focus_remote->AddObserver(
       audio_focus_observer_receiver_.BindNewPipeAndPassRemote());
 }
 
@@ -137,28 +128,44 @@ void MediaNotificationControllerImpl::OnFocusGained(
     media_session::mojom::AudioFocusRequestStatePtr session) {
   const std::string id = session->request_id->ToString();
 
-  if (base::Contains(notifications_, id))
+  // If we have an existing unfrozen item then this is a duplicate call and
+  // we should ignore it.
+  auto it = notifications_.find(id);
+  if (it != notifications_.end() && !it->second.frozen())
     return;
 
-  media_session::mojom::MediaControllerPtr controller;
+  mojo::Remote<media_session::mojom::MediaController> controller;
 
-  // |controller_manager_ptr_| may be null in tests where connector is
+  // |controller_manager_remote| may be null in tests where connector is
   // unavailable.
-  if (controller_manager_ptr_) {
-    controller_manager_ptr_->CreateMediaControllerForSession(
-        mojo::MakeRequest(&controller), *session->request_id);
+  if (controller_manager_remote) {
+    controller_manager_remote->CreateMediaControllerForSession(
+        controller.BindNewPipeAndPassReceiver(), *session->request_id);
   }
 
-  notifications_.emplace(
-      std::piecewise_construct, std::forward_as_tuple(id),
-      std::forward_as_tuple(
-          this, id, session->source_name.value_or(std::string()),
-          std::move(controller), std::move(session->session_info)));
+  if (it != notifications_.end()) {
+    // If the notification was previously frozen then we should reset the
+    // controller because the mojo pipe would have been reset.
+    it->second.SetController(std::move(controller),
+                             std::move(session->session_info));
+  } else {
+    notifications_.emplace(
+        std::piecewise_construct, std::forward_as_tuple(id),
+        std::forward_as_tuple(
+            this, id, session->source_name.value_or(std::string()),
+            std::move(controller), std::move(session->session_info)));
+  }
 }
 
 void MediaNotificationControllerImpl::OnFocusLost(
     media_session::mojom::AudioFocusRequestStatePtr session) {
-  notifications_.erase(session->request_id->ToString());
+  auto it = notifications_.find(session->request_id->ToString());
+  if (it == notifications_.end())
+    return;
+
+  // If we lost focus then we should freeze the notification as it may regain
+  // focus after a second or so.
+  it->second.Freeze();
 }
 
 void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
@@ -185,11 +192,23 @@ void MediaNotificationControllerImpl::ShowNotification(const std::string& id) {
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 
-  RecordConcurrentNotificationCount();
+  media_message_center::RecordConcurrentNotificationCount(
+      message_center::MessageCenter::Get()
+          ->FindNotificationsByAppId(kMediaSessionNotifierId)
+          .size());
 }
 
 void MediaNotificationControllerImpl::HideNotification(const std::string& id) {
   message_center::MessageCenter::Get()->RemoveNotification(id, false);
+}
+
+void MediaNotificationControllerImpl::RemoveItem(const std::string& id) {
+  notifications_.erase(id);
+}
+
+scoped_refptr<base::SequencedTaskRunner>
+MediaNotificationControllerImpl::GetTaskRunner() const {
+  return task_runner_for_testing_;
 }
 
 std::unique_ptr<MediaNotificationContainerImpl>
@@ -205,13 +224,9 @@ MediaNotificationControllerImpl::CreateMediaNotification(
                                                           std::move(item));
 }
 
-void MediaNotificationControllerImpl::RecordConcurrentNotificationCount() {
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      kCountHistogramName,
-      message_center::MessageCenter::Get()
-          ->FindNotificationsByAppId(kMediaSessionNotifierId)
-          .size(),
-      kMediaNotificationCountHistogramMax);
+bool MediaNotificationControllerImpl::HasItemForTesting(
+    const std::string& id) const {
+  return base::Contains(notifications_, id);
 }
 
 }  // namespace ash

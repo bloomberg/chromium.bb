@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -16,6 +17,7 @@
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options.h"
 #include "third_party/blink/renderer/modules/native_file_system/choose_file_system_entries_options_accepts.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_directory_handle.h"
+#include "third_party/blink/renderer/modules/native_file_system/native_file_system_error.h"
 #include "third_party/blink/renderer/modules/native_file_system/native_file_system_file_handle.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -96,10 +98,11 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise resolver_result = resolver->Promise();
 
-  // TODO(mek): Cache NativeFileSystemManagerPtr associated with an
-  // ExecutionContext, so we don't have to request a new one for each operation,
-  // and can avoid code duplication between here and other uses.
-  mojom::blink::NativeFileSystemManagerPtr manager;
+  // TODO(mek): Cache mojo::Remote<mojom::blink::NativeFileSystemManager>
+  // associated with an ExecutionContext, so we don't have to request a new one
+  // for each operation, and can avoid code duplication between here and other
+  // uses.
+  mojo::Remote<mojom::blink::NativeFileSystemManager> manager;
   auto* provider = document->GetInterfaceProvider();
   if (!provider) {
     resolver->Reject(file_error::CreateDOMException(
@@ -107,23 +110,24 @@ ScriptPromise WindowNativeFileSystem::chooseFileSystemEntries(
     return resolver_result;
   }
 
-  provider->GetInterface(&manager);
+  provider->GetInterface(manager.BindNewPipeAndPassReceiver());
   auto* raw_manager = manager.get();
   raw_manager->ChooseEntries(
       ConvertChooserType(options->type(), options->multiple()),
       std::move(accepts), !options->excludeAcceptAllOption(),
       WTF::Bind(
           [](ScriptPromiseResolver* resolver,
-             mojom::blink::NativeFileSystemManagerPtr,
+             mojo::Remote<mojom::blink::NativeFileSystemManager>,
              const ChooseFileSystemEntriesOptions* options,
              mojom::blink::NativeFileSystemErrorPtr file_operation_result,
              Vector<mojom::blink::NativeFileSystemEntryPtr> entries) {
             ExecutionContext* context = resolver->GetExecutionContext();
             if (!context)
               return;
-            if (file_operation_result->error_code != base::File::FILE_OK) {
-              resolver->Reject(file_error::CreateDOMException(
-                  file_operation_result->error_code));
+            if (file_operation_result->status !=
+                mojom::blink::NativeFileSystemStatus::kOk) {
+              native_file_system_error::Reject(resolver,
+                                               *file_operation_result);
               return;
             }
             if (options->multiple()) {

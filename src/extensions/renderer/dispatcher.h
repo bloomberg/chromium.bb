@@ -103,11 +103,11 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void DidCreateScriptContext(blink::WebLocalFrame* frame,
                               const v8::Local<v8::Context>& context,
-                              int world_id);
+                              int32_t world_id);
 
   // Runs on a different thread and should only use thread safe member
   // variables.
-  void DidInitializeServiceWorkerContextOnWorkerThread(
+  void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
@@ -116,7 +116,7 @@ class Dispatcher : public content::RenderThreadObserver,
 
   void WillReleaseScriptContext(blink::WebLocalFrame* frame,
                                 const v8::Local<v8::Context>& context,
-                                int world_id);
+                                int32_t world_id);
 
   // Runs on worker thread and should not use any member variables.
   static void DidStartServiceWorkerContextOnWorkerThread(
@@ -248,20 +248,17 @@ class Dispatcher : public content::RenderThreadObserver,
   // Enable custom element whitelist in Apps.
   void EnableCustomElementWhiteList();
 
-  // Adds or removes bindings for every context belonging to |extension_id|, or
-  // or all contexts if |extension_id| is empty.
-  void UpdateBindings(const std::string& extension_id);
+  // Adds or removes bindings for all contexts.
+  void UpdateAllBindings();
 
-  void UpdateBindingsForContext(ScriptContext* context);
+  // Adds or removes bindings for every context belonging to |extension|, due to
+  // permissions change in the extension.
+  void UpdateBindingsForExtension(const Extension& extension);
 
   void RegisterNativeHandlers(ModuleSystem* module_system,
                               ScriptContext* context,
                               NativeExtensionBindingsSystem* bindings_system,
                               V8SchemaRegistry* v8_schema_registry);
-
-  // Updates a web page context with any content capabilities granted by active
-  // extensions.
-  void UpdateContentCapabilities(ScriptContext* context);
 
   // Inserts static source code into |source_map_|.
   void PopulateSourceMap();

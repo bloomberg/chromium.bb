@@ -252,7 +252,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
     if current_branch != self.branch:
       raise BranchNotFoundException(
-          "Failed to checkout to branch %s." % self.branch)
+          'Failed to checkout to branch %s.' % self.branch)
 
   def _SetupConfigPaths(self):
     """These config files can move based on the branch.
@@ -298,7 +298,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
 
   def _RunUnitTest(self):
     """Run chromeos_config_unittest on top of the changes."""
-    logging.debug("Running chromeos_config_unittest")
+    logging.debug('Running chromeos_config_unittest')
     test_path = path_util.ToChrootPath(
         os.path.join(self.chromite_dir, self.config_dir,
                      'chromeos_config_unittest'))
@@ -340,7 +340,7 @@ class UpdateConfigStage(generic_stages.BuilderStage):
   def _PushCommits(self):
     """Commit and push changes to current branch."""
     git.RunGit(self.chromite_dir, ['add'] + self.config_paths, print_cmd=True)
-    commit_msg = "Update config settings by config-updater."
+    commit_msg = 'Update config settings by config-updater.'
     git.RunGit(self.chromite_dir, ['commit', '-m', commit_msg], print_cmd=True)
 
     git.RunGit(
@@ -390,7 +390,7 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
   def _RunUnitTest(self):
     """Run chromeos_config_unittest to confirm a clean scheduler config."""
-    logging.debug("Running chromeos_config_unittest, to confirm sane state.")
+    logging.debug('Running chromeos_config_unittest, to confirm sane state.')
     test_path = path_util.ToChrootPath(
         os.path.join(constants.CHROMITE_DIR, 'config',
                      'chromeos_config_unittest'))
@@ -429,7 +429,7 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
 
     target_file = os.path.join(self.project_dir, 'luci', 'luci-scheduler.cfg')
 
-    concatenated_content = (osutils.ReadFile(chromite_source_file) + "\n\n"
+    concatenated_content = (osutils.ReadFile(chromite_source_file) + '\n\n'
                             + osutils.ReadFile(generated_source_file))
 
     if concatenated_content == osutils.ReadFile(target_file):
@@ -441,13 +441,13 @@ class DeployLuciSchedulerStage(generic_stages.BuilderStage):
         constants.CHROMITE_DIR,
         ['rev-parse', 'HEAD:config/luci-scheduler.cfg']).output.rstrip()
 
-    message = textwrap.dedent('''\
+    message = textwrap.dedent("""\
       luci-scheduler.cfg: Chromite %s
 
       Auto update to match generated file in chromite and luci config.
-      ''' % chromite_rev)
+      """ % chromite_rev)
 
-    with open(target_file, "w") as f:
+    with open(target_file, 'w') as f:
       f.write(concatenated_content)
 
     git.RunGit(self.project_dir, ['add', '-A'])

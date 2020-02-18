@@ -26,25 +26,34 @@ namespace {
 // Header Acknowledgement decoder stream instruction with stream_id = 1.
 const char* const kHeaderAcknowledgement = "\x81";
 
+const uint64_t kMaximumDynamicTableCapacity = 1024;
+const uint64_t kMaximumBlockedStreams = 1;
+
 class QpackDecoderTest : public QuicTestWithParam<FragmentMode> {
  protected:
   QpackDecoderTest()
-      : qpack_decoder_(&encoder_stream_error_delegate_,
-                       &decoder_stream_sender_delegate_),
+      : qpack_decoder_(kMaximumDynamicTableCapacity,
+                       kMaximumBlockedStreams,
+                       &encoder_stream_error_delegate_),
         fragment_mode_(GetParam()) {
-    qpack_decoder_.SetMaximumDynamicTableCapacity(1024);
+    qpack_decoder_.set_qpack_stream_sender_delegate(
+        &decoder_stream_sender_delegate_);
   }
 
   ~QpackDecoderTest() override = default;
 
   void DecodeEncoderStreamData(QuicStringPiece data) {
-    qpack_decoder_.DecodeEncoderStreamData(data);
+    qpack_decoder_.encoder_stream_receiver()->Decode(data);
+  }
+
+  std::unique_ptr<QpackProgressiveDecoder> CreateProgressiveDecoder(
+      QuicStreamId stream_id) {
+    return qpack_decoder_.CreateProgressiveDecoder(stream_id, &handler_);
   }
 
   // Set up |progressive_decoder_|.
   void StartDecoding() {
-    progressive_decoder_ =
-        qpack_decoder_.CreateProgressiveDecoder(/* stream_id = */ 1, &handler_);
+    progressive_decoder_ = CreateProgressiveDecoder(/* stream_id = */ 1);
   }
 
   // Pass header block data to QpackProgressiveDecoder::Decode()
@@ -98,8 +107,6 @@ TEST_P(QpackDecoderTest, NoPrefix) {
 
 TEST_P(QpackDecoderTest, EmptyHeaderBlock) {
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("0000"));
 }
@@ -107,8 +114,6 @@ TEST_P(QpackDecoderTest, EmptyHeaderBlock) {
 TEST_P(QpackDecoderTest, LiteralEntryEmptyName) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("foo")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00002003666f6f"));
 }
@@ -116,8 +121,6 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyName) {
 TEST_P(QpackDecoderTest, LiteralEntryEmptyValue) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f00"));
 }
@@ -125,8 +128,6 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyValue) {
 TEST_P(QpackDecoderTest, LiteralEntryEmptyNameAndValue) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(""), Eq("")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("00002000"));
 }
@@ -134,8 +135,6 @@ TEST_P(QpackDecoderTest, LiteralEntryEmptyNameAndValue) {
 TEST_P(QpackDecoderTest, SimpleLiteralEntry) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode("000023666f6f03626172"));
 }
@@ -145,8 +144,6 @@ TEST_P(QpackDecoderTest, MultipleLiteralEntries) {
   std::string str(127, 'a');
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foobaar"), QuicStringPiece(str)));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000"                // prefix
@@ -204,8 +201,6 @@ TEST_P(QpackDecoderTest, IncompleteHeaderBlock) {
 TEST_P(QpackDecoderTest, HuffmanSimple) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("custom-key"), Eq("custom-value")));
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(
       QuicTextUtils::HexDecode("00002f0125a849e95ba97d7f8925a849e95bb8e8b4bf"));
@@ -215,8 +210,6 @@ TEST_P(QpackDecoderTest, AlternatingHuffmanNonHuffman) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("custom-key"), Eq("custom-value")))
       .Times(4);
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000"                        // Prefix.
@@ -289,8 +282,6 @@ TEST_P(QpackDecoderTest, StaticTable) {
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("location"), Eq("foo")));
 
   EXPECT_CALL(handler_, OnDecodingCompleted());
-  EXPECT_CALL(decoder_stream_sender_delegate_,
-              WriteStreamData(Eq(kHeaderAcknowledgement)));
 
   DecodeHeaderBlock(QuicTextUtils::HexDecode(
       "0000d1dfccd45f108621e9aec2a11f5c8294e75f000554524143455f1000"));
@@ -310,6 +301,7 @@ TEST_P(QpackDecoderTest, TooHighStaticTableIndex) {
 
 TEST_P(QpackDecoderTest, DynamicTable) {
   DecodeEncoderStreamData(QuicTextUtils::HexDecode(
+      "3fe107"          // Set dynamic table capacity to 1024.
       "6294e703626172"  // Add literal entry with name "foo" and value "bar".
       "80035a5a5a"      // Add entry with name of dynamic table entry index 0
                         // (relative index) and value "ZZZ".
@@ -391,6 +383,8 @@ TEST_P(QpackDecoderTest, DynamicTable) {
 }
 
 TEST_P(QpackDecoderTest, DecreasingDynamicTableCapacityEvictsEntries) {
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
@@ -437,9 +431,10 @@ TEST_P(QpackDecoderTest, EncoderStreamErrorInvalidStaticTableEntry) {
 
 TEST_P(QpackDecoderTest, EncoderStreamErrorInvalidDynamicTableEntry) {
   EXPECT_CALL(encoder_stream_error_delegate_,
-              OnEncoderStreamError(Eq("Dynamic table entry not found.")));
+              OnEncoderStreamError(Eq("Invalid relative index.")));
 
   DecodeEncoderStreamData(QuicTextUtils::HexDecode(
+      "3fe107"          // Set dynamic table capacity to 1024.
       "6294e703626172"  // Add literal entry with name "foo" and value "bar".
       "8100"));  // Address dynamic table entry with relative index 1.  Such
                  // entry does not exist.  The most recently added and only
@@ -448,9 +443,10 @@ TEST_P(QpackDecoderTest, EncoderStreamErrorInvalidDynamicTableEntry) {
 
 TEST_P(QpackDecoderTest, EncoderStreamErrorDuplicateInvalidEntry) {
   EXPECT_CALL(encoder_stream_error_delegate_,
-              OnEncoderStreamError(Eq("Dynamic table entry not found.")));
+              OnEncoderStreamError(Eq("Invalid relative index.")));
 
   DecodeEncoderStreamData(QuicTextUtils::HexDecode(
+      "3fe107"          // Set dynamic table capacity to 1024.
       "6294e703626172"  // Add literal entry with name "foo" and value "bar".
       "01"));  // Duplicate dynamic table entry with relative index 1.  Such
                // entry does not exist.  The most recently added and only
@@ -467,6 +463,8 @@ TEST_P(QpackDecoderTest, EncoderStreamErrorTooLargeInteger) {
 TEST_P(QpackDecoderTest, InvalidDynamicEntryWhenBaseIsZero) {
   EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq("Invalid relative index.")));
 
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
@@ -486,6 +484,8 @@ TEST_P(QpackDecoderTest, InvalidNegativeBase) {
 }
 
 TEST_P(QpackDecoderTest, InvalidDynamicEntryByRelativeIndex) {
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
@@ -566,7 +566,7 @@ TEST_P(QpackDecoderTest, TableCapacityMustNotExceedMaximum) {
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe10f"));
 }
 
-TEST_P(QpackDecoderTest, SetMaximumDynamicTableCapacity) {
+TEST_P(QpackDecoderTest, SetDynamicTableCapacity) {
   // Update dynamic table capacity to 128, which does not exceed the maximum.
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("3f61"));
 }
@@ -594,6 +594,8 @@ TEST_P(QpackDecoderTest, WrappedRequiredInsertCount) {
   // Maximum dynamic table capacity is 1024.
   // MaxEntries is 1024 / 32 = 32.
 
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and a 600 byte long value.  This will fit
   // in the dynamic table once but not twice.
   DecodeEncoderStreamData(
@@ -620,6 +622,8 @@ TEST_P(QpackDecoderTest, WrappedRequiredInsertCount) {
 }
 
 TEST_P(QpackDecoderTest, NonZeroRequiredInsertCountButNoDynamicEntries) {
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
@@ -633,6 +637,8 @@ TEST_P(QpackDecoderTest, NonZeroRequiredInsertCountButNoDynamicEntries) {
 }
 
 TEST_P(QpackDecoderTest, AddressEntryNotAllowedByRequiredInsertCount) {
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 
@@ -689,6 +695,8 @@ TEST_P(QpackDecoderTest, AddressEntryNotAllowedByRequiredInsertCount) {
 }
 
 TEST_P(QpackDecoderTest, PromisedRequiredInsertCountLargerThanActual) {
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
   // Duplicate entry twice so that decoding of header blocks with Required
@@ -757,6 +765,8 @@ TEST_P(QpackDecoderTest, BlockedDecoding) {
   EXPECT_CALL(decoder_stream_sender_delegate_,
               WriteStreamData(Eq(kHeaderAcknowledgement)));
 
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
   // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
 }
@@ -776,6 +786,10 @@ TEST_P(QpackDecoderTest, BlockedDecodingUnblockedBeforeEndOfHeaderBlock) {
   // the already consumed part of the header block.
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq("foo"), Eq("bar")));
   EXPECT_CALL(handler_, OnHeaderDecoded(Eq(":method"), Eq("GET")));
+
+  // Set dynamic table capacity to 1024.
+  DecodeEncoderStreamData(QuicTextUtils::HexDecode("3fe107"));
+  // Add literal entry with name "foo" and value "bar".
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e703626172"));
   Mock::VerifyAndClearExpectations(&handler_);
 
@@ -823,6 +837,21 @@ TEST_P(QpackDecoderTest, BlockedDecodingAndEvictedEntries) {
   // Add literal entry with name "foo" and value "bar".
   // Insert Count is now 6, reaching Required Insert Count of the header block.
   DecodeEncoderStreamData(QuicTextUtils::HexDecode("6294e70362617a"));
+}
+
+TEST_P(QpackDecoderTest, TooManyBlockedStreams) {
+  // Required Insert Count 1 and Delta Base 0.
+  // Without any dynamic table entries received, decoding is blocked.
+  std::string data = QuicTextUtils::HexDecode("0200");
+
+  auto progressive_decoder1 = CreateProgressiveDecoder(/* stream_id = */ 1);
+  progressive_decoder1->Decode(data);
+
+  EXPECT_CALL(handler_, OnDecodingErrorDetected(Eq(
+                            "Limit on number of blocked streams exceeded.")));
+
+  auto progressive_decoder2 = CreateProgressiveDecoder(/* stream_id = */ 2);
+  progressive_decoder2->Decode(data);
 }
 
 }  // namespace

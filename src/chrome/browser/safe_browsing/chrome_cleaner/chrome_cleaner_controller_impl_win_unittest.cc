@@ -32,7 +32,7 @@
 #include "components/chrome_cleaner/public/constants/constants.h"
 #include "components/chrome_cleaner/test/test_name_helper.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -174,7 +174,7 @@ class ChromeCleanerControllerSimpleTest
   // We need this because we need UI and IO threads during tests. The thread
   // bundle should be the first member of the class so that it will be destroyed
   // last.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   bool metrics_enabled_;
   base::CommandLine command_line_;
@@ -787,7 +787,7 @@ class ChromeCleanerControllerReporterInteractionTest
   // We need this because we need UI and IO threads during tests. The thread
   // bundle should be the first member of the class so that it will be destroyed
   // last.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   ChromeCleanerController::State initial_state_;
 

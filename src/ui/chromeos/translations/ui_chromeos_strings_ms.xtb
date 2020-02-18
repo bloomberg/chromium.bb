@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Peleraian imej</translation>
 <translation id="1943097386230153518">Pasang perkhidmatan baharu</translation>
 <translation id="1947424002851288782">Papan kekunci Jerman</translation>
+<translation id="1972984168337863910">Kembangkan panel maklum balas fail</translation>
 <translation id="197560921582345123">Boleh edit</translation>
 <translation id="1984603991036629094">Papan kekunci Fonetik bahasa Armenia</translation>
 <translation id="2001796770603320721">Urus dalam Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Anda mesti berada dalam talian untuk mengakses fail ini.</translation>
 <translation id="4212740939091998969">Fail bernama "<ph name="FOLDER_NAME" />" sudah wujud. Sila pilih nama lain.</translation>
 <translation id="4215448920900139318">Menyandarkan <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">Buka tetapan</translation>
 <translation id="426015154560005552">Papan kekunci bahasa Arab</translation>
 <translation id="4261901459838235729">Persembahan Google</translation>
 <translation id="4290535918735525311">1 folder dikongsi dengan Linux</translation>
-<translation id="42981349822642051">Kembangkan</translation>
 <translation id="4298972503445160211">Papan kekunci Denmark</translation>
 <translation id="4299729908419173967">Bahasa Brazil</translation>
 <translation id="4309915981827077375">Maklumat umum</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Autobaiki</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4886021172213954916">Papan kekunci bahasa Tamil (Mesin Taip)</translation>
-<translation id="4892969127351273348">Tidak dapat membuka fail menggunakan <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">Sedia untuk menyandarkan <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">Dibetulkan</translation>
 <translation id="4935975195727477204">Bunga Gazania</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Bahasa Perancis Switzerland</translation>
 <translation id="5234764350956374838">Singkirkan</translation>
 <translation id="5241298539944515331">Papan kekunci bahasa Vietnam (VIQR)</translation>
-<translation id="52446585071384036">Untuk membuka fail dengan <ph name="APP_NAME" />, salin ke folder fail Linux dahulu.</translation>
 <translation id="5253070652067921974">Dibuat oleh</translation>
 <translation id="5257456363153333584">Pepatung</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Akses fail dari mana-mana sahaja, walaupun di luar talian.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Bahasa Korea</translation>
 <translation id="5819442873484330149">Hangul 3 Set (Akhir)</translation>
 <translation id="5833610766403489739">Fail ini ada di tempat lain. Sila semak tetapan lokasi muat turun anda, kemudian cuba lagi.</translation>
-<translation id="5838051104334203064">Aplikasi Gedung Play tidak boleh mengakses peranti ini</translation>
 <translation id="5838451609423551646">Semua masukan dialih keluar daripada pilihan.</translation>
 <translation id="5838825566232597749">US Workman international</translation>
 <translation id="5850516540536751549">Jenis fail ini tidak disokong. Sila lawati<ph name="BEGIN_LINK" />Gedung Web Chrome<ph name="END_LINK" /> untuk mendapatkan apl yang boleh membuka jenis fail ini.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Bagi menyimpan fail-fail ini untuk kegunaan diluar talian, sila kembali ke dalam talian, klik kanan fail dan pilih pilihan <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Henti paksa</translation>
 <translation id="8261506727792406068">Padam</translation>
+<translation id="8269755669432358899">Runtuhkan panel maklum balas fail</translation>
 <translation id="8279388322240498158">Papan kekunci berdasarkan bahasa Inggeris Kurdish Sorani</translation>
 <translation id="8280151743281770066">Fonetik bahasa Armenia</translation>
 <translation id="8294431847097064396">Sumber</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Pilih fail untuk dibuka</translation>
 <translation id="8579285237314169903">Menyegerakkan <ph name="NUMBER_OF_FILES" /> item...</translation>
 <translation id="8600173386174225982">Senarai fail telah berubah kepada paparan lakaran kecil.</translation>
+<translation id="8601932370724196034">Fail imej Crostini</translation>
 <translation id="8669949407341943408">Bergerak...</translation>
 <translation id="8671210955687109937">Boleh ulas</translation>
 <translation id="8686213429977032554">Fail Drive ini belum dikongsi lagi</translation>

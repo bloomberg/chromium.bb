@@ -14,12 +14,22 @@
 
 import("../../gn/perfetto.gni")
 
+# This target is supported only in in-tree builds of Android. It contains
+# code that is not NDK-clean and references other repos in the Android tree.
+shared_library("libperfetto_android_internal") {
+  deps = [
+    ":android_internal",
+    "../../gn:default_deps",
+  ]
+}
+
 source_set("headers") {
   deps = [
     "../../gn:default_deps",
   ]
   sources = [
     "atrace_hal.h",
+    "dropbox_service.h",
     "health_hal.h",
     "incident_service.h",
     "power_stats_hal.h",
@@ -44,7 +54,7 @@ source_set("lazy_library_loader") {
 # This target proxies calls to Android internal libraries that are not part of
 # the NDK. See README.md.
 source_set("android_internal") {
-  visibility = [ "//:libperfetto_android_internal" ]
+  visibility = [ ":libperfetto_android_internal" ]
   deps = [
     ":headers",
     "../../gn:default_deps",
@@ -52,6 +62,7 @@ source_set("android_internal") {
   if (perfetto_build_with_android) {
     sources = [
       "atrace_hal.cc",
+      "dropbox_service.cc",
       "health_hal.cc",
       "incident_service.cc",
       "power_stats_hal.cc",
@@ -65,6 +76,7 @@ source_set("android_internal") {
       "log",
       "hidlbase",
       "incident",
+      "services",
       "utils",
     ]
   }

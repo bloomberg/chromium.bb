@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2002-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2002 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -490,6 +490,14 @@ class ProgramState final : angle::NonCopyable
     // GL_ANGLE_multi_draw
     int mDrawIDLocation;
 
+    // GL_ANGLE_base_vertex_base_instance
+    int mBaseVertexLocation;
+    int mBaseInstanceLocation;
+    // Cached value of base vertex and base instance
+    // need to reset them to zero if using non base vertex or base instance draw calls.
+    GLint mCachedBaseVertex;
+    GLuint mCachedBaseInstance;
+
     // The size of the data written to each transform feedback buffer per vertex.
     std::vector<GLsizei> mTransformFeedbackStrides;
 
@@ -544,10 +552,10 @@ using ProgramMergedVaryings = std::map<std::string, ProgramVaryingRef>;
 class Program final : angle::NonCopyable, public LabeledObject
 {
   public:
-    Program(rx::GLImplFactory *factory, ShaderProgramManager *manager, GLuint handle);
+    Program(rx::GLImplFactory *factory, ShaderProgramManager *manager, ShaderProgramID handle);
     void onDestroy(const Context *context);
 
-    GLuint id() const;
+    ShaderProgramID id() const;
 
     void setLabel(const Context *context, const std::string &label) override;
     const std::string &getLabel() const override;
@@ -615,7 +623,7 @@ class Program final : angle::NonCopyable, public LabeledObject
 
     int getInfoLogLength() const;
     void getInfoLog(GLsizei bufSize, GLsizei *length, char *infoLog) const;
-    void getAttachedShaders(GLsizei maxCount, GLsizei *count, GLuint *shaders) const;
+    void getAttachedShaders(GLsizei maxCount, GLsizei *count, ShaderProgramID *shaders) const;
 
     GLuint getAttributeLocation(const std::string &name) const;
     bool isAttribLocationActive(size_t attribLocation) const;
@@ -788,6 +796,11 @@ class Program final : angle::NonCopyable, public LabeledObject
 
     bool hasDrawIDUniform() const;
     void setDrawIDUniform(GLint drawid);
+
+    bool hasBaseVertexUniform() const;
+    void setBaseVertexUniform(GLint baseVertex);
+    bool hasBaseInstanceUniform() const;
+    void setBaseInstanceUniform(GLuint baseInstance);
 
     ANGLE_INLINE void addRef()
     {
@@ -1022,6 +1035,7 @@ class Program final : angle::NonCopyable, public LabeledObject
     GLint getActiveInterfaceBlockMaxNameLength(const std::vector<T> &resources) const;
 
     GLuint getSamplerUniformBinding(const VariableLocation &uniformLocation) const;
+    GLuint getImageUniformBinding(const VariableLocation &uniformLocation) const;
 
     bool validateSamplersImpl(InfoLog *infoLog, const Caps &caps);
 
@@ -1056,7 +1070,7 @@ class Program final : angle::NonCopyable, public LabeledObject
     unsigned int mRefCount;
 
     ShaderProgramManager *mResourceManager;
-    const GLuint mHandle;
+    const ShaderProgramID mHandle;
 
     InfoLog mInfoLog;
 

@@ -17,7 +17,7 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace printing {
@@ -39,7 +39,7 @@ class TestQuery : public PrinterQuery {
                      content::ChildProcessHost::kInvalidUniqueID) {}
 
   void GetSettingsDone(base::OnceClosure callback,
-                       const PrintSettings& new_settings,
+                       std::unique_ptr<PrintSettings> new_settings,
                        PrintingContext::Result result) override {
     FAIL();
   }
@@ -57,16 +57,12 @@ class TestQuery : public PrinterQuery {
     auto worker = std::make_unique<TestPrintJobWorker>();
     EXPECT_TRUE(worker->Start());
     worker->printing_context()->UseDefaultSettings();
-    settings_ = worker->printing_context()->settings();
+    SetSettingsForTest(worker->printing_context()->TakeAndResetSettings());
 
     return std::move(worker);
   }
 
-  const PrintSettings& settings() const override { return settings_; }
-
  private:
-  PrintSettings settings_;
-
   DISALLOW_COPY_AND_ASSIGN(TestQuery);
 };
 
@@ -95,7 +91,7 @@ TEST(PrintJobTest, SimplePrint) {
   // Test the multi-threaded nature of PrintJob to make sure we can use it with
   // known lifetime.
 
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   content::NotificationRegistrar registrar;
   TestPrintNotificationObserver observer;
   registrar.Add(&observer, content::NOTIFICATION_ALL,
@@ -103,6 +99,9 @@ TEST(PrintJobTest, SimplePrint) {
   volatile bool check = false;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   job->Initialize(std::make_unique<TestQuery>(), base::string16(), 1);
+#if defined(OS_CHROMEOS)
+  job->SetSource(PrintJob::Source::PRINT_PREVIEW, /*source_id=*/"");
+#endif  // defined(OS_CHROMEOS)
   job->Stop();
   while (job->document()) {
     base::RunLoop().RunUntilIdle();
@@ -117,7 +116,7 @@ TEST(PrintJobTest, SimplePrint) {
 
 TEST(PrintJobTest, SimplePrintLateInit) {
   volatile bool check = false;
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
   scoped_refptr<PrintJob> job(new TestPrintJob(&check));
   job = nullptr;
   EXPECT_TRUE(check);
@@ -147,7 +146,7 @@ TEST(PrintJobTest, SimplePrintLateInit) {
 
 #if defined(OS_WIN)
 TEST(PrintJobTest, PageRangeMapping) {
-  content::TestBrowserThreadBundle thread_bundle;
+  content::BrowserTaskEnvironment task_environment;
 
   int page_count = 4;
   std::vector<int> input_full = {0, 1, 2, 3};

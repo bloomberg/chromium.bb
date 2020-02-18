@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -68,7 +68,7 @@ class StartupControllerTest : public testing::Test {
   ModelTypeSet preferred_types_;
   bool should_start_;
   bool started_;
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<StartupController> controller_;
 };
 

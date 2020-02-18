@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/peerconnection/rtc_void_request.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
+#include "third_party/blink/renderer/platform/wtf/math_extras.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
 namespace blink {
@@ -276,6 +277,14 @@ webrtc::RtpEncodingParameters ToRtpEncodingParameters(
     webrtc_encoding.scale_resolution_down_by =
         encoding->scaleResolutionDownBy();
   }
+  // https://w3c.github.io/webrtc-svc/
+  if (encoding->hasScalabilityMode()) {
+    if (encoding->scalabilityMode() == "L1T2") {
+      webrtc_encoding.num_temporal_layers = 2;
+    } else if (encoding->scalabilityMode() == "L1T3") {
+      webrtc_encoding.num_temporal_layers = 3;
+    }
+  }
   return webrtc_encoding;
 }
 
@@ -393,6 +402,16 @@ RTCRtpSendParameters* RTCRtpSender::getParameters() {
         PriorityFromDouble(webrtc_encoding.bitrate_priority).c_str());
     encoding->setNetworkPriority(
         PriorityFromDouble(webrtc_encoding.network_priority).c_str());
+    if (webrtc_encoding.num_temporal_layers) {
+      if (*webrtc_encoding.num_temporal_layers == 2) {
+        encoding->setScalabilityMode("L1T2");
+      } else if (*webrtc_encoding.num_temporal_layers == 3) {
+        encoding->setScalabilityMode("L1T3");
+      } else {
+        LOG(ERROR) << "Not understood value of num_temporal_layers: "
+                   << *webrtc_encoding.num_temporal_layers;
+      }
+    }
     encodings.push_back(encoding);
   }
   parameters->setEncodings(encodings);
@@ -575,6 +594,13 @@ RTCRtpCapabilities* RTCRtpSender::getCapabilities(const String& kind) {
         sdp_fmtp_line += parameter.first + "=" + parameter.second;
       }
       codec->setSdpFmtpLine(sdp_fmtp_line.c_str());
+    }
+    if (rtc_codec.mime_type() == "video/VP8" ||
+        rtc_codec.mime_type() == "video/VP9") {
+      Vector<String> modes;
+      modes.push_back("L1T2");
+      modes.push_back("L1T3");
+      codec->setScalabilityModes(modes);
     }
     codecs.push_back(codec);
   }

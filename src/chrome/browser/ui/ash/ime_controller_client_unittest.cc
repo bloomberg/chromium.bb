@@ -9,12 +9,13 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/mojom/ime_info.mojom.h"
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/ui/ash/test_ime_controller.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/ime/chromeos/fake_input_method_delegate.h"
@@ -162,7 +163,7 @@ class ImeControllerClientTest : public testing::Test {
   TestImeController ime_controller_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ImeControllerClientTest);
 };

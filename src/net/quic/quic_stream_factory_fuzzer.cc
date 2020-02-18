@@ -4,6 +4,8 @@
 
 #include "net/quic/quic_stream_factory.h"
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include "base/stl_util.h"
 #include "net/base/network_isolation_key.h"
 #include "net/base/test_completion_callback.h"
@@ -13,7 +15,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/dns/context_host_resolver.h"
 #include "net/dns/fuzzed_host_resolver_util.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/quic/mock_crypto_client_stream_factory.h"
 #include "net/quic/quic_http_stream.h"
@@ -26,7 +28,6 @@
 #include "net/third_party/quiche/src/quic/test_tools/mock_clock.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace net {
 
@@ -91,7 +92,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   FuzzedSocketFactory socket_factory(&data_provider);
 
   // Initialize this on each loop since some options mutate this.
-  HttpServerPropertiesImpl http_server_properties;
+  HttpServerProperties http_server_properties;
 
   QuicParams params;
   params.max_server_configs_stored_in_properties =

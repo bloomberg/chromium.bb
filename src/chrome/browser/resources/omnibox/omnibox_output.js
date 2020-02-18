@@ -727,7 +727,7 @@ cr.define('omnibox_output', function() {
      */
     static renderClassifiedText_(container, string, classes) {
       clearChildren(container);
-      OutputAnswerProperty.classify(string + '\n', classes)
+      OutputAnswerProperty.classify(string, classes)
           .map(
               ({string, style}) => OutputJsonProperty.renderJsonWord(
                   string, OutputAnswerProperty.styleToClasses_(style)))
@@ -1053,6 +1053,10 @@ cr.define('omnibox_output', function() {
           'descriptionClass'
         ],
         OutputAnswerProperty),
+    new Column(
+        ['S'], '', 'swapContentsAndDescription', false,
+        'Swap Contents and Description', ['swapContentsAndDescription'],
+        OutputBooleanProperty),
     new Column(
         ['D'], '', 'allowedToBeDefaultMatch', true,
         'Can be Default\nA green checkmark indicates that the result can be ' +

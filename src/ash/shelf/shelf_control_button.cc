@@ -28,6 +28,8 @@ ShelfControlButton::ShelfControlButton(
   SetInstallFocusRingOnFocus(true);
   focus_ring()->SetColor(kShelfFocusBorderColor);
   SetFocusPainter(nullptr);
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(false);
 }
 
 ShelfControlButton::~ShelfControlButton() = default;
@@ -56,6 +58,11 @@ std::unique_ptr<views::InkDropMask> ShelfControlButton::CreateInkDropMask()
 
 const char* ShelfControlButton::GetClassName() const {
   return "ash/ShelfControlButton";
+}
+
+gfx::Size ShelfControlButton::CalculatePreferredSize() const {
+  return gfx::Size(ShelfConstants::control_size(),
+                   ShelfConstants::control_size());
 }
 
 void ShelfControlButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {

@@ -21,7 +21,8 @@ bool Impression::operator==(const Impression& other) const {
   return create_time == other.create_time && feedback == other.feedback &&
          impression == other.impression && integrated == other.integrated &&
          task_start_time == other.task_start_time && guid == other.guid &&
-         type == other.type && impression_mapping == other.impression_mapping;
+         type == other.type && impression_mapping == other.impression_mapping &&
+         custom_data == other.custom_data;
 }
 
 SuppressionInfo::SuppressionInfo(const base::Time& last_trigger,
@@ -47,9 +48,16 @@ ClientState::ClientState(const ClientState& other) = default;
 ClientState::~ClientState() = default;
 
 bool ClientState::operator==(const ClientState& other) const {
+  if (impressions.size() != other.impressions.size())
+    return false;
+
+  for (size_t i = 0; i < impressions.size(); ++i) {
+    if (!(impressions[i] == other.impressions[i]))
+      return false;
+  }
+
   return type == other.type &&
          current_max_daily_show == other.current_max_daily_show &&
-         impressions == other.impressions &&
          suppression_info == other.suppression_info;
 }
 

@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Verwenden Sie <ph name="MINIMUM_DATE_OR_TIME" /> oder einen späteren Wert.</translation>
 <translation id="2759744352195237655">Pop-up-Schaltfläche</translation>
 <translation id="2761667185364618470">Klicken Sie dieses Kästchen an, wenn Sie fortfahren möchten.</translation>
+<translation id="2844350028562914727">Details</translation>
 <translation id="2896972712917208084">Optionsfeldgruppe</translation>
 <translation id="2908441821576996758">Geben Sie eine durch Kommas getrennte Liste der E-Mail-Adressen ein.</translation>
 <translation id="2940813599313844715">Objekt</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Wert muss kleiner als oder gleich <ph name="MAXIMUM" /> sein.</translation>
 <translation id="3486220673238053218">Definition</translation>
 <translation id="3557673793733683882">Überschrift <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">Wochenauswahl</translation>
 <translation id="3685101356851116974">Bild ohne Label</translation>
 <translation id="3706100364254443312">wechseln</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">Bildlaufleiste</translation>
 <translation id="4103419683916926126">Millisekunden</translation>
 <translation id="4151657705144244502">Grafik</translation>
+<translation id="4160057747563657758">Telefonnummer</translation>
 <translation id="4193965531860883258">Vorwort</translation>
 <translation id="4201051445878709314">Vorherigen Monat anzeigen</translation>
 <translation id="421884353938374759">color picker</translation>
 <translation id="4248100235867064564">Menüleiste</translation>
-<translation id="4254339807215791271">Inhaltsinformationen</translation>
 <translation id="4360991593054037559">Geben Sie einen gültigen Wert ein. Die zwei nächstliegenden gültigen Werte sind <ph name="VALID_VALUE_LOW" /> und <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Fragen und Antworten</translation>
 <translation id="4413860115965805769">Menüschaltfläche</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Aus</translation>
 <translation id="588258955323874662">Vollbild</translation>
 <translation id="5888666972993069672">Wird gerade auf <ph name="DEVICE_FRIENDLY_NAME" /> gestreamt</translation>
+<translation id="591047860372322273">Suchfeld</translation>
 <translation id="5939518447894949180">Zurücksetzen</translation>
 <translation id="5966707198760109579">Woche</translation>
 <translation id="5987525920412732405">Drehfeld</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">Nachwort</translation>
 <translation id="6209276755895393898">Anscheinend ist es: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">Glossar</translation>
+<translation id="6281763101136022427">URL</translation>
 <translation id="6310801910862476708">Bild-im-Bild-Modus beenden</translation>
 <translation id="6398862346408813489">Auswahlbereich für Monatsanzeige</translation>
 <translation id="6404546809543547843">Audio-Zeitachse</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Ihre Eingabe muss mit dem geforderten Format übereinstimmen.</translation>
 <translation id="7118469954320184356">Keine Beschreibung verfügbar.</translation>
 <translation id="7139483182332611405">Vorbemerkung</translation>
+<translation id="7214187073215825913">Informationen zum Inhalt</translation>
 <translation id="7263440858009898357">Wählen Sie ein Element in der Liste aus.</translation>
 <translation id="727747134524199931">Spaltenüberschrift</translation>
 <translation id="7320576522385648310">Wird zwischengespeichert</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Beschreibung wird abgerufen…</translation>
 <translation id="8117451130807776954">Diese Woche</translation>
 <translation id="8199524924445686405">jjjj</translation>
+<translation id="8208673686607688524">lokale Datums- und Uhrzeitauswahl</translation>
 <translation id="8261464734335370856">Ungültige Schreibweise</translation>
 <translation id="8284326494547611709">Untertitel</translation>
 <translation id="835897206747267392">Ungültiger Wert.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">Inhaltsverzeichnis</translation>
 <translation id="8613126697340063924">Remote-Wiedergabe steuern</translation>
 <translation id="862370744433916922">Untertitel</translation>
+<translation id="8711688047404765493">Ausgang</translation>
 <translation id="8750798805984357768">Wählen Sie eine dieser Optionen aus.</translation>
 <translation id="8808573423886751634">Kapitel</translation>
 <translation id="8845239796550121995">Wird gerade auf Ihren Fernseher gestreamt</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8987927404178983737">Monat</translation>
 <translation id="901493112792887934">Aktuelle Dauer in Sekunden</translation>
+<translation id="901834265349196618">E-Mail</translation>
 <translation id="9048119486235211610">Navigation</translation>
 <translation id="9062295712474918030">Dokument</translation>
 <translation id="9062307380734144336">Auswählen, um zwischen Wiedergabe und Pause zu wechseln</translation>

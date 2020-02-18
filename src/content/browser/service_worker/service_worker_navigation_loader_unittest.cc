@@ -12,7 +12,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/single_request_url_loader_factory.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
@@ -23,14 +22,15 @@
 #include "content/browser/service_worker/service_worker_test_utils.h"
 #include "content/browser/service_worker/service_worker_version.h"
 #include "content/common/service_worker/service_worker_utils.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"
-#include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
@@ -103,11 +103,12 @@ class FetchEventServiceWorker : public FakeServiceWorker {
 
   // Tells this worker to respond to fetch events with the specified stream.
   void RespondWithStream(
-      blink::mojom::ServiceWorkerStreamCallbackRequest callback_request,
+      mojo::PendingReceiver<blink::mojom::ServiceWorkerStreamCallback>
+          callback_receiver,
       mojo::ScopedDataPipeConsumerHandle consumer_handle) {
     response_mode_ = ResponseMode::kStream;
     stream_handle_ = blink::mojom::ServiceWorkerStreamHandle::New();
-    stream_handle_->callback_request = std::move(callback_request);
+    stream_handle_->callback_receiver = std::move(callback_receiver);
     stream_handle_->stream = std::move(consumer_handle);
   }
 
@@ -180,7 +181,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
  protected:
   void DispatchFetchEventForMainResource(
       blink::mojom::DispatchFetchEventParamsPtr params,
-      blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
+      mojo::PendingRemote<blink::mojom::ServiceWorkerFetchResponseCallback>
+          pending_response_callback,
       blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
           finish_callback) override {
     // Basic checks on DispatchFetchEvent parameters.
@@ -190,10 +192,12 @@ class FetchEventServiceWorker : public FakeServiceWorker {
     if (params->request->body)
       request_body_ = params->request->body;
 
+    mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+        response_callback(std::move(pending_response_callback));
     switch (response_mode_) {
       case ResponseMode::kDefault:
         FakeServiceWorker::DispatchFetchEventForMainResource(
-            std::move(params), std::move(response_callback),
+            std::move(params), response_callback.Unbind(),
             std::move(finish_callback));
         break;
       case ResponseMode::kBlob:
@@ -289,7 +293,8 @@ class FetchEventServiceWorker : public FakeServiceWorker {
   // For ResponseMode::kEarlyResponse and kDeferredResponse.
   blink::mojom::ServiceWorker::DispatchFetchEventForMainResourceCallback
       finish_callback_;
-  blink::mojom::ServiceWorkerFetchResponseCallbackPtr response_callback_;
+  mojo::Remote<blink::mojom::ServiceWorkerFetchResponseCallback>
+      response_callback_;
 
   // For ResponseMode::kRedirect.
   GURL redirected_url_;
@@ -329,16 +334,14 @@ const char kHistogramMainResourceFetchEvent[] =
 class ServiceWorkerNavigationLoaderTest : public testing::Test {
  public:
   ServiceWorkerNavigationLoaderTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP) {}
   ~ServiceWorkerNavigationLoaderTest() override = default;
 
   void SetUp() override {
-    feature_list_.InitAndEnableFeature(network::features::kNetworkService);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
 
     // Create an active service worker.
-    storage()->LazyInitializeForTest(base::DoNothing());
-    base::RunLoop().RunUntilIdle();
+    storage()->LazyInitializeForTest();
     blink::mojom::ServiceWorkerRegistrationOptions options;
     options.scope = GURL("https://example.com/");
     registration_ =
@@ -464,7 +467,7 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   scoped_refptr<ServiceWorkerRegistration> registration_;
   scoped_refptr<ServiceWorkerVersion> version_;
@@ -479,8 +482,6 @@ class ServiceWorkerNavigationLoaderTest : public testing::Test {
   bool did_call_fallback_callback_ = false;
   bool reset_subresource_loader_params_ = false;
   base::OnceClosure quit_closure_for_fallback_callback_;
-
-  base::test::ScopedFeatureList feature_list_;
 };
 
 TEST_F(ServiceWorkerNavigationLoaderTest, Basic) {
@@ -565,8 +566,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BlobResponse) {
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = blob_handle->uuid();
   blob->size = blob_handle->size();
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  mojo::PendingReceiver<blink::mojom::Blob> receiver =
+      mojo::MakeRequest(&blob->blob);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
@@ -605,8 +607,9 @@ TEST_F(ServiceWorkerNavigationLoaderTest, BrokenBlobResponse) {
                                   storage::BlobStatus::ERR_OUT_OF_MEMORY);
   auto blob = blink::mojom::SerializedBlob::New();
   blob->uuid = kBrokenUUID;
-  blink::mojom::BlobRequest request = mojo::MakeRequest(&blob->blob);
-  storage::BlobImpl::Create(std::move(blob_handle), std::move(request));
+  mojo::PendingReceiver<blink::mojom::Blob> receiver =
+      mojo::MakeRequest(&blob->blob);
+  storage::BlobImpl::Create(std::move(blob_handle), std::move(receiver));
   service_worker_->RespondWithBlob(std::move(blob));
 
   // Perform the request.
@@ -639,10 +642,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -686,10 +690,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponse_Abort) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -735,10 +740,11 @@ TEST_F(ServiceWorkerNavigationLoaderTest, StreamResponseAndCancel) {
 
   // Construct the Stream to respond with.
   const char kResponseBody[] = "Here is sample text for the Stream.";
-  blink::mojom::ServiceWorkerStreamCallbackPtr stream_callback;
+  mojo::Remote<blink::mojom::ServiceWorkerStreamCallback> stream_callback;
   mojo::DataPipe data_pipe;
-  service_worker_->RespondWithStream(mojo::MakeRequest(&stream_callback),
-                                     std::move(data_pipe.consumer_handle));
+  service_worker_->RespondWithStream(
+      stream_callback.BindNewPipeAndPassReceiver(),
+      std::move(data_pipe.consumer_handle));
 
   // Perform the request.
   StartRequest(CreateRequest());
@@ -943,7 +949,7 @@ TEST_F(ServiceWorkerNavigationLoaderTest, CancelNavigationDuringFetchEvent) {
 
   // Delete the provider host during the request. The load should abort without
   // crashing.
-  *provider_endpoints_.host_ptr() = nullptr;
+  provider_endpoints_.host_remote()->reset();
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(provider_host_);
 

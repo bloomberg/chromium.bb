@@ -35,10 +35,8 @@ void ContentMockCertVerifier::CertVerifier::set_default_result(
       switches::kMockCertVerifierDefaultResultForTesting,
       base::NumberToString(default_result));
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsInProcessNetworkService()) {
+  if (IsInProcessNetworkService())
     return;
-  }
 
   EnsureNetworkServiceTestInitialized();
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
@@ -59,10 +57,8 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
     int rv) {
   verifier_->AddResultForCertAndHost(cert, host_pattern, verify_result, rv);
 
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService) ||
-      IsInProcessNetworkService()) {
+  if (IsInProcessNetworkService())
     return;
-  }
 
   EnsureNetworkServiceTestInitialized();
   mojo::ScopedAllowSyncCallForTesting allow_sync_call;
@@ -72,7 +68,7 @@ void ContentMockCertVerifier::CertVerifier::AddResultForCertAndHost(
 
 void ContentMockCertVerifier::CertVerifier::
     EnsureNetworkServiceTestInitialized() {
-  if (!network_service_test_) {
+  if (!network_service_test_ || network_service_test_.encountered_error()) {
     GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
                                         &network_service_test_);
   }

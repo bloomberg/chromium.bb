@@ -6,7 +6,6 @@
 
 #include <assert.h>
 #include <errno.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -69,6 +68,13 @@ static const struct planar_layout triplanar_yuv_420_layout = {
 	.bytes_per_pixel = { 1, 1, 1 }
 };
 
+static const struct planar_layout biplanar_yuv_p010_layout = {
+	.num_planes = 2,
+	.horizontal_subsampling = { 1, 2 },
+	.vertical_subsampling = { 1, 2 },
+	.bytes_per_pixel = { 2, 4 }
+};
+
 // clang-format on
 
 static const struct planar_layout *layout_from_format(uint32_t format)
@@ -87,6 +93,9 @@ static const struct planar_layout *layout_from_format(uint32_t format)
 	case DRM_FORMAT_NV12:
 	case DRM_FORMAT_NV21:
 		return &biplanar_yuv_420_layout;
+
+	case DRM_FORMAT_P010:
+		return &biplanar_yuv_p010_layout;
 
 	case DRM_FORMAT_ABGR1555:
 	case DRM_FORMAT_ABGR4444:
@@ -290,7 +299,7 @@ int drv_dumb_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t 
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_CREATE_DUMB, &create_dumb);
 	if (ret) {
 		drv_log("DRM_IOCTL_MODE_CREATE_DUMB failed (%d, %d)\n", bo->drv->fd, errno);
-		return ret;
+		return -errno;
 	}
 
 	drv_bo_from_format(bo, create_dumb.pitch, height, format);
@@ -313,7 +322,7 @@ int drv_dumb_bo_destroy(struct bo *bo)
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_MODE_DESTROY_DUMB, &destroy_dumb);
 	if (ret) {
 		drv_log("DRM_IOCTL_MODE_DESTROY_DUMB failed (handle=%x)\n", bo->handles[0].u32);
-		return ret;
+		return -errno;
 	}
 
 	return 0;
@@ -340,7 +349,7 @@ int drv_gem_bo_destroy(struct bo *bo)
 		if (ret) {
 			drv_log("DRM_IOCTL_GEM_CLOSE failed (handle=%x) error %d\n",
 				bo->handles[plane].u32, ret);
-			error = ret;
+			error = -errno;
 		}
 	}
 
@@ -370,7 +379,7 @@ int drv_prime_bo_import(struct bo *bo, struct drv_import_fd_data *data)
 			 */
 			bo->num_planes = plane;
 			drv_gem_bo_destroy(bo);
-			return ret;
+			return -errno;
 		}
 
 		bo->handles[plane].u32 = prime_handle.handle;
@@ -522,7 +531,8 @@ void drv_modify_combination(struct driver *drv, uint32_t format, struct format_m
 struct drv_array *drv_query_kms(struct driver *drv)
 {
 	struct drv_array *kms_items;
-	uint64_t plane_type, use_flag;
+	uint64_t plane_type = UINT64_MAX;
+        uint64_t use_flag;
 	uint32_t i, j, k;
 
 	drmModePlanePtr plane;
@@ -549,6 +559,7 @@ struct drv_array *drv_query_kms(struct driver *drv)
 		goto out;
 
 	for (i = 0; i < resources->count_planes; i++) {
+		plane_type = UINT64_MAX;
 		plane = drmModeGetPlane(drv->fd, resources->planes[i]);
 		if (!plane)
 			goto out;
@@ -669,4 +680,17 @@ uint64_t drv_pick_modifier(const uint64_t *modifiers, uint32_t count,
 	}
 
 	return DRM_FORMAT_MOD_LINEAR;
+}
+
+/*
+ * Search a list of modifiers to see if a given modifier is present
+ */
+bool drv_has_modifier(const uint64_t *list, uint32_t count, uint64_t modifier)
+{
+	uint32_t i;
+	for (i = 0; i < count; i++)
+		if (list[i] == modifier)
+			return true;
+
+	return false;
 }

@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser.test.util;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.app.Activity;
 import android.graphics.Rect;
 import android.util.JsonReader;
@@ -30,7 +28,7 @@ import java.util.concurrent.TimeoutException;
  */
 @JNINamespace("content")
 public class DOMUtils {
-    private static final long MEDIA_TIMEOUT_SECONDS = scaleTimeout(10);
+    private static final long MEDIA_TIMEOUT_SECONDS = 10L;
     private static final long MEDIA_TIMEOUT_MILLISECONDS = MEDIA_TIMEOUT_SECONDS * 1000;
 
     /**
@@ -253,7 +251,22 @@ public class DOMUtils {
      */
     public static boolean clickNode(final WebContents webContents, String nodeId,
             boolean goThroughRootAndroidView) throws InterruptedException, TimeoutException {
-        scrollNodeIntoView(webContents, nodeId);
+        return clickNode(
+                webContents, nodeId, goThroughRootAndroidView, true /* shouldScrollIntoView */);
+    }
+
+    /**
+     * Click a DOM node by its id.
+     * @param webContents The WebContents in which the node lives.
+     * @param nodeId The id of the node.
+     * @param goThroughRootAndroidView Whether the input should be routed through the Root View for
+     *        the CVC.
+     * @param shouldScrollIntoView Whether to scroll the node into view first.
+     */
+    public static boolean clickNode(final WebContents webContents, String nodeId,
+            boolean goThroughRootAndroidView, boolean shouldScrollIntoView)
+            throws InterruptedException, TimeoutException {
+        if (shouldScrollIntoView) scrollNodeIntoView(webContents, nodeId);
         int[] clickTarget = getClickTargetForNode(webContents, nodeId);
         if (goThroughRootAndroidView) {
             return TouchCommon.singleClickView(

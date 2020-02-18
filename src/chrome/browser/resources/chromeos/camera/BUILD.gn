@@ -158,6 +158,8 @@ copy("chrome_camera_app_js_models") {
     "src/js/models/filenamer.js",
     "src/js/models/filesystem.js",
     "src/js/models/gallery.js",
+    "src/js/models/result_saver.js",
+    "src/js/models/video_saver.js",
   ]
 
   outputs = [
@@ -167,7 +169,8 @@ copy("chrome_camera_app_js_models") {
 
 copy("chrome_camera_app_js_mojo") {
   sources = [
-    "src/js/mojo/imagecapture.js",
+    "src/js/mojo/device_operator.js",
+    "src/js/mojo/image_capture.js",
   ]
 
   outputs = [
@@ -232,17 +235,21 @@ copy("chrome_camera_app_views") {
 copy("chrome_camera_app_mojo_generated") {
   sources = [
     "$root_gen_dir/media/capture/mojom/image_capture.mojom-lite.js",
-    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_common.mojom-lite.js",
-    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata.mojom-lite.js",
-    "$root_gen_dir/media/capture/video/chromeos/mojo/camera_metadata_tags.mojom-lite.js",
-    "$root_gen_dir/media/capture/video/chromeos/mojo/cros_image_capture.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojom/camera_app.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojom/camera_common.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojom/camera_metadata.mojom-lite.js",
+    "$root_gen_dir/media/capture/video/chromeos/mojom/camera_metadata_tags.mojom-lite.js",
     "$root_gen_dir/mojo/public/js/mojo_bindings_lite.js",
+    "$root_gen_dir/ui/gfx/geometry/mojom/geometry.mojom-lite.js",
+    "$root_gen_dir/ui/gfx/range/mojom/range.mojom-lite.js",
   ]
 
   deps = [
     "//media/capture/mojom:image_capture_js",
-    "//media/capture/video/chromeos/mojo:cros_camera_js",
+    "//media/capture/video/chromeos/mojom:cros_camera_js",
     "//mojo/public/js:bindings_lite",
+    "//ui/gfx/geometry/mojom:mojom_js",
+    "//ui/gfx/range/mojom:mojom_js",
   ]
 
   outputs = [

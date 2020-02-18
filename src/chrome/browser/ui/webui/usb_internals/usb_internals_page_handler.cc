@@ -11,21 +11,21 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 UsbInternalsPageHandler::UsbInternalsPageHandler(
-    mojom::UsbInternalsPageHandlerRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::UsbInternalsPageHandler> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 UsbInternalsPageHandler::~UsbInternalsPageHandler() {}
 
 void UsbInternalsPageHandler::BindTestInterface(
-    device::mojom::UsbDeviceManagerTestRequest request) {
+    mojo::PendingReceiver<device::mojom::UsbDeviceManagerTest> receiver) {
   // Forward the request to the DeviceService.
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               std::move(request));
+  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
+                                         std::move(receiver));
 }
 
 void UsbInternalsPageHandler::BindUsbDeviceManagerInterface(
-    device::mojom::UsbDeviceManagerRequest request) {
+    mojo::PendingReceiver<device::mojom::UsbDeviceManager> receiver) {
   // Forward the request to the DeviceService.
-  content::GetSystemConnector()->BindInterface(device::mojom::kServiceName,
-                                               std::move(request));
+  content::GetSystemConnector()->Connect(device::mojom::kServiceName,
+                                         std::move(receiver));
 }

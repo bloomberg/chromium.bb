@@ -24,7 +24,7 @@
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
-#include "components/autofill/core/browser/ui/payments/save_card_bubble_controller.h"
+#include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
 #endif  // !defined(OS_ANDROID)
 
@@ -82,6 +82,7 @@ class ChromeAutofillClient
       const base::string16& tip_message,
       const std::vector<MigratableCreditCard>& migratable_credit_cards,
       MigrationDeleteCardCallback delete_local_card_callback) override;
+  void ShowWebauthnOfferDialog(WebauthnOfferDialogCallback callback) override;
   void ConfirmSaveAutofillProfile(const AutofillProfile& profile,
                                   base::OnceClosure callback) override;
   void ConfirmSaveCreditCardLocally(

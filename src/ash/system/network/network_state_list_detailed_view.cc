@@ -19,8 +19,10 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chromeos/network/network_connect.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "net/base/ip_address.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
 #include "ui/views/controls/button/button.h"
@@ -64,7 +66,6 @@ bool NetworkTypeIsConfigurable(NetworkType type) {
   switch (type) {
     case NetworkType::kVPN:
     case NetworkType::kWiFi:
-    case NetworkType::kWiMAX:
       return true;
     case NetworkType::kAll:
     case NetworkType::kCellular:
@@ -202,16 +203,10 @@ NetworkStateListDetailedView::NetworkStateListDetailedView(
       info_bubble_(nullptr) {}
 
 NetworkStateListDetailedView::~NetworkStateListDetailedView() {
+  model_->RemoveObserver(this);
   if (info_bubble_)
     info_bubble_->OnNetworkStateListDetailedViewIsDeleting();
   ResetInfoBubble();
-}
-
-void NetworkStateListDetailedView::Update() {
-  UpdateNetworkList();
-  UpdateHeaderButtons();
-  UpdateScanningBar();
-  Layout();
 }
 
 void NetworkStateListDetailedView::ToggleInfoBubbleForTesting() {
@@ -228,10 +223,26 @@ void NetworkStateListDetailedView::Init() {
                      ? IDS_ASH_STATUS_TRAY_NETWORK
                      : IDS_ASH_STATUS_TRAY_VPN);
 
+  model_->AddObserver(this);
   Update();
 
   if (list_type_ == LIST_TYPE_NETWORK && IsWifiEnabled())
     ScanAndStartTimer();
+}
+
+void NetworkStateListDetailedView::Update() {
+  UpdateNetworkList();
+  UpdateHeaderButtons();
+  UpdateScanningBar();
+  Layout();
+}
+
+void NetworkStateListDetailedView::ActiveNetworkStateChanged() {
+  Update();
+}
+
+void NetworkStateListDetailedView::NetworkListChanged() {
+  Update();
 }
 
 void NetworkStateListDetailedView::HandleButtonPressed(views::Button* sender,
@@ -308,7 +319,8 @@ void NetworkStateListDetailedView::ShowSettings() {
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
   CloseBubble();  // Deletes |this|.
   Shell::Get()->system_tray_model()->client()->ShowNetworkSettings(
-      std::string());
+      model_->default_network() ? model_->default_network()->guid
+                                : std::string());
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {

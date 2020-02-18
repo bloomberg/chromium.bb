@@ -9,9 +9,11 @@
 #include <vector>
 
 #include "ash/public/cpp/ash_switches.h"
-#include "ash/public/interfaces/constants.mojom.h"
-#include "ash/public/interfaces/cros_display_config.mojom-test-utils.h"
-#include "ash/public/interfaces/cros_display_config.mojom.h"
+#include "ash/public/cpp/tablet_mode.h"
+#include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/public/mojom/constants.mojom.h"
+#include "ash/public/mojom/cros_display_config.mojom-test-utils.h"
+#include "ash/public/mojom/cros_display_config.mojom.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
@@ -21,7 +23,6 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/permissions/permission_request_impl.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
-#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -37,6 +38,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/display/display.h"
+#include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
@@ -258,7 +260,12 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
 
+    // Mark the device is capable of entering tablet mode.
     command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
+
+    // Use first display as internal display. Otherwise, tablet mode is ended
+    // on display change.
+    command_line->AppendSwitch(switches::kUseFirstDisplayAsInternal);
   }
 
   void SetUpOnMainThread() override {
@@ -281,20 +288,18 @@ class TopControlsSlideControllerTest : public InProcessBrowserTest {
   }
 
   void OpenUrlAtIndex(const GURL& url, int index) {
-    AddTabAtIndex(0, url, ui::PAGE_TRANSITION_TYPED);
+    AddTabAtIndex(index, url, ui::PAGE_TRANSITION_TYPED);
     TabNonEmptyPaintWaiter waiter(
         browser()->tab_strip_model()->GetActiveWebContents());
     waiter.Wait();
   }
 
   void ToggleTabletMode() {
-    auto* tablet_mode_client = TabletModeClient::Get();
-    tablet_mode_client->OnTabletModeToggled(
-        !tablet_mode_client->tablet_mode_enabled());
+    ash::ShellTestApi().SetTabletModeEnabledForTest(!GetTabletModeEnabled());
   }
 
   bool GetTabletModeEnabled() const {
-    return TabletModeClient::Get()->tablet_mode_enabled();
+    return ash::TabletMode::Get()->InTabletMode();
   }
 
   void CheckBrowserLayout(BrowserView* browser_view,
@@ -466,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, DisabledForHostedApps) {
   Browser* browser = new Browser(params);
   AddBlankTabAndShow(browser);
 
-  ASSERT_TRUE(browser->is_app());
+  ASSERT_TRUE(browser->is_type_app());
 
   // No slide controller gets created for hosted apps.
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
@@ -1108,9 +1113,7 @@ IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
   }
 }
 
-// Disabled due to flakiness: https://crbug.com/983791.
-IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest,
-                       DISABLED_TestPermissionBubble) {
+IN_PROC_BROWSER_TEST_F(TopControlsSlideControllerTest, TestPermissionBubble) {
   ToggleTabletMode();
   ASSERT_TRUE(GetTabletModeEnabled());
   EXPECT_TRUE(top_controls_slide_controller()->IsEnabled());

@@ -41,6 +41,25 @@
 #include "base/win/windows_version.h"
 #endif  // defined(OS_WIN)
 
+// Data from deprecated UMA histograms:
+//
+// ThreadPool.NumTasksBetweenWaits.(Browser/Renderer).Foreground, August 2019
+//   Number of tasks between two waits by a foreground worker thread in a
+//   browser/renderer process.
+//
+//  Windows (browser/renderer)
+//    1 at 87th percentile / 92th percentile
+//    2 at 95th percentile / 98th percentile
+//    5 at 99th percentile / 100th percentile
+//  Mac (browser/renderer)
+//    1 at 81th percentile / 90th percentile
+//    2 at 92th percentile / 97th percentile
+//    5 at 98th percentile / 100th percentile
+//  Android (browser/renderer)
+//    1 at 92th percentile / 96th percentile
+//    2 at 97th percentile / 98th percentile
+//    5 at 99th percentile / 100th percentile
+
 namespace base {
 namespace internal {
 
@@ -49,8 +68,6 @@ namespace {
 constexpr char kDetachDurationHistogramPrefix[] = "ThreadPool.DetachDuration.";
 constexpr char kNumTasksBeforeDetachHistogramPrefix[] =
     "ThreadPool.NumTasksBeforeDetach.";
-constexpr char kNumTasksBetweenWaitsHistogramPrefix[] =
-    "ThreadPool.NumTasksBetweenWaits.";
 constexpr char kNumWorkersHistogramPrefix[] = "ThreadPool.NumWorkers.";
 constexpr char kNumActiveWorkersHistogramPrefix[] =
     "ThreadPool.NumActiveWorkers.";
@@ -205,7 +222,7 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
   // WorkerThread::Delegate:
   WorkerThread::ThreadLabel GetThreadLabel() const override;
   void OnMainEntry(const WorkerThread* worker) override;
-  RunIntentWithRegisteredTaskSource GetWork(WorkerThread* worker) override;
+  RegisteredTaskSource GetWork(WorkerThread* worker) override;
   void DidProcessTask(RegisteredTaskSource task_source) override;
   TimeDelta GetSleepTimeout() override;
   void OnMainExit(WorkerThread* worker) override;
@@ -258,10 +275,6 @@ class ThreadGroupImpl::WorkerThreadDelegateImpl : public WorkerThread::Delegate,
 
   // Accessed only from the worker thread.
   struct WorkerOnly {
-    // Number of tasks executed since the last time the
-    // ThreadPool.NumTasksBetweenWaits histogram was recorded.
-    size_t num_tasks_since_last_wait = 0;
-
     // Number of tasks executed since the last time the
     // ThreadPool.NumTasksBeforeDetach histogram was recorded.
     size_t num_tasks_since_last_detach = 0;
@@ -345,17 +358,6 @@ ThreadGroupImpl::ThreadGroupImpl(StringPiece histogram_label,
           1000,
           50,
           HistogramBase::kUmaTargetedHistogramFlag)),
-      // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A WorkerThread is
-      // expected to run between zero and a few tens of tasks between waits.
-      // When it runs more than 100 tasks, there is no need to know the exact
-      // number of tasks that ran.
-      num_tasks_between_waits_histogram_(Histogram::FactoryGet(
-          JoinString({kNumTasksBetweenWaitsHistogramPrefix, histogram_label},
-                     ""),
-          1,
-          100,
-          50,
-          HistogramBase::kUmaTargetedHistogramFlag)),
       // Mimics the UMA_HISTOGRAM_COUNTS_100 macro. A ThreadGroup is
       // expected to run between zero and a few tens of workers.
       // When it runs more than 100 worker, there is no need to know the exact
@@ -429,10 +431,9 @@ ThreadGroupImpl::~ThreadGroupImpl() {
   DCHECK(workers_.empty());
 }
 
-void ThreadGroupImpl::UpdateSortKey(
-    TransactionWithOwnedTaskSource transaction_with_task_source) {
+void ThreadGroupImpl::UpdateSortKey(TaskSource::Transaction transaction) {
   ScopedWorkersExecutor executor(this);
-  UpdateSortKeyImpl(&executor, std::move(transaction_with_task_source));
+  UpdateSortKeyImpl(&executor, std::move(transaction));
 }
 
 void ThreadGroupImpl::PushTaskSourceAndWakeUpWorkers(
@@ -569,8 +570,6 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
       outer_->after_start().worker_environment);
 #endif  // defined(OS_WIN)
 
-  DCHECK_EQ(worker_only().num_tasks_since_last_wait, 0U);
-
   PlatformThread::SetName(
       StringPrintf("ThreadPool%sWorker", outer_->thread_group_label_.c_str()));
 
@@ -578,8 +577,8 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::OnMainEntry(
   SetBlockingObserverForCurrentThread(this);
 }
 
-RunIntentWithRegisteredTaskSource
-ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
+RegisteredTaskSource ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(
+    WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
   DCHECK(!worker_only().is_running_task);
 
@@ -597,7 +596,7 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
   if (!CanGetWorkLockRequired(worker))
     return nullptr;
 
-  RunIntentWithRegisteredTaskSource task_source;
+  RegisteredTaskSource task_source;
   TaskPriority priority;
   while (!task_source && !outer_->priority_queue_.IsEmpty()) {
     // Enforce the CanRunPolicy and that no more than |max_best_effort_tasks_|
@@ -610,7 +609,7 @@ ThreadGroupImpl::WorkerThreadDelegateImpl::GetWork(WorkerThread* worker) {
       break;
     }
 
-    task_source = outer_->TakeRunIntentWithRegisteredTaskSource(&executor);
+    task_source = outer_->TakeRegisteredTaskSource(&executor);
   }
   if (!task_source) {
     OnWorkerBecomesIdleLockRequired(worker);
@@ -632,7 +631,6 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::DidProcessTask(
   DCHECK(worker_only().is_running_task);
   DCHECK(read_worker().may_block_start_time.is_null());
 
-  ++worker_only().num_tasks_since_last_wait;
   ++worker_only().num_tasks_since_last_detach;
 
   // A transaction to the TaskSource to reenqueue, if any. Instantiated here as
@@ -737,14 +735,6 @@ void ThreadGroupImpl::WorkerThreadDelegateImpl::CleanupLockRequired(
 void ThreadGroupImpl::WorkerThreadDelegateImpl::OnWorkerBecomesIdleLockRequired(
     WorkerThread* worker) {
   DCHECK_CALLED_ON_VALID_THREAD(worker_thread_checker_);
-
-  // Record the ThreadPool.NumTasksBetweenWaits histogram. After GetWork()
-  // returns nullptr, the WorkerThread will perform a wait on its
-  // WaitableEvent, so we record how many tasks were ran since the last wait
-  // here.
-  outer_->num_tasks_between_waits_histogram_->Add(
-      worker_only().num_tasks_since_last_wait);
-  worker_only().num_tasks_since_last_wait = 0;
 
   // Add the worker to the idle stack.
   DCHECK(!outer_->idle_workers_stack_.Contains(worker));

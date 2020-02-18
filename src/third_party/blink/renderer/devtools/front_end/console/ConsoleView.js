@@ -98,7 +98,7 @@ Console.ConsoleView = class extends UI.VBox {
 
     const toolbar = new UI.Toolbar('console-main-toolbar', consoleToolbarContainer);
     const rightToolbar = new UI.Toolbar('', consoleToolbarContainer);
-    toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton('console sidebar'));
+    toolbar.appendToolbarItem(this._splitWidget.createShowHideSidebarButton(ls`console sidebar`));
     toolbar.appendToolbarItem(UI.Toolbar.createActionButton(
         /** @type {!UI.Action }*/ (UI.actionRegistry.action('console.clear'))));
     toolbar.appendSeparator();
@@ -1260,6 +1260,7 @@ Console.ConsoleViewFilter = class {
     this._levelMenuButton = new UI.ToolbarButton(ls`Log levels`);
     this._levelMenuButton.turnIntoSelect();
     this._levelMenuButton.addEventListener(UI.ToolbarButton.Events.Click, this._showLevelContextMenu.bind(this));
+    UI.ARIAUtils.markAsMenuButton(this._levelMenuButton.element);
 
     this._updateLevelMenuButtonText();
     this._messageLevelFiltersSetting.addChangeListener(this._updateLevelMenuButtonText.bind(this));

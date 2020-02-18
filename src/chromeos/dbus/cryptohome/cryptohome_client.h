@@ -30,6 +30,7 @@ class GetKeyDataRequest;
 class GetSupportedKeyPoliciesRequest;
 class GetTpmStatusRequest;
 class LockToSingleUserMountUntilRebootRequest;
+class MassRemoveKeysRequest;
 class MigrateKeyRequest;
 class MigrateToDircryptoRequest;
 class MountGuestRequest;
@@ -422,7 +423,10 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
   // The |callback| will be called when the dbus call completes.  When the
   // operation completes, the AsyncCallStatusWithDataHandler signal handler is
   // called.  If |key_type| is KEY_USER, a |id| must be provided.
-  // Otherwise |id| is ignored.
+  // Otherwise |id| is ignored. If |key_name_for_spkac| is not empty, then the
+  // corresponding key will be used for SignedPublicKeyAndChallenge, but the
+  // challenge response will still be signed by the key specified by |key_name|
+  // (EMK or EUK).
   virtual void TpmAttestationSignEnterpriseChallenge(
       attestation::AttestationKeyType key_type,
       const cryptohome::AccountIdentifier& id,
@@ -431,6 +435,7 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const std::string& device_id,
       attestation::AttestationChallengeOptions options,
       const std::string& challenge,
+      const std::string& key_name_for_spkac,
       AsyncMethodCallback callback) = 0;
 
   // Asynchronously signs a simple challenge with the key specified by
@@ -533,6 +538,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
                         const cryptohome::AddKeyRequest& request,
                         DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
+  // Asynchronously calls AddDataRestoreKey method. |callback| is called after
+  // method call, and with reply protobuf.
+  // AddDataRestoreKey generates data_restore_key in OS and adds it to the
+  // given key set. The reply protobuf needs to be extended to
+  // AddDataRestoreKeyReply so that caller gets raw bytes of data_restore_key
+  virtual void AddDataRestoreKey(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
   // Asynchronously calls UpdateKeyEx method. |callback| is called after method
   // call, and with reply protobuf. Reply will contain MountReply extension.
   // UpdateKeyEx replaces key used for authorization, without affecting any
@@ -551,6 +566,16 @@ class COMPONENT_EXPORT(CRYPTOHOME_CLIENT) CryptohomeClient {
       const cryptohome::AccountIdentifier& id,
       const cryptohome::AuthorizationRequest& auth,
       const cryptohome::RemoveKeyRequest& request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
+
+  // Asynchronously calls MassRemoveKeys method. |callback| is called after
+  // method call, and with reply protobuf.
+  // MassRemoveKeys removes all keys except those whose labels are exempted
+  // in MassRemoveKeysRequest.
+  virtual void MassRemoveKeys(
+      const cryptohome::AccountIdentifier& id,
+      const cryptohome::AuthorizationRequest& auth,
+      const cryptohome::MassRemoveKeysRequest& request,
       DBusMethodCallback<cryptohome::BaseReply> callback) = 0;
 
   // Asynchronously calls GetBootAttribute method. |callback| is called after

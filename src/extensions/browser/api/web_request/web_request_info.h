@@ -49,7 +49,8 @@ struct WebRequestInfoInitParams {
       int32_t routing_id,
       const network::ResourceRequest& request,
       bool is_download,
-      bool is_async);
+      bool is_async,
+      bool is_service_worker_script);
 
   ~WebRequestInfoInitParams();
 
@@ -62,7 +63,7 @@ struct WebRequestInfoInitParams {
   std::string method;
   bool is_navigation_request = false;
   base::Optional<url::Origin> initiator;
-  base::Optional<content::ResourceType> type;
+  content::ResourceType type = content::ResourceType::kSubResource;
   WebRequestResourceType web_request_type = WebRequestResourceType::OTHER;
   bool is_async = false;
   net::HttpRequestHeaders extra_request_headers;
@@ -71,7 +72,8 @@ struct WebRequestInfoInitParams {
   int web_view_instance_id = -1;
   int web_view_rules_registry_id = -1;
   int web_view_embedder_process_id = -1;
-  base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+  ExtensionApiFrameIdMap::FrameData frame_data;
+  bool is_service_worker_script = false;
 
  private:
   void InitializeWebViewAndFrameData(
@@ -120,14 +122,11 @@ struct WebRequestInfo {
   const base::Optional<url::Origin> initiator;
 
   // Extension API frame data corresponding to details of the frame which
-  // initiate this request. May be null for renderer-initiated requests where
-  // some frame details are not known at WebRequestInfo construction time.
-  // Mutable since this is lazily computed.
-  mutable base::Optional<ExtensionApiFrameIdMap::FrameData> frame_data;
+  // initiate this request.
+  ExtensionApiFrameIdMap::FrameData frame_data;
 
-  // The type of the request (e.g. main frame, subresource, XHR, etc). May have
-  // no value if the request did not originate from a ResourceDispatcher.
-  const base::Optional<content::ResourceType> type;
+  // The type of the request (e.g. main frame, subresource, XHR, etc).
+  const content::ResourceType type;
 
   // A partially mirrored copy of |type| which is slightly less granular and
   // which also identifies WebSocket requests separately from other types.
@@ -171,6 +170,8 @@ struct WebRequestInfo {
   // since this is lazily computed. Cached to avoid redundant computations.
   mutable base::Optional<declarative_net_request::RulesetManager::Action>
       dnr_action;
+
+  const bool is_service_worker_script;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(WebRequestInfo);

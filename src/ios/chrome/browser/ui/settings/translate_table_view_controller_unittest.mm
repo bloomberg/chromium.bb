@@ -8,7 +8,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/language/core/browser/language_prefs.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -42,8 +42,7 @@ const char kLanguage2[] = "pirate";
 class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
  protected:
   TranslateTableViewControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     ChromeTableViewControllerTest::SetUp();
@@ -67,7 +66,7 @@ class TranslateTableViewControllerTest : public ChromeTableViewControllerTest {
     return factory.Create(registry.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PrefService> pref_service_;
 };
 

@@ -18,7 +18,7 @@ namespace media {
 // the actual rendering.
 class GpuMaybeRenderEarlyImpl {
  public:
-  GpuMaybeRenderEarlyImpl() : weak_factory_(this) {}
+  GpuMaybeRenderEarlyImpl() {}
   ~GpuMaybeRenderEarlyImpl() = default;
 
   void SetCodecImageGroup(scoped_refptr<CodecImageGroup> image_group) {
@@ -51,7 +51,13 @@ class GpuMaybeRenderEarlyImpl {
     // adding a DestructionCB to CodecImage.  However, since we use a weak ptr
     // for the callback, it isn't safe.  CodecImageGroup uses a strong ref.
     DCHECK(std::find(images_.begin(), images_.end(), image) != images_.end());
-    image_group_->RemoveCodecImage(image);
+    // Remember that |image_group_| might not be the same one that |image|
+    // belongs to.  So, we can't remove it.  Instead, trust that the destruction
+    // cb will also be run.
+    // TODO(liberato): Simplify this.  We don't need both callbacks.  The
+    // destruction CB can be renamed to the unused cb, and CodecImageGroup can
+    // set it like it used to, and notify us about it.  It would be called both
+    // on CodecImage destruction and (with pooling) when it's unused.
     base::Erase(images_, image);
     internal::MaybeRenderEarly(&images_);
   }
@@ -63,7 +69,7 @@ class GpuMaybeRenderEarlyImpl {
   // replace this when SetImageGroup() is called.
   scoped_refptr<CodecImageGroup> image_group_;
 
-  base::WeakPtrFactory<GpuMaybeRenderEarlyImpl> weak_factory_;
+  base::WeakPtrFactory<GpuMaybeRenderEarlyImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(GpuMaybeRenderEarlyImpl);
 };

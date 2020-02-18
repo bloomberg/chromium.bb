@@ -10,10 +10,10 @@
 from __future__ import absolute_import
 from __future__ import print_function
 
-import mock
 import socket
 
-import psutil
+import mock
+import psutil  # pylint: disable=import-error
 
 from chromite.lib import cros_test_lib
 from chromite.scripts.sysmon import net_metrics

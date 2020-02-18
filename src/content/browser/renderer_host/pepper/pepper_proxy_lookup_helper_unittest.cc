@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/proxy_resolution/proxy_info.h"
 #include "services/network/public/mojom/proxy_lookup_client.mojom.h"
@@ -40,7 +40,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
     base::RunLoop run_loop;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&PepperProxyLookupHelperTest::StartLookupOnIOThread,
                        base::Unretained(this), run_loop.QuitClosure()));
@@ -63,7 +63,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     base::RunLoop run_loop;
 
-    base::PostTaskWithTraitsAndReply(
+    base::PostTaskAndReply(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(
             &PepperProxyLookupHelperTest::DestroyLookupHelperOnIOThread,
@@ -140,7 +140,7 @@ class PepperProxyLookupHelperTest : public testing::Test {
     lookup_helper_.reset();
   }
 
-  TestBrowserThreadBundle test_browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
 
   bool fail_to_start_request_ = false;
 

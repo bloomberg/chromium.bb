@@ -72,7 +72,6 @@ const CSSValue* AlignContent::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::
       ValueForContentPositionAndDistributionWithOverflowAlignment(
@@ -95,7 +94,6 @@ const CSSValue* AlignItems::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
       style.AlignItems());
@@ -113,7 +111,6 @@ const CSSValue* AlignSelf::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
       style.AlignSelf());
@@ -122,7 +119,6 @@ const CSSValue* AlignmentBaseline::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.AlignmentBaseline());
 }
@@ -139,7 +135,6 @@ const CSSValue* AnimationDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationDelay(style.Animations());
 }
@@ -167,7 +162,6 @@ const CSSValue* AnimationDirection::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
@@ -200,7 +194,6 @@ const CSSValue* AnimationDuration::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationDuration(style.Animations());
 }
@@ -228,7 +221,6 @@ const CSSValue* AnimationFillMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
@@ -261,7 +253,6 @@ const CSSValue* AnimationIterationCount::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
@@ -299,7 +290,6 @@ const CSSValue* AnimationName::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
@@ -334,7 +324,6 @@ const CSSValue* AnimationPlayState::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const CSSAnimationData* animation_data = style.Animations();
@@ -367,7 +356,6 @@ const CSSValue* AnimationTimingFunction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationTimingFunction(
       style.Animations());
@@ -390,7 +378,6 @@ const CSSValue* BackdropFilter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFilter(style, style.BackdropFilter());
 }
@@ -398,7 +385,6 @@ const CSSValue* BackfaceVisibility::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(
       (style.BackfaceVisibility() == EBackfaceVisibility::kHidden)
@@ -418,7 +404,6 @@ const CSSValue* BackgroundAttachment::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
@@ -439,7 +424,6 @@ const CSSValue* BackgroundBlendMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const FillLayer* curr_layer = &style.BackgroundLayers(); curr_layer;
@@ -460,7 +444,6 @@ const CSSValue* BackgroundClip::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.BackgroundLayers();
@@ -490,7 +473,6 @@ const CSSValue* BackgroundColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (allow_visited_style) {
     return cssvalue::CSSColorValue::Create(
@@ -513,10 +495,10 @@ const CSSValue* BackgroundImage::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.BackgroundLayers();
-  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(fill_layer);
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+      style, allow_visited_style, fill_layer);
 }
 
 const CSSValue* BackgroundOrigin::ParseSingleValue(
@@ -531,7 +513,6 @@ const CSSValue* BackgroundOrigin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.BackgroundLayers();
@@ -556,7 +537,6 @@ const CSSValue* BackgroundPositionX::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer* curr_layer = &style.BackgroundLayers();
   return ComputedStyleUtils::BackgroundPositionXOrWebkitMaskPositionX(
@@ -577,7 +557,6 @@ const CSSValue* BackgroundPositionY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer* curr_layer = &style.BackgroundLayers();
   return ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
@@ -596,7 +575,6 @@ const CSSValue* BackgroundSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.BackgroundLayers();
   return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
@@ -618,7 +596,6 @@ const CSSValue* BaselineShift::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   switch (svg_style.BaselineShift()) {
     case BS_SUPER:
@@ -733,7 +710,6 @@ const CSSValue* BorderBottomColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
@@ -752,7 +728,6 @@ const CSSValue* BorderBottomLeftRadius::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return &ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderBottomLeftRadius(), style);
@@ -769,7 +744,6 @@ const CSSValue* BorderBottomRightRadius::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return &ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderBottomRightRadius(), style);
@@ -778,7 +752,6 @@ const CSSValue* BorderBottomStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BorderBottomStyle());
 }
@@ -794,7 +767,6 @@ const CSSValue* BorderBottomWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.BorderBottomWidth(), style);
 }
@@ -803,7 +775,6 @@ const CSSValue* BorderCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.BorderCollapse() == EBorderCollapse::kCollapse)
     return CSSIdentifierValue::Create(CSSValueID::kCollapse);
@@ -821,7 +792,6 @@ const CSSValue* BorderImageOutset::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageQuad(
       style.BorderImage().Outset(), style);
@@ -847,7 +817,6 @@ const CSSValue* BorderImageRepeat::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageRepeat(style.BorderImage());
 }
@@ -870,7 +839,6 @@ const CSSValue* BorderImageSlice::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageSlice(style.BorderImage());
 }
@@ -898,10 +866,11 @@ const CSSValue* BorderImageSource::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  if (style.BorderImageSource())
-    return style.BorderImageSource()->ComputedCSSValue();
+  if (style.BorderImageSource()) {
+    return style.BorderImageSource()->ComputedCSSValue(style,
+                                                       allow_visited_style);
+  }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -928,7 +897,6 @@ const CSSValue* BorderImageWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageQuad(
       style.BorderImage().BorderSlices(), style);
@@ -995,7 +963,6 @@ const CSSValue* BorderLeftColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
@@ -1007,7 +974,6 @@ const CSSValue* BorderLeftStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BorderLeftStyle());
 }
@@ -1023,7 +989,6 @@ const CSSValue* BorderLeftWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.BorderLeftWidth(), style);
 }
@@ -1048,7 +1013,6 @@ const CSSValue* BorderRightColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
@@ -1060,7 +1024,6 @@ const CSSValue* BorderRightStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BorderRightStyle());
 }
@@ -1076,7 +1039,6 @@ const CSSValue* BorderRightWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.BorderRightWidth(), style);
 }
@@ -1101,7 +1063,6 @@ const CSSValue* BorderTopColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style
              ? cssvalue::CSSColorValue::Create(
@@ -1121,7 +1082,6 @@ const CSSValue* BorderTopLeftRadius::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return &ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderTopLeftRadius(), style);
@@ -1138,7 +1098,6 @@ const CSSValue* BorderTopRightRadius::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return &ComputedStyleUtils::ValueForBorderRadiusCorner(
       style.BorderTopRightRadius(), style);
@@ -1148,7 +1107,6 @@ const CSSValue* BorderTopStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BorderTopStyle());
 }
@@ -1164,7 +1122,6 @@ const CSSValue* BorderTopWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.BorderTopWidth(), style);
 }
@@ -1187,7 +1144,6 @@ const CSSValue* Bottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPositionOffset(style, *this,
                                                     layout_object);
@@ -1205,7 +1161,6 @@ const CSSValue* BoxShadow::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForShadowList(style.BoxShadow(), style, true);
 }
@@ -1214,7 +1169,6 @@ const CSSValue* BoxSizing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.BoxSizing() == EBoxSizing::kContentBox)
     return CSSIdentifierValue::Create(CSSValueID::kContentBox);
@@ -1225,7 +1179,6 @@ const CSSValue* BreakAfter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BreakAfter());
 }
@@ -1234,7 +1187,6 @@ const CSSValue* BreakBefore::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BreakBefore());
 }
@@ -1243,7 +1195,6 @@ const CSSValue* BreakInside::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BreakInside());
 }
@@ -1252,7 +1203,6 @@ const CSSValue* BufferedRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.BufferedRendering());
 }
@@ -1261,7 +1211,6 @@ const CSSValue* CaptionSide::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.CaptionSide());
 }
@@ -1291,7 +1240,6 @@ const CSSValue* CaretColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   blink::Color color;
   if (allow_visited_style)
@@ -1321,7 +1269,6 @@ const CSSValue* Clear::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Clear());
 }
@@ -1377,7 +1324,6 @@ const CSSValue* Clip::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasAutoClip())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -1408,7 +1354,6 @@ const CSSValue* ClipPath::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (ClipPathOperation* operation = style.ClipPath()) {
     if (operation->GetType() == ClipPathOperation::SHAPE) {
@@ -1427,7 +1372,6 @@ const CSSValue* ClipRule::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ClipRule());
 }
@@ -1450,7 +1394,6 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return cssvalue::CSSColorValue::Create(
       allow_visited_style ? style.VisitedDependentColor(*this).Rgb()
@@ -1458,11 +1401,21 @@ const CSSValue* Color::CSSValueFromComputedStyleInternal(
 }
 
 void Color::ApplyInitial(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInitial));
+    return;
+  }
   blink::Color color = ComputedStyleInitialValues::InitialColor();
   state.Style()->SetColor(color);
 }
 
 void Color::ApplyInherit(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInherit));
+    return;
+  }
   blink::Color color = state.ParentStyle()->GetColor();
   if (state.ParentStyle()->IsColorInternalText())
     state.Style()->SetIsColorInternalText(true);
@@ -1471,6 +1424,10 @@ void Color::ApplyInherit(StyleResolverState& state) const {
 }
 
 void Color::ApplyValue(StyleResolverState& state, const CSSValue& value) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedColorValue(&value);
+    return;
+  }
   // As per the spec, 'color: currentColor' is treated as 'color: inherit'
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
@@ -1491,7 +1448,6 @@ const CSSValue* ColorInterpolation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ColorInterpolation());
 }
@@ -1500,7 +1456,6 @@ const CSSValue* ColorInterpolationFilters::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ColorInterpolationFilters());
 }
@@ -1509,7 +1464,6 @@ const CSSValue* ColorRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ColorRendering());
 }
@@ -1566,7 +1520,6 @@ const CSSValue* ColorScheme::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.ColorScheme().IsEmpty())
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
@@ -1632,7 +1585,6 @@ const CSSValue* ColumnCount::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasAutoColumnCount())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -1644,7 +1596,6 @@ const CSSValue* ColumnFill::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetColumnFill());
 }
@@ -1660,7 +1611,6 @@ const CSSValue* ColumnGap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool) const {
   return ComputedStyleUtils::ValueForGapLength(style.ColumnGap(), style);
 }
@@ -1683,7 +1633,6 @@ const CSSValue* ColumnRuleColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
@@ -1695,7 +1644,6 @@ const CSSValue* ColumnRuleStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ColumnRuleStyle());
 }
@@ -1713,7 +1661,6 @@ const CSSValue* ColumnRuleWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.ColumnRuleWidth(), style);
 }
@@ -1730,7 +1677,6 @@ const CSSValue* ColumnSpan::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(static_cast<unsigned>(style.GetColumnSpan())
                                         ? CSSValueID::kAll
@@ -1748,7 +1694,6 @@ const CSSValue* ColumnWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasAutoColumnWidth())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -1805,7 +1750,6 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.Contain())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -1825,6 +1769,40 @@ const CSSValue* Contain::CSSValueFromComputedStyleInternal(
     list->Append(*CSSIdentifierValue::Create(CSSValueID::kPaint));
   DCHECK(list->length());
   return list;
+}
+
+const CSSValue* ContentSize::ParseSingleValue(
+    CSSParserTokenRange& range,
+    const CSSParserContext& context,
+    const CSSParserLocalContext&) const {
+  if (range.Peek().Id() == CSSValueID::kNone)
+    return css_property_parser_helpers::ConsumeIdent(range);
+  auto* width = css_property_parser_helpers::ConsumeLength(
+      range, context.Mode(), kValueRangeNonNegative);
+  if (!width)
+    return nullptr;
+  auto* height = css_property_parser_helpers::ConsumeLength(
+      range, context.Mode(), kValueRangeNonNegative);
+  if (!height)
+    height = width;
+
+  return MakeGarbageCollected<CSSValuePair>(width, height,
+                                            CSSValuePair::kDropIdenticalValues);
+}
+
+const CSSValue* ContentSize::CSSValueFromComputedStyleInternal(
+    const ComputedStyle& style,
+    const SVGComputedStyle&,
+    const LayoutObject* layout_object,
+    bool allow_visited_style) const {
+  if (style.GetContentSize().IsNone())
+    return CSSIdentifierValue::Create(CSSValueID::kNone);
+  return MakeGarbageCollected<CSSValuePair>(
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.GetContentSize().GetWidth(), style),
+      ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
+          style.GetContentSize().GetHeight(), style),
+      CSSValuePair::kDropIdenticalValues);
 }
 
 namespace {
@@ -1923,6 +1901,10 @@ const CSSValue* Content::ParseSingleValue(CSSParserTokenRange& range,
     if (!parsed_value) {
       if (RuntimeEnabledFeatures::CSSAltTextEnabled() &&
           css_property_parser_helpers::ConsumeSlashIncludingWhitespace(range)) {
+        // No values were parsed before the slash, so nothing to apply the
+        // alternative text to.
+        if (!values->length())
+          return nullptr;
         alt_text_present = true;
       } else {
         return nullptr;
@@ -1946,9 +1928,8 @@ const CSSValue* Content::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForContentData(style);
+  return ComputedStyleUtils::ValueForContentData(style, allow_visited_style);
 }
 
 void Content::ApplyInitial(StyleResolverState& state) const {
@@ -2063,7 +2044,6 @@ const CSSValue* CounterIncrement::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForCounterDirectives(style, true);
 }
@@ -2082,7 +2062,6 @@ const CSSValue* CounterReset::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForCounterDirectives(style, false);
 }
@@ -2150,7 +2129,6 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = nullptr;
   CursorList* cursors = style.Cursors();
@@ -2159,8 +2137,8 @@ const CSSValue* Cursor::CSSValueFromComputedStyleInternal(
     for (const CursorData& cursor : *cursors) {
       if (StyleImage* image = cursor.GetImage()) {
         list->Append(*MakeGarbageCollected<cssvalue::CSSCursorImageValue>(
-            *image->ComputedCSSValue(), cursor.HotSpotSpecified(),
-            cursor.HotSpot()));
+            *image->ComputedCSSValue(style, allow_visited_style),
+            cursor.HotSpotSpecified(), cursor.HotSpot()));
       }
     }
   }
@@ -2216,7 +2194,6 @@ const CSSValue* Cx::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Cx(),
                                                              style);
@@ -2233,7 +2210,6 @@ const CSSValue* Cy::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Cy(),
                                                              style);
@@ -2249,7 +2225,6 @@ const CSSValue* D::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (const StylePath* style_path = svg_style.D())
     return style_path->ComputedCSSValue();
@@ -2260,7 +2235,6 @@ const CSSValue* Direction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Direction());
 }
@@ -2306,7 +2280,6 @@ const CSSValue* Display::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.IsDisplayLayoutCustomBox()) {
     return MakeGarbageCollected<cssvalue::CSSLayoutFunctionValue>(
@@ -2353,7 +2326,6 @@ const CSSValue* DominantBaseline::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.DominantBaseline());
 }
@@ -2362,7 +2334,6 @@ const CSSValue* EmptyCells::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.EmptyCells());
 }
@@ -2377,7 +2348,6 @@ const CSSValue* Fill::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
       svg_style.FillPaint(), style.GetColor());
@@ -2387,14 +2357,13 @@ const CSSValue* FillOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* FillOpacity::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(svg_style.FillOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -2404,7 +2373,6 @@ const CSSValue* FillRule::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.FillRule());
 }
@@ -2419,7 +2387,6 @@ const CSSValue* Filter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFilter(style, style.Filter());
 }
@@ -2439,7 +2406,6 @@ const CSSValue* FlexBasis::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.FlexBasis(),
                                                              style);
@@ -2449,7 +2415,6 @@ const CSSValue* FlexDirection::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.FlexDirection());
 }
@@ -2465,7 +2430,6 @@ const CSSValue* FlexGrow::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.FlexGrow(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -2483,7 +2447,6 @@ const CSSValue* FlexShrink::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.FlexShrink(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -2493,7 +2456,6 @@ const CSSValue* FlexWrap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.FlexWrap());
 }
@@ -2502,7 +2464,6 @@ const CSSValue* Float::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasOutOfFlowPosition())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -2529,7 +2490,6 @@ const CSSValue* FloodColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style,
                                                       style.FloodColor());
@@ -2539,14 +2499,13 @@ const CSSValue* FloodOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* FloodOpacity::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(svg_style.FloodOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -2563,7 +2522,6 @@ const CSSValue* FontFamily::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontFamily(style);
 }
@@ -2579,7 +2537,6 @@ const CSSValue* FontFeatureSettings::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const blink::FontFeatureSettings* feature_settings =
       style.GetFontDescription().FeatureSettings();
@@ -2599,7 +2556,6 @@ const CSSValue* FontKerning::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetFontDescription().GetKerning());
 }
@@ -2619,7 +2575,6 @@ const CSSValue* FontSizeAdjust::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasFontSizeAdjust()) {
     return CSSNumericLiteralValue::Create(style.FontSizeAdjust(),
@@ -2639,7 +2594,6 @@ const CSSValue* FontSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontSize(style);
 }
@@ -2655,7 +2609,6 @@ const CSSValue* FontStretch::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontStretch(style);
 }
@@ -2671,7 +2624,6 @@ const CSSValue* FontStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontStyle(style);
 }
@@ -2690,7 +2642,6 @@ const CSSValue* FontVariantCaps::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontVariantCaps(style);
 }
@@ -2716,7 +2667,6 @@ const CSSValue* FontVariantEastAsian::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontVariantEastAsian(style);
 }
@@ -2743,7 +2693,6 @@ const CSSValue* FontVariantLigatures::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontVariantLigatures(style);
 }
@@ -2769,7 +2718,6 @@ const CSSValue* FontVariantNumeric::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontVariantNumeric(style);
 }
@@ -2826,7 +2774,6 @@ const CSSValue* FontVariationSettings::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const blink::FontVariationSettings* variation_settings =
       style.GetFontDescription().VariationSettings();
@@ -2854,7 +2801,6 @@ const CSSValue* FontWeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForFontWeight(style);
 }
@@ -2863,7 +2809,6 @@ const CSSValue* ForcedColorAdjust::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ForcedColorAdjust());
 }
@@ -2890,8 +2835,32 @@ const CSSValue* InternalEffectiveZoom::ParseSingleValue(
   return css_property_parser_helpers::ConsumeNumber(range, value_range);
 }
 
+void InternalVisitedColor::ApplyInitial(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInitial));
+    return;
+  }
+  auto color = ComputedStyleInitialValues::InitialColor();
+  state.Style()->SetInternalVisitedColor(color);
+}
+
+void InternalVisitedColor::ApplyInherit(StyleResolverState& state) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(
+        CSSIdentifierValue::Create(CSSValueID::kInherit));
+    return;
+  }
+  auto color = state.ParentStyle()->GetColor();
+  state.Style()->SetInternalVisitedColor(color);
+}
+
 void InternalVisitedColor::ApplyValue(StyleResolverState& state,
                                       const CSSValue& value) const {
+  if (!RuntimeEnabledFeatures::CSSCascadeEnabled()) {
+    state.SetCascadedVisitedColorValue(&value);
+    return;
+  }
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value &&
       identifier_value->GetValueID() == CSSValueID::kCurrentcolor) {
@@ -2937,7 +2906,6 @@ const CSSValue* GridAutoColumns::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridTrackSizeList(kForColumns, style);
 }
@@ -2970,7 +2938,6 @@ const CSSValue* GridAutoFlow::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   switch (style.GetGridAutoFlow()) {
@@ -3012,7 +2979,6 @@ const CSSValue* GridAutoRows::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridTrackSizeList(kForRows, style);
 }
@@ -3028,7 +2994,6 @@ const CSSValue* GridColumnEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridPosition(style.GridColumnEnd());
 }
@@ -3044,7 +3009,6 @@ const CSSValue* GridColumnStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridPosition(style.GridColumnStart());
 }
@@ -3060,7 +3024,6 @@ const CSSValue* GridRowEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridPosition(style.GridRowEnd());
 }
@@ -3076,7 +3039,6 @@ const CSSValue* GridRowStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridPosition(style.GridRowStart());
 }
@@ -3111,7 +3073,6 @@ const CSSValue* GridTemplateAreas::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.NamedGridAreaRowCount()) {
     DCHECK(!style.NamedGridAreaColumnCount());
@@ -3189,7 +3150,6 @@ const CSSValue* GridTemplateColumns::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridTrackList(kForColumns, layout_object,
                                                    style);
@@ -3212,7 +3172,6 @@ const CSSValue* GridTemplateRows::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForGridTrackList(kForRows, layout_object,
                                                    style);
@@ -3234,7 +3193,6 @@ const CSSValue* Height::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   if (ComputedStyleUtils::WidthOrHeightShouldReturnUsedValue(layout_object)) {
     return ZoomAdjustedPixelValue(
@@ -3248,7 +3206,6 @@ const CSSValue* Hyphens::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetHyphens());
 }
@@ -3273,7 +3230,6 @@ const CSSValue* ImageOrientation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.RespectImageOrientation() == kRespectImageOrientation)
     return CSSIdentifierValue::Create(CSSValueID::kFromImage);
@@ -3285,7 +3241,6 @@ const CSSValue* ImageRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ImageRendering());
 }
@@ -3590,7 +3545,6 @@ const CSSValue* Isolation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Isolation());
 }
@@ -3612,7 +3566,6 @@ const CSSValue* JustifyContent::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::
       ValueForContentPositionAndDistributionWithOverflowAlignment(
@@ -3657,7 +3610,6 @@ const CSSValue* JustifyItems::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
       style.JustifyItems().GetPosition() == ItemPosition::kAuto
@@ -3677,7 +3629,6 @@ const CSSValue* JustifySelf::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForItemPositionWithOverflowAlignment(
       style.JustifySelf());
@@ -3701,7 +3652,6 @@ const CSSValue* Left::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPositionOffset(style, *this,
                                                     layout_object);
@@ -3718,7 +3668,6 @@ const CSSValue* LetterSpacing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.LetterSpacing())
     return CSSIdentifierValue::Create(CSSValueID::kNormal);
@@ -3745,7 +3694,6 @@ const CSSValue* LightingColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style,
                                                       style.LightingColor());
@@ -3755,7 +3703,6 @@ const CSSValue* LineBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetLineBreak());
 }
@@ -3771,7 +3718,6 @@ const CSSValue* LineHeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForLineHeight(style);
 }
@@ -3788,7 +3734,6 @@ const CSSValue* LineHeightStep::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.LineHeightStep(), style);
 }
@@ -3804,10 +3749,9 @@ const CSSValue* ListStyleImage::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.ListStyleImage())
-    return style.ListStyleImage()->ComputedCSSValue();
+    return style.ListStyleImage()->ComputedCSSValue(style, allow_visited_style);
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -3821,7 +3765,6 @@ const CSSValue* ListStylePosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ListStylePosition());
 }
@@ -3830,9 +3773,13 @@ const CSSValue* ListStyleType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ListStyleType());
+}
+
+bool MarginBlockEnd::IsLayoutDependent(const ComputedStyle* style,
+                                       LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginBlockEnd::ParseSingleValue(
@@ -3842,6 +3789,11 @@ const CSSValue* MarginBlockEnd::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool MarginBlockStart::IsLayoutDependent(const ComputedStyle* style,
+                                         LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginBlockStart::ParseSingleValue(
@@ -3872,7 +3824,6 @@ const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& margin_bottom = style.MarginBottom();
   if (margin_bottom.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -3883,6 +3834,11 @@ const CSSValue* MarginBottom::CSSValueFromComputedStyleInternal(
                                 style);
 }
 
+bool MarginInlineEnd::IsLayoutDependent(const ComputedStyle* style,
+                                        LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* MarginInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -3890,6 +3846,11 @@ const CSSValue* MarginInlineEnd::ParseSingleValue(
   return css_parsing_utils::ConsumeMarginOrOffset(
       range, context.Mode(),
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool MarginInlineStart::IsLayoutDependent(const ComputedStyle* style,
+                                          LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* MarginInlineStart::ParseSingleValue(
@@ -3920,7 +3881,6 @@ const CSSValue* MarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& margin_left = style.MarginLeft();
   if (margin_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -3950,7 +3910,6 @@ const CSSValue* MarginRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& margin_right = style.MarginRight();
   if (margin_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -3994,7 +3953,6 @@ const CSSValue* MarginTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& margin_top = style.MarginTop();
   if (margin_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -4017,7 +3975,6 @@ const CSSValue* MarkerEnd::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForSVGResource(svg_style.MarkerEndResource());
 }
@@ -4035,7 +3992,6 @@ const CSSValue* MarkerMid::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForSVGResource(svg_style.MarkerMidResource());
 }
@@ -4053,7 +4009,6 @@ const CSSValue* MarkerStart::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForSVGResource(
       svg_style.MarkerStartResource());
@@ -4071,7 +4026,6 @@ const CSSValue* Mask::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForSVGResource(svg_style.MaskerResource());
 }
@@ -4099,7 +4053,6 @@ const CSSValue* MaskSourceType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   for (const FillLayer* curr_layer = &style.MaskLayers(); curr_layer;
@@ -4112,7 +4065,6 @@ const CSSValue* MaskType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.MaskType());
 }
@@ -4136,7 +4088,6 @@ const CSSValue* MaxHeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const Length& max_height = style.MaxHeight();
   if (max_height.IsMaxSizeNone())
@@ -4162,7 +4113,6 @@ const CSSValue* MaxWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const Length& max_width = style.MaxWidth();
   if (max_width.IsMaxSizeNone())
@@ -4188,11 +4138,10 @@ const CSSValue* MinHeight::ParseSingleValue(
 const CSSValue* MinHeight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
-    const LayoutObject*,
-    const Node* styled_node,
+    const LayoutObject* layout_object,
     bool allow_visited_style) const {
   if (style.MinHeight().IsAuto())
-    return ComputedStyleUtils::MinWidthOrMinHeightAuto(styled_node, style);
+    return ComputedStyleUtils::MinWidthOrMinHeightAuto(style);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MinHeight(),
                                                              style);
 }
@@ -4214,11 +4163,10 @@ const CSSValue* MinWidth::ParseSingleValue(CSSParserTokenRange& range,
 const CSSValue* MinWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
-    const LayoutObject*,
-    const Node* styled_node,
+    const LayoutObject* layout_object,
     bool allow_visited_style) const {
   if (style.MinWidth().IsAuto())
-    return ComputedStyleUtils::MinWidthOrMinHeightAuto(styled_node, style);
+    return ComputedStyleUtils::MinWidthOrMinHeightAuto(style);
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(style.MinWidth(),
                                                              style);
 }
@@ -4227,7 +4175,6 @@ const CSSValue* MixBlendMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetBlendMode());
 }
@@ -4236,7 +4183,6 @@ const CSSValue* ObjectFit::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetObjectFit());
 }
@@ -4254,7 +4200,6 @@ const CSSValue* ObjectPosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return MakeGarbageCollected<CSSValuePair>(
       ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
@@ -4280,7 +4225,6 @@ const CSSValue* OffsetAnchor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPosition(style.OffsetAnchor(), style);
 }
@@ -4297,7 +4241,6 @@ const CSSValue* OffsetDistance::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.OffsetDistance(), style);
@@ -4314,7 +4257,6 @@ const CSSValue* OffsetPath::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (const BasicShape* style_motion_path = style.OffsetPath())
     return ValueForBasicShape(style, style_motion_path);
@@ -4342,7 +4284,6 @@ const CSSValue* OffsetPosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPosition(style.OffsetPosition(), style);
 }
@@ -4357,7 +4298,6 @@ const CSSValue* OffsetRotate::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (style.OffsetRotate().type == OffsetRotationType::kAuto)
@@ -4370,14 +4310,13 @@ const CSSValue* OffsetRotate::CSSValueFromComputedStyleInternal(
 const CSSValue* Opacity::ParseSingleValue(CSSParserTokenRange& range,
                                           const CSSParserContext& context,
                                           const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* Opacity::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Opacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -4393,7 +4332,6 @@ const CSSValue* Order::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Order(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -4409,7 +4347,6 @@ const CSSValue* Orphans::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Orphans(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -4436,7 +4373,6 @@ const CSSValue* OutlineColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return allow_visited_style ? cssvalue::CSSColorValue::Create(
                                    style.VisitedDependentColor(*this).Rgb())
@@ -4456,7 +4392,6 @@ const CSSValue* OutlineOffset::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.OutlineOffset(), style);
 }
@@ -4465,7 +4400,6 @@ const CSSValue* OutlineStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.OutlineStyleIsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -4505,7 +4439,6 @@ const CSSValue* OutlineWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.OutlineWidth(), style);
 }
@@ -4514,7 +4447,6 @@ const CSSValue* OverflowAnchor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverflowAnchor());
 }
@@ -4523,7 +4455,6 @@ const CSSValue* OverflowWrap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverflowWrap());
 }
@@ -4532,7 +4463,6 @@ const CSSValue* OverflowX::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverflowX());
 }
@@ -4541,7 +4471,6 @@ const CSSValue* OverflowY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverflowY());
 }
@@ -4550,7 +4479,6 @@ const CSSValue* OverscrollBehaviorX::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverscrollBehaviorX());
 }
@@ -4559,9 +4487,13 @@ const CSSValue* OverscrollBehaviorY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.OverscrollBehaviorY());
+}
+
+bool PaddingBlockEnd::IsLayoutDependent(const ComputedStyle* style,
+                                        LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* PaddingBlockEnd::ParseSingleValue(
@@ -4571,6 +4503,11 @@ const CSSValue* PaddingBlockEnd::ParseSingleValue(
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool PaddingBlockStart::IsLayoutDependent(const ComputedStyle* style,
+                                          LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* PaddingBlockStart::ParseSingleValue(
@@ -4601,7 +4538,6 @@ const CSSValue* PaddingBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& padding_bottom = style.PaddingBottom();
   if (padding_bottom.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -4612,6 +4548,11 @@ const CSSValue* PaddingBottom::CSSValueFromComputedStyleInternal(
       ToLayoutBox(layout_object)->ComputedCSSPaddingBottom(), style);
 }
 
+bool PaddingInlineEnd::IsLayoutDependent(const ComputedStyle* style,
+                                         LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
+}
+
 const CSSValue* PaddingInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -4619,6 +4560,11 @@ const CSSValue* PaddingInlineEnd::ParseSingleValue(
   return ConsumeLengthOrPercent(
       range, context.Mode(), kValueRangeNonNegative,
       css_property_parser_helpers::UnitlessQuirk::kForbid);
+}
+
+bool PaddingInlineStart::IsLayoutDependent(const ComputedStyle* style,
+                                           LayoutObject* layout_object) const {
+  return layout_object && layout_object->IsBox();
 }
 
 const CSSValue* PaddingInlineStart::ParseSingleValue(
@@ -4649,7 +4595,6 @@ const CSSValue* PaddingLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& padding_left = style.PaddingLeft();
   if (padding_left.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -4679,7 +4624,6 @@ const CSSValue* PaddingRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& padding_right = style.PaddingRight();
   if (padding_right.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -4709,7 +4653,6 @@ const CSSValue* PaddingTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   const Length& padding_top = style.PaddingTop();
   if (padding_top.IsFixed() || !layout_object || !layout_object->IsBox()) {
@@ -4785,7 +4728,6 @@ const CSSValue* PaintOrder::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const EPaintOrder paint_order = svg_style.PaintOrder();
   if (paint_order == kPaintOrderNormal)
@@ -4846,7 +4788,6 @@ const CSSValue* Perspective::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.HasPerspective())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -4871,7 +4812,6 @@ const CSSValue* PerspectiveOrigin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   if (layout_object) {
     LayoutRect box;
@@ -4900,7 +4840,6 @@ const CSSValue* PointerEvents::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.PointerEvents());
 }
@@ -4909,7 +4848,6 @@ const CSSValue* Position::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetPosition());
 }
@@ -4941,7 +4879,6 @@ const CSSValue* Quotes::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.Quotes()) {
     // TODO(ramya.v): We should return the quote values that we're actually
@@ -4972,7 +4909,6 @@ const CSSValue* R::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.R(),
                                                              style);
@@ -4982,7 +4918,6 @@ const CSSValue* Resize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Resize());
 }
@@ -5022,7 +4957,6 @@ const CSSValue* Right::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPositionOffset(style, *this,
                                                     layout_object);
@@ -5063,7 +4997,6 @@ const CSSValue* Rotate::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.Rotate())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -5093,7 +5026,6 @@ const CSSValue* RowGap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool) const {
   return ComputedStyleUtils::ValueForGapLength(style.RowGap(), style);
 }
@@ -5111,7 +5043,6 @@ const CSSValue* Rx::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Rx(),
                                                              style);
@@ -5130,7 +5061,6 @@ const CSSValue* Ry::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Ry(),
                                                              style);
@@ -5174,7 +5104,6 @@ const CSSValue* Scale::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   ScaleTransformOperation* scale = style.Scale();
   if (!scale)
@@ -5202,7 +5131,6 @@ const CSSValue* ScrollBehavior::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetScrollBehavior());
 }
@@ -5258,7 +5186,6 @@ const CSSValue* ScrollCustomization::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ScrollCustomizationFlagsToCSSValue(
       style.ScrollCustomization());
@@ -5292,7 +5219,6 @@ const CSSValue* ScrollMarginBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.ScrollMarginBottom(), style);
 }
@@ -5325,7 +5251,6 @@ const CSSValue* ScrollMarginLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.ScrollMarginLeft(), style);
 }
@@ -5342,7 +5267,6 @@ const CSSValue* ScrollMarginRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.ScrollMarginRight(), style);
 }
@@ -5359,7 +5283,6 @@ const CSSValue* ScrollMarginTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.ScrollMarginTop(), style);
 }
@@ -5368,34 +5291,27 @@ const CSSValue* ScrollPaddingBlockEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBlockStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBottom::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingBottom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.ScrollPaddingBottom(), style);
@@ -5405,34 +5321,27 @@ const CSSValue* ScrollPaddingInlineEnd::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingInlineStart::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingLeft::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingLeft::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.ScrollPaddingLeft(), style);
@@ -5442,16 +5351,13 @@ const CSSValue* ScrollPaddingRight::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingRight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.ScrollPaddingRight(), style);
@@ -5461,16 +5367,13 @@ const CSSValue* ScrollPaddingTop::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return ConsumeLengthOrPercent(
-      range, context.Mode(), kValueRangeNonNegative,
-      css_property_parser_helpers::UnitlessQuirk::kForbid);
+  return css_parsing_utils::ConsumeScrollPadding(range);
 }
 
 const CSSValue* ScrollPaddingTop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.ScrollPaddingTop(), style);
@@ -5502,7 +5405,6 @@ const CSSValue* ScrollSnapAlign::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForScrollSnapAlign(style.GetScrollSnapAlign(),
                                                      style);
@@ -5512,7 +5414,6 @@ const CSSValue* ScrollSnapStop::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.ScrollSnapStop());
 }
@@ -5546,7 +5447,6 @@ const CSSValue* ScrollSnapType::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForScrollSnapType(style.GetScrollSnapType(),
                                                     style);
@@ -5556,14 +5456,13 @@ const CSSValue* ShapeImageThreshold::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* ShapeImageThreshold::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.ShapeImageThreshold(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -5581,7 +5480,6 @@ const CSSValue* ShapeMargin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSValue::Create(style.ShapeMargin(), style.EffectiveZoom());
 }
@@ -5613,16 +5511,15 @@ const CSSValue* ShapeOutside::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForShape(style, style.ShapeOutside());
+  return ComputedStyleUtils::ValueForShape(style, allow_visited_style,
+                                           style.ShapeOutside());
 }
 
 const CSSValue* ShapeRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.ShapeRendering());
 }
@@ -5771,7 +5668,6 @@ const CSSValue* Speak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Speak());
 }
@@ -5796,7 +5692,6 @@ const CSSValue* StopColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style, style.StopColor());
 }
@@ -5805,14 +5700,13 @@ const CSSValue* StopOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* StopOpacity::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(svg_style.StopOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -5828,7 +5722,6 @@ const CSSValue* Stroke::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::AdjustSVGPaintForCurrentColor(
       svg_style.StrokePaint(), style.GetColor());
@@ -5860,7 +5753,6 @@ const CSSValue* StrokeDasharray::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::StrokeDashArrayToCSSValueList(
       *svg_style.StrokeDashArray(), style);
@@ -5879,7 +5771,6 @@ const CSSValue* StrokeDashoffset::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
       style.StrokeDashOffset(), style);
@@ -5889,7 +5780,6 @@ const CSSValue* StrokeLinecap::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.CapStyle());
 }
@@ -5898,7 +5788,6 @@ const CSSValue* StrokeLinejoin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.JoinStyle());
 }
@@ -5915,7 +5804,6 @@ const CSSValue* StrokeMiterlimit::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(svg_style.StrokeMiterLimit(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -5925,14 +5813,13 @@ const CSSValue* StrokeOpacity::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
-  return css_property_parser_helpers::ConsumeNumber(range, kValueRangeAll);
+  return css_property_parser_helpers::ConsumeAlphaValue(range);
 }
 
 const CSSValue* StrokeOpacity::CSSValueFromComputedStyleInternal(
     const ComputedStyle&,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(svg_style.StrokeOpacity(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -5951,7 +5838,6 @@ const CSSValue* StrokeWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const Length& length = svg_style.StrokeWidth().length();
   if (length.IsFixed()) {
@@ -5976,7 +5862,6 @@ const CSSValue* TabSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(
       style.GetTabSize().GetPixelSize(1.0),
@@ -5988,7 +5873,6 @@ const CSSValue* TableLayout::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TableLayout());
 }
@@ -5997,7 +5881,6 @@ const CSSValue* TextAlign::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetTextAlign());
 }
@@ -6033,7 +5916,6 @@ const CSSValue* TextAlignLast::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TextAlignLast());
 }
@@ -6042,7 +5924,6 @@ const CSSValue* TextAnchor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.TextAnchor());
 }
@@ -6051,7 +5932,6 @@ const CSSValue* TextCombineUpright::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TextCombine());
 }
@@ -6075,7 +5955,6 @@ const CSSValue* TextDecorationColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(
       style, style.TextDecorationColor());
@@ -6092,7 +5971,6 @@ const CSSValue* TextDecorationLine::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
       style.GetTextDecoration());
@@ -6102,7 +5980,6 @@ const CSSValue* TextDecorationSkipInk::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForTextDecorationSkipInk(
       style.TextDecorationSkipInk());
@@ -6112,7 +5989,6 @@ const CSSValue* TextDecorationStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForTextDecorationStyle(
       style.TextDecorationStyle());
@@ -6169,7 +6045,6 @@ const CSSValue* TextIndent::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   list->Append(*ComputedStyleUtils::ZoomAdjustedPixelValueForLength(
@@ -6230,7 +6105,6 @@ const CSSValue* TextJustify::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetTextJustify());
 }
@@ -6239,7 +6113,6 @@ const CSSValue* TextOrientation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetTextOrientation());
 }
@@ -6254,7 +6127,6 @@ const CSSValue* TextOverflow::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.TextOverflow() != ETextOverflow::kClip)
     return CSSIdentifierValue::Create(CSSValueID::kEllipsis);
@@ -6265,7 +6137,6 @@ const CSSValue* TextRendering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetFontDescription().TextRendering());
 }
@@ -6282,7 +6153,6 @@ const CSSValue* TextShadow::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForShadowList(style.TextShadow(), style,
                                                 false);
@@ -6304,7 +6174,6 @@ const CSSValue* TextSizeAdjust::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.GetTextSizeAdjust().IsAuto())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -6317,7 +6186,6 @@ const CSSValue* TextTransform::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TextTransform());
 }
@@ -6354,7 +6222,6 @@ const CSSValue* TextUnderlinePosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   auto text_underline_position = style.TextUnderlinePosition();
   if (text_underline_position == kTextUnderlinePositionAuto)
@@ -6395,7 +6262,6 @@ const CSSValue* Top::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForPositionOffset(style, *this,
                                                     layout_object);
@@ -6461,7 +6327,6 @@ const CSSValue* TouchAction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::TouchActionFlagsToCSSValue(style.GetTouchAction());
 }
@@ -6470,7 +6335,6 @@ const CSSValue* TransformBox::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TransformBox());
 }
@@ -6492,7 +6356,6 @@ const CSSValue* Transform::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ComputedTransform(layout_object, style);
 }
@@ -6529,7 +6392,6 @@ const CSSValue* TransformOrigin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   if (layout_object) {
@@ -6555,7 +6417,6 @@ const CSSValue* TransformStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(
       (style.TransformStyle3D() == ETransformStyle3D::kPreserve3d)
@@ -6575,7 +6436,6 @@ const CSSValue* TransitionDelay::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationDelay(style.Transitions());
 }
@@ -6600,7 +6460,6 @@ const CSSValue* TransitionDuration::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationDuration(style.Transitions());
 }
@@ -6628,7 +6487,6 @@ const CSSValue* TransitionProperty::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForTransitionProperty(style.Transitions());
 }
@@ -6651,7 +6509,6 @@ const CSSValue* TransitionTimingFunction::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForAnimationTimingFunction(
       style.Transitions());
@@ -6705,7 +6562,6 @@ const CSSValue* Translate::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.Translate())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -6729,7 +6585,6 @@ const CSSValue* UnicodeBidi::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetUnicodeBidi());
 }
@@ -6738,7 +6593,6 @@ const CSSValue* UserSelect::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.UserSelect());
 }
@@ -6747,7 +6601,6 @@ const CSSValue* VectorEffect::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(svg_style.VectorEffect());
 }
@@ -6770,7 +6623,6 @@ const CSSValue* VerticalAlign::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   switch (style.VerticalAlign()) {
     case EVerticalAlign::kBaseline:
@@ -6824,7 +6676,6 @@ const CSSValue* Visibility::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Visibility());
 }
@@ -6833,7 +6684,6 @@ const CSSValue* WebkitAppRegion::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.DraggableRegionMode() == EDraggableRegionMode::kNone)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -6861,7 +6711,6 @@ const CSSValue* WebkitAppearance::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.Appearance());
 }
@@ -6879,7 +6728,6 @@ WebkitBorderHorizontalSpacing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.HorizontalBorderSpacing(), style);
 }
@@ -6895,9 +6743,9 @@ const CSSValue* WebkitBorderImage::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style);
+  return ComputedStyleUtils::ValueForNinePieceImage(style.BorderImage(), style,
+                                                    allow_visited_style);
 }
 
 void WebkitBorderImage::ApplyValue(StyleResolverState& state,
@@ -6920,7 +6768,6 @@ const CSSValue* WebkitBorderVerticalSpacing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.VerticalBorderSpacing(), style);
 }
@@ -6929,7 +6776,6 @@ const CSSValue* WebkitBoxAlign::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BoxAlign());
 }
@@ -6938,7 +6784,6 @@ const CSSValue* WebkitBoxDecorationBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.BoxDecorationBreak() == EBoxDecorationBreak::kSlice)
     return CSSIdentifierValue::Create(CSSValueID::kSlice);
@@ -6949,7 +6794,6 @@ const CSSValue* WebkitBoxDirection::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BoxDirection());
 }
@@ -6965,7 +6809,6 @@ const CSSValue* WebkitBoxFlex::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.BoxFlex(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -6982,7 +6825,6 @@ const CSSValue* WebkitBoxOrdinalGroup::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.BoxOrdinalGroup(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -6992,7 +6834,6 @@ const CSSValue* WebkitBoxOrient::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BoxOrient());
 }
@@ -7001,7 +6842,6 @@ const CSSValue* WebkitBoxPack::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.BoxPack());
 }
@@ -7051,9 +6891,9 @@ const CSSValue* WebkitBoxReflect::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style);
+  return ComputedStyleUtils::ValueForReflection(style.BoxReflect(), style,
+                                                allow_visited_style);
 }
 
 const CSSValue* WebkitFontSizeDelta::ParseSingleValue(
@@ -7069,7 +6909,6 @@ const CSSValue* WebkitFontSmoothing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetFontDescription().FontSmoothing());
 }
@@ -7087,7 +6926,6 @@ const CSSValue* WebkitHighlight::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.Highlight() == g_null_atom)
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -7107,7 +6945,6 @@ const CSSValue* WebkitHyphenateCharacter::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HyphenationString().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -7118,7 +6955,6 @@ const CSSValue* WebkitLineBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetLineBreak());
 }
@@ -7135,7 +6971,6 @@ const CSSValue* WebkitLineClamp::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (!style.HasLineClamp())
     return CSSIdentifierValue::Create(CSSValueID::kNone);
@@ -7156,7 +6991,6 @@ const CSSValue* WebkitLocale::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.Locale().IsNull())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -7178,7 +7012,6 @@ const CSSValue* WebkitMarginAfterCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.MarginAfterCollapse());
 }
@@ -7187,7 +7020,6 @@ const CSSValue* WebkitMarginBeforeCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.MarginBeforeCollapse());
 }
@@ -7196,7 +7028,6 @@ const CSSValue* WebkitMarginBottomCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.MarginAfterCollapse());
 }
@@ -7205,7 +7036,6 @@ const CSSValue* WebkitMarginTopCollapse::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.MarginBeforeCollapse());
 }
@@ -7221,7 +7051,6 @@ const CSSValue* WebkitMaskBoxImageOutset::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageQuad(
       style.MaskBoxImage().Outset(), style);
@@ -7238,7 +7067,6 @@ const CSSValue* WebkitMaskBoxImageRepeat::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageRepeat(style.MaskBoxImage());
 }
@@ -7255,7 +7083,6 @@ const CSSValue* WebkitMaskBoxImageSlice::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageSlice(style.MaskBoxImage());
 }
@@ -7271,10 +7098,11 @@ const CSSValue* WebkitMaskBoxImageSource::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
-  if (style.MaskBoxImageSource())
-    return style.MaskBoxImageSource()->ComputedCSSValue();
+  if (style.MaskBoxImageSource()) {
+    return style.MaskBoxImageSource()->ComputedCSSValue(style,
+                                                        allow_visited_style);
+  }
   return CSSIdentifierValue::Create(CSSValueID::kNone);
 }
 
@@ -7295,7 +7123,6 @@ const CSSValue* WebkitMaskBoxImageWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForNinePieceImageQuad(
       style.MaskBoxImage().BorderSlices(), style);
@@ -7314,7 +7141,6 @@ const CSSValue* WebkitMaskClip::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.MaskLayers();
@@ -7337,7 +7163,6 @@ const CSSValue* WebkitMaskComposite::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.MaskLayers();
@@ -7358,10 +7183,10 @@ const CSSValue* WebkitMaskImage::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.MaskLayers();
-  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(fill_layer);
+  return ComputedStyleUtils::BackgroundImageOrWebkitMaskImage(
+      style, allow_visited_style, fill_layer);
 }
 
 const CSSValue* WebkitMaskOrigin::ParseSingleValue(
@@ -7377,7 +7202,6 @@ const CSSValue* WebkitMaskOrigin::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateCommaSeparated();
   const FillLayer* curr_layer = &style.MaskLayers();
@@ -7402,7 +7226,6 @@ const CSSValue* WebkitMaskPositionX::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer* curr_layer = &style.MaskLayers();
   return ComputedStyleUtils::BackgroundPositionXOrWebkitMaskPositionX(
@@ -7423,7 +7246,6 @@ const CSSValue* WebkitMaskPositionY::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer* curr_layer = &style.MaskLayers();
   return ComputedStyleUtils::BackgroundPositionYOrWebkitMaskPositionY(
@@ -7442,7 +7264,6 @@ const CSSValue* WebkitMaskSize::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   const FillLayer& fill_layer = style.MaskLayers();
   return ComputedStyleUtils::BackgroundImageOrWebkitMaskSize(style, fill_layer);
@@ -7470,7 +7291,6 @@ const CSSValue* WebkitPrintColorAdjust::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.PrintColorAdjust());
 }
@@ -7479,7 +7299,6 @@ const CSSValue* WebkitRtlOrdering::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.RtlOrdering() == EOrder::kVisual
                                         ? CSSValueID::kVisual
@@ -7490,7 +7309,6 @@ const CSSValue* WebkitRubyPosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetRubyPosition());
 }
@@ -7515,7 +7333,6 @@ const CSSValue* WebkitTapHighlightColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(
       style, style.TapHighlightColor());
@@ -7525,7 +7342,6 @@ const CSSValue* WebkitTextCombine::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.TextCombine() == ETextCombine::kAll)
     return CSSIdentifierValue::Create(CSSValueID::kHorizontal);
@@ -7544,7 +7360,6 @@ WebkitTextDecorationsInEffect::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::RenderTextDecorationFlagsToCSSValue(
       style.TextDecorationsInEffect());
@@ -7568,7 +7383,6 @@ const CSSValue* WebkitTextEmphasisColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(
       style, style.TextEmphasisColor());
@@ -7628,7 +7442,6 @@ const CSSValue* WebkitTextEmphasisPosition::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   CSSValueList* list = CSSValueList::CreateSpaceSeparated();
   switch (style.GetTextEmphasisPosition()) {
@@ -7691,7 +7504,6 @@ const CSSValue* WebkitTextEmphasisStyle::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   switch (style.GetTextEmphasisMark()) {
     case TextEmphasisMark::kNone:
@@ -7796,7 +7608,6 @@ const CSSValue* WebkitTextFillColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style,
                                                       style.TextFillColor());
@@ -7806,7 +7617,6 @@ const CSSValue* WebkitTextOrientation::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.GetTextOrientation() == ETextOrientation::kMixed)
     return CSSIdentifierValue::Create(CSSValueID::kVerticalRight);
@@ -7823,7 +7633,6 @@ const CSSValue* WebkitTextSecurity::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.TextSecurity());
 }
@@ -7846,7 +7655,6 @@ const CSSValue* WebkitTextStrokeColor::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::CurrentColorOrValidColor(style,
                                                       style.TextStrokeColor());
@@ -7865,7 +7673,6 @@ const CSSValue* WebkitTextStrokeWidth::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.TextStrokeWidth(), style);
 }
@@ -7900,7 +7707,6 @@ const CSSValue* WebkitUserDrag::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.UserDrag());
 }
@@ -7909,7 +7715,6 @@ const CSSValue* WebkitUserModify::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.UserModify());
 }
@@ -7918,7 +7723,6 @@ const CSSValue* WebkitWritingMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
@@ -7933,7 +7737,6 @@ const CSSValue* WhiteSpace::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.WhiteSpace());
 }
@@ -7948,7 +7751,6 @@ const CSSValue* Widows::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Widows(),
                                         CSSPrimitiveValue::UnitType::kNumber);
@@ -7970,7 +7772,6 @@ const CSSValue* Width::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject* layout_object,
-    const Node*,
     bool allow_visited_style) const {
   if (ComputedStyleUtils::WidthOrHeightShouldReturnUsedValue(layout_object)) {
     return ZoomAdjustedPixelValue(
@@ -8041,7 +7842,6 @@ const CSSValue* WillChange::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ValueForWillChange(
       style.WillChangeProperties(), style.WillChangeContents(),
@@ -8102,7 +7902,6 @@ const CSSValue* WordBreak::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.WordBreak());
 }
@@ -8118,7 +7917,6 @@ const CSSValue* WordSpacing::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ZoomAdjustedPixelValue(style.WordSpacing(), style);
 }
@@ -8127,7 +7925,6 @@ const CSSValue* WritingMode::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSIdentifierValue::Create(style.GetWritingMode());
 }
@@ -8149,7 +7946,6 @@ const CSSValue* X::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.X(),
                                                              style);
@@ -8166,7 +7962,6 @@ const CSSValue* Y::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle& svg_style,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return ComputedStyleUtils::ZoomAdjustedPixelValueForLength(svg_style.Y(),
                                                              style);
@@ -8184,7 +7979,6 @@ const CSSValue* ZIndex::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   if (style.HasAutoZIndex() || !style.IsStackingContext())
     return CSSIdentifierValue::Create(CSSValueID::kAuto);
@@ -8223,7 +8017,6 @@ const CSSValue* Zoom::CSSValueFromComputedStyleInternal(
     const ComputedStyle& style,
     const SVGComputedStyle&,
     const LayoutObject*,
-    const Node*,
     bool allow_visited_style) const {
   return CSSNumericLiteralValue::Create(style.Zoom(),
                                         CSSPrimitiveValue::UnitType::kNumber);

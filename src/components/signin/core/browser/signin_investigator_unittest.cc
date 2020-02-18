@@ -5,7 +5,7 @@
 #include <string>
 
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/core/browser/signin_investigator.h"
 #include "components/signin/public/base/signin_metrics.h"
@@ -33,7 +33,7 @@ class FakeProvider : public SigninInvestigator::DependencyProvider {
   PrefService* GetPrefs() override { return &prefs_; }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   signin::IdentityTestEnvironment identity_test_env_;
 };

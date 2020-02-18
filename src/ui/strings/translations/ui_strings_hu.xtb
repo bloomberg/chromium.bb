@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 p}other{# p}}</translation>
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1243314992276662751">Feltöltés</translation>
+<translation id="1266864766717917324">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209"><ph name="DRAGGED_APP" /> áthelyezése a következő mappába: <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Próbálja meg kisebb részletekben megosztani a szöveget.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">AJÁNLOTT ALKALMAZÁSOK</translation>
 <translation id="1368832886055348810">Balról jobbra</translation>
 <translation id="1383876407941801731">Keresés</translation>
 <translation id="1398853756734560583">Teljes méret</translation>
 <translation id="1409544243779336081">Javasolt alkalmazás</translation>
+<translation id="1450753235335490080">Nem sikerült a(z) <ph name="CONTENT_TYPE" /> megosztása</translation>
 <translation id="1498028757988366001">Korábban már rákeresett erre. Ha törli a(z) <ph name="QUERY" /> lekérdezést az előzmények közül, azzal véglegesen eltávolítja fiókjából minden eszközén.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 perc és }other{# perc és }}</translation>
 <translation id="1643823602425662293">Értesítés</translation>
@@ -35,9 +38,11 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Össz&amp;es kiválasztása</translation>
 <translation id="1938451708255335766">Az ablak megjelenítési sűrűségének módosításához indítsa újra az alkalmazást.</translation>
+<translation id="2006524834898217237">Ellenőrizze, hogy az eszköz csatlakozik-e az internethez.</translation>
 <translation id="208586643495776849">Próbálkozzon újra</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 n}other{# n}}</translation>
 <translation id="2148716181193084225">Ma</translation>
+<translation id="2161656808144014275">Szöveg</translation>
 <translation id="2168039046890040389">Oldal fel</translation>
 <translation id="2190355936436201913">(üres)</translation>
 <translation id="2192232475740621500">Alacsony sűrűség használata</translation>
@@ -49,7 +54,6 @@
 <translation id="2388990488038464401">Szeretné ezt a számot hívni a telefonjáról?</translation>
 <translation id="24452542372838207">Értesítés kibontása</translation>
 <translation id="2445449901874883781">Magas sűrűség használata</translation>
-<translation id="2451871130406122810">Elküldve az eszközre</translation>
 <translation id="2482878487686419369">Értesítések</translation>
 <translation id="2497284189126895209">Minden fájl</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -70,12 +74,13 @@
 <translation id="3068711042108640621">A polc a bal oldalon található</translation>
 <translation id="3087734570205094154">Alja</translation>
 <translation id="3126026824346185272">Ctrl</translation>
-<translation id="3157931365184549694">Visszaállítás</translation>
+<translation id="3157931365184549694">Helyreállítás</translation>
 <translation id="3183922693828471536">Görgessen ide</translation>
 <translation id="3234408098842461169">Lefelé nyíl</translation>
 <translation id="3291688615589870984">{DAYS,plural, =1{1 nap}other{# nap}}</translation>
 <translation id="3295886253693811851">Hívás indítása a következővel:</translation>
 <translation id="335581015389089642">Beszéd</translation>
+<translation id="3389286852084373014">A szöveg túl nagy</translation>
 <translation id="3443810440409579745">Sikerült a lap fogadása.</translation>
 <translation id="3479552764303398839">Ne most</translation>
 <translation id="348799646910989694">A polc automatikusan elrejti magát</translation>
@@ -85,6 +90,7 @@
 <translation id="3618849550573277856">A(z) „<ph name="LOOKUP_STRING" />” keresése</translation>
 <translation id="364720409959344976">Mappa kiválasztása a feltöltéshez</translation>
 <translation id="3660179305079774227">Felfelé nyíl</translation>
+<translation id="3670030362669914947">Szám</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783"><ph name="TITLE" /> olvasásának folytatása a mobileszközön</translation>
@@ -100,7 +106,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 hónapja}other{# hónapja}}</translation>
 <translation id="4289300219472526559">Beszéd megkezdése</translation>
 <translation id="4316910396681052118">MINDEN ALKALMAZÁS</translation>
-<translation id="4467014365953759647">Nem sikerült a szám elküldése</translation>
 <translation id="4588090240171750605">Görgetés jobbra</translation>
 <translation id="4690510401873698237">A polc alul található</translation>
 <translation id="4724120544754982507">Értesítési központ, <ph name="UNREAD_NOTIFICATION_COUNT" /> olvasatlan értesítés</translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{hátralévő idő: 1 hónap}other{hátralévő idő: # hónap}}</translation>
 <translation id="4841881773802181781">Beszúrás</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
+<translation id="4888938634149558681">Hívás indítása</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 másodperc}other{# másodperc}}</translation>
 <translation id="4971687151119236543">Előző szám</translation>
 <translation id="5046499563572181734">Koppintson ide</translation>
@@ -127,6 +133,7 @@
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5613020302032141669">Bal nyíl</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 perc}other{# perc}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Ma volt aktív}=1{1 napja volt aktív}other{# napja volt aktív}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 nap és }other{# nap és }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{1 év múlva}other{# év múlva}}</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
@@ -150,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
 <translation id="6430678249303439055">Minden értesítés letiltása ettől az alkalmazástól</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{1 másodperce}other{# másodperce}}</translation>
+<translation id="6539092367496845964">Hiba történt. Próbálja újra később.</translation>
 <translation id="654149438358937226">Minden értesítés letiltása</translation>
 <translation id="6567071839949112727">kattintás az elődre</translation>
 <translation id="6578407462441924264">Név nélküli</translation>
 <translation id="6612467943526193239">Ha ki szeretne lépni a kalibrálásból, nyomja meg az Esc billentyűt.</translation>
 <translation id="6620110761915583480">Fájl mentése</translation>
+<translation id="6656912866303152668">Győződjön meg arról, hogy a(z) <ph name="TARGET_DEVICE_NAME" /> szinkronizálása be van kapcsolva a Chrome-ban, majd próbálja újra.</translation>
 <translation id="6699343763173986273">Következő szám</translation>
 <translation id="673773751041746814">Törlés</translation>
 <translation id="6779314412797872738">Ha innen szeretne számot küldeni Android-telefonjára, <ph name="TROUBLESHOOT_LINK" /> a beállításokban mindkét eszközén.</translation>
@@ -176,7 +185,6 @@
 <translation id="7319740667687257810">Indító, részleges nézet</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{1 perce}other{# perce}}</translation>
 <translation id="7389409599945284130">– <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Ellenőrizze a telefon kapcsolatát, és próbálja újra</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{1 perc van hátra}other{# perc van hátra}}</translation>
 <translation id="7430878839542012341">Törli ezt a keresést az előzmények közül?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -217,9 +225,11 @@
 <translation id="8806053966018712535"><ph name="FOLDER_NAME" /> mappa</translation>
 <translation id="883911313571074303">Megjegyzés fűzése a képhez</translation>
 <translation id="8841375032071747811">Vissza gomb</translation>
+<translation id="8867568208303837180">Küldés...</translation>
 <translation id="8876215549894133151">Formátum:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> kB</translation>
 <translation id="8926951137623668982">A polc mindig rejtve lesz</translation>
+<translation id="8996630695507351249">Győződjön meg arról, hogy a(z) <ph name="TARGET_DEVICE_NAME" /> csatlakozik az internethez.</translation>
 <translation id="9002566407876343676">megnyitás</translation>
 <translation id="9039076430527029379">Áthelyezés ide: <ph name="PAGE_NUMBER" />. oldal, <ph name="ROW_NUMBER" />. sor, <ph name="COLUMN_NUMBER" />. oszlop.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 mp}other{# mp}}</translation>

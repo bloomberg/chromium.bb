@@ -233,10 +233,8 @@ bool OmniboxResultView::IsSelected() const {
 }
 
 OmniboxPartState OmniboxResultView::GetThemeState() const {
-  if (IsSelected()) {
-    return is_hovered_ ? OmniboxPartState::HOVERED_AND_SELECTED
-                       : OmniboxPartState::SELECTED;
-  }
+  if (IsSelected())
+    return OmniboxPartState::SELECTED;
   return is_hovered_ ? OmniboxPartState::HOVERED : OmniboxPartState::NORMAL;
 }
 
@@ -263,7 +261,7 @@ void OmniboxResultView::SetRichSuggestionImage(const gfx::ImageSkia& image) {
 void OmniboxResultView::ButtonPressed(views::Button* button,
                                       const ui::Event& event) {
   if (!(OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-        match_.ShouldShowTabMatch())) {
+        match_.ShouldShowTabMatchButton())) {
     OpenMatch(WindowOpenDisposition::SWITCH_TO_TAB, event.time_stamp());
   } else {
     OpenMatch(WindowOpenDisposition::CURRENT_TAB, event.time_stamp());
@@ -306,7 +304,8 @@ void OmniboxResultView::Layout() {
   }
   keyword_view_->SetBounds(suggestion_width, 0, width() - suggestion_width,
                            height());
-  if (popup_contents_view_->InExplicitExperimentalKeywordMode()) {
+  if (popup_contents_view_->InExplicitExperimentalKeywordMode() ||
+      match_.IsSubMatch()) {
     suggestion_view_->SetBounds(kKeywordSuggestionIndent, 0,
                                 suggestion_width - kKeywordSuggestionIndent,
                                 height());
@@ -357,8 +356,9 @@ void OmniboxResultView::OnMouseReleased(const ui::MouseEvent& event) {
         event.IsOnlyLeftMouseButton()
             ? WindowOpenDisposition::CURRENT_TAB
             : WindowOpenDisposition::NEW_BACKGROUND_TAB;
-    if (OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
-        match_.ShouldShowTabMatch()) {
+    if ((OmniboxFieldTrial::IsTabSwitchLogicReversed() &&
+         match_.ShouldShowTabMatchButton()) ||
+        match_.IsTabSwitchSuggestion()) {
       disposition = WindowOpenDisposition::SWITCH_TO_TAB;
     }
     OpenMatch(disposition, event.time_stamp());

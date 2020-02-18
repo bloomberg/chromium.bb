@@ -338,7 +338,13 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
+// Flaky on Linux/ChromeOS only. http://crbug.com/997719
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+#define MAYBE_TabManagerBasics DISABLED_TabManagerBasics
+#else
+#define MAYBE_TabManagerBasics TabManagerBasics
+#endif
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.
@@ -1476,10 +1482,9 @@ void EnsureTabsInBrowser(Browser* browser, int num_tabs) {
 // Creates a browser with |num_tabs| tabs.
 Browser* CreateBrowserWithTabs(int num_tabs) {
   Browser* current_browser = BrowserList::GetInstance()->GetLastActive();
-  ui_test_utils::BrowserAddedObserver browser_added_observer;
   chrome::NewWindow(current_browser);
-  Browser* new_browser = browser_added_observer.WaitForSingleNewBrowser();
-  EXPECT_EQ(new_browser, BrowserList::GetInstance()->GetLastActive());
+  Browser* new_browser = BrowserList::GetInstance()->GetLastActive();
+  EXPECT_NE(new_browser, current_browser);
   EnsureTabsInBrowser(new_browser, num_tabs);
   return new_browser;
 }

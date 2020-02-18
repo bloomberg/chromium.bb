@@ -26,19 +26,17 @@ namespace storage {
 class BlobStorageContext;
 }  // namespace storage
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace network {
 class SharedURLLoaderFactory;
+}
+
+namespace blink {
+class URLLoaderThrottle;
 }
 
 namespace content {
 
 class BrowserContext;
-class ResourceContext;
-class URLLoaderThrottle;
 class PrefetchedSignedExchangeCacheAdapter;
 class SignedExchangePrefetchHandler;
 class SignedExchangePrefetchMetricRecorder;
@@ -49,14 +47,13 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
                                          public mojo::DataPipeDrainer::Client {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
-      std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>>()>;
 
-  // |url_loader_throttles_getter|, |resource_context| and
-  // |request_context_getter| may be used when a prefetch handler
-  // needs to additionally create a request (e.g. for fetching certificate
-  // if the prefetch was for a signed exchange).
-  // |frame_tree_node_id_getter| is called only on UI thread when NetworkService
-  // is not enabled, but can be also called on IO thread otherwise.
+  // |url_loader_throttles_getter| may be used when a prefetch handler needs to
+  // additionally create a request (e.g. for fetching certificate if the
+  // prefetch was for a signed exchange).  |frame_tree_node_id_getter| is called
+  // only on UI thread when NetworkService is not enabled, but can be also
+  // called on IO thread otherwise.
   PrefetchURLLoader(
       int32_t routing_id,
       int32_t request_id,
@@ -68,8 +65,6 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       scoped_refptr<network::SharedURLLoaderFactory> network_loader_factory,
       URLLoaderThrottlesGetter url_loader_throttles_getter,
       BrowserContext* browser_context,
-      ResourceContext* resource_context,
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
       scoped_refptr<SignedExchangePrefetchMetricRecorder>
           signed_exchange_prefetch_metric_recorder,
       scoped_refptr<PrefetchedSignedExchangeCache>
@@ -87,20 +82,29 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
       const network::URLLoaderCompletionStatus& completion_status);
 
  private:
+  // This enum is used to record a histogram and should not be renumbered.
+  enum class PrefetchRedirect {
+    kPrefetchMade = 0,
+    kPrefetchRedirected = 1,
+    kPrefetchRedirectedSXGHandler = 2,
+    kMaxValue = kPrefetchRedirectedSXGHandler
+  };
+
+  void RecordPrefetchRedirectHistogram(PrefetchRedirect event);
+
   // network::mojom::URLLoader overrides:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
   // network::mojom::URLLoaderClient overrides:
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         base::OnceCallback<void()> callback) override;
@@ -133,12 +137,8 @@ class CONTENT_EXPORT PrefetchURLLoader : public network::mojom::URLLoader,
   // To be a URLLoader for the client.
   network::mojom::URLLoaderClientPtr forwarding_client_;
 
-  // |url_loader_throttles_getter_| and |resource_context_| should be
-  // valid as far as |request_context_getter_| returns non-null value.
   URLLoaderThrottlesGetter url_loader_throttles_getter_;
   BrowserContext* browser_context_;
-  ResourceContext* resource_context_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
 
   std::unique_ptr<mojo::DataPipeDrainer> pipe_drainer_;
 

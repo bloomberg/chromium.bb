@@ -8,6 +8,7 @@
 
 #include "components/password_manager/core/browser/credentials_filter.h"
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace password_manager {
 
@@ -19,6 +20,11 @@ StubPasswordManagerClient::~StubPasswordManagerClient() {}
 bool StubPasswordManagerClient::PromptUserToSaveOrUpdatePassword(
     std::unique_ptr<PasswordFormManagerForUI> form_to_save,
     bool update_password) {
+  return false;
+}
+
+bool StubPasswordManagerClient::ShowOnboarding(
+    std::unique_ptr<PasswordFormManagerForUI> form_to_save) {
   return false;
 }
 
@@ -76,16 +82,21 @@ const autofill::LogManager* StubPasswordManagerClient::GetLogManager() const {
   return &log_manager_;
 }
 
-#if defined(FULL_SAFE_BROWSING)
+#if defined(ON_FOCUS_PING_ENABLED) || \
+    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 safe_browsing::PasswordProtectionService*
 StubPasswordManagerClient::GetPasswordProtectionService() const {
   return nullptr;
 }
+#endif
 
+#if defined(ON_FOCUS_PING_ENABLED)
 void StubPasswordManagerClient::CheckSafeBrowsingReputation(
     const GURL& form_action,
     const GURL& frame_url) {}
+#endif
 
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void StubPasswordManagerClient::CheckProtectedPasswordEntry(
     metrics_util::PasswordType reused_password_type,
     const std::string& username,
@@ -105,6 +116,15 @@ StubPasswordManagerClient::GetMetricsRecorder() {
     metrics_recorder_.emplace(GetUkmSourceId(), GetMainFrameURL());
   }
   return base::OptionalOrNullptr(metrics_recorder_);
+}
+
+signin::IdentityManager* StubPasswordManagerClient::GetIdentityManager() {
+  return nullptr;
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+StubPasswordManagerClient::GetURLLoaderFactory() {
+  return nullptr;
 }
 
 bool StubPasswordManagerClient::IsIsolationForPasswordSitesEnabled() const {

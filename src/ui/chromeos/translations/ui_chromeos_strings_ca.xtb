@@ -34,7 +34,7 @@
 <translation id="1310751437842832374">Transliteració (mausam → ନମସ୍ତେ)</translation>
 <translation id="1337036551624197047">Teclat txec</translation>
 <translation id="1338950911836659113">S'està suprimint...</translation>
-<translation id="1346748346194534595">A la dreta</translation>
+<translation id="1346748346194534595">Dreta</translation>
 <translation id="1351692861129622852">S'estan important <ph name="FILE_COUNT" /> fitxers...</translation>
 <translation id="1352103415082130575">Teclat tailandès (pattachote)</translation>
 <translation id="1358735829858566124">El fitxer o directori no es pot fer servir.</translation>
@@ -48,7 +48,7 @@
 <translation id="1441841714100794440">Teclat vietnamita (Telex)</translation>
 <translation id="1455548678241328678">Teclat noruec</translation>
 <translation id="1464724975715666883">1 error.</translation>
-<translation id="1467432559032391204">A l'esquerra</translation>
+<translation id="1467432559032391204">Esquerra</translation>
 <translation id="1474339897586437869">"<ph name="FILENAME" />" no s'ha penjat. No hi ha prou espai lliure al vostre compte de Google Drive.</translation>
 <translation id="148466539719134488">Suís</translation>
 <translation id="1497522201463361063">No es pot canviar el nom a "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Resolució de la imatge</translation>
 <translation id="1943097386230153518">Instal·la un servei nou</translation>
 <translation id="1947424002851288782">Teclat alemany</translation>
+<translation id="1972984168337863910">Desplega els taulers amb informació dels fitxers</translation>
 <translation id="197560921582345123">Pot editar</translation>
 <translation id="1984603991036629094">Teclat fonètic armeni</translation>
 <translation id="2001796770603320721">Gestiona a Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Heu d'estar en línia per accedir a aquest fitxer.</translation>
 <translation id="4212740939091998969">Ja hi ha una carpeta anomenada "<ph name="FOLDER_NAME" />". Tria un altre nom.</translation>
 <translation id="4215448920900139318">S'estan afegint <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
-<translation id="4242533952199664413">Obre la configuració</translation>
 <translation id="426015154560005552">Teclat àrab</translation>
 <translation id="4261901459838235729">Presentació de Google</translation>
 <translation id="4290535918735525311">S'ha compartit 1 carpeta amb Linux</translation>
-<translation id="42981349822642051">Desplega</translation>
 <translation id="4298972503445160211">Teclat danès</translation>
 <translation id="4299729908419173967">Brasiler</translation>
 <translation id="4309915981827077375">Informació general</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Correcció automàtica</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4886021172213954916">Teclat tàmil (màquina d'escriure)</translation>
-<translation id="4892969127351273348">No es pot obrir amb <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">A punt per afegir <ph name="FILE_COUNT" /> a la còpia de seguretat</translation>
 <translation id="4924638091161556692">Corregida</translation>
 <translation id="4935975195727477204">Flor de gazània</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Francès suís</translation>
 <translation id="5234764350956374838">Omet</translation>
 <translation id="5241298539944515331">Teclat vietnamita (VIQR)</translation>
-<translation id="52446585071384036">Per obrir fitxers amb <ph name="APP_NAME" />, primer copia'ls a la carpeta de fitxers de Linux.</translation>
 <translation id="5253070652067921974">Creat per</translation>
 <translation id="5257456363153333584">Libèl·lula</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Accediu a fitxers des de qualsevol lloc, fins i tot sense connexió.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Coreà</translation>
 <translation id="5819442873484330149">Configuració 3 de hangul (final)</translation>
 <translation id="5833610766403489739">Aquest fitxer s'ha extraviat en algun lloc. Comproveu el paràmetre d'ubicació de les baixades i torneu-ho a provar.</translation>
-<translation id="5838051104334203064">Les aplicacions de Play Store no poden accedir a aquest dispositiu</translation>
 <translation id="5838451609423551646">S'han suprimit totes les entrades de la selecció.</translation>
 <translation id="5838825566232597749">Workman nord-americà internacional</translation>
 <translation id="5850516540536751549">Aquest tipus de fitxer no és compatible. Visiteu <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> per trobar una aplicació que pugui obrir aquest tipus de fitxer.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Per desar aquests fitxers per utilitzar-los fora de línia, connecteu-vos a una xarxa, feu clic amb el botó dret als fitxers i seleccioneu l'opció <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Cancel·la</translation>
 <translation id="8261506727792406068">Suprimeix</translation>
+<translation id="8269755669432358899">Replega els taulers amb informació dels fitxers</translation>
 <translation id="8279388322240498158">Teclat de kurd sorani basat en l'anglès</translation>
 <translation id="8280151743281770066">Fonètic armeni</translation>
 <translation id="8294431847097064396">Font</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Seleccioneu el fitxer que vulgueu obrir</translation>
 <translation id="8579285237314169903">S'estan sincronitzant <ph name="NUMBER_OF_FILES" /> elements...</translation>
 <translation id="8600173386174225982">La llista de fitxers ha canviat a la visualització de miniatures.</translation>
+<translation id="8601932370724196034">Fitxer d'imatge de Crostini</translation>
 <translation id="8669949407341943408">S'estan traslladant...</translation>
 <translation id="8671210955687109937">Pot comentar</translation>
 <translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>

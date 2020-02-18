@@ -9,20 +9,19 @@
 #define SkLocalMatrixImageFilter_DEFINED
 
 #include "include/core/SkFlattenable.h"
-#include "include/core/SkImageFilter.h"
+#include "src/core/SkImageFilter_Base.h"
 
 /**
  *  Wraps another imagefilter + matrix, such that using this filter will give the same result
  *  as using the wrapped filter with the matrix applied to its context.
  */
-class SkLocalMatrixImageFilter : public SkImageFilter {
+class SkLocalMatrixImageFilter : public SkImageFilter_Base {
 public:
     static sk_sp<SkImageFilter> Make(const SkMatrix& localM, sk_sp<SkImageFilter> input);
 
 protected:
     void flatten(SkWriteBuffer&) const override;
-    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage* source, const Context&,
-                                        SkIPoint* offset) const override;
+    sk_sp<SkSpecialImage> onFilterImage(const Context&, SkIPoint* offset) const override;
     SkIRect onFilterBounds(const SkIRect& src, const SkMatrix& ctm,
                            MapDirection, const SkIRect* inputRect) const override;
 
@@ -35,7 +34,7 @@ private:
 
     SkMatrix fLocalM;
 
-    typedef SkImageFilter INHERITED;
+    typedef SkImageFilter_Base INHERITED;
 };
 
 #endif

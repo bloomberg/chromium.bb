@@ -17,7 +17,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "build/build_config.h"
 #include "device/bluetooth/bluetooth_adapter.h"
@@ -30,7 +30,6 @@
 #import "device/bluetooth/test/mock_bluetooth_central_manager_mac.h"
 #import "device/bluetooth/test/test_bluetooth_adapter_observer.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#import "third_party/ocmock/OCMock/OCMock.h"
 
 #if defined(OS_IOS)
 #import <CoreBluetooth/CoreBluetooth.h>
@@ -134,7 +133,7 @@ class BluetoothAdapterMacTest : public testing::Test {
         temp_dir_.GetPath().AppendASCII(kTestPropertyListFileName);
   }
 
-  void TearDown() override { scoped_task_environment_.RunUntilIdle(); }
+  void TearDown() override { task_environment_.RunUntilIdle(); }
 
   // Helper methods for setup and access to BluetoothAdapterMacTest's members.
   void PollAdapter() { adapter_mac_->PollAdapter(); }
@@ -214,7 +213,7 @@ class BluetoothAdapterMacTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   scoped_refptr<base::TestSimpleTaskRunner> ui_task_runner_;
   scoped_refptr<BluetoothAdapter> adapter_;
   BluetoothAdapterMac* adapter_mac_;
@@ -305,6 +304,9 @@ TEST_F(BluetoothAdapterMacTest, AddSecondDiscoverySessionWithLowEnergyFilter) {
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
   std::unique_ptr<BluetoothDiscoveryFilter> discovery_filter2(
       new BluetoothDiscoveryFilter(BLUETOOTH_TRANSPORT_LE));
+  // Adding uuid to first discovery session so that there is a change to be made
+  // when starting the second session.
+  discovery_filter->AddUUID(device::BluetoothUUID("1000"));
   adapter_mac_->StartDiscoverySessionWithFilter(
       std::move(discovery_filter),
       base::BindRepeating(

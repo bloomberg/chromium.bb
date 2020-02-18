@@ -18,18 +18,16 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
-
 #include "perfetto/base/build_config.h"
 #include "perfetto/ext/base/pipe.h"
 #include "perfetto/ext/tracing/ipc/default_socket.h"
 #include "perfetto/protozero/scattered_heap_buffer.h"
 #include "src/base/test/test_task_runner.h"
 #include "src/profiling/memory/heapprofd_producer.h"
+#include "test/gtest_and_gmock.h"
 #include "test/test_helper.h"
 
-#include "perfetto/config/profiling/heapprofd_config.pbzero.h"
+#include "protos/perfetto/config/profiling/heapprofd_config.pbzero.h"
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID)
 #include <sys/system_properties.h>
 #endif
@@ -193,6 +191,10 @@ std::string FormatStats(const protos::ProfilePacket_ProcessStats& stats) {
          "unwinding_time_us: " + FormatHistogram(stats.unwinding_time_us());
 }
 
+std::string TestSuffix(const ::testing::TestParamInfo<bool>& info) {
+  return info.param ? "ForkMode" : "CentralMode";
+}
+
 class HeapprofdEndToEnd : public ::testing::TestWithParam<bool> {
  public:
   HeapprofdEndToEnd() {
@@ -247,10 +249,10 @@ class HeapprofdEndToEnd : public ::testing::TestWithParam<bool> {
         if (dump.pid() != pid)
           continue;
         for (const auto& sample : dump.samples()) {
-          EXPECT_EQ(sample.self_allocated() % alloc_size, 0);
-          EXPECT_EQ(sample.self_freed() % alloc_size, 0);
+          EXPECT_EQ(sample.self_allocated() % alloc_size, 0u);
+          EXPECT_EQ(sample.self_freed() % alloc_size, 0u);
           EXPECT_THAT(sample.self_allocated() - sample.self_freed(),
-                      AnyOf(Eq(0), Eq(alloc_size)));
+                      AnyOf(Eq(0u), Eq(alloc_size)));
         }
       }
     }
@@ -301,10 +303,10 @@ class HeapprofdEndToEnd : public ::testing::TestWithParam<bool> {
         profile_packets++;
       }
     }
-    EXPECT_GT(profile_packets, 0);
-    EXPECT_GT(samples, 0);
-    EXPECT_GT(last_allocated, 0);
-    EXPECT_GT(last_freed, 0);
+    EXPECT_GT(profile_packets, 0u);
+    EXPECT_GT(samples, 0u);
+    EXPECT_GT(last_allocated, 0u);
+    EXPECT_GT(last_freed, 0u);
   }
 
   void ValidateOnlyPID(TestHelper* helper, uint64_t pid) {
@@ -316,7 +318,7 @@ class HeapprofdEndToEnd : public ::testing::TestWithParam<bool> {
         dumps++;
       }
     }
-    EXPECT_GT(dumps, 0);
+    EXPECT_GT(dumps, 0u);
   }
 };
 
@@ -328,7 +330,7 @@ TEST_P(HeapprofdEndToEnd, Smoke) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(2000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -363,7 +365,7 @@ TEST_P(HeapprofdEndToEnd, TwoProcesses) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(2000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -397,7 +399,7 @@ TEST_P(HeapprofdEndToEnd, FinalFlush) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(2000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -425,7 +427,7 @@ TEST_P(HeapprofdEndToEnd, NativeStartup) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -485,7 +487,7 @@ TEST_P(HeapprofdEndToEnd, NativeStartup) {
       const auto& dumps = packet.profile_packet().process_dumps();
       ASSERT_EQ(dumps.size(), 1);
       const protos::ProfilePacket_ProcessHeapSamples& dump = dumps.Get(0);
-      EXPECT_EQ(dump.pid(), pid);
+      EXPECT_EQ(static_cast<pid_t>(dump.pid()), pid);
       profile_packets++;
       for (const auto& sample : dump.samples()) {
         samples++;
@@ -494,10 +496,10 @@ TEST_P(HeapprofdEndToEnd, NativeStartup) {
       }
     }
   }
-  EXPECT_EQ(profile_packets, 1);
-  EXPECT_GT(samples, 0);
-  EXPECT_GT(total_allocated, 0);
-  EXPECT_GT(total_freed, 0);
+  EXPECT_EQ(profile_packets, 1u);
+  EXPECT_GT(samples, 0u);
+  EXPECT_GT(total_allocated, 0u);
+  EXPECT_GT(total_freed, 0u);
 }
 
 TEST_P(HeapprofdEndToEnd, NativeStartupDenormalizedCmdline) {
@@ -506,7 +508,7 @@ TEST_P(HeapprofdEndToEnd, NativeStartupDenormalizedCmdline) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -566,7 +568,7 @@ TEST_P(HeapprofdEndToEnd, NativeStartupDenormalizedCmdline) {
       const auto& dumps = packet.profile_packet().process_dumps();
       ASSERT_EQ(dumps.size(), 1);
       const protos::ProfilePacket_ProcessHeapSamples& dump = dumps.Get(0);
-      EXPECT_EQ(dump.pid(), pid);
+      EXPECT_EQ(static_cast<pid_t>(dump.pid()), pid);
       profile_packets++;
       for (const auto& sample : dump.samples()) {
         samples++;
@@ -575,10 +577,10 @@ TEST_P(HeapprofdEndToEnd, NativeStartupDenormalizedCmdline) {
       }
     }
   }
-  EXPECT_EQ(profile_packets, 1);
-  EXPECT_GT(samples, 0);
-  EXPECT_GT(total_allocated, 0);
-  EXPECT_GT(total_freed, 0);
+  EXPECT_EQ(profile_packets, 1u);
+  EXPECT_GT(samples, 0u);
+  EXPECT_GT(total_allocated, 0u);
+  EXPECT_GT(total_freed, 0u);
 }
 
 TEST_P(HeapprofdEndToEnd, DiscoverByName) {
@@ -587,7 +589,7 @@ TEST_P(HeapprofdEndToEnd, DiscoverByName) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -643,7 +645,7 @@ TEST_P(HeapprofdEndToEnd, DiscoverByName) {
       const auto& dumps = packet.profile_packet().process_dumps();
       ASSERT_EQ(dumps.size(), 1);
       const protos::ProfilePacket_ProcessHeapSamples& dump = dumps.Get(0);
-      EXPECT_EQ(dump.pid(), pid);
+      EXPECT_EQ(static_cast<pid_t>(dump.pid()), pid);
       profile_packets++;
       for (const auto& sample : dump.samples()) {
         samples++;
@@ -652,10 +654,10 @@ TEST_P(HeapprofdEndToEnd, DiscoverByName) {
       }
     }
   }
-  EXPECT_EQ(profile_packets, 1);
-  EXPECT_GT(samples, 0);
-  EXPECT_GT(total_allocated, 0);
-  EXPECT_GT(total_freed, 0);
+  EXPECT_EQ(profile_packets, 1u);
+  EXPECT_GT(samples, 0u);
+  EXPECT_GT(total_allocated, 0u);
+  EXPECT_GT(total_freed, 0u);
 }
 
 TEST_P(HeapprofdEndToEnd, DiscoverByNameDenormalizedCmdline) {
@@ -664,7 +666,7 @@ TEST_P(HeapprofdEndToEnd, DiscoverByNameDenormalizedCmdline) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -720,7 +722,7 @@ TEST_P(HeapprofdEndToEnd, DiscoverByNameDenormalizedCmdline) {
       const auto& dumps = packet.profile_packet().process_dumps();
       ASSERT_EQ(dumps.size(), 1);
       const protos::ProfilePacket_ProcessHeapSamples& dump = dumps.Get(0);
-      EXPECT_EQ(dump.pid(), pid);
+      EXPECT_EQ(static_cast<pid_t>(dump.pid()), pid);
       profile_packets++;
       for (const auto& sample : dump.samples()) {
         samples++;
@@ -729,10 +731,10 @@ TEST_P(HeapprofdEndToEnd, DiscoverByNameDenormalizedCmdline) {
       }
     }
   }
-  EXPECT_EQ(profile_packets, 1);
-  EXPECT_GT(samples, 0);
-  EXPECT_GT(total_allocated, 0);
-  EXPECT_GT(total_freed, 0);
+  EXPECT_EQ(profile_packets, 1u);
+  EXPECT_GT(samples, 0u);
+  EXPECT_GT(total_allocated, 0u);
+  EXPECT_GT(total_freed, 0u);
 }
 
 TEST_P(HeapprofdEndToEnd, ReInit) {
@@ -777,7 +779,7 @@ TEST_P(HeapprofdEndToEnd, ReInit) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(2000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -817,7 +819,7 @@ TEST_P(HeapprofdEndToEnd, ReInit) {
   PERFETTO_CHECK(PERFETTO_EINTR(waitpid(pid, nullptr, 0)) == pid);
 }
 
-TEST_P(HeapprofdEndToEnd, ConcurrentSession) {
+TEST_P(HeapprofdEndToEnd, DISABLED_ConcurrentSession) {
   constexpr size_t kAllocSize = 1024;
 
   pid_t pid = ForkContinuousMalloc(kAllocSize);
@@ -825,7 +827,7 @@ TEST_P(HeapprofdEndToEnd, ConcurrentSession) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -899,7 +901,7 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
   TraceConfig trace_config;
   trace_config.add_buffers()->set_size_kb(10 * 1024);
   trace_config.set_duration_ms(5000);
-  trace_config.set_flush_timeout_ms(10000);
+  trace_config.set_data_source_stop_timeout_ms(10000);
 
   auto* ds_config = trace_config.add_data_sources()->mutable_config();
   ds_config->set_name("android.heapprofd");
@@ -944,7 +946,7 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
       const auto& dumps = packet.profile_packet().process_dumps();
       ASSERT_EQ(dumps.size(), 1);
       const protos::ProfilePacket_ProcessHeapSamples& dump = dumps.Get(0);
-      EXPECT_EQ(dump.pid(), pid);
+      EXPECT_EQ(static_cast<pid_t>(dump.pid()), pid);
       profile_packets++;
       for (const auto& sample : dump.samples()) {
         samples++;
@@ -952,9 +954,9 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
       }
     }
   }
-  EXPECT_EQ(profile_packets, 1);
-  EXPECT_GT(samples, 0);
-  EXPECT_GT(total_allocated, 0);
+  EXPECT_EQ(profile_packets, 1u);
+  EXPECT_GT(samples, 0u);
+  EXPECT_GT(total_allocated, 0u);
 }
 
 // This test only works when run on Android using an Android Q version of
@@ -963,9 +965,9 @@ TEST_P(HeapprofdEndToEnd, NativeProfilingActiveAtProcessExit) {
 #if !PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) ||                        \
     PERFETTO_BUILDFLAG(PERFETTO_START_DAEMONS) || defined(__i386__) || \
     defined(__x86_64__)
-INSTANTIATE_TEST_CASE_P(DISABLED_ForkMode, HeapprofdEndToEnd, Bool());
+INSTANTIATE_TEST_CASE_P(DISABLED_Run, HeapprofdEndToEnd, Bool(), TestSuffix);
 #else
-INSTANTIATE_TEST_CASE_P(ForkMode, HeapprofdEndToEnd, Bool());
+INSTANTIATE_TEST_CASE_P(Run, HeapprofdEndToEnd, Bool(), TestSuffix);
 #endif
 
 }  // namespace

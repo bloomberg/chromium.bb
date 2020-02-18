@@ -30,6 +30,7 @@
 #include <memory>
 
 #include "base/optional.h"
+#include "base/timer/elapsed_timer.h"
 #include "third_party/blink/public/platform/web_audio_source_provider_client.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/timer.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace cc {
 class Layer;
@@ -67,7 +69,6 @@ class HTMLMediaElementControlsList;
 class HTMLMediaSource;
 class HTMLSourceElement;
 class HTMLTrackElement;
-class KURL;
 class MediaError;
 class MediaStreamDescriptor;
 class ScriptPromiseResolver;
@@ -756,7 +757,7 @@ class CORE_EXPORT HTMLMediaElement
 };
 
 inline bool IsHTMLMediaElement(const HTMLElement& element) {
-  return IsHTMLAudioElement(element) || IsHTMLVideoElement(element);
+  return IsA<HTMLAudioElement>(element) || IsHTMLVideoElement(element);
 }
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLMediaElement);

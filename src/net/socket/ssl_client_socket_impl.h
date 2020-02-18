@@ -30,6 +30,7 @@
 #include "net/socket/stream_socket.h"
 #include "net/ssl/openssl_ssl_util.h"
 #include "net/ssl/ssl_client_cert_type.h"
+#include "net/ssl/ssl_client_session_cache.h"
 #include "net/ssl/ssl_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "third_party/boringssl/src/include/openssl/base.h"
@@ -43,7 +44,9 @@ namespace net {
 
 class SSLCertRequestInfo;
 class SSLInfo;
+class SSLPrivateKey;
 class SSLKeyLogger;
+class X509Certificate;
 
 class SSLClientSocketImpl : public SSLClientSocket,
                             public SocketBIOAdapter::Delegate {
@@ -162,8 +165,9 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // the |ssl_info|.signed_certificate_timestamps list.
   void AddCTInfoToSSLInfo(SSLInfo* ssl_info) const;
 
-  // Returns a unique key string for the SSL session cache for this socket.
-  std::string GetSessionCacheKey(base::Optional<IPAddress> dest_ip_addr) const;
+  // Returns a session cache key for this socket.
+  SSLClientSessionCache::Key GetSessionCacheKey(
+      base::Optional<IPAddress> dest_ip_addr) const;
 
   // Returns true if renegotiations are allowed.
   bool IsRenegotiationAllowed() const;
@@ -183,9 +187,6 @@ class SSLClientSocketImpl : public SSLClientSocket,
                                                       size_t max_out);
 
   void OnPrivateKeyComplete(Error error, const std::vector<uint8_t>& signature);
-
-  // Called from the BoringSSL info callback. (See |SSL_CTX_set_info_callback|.)
-  void InfoCallback(int type, int value);
 
   // Called whenever BoringSSL processes a protocol message.
   void MessageCallback(int is_write,
@@ -275,6 +276,7 @@ class SSLClientSocketImpl : public SSLClientSocket,
   bool disconnected_;
 
   NextProto negotiated_protocol_;
+
   // Set to true if a CertificateRequest was received.
   bool certificate_requested_;
 
@@ -292,6 +294,14 @@ class SSLClientSocketImpl : public SSLClientSocket,
   // True if there was a certificate error which should be treated as fatal,
   // and false otherwise.
   bool is_fatal_cert_error_;
+
+  // True if the socket should respond to client certificate requests with
+  // |client_cert_| and |client_private_key_|, which may be null to continue
+  // with no certificate. If false, client certificate requests will result in
+  // ERR_SSL_CLIENT_AUTH_CERT_NEEDED.
+  bool send_client_cert_;
+  scoped_refptr<X509Certificate> client_cert_;
+  scoped_refptr<SSLPrivateKey> client_private_key_;
 
   NetLogWithSource net_log_;
   base::WeakPtrFactory<SSLClientSocketImpl> weak_factory_{this};

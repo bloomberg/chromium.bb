@@ -22,11 +22,11 @@
 #import "ios/web/js_messaging/web_frames_manager_impl.h"
 #import "ios/web/navigation/navigation_manager_delegate.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
-#import "ios/web/public/java_script_dialog_callback.h"
-#include "ios/web/public/java_script_dialog_type.h"
 #include "ios/web/public/js_messaging/web_frame.h"
 #import "ios/web/public/navigation/web_state_policy_decider.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/ui/java_script_dialog_callback.h"
+#include "ios/web/public/ui/java_script_dialog_type.h"
+#import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "url/gurl.h"
 
@@ -38,10 +38,6 @@
 @protocol CRWWebViewNavigationProxy;
 @class UIViewController;
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 namespace web {
 
 class BrowserState;
@@ -51,7 +47,6 @@ class NavigationContextImpl;
 class NavigationManager;
 class SessionCertificatePolicyCacheImpl;
 class WebInterstitialImpl;
-class WebStateInterfaceProvider;
 class WebUIIOS;
 
 // Implementation of WebState.
@@ -134,19 +129,6 @@ class WebStateImpl : public WebState,
   // Returns true if there is a WebUI active.
   bool HasWebUI();
 
-  // Gets the HTTP response headers associated with the current page.
-  // NOTE: For a WKWebView-based WebState, these headers are generated via
-  // net::CreateHeadersFromNSHTTPURLResponse(); see comments in
-  // http_response_headers_util.h for limitations.
-  net::HttpResponseHeaders* GetHttpResponseHeaders() const;
-
-  // Called when HTTP response headers are received.
-  // |resource_url| is the URL associated with the headers.
-  // This function has no visible effects until UpdateHttpResponseHeaders() is
-  // called.
-  void OnHttpResponseHeadersReceived(net::HttpResponseHeaders* response_headers,
-                                     const GURL& resource_url);
-
   // Explicitly sets the MIME type, overwriting any MIME type that was set by
   // headers. Note that this should be called after OnNavigationCommitted, as
   // that is the point where MIME type is set from HTTP headers.
@@ -222,11 +204,8 @@ class WebStateImpl : public WebState,
       const ScriptCommandCallback& callback,
       const std::string& command_prefix) override;
   id<CRWWebViewProxy> GetWebViewProxy() const override;
-  WebStateInterfaceProvider* GetWebStateInterfaceProvider() override;
   void DidChangeVisibleSecurityState() override;
-  void BindInterfaceRequestFromMainFrame(
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  InterfaceBinder* GetInterfaceBinderForMainFrame() override;
   bool HasOpener() const override;
   void SetHasOpener(bool has_opener) override;
   bool CanTakeSnapshot() const override;
@@ -285,11 +264,6 @@ class WebStateImpl : public WebState,
   void Reload() override;
   void OnNavigationItemsPruned(size_t pruned_item_count) override;
   void OnNavigationItemCommitted(NavigationItem* item) override;
-
-  // Updates the HTTP response headers for the main page using the headers
-  // passed to the OnHttpResponseHeadersReceived() function below.
-  // GetHttpResponseHeaders() can be used to get the headers.
-  void UpdateHttpResponseHeaders(const GURL& url);
 
   WebState* GetWebState() override;
   id<CRWWebViewNavigationProxy> GetWebViewNavigationProxy() const override;
@@ -362,12 +336,6 @@ class WebStateImpl : public WebState,
   // code, hence the ObserverList.
   base::ObserverList<WebStatePolicyDecider, true>::Unchecked policy_deciders_;
 
-  // Map of all the HTTP response headers received, for each URL.
-  // This map is cleared after each page load, and only the headers of the main
-  // page are used.
-  std::map<GURL, scoped_refptr<net::HttpResponseHeaders> >
-      response_headers_map_;
-  scoped_refptr<net::HttpResponseHeaders> http_response_headers_;
   std::string mime_type_;
 
   // Weak pointer to the interstitial page being displayed, if any.
@@ -384,9 +352,6 @@ class WebStateImpl : public WebState,
   // WebState::CreateParams::created_with_opener_ for more details.
   bool created_with_opener_;
 
-  // Mojo interface registry for this WebState.
-  std::unique_ptr<WebStateInterfaceProvider> web_state_interface_provider_;
-
   // The most recently restored session history that has not yet committed in
   // the WKWebView. This is reset in OnNavigationItemCommitted().
   CRWSessionStorage* restored_session_storage_;
@@ -399,6 +364,10 @@ class WebStateImpl : public WebState,
 
   // Whether a JavaScript dialog is currently being presented.
   bool running_javascript_dialog_ = false;
+
+  // The InterfaceBinder exposed by WebStateImpl. Used to handle Mojo interface
+  // requests from the main frame.
+  InterfaceBinder interface_binder_{this};
 
   base::WeakPtrFactory<WebStateImpl> weak_factory_;
 

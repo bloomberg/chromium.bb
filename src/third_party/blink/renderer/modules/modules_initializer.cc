@@ -24,11 +24,11 @@
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/inspector/devtools_session.h"
+#include "third_party/blink/renderer/core/inspector/inspector_media_context_impl.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
-#include "third_party/blink/renderer/core/workers/worker_content_settings_client.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 #include "third_party/blink/renderer/modules/accessibility/inspector_accessibility_agent.h"
 #include "third_party/blink/renderer/modules/app_banner/app_banner_controller.h"
@@ -54,7 +54,6 @@
 #include "third_party/blink/renderer/modules/gamepad/navigator_gamepad.h"
 #include "third_party/blink/renderer/modules/image_downloader/image_downloader_impl.h"
 #include "third_party/blink/renderer/modules/indexed_db_names.h"
-#include "third_party/blink/renderer/modules/indexeddb/indexed_db_client.h"
 #include "third_party/blink/renderer/modules/indexeddb/inspector_indexed_db_agent.h"
 #include "third_party/blink/renderer/modules/installation/installation_service_impl.h"
 #include "third_party/blink/renderer/modules/installedapp/installed_app_controller.h"
@@ -159,9 +158,9 @@ void ModulesInitializer::Initialize() {
 void ModulesInitializer::InitLocalFrame(LocalFrame& frame) const {
   if (frame.IsMainFrame()) {
     frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
-        &CopylessPasteServer::BindMojoRequest, WrapWeakPersistent(&frame)));
+        &CopylessPasteServer::BindMojoReceiver, WrapWeakPersistent(&frame)));
   }
-  if (RuntimeEnabledFeatures::FileHandlingEnabled()) {
+  if (RuntimeEnabledFeatures::FileHandlingEnabled(frame.GetDocument())) {
     frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
         &WebLaunchServiceImpl::Create, WrapWeakPersistent(&frame)));
   }
@@ -182,9 +181,7 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
   DCHECK(client);
   ProvidePushMessagingClientTo(
       frame, MakeGarbageCollected<PushMessagingClient>(frame));
-  ProvideUserMediaTo(
-      frame, std::make_unique<UserMediaClient>(client->UserMediaClient()));
-  ProvideIndexedDBClientTo(frame, MakeGarbageCollected<IndexedDBClient>(frame));
+  ProvideUserMediaTo(frame);
   ProvideLocalFileSystemTo(frame, std::make_unique<LocalFileSystemClient>());
 
   ScreenOrientationControllerImpl::ProvideTo(frame);
@@ -198,18 +195,13 @@ void ModulesInitializer::InstallSupplements(LocalFrame& frame) const {
     // Only main frame has ImageDownloader service.
     ImageDownloaderImpl::ProvideTo(frame);
   }
+  MediaInspectorContextImpl::ProvideToLocalFrame(frame);
 }
 
 void ModulesInitializer::ProvideLocalFileSystemToWorker(
     WorkerClients& worker_clients) const {
   ::blink::ProvideLocalFileSystemToWorker(
       &worker_clients, std::make_unique<LocalFileSystemClient>());
-}
-
-void ModulesInitializer::ProvideIndexedDBClientToWorker(
-    WorkerClients& worker_clients) const {
-  ::blink::ProvideIndexedDBClientToWorker(
-      &worker_clients, MakeGarbageCollected<IndexedDBClient>(worker_clients));
 }
 
 MediaControls* ModulesInitializer::CreateMediaControls(
@@ -274,15 +266,16 @@ std::unique_ptr<WebMediaPlayer> ModulesInitializer::CreateWebMediaPlayer(
     WebLocalFrameClient* web_frame_client,
     HTMLMediaElement& html_media_element,
     const WebMediaPlayerSource& source,
-    WebMediaPlayerClient* media_player_client,
-    WebLayerTreeView* view) const {
+    WebMediaPlayerClient* media_player_client) const {
   HTMLMediaElementEncryptedMedia& encrypted_media =
       HTMLMediaElementEncryptedMedia::From(html_media_element);
   WebString sink_id(
       HTMLMediaElementAudioOutputDevice::sinkId(html_media_element));
+  MediaInspectorContextImpl* context_impl =
+      MediaInspectorContextImpl::FromHtmlMediaElement(html_media_element);
   return base::WrapUnique(web_frame_client->CreateMediaPlayer(
-      source, media_player_client, &encrypted_media,
-      encrypted_media.ContentDecryptionModule(), sink_id, view));
+      source, media_player_client, context_impl, &encrypted_media,
+      encrypted_media.ContentDecryptionModule(), sink_id));
 }
 
 WebRemotePlaybackClient* ModulesInitializer::CreateWebRemotePlaybackClient(

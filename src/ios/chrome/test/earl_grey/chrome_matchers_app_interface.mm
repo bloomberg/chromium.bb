@@ -36,6 +36,7 @@
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
 #import "ios/chrome/browser/ui/toolbar/keyboard_assist/toolbar_assistive_keyboard_views_utils.h"
+#import "ios/chrome/browser/ui/toolbar/primary_toolbar_view.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
@@ -196,6 +197,10 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 + (id<GREYMatcher>)headerWithAccessibilityLabel:(NSString*)label {
   return grey_allOf(grey_accessibilityLabel(label),
                     grey_accessibilityTrait(UIAccessibilityTraitHeader), nil);
+}
+
++ (id<GREYMatcher>)primaryToolbar {
+  return grey_kindOfClass([PrimaryToolbarView class]);
 }
 
 + (id<GREYMatcher>)cancelButton {
@@ -362,10 +367,8 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 }
 
 + (id<GREYMatcher>)accountConsistencyConfirmationOKButton {
-  int labelID = unified_consent::IsUnifiedConsentFeatureEnabled()
-                    ? IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON
-                    : IDS_IOS_ACCOUNT_CONSISTENCY_CONFIRMATION_OK_BUTTON;
-  return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:(labelID)];
+  int labelID = IDS_IOS_ACCOUNT_UNIFIED_CONSENT_OK_BUTTON;
+  return [ChromeMatchersAppInterface buttonWithAccessibilityLabelID:labelID];
 }
 
 + (id<GREYMatcher>)unifiedConsentAddAccountButton {

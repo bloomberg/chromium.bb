@@ -19,10 +19,13 @@ struct ResourceResponseHead;
 struct ResourceRequest;
 }  // namespace network
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace content {
 
 class ThrottlingURLLoader;
-class URLLoaderThrottle;
 class WorkerScriptLoaderFactory;
 
 // NetworkService (PlzWorker):
@@ -32,7 +35,7 @@ class WorkerScriptLoaderFactory;
 // resource loader in the renderer process will take them over.
 //
 // WorkerScriptFetcher deletes itself when the ownership of the loader and
-// client is passed to the renderer, or on failure. It lives on the IO or UI
+// client is passed to the renderer, or on failure. It lives on the UI
 // thread.
 class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
  public:
@@ -45,7 +48,7 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
   // OnReceiveResponse is called on |this|.
   static void CreateAndStart(
       std::unique_ptr<WorkerScriptLoaderFactory> script_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       std::unique_ptr<network::ResourceRequest> resource_request,
       CreateAndStartCallback callback);
 
@@ -57,12 +60,12 @@ class WorkerScriptFetcher : public network::mojom::URLLoaderClient {
 
   ~WorkerScriptFetcher() override;
 
-  void Start(std::vector<std::unique_ptr<URLLoaderThrottle>> throttles);
+  void Start(std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles);
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;

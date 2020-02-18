@@ -157,6 +157,10 @@ namespace rr
 		{
 			return false;
 		}
+
+		// self() returns the this pointer to this LValue<T> object.
+		// This function exists because operator&() is overloaded.
+		inline LValue<T>* self() { return this; }
 	};
 
 	template<class T>
@@ -2092,11 +2096,38 @@ namespace rr
 	RValue<Float> Rcp_pp(RValue<Float> val, bool exactAtPow2 = false);
 	RValue<Float> RcpSqrt_pp(RValue<Float> val);
 	RValue<Float> Sqrt(RValue<Float> x);
-	RValue<Float> Round(RValue<Float> val);
-	RValue<Float> Trunc(RValue<Float> val);
-	RValue<Float> Frac(RValue<Float> val);
-	RValue<Float> Floor(RValue<Float> val);
-	RValue<Float> Ceil(RValue<Float> val);
+
+//	RValue<Int4> IsInf(RValue<Float> x);
+//	RValue<Int4> IsNan(RValue<Float> x);
+	RValue<Float> Round(RValue<Float> x);
+	RValue<Float> Trunc(RValue<Float> x);
+	RValue<Float> Frac(RValue<Float> x);
+	RValue<Float> Floor(RValue<Float> x);
+	RValue<Float> Ceil(RValue<Float> x);
+
+	// Trigonometric functions
+	// TODO: Currently unimplemented for Subzero.
+//	RValue<Float> Sin(RValue<Float> x);
+//	RValue<Float> Cos(RValue<Float> x);
+//	RValue<Float> Tan(RValue<Float> x);
+//	RValue<Float> Asin(RValue<Float> x);
+//	RValue<Float> Acos(RValue<Float> x);
+//	RValue<Float> Atan(RValue<Float> x);
+//	RValue<Float> Sinh(RValue<Float> x);
+//	RValue<Float> Cosh(RValue<Float> x);
+//	RValue<Float> Tanh(RValue<Float> x);
+//	RValue<Float> Asinh(RValue<Float> x);
+//	RValue<Float> Acosh(RValue<Float> x);
+//	RValue<Float> Atanh(RValue<Float> x);
+//	RValue<Float> Atan2(RValue<Float> x, RValue<Float> y);
+
+	// Exponential functions
+	// TODO: Currently unimplemented for Subzero.
+//	RValue<Float> Pow(RValue<Float> x, RValue<Float> y);
+//	RValue<Float> Exp(RValue<Float> x);
+//	RValue<Float> Log(RValue<Float> x);
+	RValue<Float> Exp2(RValue<Float> x);
+	RValue<Float> Log2(RValue<Float> x);
 
 	class Float2 : public LValue<Float2>
 	{
@@ -2264,7 +2295,7 @@ namespace rr
 	RValue<Float4> Ceil(RValue<Float4> x);
 
 	// Trigonometric functions
-	// TODO: Currentlhy unimplemented for Subzero.
+	// TODO: Currently unimplemented for Subzero.
 	RValue<Float4> Sin(RValue<Float4> x);
 	RValue<Float4> Cos(RValue<Float4> x);
 	RValue<Float4> Tan(RValue<Float4> x);
@@ -2280,7 +2311,7 @@ namespace rr
 	RValue<Float4> Atan2(RValue<Float4> x, RValue<Float4> y);
 
 	// Exponential functions
-	// TODO: Currentlhy unimplemented for Subzero.
+	// TODO: Currently unimplemented for Subzero.
 	RValue<Float4> Pow(RValue<Float4> x, RValue<Float4> y);
 	RValue<Float4> Exp(RValue<Float4> x);
 	RValue<Float4> Log(RValue<Float4> x);
@@ -2288,16 +2319,18 @@ namespace rr
 	RValue<Float4> Log2(RValue<Float4> x);
 
 	// Bit Manipulation functions.
-	// TODO: Currentlhy unimplemented for Subzero.
+	// TODO: Currently unimplemented for Subzero.
 
 	// Count leading zeros.
 	// Returns 32 when: isZeroUndef && x == 0.
 	// Returns an undefined value when: !isZeroUndef && x == 0.
+	RValue<UInt> Ctlz(RValue<UInt> x, bool isZeroUndef);
 	RValue<UInt4> Ctlz(RValue<UInt4> x, bool isZeroUndef);
 
 	// Count trailing zeros.
 	// Returns 32 when: isZeroUndef && x == 0.
 	// Returns an undefined value when: !isZeroUndef && x == 0.
+	RValue<UInt> Cttz(RValue<UInt> x, bool isZeroUndef);
 	RValue<UInt4> Cttz(RValue<UInt4> x, bool isZeroUndef);
 
 	template<class T>
@@ -2325,10 +2358,12 @@ namespace rr
 		Pointer(RValue<Pointer<T>> rhs);
 		Pointer(const Pointer<T> &rhs);
 		Pointer(const Reference<Pointer<T>> &rhs);
+		Pointer(std::nullptr_t);
 
 		RValue<Pointer<T>> operator=(RValue<Pointer<T>> rhs);
 		RValue<Pointer<T>> operator=(const Pointer<T> &rhs);
 		RValue<Pointer<T>> operator=(const Reference<Pointer<T>> &rhs);
+		RValue<Pointer<T>> operator=(std::nullptr_t);
 
 		Reference<T> operator*();
 		Reference<T> operator[](int index);
@@ -2355,6 +2390,12 @@ namespace rr
 	RValue<Pointer<Byte>> operator-=(Pointer<Byte> &lhs, int offset);
 	RValue<Pointer<Byte>> operator-=(Pointer<Byte> &lhs, RValue<Int> offset);
 	RValue<Pointer<Byte>> operator-=(Pointer<Byte> &lhs, RValue<UInt> offset);
+
+	template <typename T>
+	RValue<Bool> operator==(const Pointer<T> &lhs, const Pointer<T> &rhs)
+	{
+		return RValue<Bool>(Nucleus::createPtrEQ(lhs.loadValue(), rhs.loadValue()));
+	}
 
 	template<typename T>
 	RValue<T> Load(RValue<Pointer<T>> pointer, unsigned int alignment, bool atomic, std::memory_order memoryOrder)
@@ -2413,6 +2454,10 @@ namespace rr
 		Reference<T> operator[](unsigned int index);
 		Reference<T> operator[](RValue<Int> index);
 		Reference<T> operator[](RValue<UInt> index);
+
+		// self() returns the this pointer to this Array object.
+		// This function exists because operator&() is overloaded by LValue<T>.
+		inline Array* self() { return this; }
 	};
 
 //	RValue<Array<T>> operator++(Array<T> &val, int);   // Post-increment
@@ -2464,8 +2509,8 @@ namespace rr
 			return Argument<typename std::tuple_element<index, std::tuple<Arguments...>>::type>(arg);
 		}
 
-		Routine *operator()(const char *name, ...);
-		Routine *operator()(const Config::Edit &cfg, const char *name, ...);
+		std::shared_ptr<Routine> operator()(const char *name, ...);
+		std::shared_ptr<Routine> operator()(const Config::Edit &cfg, const char *name, ...);
 
 	protected:
 		Nucleus *core;
@@ -2810,10 +2855,7 @@ namespace rr
 	}
 
 	template<class T>
-	Pointer<T>::Pointer() : alignment(1)
-	{
-		LValue<Pointer<T>>::storeValue(Nucleus::createNullPointer(T::getType()));
-	}
+	Pointer<T>::Pointer() : alignment(1) {}
 
 	template<class T>
 	Pointer<T>::Pointer(RValue<Pointer<T>> rhs) : alignment(1)
@@ -2832,6 +2874,13 @@ namespace rr
 	Pointer<T>::Pointer(const Reference<Pointer<T>> &rhs) : alignment(rhs.getAlignment())
 	{
 		Value *value = rhs.loadValue();
+		LValue<Pointer<T>>::storeValue(value);
+	}
+
+	template<class T>
+	Pointer<T>::Pointer(std::nullptr_t) : alignment(1)
+	{
+		Value *value = Nucleus::createNullPointer(T::getType());
 		LValue<Pointer<T>>::storeValue(value);
 	}
 
@@ -2859,6 +2908,15 @@ namespace rr
 		LValue<Pointer<T>>::storeValue(value);
 
 		return RValue<Pointer<T>>(value);
+	}
+
+	template<class T>
+	RValue<Pointer<T>> Pointer<T>::operator=(std::nullptr_t)
+	{
+		Value *value = Nucleus::createNullPointer(T::getType());
+		LValue<Pointer<T>>::storeValue(value);
+
+		return RValue<Pointer<T>>(this);
 	}
 
 	template<class T>
@@ -3031,7 +3089,7 @@ namespace rr
 	}
 
 	template<typename Return, typename... Arguments>
-	Routine *Function<Return(Arguments...)>::operator()(const char *name, ...)
+	std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const char *name, ...)
 	{
 		char fullName[1024 + 1];
 
@@ -3044,7 +3102,7 @@ namespace rr
 	}
 
 	template<typename Return, typename... Arguments>
-	Routine *Function<Return(Arguments...)>::operator()(const Config::Edit &cfg, const char *name, ...)
+	std::shared_ptr<Routine> Function<Return(Arguments...)>::operator()(const Config::Edit &cfg, const char *name, ...)
 	{
 		char fullName[1024 + 1];
 

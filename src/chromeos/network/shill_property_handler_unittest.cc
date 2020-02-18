@@ -15,7 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_clients.h"
 #include "chromeos/dbus/shill/shill_device_client.h"
@@ -159,8 +159,8 @@ class TestListener : public internal::ShillPropertyHandler::Listener {
 class ShillPropertyHandlerTest : public testing::Test {
  public:
   ShillPropertyHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         manager_test_(NULL),
         device_test_(NULL),
         service_test_(NULL),
@@ -258,7 +258,6 @@ class ShillPropertyHandlerTest : public testing::Test {
     return (type == shill::kTypeEthernet ||
             type == shill::kTypeEthernetEap ||
             type == shill::kTypeWifi ||
-            type == shill::kTypeWimax ||
             type == shill::kTypeBluetooth ||
             type == shill::kTypeCellular ||
             type == shill::kTypeVPN);
@@ -277,7 +276,7 @@ class ShillPropertyHandlerTest : public testing::Test {
     AddService(shill::kTypeCellular, "stub_cellular1", shill::kStateIdle);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<TestListener> listener_;
   std::unique_ptr<internal::ShillPropertyHandler> shill_property_handler_;
   ShillManagerClient::TestInterface* manager_test_;
@@ -328,6 +327,36 @@ TEST_F(ShillPropertyHandlerTest, ShillPropertyHandlerTechnologyChanged) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, listener_->technology_list_updates());
   EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
+
+  EXPECT_EQ(0, listener_->errors());
+}
+
+TEST_F(ShillPropertyHandlerTest,
+       ShillPropertyHandlerTechnologyChangedTransitions) {
+  listener_->reset_list_updates();
+  manager_test_->AddTechnology(shill::kTypeWifi, /*enabled=*/true);
+
+  // Disabling WiFi transitions from Disabling -> Disabled.
+  shill_property_handler_->SetTechnologyEnabled(
+      shill::kTypeWifi, /*enabled=*/false, base::DoNothing());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, listener_->technology_list_updates());
+  EXPECT_FALSE(
+      shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyAvailable(shill::kTypeWifi));
+
+  // Enable the technology.
+  listener_->reset_list_updates();
+  shill_property_handler_->SetTechnologyEnabled(
+      shill::kTypeWifi, /*enabled=*/true, base::DoNothing());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabling(shill::kTypeWifi));
+  EXPECT_FALSE(
+      shill_property_handler_->IsTechnologyDisabling(shill::kTypeWifi));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(1, listener_->technology_list_updates());
+  EXPECT_TRUE(shill_property_handler_->IsTechnologyEnabled(shill::kTypeWifi));
+  EXPECT_FALSE(shill_property_handler_->IsTechnologyEnabling(shill::kTypeWifi));
 
   EXPECT_EQ(0, listener_->errors());
 }

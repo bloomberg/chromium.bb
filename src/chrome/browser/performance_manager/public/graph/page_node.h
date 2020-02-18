@@ -5,11 +5,15 @@
 #ifndef CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 #define CHROME_BROWSER_PERFORMANCE_MANAGER_PUBLIC_GRAPH_PAGE_NODE_H_
 
+#include <string>
+
+#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "chrome/browser/performance_manager/public/graph/node.h"
 #include "chrome/browser/performance_manager/public/web_contents_proxy.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
-#include "services/resource_coordinator/public/mojom/lifecycle.mojom-shared.h"
+#include "services/resource_coordinator/public/mojom/coordination_unit.mojom.h"
+#include "services/resource_coordinator/public/mojom/lifecycle.mojom.h"
 
 class GURL;
 
@@ -23,12 +27,16 @@ class PageNodeObserver;
 // Extensions.
 class PageNode : public Node {
  public:
+  using InterventionPolicy = resource_coordinator::mojom::InterventionPolicy;
   using LifecycleState = resource_coordinator::mojom::LifecycleState;
   using Observer = PageNodeObserver;
   class ObserverDefaultImpl;
 
   PageNode();
   ~PageNode() override;
+
+  // Returns the unique ID of the browser context that this page belongs to.
+  virtual const std::string& GetBrowserContextID() const = 0;
 
   // Returns the page almost idle state of this page.
   // See PageNodeObserver::OnPageAlmostIdleChanged.
@@ -60,6 +68,9 @@ class PageNode : public Node {
   // PageNodeObserver::OnPageLifecycleStateChanged.
   virtual LifecycleState GetLifecycleState() const = 0;
 
+  // Returns the freeze policy set via origin trial.
+  virtual InterventionPolicy GetOriginTrialFreezePolicy() const = 0;
+
   // Returns the navigation ID associated with the last committed navigation
   // event for the main frame of this page.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
@@ -74,14 +85,20 @@ class PageNode : public Node {
   // are no main frames at the moment, returns nullptr.
   virtual const FrameNode* GetMainFrameNode() const = 0;
 
-  // Returns the URL the main frame last committed a navigation to.
+  // Returns all of the main frame nodes, both current and otherwise. If there
+  // are no main frames at the moment, returns the empty set.
+  virtual const base::flat_set<const FrameNode*> GetMainFrameNodes() const = 0;
+
+  // Returns the URL the main frame last committed a navigation to, or the
+  // initial URL of the page before navigation. The latter case is distinguished
+  // by a zero navigation ID.
   // See PageNodeObserver::OnMainFrameNavigationCommitted.
   virtual const GURL& GetMainFrameUrl() const = 0;
 
   // Returns the web contents associated with this page node. It is valid to
   // call this function on any thread but the weak pointer must only be
   // dereferenced on the UI thread.
-  virtual const WebContentsProxy& GetContentProxy() const = 0;
+  virtual const WebContentsProxy& GetContentsProxy() const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(PageNode);
@@ -104,26 +121,34 @@ class PageNodeObserver {
 
   // Notifications of property changes.
 
-  // Invoked when the |is_visible| property changes.
+  // Invoked when the IsVisible property changes.
   virtual void OnIsVisibleChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |is_audible| property changes.
+  // Invoked when the IsAudible property changes.
   virtual void OnIsAudibleChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |is_loading| property changes.
+  // Invoked when the IsLoading property changes.
   virtual void OnIsLoadingChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |ukm_source_id| property changes.
+  // Invoked when the UkmSourceId property changes.
   virtual void OnUkmSourceIdChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |lifecycle_state| property changes.
+  // Invoked when the PageLifecycleState property changes.
   virtual void OnPageLifecycleStateChanged(const PageNode* page_node) = 0;
 
-  // Invoked when the |page_almost_idle| property changes.
+  // Invoked when the OriginTrialFreezePolicy property changes.
+  virtual void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) = 0;
+
+  // Invoked when the PageAlmostIdle property changes.
   virtual void OnPageAlmostIdleChanged(const PageNode* page_node) = 0;
 
   // This is fired when a main frame navigation commits. It indicates that the
-  // |navigation_id| and |main_frame_url| properties have changed.
+  // |main_frame_url| and possibly the |navigation_id| properties have changed.
+  // Prior to loading and initial navigation of page, the |main_frame_url| can
+  // change, while the |navigation_id| stays zero.
+  // TODO(siggi): Maybe #hash navigation can work the same way, or perhaps the
+  //     two each properties deserve their own notification?
   virtual void OnMainFrameNavigationCommitted(const PageNode* page_node) = 0;
 
   // Events with no property changes.
@@ -156,6 +181,8 @@ class PageNode::ObserverDefaultImpl : public PageNodeObserver {
   void OnIsLoadingChanged(const PageNode* page_node) override {}
   void OnUkmSourceIdChanged(const PageNode* page_node) override {}
   void OnPageLifecycleStateChanged(const PageNode* page_node) override {}
+  void OnPageOriginTrialFreezePolicyChanged(
+      const PageNode* page_node) override {}
   void OnPageAlmostIdleChanged(const PageNode* page_node) override {}
   void OnMainFrameNavigationCommitted(const PageNode* page_node) override {}
   void OnTitleUpdated(const PageNode* page_node) override {}

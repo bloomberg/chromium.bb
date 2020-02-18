@@ -173,6 +173,24 @@ class Command(object):
   REMOVE_VIRTUAL_AUTHENTICATOR = (
       _Method.DELETE,
       '/session/:sessionId/webauthn/authenticator/:authenticatorId')
+  ADD_CREDENTIAL = (
+      _Method.POST,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credential')
+  GET_CREDENTIALS = (
+      _Method.GET,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')
+  REMOVE_CREDENTIAL = (
+      _Method.DELETE,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials/'
+      ':credentialId')
+  REMOVE_ALL_CREDENTIALS = (
+      _Method.DELETE,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/credentials')
+  SET_USER_VERIFIED = (
+      _Method.POST,
+      '/session/:sessionId/webauthn/authenticator/:authenticatorId/uv')
+  SET_PERMISSION = (
+      _Method.POST, '/session/:sessionId/permissions')
 
   # Custom Chrome commands.
   IS_LOADING = (_Method.GET, '/session/:sessionId/is_loading')
@@ -182,10 +200,11 @@ class CommandExecutor(object):
     self._server_url = server_url
     parsed_url = urlparse(server_url)
     self._http_client = httplib.HTTPConnection(
-        parsed_url.hostname, parsed_url.port, timeout=30)
+      parsed_url.hostname, parsed_url.port, timeout=30)
 
-  def Execute(self, command, params):
-    url_parts = command[1].split('/')
+  @staticmethod
+  def CreatePath(template_url_path, params):
+    url_parts = template_url_path.split('/')
     substituted_parts = []
     for part in url_parts:
       if part.startswith(':'):
@@ -194,11 +213,14 @@ class CommandExecutor(object):
         del params[key]
       else:
         substituted_parts += [part]
+    return '/'.join(substituted_parts)
 
+  def Execute(self, command, params):
+    url_path = self.CreatePath(command[1], params)
     body = None
     if command[0] == _Method.POST:
       body = json.dumps(params)
-    self._http_client.request(command[0], '/'.join(substituted_parts), body)
+    self._http_client.request(command[0], url_path, body)
     response = self._http_client.getresponse()
 
     if response.status == 303:

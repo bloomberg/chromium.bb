@@ -5,8 +5,8 @@
 #include "chromecast/media/cma/backend/fuchsia/mixer_output_stream_fuchsia.h"
 
 #include "base/location.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,7 +18,9 @@ constexpr int kNumChannels = 2;
 
 class MixerOutputStreamFuchsiaTest : public ::testing::Test {
  protected:
-  base::MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
   MixerOutputStreamFuchsia output_;
 };
 

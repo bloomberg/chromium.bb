@@ -11,6 +11,7 @@
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/css/css_font_selector.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_rule.h"
@@ -1563,6 +1564,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColors) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) {
         body { color: red }
       }
@@ -1589,6 +1593,9 @@ TEST_F(StyleEngineTest, MediaQueriesChangeForcedColorsAndPreferredColorScheme) {
   ScopedForcedColorsForTest scoped_feature(true);
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style>
+      body {
+        forced-color-adjust: none;
+      }
       @media (forced-colors: none) and (prefers-color-scheme: light) {
         body { color: red }
       }
@@ -1709,7 +1716,7 @@ TEST_F(StyleEngineTest, RejectSelectorForPseudoElement) {
   div->SetInlineStyleProperty(CSSPropertyID::kColor, "green");
 
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetStyleEngine().RecalcStyle({});
+  GetStyleEngine().RecalcStyle();
 
   // Should fast reject ".not-in-filter div::before {}" for both the div and its
   // ::before pseudo element.
@@ -1733,10 +1740,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d1));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1745,10 +1752,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d2));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   UpdateAllLifecyclePhases();
 
@@ -1756,10 +1763,10 @@ TEST_F(StyleEngineTest, MarkForWhitespaceReattachment) {
   EXPECT_TRUE(GetStyleEngine().NeedsWhitespaceReattachment(d3));
   EXPECT_FALSE(GetDocument().ChildNeedsStyleInvalidation());
   EXPECT_FALSE(GetDocument().ChildNeedsStyleRecalc());
-  EXPECT_FALSE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
 
   GetStyleEngine().MarkForWhitespaceReattachment();
-  EXPECT_TRUE(GetDocument().ChildNeedsReattachLayoutTree());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
 }
 
 TEST_F(StyleEngineTest, FirstLetterRemoved) {
@@ -1842,8 +1849,8 @@ TEST_F(StyleEngineTest, InitialDataCreation) {
   // After a full recalc, we should have the same initial data.
   GetDocument().body()->SetInnerHTMLFromString(
       "<style>* { font-size: 1px; } </style>");
-  EXPECT_TRUE(GetDocument().NeedsStyleRecalc());
-  EXPECT_TRUE(GetDocument().ChildNeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->NeedsStyleRecalc());
+  EXPECT_TRUE(GetDocument().documentElement()->ChildNeedsStyleRecalc());
   UpdateAllLifecyclePhases();
   auto data2 = GetStyleEngine().MaybeCreateAndGetInitialData();
   EXPECT_TRUE(data2);
@@ -1921,7 +1928,7 @@ TEST_F(StyleEngineTest, EnsuredComputedStyleRecalc) {
   span_outer->SetInlineStyleProperty(CSSPropertyID::kColor, "blue");
   EXPECT_TRUE(span_outer->NeedsStyleRecalc());
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
-  GetStyleEngine().RecalcStyle({});
+  GetStyleEngine().RecalcStyle();
   GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
 
   EXPECT_FALSE(span_outer->NeedsStyleRecalc());
@@ -2026,6 +2033,63 @@ TEST_F(StyleEngineTest, ColorSchemeBaseBackgroundChange) {
   UpdateAllLifecyclePhases();
 
   EXPECT_EQ(Color::kBlack, GetDocument().View()->BaseBackgroundColor());
+}
+
+TEST_F(StyleEngineTest, PseudoElementBaseComputedStyle) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @keyframes anim {
+        from { background-color: white }
+        to { background-color: blue }
+      }
+      #anim::before {
+        content:"";
+        animation: anim 1s;
+      }
+    </style>
+    <div id="anim"></div>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+
+  auto* anim_element = GetDocument().getElementById("anim");
+  auto* before = anim_element->GetPseudoElement(kPseudoIdBefore);
+  auto* animations = before->GetElementAnimations();
+
+  ASSERT_TRUE(animations);
+
+  before->SetNeedsAnimationStyleRecalc();
+  UpdateAllLifecyclePhases();
+
+  scoped_refptr<ComputedStyle> base_computed_style =
+      animations->base_computed_style_;
+  EXPECT_TRUE(base_computed_style);
+
+  before->SetNeedsAnimationStyleRecalc();
+  UpdateAllLifecyclePhases();
+
+  EXPECT_TRUE(animations->base_computed_style_);
+#if !DCHECK_IS_ON()
+  // When DCHECK is enabled, BaseComputedStyle() returns null and we repeatedly
+  // create new instances which means the pointers will be different here.
+  EXPECT_EQ(base_computed_style, animations->base_computed_style_);
+#endif
+}
+
+TEST_F(StyleEngineTest, NeedsLayoutTreeRebuild) {
+  UpdateAllLifecyclePhases();
+
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_FALSE(GetDocument().NeedsLayoutTreeRebuild());
+
+  GetDocument().documentElement()->SetInlineStyleProperty(
+      CSSPropertyID::kDisplay, "none");
+
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().GetStyleEngine().RecalcStyle();
+
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeUpdate());
+  EXPECT_TRUE(GetDocument().NeedsLayoutTreeRebuild());
 }
 
 }  // namespace blink

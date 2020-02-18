@@ -59,7 +59,13 @@ const base::Feature kSimplifyHttpsIndicator{"SimplifyHttpsIndicator",
 // by major type. i.e. search types are first, followed by all others,
 // except for the default match which is unchanged in position.
 const base::Feature kOmniboxGroupSuggestionsBySearchVsUrl{
-    "OmniboxGroupSuggestionsBySearchVsUrl", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxGroupSuggestionsBySearchVsUrl",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable local entity suggestions. Similar to rich entities but
 // but location specific. E.g., typing 'starbucks near' could display the local
@@ -87,7 +93,13 @@ const base::Feature kOmniboxRichEntitySuggestions{
 };
 
 const base::Feature kOmniboxPreserveDefaultMatchScore{
-    "OmniboxPreserveDefaultMatchScore", base::FEATURE_DISABLED_BY_DEFAULT};
+  "OmniboxPreserveDefaultMatchScore",
+#if defined(OS_IOS) || defined(OS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 // Feature used to enable swapping the rows on answers.
 const base::Feature kOmniboxReverseAnswers{"OmniboxReverseAnswers",
@@ -102,8 +114,9 @@ const base::Feature kOmniboxShortBookmarkSuggestions{
 const base::Feature kOmniboxTailSuggestions{
     "OmniboxTailSuggestions", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that enables the tab-switch button on suggestions corresponding to an
-// open tab. Enabled by default on Desktop and iOS.
+// Feature that enables the tab-switch suggestions corresponding to an open
+// tab, for a button or dedicated suggestion. Enabled by default on Desktop
+// and iOS.
 const base::Feature kOmniboxTabSwitchSuggestions{
   "OmniboxTabSwitchSuggestions",
 #if defined(OS_ANDROID)
@@ -112,6 +125,11 @@ const base::Feature kOmniboxTabSwitchSuggestions{
       base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Feature that enables tab-switch suggestions in their own row.
+const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow{
+    "OmniboxTabSwitchSuggestionsDedicatedRow",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature that enables wrapping the Omnibox position between top and bottom.
 // The feature is enabled by default, but remains as a kill-switch.
@@ -228,17 +246,6 @@ const base::Feature kUIExperimentSwapTitleAndUrl{
 #endif
 };
 
-// Feature used for the vertical margin UI experiment, currently only used on
-// desktop platforms.
-const base::Feature kUIExperimentVerticalMargin{
-    "OmniboxUIExperimentVerticalMargin", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Feature used to limit the vertical margin UI experiment to non-touch
-// devices only. Has no effect if kUIExperimentVerticalMargin is not enabled.
-const base::Feature kUIExperimentVerticalMarginLimitToNonTouchOnly{
-    "OmniboxUIExperimentVerticalMarginLimitToNonTouchOnly",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Shows the "Search Google or type a URL" omnibox placeholder even when the
 // caret (text edit cursor) is showing / when focused. views::Textfield works
 // this way, as does <input placeholder="">. Omnibox and the NTP's "fakebox"
@@ -284,8 +291,6 @@ const base::Feature kOmniboxSearchEngineLogo{"OmniboxSearchEngineLogo",
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of
 //    ZeroSuggestProvider.
-//  - "CustomEndpointURL" configures a custom endpoint for remote suggestions.
-//  - "CustomEndpointExperimentID" sends an id number to the custom endpoint.
 const base::Feature kOnFocusSuggestions{"OmniboxOnFocusSuggestions",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 

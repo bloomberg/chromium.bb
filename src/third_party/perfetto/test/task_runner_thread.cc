@@ -23,9 +23,9 @@
 #include <condition_variable>
 #include <thread>
 
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/string_splitter.h"
-#include "perfetto/ext/base/time.h"
 #include "test/task_runner_thread.h"
 
 namespace perfetto {
@@ -85,7 +85,7 @@ void TaskRunnerThread::Run(std::unique_ptr<ThreadDelegate> delegate) {
 #endif
 
   // Create the task runner and execute the specicalised code.
-  base::PlatformTaskRunner task_runner;
+  base::UnixTaskRunner task_runner;
   delegate->Initialize(&task_runner);
 
   // Pass the runner back to the main thread.

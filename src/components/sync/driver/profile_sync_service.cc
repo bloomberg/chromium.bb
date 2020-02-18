@@ -140,6 +140,8 @@ ProfileSyncService::ProfileSyncService(InitParams init_params)
       debug_identifier_(init_params.debug_identifier),
       autofill_enable_account_wallet_storage_(
           init_params.autofill_enable_account_wallet_storage),
+      enable_passwords_account_storage_(
+          init_params.enable_passwords_account_storage),
       sync_service_url_(
           GetSyncServiceURL(*base::CommandLine::ForCurrentProcess(), channel_)),
       crypto_(
@@ -221,13 +223,6 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
-  // If sync is disallowed by policy, clean up.
-  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
-    // Note that this won't actually clear data, since neither |engine_| nor
-    // |sync_thread_| exist at this point. Bug or feature?
-    StopImpl(CLEAR_DATA);
-  }
-
   if (!IsLocalSyncEnabled()) {
     auth_manager_->RegisterForAuthNotifications();
     for (auto* provider : invalidations_identity_providers_) {
@@ -235,11 +230,14 @@ void ProfileSyncService::Initialize() {
         provider->SetActiveAccountId(GetAuthenticatedAccountInfo().account_id);
       }
     }
+  }
 
-    if (!IsSignedIn()) {
-      // Clean up in case of previous crash during signout.
-      StopImpl(CLEAR_DATA);
-    }
+  // If sync is disabled permanently, clean up old data that may be around (e.g.
+  // crash during signout).
+  if (HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY) ||
+      (HasDisableReason(DISABLE_REASON_NOT_SIGNED_IN) &&
+       auth_manager_->IsActiveAccountInfoFullyLoaded())) {
+    StopImpl(CLEAR_DATA);
   }
 
   // Note: We need to record the initial state *after* calling
@@ -423,6 +421,19 @@ void ProfileSyncService::OnDataTypeRequestsSyncStartup(ModelType type) {
   startup_controller_->OnDataTypeRequestsSyncStartup(type);
 }
 
+void ProfileSyncService::StartSyncThreadIfNeeded() {
+  if (sync_thread_) {
+    // Already started.
+    return;
+  }
+
+  sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
+  base::Thread::Options options;
+  options.timer_slack = base::TIMER_SLACK_MAXIMUM;
+  bool success = sync_thread_->StartWithOptions(options);
+  DCHECK(success);
+}
+
 void ProfileSyncService::StartUpSlowEngineComponents() {
   DCHECK(IsEngineAllowedToStart());
 
@@ -435,13 +446,7 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
     last_actionable_error_ = SyncProtocolError();
   }
 
-  if (!sync_thread_) {
-    sync_thread_ = std::make_unique<base::Thread>("Chrome_SyncThread");
-    base::Thread::Options options;
-    options.timer_slack = base::TIMER_SLACK_MAXIMUM;
-    bool success = sync_thread_->StartWithOptions(options);
-    DCHECK(success);
-  }
+  StartSyncThreadIfNeeded();
 
   SyncEngine::InitParams params;
   params.sync_task_runner = sync_thread_->task_runner();
@@ -467,18 +472,6 @@ void ProfileSyncService::StartUpSlowEngineComponents() {
   }
   params.sync_manager_factory =
       std::make_unique<SyncManagerFactory>(network_connection_tracker_);
-  // The first time we start up the engine we want to ensure we have a clean
-  // directory, so delete any old one that might be there.
-  params.delete_sync_data_folder = !user_settings_->IsFirstSetupComplete();
-  if (params.delete_sync_data_folder) {
-    // This looks questionable here but it mimics the old behavior of deleting
-    // the directory via Directory::DeleteDirectoryFiles(). One consecuence is
-    // that, for sync the transport users (without sync-the-feature enabled),
-    // the cache GUID and other fields are reset on every restart.
-    // TODO(crbug.com/923285): Reconsider the lifetime of the cache GUID and
-    // its persistence depending on StorageOption.
-    sync_prefs_.ClearDirectoryConsistencyPreferences();
-  }
   params.enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
   params.local_sync_backend_folder = sync_client_->GetLocalSyncBackendFolder();
   params.restored_key_for_bootstrapping =
@@ -533,12 +526,24 @@ void ProfileSyncService::Shutdown() {
 
 void ProfileSyncService::ShutdownImpl(ShutdownReason reason) {
   if (!engine_) {
-    if (reason == ShutdownReason::DISABLE_SYNC && sync_thread_) {
-      // If the engine is already shut down when a DISABLE_SYNC happens,
-      // the data directory needs to be cleaned up here.
-      sync_thread_->task_runner()->PostTask(
-          FROM_HERE, base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
-                                    sync_client_->GetSyncDataPath()));
+    // If the engine hasn't started or is already shut down when a DISABLE_SYNC
+    // happens, the data directory needs to be cleaned up here.
+    if (reason == ShutdownReason::DISABLE_SYNC) {
+      // Clearing the Directory via Directory::DeleteDirectoryFiles() requires
+      // the |sync_thread_| initialized. It also means there's IO involved which
+      // may we considerable overhead if triggered consistently upon browser
+      // startup (which is the case for certain codepaths such as the user being
+      // signed out). To avoid that, SyncPrefs is used to determine whether it's
+      // worth.
+      if (!sync_prefs_.GetCacheGuid().empty()) {
+        StartSyncThreadIfNeeded();
+      }
+      if (sync_thread_) {
+        sync_thread_->task_runner()->PostTask(
+            FROM_HERE,
+            base::BindOnce(&syncable::Directory::DeleteDirectoryFiles,
+                           sync_client_->GetSyncDataPath()));
+      }
     }
     return;
   }
@@ -774,11 +779,11 @@ void ProfileSyncService::OnUnrecoverableErrorImpl(
   sync_prefs_.ClearDirectoryConsistencyPreferences();
 }
 
-void ProfileSyncService::ReadyForStartChanged(ModelType type) {
+void ProfileSyncService::DataTypePreconditionChanged(ModelType type) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!engine_ || !engine_->IsInitialized() || !data_type_manager_)
     return;
-  data_type_manager_->ReadyForStartChanged(type);
+  data_type_manager_->DataTypePreconditionChanged(type);
 }
 
 void ProfileSyncService::UpdateEngineInitUMA(bool success) const {
@@ -807,7 +812,6 @@ void ProfileSyncService::OnEngineInitialized(
     const std::string& bag_of_chips,
     bool success) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!cache_guid.empty());
 
   // TODO(treib): Based on some crash reports, it seems like the user could have
   // signed out already at this point, so many of the steps below, including
@@ -828,6 +832,8 @@ void ProfileSyncService::OnEngineInitialized(
                              ERROR_REASON_ENGINE_INIT_FAILURE);
     return;
   }
+
+  DCHECK(!cache_guid.empty());
 
   sync_js_controller_.AttachJsBackend(js_backend);
 
@@ -1257,7 +1263,7 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
   ModelTypeSet types = GetPreferredDataTypes();
   // In transport-only mode, only a subset of data types is supported.
   if (use_transport_only_mode) {
-    ModelTypeSet allowed_types = {USER_CONSENTS};
+    ModelTypeSet allowed_types = {USER_CONSENTS, SECURITY_EVENTS};
 
     if (autofill_enable_account_wallet_storage_) {
       if (!GetUserSettings()->IsUsingSecondaryPassphrase() ||
@@ -1265,6 +1271,13 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
               switches::
                   kSyncAllowWalletDataInTransportModeWithCustomPassphrase)) {
         allowed_types.Put(AUTOFILL_WALLET_DATA);
+      }
+    }
+
+    if (enable_passwords_account_storage_ &&
+        base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
+      if (!GetUserSettings()->IsUsingSecondaryPassphrase()) {
+        allowed_types.Put(PASSWORDS);
       }
     }
 
@@ -1492,7 +1505,7 @@ void ProfileSyncService::OnAccountsInCookieUpdatedWithCallback(
 
 bool ProfileSyncService::HasCookieJarMismatch(
     const std::vector<gaia::ListedAccount>& cookie_jar_accounts) {
-  std::string account_id = GetAuthenticatedAccountInfo().account_id;
+  CoreAccountId account_id = GetAuthenticatedAccountInfo().account_id;
   // Iterate through list of accounts, looking for current sync account.
   for (const auto& account : cookie_jar_accounts) {
     if (account.id == account_id)

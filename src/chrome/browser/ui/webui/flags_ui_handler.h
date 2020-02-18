@@ -26,6 +26,12 @@ class FlagsUIHandler : public content::WebUIMessageHandler {
   // this was called, it calls |HandleRequestExperimentalFeatures| again.
   void Init(flags_ui::FlagsStorage* flags_storage, flags_ui::FlagAccess access);
 
+  // Configures the handler to return either all features or deprecated
+  // features only.
+  void set_deprecated_features_only(bool deprecatedFeaturesOnly) {
+    deprecated_features_only_ = deprecatedFeaturesOnly;
+  }
+
   // WebUIMessageHandler implementation.
   void RegisterMessages() override;
 
@@ -48,6 +54,7 @@ class FlagsUIHandler : public content::WebUIMessageHandler {
   std::unique_ptr<flags_ui::FlagsStorage> flags_storage_;
   flags_ui::FlagAccess access_;
   bool experimental_features_requested_;
+  bool deprecated_features_only_;
 
   DISALLOW_COPY_AND_ASSIGN(FlagsUIHandler);
 };

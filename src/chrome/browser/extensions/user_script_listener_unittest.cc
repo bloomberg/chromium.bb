@@ -26,8 +26,8 @@
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/mock_navigation_handle.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -77,7 +77,7 @@ scoped_refptr<Extension> LoadExtension(const std::string& filename,
 class UserScriptListenerTest : public testing::Test {
  public:
   UserScriptListenerTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         profile_manager_(
             new TestingProfileManager(TestingBrowserProcess::GetGlobal())) {}
 
@@ -134,7 +134,7 @@ class UserScriptListenerTest : public testing::Test {
     return throttle;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::RenderViewHostTestEnabler rvh_test_enabler_;
   std::unique_ptr<TestingProfileManager> profile_manager_;
   UserScriptListener listener_;

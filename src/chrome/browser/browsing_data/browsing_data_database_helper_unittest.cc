@@ -5,7 +5,7 @@
 #include "chrome/browser/browsing_data/browsing_data_database_helper.h"
 
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/common/database/database_identifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -14,7 +14,7 @@ namespace {
 using storage::DatabaseIdentifier;
 
 class CannedBrowsingDataDatabaseHelperTest : public testing::Test {
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 };
 
 TEST_F(CannedBrowsingDataDatabaseHelperTest, Empty) {

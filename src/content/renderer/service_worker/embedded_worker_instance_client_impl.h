@@ -9,7 +9,8 @@
 
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/common/privacy_preferences.h"
 #include "third_party/blink/public/mojom/service_worker/embedded_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
@@ -26,7 +27,9 @@ class ServiceWorkerContextClient;
 // the Mojo connection to the browser breaks first, the instance waits for the
 // service worker to stop and then deletes itself.
 //
-// All methods are called on the main thread.
+// All methods are called on the thread that creates the instance of this class.
+// Currently it's the main thread but it could be a background thread in the
+// future. https://crbug.com/692909
 class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
     : public blink::mojom::EmbeddedWorkerInstanceClient {
  public:
@@ -38,11 +41,14 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   };
 
   // Creates a new EmbeddedWorkerInstanceClientImpl instance bound to
-  // |request|. The instance destroys itself when needed, see the class
+  // |receiver|. The instance destroys itself when needed, see the class
   // documentation.
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
-  static void Create(blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  static void Create(
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver,
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_task_runner);
 
   ~EmbeddedWorkerInstanceClientImpl() override;
 
@@ -56,25 +62,26 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
  private:
   friend class ServiceWorkerContextClientTest;
 
-  explicit EmbeddedWorkerInstanceClientImpl(
-      blink::mojom::EmbeddedWorkerInstanceClientRequest request);
+  EmbeddedWorkerInstanceClientImpl(
+      mojo::PendingReceiver<blink::mojom::EmbeddedWorkerInstanceClient>
+          receiver,
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
 
   // blink::mojom::EmbeddedWorkerInstanceClient implementation
   void StartWorker(blink::mojom::EmbeddedWorkerStartParamsPtr params) override;
   void ResumeAfterDownload() override;
-  void AddMessageToConsole(blink::mojom::ConsoleMessageLevel level,
-                           const std::string& message) override;
-  void BindDevToolsAgent(
-      blink::mojom::DevToolsAgentHostAssociatedPtrInfo host,
-      blink::mojom::DevToolsAgentAssociatedRequest request) override;
 
-  // Handler of connection error bound to |binding_|.
+  // Handler of connection error bound to |receiver_|.
   void OnError();
 
   blink::WebEmbeddedWorkerStartData BuildStartData(
       const blink::mojom::EmbeddedWorkerStartParams& params);
 
-  mojo::Binding<blink::mojom::EmbeddedWorkerInstanceClient> binding_;
+  mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;
+
+  // A copy of this runner is also passed to ServiceWorkerContextClient in
+  // StartWorker().
+  scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner_;
 
   // nullptr means worker is not running.
   std::unique_ptr<ServiceWorkerContextClient> service_worker_context_client_;

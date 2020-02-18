@@ -5,11 +5,11 @@
 #include "ui/base/mojom/cursor_mojom_traits.h"
 
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"
+#include "skia/public/mojom/bitmap_skbitmap_mojom_traits.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/mojom/cursor.mojom.h"
-#include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
+#include "ui/gfx/geometry/mojom/geometry_mojom_traits.h"
 #include "ui/gfx/skia_util.h"
 
 namespace ui {
@@ -29,6 +29,7 @@ TEST_F(CursorStructTraitsTest, TestBuiltIn) {
   for (int i = 0; i < static_cast<int>(ui::CursorType::kCustom); ++i) {
     ui::CursorType type = static_cast<ui::CursorType>(i);
     ui::Cursor input(type);
+    input.set_device_scale_factor(1);
 
     ui::Cursor output;
     ASSERT_TRUE(EchoCursor(input, &output));

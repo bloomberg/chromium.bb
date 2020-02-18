@@ -5,6 +5,7 @@
 #include "android_webview/common/crash_reporter/crash_keys.h"
 
 #include "components/crash/core/common/crash_key.h"
+#include "components/gwp_asan/common/crash_key_name.h"
 
 namespace android_webview {
 namespace crash_keys {
@@ -35,6 +36,7 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "gpu-gl-vendor__1",
     "gpu-gl-vendor__2",
     "gpu-gl-renderer",
+    "oop_read_failure",
 
     // content/:
     "bad_message_reason",
@@ -45,6 +47,10 @@ const char* const kWebViewCrashKeyWhiteList[] = {
     "mojo-message-error__3",
     "mojo-message-error__4",
     "total-discardable-memory-allocated",
+
+    // GWP-ASan
+    gwp_asan::kMallocCrashKey,
+    gwp_asan::kPartitionAllocCrashKey,
 
     // crash keys needed for recording finch trials
     "variations",

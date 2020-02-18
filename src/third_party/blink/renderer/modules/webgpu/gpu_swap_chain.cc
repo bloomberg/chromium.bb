@@ -23,9 +23,10 @@ GPUSwapChain::GPUSwapChain(GPUCanvasContext* context,
     : DawnObjectBase(descriptor->device()->GetDawnControlClient()),
       device_(descriptor->device()),
       context_(context),
-      usage_(AsDawnEnum<DawnTextureUsageBit>(descriptor->usage())) {
-  swap_buffers_ = base::AdoptRef(
-      new WebGPUSwapBufferProvider(this, GetDawnControlClient(), usage_));
+      usage_(AsDawnEnum<DawnTextureUsage>(descriptor->usage())) {
+  swap_buffers_ = base::AdoptRef(new WebGPUSwapBufferProvider(
+      this, GetDawnControlClient(), usage_,
+      AsDawnEnum<DawnTextureFormat>(descriptor->format())));
 }
 
 GPUSwapChain::~GPUSwapChain() {

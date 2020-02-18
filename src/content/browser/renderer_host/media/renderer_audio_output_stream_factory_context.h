@@ -11,7 +11,7 @@
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_output_delegate.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 
 namespace media {
 class AudioParameters;
@@ -35,7 +35,7 @@ class CONTENT_EXPORT RendererAudioOutputStreamFactoryContext {
   // Called to request access to a device on behalf of the renderer.
   virtual void RequestDeviceAuthorization(
       int render_frame_id,
-      int session_id,
+      const base::UnguessableToken& session_id,
       const std::string& device_id,
       AuthorizationCompletedCallback cb) const = 0;
 

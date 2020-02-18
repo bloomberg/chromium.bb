@@ -156,7 +156,7 @@ ModuleWatcher::~ModuleWatcher() {
   g_module_watcher_instance = nullptr;
 }
 
-ModuleWatcher::ModuleWatcher() : weak_ptr_factory_(this) {}
+ModuleWatcher::ModuleWatcher() {}
 
 // Initializes the ModuleWatcher instance.
 void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
@@ -165,9 +165,9 @@ void ModuleWatcher::Initialize(OnModuleEventCallback callback) {
 
   // The enumeration of modules is done on a background task to make sure it
   // doesn't slow down startup.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ModuleWatcher::EnumerateAlreadyLoadedModules,
                      base::SequencedTaskRunnerHandle::Get(),

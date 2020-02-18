@@ -6,6 +6,12 @@ for, whether the function was successful, and connect all of this information to
 any existing informational logs. The below provides information about how this
 can be achieved with OSP's TraceLogging Infrastructure.
 
+## Compilation
+
+By default, TraceLogging is enabled as part of the build.
+To disable TraceLogging, include flag `--args="enable_trace_logging=false"`
+when calling `gn gen` as part of building this library.
+
 ## Imports
 
 To use TraceLogging, import the following header file:

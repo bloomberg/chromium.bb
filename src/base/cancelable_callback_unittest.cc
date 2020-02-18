@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -168,7 +168,7 @@ TEST(CancelableCallbackTest, IsNull) {
 // CancelableCallback posted to a task environment with PostTask.
 //  - Posted callbacks can be cancelled.
 TEST(CancelableCallbackTest, PostTask) {
-  test::ScopedTaskEnvironment scoped_task_environment;
+  test::TaskEnvironment task_environment;
 
   int count = 0;
   CancelableRepeatingClosure cancelable(

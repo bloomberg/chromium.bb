@@ -50,8 +50,6 @@ constexpr const int kMB = 1024 * 1024;
 // Hard coded default when not using quota management.
 constexpr const int kDefaultQuota = 5 * kMB;
 
-constexpr const int kMaxAppCacheMemDiskCacheSize = 10 * kMB;
-
 constexpr base::FilePath::CharType kDiskCacheDirectoryName[] =
     FILE_PATH_LITERAL("Cache");
 constexpr base::FilePath::CharType kAppCacheDatabaseName[] =
@@ -308,15 +306,9 @@ void AppCacheStorageImpl::InitTask::RunCompleted() {
   }
 
   if (storage_->service()->quota_manager_proxy()) {
-    if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
-      if (storage_->service()->quota_client())
-        storage_->service()->quota_client()->NotifyAppCacheReady();
-    } else {
-      base::PostTaskWithTraits(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
-                         storage_->service()->quota_client()));
-    }
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&AppCacheQuotaClient::NotifyAppCacheReady,
+                                  storage_->service()->quota_client()));
   }
 }
 
@@ -1856,9 +1848,8 @@ AppCacheDiskCache* AppCacheStorageImpl::disk_cache() {
     disk_cache_ = std::make_unique<AppCacheDiskCache>();
     if (is_incognito_) {
       rv = disk_cache_->InitWithMemBackend(
-          kMaxAppCacheMemDiskCacheSize,
-          base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
-                         base::Unretained(this)));
+          0, base::BindOnce(&AppCacheStorageImpl::OnDiskCacheInitialized,
+                            base::Unretained(this)));
     } else {
       expecting_cleanup_complete_on_disable_ = true;
 

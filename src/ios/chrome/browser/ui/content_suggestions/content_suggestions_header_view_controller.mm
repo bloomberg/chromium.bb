@@ -57,17 +57,6 @@ using base::UserMetricsAction;
 // Exposes view and methods to drive the doodle.
 @property(nonatomic, weak) id<LogoVendor> logoVendor;
 
-// |YES| if the google landing toolbar can show the forward arrow, cached and
-// pushed into the header view.
-@property(nonatomic, assign) BOOL canGoForward;
-
-// |YES| if the google landing toolbar can show the back arrow, cached and
-// pushed into the header view.
-@property(nonatomic, assign) BOOL canGoBack;
-
-// The number of tabs to show in the google landing fake toolbar.
-@property(nonatomic, assign) int tabCount;
-
 @property(nonatomic, strong) ContentSuggestionsHeaderView* headerView;
 @property(nonatomic, strong) UIButton* fakeOmnibox;
 @property(nonatomic, strong) UIButton* accessibilityButton;
@@ -83,19 +72,11 @@ using base::UserMetricsAction;
 
 @implementation ContentSuggestionsHeaderViewController
 
-@synthesize dispatcher = _dispatcher;
-@synthesize delegate = _delegate;
-@synthesize commandHandler = _commandHandler;
 @synthesize collectionSynchronizer = _collectionSynchronizer;
-@synthesize readingListModel = _readingListModel;
-@synthesize toolbarDelegate = _toolbarDelegate;
 @synthesize logoVendor = _logoVendor;
 @synthesize promoCanShow = _promoCanShow;
-@synthesize canGoForward = _canGoForward;
-@synthesize canGoBack = _canGoBack;
 @synthesize showing = _showing;
 @synthesize omniboxFocused = _omniboxFocused;
-@synthesize tabCount = _tabCount;
 
 @synthesize headerView = _headerView;
 @synthesize fakeOmnibox = _fakeOmnibox;
@@ -359,20 +340,8 @@ using base::UserMetricsAction;
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
   UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
-  if (base::ios::IsRunningOnIOS12OrLater()) {
-    [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
-        .constrainedView = voiceSearchButton;
-  } else {
-    // On iOS 11 and below, constraining the layout guide to a view instead of
-    // using frame freeze the app. The root cause wasn't found. See
-    // https://crbug.com/874017.
-    NamedGuide* voiceSearchGuide =
-        [NamedGuide guideWithName:kVoiceSearchButtonGuide
-                             view:voiceSearchButton];
-    voiceSearchGuide.constrainedFrame =
-        [voiceSearchGuide.owningView convertRect:voiceSearchButton.bounds
-                                        fromView:voiceSearchButton];
-  }
+  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
+      .constrainedView = voiceSearchButton;
   [self.dispatcher startVoiceSearch];
 }
 

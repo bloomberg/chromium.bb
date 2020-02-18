@@ -8,7 +8,7 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/autocomplete_provider_listener.h"
@@ -29,13 +29,13 @@ class OnDeviceHeadProviderTest : public testing::Test,
     client_.reset(new FakeAutocompleteProviderClient());
     SetTestOnDeviceHeadModel();
     provider_ = OnDeviceHeadProvider::Create(client_.get(), this);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void TearDown() override {
     provider_ = nullptr;
     client_.reset();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // AutocompleteProviderListener:
@@ -52,7 +52,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     auto* update_listener = OnDeviceModelUpdateListener::GetInstance();
     if (update_listener)
       update_listener->OnModelUpdate(file_path);
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void ResetServingInstance() {
@@ -63,7 +63,7 @@ class OnDeviceHeadProviderTest : public testing::Test,
     }
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
   scoped_refptr<OnDeviceHeadProvider> provider_;
 };
@@ -80,7 +80,7 @@ TEST_F(OnDeviceHeadProviderTest, ServingInstanceNotCreated) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -94,7 +94,7 @@ TEST_F(OnDeviceHeadProviderTest, RejectSynchronousRequest) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -107,10 +107,29 @@ TEST_F(OnDeviceHeadProviderTest, RejectIncognito) {
   input.set_want_asynchronous_matches(true);
 
   EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(true));
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
+
+  EXPECT_TRUE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->done());
+}
+
+TEST_F(OnDeviceHeadProviderTest, RejectOnFocusRequest) {
+  AutocompleteInput input(base::UTF8ToUTF16("M"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+  input.set_want_asynchronous_matches(true);
+  input.set_from_omnibox_focus(true);
+
+  EXPECT_CALL(*client_.get(), IsOffTheRecord()).WillOnce(Return(false));
+  EXPECT_CALL(*client_.get(), SearchSuggestEnabled()).WillOnce(Return(true));
+
+  provider_->Start(input, false);
+  if (!provider_->done())
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -127,7 +146,7 @@ TEST_F(OnDeviceHeadProviderTest, NoMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->matches().empty());
   EXPECT_TRUE(provider_->done());
@@ -144,7 +163,7 @@ TEST_F(OnDeviceHeadProviderTest, HasMatches) {
 
   provider_->Start(input, false);
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());
@@ -172,7 +191,7 @@ TEST_F(OnDeviceHeadProviderTest, CancelInProgressRequest) {
   provider_->Start(input2, false);
 
   if (!provider_->done())
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(provider_->done());
   ASSERT_EQ(3U, provider_->matches().size());

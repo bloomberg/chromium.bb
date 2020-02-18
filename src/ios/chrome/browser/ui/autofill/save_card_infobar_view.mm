@@ -10,13 +10,16 @@
 #import "ios/chrome/browser/ui/autofill/save_card_infobar_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/infobars/infobar_constants.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_constants.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Buttons/src/MaterialButtons.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 #include "ui/base/l10n/l10n_util.h"
+#import "ui/gfx/ios/uikit_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -38,9 +41,6 @@ const CGFloat kDescriptionLineHeight = 20;
 // to the close button icon's intrinsic padding equals kPadding.
 const CGFloat kCloseButtonPadding = 12;
 
-// Color in RGB to be used as tint color on the icon.
-const CGFloat kIconTintColor = 0x1A73E8;
-
 // Padding used on the bottom edge of the title.
 const CGFloat kTitleBottomPadding = 24;
 
@@ -52,9 +52,6 @@ const CGFloat kHorizontalSpacing = 8;
 
 // Padding used on the top edge of the action buttons' container.
 const CGFloat kButtonsTopPadding = 32;
-
-// Color in RGB used as background of the action buttons.
-const int kButtonTitleColorBlue = 0x4285f4;
 
 // Corner radius for action buttons.
 const CGFloat kButtonCornerRadius = 8.0;
@@ -93,11 +90,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 }  // namespace
 
 @implementation MessageWithLinks
-
-@synthesize messageText = _messageText;
-@synthesize linkRanges = _linkRanges;
-@synthesize linkURLs = _linkURLs;
-
 @end
 
 @interface SaveCardInfoBarView ()
@@ -115,61 +107,13 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 // animation).
 @property(nonatomic, assign) CGFloat visibleHeight;
 
-// Creates and adds subviews.
-- (void)setupSubviews;
-
-// Returns the view containing the infobar title. No padding is required on the
-// view. If |googlePayIcon| is present, returns a view containing the GooglePay
-// icon followed by the title laid out horizontally.
-- (UIView*)titleView;
-
-// Returns the view containing the infobar content. No padding is required on
-// the view.
-- (UIView*)contentView;
-
-// Creates and returns an instance of LabelLinkController for |label| and
-// |action| which is invoked when links managed by it are tapped.
-- (LabelLinkController*)labelLinkControllerWithLabel:(UILabel*)label
-                                              action:(ProceduralBlockWithURL)
-                                                         action;
-
-// Creates and returns an infobar action button initialized with the given
-// title, colors, and action.
-- (UIButton*)actionButtonWithTitle:(NSString*)title
-                           palette:(MDCPalette*)palette
-                        titleColor:(UIColor*)titleColor
-                            target:(id)target
-                            action:(SEL)action;
-
-// Handles tapping the close button.
-- (void)didTapClose;
-
-// Handles tapping the cancel button.
-- (void)didTapCancel;
-
-// Handles tapping the confirm button.
-- (void)didTapConfirm;
-
 @end
 
 @implementation SaveCardInfoBarView
 
-@synthesize visibleHeight = _visibleHeight;
-@synthesize delegate = _delegate;
-@synthesize icon = _icon;
-@synthesize googlePayIcon = _googlePayIcon;
-@synthesize message = _message;
-@synthesize closeButtonImage = _closeButtonImage;
+// Synthesize description because the existing NSObject description property
+// is readonly.
 @synthesize description = _description;
-@synthesize cardIssuerIcon = _cardIssuerIcon;
-@synthesize cardLabel = _cardLabel;
-@synthesize cardSublabel = _cardSublabel;
-@synthesize legalMessages = _legalMessages;
-@synthesize cancelButtonTitle = _cancelButtonTitle;
-@synthesize confirmButtonTitle = _confirmButtonTitle;
-@synthesize messageLinkController = _messageLinkController;
-@synthesize legalMessageLinkController = _legalMessageLinkController;
-@synthesize bottomAnchorConstraint = _bottomAnchorConstraint;
 
 #pragma mark - UIView
 
@@ -223,10 +167,24 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
 
 #pragma mark - Helper methods
 
+// Creates and adds subviews.
 - (void)setupSubviews {
   [self setAccessibilityViewIsModal:YES];
-  self.backgroundColor = UIColorFromRGB(kInfobarBackgroundColor);
+  self.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   id<LayoutGuideProvider> safeAreaLayoutGuide = self.safeAreaLayoutGuide;
+
+  // Add thin separator to separate infobar from the web content.
+  UIView* separator = [[UIView alloc] initWithFrame:CGRectZero];
+  separator.translatesAutoresizingMaskIntoConstraints = NO;
+  separator.backgroundColor = [UIColor colorNamed:kToolbarShadowColor];
+  [self addSubview:separator];
+  CGFloat separatorHeight = ui::AlignValueToUpperPixel(kToolbarSeparatorHeight);
+  [NSLayoutConstraint activateConstraints:@[
+    [separator.heightAnchor constraintEqualToConstant:separatorHeight],
+    [self.leadingAnchor constraintEqualToAnchor:separator.leadingAnchor],
+    [self.trailingAnchor constraintEqualToAnchor:separator.trailingAnchor],
+    [self.topAnchor constraintEqualToAnchor:separator.bottomAnchor],
+  ]];
 
   // Add the icon. The icon is fixed to the top leading corner of the infobar.
   // |iconContainerView| is used here because the AutoLayout constraints for
@@ -243,7 +201,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     iconImageView.translatesAutoresizingMaskIntoConstraints = NO;
     iconImageView.accessibilityIdentifier =
         kIconImageViewAccessibilityIdentifier;
-    iconImageView.tintColor = UIColorFromRGB(kIconTintColor);
     // Prevent the icon from shrinking horizontally. This is needed when the
     // title is long and needs to wrap.
     [iconImageView
@@ -318,8 +275,7 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
                   action:@selector(didTapClose)
         forControlEvents:UIControlEventTouchUpInside];
   [closeButton setAccessibilityLabel:l10n_util::GetNSString(IDS_CLOSE)];
-  closeButton.tintColor = [UIColor blackColor];
-  closeButton.alpha = 0.20;
+  closeButton.tintColor = [UIColor colorNamed:kToolbarButtonColor];
   // Prevent the button from shrinking horizontally. This is needed when the
   // title is long and needs to wrap.
   [closeButton
@@ -389,8 +345,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     if (self.cancelButtonTitle.length > 0UL) {
       UIButton* cancelButton =
           [self actionButtonWithTitle:self.cancelButtonTitle
-                              palette:nil
-                           titleColor:UIColorFromRGB(kButtonTitleColorBlue)
+                      backgroundColor:nil
+                           titleColor:[UIColor colorNamed:kBlueColor]
                                target:self
                                action:@selector(didTapCancel)];
 
@@ -400,8 +356,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     if (self.confirmButtonTitle.length > 0UL) {
       UIButton* confirmButton =
           [self actionButtonWithTitle:self.confirmButtonTitle
-                              palette:[MDCPalette cr_bluePalette]
-                           titleColor:[UIColor whiteColor]
+                      backgroundColor:[UIColor colorNamed:kBlueColor]
+                           titleColor:[UIColor colorNamed:kSolidButtonTextColor]
                                target:self
                                action:@selector(didTapConfirm)];
 
@@ -414,6 +370,9 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   }
 }
 
+// Returns the view containing the infobar title. No padding is required on the
+// view. If |googlePayIcon| is present, returns a view containing the GooglePay
+// icon followed by the title laid out horizontally.
 - (UIView*)titleView {
   UIView* titleView = [[UIView alloc] initWithFrame:CGRectZero];
   titleView.accessibilityIdentifier = kTitleViewAccessibilityIdentifier;
@@ -453,9 +412,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   label.accessibilityIdentifier = kTitleLabelAccessibilityIdentifier;
   label.translatesAutoresizingMaskIntoConstraints = NO;
   label.clipsToBounds = YES;
-  label.textColor = [[MDCPalette greyPalette] tint900];
+  label.textColor = [UIColor colorNamed:kTextPrimaryColor];
   label.numberOfLines = 0;
-  label.backgroundColor = [UIColor clearColor];
   NSMutableParagraphStyle* paragraphStyle =
       [[NSMutableParagraphStyle alloc] init];
   paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
@@ -510,6 +468,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return titleView;
 }
 
+// Returns the view containing the infobar content. No padding is required on
+// the view.
 - (UIView*)contentView {
   UIStackView* contentView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
   contentView.accessibilityIdentifier = kContentViewAccessibilityIdentifier;
@@ -522,9 +482,8 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   if (self.description.length > 0UL) {
     UILabel* label = [[UILabel alloc] initWithFrame:CGRectZero];
     label.accessibilityIdentifier = kDescriptionLabelAccessibilityIdentifier;
-    label.textColor = [[MDCPalette greyPalette] tint700];
+    label.textColor = [UIColor colorNamed:kTextSecondaryColor];
     label.numberOfLines = 0;
-    label.backgroundColor = [UIColor clearColor];
     NSMutableParagraphStyle* paragraphStyle =
         [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
@@ -566,16 +525,14 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   cardLabel.accessibilityIdentifier = kCardLabelAccessibilityIdentifier;
   cardLabel.text = self.cardLabel;
   cardLabel.font = [MDCTypography body1Font];
-  cardLabel.textColor = [[MDCPalette greyPalette] tint900];
-  cardLabel.backgroundColor = [UIColor clearColor];
+  cardLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   [cardDetailsContainerView addArrangedSubview:cardLabel];
 
   UILabel* cardSublabel = [[UILabel alloc] initWithFrame:CGRectZero];
   cardSublabel.accessibilityIdentifier = kCardSublabelAccessibilityIdentifier;
   cardSublabel.text = self.cardSublabel;
   cardSublabel.font = [MDCTypography body1Font];
-  cardSublabel.textColor = [[MDCPalette greyPalette] tint700];
-  cardSublabel.backgroundColor = [UIColor clearColor];
+  cardSublabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   [cardDetailsContainerView addArrangedSubview:cardSublabel];
 
   // Dummy view that expands so that the card details are aligned to the leading
@@ -594,7 +551,6 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
     label.accessibilityIdentifier = kLegalMessageLabelAccessibilityIdentifier;
     label.textColor = [[MDCPalette greyPalette] tint700];
     label.numberOfLines = 0;
-    label.backgroundColor = [UIColor clearColor];
     NSMutableParagraphStyle* paragraphStyle =
         [[NSMutableParagraphStyle alloc] init];
     paragraphStyle.lineBreakMode = NSLineBreakByWordWrapping;
@@ -632,17 +588,21 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return contentView;
 }
 
+// Creates and returns an instance of LabelLinkController for |label| and
+// |action| which is invoked when links managed by it are tapped.
 - (LabelLinkController*)labelLinkControllerWithLabel:(UILabel*)label
                                               action:(ProceduralBlockWithURL)
                                                          action {
   LabelLinkController* labelLinkController =
       [[LabelLinkController alloc] initWithLabel:label action:action];
-  [labelLinkController setLinkColor:[[MDCPalette cr_bluePalette] tint500]];
+  [labelLinkController setLinkColor:[UIColor colorNamed:kBlueColor]];
   return labelLinkController;
 }
 
+// Creates and returns an infobar action button initialized with the given
+// title, colors, and action.
 - (UIButton*)actionButtonWithTitle:(NSString*)title
-                           palette:(MDCPalette*)palette
+                   backgroundColor:(UIColor*)backgroundColor
                         titleColor:(UIColor*)titleColor
                             target:(id)target
                             action:(SEL)action {
@@ -653,17 +613,17 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   [button addTarget:target
                 action:action
       forControlEvents:UIControlEventTouchUpInside];
-  [button setUnderlyingColorHint:[UIColor blackColor]];
+  [button setUnderlyingColorHint:[UIColor colorNamed:kBackgroundColor]];
   button.uppercaseTitle = NO;
   button.layer.cornerRadius = kButtonCornerRadius;
   [button
       setTitleFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
           forState:UIControlStateNormal];
 
-  if (palette) {
+  if (backgroundColor) {
     button.hasOpaqueBackground = YES;
-    button.inkColor = [[palette tint300] colorWithAlphaComponent:0.5f];
-    [button setBackgroundColor:[palette tint500] forState:UIControlStateNormal];
+    button.inkColor = [UIColor colorNamed:kMDCInkColor];
+    [button setBackgroundColor:backgroundColor forState:UIControlStateNormal];
   }
 
   if (titleColor) {
@@ -675,14 +635,17 @@ NSString* const kTitleViewAccessibilityIdentifier = @"titleView";
   return button;
 }
 
+// Handles tapping the close button.
 - (void)didTapClose {
   [self.delegate saveCardInfoBarViewDidTapClose:self];
 }
 
+// Handles tapping the cancel button.
 - (void)didTapCancel {
   [self.delegate saveCardInfoBarViewDidTapCancel:self];
 }
 
+// Handles tapping the confirm button.
 - (void)didTapConfirm {
   [self.delegate saveCardInfoBarViewDidTapConfirm:self];
 }

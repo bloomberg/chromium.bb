@@ -15,7 +15,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/sync_file_system/drive_backend/callback_helper.h"
 #include "chrome/browser/sync_file_system/drive_backend/drive_backend_constants.h"
@@ -37,11 +37,12 @@
 #include "components/drive/service/test_util.h"
 #include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_task_traits.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/extension.h"
 #include "google_apis/drive/drive_api_parser.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -80,7 +81,7 @@ class DriveBackendSyncTest : public testing::Test,
                              public RemoteFileSyncService::Observer {
  public:
   DriveBackendSyncTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         pending_remote_changes_(0),
         pending_local_changes_(0) {}
   ~DriveBackendSyncTest() override {}
@@ -89,14 +90,16 @@ class DriveBackendSyncTest : public testing::Test,
     ASSERT_TRUE(base_dir_.CreateUniqueTempDir());
     in_memory_env_ = leveldb_chrome::NewMemEnv("DriveBackendSyncTest");
 
-    io_task_runner_ = base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
-    worker_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    io_task_runner_ =
+        base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
+    worker_task_runner_ = base::CreateSequencedTaskRunner(
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     file_task_runner_ = io_task_runner_;
     scoped_refptr<base::SequencedTaskRunner> drive_task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
 
     RegisterSyncableFileSystem();
     local_sync_service_ = LocalFileSyncService::CreateForTesting(
@@ -110,7 +113,7 @@ class DriveBackendSyncTest : public testing::Test,
 
     std::unique_ptr<drive::DriveUploaderInterface> uploader(
         new drive::DriveUploader(drive_service.get(), file_task_runner_.get(),
-                                 nullptr));
+                                 mojo::NullRemote()));
 
     fake_drive_service_helper_.reset(new FakeDriveServiceHelper(
         drive_service.get(), uploader.get(),
@@ -603,7 +606,7 @@ class DriveBackendSyncTest : public testing::Test,
     return sync_worker()->context_->metadata_database_.get();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir base_dir_;
   std::unique_ptr<leveldb::Env> in_memory_env_;

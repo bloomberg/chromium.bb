@@ -38,7 +38,6 @@ cr.define('chrome', function() {
         Cellular: {Type: 'Cellular', State: ''},
         Tether: {Type: 'Tether', State: ''},
         VPN: {Type: 'VPN', State: ''},
-        WiMAX: {Type: 'WiMAX', State: ''},
       };
 
       this.networkStates_ = [
@@ -53,7 +52,7 @@ cr.define('chrome', function() {
 
       var methodNames = [
         'getProperties', 'getProperties', 'getManagedProperties', 'getNetworks',
-        'getDeviceStates', 'enableNetworkType', 'disableNetworkType',
+        'getDeviceStates', 'getState', 'enableNetworkType',
         'disableNetworkType', 'requestNetworkScan', 'getGlobalPolicy',
         'getCertificateLists'
       ];
@@ -127,7 +126,13 @@ cr.define('chrome', function() {
     },
 
     /** @override */
-    getState: assertNotReached,
+    getState: function(guid, callback) {
+      var result = this.networkStates_.find(function(state) {
+        return state.GUID == guid;
+      });
+      callback(result);
+      this.methodCalled('getState');
+    },
 
     /** @override */
     setProperties: assertNotReached,
@@ -239,6 +244,9 @@ cr.define('chrome', function() {
 
     /** @type {!FakeChromeEvent} */
     onDeviceStateListChanged: new FakeChromeEvent(),
+
+    /** @type {!FakeChromeEvent} */
+    onActiveNetworksChanged: new FakeChromeEvent(),
 
     /** @type {!FakeChromeEvent} */
     onPortalDetectionCompleted: new FakeChromeEvent(),

@@ -103,6 +103,8 @@ static void compile(spvc_compiler compiler, const char *tag)
 
 int main(int argc, char **argv)
 {
+	const char *rev = NULL;
+
 	spvc_context context = NULL;
 	spvc_parsed_ir ir = NULL;
 	spvc_compiler compiler_glsl = NULL;
@@ -116,11 +118,37 @@ int main(int argc, char **argv)
 	SpvId *buffer = NULL;
 	size_t word_count = 0;
 
-	if (argc != 2)
+	rev = spvc_get_commit_revision_and_timestamp();
+	if (!rev || *rev == '\0')
+		return 1;
+
+	printf("Revision: %s\n", rev);
+
+	if (argc != 5)
 		return 1;
 
 	if (read_file(argv[1], &buffer, &word_count) < 0)
 		return 1;
+
+	unsigned abi_major, abi_minor, abi_patch;
+	spvc_get_version(&abi_major, &abi_minor, &abi_patch);
+	if (abi_major != strtoul(argv[2], NULL, 0))
+	{
+		fprintf(stderr, "VERSION_MAJOR mismatch!\n");
+		return 1;
+	}
+
+	if (abi_minor != strtoul(argv[3], NULL, 0))
+	{
+		fprintf(stderr, "VERSION_MINOR mismatch!\n");
+		return 1;
+	}
+
+	if (abi_patch != strtoul(argv[4], NULL, 0))
+	{
+		fprintf(stderr, "VERSION_PATCH mismatch!\n");
+		return 1;
+	}
 
 	SPVC_CHECKED_CALL(spvc_context_create(&context));
 	spvc_context_set_error_callback(context, error_callback, NULL);

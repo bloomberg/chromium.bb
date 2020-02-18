@@ -194,7 +194,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationAction:action];
+  [self createPendingNavigationInfoFromNavigationAction:action];
 
   if (web::GetWebClient()->IsSlimNavigationManagerEnabled() &&
       action.targetFrame.mainFrame &&
@@ -221,9 +221,21 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if (isMainFrameNavigationAction) {
     web::NavigationContextImpl* context =
         [self contextForPendingMainFrameNavigationWithURL:requestURL];
-    if (context) {
-      DCHECK(!context->IsRendererInitiated() ||
-             (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK));
+    // Theoretically if |context| can be found here, the navigation should be
+    // either user-initiated or JS back/forward. The second part in the "if"
+    // condition used to be a DCHECK, but it would fail in this case:
+    // 1. Multiple render-initiated navigation with the same URL happens at the
+    //    same time;
+    // 2. One of these navigations gets the "didStartProvisonalNavigation"
+    //    callback and creates a NavigationContext;
+    // 3. Another navigation reaches here and retrieves that NavigationContext
+    //    by matching URL.
+    // The DCHECK is now turned into a "if" condition, but can be reverted if a
+    // more reliable way of matching NavigationContext with WKNavigationAction
+    // is found.
+    if (context &&
+        (!context->IsRendererInitiated() ||
+         (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK))) {
       transition = context->GetPageTransition();
       if (context->IsLoadingErrorPage()) {
         // loadHTMLString: navigation which loads error page into WKWebView.
@@ -448,15 +460,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if ([WKResponse.response isKindOfClass:[NSHTTPURLResponse class]]) {
     headers = net::CreateHeadersFromNSHTTPURLResponse(
         static_cast<NSHTTPURLResponse*>(WKResponse.response));
-    // TODO(crbug.com/551677): remove |OnHttpResponseHeadersReceived| and attach
-    // headers to web::NavigationContext.
-    self.webStateImpl->OnHttpResponseHeadersReceived(headers.get(),
-                                                     responseURL);
   }
 
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
-  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse];
+  [self updatePendingNavigationInfoFromNavigationResponse:WKResponse
+                                              HTTPHeaders:headers];
 
   BOOL shouldRenderResponse = [self shouldRenderResponse:WKResponse];
   if (!shouldRenderResponse) {
@@ -559,6 +568,8 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
 
     self.webStateImpl->OnNavigationStarted(context);
+    self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(
+        webViewURL);
     return;
   }
 
@@ -609,8 +620,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     return;
   }
 
-  self.webStateImpl->GetNavigationManagerImpl()
-      .OnRendererInitiatedNavigationStarted(webViewURL);
+  self.webStateImpl->GetNavigationManagerImpl().OnNavigationStarted(webViewURL);
 
   // When a client-side redirect occurs while an interstitial warning is
   // displayed, clear the warning and its navigation item, so that a new
@@ -679,7 +689,12 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     DCHECK(web::GetWebClient()->IsAppSpecificURL(
         net::GURLWithNSURL(error.userInfo[NSURLErrorFailingURLErrorKey])));
   } else {
-    if (web::IsWKWebViewSSLCertError(error)) {
+    // Skip this check when committed interstitials enabled and let the cert
+    // error go through handleLoadError: instead. In this case, a generic
+    // net error page gets shown for cert errors.
+    if (web::IsWKWebViewSSLCertError(error) &&
+        !base::FeatureList::IsEnabled(
+            web::features::kSSLCommittedInterstitials)) {
       [self handleSSLCertError:error forNavigation:navigation webView:webView];
     } else {
       [self handleLoadError:error
@@ -689,7 +704,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     }
   }
 
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
   // This must be reset at the end, since code above may need information about
   // the pending load.
   self.pendingNavigationInfo = nil;
@@ -752,14 +767,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   if (self.pendingNavigationInfo.MIMEType)
     context->SetMimeType(self.pendingNavigationInfo.MIMEType);
+  if (self.pendingNavigationInfo.HTTPHeaders)
+    context->SetResponseHeaders(self.pendingNavigationInfo.HTTPHeaders);
 
   // Don't show webview for placeholder navigation to avoid covering the native
   // content, which may have already been shown.
   if (!IsPlaceholderUrl(webViewURL))
     [self.delegate navigationHandlerDisplayWebView:self];
-
-  // Update HTTP response headers.
-  self.webStateImpl->UpdateHttpResponseHeaders(webViewURL);
 
   if (@available(iOS 11.3, *)) {
     // On iOS 11.3 didReceiveServerRedirectForProvisionalNavigation: is not
@@ -805,14 +819,13 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
       //    crbug.com/676129)
       context->SetHasCommitted(true);
     }
-    context->SetResponseHeaders(self.webStateImpl->GetHttpResponseHeaders());
     self.webStateImpl->SetContentsMimeType(
         base::SysNSStringToUTF8(context->GetMimeType()));
   }
 
   [self commitPendingNavigationInfoInWebView:webView];
 
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
 
   // This point should closely approximate the document object change, so reset
   // the list of injected scripts to those that are automatically injected.
@@ -1059,7 +1072,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           forNavigation:navigation
                 webView:webView
         provisionalLoad:NO];
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
   _certVerificationErrors->Clear();
   [self forgetNullWKNavigation:navigation];
 }
@@ -1112,7 +1125,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   _certVerificationErrors->Clear();
   self.webProcessCrashed = YES;
-  [self removeAllWebFrames];
+  self.webStateImpl->GetWebFramesManagerImpl().RemoveAllWebFrames();
 
   [self.delegate navigationHandlerWebProcessDidCrash:self];
 }
@@ -1175,7 +1188,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 // Some pieces of navigation information are only known in
 // |decidePolicyForNavigationAction|, but must be in a pending state until
 // |didgo/Navigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationAction:
+- (void)createPendingNavigationInfoFromNavigationAction:
     (WKNavigationAction*)action {
   if (action.targetFrame.mainFrame) {
     self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
@@ -1186,6 +1199,26 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
     self.pendingNavigationInfo.hasUserGesture =
         web::GetNavigationActionInitiationType(action) ==
         web::NavigationActionInitiationType::kUserInitiated;
+  }
+}
+
+// Extracts navigation info from WKNavigationResponse and sets it as a pending.
+// Some pieces of navigation information are only known in
+// |decidePolicyForNavigationResponse|, but must be in a pending state until
+// |didCommitNavigation| where it becames current.
+- (void)
+    updatePendingNavigationInfoFromNavigationResponse:
+        (WKNavigationResponse*)response
+                                          HTTPHeaders:
+                                              (const scoped_refptr<
+                                                  net::HttpResponseHeaders>&)
+                                                  headers {
+  if (response.isForMainFrame) {
+    if (!self.pendingNavigationInfo) {
+      self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
+    }
+    self.pendingNavigationInfo.MIMEType = response.response.MIMEType;
+    self.pendingNavigationInfo.HTTPHeaders = headers;
   }
 }
 
@@ -1326,20 +1359,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
            ->UserInteractionRegisteredSinceWebViewCreated();
   BOOL noNavigationItems = !(self.navigationManagerImpl->GetItemCount());
   return rendererInitiatedWithoutInteraction || noNavigationItems;
-}
-
-// Extracts navigation info from WKNavigationResponse and sets it as a pending.
-// Some pieces of navigation information are only known in
-// |decidePolicyForNavigationResponse|, but must be in a pending state until
-// |didCommitNavigation| where it becames current.
-- (void)updatePendingNavigationInfoFromNavigationResponse:
-    (WKNavigationResponse*)response {
-  if (response.isForMainFrame) {
-    if (!self.pendingNavigationInfo) {
-      self.pendingNavigationInfo = [[CRWPendingNavigationInfo alloc] init];
-    }
-    self.pendingNavigationInfo.MIMEType = response.response.MIMEType;
-  }
 }
 
 // Returns YES if response should be rendered in WKWebView.
@@ -1645,6 +1664,22 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   web::NavigationContextImpl* navigationContext =
       [self.navigationStates contextForNavigation:navigation];
+
+  if (@available(iOS 13, *)) {
+  } else {
+    if (provisionalLoad && !navigationContext &&
+        web::RequiresProvisionalNavigationFailureWorkaround()) {
+      // It is likely that |navigationContext| is null because
+      // didStartProvisionalNavigation: was not called with this WKNavigation
+      // object. Log UMA to know when this workaround can be removed and
+      // do not call OnNavigationFinished() to avoid crash on null pointer
+      // dereferencing. See crbug.com/973653 and crbug.com/1004634 for details.
+      UMA_HISTOGRAM_BOOLEAN(
+          "Navigation.IOSNullContextInDidFailProvisionalNavigation", true);
+      return;
+    }
+  }
+
   navigationContext->SetError(error);
   navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation
@@ -1664,6 +1699,16 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
         // If URL is blocked due to Restriction, do not take any further
         // action as WKWebView will show a built-in error.
         if (!web::RequiresContentFilterBlockingWorkaround()) {
+          // On iOS13, immediately following this navigation, WebKit will
+          // navigate to an internal failure page. Unfortunately, due to how
+          // SlimNav session restoration works with same document navigations,
+          // this page blocked by a content filter puts WebKit into a state
+          // where all further restoration same-document navigations are 'stuck'
+          // on this failure page.  Instead, avoid restoring this page
+          // completely.  Consider revisiting this if and when a proper session
+          // restoration API is provided by WKWebView.
+          self.navigationManagerImpl->SetWKWebViewNextPendingUrlNotSerializable(
+              navigationContext->GetUrl());
           return;
         } else if (!PageTransitionIsNewNavigation(transition)) {
           if (transition & ui::PAGE_TRANSITION_RELOAD) {
@@ -1749,7 +1794,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
           net::GURLWithNSURL(webView.URL), errorURL);
     } else {
       command = item->error_retry_state_machine().DidFailNavigation(
-          net::GURLWithNSURL(webView.URL), errorURL);
+          net::GURLWithNSURL(webView.URL));
     }
     [self handleErrorRetryCommand:command
                    navigationItem:item
@@ -1771,7 +1816,11 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   if ([self shouldCancelLoadForCancelledError:error
                               provisionalLoad:provisionalLoad]) {
     [self loadCancelled];
-    self.navigationManagerImpl->DiscardNonCommittedItems();
+    web::NavigationItemImpl* item =
+        web::GetItemWithUniqueID(self.navigationManagerImpl, navigationContext);
+    if (self.navigationManagerImpl->GetPendingItem() == item) {
+      self.navigationManagerImpl->DiscardNonCommittedItems();
+    }
 
     [self.legacyNativeContentController
         handleCancelledErrorForContext:navigationContext];
@@ -1827,7 +1876,7 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
                                 forContext:std::move(originalContext)];
     } break;
 
-    case web::ErrorRetryCommand::kLoadErrorView:
+    case web::ErrorRetryCommand::kLoadError:
       [self loadErrorPageForNavigationItem:item
                          navigationContext:context
                                    webView:webView];
@@ -1892,7 +1941,6 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 - (void)loadErrorPageForNavigationItem:(web::NavigationItemImpl*)item
                      navigationContext:(web::NavigationContextImpl*)context
                                webView:(WKWebView*)webView {
-  const GURL currentURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   NSError* error = context->GetError();
   DCHECK(error);
   DCHECK_EQ(item->GetUniqueID(), context->GetNavigationItemUniqueID());
@@ -1911,76 +1959,70 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
   NSString* failingURLString =
       error.userInfo[NSURLErrorFailingURLStringErrorKey];
   GURL failingURL(base::SysNSStringToUTF8(failingURLString));
-  NSString* errorHTML = nil;
   web::GetWebClient()->PrepareErrorPage(
       self.webStateImpl, failingURL, error, context->IsPost(),
-      self.webStateImpl->GetBrowserState()->IsOffTheRecord(), &errorHTML);
+      self.webStateImpl->GetBrowserState()->IsOffTheRecord(),
+      base::BindOnce(^(NSString* errorHTML) {
+        if (errorHTML) {
+          WKNavigation* navigation =
+              [webView loadHTMLString:errorHTML
+                              baseURL:net::NSURLWithGURL(failingURL)];
+          auto loadHTMLContext =
+              web::NavigationContextImpl::CreateNavigationContext(
+                  self.webStateImpl, failingURL,
+                  /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
+                  /*is_renderer_initiated=*/false);
+          loadHTMLContext->SetLoadingErrorPage(true);
+          loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
 
-  WKNavigation* navigation =
-      [webView loadHTMLString:errorHTML baseURL:net::NSURLWithGURL(failingURL)];
+          [self.navigationStates setContext:std::move(loadHTMLContext)
+                              forNavigation:navigation];
+          [self.navigationStates setState:web::WKNavigationState::REQUESTED
+                            forNavigation:navigation];
+        }
 
-  auto loadHTMLContext = web::NavigationContextImpl::CreateNavigationContext(
-      self.webStateImpl, failingURL,
-      /*has_user_gesture=*/false, ui::PAGE_TRANSITION_FIRST,
-      /*is_renderer_initiated=*/false);
-  loadHTMLContext->SetLoadingErrorPage(true);
-  loadHTMLContext->SetNavigationItemUniqueID(item->GetUniqueID());
+        // TODO(crbug.com/803503): only call these for placeholder navigation
+        // because they should have already been triggered during navigation
+        // commit for failures that happen after commit.
+        [self.delegate navigationHandlerDidStartLoading:self];
+        // TODO(crbug.com/973765): This is a workaround because |item| might get
+        // released after
+        // |self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem()|.
+        // Remove this once navigation refactor is done.
+        GURL itemURL = item->GetURL();
+        self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
+        if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
+          [self.delegate navigationHandler:self
+                            setDocumentURL:itemURL
+                                   context:context];
+        } else {
+          web::NavigationItem* lastCommittedItem =
+              self.navigationManagerImpl->GetLastCommittedItem();
+          DCHECK_EQ(itemURL, lastCommittedItem->GetURL());
+          [self.delegate navigationHandler:self
+                            setDocumentURL:lastCommittedItem->GetURL()
+                                   context:context];
+        }
 
-  [self.navigationStates setContext:std::move(loadHTMLContext)
-                      forNavigation:navigation];
-  [self.navigationStates setState:web::WKNavigationState::REQUESTED
-                    forNavigation:navigation];
+        // If |context| is a placeholder navigation, this is the second part of
+        // the error page load for a provisional load failure. Rewrite the
+        // context URL to actual URL and trigger the deferred
+        // |OnNavigationFinished| callback. This is also needed if |context| is
+        // not yet committed, which can happen on a reload/back/forward load
+        // that failed in provisional navigation.
+        if (context->IsPlaceholderNavigation() || !context->HasCommitted()) {
+          context->SetUrl(itemURL);
+          context->SetPlaceholderNavigation(false);
+          context->SetHasCommitted(true);
+          self.webStateImpl->OnNavigationFinished(context);
+        }
 
-  // TODO(crbug.com/803503): only call these for placeholder navigation because
-  // they should have already been triggered during navigation commit for
-  // failures that happen after commit.
-  [self.delegate navigationHandlerDidStartLoading:self];
-  // TODO(crbug.com/973765): This is a workaround because |item| might get
-  // released after
-  // |self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem()|.
-  // Remove this once navigation refactor is done.
-  GURL itemURL = item->GetURL();
-  self.navigationManagerImpl->CommitPendingItem(context->ReleaseItem());
-  if (web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    [self.delegate navigationHandler:self
-                      setDocumentURL:itemURL
-                             context:context];
-  } else {
-    web::NavigationItem* lastCommittedItem =
-        self.navigationManagerImpl->GetLastCommittedItem();
-    DCHECK_EQ(itemURL, lastCommittedItem->GetURL());
-    [self.delegate navigationHandler:self
-                      setDocumentURL:lastCommittedItem->GetURL()
-                             context:context];
-  }
-
-  // If |context| is a placeholder navigation, this is the second part of the
-  // error page load for a provisional load failure. Rewrite the context URL to
-  // actual URL and trigger the deferred |OnNavigationFinished| callback. This
-  // is also needed if |context| is not yet committed, which can happen on a
-  // reload/back/forward load that failed in provisional navigation.
-  if (context->IsPlaceholderNavigation() || !context->HasCommitted()) {
-    context->SetUrl(itemURL);
-    context->SetPlaceholderNavigation(false);
-    context->SetHasCommitted(true);
-    self.webStateImpl->OnNavigationFinished(context);
-  }
-
-  [self.delegate navigationHandler:self
-        didCompleteLoadWithSuccess:NO
-                        forContext:context];
-  self.webStateImpl->SetIsLoading(false);
-  self.webStateImpl->OnPageLoaded(failingURL, NO);
-}
-
-// Clears the frames list.
-- (void)removeAllWebFrames {
-  web::WebFramesManagerImpl& framesManager =
-      self.webStateImpl->GetWebFramesManagerImpl();
-  for (auto* frame : framesManager.GetAllWebFrames()) {
-    self.webStateImpl->OnWebFrameUnavailable(frame);
-  }
-  framesManager.RemoveAllWebFrames();
+        [self.delegate navigationHandler:self
+              didCompleteLoadWithSuccess:NO
+                              forContext:context];
+        self.webStateImpl->SetIsLoading(false);
+        self.webStateImpl->OnPageLoaded(failingURL, NO);
+      }));
 }
 
 // Resets any state that is associated with a specific document object (e.g.,

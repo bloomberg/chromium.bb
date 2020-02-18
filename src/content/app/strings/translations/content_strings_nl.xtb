@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Waarde moet <ph name="MINIMUM_DATE_OR_TIME" /> of later zijn.</translation>
 <translation id="2759744352195237655">pop-upknop</translation>
 <translation id="2761667185364618470">Vink dit selectievakje aan als je wilt doorgaan.</translation>
+<translation id="2844350028562914727">details</translation>
 <translation id="2896972712917208084">groep met keuzerondjes</translation>
 <translation id="2908441821576996758">Voer een door komma's gescheiden lijst met e-mailadressen in.</translation>
 <translation id="2940813599313844715">object</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Waarde moet kleiner dan of gelijk zijn aan <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definitie</translation>
 <translation id="3557673793733683882">koptekst <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">weekkiezer</translation>
 <translation id="3685101356851116974">Ongelabelde afbeelding</translation>
 <translation id="3706100364254443312">schakelaar</translation>
 <translation id="3732799496749320381">mm</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">scrollbar</translation>
 <translation id="4103419683916926126">Milliseconden</translation>
 <translation id="4151657705144244502">afbeelding</translation>
+<translation id="4160057747563657758">telefoon</translation>
 <translation id="4193965531860883258">voorwoord</translation>
 <translation id="4201051445878709314">Vorige maand weergeven</translation>
 <translation id="421884353938374759">kleurkiezer</translation>
 <translation id="4248100235867064564">menubalk</translation>
-<translation id="4254339807215791271">informatie over content</translation>
 <translation id="4360991593054037559">Geef een geldige waarde op. De twee dichtstbijzijnde geldige waarden zijn <ph name="VALID_VALUE_LOW" /> en <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4413860115965805769">menuknop</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Uit</translation>
 <translation id="588258955323874662">Volledig scherm</translation>
 <translation id="5888666972993069672">Wordt nu gecast naar <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">zoekvak</translation>
 <translation id="5939518447894949180">Resetten</translation>
 <translation id="5966707198760109579">Week</translation>
 <translation id="5987525920412732405">draaiknop</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">nawoord</translation>
 <translation id="6209276755895393898">Lijkt het volgende te zijn: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">woordenlijst</translation>
+<translation id="6281763101136022427">url</translation>
 <translation id="6310801910862476708">Scherm-in-scherm afsluiten</translation>
 <translation id="6398862346408813489">Deelvenster voor maandselectie weergeven</translation>
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="7118469954320184356">Geen beschrijving beschikbaar.</translation>
 <translation id="7139483182332611405">voorwoord</translation>
+<translation id="7214187073215825913">Gegevens over de content</translation>
 <translation id="7263440858009898357">Selecteer een item in de lijst.</translation>
 <translation id="727747134524199931">kolomkop</translation>
 <translation id="7320576522385648310">bufferen</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Beschrijving ophalen…</translation>
 <translation id="8117451130807776954">Deze week</translation>
 <translation id="8199524924445686405">jjjj</translation>
+<translation id="8208673686607688524">lokale datum- en tijdkiezer</translation>
 <translation id="8261464734335370856">Ongeldige spelling</translation>
 <translation id="8284326494547611709">Ondertiteling</translation>
 <translation id="835897206747267392">Ongeldige waarde.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">inhoudsopgave</translation>
 <translation id="8613126697340063924">afspelen bedienen op afstand</translation>
 <translation id="862370744433916922">ondertitel</translation>
+<translation id="8711688047404765493">uitvoer</translation>
 <translation id="8750798805984357768">Selecteer een van deze opties.</translation>
 <translation id="8808573423886751634">hoofdstuk</translation>
 <translation id="8845239796550121995">Wordt nu gecast naar je tv</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" />  KB</translation>
 <translation id="8987927404178983737">Maand</translation>
 <translation id="901493112792887934">huidige tijd in seconden</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9048119486235211610">navigatie</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9062307380734144336">selecteer om te schakelen tussen afspelen en pauzeren</translation>

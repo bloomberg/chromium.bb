@@ -206,6 +206,14 @@ struct BASE_EXPORT LaunchOptions {
   //
   // See base/mac/mach_port_rendezvous.h for details.
   MachPortsForRendezvous mach_ports_for_rendezvous;
+
+  // When a child process is launched, the system tracks the parent process
+  // with a concept of "responsibility". The responsible process will be
+  // associated with any requests for private data stored on the system via
+  // the TCC subsystem. When launching processes that run foreign/third-party
+  // code, the responsibility for the child process should be disclaimed so
+  // that any TCC requests are not associated with the parent.
+  bool disclaim_responsibility = false;
 #endif
 
 #if defined(OS_FUCHSIA)
@@ -246,6 +254,10 @@ struct BASE_EXPORT LaunchOptions {
   // child process' namespace. Paths installed by |paths_to_clone| will be
   // overridden by these entries.
   std::vector<PathToTransfer> paths_to_transfer;
+
+  // Suffix that will be added to the process name. When specified process name
+  // will be set to "<binary_name><process_suffix>".
+  std::string process_name_suffix;
 #endif  // defined(OS_FUCHSIA)
 
 #if defined(OS_POSIX)

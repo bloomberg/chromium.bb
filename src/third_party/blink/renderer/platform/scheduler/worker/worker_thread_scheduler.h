@@ -6,7 +6,6 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_WORKER_WORKER_THREAD_SCHEDULER_H_
 
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "components/scheduling_metrics/task_duration_metric_reporter.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
@@ -17,14 +16,11 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_metrics_helper.h"
 
 namespace base {
+class TaskObserver;
 namespace sequence_manager {
 class SequenceManager;
 }
 }  // namespace base
-
-namespace service_manager {
-class Connector;
-}
 
 namespace ukm {
 class UkmRecorder;
@@ -56,9 +52,8 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
   scoped_refptr<base::SingleThreadTaskRunner> IPCTaskRunner() override;
   bool ShouldYieldForHighPriorityWork() override;
   bool CanExceedIdleDeadlineIfRequired() const override;
-  void AddTaskObserver(base::MessageLoop::TaskObserver* task_observer) override;
-  void RemoveTaskObserver(
-      base::MessageLoop::TaskObserver* task_observer) override;
+  void AddTaskObserver(base::TaskObserver* task_observer) override;
+  void RemoveTaskObserver(base::TaskObserver* task_observer) override;
   void AddRAILModeObserver(RAILModeObserver*) override {}
   void RemoveRAILModeObserver(RAILModeObserver const*) override {}
   void Shutdown() override;
@@ -161,7 +156,6 @@ class PLATFORM_EXPORT WorkerThreadScheduler : public NonMainThreadSchedulerImpl,
   const FrameStatus initial_frame_status_;
 
   const ukm::SourceId ukm_source_id_;
-  std::unique_ptr<service_manager::Connector> connector_;
   std::unique_ptr<ukm::UkmRecorder> ukm_recorder_;
 
   DISALLOW_COPY_AND_ASSIGN(WorkerThreadScheduler);

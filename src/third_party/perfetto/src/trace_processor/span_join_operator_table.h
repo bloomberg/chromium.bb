@@ -17,6 +17,8 @@
 #ifndef SRC_TRACE_PROCESSOR_SPAN_JOIN_OPERATOR_TABLE_H_
 #define SRC_TRACE_PROCESSOR_SPAN_JOIN_OPERATOR_TABLE_H_
 
+#include <sqlite3.h>
+
 #include <array>
 #include <deque>
 #include <limits>
@@ -28,9 +30,8 @@
 
 #include "perfetto/trace_processor/basic_types.h"
 #include "perfetto/trace_processor/status.h"
-#include "src/trace_processor/scoped_db.h"
-#include "src/trace_processor/sqlite.h"
-#include "src/trace_processor/table.h"
+#include "src/trace_processor/sqlite/scoped_db.h"
+#include "src/trace_processor/sqlite/sqlite_table.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -67,7 +68,7 @@ namespace trace_processor {
 //
 // All other columns apart from timestamp (ts), duration (dur) and the join key
 // are passed through unchanged.
-class SpanJoinOperatorTable : public Table {
+class SpanJoinOperatorTable : public SqliteTable {
  public:
   // Columns of the span operator table.
   enum Column {
@@ -101,7 +102,7 @@ class SpanJoinOperatorTable : public Table {
 
     TableDefinition(std::string name,
                     std::string partition_col,
-                    std::vector<Table::Column> cols,
+                    std::vector<SqliteTable::Column> cols,
                     bool emit_shadow_slices,
                     uint32_t ts_idx,
                     uint32_t dur_idx,
@@ -109,7 +110,7 @@ class SpanJoinOperatorTable : public Table {
 
     const std::string& name() const { return name_; }
     const std::string& partition_col() const { return partition_col_; }
-    const std::vector<Table::Column>& columns() const { return cols_; }
+    const std::vector<SqliteTable::Column>& columns() const { return cols_; }
 
     bool emit_shadow_slices() const { return emit_shadow_slices_; }
     uint32_t ts_idx() const { return ts_idx_; }
@@ -121,7 +122,7 @@ class SpanJoinOperatorTable : public Table {
    private:
     std::string name_;
     std::string partition_col_;
-    std::vector<Table::Column> cols_;
+    std::vector<SqliteTable::Column> cols_;
     bool emit_shadow_slices_;
     uint32_t ts_idx_ = std::numeric_limits<uint32_t>::max();
     uint32_t dur_idx_ = std::numeric_limits<uint32_t>::max();
@@ -221,7 +222,7 @@ class SpanJoinOperatorTable : public Table {
   };
 
   // Base class for a cursor on the span table.
-  class Cursor : public Table::Cursor {
+  class Cursor : public SqliteTable::Cursor {
    public:
     Cursor(SpanJoinOperatorTable*, sqlite3* db);
     ~Cursor() override = default;
@@ -253,8 +254,8 @@ class SpanJoinOperatorTable : public Table {
   static void RegisterTable(sqlite3* db, const TraceStorage* storage);
 
   // Table implementation.
-  util::Status Init(int, const char* const*, Table::Schema*) override;
-  std::unique_ptr<Table::Cursor> CreateCursor() override;
+  util::Status Init(int, const char* const*, SqliteTable::Schema*) override;
+  std::unique_ptr<SqliteTable::Cursor> CreateCursor() override;
   int BestIndex(const QueryConstraints& qc, BestIndexInfo* info) override;
 
  private:
@@ -286,7 +287,7 @@ class SpanJoinOperatorTable : public Table {
                                           int global_column);
 
   void CreateSchemaColsForDefn(const TableDefinition& defn,
-                               std::vector<Table::Column>* cols);
+                               std::vector<SqliteTable::Column>* cols);
 
   TableDefinition t1_defn_;
   TableDefinition t2_defn_;

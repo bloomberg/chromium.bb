@@ -26,6 +26,7 @@ arm_internal_release_boards = frozenset([
     'beaglebone',
     'beaglebone_servo',
     'bob',
+    'bubs',
     'capri',
     'capri-zfpga',
     'cheza',
@@ -38,8 +39,9 @@ arm_internal_release_boards = frozenset([
     'hana',
     'jacuzzi',
     'kevin',
-    'kevin-arcnext',
     'kevin64',
+    'kevin-arc64',
+    'kevin-arcnext',
     'kukui',
     'lasilla-ground',
     'littlejoe',
@@ -88,7 +90,6 @@ x86_internal_release_boards = frozenset([
     'buddy',
     'candy',
     'caroline',
-    'caroline-arcnext',
     'cave',
     'celes',
     'chell',
@@ -113,7 +114,6 @@ x86_internal_release_boards = frozenset([
     'guado',
     'guado-accelerator',
     'guado_labstation',
-    'guado_moblab',
     'hatch',
     'heli',
     'jecht',
@@ -159,6 +159,7 @@ x86_internal_release_boards = frozenset([
     'terra',
     'tidus',
     'ultima',
+    'volteer',
     'winky',
     'wizpig',
     'wristpin',
@@ -227,7 +228,6 @@ wshwos_boards = frozenset([
 
 moblab_boards = frozenset([
     'fizz-moblab',
-    'guado_moblab',
     'moblab-generic-vm',
 ])
 

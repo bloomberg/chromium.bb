@@ -506,16 +506,14 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       // We ascend through ancestor shadow host elements until we reach the host
       // in the TreeScope associated with the style rule. We then match against
       // that host.
-      if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
-        while (next_context.element) {
-          next_context.element = next_context.element->OwnerShadowHost();
-          if (!next_context.element)
-            return kSelectorFailsCompletely;
+      while (next_context.element) {
+        next_context.element = next_context.element->OwnerShadowHost();
+        if (!next_context.element)
+          return kSelectorFailsCompletely;
 
-          if (next_context.element->GetTreeScope() ==
-              context.scope->GetTreeScope())
-            return MatchSelector(next_context, result);
-        }
+        if (next_context.element->GetTreeScope() ==
+            context.scope->GetTreeScope())
+          return MatchSelector(next_context, result);
       }
       return kSelectorFailsCompletely;
       break;
@@ -1098,7 +1096,7 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
         if (!root->IsUserAgent())
           return false;
         const ComputedStyle* style = root->host().GetComputedStyle();
-        return style && style->HasAppearance();
+        return style && style->HasEffectiveAppearance();
       }
       return false;
     case CSSSelector::kPseudoWindowInactive:
@@ -1147,8 +1145,6 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       return false;
     }
     case CSSSelector::kPseudoPart:
-      if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
-        return false;
       DCHECK(part_names_);
       return part_names_->Contains(selector.Argument());
     case CSSSelector::kPseudoPlaceholder:

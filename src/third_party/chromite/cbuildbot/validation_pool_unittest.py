@@ -12,11 +12,12 @@ import contextlib
 import copy
 import httplib
 import itertools
-import mock
 import os
 import pickle
 import tempfile
 import time
+
+import mock
 
 from chromite.cbuildbot import patch_series
 from chromite.cbuildbot import repository
@@ -478,29 +479,6 @@ class TestCoreLogic(_Base):
         change_id=1, patch_number=2)
     master_pool.HandleApplySuccess(change)
 
-  def testGetCLStatusURLForExternalPatch(self):
-    """Test GetCLStatusURL for external patches."""
-    master_pool = self.MakePool()
-    change = self.MockPatch(
-        change_id=1, patch_number=2)
-    url = master_pool._GetCLStatusURL(change)
-    self.assertEqual(
-        validation_pool.CL_STATUS_URL_PREFIX +
-        '/chromium-review.googlesource.com/1/2',
-        url)
-
-  def testGetCLStatusURLForInternalPatch(self):
-    """Test GetCLStatusURL for internal patches."""
-    site_params = config_lib.GetSiteParams()
-    master_pool = self.MakePool()
-    change = self.MockPatch(
-        change_id=1, patch_number=2, remote=site_params.INTERNAL_REMOTE)
-    url = master_pool._GetCLStatusURL(change)
-    self.assertEqual(
-        validation_pool.CL_STATUS_URL_PREFIX +
-        '/chrome-internal-review.googlesource.com/1/2',
-        url)
-
   def _setUpSubmit(self):
     pool = self.MakePool(dryrun=False, handlers=True)
     patches = self.GetPatches(3)
@@ -616,7 +594,7 @@ class TestCoreLogic(_Base):
     pool.applied = []
 
     class MyException(Exception):
-      """"Unique Exception used for testing."""
+      """Unique Exception used for testing."""
 
     patch_series.PatchSeries.Apply.configure_mock(side_effect=MyException)
     pool._HandleApplyFailure.configure_mock(return_valu=None)
@@ -1645,7 +1623,7 @@ class RemoveReadyTest(cros_test_lib.MockTempDirTestCase):
     """Test RemoveReady which raises exception."""
     helper_mock = mock.Mock()
     helper_mock.ForChange.return_value.RemoveReady.side_effect = (
-        gob_util.GOBError(http_status=409, reason="test"))
+        gob_util.GOBError(http_status=409, reason='test'))
     self.pool._helper_pool = helper_mock
 
     self.assertRaises(gob_util.GOBError, self.pool.RemoveReady,

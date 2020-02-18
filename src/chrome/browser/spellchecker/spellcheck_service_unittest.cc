@@ -19,7 +19,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/user_prefs/user_prefs.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 struct TestCase {
@@ -103,7 +103,7 @@ class SpellcheckServiceUnitTest : public testing::TestWithParam<TestCase> {
   struct : public base::SupportsUserData {
   } context_;
   TestingPrefServiceSimple prefs_;
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckServiceUnitTest);
 };

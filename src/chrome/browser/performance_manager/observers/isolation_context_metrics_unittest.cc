@@ -51,8 +51,8 @@ class IsolationContextMetricsTest : public GraphTestHarness {
  public:
   IsolationContextMetricsTest()
       : GraphTestHarness(
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED,
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW) {}
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED,
+            base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   ~IsolationContextMetricsTest() override = default;
 
@@ -85,6 +85,7 @@ class IsolationContextMetricsTest : public GraphTestHarness {
 
   void TearDown() override {
     PerformanceManagerClock::ResetClockForTesting();
+    GraphTestHarness::TearDown();
   }
 
   void ExpectBrowsingInstanceData(int32_t browsing_instance_id,

@@ -26,6 +26,8 @@ using ConditionalFrequencyPredictorConfig =
     RecurrencePredictorConfigProto::ConditionalFrequencyPredictorConfig;
 using FrecencyPredictorConfig =
     RecurrencePredictorConfigProto::FrecencyPredictorConfig;
+using FrequencyPredictorConfig =
+    RecurrencePredictorConfigProto::FrequencyPredictorConfig;
 using HourBinPredictorConfig =
     RecurrencePredictorConfigProto::HourBinPredictorConfig;
 using MarkovPredictorConfig =
@@ -119,6 +121,30 @@ class DefaultPredictor : public RecurrencePredictor {
   DISALLOW_COPY_AND_ASSIGN(DefaultPredictor);
 };
 
+// A simple frequency predictor that scores targets by their normalized counts.
+class FrequencyPredictor : public RecurrencePredictor {
+ public:
+  explicit FrequencyPredictor(const std::string& model_identifier);
+  FrequencyPredictor(const FrequencyPredictorConfig& config,
+                     const std::string& model_identifier);
+  ~FrequencyPredictor() override;
+
+  // RecurrencePredictor:
+  void Train(unsigned int target, unsigned int condition) override;
+  std::map<unsigned int, float> Rank(unsigned int condition) override;
+  void Cleanup(const std::vector<unsigned int>& valid_targets) override;
+  void ToProto(RecurrencePredictorProto* proto) const override;
+  void FromProto(const RecurrencePredictorProto& proto) override;
+  const char* GetPredictorName() const override;
+
+  static const char kPredictorName[];
+
+ private:
+  std::map<unsigned int, int> counts_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrequencyPredictor);
+};
+
 // Represents a conditional probability table which stores the frequency of
 // targets given a condition. Conditions can be client-provided, or could be the
 // output of a hash of other contextual features. This allows for an arbitrary
@@ -175,10 +201,18 @@ class ConditionalFrequencyPredictor : public RecurrencePredictor {
 };
 
 // FrecencyPredictor ranks targets according to their frecency, and
-// can only be used for zero-state predictions. This predictor allows for
-// frecency-based rankings with different configuration to that of the ranker's
-// FrecencyStore. If frecency-based rankings with the same configuration as the
-// store are needed, the DefaultPredictor should be used instead.
+// can only be used for zero-state predictions. This predictor has two
+// key differences from the DefaultPredictor:
+//
+//  1. The decay coefficient for ranking can be set separately from the
+//     RecurrenceRanker's target_decay parameter used for storage.
+//
+//  2. The scores returned by FrecencyPredictor::Rank are normalized to sum to
+//     1 (if there is at least one result). This is not the case for
+//     DefaultPredictor::Rank.
+//
+// If neither of the above differences are required, it is more efficient to
+// use DefaultPredictor.
 class FrecencyPredictor : public RecurrencePredictor {
  public:
   FrecencyPredictor(const FrecencyPredictorConfig& config,

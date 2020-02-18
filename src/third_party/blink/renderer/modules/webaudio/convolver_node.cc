@@ -102,6 +102,8 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
   DCHECK(IsMainThread());
 
   if (!buffer) {
+    BaseAudioContext::GraphAutoLocker context_locker(Context());
+    MutexLocker locker(process_lock_);
     reverb_.reset();
     shared_buffer_ = nullptr;
     return;
@@ -237,8 +239,6 @@ void ConvolverHandler::CheckNumberOfChannelsForInput(AudioNodeInput* input) {
 
   DCHECK(input);
   DCHECK_EQ(input, &this->Input(0));
-  if (input != &this->Input(0))
-    return;
 
   if (shared_buffer_) {
     unsigned number_of_output_channels = ComputeNumberOfOutputChannels(
@@ -318,6 +318,14 @@ void ConvolverNode::setNormalize(bool normalize) {
 void ConvolverNode::Trace(Visitor* visitor) {
   visitor->Trace(buffer_);
   AudioNode::Trace(visitor);
+}
+
+void ConvolverNode::ReportDidCreate() {
+  GraphTracer().DidCreateAudioNode(this);
+}
+
+void ConvolverNode::ReportWillBeDestroyed() {
+  GraphTracer().WillDestroyAudioNode(this);
 }
 
 }  // namespace blink

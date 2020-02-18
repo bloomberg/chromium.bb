@@ -67,6 +67,18 @@ PACKAGE_INFO.update({
     chrome.PackageInfo('com.android.webview',
                        'com.android.cts.webkit.WebViewStartupCtsActivity',
                        'webview-command-line', None),
+    'android_google_webview_cts':
+    chrome.PackageInfo('com.google.android.webview',
+                       'com.android.cts.webkit.WebViewStartupCtsActivity',
+                       'webview-command-line', None),
+    'android_system_webview_shell':
+    chrome.PackageInfo('org.chromium.webview_shell',
+                       'org.chromium.webview_shell.WebViewBrowserActivity',
+                       'webview-command-line', None),
+    'android_webview_ui_test':
+    chrome.PackageInfo('org.chromium.webview_ui_test',
+                       'org.chromium.webview_ui_test.WebViewUiTestActivity',
+                       'webview-command-line', None),
 })
 
 
@@ -98,7 +110,7 @@ DEVICE_PERF_OUTPUT_DIR = (
 SCREENSHOTS_DIR = os.path.join(DIR_SOURCE_ROOT, 'out_screenshots')
 
 ANDROID_SDK_VERSION = version_codes.OREO_MR1
-ANDROID_SDK_BUILD_TOOLS_VERSION = '27.0.3'
+ANDROID_SDK_BUILD_TOOLS_VERSION = '29.0.2'
 ANDROID_SDK_ROOT = os.path.join(DIR_SOURCE_ROOT, 'third_party', 'android_sdk',
                                 'public')
 ANDROID_SDK_TOOLS = os.path.join(ANDROID_SDK_ROOT,

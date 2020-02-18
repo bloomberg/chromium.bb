@@ -14,6 +14,7 @@
 #include "core/fxge/cfx_pathdata.h"
 #include "core/fxge/cfx_renderdevice.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
+#include "third_party/base/ptr_util.h"
 
 namespace {
 
@@ -105,10 +106,11 @@ void PWL_SCROLL_PRIVATEDATA::SubBig() {
     SetPos(ScrollRange.fMin);
 }
 
-CPWL_SBButton::CPWL_SBButton(const CreateParams& cp,
-                             std::unique_ptr<PrivateData> pAttachedData,
-                             PWL_SCROLLBAR_TYPE eScrollBarType,
-                             PWL_SBBUTTON_TYPE eButtonType)
+CPWL_SBButton::CPWL_SBButton(
+    const CreateParams& cp,
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData,
+    PWL_SCROLLBAR_TYPE eScrollBarType,
+    PWL_SBBUTTON_TYPE eButtonType)
     : CPWL_Wnd(cp, std::move(pAttachedData)),
       m_eScrollBarType(eScrollBarType),
       m_eSBButtonType(eButtonType) {
@@ -297,9 +299,10 @@ bool CPWL_SBButton::OnMouseMove(const CFX_PointF& point, uint32_t nFlag) {
   return true;
 }
 
-CPWL_ScrollBar::CPWL_ScrollBar(const CreateParams& cp,
-                               std::unique_ptr<PrivateData> pAttachedData,
-                               PWL_SCROLLBAR_TYPE sbType)
+CPWL_ScrollBar::CPWL_ScrollBar(
+    const CreateParams& cp,
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData,
+    PWL_SCROLLBAR_TYPE sbType)
     : CPWL_Wnd(cp, std::move(pAttachedData)), m_sbType(sbType) {
   GetCreationParams()->eCursorType = FXCT_ARROW;
 }
@@ -472,9 +475,8 @@ bool CPWL_ScrollBar::OnLButtonUp(const CFX_PointF& point, uint32_t nFlag) {
     }
   }
 
-  EndTimer();
+  m_pTimer.reset();
   m_bMouseDown = false;
-
   return true;
 }
 
@@ -671,12 +673,10 @@ void CPWL_ScrollBar::OnMinButtonLBDown(const CFX_PointF& point) {
   m_sData.SubSmall();
   if (!MovePosButton(true))
     return;
+
   NotifyScrollWindow();
-
   m_bMinOrMax = true;
-
-  EndTimer();
-  BeginTimer(100);
+  m_pTimer = pdfium::MakeUnique<CFX_Timer>(GetTimerHandler(), this, 100);
 }
 
 void CPWL_ScrollBar::OnMinButtonLBUp(const CFX_PointF& point) {}
@@ -687,12 +687,10 @@ void CPWL_ScrollBar::OnMaxButtonLBDown(const CFX_PointF& point) {
   m_sData.AddSmall();
   if (!MovePosButton(true))
     return;
+
   NotifyScrollWindow();
-
   m_bMinOrMax = false;
-
-  EndTimer();
-  BeginTimer(100);
+  m_pTimer = pdfium::MakeUnique<CFX_Timer>(GetTimerHandler(), this, 100);
 }
 
 void CPWL_ScrollBar::OnMaxButtonLBUp(const CFX_PointF& point) {}
@@ -885,16 +883,18 @@ void CPWL_ScrollBar::CreateChildWnd(const CreateParams& cp) {
   CreateButtons(cp);
 }
 
-void CPWL_ScrollBar::TimerProc() {
+void CPWL_ScrollBar::OnTimerFired() {
   PWL_SCROLL_PRIVATEDATA sTemp = m_sData;
   if (m_bMinOrMax)
     m_sData.SubSmall();
   else
     m_sData.AddSmall();
 
-  if (sTemp != m_sData) {
-    if (!MovePosButton(true))
-      return;
-    NotifyScrollWindow();
-  }
+  if (sTemp == m_sData)
+    return;
+
+  if (!MovePosButton(true))
+    return;
+
+  NotifyScrollWindow();
 }

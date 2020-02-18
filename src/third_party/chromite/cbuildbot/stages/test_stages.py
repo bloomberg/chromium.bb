@@ -98,7 +98,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 
   option_name = 'tests'
   config_name = 'hw_tests'
-  stage_name = "HWTest"
+  stage_name = 'HWTest'
   category = constants.TEST_INFRA_STAGE
 
   PERF_RESULTS_EXTENSION = 'results'
@@ -232,7 +232,12 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
       arch = self._GetPortageEnvVar('ARCH', self._current_board)
       cpv = portage_util.PortageqBestVisible(
           constants.CHROME_CP, cwd=self._build_root)
-      if afdo.CheckAFDOPerfData(cpv, arch, gs.GSContext()):
+      # For async AFDO builders, need to skip this check because it's checking
+      # a different bucket for PFQ AFDO. Also for async AFDO builders, no need
+      # to check here because there's an earlier check to avoid generating
+      # AFDO for the same version.
+      if not self._run.config.afdo_generate_async and \
+         afdo.CheckAFDOPerfData(cpv, arch, gs.GSContext()):
         logging.info(
             'AFDO profile already generated for arch %s '
             'and Chrome %s. Not generating it again', arch,
@@ -303,7 +308,7 @@ class HWTestStage(generic_stages.BoardSpecificBuilderStage,
 class SkylabHWTestStage(HWTestStage):
   """Stage that runs tests in the Autotest lab with Skylab."""
 
-  stage_name = "SkylabHWTest"
+  stage_name = 'SkylabHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def _SetBranchedSuiteConfig(self, suite_config):
@@ -319,10 +324,9 @@ class SkylabHWTestStage(HWTestStage):
     if config_lib.IsPFQType(build_type) and self._board_name not in blacklist:
       pool = constants.HWTEST_QUOTA_POOL
 
-    # Retain guado_moblab and wukong paladins on cq pool, until they are able
+    # Retain all moblab boards on cq pool, until it is able
     # to migrate to Skylab. See crbug.com/949217
-    if (self._board_name in ('guado_moblab', 'wukong') and
-        config_lib.IsCQType(self._run.config.build_type)):
+    if self._IsMoblabCQ():
       pool = constants.HWTEST_PALADIN_POOL
 
     return pool
@@ -332,13 +336,19 @@ class SkylabHWTestStage(HWTestStage):
   def _InferQuotaAccount(self):
     """Attempt to infer quota account to use for this test, if applicable."""
     build_type = self._run.config.build_type
-    # The order of checks matters here, because CQ builds are considered to be
-    # PFQ type as well.
+    # The order of checks matters here.
+    # CQ builds are considered to be PFQ type as well.
+    if self._IsMoblabCQ():
+      return None
     if config_lib.IsCQType(build_type):
       return 'cq'
     if config_lib.IsPFQType(build_type):
       return 'pfq'
     return None
+
+  def _IsMoblabCQ(self):
+    return ('moblab' in self._board_name
+            and config_lib.IsCQType(self._run.config.build_type))
 
   def PerformStage(self):
     build = '/'.join([self._bot_id, self.version])
@@ -368,7 +378,7 @@ class SkylabHWTestStage(HWTestStage):
 class ASyncHWTestStage(HWTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets hw test suites to the Autotest lab."""
 
-  stage_name = "ASyncHWTest"
+  stage_name = 'ASyncHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
@@ -380,7 +390,7 @@ class ASyncSkylabHWTestStage(SkylabHWTestStage,
                              generic_stages.ForgivingBuilderStage):
   """Stage that fires and forgets skylab hw test suites to the Autotest lab."""
 
-  stage_name = "ASyncSkylabHWTest"
+  stage_name = 'ASyncSkylabHWTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
@@ -673,9 +683,9 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
     board = self._current_board
 
     if not builder_run.options.archive:
-      logging.warning("HWTests were requested but could not be run because "
+      logging.warning('HWTests were requested but could not be run because '
                       "artifacts weren't uploaded. Please ensure the archive "
-                      "option in the builder config is set to True.")
+                      'option in the builder config is set to True.')
       return
 
 
@@ -730,18 +740,9 @@ class TestPlanStage(generic_stages.BoardSpecificBuilderStage):
     if model.test_suites is None or suite_config.suite in model.test_suites:
       stage_class = None
       if suite_config.async:
-        stage_class = ASyncHWTestStage
+        stage_class = ASyncSkylabHWTestStage
       else:
-        stage_class = HWTestStage
-
-      hwtest_env = config_lib.GetHWTestEnv(builder_run.config,
-                                           model_config=model,
-                                           suite_config=suite_config)
-      if hwtest_env == constants.ENV_SKYLAB:
-        if suite_config.async:
-          stage_class = ASyncSkylabHWTestStage
-        else:
-          stage_class = SkylabHWTestStage
+        stage_class = SkylabHWTestStage
 
       result = stage_class(
           builder_run,

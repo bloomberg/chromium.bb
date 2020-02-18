@@ -6,6 +6,7 @@
 #define CC_TREES_MUTATOR_HOST_CLIENT_H_
 
 #include "cc/paint/element_id.h"
+#include "cc/paint/paint_worklet_input.h"
 #include "cc/trees/property_animation_state.h"
 #include "cc/trees/target_property.h"
 
@@ -72,6 +73,11 @@ class MutatorHostClient {
   virtual void NotifyAnimationWorkletStateChange(
       AnimationWorkletMutationState state,
       ElementListType tree_type) = 0;
+
+  virtual void OnCustomPropertyMutated(
+      ElementId element_id,
+      const std::string& custom_property_name,
+      PaintWorkletInput::PropertyValue custom_property_value) = 0;
 };
 
 }  // namespace cc

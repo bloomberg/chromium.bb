@@ -10,7 +10,7 @@ from __future__ import print_function
 
 import time
 
-import yaml
+import yaml  # pylint: disable=import-error
 
 from chromite.lib import cros_logging as logging
 from chromite.lib import metrics

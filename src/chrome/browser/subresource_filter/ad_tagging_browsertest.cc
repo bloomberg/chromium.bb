@@ -483,8 +483,9 @@ class AdTaggingEventFromSubframeBrowserTest
       public ::testing::WithParamInterface<
           std::tuple<bool /* cross_origin */, bool /* from_ad_subframe */>> {};
 
+// crbug.com/997410. The test is flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_P(AdTaggingEventFromSubframeBrowserTest,
-                       WindowOpenFromSubframe) {
+                       DISABLED_WindowOpenFromSubframe) {
   bool cross_origin;
   bool from_ad_subframe;
   std::tie(cross_origin, from_ad_subframe) = GetParam();
@@ -522,8 +523,9 @@ class AdTaggingEventWithScriptInStackBrowserTest
     : public AdTaggingBrowserTest,
       public ::testing::WithParamInterface<bool /* from_ad_script */> {};
 
+// crbug.com/998405. The test is flaky on multiple platforms.
 IN_PROC_BROWSER_TEST_P(AdTaggingEventWithScriptInStackBrowserTest,
-                       WindowOpenWithScriptInStack) {
+                       DISABLED_WindowOpenWithScriptInStack) {
   bool from_ad_script = GetParam();
   SCOPED_TRACE(::testing::Message() << "from_ad_script = " << from_ad_script);
 

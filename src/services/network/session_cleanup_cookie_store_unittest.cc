@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "services/network/session_cleanup_cookie_store.h"
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -10,8 +11,8 @@
 #include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/test_net_log.h"
@@ -54,7 +55,7 @@ class SessionCleanupCookieStoreTest : public testing::Test {
   CanonicalCookieVector CreateAndLoad() {
     auto sqlite_store = base::MakeRefCounted<net::SQLitePersistentCookieStore>(
         temp_dir_.GetPath().Append(kTestCookiesFilename),
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
         background_task_runner_, true, nullptr);
     store_ =
         base::MakeRefCounted<SessionCleanupCookieStore>(sqlite_store.get());
@@ -83,9 +84,9 @@ class SessionCleanupCookieStoreTest : public testing::Test {
 
   void TearDown() override { DestroyStore(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::ScopedTempDir temp_dir_;
   scoped_refptr<SessionCleanupCookieStore> store_;
   net::BoundTestNetLog net_log_;
@@ -213,7 +214,7 @@ TEST_F(SessionCleanupCookieStoreTest, TestDeleteSessionCookies) {
       base::BindRepeating([](const std::string& domain, bool is_https) {
         return domain == "nonpersistent.com";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   DestroyStore();
   cookies = CreateAndLoad();
 
@@ -251,7 +252,7 @@ TEST_F(SessionCleanupCookieStoreTest, ForceKeepSessionState) {
       base::BindRepeating([](const std::string& domain, bool is_https) {
         return domain == "nonpersistent.com";
       }));
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
   DestroyStore();
   cookies = CreateAndLoad();
 

@@ -28,13 +28,13 @@ namespace utils {
 
     namespace {
 
-        shaderc_shader_kind ShadercShaderKind(ShaderStage stage) {
+        shaderc_shader_kind ShadercShaderKind(SingleShaderStage stage) {
             switch (stage) {
-                case ShaderStage::Vertex:
+                case SingleShaderStage::Vertex:
                     return shaderc_glsl_vertex_shader;
-                case ShaderStage::Fragment:
+                case SingleShaderStage::Fragment:
                     return shaderc_glsl_fragment_shader;
-                case ShaderStage::Compute:
+                case SingleShaderStage::Compute:
                     return shaderc_glsl_compute_shader;
                 default:
                     UNREACHABLE();
@@ -60,7 +60,7 @@ namespace utils {
     }  // anonymous namespace
 
     dawn::ShaderModule CreateShaderModule(const dawn::Device& device,
-                                          ShaderStage stage,
+                                          SingleShaderStage stage,
                                           const char* source) {
         shaderc_shader_kind kind = ShadercShaderKind(stage);
 
@@ -116,10 +116,10 @@ namespace utils {
     dawn::Buffer CreateBufferFromData(const dawn::Device& device,
                                       const void* data,
                                       uint64_t size,
-                                      dawn::BufferUsageBit usage) {
+                                      dawn::BufferUsage usage) {
         dawn::BufferDescriptor descriptor;
         descriptor.size = size;
-        descriptor.usage = usage | dawn::BufferUsageBit::CopyDst;
+        descriptor.usage = usage | dawn::BufferUsage::CopyDst;
 
         dawn::Buffer buffer = device.CreateBuffer(&descriptor);
         buffer.SetSubData(0, size, data);
@@ -207,7 +207,7 @@ namespace utils {
           height(texHeight),
           color(colorAttachment),
           colorFormat(textureFormat),
-          renderPassInfo({colorAttachment.CreateDefaultView()}) {
+          renderPassInfo({colorAttachment.CreateView()}) {
     }
 
     BasicRenderPass CreateBasicRenderPass(const dawn::Device& device,
@@ -224,7 +224,7 @@ namespace utils {
         descriptor.sampleCount = 1;
         descriptor.format = BasicRenderPass::kDefaultColorFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+        descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
         dawn::Texture color = device.CreateTexture(&descriptor);
 
         return BasicRenderPass(width, height, color);
@@ -288,7 +288,7 @@ namespace utils {
     dawn::BindGroupLayout MakeBindGroupLayout(
         const dawn::Device& device,
         std::initializer_list<dawn::BindGroupLayoutBinding> bindingsInitializer) {
-        constexpr dawn::ShaderStageBit kNoStages{};
+        constexpr dawn::ShaderStage kNoStages{};
 
         std::vector<dawn::BindGroupLayoutBinding> bindings;
         for (const dawn::BindGroupLayoutBinding& binding : bindingsInitializer) {

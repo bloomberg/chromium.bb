@@ -274,6 +274,10 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
               uint32_t firstInstance);
     void draw(uint32_t vertexCount, uint32_t firstVertex);
     void drawInstanced(uint32_t vertexCount, uint32_t instanceCount, uint32_t firstVertex);
+    void drawInstancedBaseInstance(uint32_t vertexCount,
+                                   uint32_t instanceCount,
+                                   uint32_t firstVertex,
+                                   uint32_t firstInstance);
     void drawIndexed(uint32_t indexCount,
                      uint32_t instanceCount,
                      uint32_t firstIndex,
@@ -281,11 +285,18 @@ class CommandBuffer : public WrappedObject<CommandBuffer, VkCommandBuffer>
                      uint32_t firstInstance);
     void drawIndexed(uint32_t indexCount);
     void drawIndexedInstanced(uint32_t indexCount, uint32_t instanceCount);
+    void drawIndexedInstancedBaseVertexBaseInstance(uint32_t indexCount,
+                                                    uint32_t instanceCount,
+                                                    uint32_t firstIndex,
+                                                    int32_t vertexOffset,
+                                                    uint32_t firstInstance);
 
     VkResult end();
     void endQuery(VkQueryPool queryPool, uint32_t query);
     void endRenderPass();
     void executeCommands(uint32_t commandBufferCount, const CommandBuffer *commandBuffers);
+
+    void getMemoryUsageStats(size_t *usedMemoryOut, size_t *allocatedMemoryOut);
 
     void executionBarrier(VkPipelineStageFlags stageMask);
 
@@ -478,6 +489,10 @@ class PipelineCache final : public WrappedObject<PipelineCache, VkPipelineCache>
 
     VkResult init(VkDevice device, const VkPipelineCacheCreateInfo &createInfo);
     VkResult getCacheData(VkDevice device, size_t *cacheSize, void *cacheData);
+    VkResult merge(VkDevice device,
+                   VkPipelineCache dstCache,
+                   uint32_t srcCacheCount,
+                   const VkPipelineCache *srcCaches);
 };
 
 class DescriptorSetLayout final : public WrappedObject<DescriptorSetLayout, VkDescriptorSetLayout>
@@ -801,6 +816,14 @@ ANGLE_INLINE void CommandBuffer::executeCommands(uint32_t commandBufferCount,
     vkCmdExecuteCommands(mHandle, commandBufferCount, commandBuffers[0].ptr());
 }
 
+ANGLE_INLINE void CommandBuffer::getMemoryUsageStats(size_t *usedMemoryOut,
+                                                     size_t *allocatedMemoryOut)
+{
+    // No data available.
+    *usedMemoryOut      = 0;
+    *allocatedMemoryOut = 1;
+}
+
 ANGLE_INLINE void CommandBuffer::fillBuffer(const Buffer &dstBuffer,
                                             VkDeviceSize dstOffset,
                                             VkDeviceSize size,
@@ -915,6 +938,15 @@ ANGLE_INLINE void CommandBuffer::drawInstanced(uint32_t vertexCount,
     vkCmdDraw(mHandle, vertexCount, instanceCount, firstVertex, 0);
 }
 
+ANGLE_INLINE void CommandBuffer::drawInstancedBaseInstance(uint32_t vertexCount,
+                                                           uint32_t instanceCount,
+                                                           uint32_t firstVertex,
+                                                           uint32_t firstInstance)
+{
+    ASSERT(valid());
+    vkCmdDraw(mHandle, vertexCount, instanceCount, firstVertex, firstInstance);
+}
+
 ANGLE_INLINE void CommandBuffer::drawIndexed(uint32_t indexCount,
                                              uint32_t instanceCount,
                                              uint32_t firstIndex,
@@ -935,6 +967,16 @@ ANGLE_INLINE void CommandBuffer::drawIndexedInstanced(uint32_t indexCount, uint3
 {
     ASSERT(valid());
     vkCmdDrawIndexed(mHandle, indexCount, instanceCount, 0, 0, 0);
+}
+
+ANGLE_INLINE void CommandBuffer::drawIndexedInstancedBaseVertexBaseInstance(uint32_t indexCount,
+                                                                            uint32_t instanceCount,
+                                                                            uint32_t firstIndex,
+                                                                            int32_t vertexOffset,
+                                                                            uint32_t firstInstance)
+{
+    ASSERT(valid());
+    vkCmdDrawIndexed(mHandle, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
 }
 
 ANGLE_INLINE void CommandBuffer::dispatch(uint32_t groupCountX,
@@ -1235,6 +1277,15 @@ ANGLE_INLINE VkResult PipelineCache::init(VkDevice device,
     // Note: if we are concerned with memory usage of this cache, we should give it custom
     // allocators.  Also, failure of this function is of little importance.
     return vkCreatePipelineCache(device, &createInfo, nullptr, &mHandle);
+}
+
+ANGLE_INLINE VkResult PipelineCache::merge(VkDevice device,
+                                           VkPipelineCache dstCache,
+                                           uint32_t srcCacheCount,
+                                           const VkPipelineCache *srcCaches)
+{
+    ASSERT(valid());
+    return vkMergePipelineCaches(device, dstCache, srcCacheCount, srcCaches);
 }
 
 ANGLE_INLINE VkResult PipelineCache::getCacheData(VkDevice device,

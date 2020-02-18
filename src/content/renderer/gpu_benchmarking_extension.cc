@@ -45,7 +45,6 @@
 #include "gpu/config/gpu_driver_bug_workaround_type.h"
 #include "gpu/ipc/common/gpu_messages.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_image_cache.h"
@@ -331,6 +330,7 @@ bool BeginSmoothScroll(GpuBenchmarkingContext* context,
                                    blink::WebInputEvent::kNoModifiers,
                                    ui::EventTimeForNow());
     mouseMove.SetPositionInWidget(start_x, start_y);
+    CHECK(context->web_view()->MainFrameWidget());
     context->web_view()->MainFrameWidget()->HandleInputEvent(
         blink::WebCoalescedInputEvent(mouseMove));
     context->web_view()->MainFrameWidget()->SetCursorVisibilityState(
@@ -958,7 +958,7 @@ void GpuBenchmarking::SetBrowserControlsShown(bool show) {
   GpuBenchmarkingContext context;
   if (!context.Init(true))
     return;
-  context.layer_tree_view()->UpdateBrowserControlsState(
+  context.layer_tree_view()->layer_tree_host()->UpdateBrowserControlsState(
       cc::BrowserControlsState::kBoth,
       show ? cc::BrowserControlsState::kShown
            : cc::BrowserControlsState::kHidden,

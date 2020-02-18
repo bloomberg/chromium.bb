@@ -106,22 +106,15 @@ enum BufferPackingStandard
 	BufferPackingStd140EnhancedLayout,
 	BufferPackingStd430EnhancedLayout,
 	BufferPackingHLSLCbuffer,
-	BufferPackingHLSLCbufferPackOffset
+	BufferPackingHLSLCbufferPackOffset,
+	BufferPackingScalar,
+	BufferPackingScalarEnhancedLayout
 };
 
 struct EntryPoint
 {
 	std::string name;
 	spv::ExecutionModel execution_model;
-};
-
-enum ExtendedDecorations
-{
-	SPIRVCrossDecorationPacked,
-	SPIRVCrossDecorationPackedType,
-	SPIRVCrossDecorationInterfaceMemberIndex,
-	SPIRVCrossDecorationInterfaceOrigID,
-	SPIRVCrossDecorationArgumentBufferID
 };
 
 class Compiler
@@ -253,7 +246,7 @@ public:
 	size_t get_declared_struct_size_runtime_array(const SPIRType &struct_type, size_t array_size) const;
 
 	// Returns the effective size of a buffer block struct member.
-	virtual size_t get_declared_struct_member_size(const SPIRType &struct_type, uint32_t index) const;
+	size_t get_declared_struct_member_size(const SPIRType &struct_type, uint32_t index) const;
 
 	// Returns a set of all global variables which are statically accessed
 	// by the control flow graph from the current entry point.
@@ -667,6 +660,7 @@ protected:
 	bool block_is_outside_flow_control_from_block(const SPIRBlock &from, const SPIRBlock &to);
 
 	bool execution_is_branchless(const SPIRBlock &from, const SPIRBlock &to) const;
+	bool execution_is_direct_branch(const SPIRBlock &from, const SPIRBlock &to) const;
 	bool execution_is_noop(const SPIRBlock &from, const SPIRBlock &to) const;
 	SPIRBlock::ContinueBlockType continue_block_type(const SPIRBlock &continue_block) const;
 
@@ -820,6 +814,7 @@ protected:
 
 	std::unordered_set<uint32_t> forced_temporaries;
 	std::unordered_set<uint32_t> forwarded_temporaries;
+	std::unordered_set<uint32_t> suppressed_usage_tracking;
 	std::unordered_set<uint32_t> hoisted_temporaries;
 
 	Bitset active_input_builtins;
@@ -916,6 +911,7 @@ protected:
 		std::unordered_map<uint32_t, uint32_t> result_id_to_type;
 		std::unordered_map<uint32_t, std::unordered_set<uint32_t>> complete_write_variables_to_block;
 		std::unordered_map<uint32_t, std::unordered_set<uint32_t>> partial_write_variables_to_block;
+		std::unordered_set<uint32_t> access_chain_expressions;
 		const SPIRBlock *current_block = nullptr;
 	};
 
@@ -931,9 +927,20 @@ protected:
 		uint32_t write_count = 0;
 	};
 
+	struct PhysicalStorageBufferPointerHandler : OpcodeHandler
+	{
+		PhysicalStorageBufferPointerHandler(Compiler &compiler_);
+		bool handle(spv::Op op, const uint32_t *args, uint32_t length) override;
+		Compiler &compiler;
+		std::unordered_set<uint32_t> types;
+	};
+	void analyze_non_block_pointer_types();
+	SmallVector<uint32_t> physical_storage_non_block_pointer_types;
+
 	void analyze_variable_scope(SPIRFunction &function, AnalyzeVariableScopeAccessHandler &handler);
 	void find_function_local_luts(SPIRFunction &function, const AnalyzeVariableScopeAccessHandler &handler,
 	                              bool single_function);
+	bool may_read_undefined_variable_in_block(const SPIRBlock &block, uint32_t var);
 
 	void make_constant_null(uint32_t id, uint32_t type);
 
@@ -958,14 +965,19 @@ protected:
 	bool has_extended_member_decoration(uint32_t type, uint32_t index, ExtendedDecorations decoration) const;
 	void unset_extended_member_decoration(uint32_t type, uint32_t index, ExtendedDecorations decoration);
 
+	bool type_is_array_of_pointers(const SPIRType &type) const;
+	bool type_is_block_like(const SPIRType &type) const;
+	bool type_is_opaque_value(const SPIRType &type) const;
+
+	bool reflection_ssbo_instance_name_is_significant() const;
+	std::string get_remapped_declared_block_name(uint32_t id, bool fallback_prefer_instance_name) const;
+
+	bool flush_phi_required(uint32_t from, uint32_t to) const;
+
 private:
 	// Used only to implement the old deprecated get_entry_point() interface.
 	const SPIREntryPoint &get_first_entry_point(const std::string &name) const;
 	SPIREntryPoint &get_first_entry_point(const std::string &name);
-
-	void fixup_type_alias();
-	bool type_is_block_like(const SPIRType &type) const;
-	bool type_is_opaque_value(const SPIRType &type) const;
 };
 } // namespace SPIRV_CROSS_NAMESPACE
 

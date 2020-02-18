@@ -14,7 +14,7 @@
 #include "components/viz/host/viz_host_export.h"
 #include "media/base/video_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -34,7 +34,7 @@ class VIZ_HOST_EXPORT ClientFrameSinkVideoCapturer
     : private mojom::FrameSinkVideoConsumer {
  public:
   // A re-connectable FrameSinkVideoCaptureOverlay. See CreateOverlay().
-  class Overlay : public mojom::FrameSinkVideoCaptureOverlay {
+  class VIZ_HOST_EXPORT Overlay : public mojom::FrameSinkVideoCaptureOverlay {
    public:
     Overlay(base::WeakPtr<ClientFrameSinkVideoCapturer> client_capturer,
             int32_t stacking_index);

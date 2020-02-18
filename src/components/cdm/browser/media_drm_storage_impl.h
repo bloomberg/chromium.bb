@@ -18,7 +18,7 @@
 #include "content/public/browser/frame_service_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "media/mojo/interfaces/media_drm_storage.mojom.h"
+#include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -131,7 +131,7 @@ class MediaDrmStorageImpl final
   bool is_initialized_ = false;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
-  base::WeakPtrFactory<MediaDrmStorageImpl> weak_factory_;
+  base::WeakPtrFactory<MediaDrmStorageImpl> weak_factory_{this};
 };
 
 }  // namespace cdm

@@ -12,10 +12,11 @@ import collections
 import datetime as dt
 import json
 import hashlib
-import mock
 import os
 import struct
 from StringIO import StringIO
+
+import mock
 
 from chromite.cbuildbot import commands
 from chromite.lib import config_lib
@@ -332,6 +333,49 @@ class SkylabHWLabCommandsTest(cros_test_lib.RunCommandTestCase):
     self.assertTrue(isinstance(error, failures_lib.TestFailure))
     self.assertTrue('Suite failed' in error.message)
 
+  def testCreateTest(self):
+    """Test that function call args are mapped correctly to commandline args."""
+    test_plan = '{}'
+    build = 'foo-bar/R1234'
+    board = 'foo-board'
+    model = 'foo-model'
+    pool = 'foo-pool'
+    suite = 'foo-suite'
+    # An OrderedDict is used to make the keyval order on the command line
+    # deterministic for testing purposes.
+    keyvals = {'key': 'value'}
+    timeout_mins = 10
+
+    task_id = 'foo-task_id'
+
+    create_cmd = [
+        self._SKYLAB_TOOL, 'create-testplan',
+        '-image', build,
+        '-legacy-suite', suite,
+        '-pool', pool,
+        '-board', board,
+        '-model', model,
+        '-timeout-mins', str(timeout_mins),
+        '-keyval', 'key:value',
+        '-service-account-json', constants.CHROMEOS_SERVICE_ACCOUNT,
+        '-plan-file', '/dev/stdin'
+    ]
+
+    self.rc.AddCmdResult(
+        create_cmd, output=self._fakeCreateJson(task_id, 'foo://foo'))
+
+    result = commands.RunSkylabHWTestPlan(
+        test_plan=test_plan, build=build, pool=pool, board=board, model=model,
+        timeout_mins=timeout_mins, keyvals=keyvals, legacy_suite=suite)
+    self.assertTrue(isinstance(result, commands.HWTestSuiteResult))
+    self.assertEqual(result.to_raise, None)
+    self.assertEqual(result.json_dump_result, None)
+
+    self.rc.assertCommandCalled(
+        create_cmd, redirect_stdout=True, input=test_plan)
+    self.assertEqual(self.rc.call_count, 1)
+
+
 
 class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
                         cros_test_lib.OutputTestCase,
@@ -339,27 +383,27 @@ class HWLabCommandsTest(cros_test_lib.RunCommandTestCase,
   """Test commands related to HWLab tests that are runing via swarming proxy."""
 
   # pylint: disable=protected-access
-  JOB_ID_OUTPUT = '''
+  JOB_ID_OUTPUT = """
 Autotest instance: cautotest
 02-23-2015 [06:26:51] Submitted create_suite_job rpc
 02-23-2015 [06:26:53] Created suite job: http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110
 Created task id: 26960110
 @@@STEP_LINK@Suite created@http://cautotest.corp.google.com/afe/#tab_id=view_job&object_id=26960110@@@
-'''
+"""
 
-  WAIT_RETRY_OUTPUT = '''
+  WAIT_RETRY_OUTPUT = """
 ERROR: Encountered swarming internal error
-'''
+"""
 
-  WAIT_OUTPUT = '''
+  WAIT_OUTPUT = """
 The suite job has another 3:09:50.012887 till timeout.
 The suite job has another 2:39:39.789250 till timeout.
-'''
-  JSON_DICT = '''
+"""
+  JSON_DICT = """
 {"tests": {"test_1":{"status":"GOOD", "attributes": ["suite:test-suite"]},
            "test_2":{"status":"other", "attributes": ["suite:test-suite"]}
 }}
-'''
+"""
   JSON_OUTPUT = ('%s%s%s' % (commands.JSON_DICT_START, JSON_DICT,
                              commands.JSON_DICT_END))
   SWARMING_TIMEOUT_DEFAULT = str(
@@ -466,7 +510,7 @@ The suite job has another 2:39:39.789250 till timeout.
     ])
     self.rc.AddCmdResult(
         self.create_cmd,
-        side_effect=lambda *args, **kwargs: create_results.next(),
+        side_effect=lambda *args, **kwargs: next(create_results),
     )
     wait_results_list = []
     if wait_retry:
@@ -485,7 +529,7 @@ The suite job has another 2:39:39.789250 till timeout.
 
     self.rc.AddCmdResult(
         self.wait_cmd,
-        side_effect=lambda *args, **kwargs: wait_results.next(),
+        side_effect=lambda *args, **kwargs: next(wait_results),
     )
 
     # Json dump will only run when wait_cmd fails
@@ -497,7 +541,7 @@ The suite job has another 2:39:39.789250 till timeout.
       ])
       self.rc.AddCmdResult(
           self.json_dump_cmd,
-          side_effect=lambda *args, **kwargs: dump_json_results.next(),
+          side_effect=lambda *args, **kwargs: next(dump_json_results),
       )
 
   def PatchJson(self, task_outputs):
@@ -532,7 +576,7 @@ The suite job has another 2:39:39.789250 till timeout.
         return_values.append(j)
       return_values_iter = iter(return_values)
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
-                       side_effect=lambda json_file: return_values_iter.next())
+                       side_effect=lambda json_file: next(return_values_iter))
     else:
       self.PatchObject(swarming_lib.SwarmingCommandResult, 'LoadJsonSummary',
                        return_value=None)
@@ -828,7 +872,7 @@ class CBuildBotTest(cros_test_lib.RunCommandTempDirTestCase):
     self.assertCommandContains(['./build_packages'])
 
   def testGetFirmwareVersions(self):
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): a8f99c2e61e7dc09c4b25ef5a76ef692 */build/kevin/usr/sbin/flashrom
              ELF 32-bit LSB executable, ARM, EABI5 version 1 (SYSV), statically linked, for GNU/Linux 2.d
@@ -853,7 +897,7 @@ d78722e4f1a0dc2d8c3d6b0bc7010ae3 *./crossystem
 c98ca54db130886142ad582a58e90ddc *./common.sh
 5ba978bdec0f696f47f0f0de90936880 *./mosys
 312e8ee6122057f2a246d7bcf1572f49 *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -865,7 +909,7 @@ c98ca54db130886142ad582a58e90ddc *./common.sh
 
   def testGetFirmwareVersionsMixedImage(self):
     """Verify that can extract the right version from a mixed RO+RW bundle."""
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): 29c9ec509aaa9c1f575cca883d90980c */build/caroline/usr/sbin/flashrom
              ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=eb6af9bb9e14e380676ad9607760c54addec4a3a, stripped
@@ -901,7 +945,7 @@ c2728ed24809ec845c53398a15255f49 *./xxd
 c98ca54db130886142ad582a58e90ddc *./common.sh
 a3326e34e8c9f221cc2dcd2489284e30 *./mosys
 ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -917,7 +961,7 @@ ae8cf9fca3165a1c1f12decfd910c4fe *./vpd
 
   def testGetAllFirmwareVersions(self):
     """Verify that all model firmware versions can be extracted"""
-    self.rc.SetDefaultCmdResult(output='''
+    self.rc.SetDefaultCmdResult(output="""
 
 flashrom(8): 68935ee2fcfcffa47af81b966269cd2b */build/reef/usr/sbin/flashrom
              ELF 64-bit LSB executable, x86-64, version 1 (SYSV), statically linked, for GNU/Linux 2.6.32, BuildID[sha1]=e102cc98d45300b50088999d53775acbeff407dc, stripped
@@ -986,7 +1030,7 @@ c4db159e84428391d2ee25368c5fe5b6 *./models/snappy/ec.bin
 3ab63ff080596bd7de4e7619f003bb64 *./models/snappy/bios.bin
 fe5d699f2e9e4a7de031497953313dbd *./models/snappy/setvars.sh
 79aabd7cd8a215a54234c53d7bb2e6fb *./vpd
-''')
+""")
     build_sbin = os.path.join(self._buildroot, constants.DEFAULT_CHROOT_DIR,
                               'build', self._board, 'usr', 'sbin')
     osutils.Touch(os.path.join(build_sbin, 'chromeos-firmwareupdate'),
@@ -1482,7 +1526,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     self.assertEquals(returned_archive_name, constants.FIRMWARE_ARCHIVE_NAME)
 
     # Create an archive and specify that archive filename.
-    archive_name = "alternative_archive.tar.bz2"
+    archive_name = 'alternative_archive.tar.bz2'
     returned_archive_name = commands.BuildFirmwareArchive(fw_test_root, board,
                                                           fw_test_root,
                                                           archive_name)
@@ -1528,7 +1572,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     osutils.SafeMakedirs(archive)
 
     # Text file.
-    text_str = "Happiness equals reality minus expectations.\n"
+    text_str = 'Happiness equals reality minus expectations.\n'
     osutils.WriteFile(os.path.join(archive, 'file1.txt'), text_str)
 
     # JSON file.
@@ -1538,7 +1582,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
     # Binary file.
     bin_blob = struct.pack('6B', 228, 39, 123, 87, 2, 168)
-    with open(os.path.join(archive, 'file3.bin'), "wb") as f:
+    with open(os.path.join(archive, 'file3.bin'), 'wb') as f:
       f.write(bin_blob)
 
     # Directory.
@@ -1546,7 +1590,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
 
     # List of files in archive.
     uploaded = os.path.join(self.tempdir, 'uploaded')
-    osutils.WriteFile(uploaded, "file1.txt\nfile2.json\nfile3.bin\ndir\n")
+    osutils.WriteFile(uploaded, 'file1.txt\nfile2.json\nfile3.bin\ndir\n')
 
     upload_file = os.path.join(self.tempdir, 'upload.json')
     commands.GenerateUploadJSON(upload_file, archive, uploaded)
@@ -1715,7 +1759,7 @@ class UnmockedTests(cros_test_lib.TempDirTestCase):
     tarred_files = [os.path.join('logs', x) for x in log_files]
     board = 'samus'
     log_files_root = os.path.join(self.tempdir,
-                                  '%s/tmp/portage/logs' % board)
+                                  'chroot/build/%s/tmp/portage/logs' % board)
     # Generate a representative set of log files produced by a typical build.
     cros_test_lib.CreateOnDiskHierarchy(log_files_root, log_files)
     # Create an archive from the simulated logs directory
@@ -1787,7 +1831,7 @@ class ImageTestCommandsTest(cros_test_lib.RunCommandTestCase):
         enter_chroot=True,
     )
 
-class GenerateChromeOrderfileArtifactsTests(
+class GenerateAFDOArtifactsTests(
     cros_test_lib.RunCommandTempDirTestCase):
   """Test GenerateChromeOrderfileArtifacts command."""
 
@@ -1797,57 +1841,42 @@ class GenerateChromeOrderfileArtifactsTests(
     chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
     osutils.SafeMakedirs(chroot_tmp)
     self.board = 'board'
+    self.target = 'any_target'
     self.output_path = os.path.join(self.tempdir, 'output_dir')
     osutils.SafeMakedirs(self.output_path)
+    self.mock_command = self.PatchObject(commands,
+                                         'RunBuildScript')
 
-    unused = {
-        'pv': None,
-        'version_no_rev': None,
-        'rev': None,
-        'category': None,
-        'cpv': None,
-        'cp': None,
-        'cpf': None
-    }
-    cpv = portage_util.CPV(
-        version='75.0.3761.0', package='chromeos-chrome', **unused)
-
-    self.PatchObject(portage_util, 'PortageqBestVisible',
-                     return_value=cpv)
-    self.chrome_version = 'chromeos-chrome-orderfile-75.0.3761.0'
-
-  def testRun(self):
-    """Verifies GenerateChromeOrderfileArtifacts calls into build-api."""
+  def testGeneratePass(self):
+    """Test generate call correctly."""
     # Redirect the current tempdir to read/write contents inside it.
     self.PatchObject(osutils.TempDir, '__enter__',
                      return_value=self.tempdir)
-
     input_proto_file = os.path.join(self.tempdir, 'input.json')
     output_proto_file = os.path.join(self.tempdir, 'output.json')
-
     # Write dummy outputs to output JSON file
     with open(output_proto_file, 'w') as f:
       output_proto = {
           'artifacts': [
-              {'path': self.chrome_version + '.orderfile.tar.xz'},
-              {'path': self.chrome_version + '.nm.tar.xz'}
+              {'path': 'artifact1'},
+              {'path': 'artifact2'},
           ]
       }
       json.dump(output_proto, f)
 
-    commands.GenerateChromeOrderfileArtifacts(
-        self.buildroot, self.board, self.output_path)
+    ret = commands.GenerateAFDOArtifacts(
+        self.buildroot, self.board, self.output_path, self.target)
 
-    # Verify the command is called correctly
-    self.assertCommandContains(
-        [
-            os.path.join(self.buildroot, constants.CHROMITE_BIN_SUBDIR,
-                         'build_api'),
-            'chromite.api.ArtifactsService/BundleOrderfileGenerationArtifacts',
-            '--input-json', input_proto_file,
-            '--output-json', output_proto_file
-        ]
-    )
+    cmd = [
+        'build_api',
+        'chromite.api.ArtifactsService/BundleAFDOGenerationArtifacts',
+        '--input-json', input_proto_file,
+        '--output-json', output_proto_file,
+    ]
+
+    self.mock_command.assert_called_once_with(
+        self.buildroot, cmd,
+        chromite_cmd=True, redirect_stdout=True)
 
     # Verify the input proto has all the information
     input_proto = json.loads(osutils.ReadFile(input_proto_file))
@@ -1855,7 +1884,104 @@ class GenerateChromeOrderfileArtifactsTests(
                      os.path.join(self.buildroot, 'chroot'))
     self.assertEqual(input_proto['build_target']['name'],
                      self.board)
-    self.assertEqual(input_proto['chrome_version'],
-                     self.chrome_version)
     self.assertEqual(input_proto['output_dir'],
                      self.output_path)
+    self.assertEqual(input_proto['artifact_type'], self.target)
+
+    # Verify the output matches the proto
+    self.assertEqual(ret, ['artifact1', 'artifact2'])
+
+
+class VerifyAFDOArtifactsTests(
+    cros_test_lib.RunCommandTempDirTestCase):
+  """Test VerifyChromeOrderfileArtifacts command."""
+
+  def setUp(self):
+    self.buildroot = os.path.join(self.tempdir, 'buildroot')
+    osutils.SafeMakedirs(self.buildroot)
+    chroot_tmp = os.path.join(self.buildroot, 'chroot', 'tmp')
+    osutils.SafeMakedirs(chroot_tmp)
+    self.board = 'board'
+    self.target = 'any_target'
+    self.build_api = 'path.to.anyBuildAPI'
+    self.mock_command = self.PatchObject(commands,
+                                         'RunBuildScript')
+
+  def testVerifyPass(self):
+    """Test verify call correctly."""
+    # Redirect the current tempdir to read/write contents inside it.
+    self.PatchObject(osutils.TempDir, '__enter__',
+                     return_value=self.tempdir)
+    input_proto_file = os.path.join(self.tempdir, 'input.json')
+    output_proto_file = os.path.join(self.tempdir, 'output.json')
+    # Write dummy outputs to output JSON file
+    with open(output_proto_file, 'w') as f:
+      output_proto = {
+          'status': True
+      }
+      json.dump(output_proto, f)
+
+    ret = commands.VerifyAFDOArtifacts(
+        self.buildroot, self.board, self.target, self.build_api)
+
+    cmd = [
+        'build_api',
+        self.build_api,
+        '--input-json', input_proto_file,
+        '--output-json', output_proto_file,
+    ]
+
+    self.mock_command.assert_called_once_with(
+        self.buildroot, cmd,
+        chromite_cmd=True, redirect_stdout=True)
+
+    # Verify the input proto has all the information
+    input_proto = json.loads(osutils.ReadFile(input_proto_file))
+    self.assertEqual(input_proto['build_target']['name'],
+                     self.board)
+    self.assertEqual(input_proto['artifact_type'], self.target)
+
+    # Verify the output matches the proto
+    self.assertTrue(ret)
+
+
+class MarkAndroidAsStableTest(cros_test_lib.RunCommandTempDirTestCase):
+  """MarkAndroidAsStable tests."""
+
+  def testSuccess(self):
+    """Test input and success handling."""
+    # Raw arguments for the function.
+    buildroot = '/buildroot'
+    tracking_branch = 'refs/tracking'
+    android_package = 'android/android-1.0-r1'
+    android_build_branch = 'refs/build'
+    boards = ['foo', 'bar']
+    android_version = '1.0'
+    android_gts_build_branch = 'refs/gts-build'
+
+    # Write out the mock response.
+    response_package = {'category': 'android', 'package_name': 'android',
+                        'version': '1.0-r2'}
+
+    call_patch = self.PatchObject(
+        commands, 'CallBuildApiWithInputProto',
+        return_value={'status': 1, 'android_atom': response_package})
+
+    new_atom = commands.MarkAndroidAsStable(
+        buildroot, tracking_branch, android_package, android_build_branch,
+        boards=boards, android_version=android_version,
+        android_gts_build_branch=android_gts_build_branch)
+
+    # Make sure the atom is rebuilt correctly from the package info.
+    self.assertEqual('android/android-1.0-r2', new_atom)
+
+    expected_input = {
+        'trackingBranch': tracking_branch,
+        'packageName': android_package,
+        'androidBuildBranch': android_build_branch,
+        'androidVersion': android_version,
+        'androidGtsBuildBranch': android_gts_build_branch,
+        'buildTargets': [{'name': 'foo'}, {'name': 'bar'}],
+    }
+    call_patch.assert_called_with(
+        buildroot, 'chromite.api.AndroidService/MarkStable', expected_input)

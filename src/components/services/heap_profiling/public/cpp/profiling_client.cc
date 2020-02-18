@@ -29,8 +29,9 @@ namespace heap_profiling {
 ProfilingClient::ProfilingClient() = default;
 ProfilingClient::~ProfilingClient() = default;
 
-void ProfilingClient::BindToInterface(mojom::ProfilingClientRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ProfilingClient::BindToInterface(
+    mojo::PendingReceiver<mojom::ProfilingClient> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
@@ -50,9 +51,9 @@ void ProfilingClient::StartProfiling(mojom::ProfilingParamsPtr params) {
     defined(OFFICIAL_BUILD)
   // On Android the unwinder initialization requires file reading before
   // initializing shim. So, post task on background thread.
-  base::PostTaskWithTraitsAndReply(
+  base::PostTaskAndReply(
       FROM_HERE,
-      {base::TaskPriority::BEST_EFFORT, base::MayBlock(),
+      {base::ThreadPool(), base::TaskPriority::BEST_EFFORT, base::MayBlock(),
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce([]() {
         bool can_unwind =

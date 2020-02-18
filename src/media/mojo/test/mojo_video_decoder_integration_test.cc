@@ -17,7 +17,7 @@
 #include "base/stl_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "media/base/decode_status.h"
@@ -203,7 +203,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
   }
 
  protected:
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
   void SetWriterCapacity(uint32_t capacity) { writer_capacity_ = capacity; }
 
@@ -324,7 +324,7 @@ class MojoVideoDecoderIntegrationTest : public ::testing::Test {
     return std::unique_ptr<VideoDecoder>(decoder_.get());
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   // Capacity that will be used for the MojoDecoderBufferWriter.
   uint32_t writer_capacity_ = 0;

@@ -21,7 +21,6 @@
 #include "ui/aura/window.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
-#include "ui/display/screen.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -97,8 +96,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
         preview_view_(
             new WindowPreviewView(window,
                                   /*trilinear_filtering_on_init=*/
-                                  features::IsTrilinearFilteringEnabled())),
-        window_observer_(this) {
+                                  features::IsTrilinearFilteringEnabled())) {
     header_view_ = new views::View();
     views::BoxLayout* layout =
         header_view_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -189,7 +187,6 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   }
 
  private:
-
   // Returns the size for the mirror view, scaled to fit within the max bounds.
   // Scaling is always 1:1 and we only scale down, never up.
   gfx::Size GetMirrorViewScaledSize() const {
@@ -239,7 +236,7 @@ class WindowCycleItemView : public views::View, public aura::WindowObserver {
   // The view that actually renders a thumbnail version of the window.
   WindowPreviewView* preview_view_;
 
-  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_;
+  ScopedObserver<aura::Window, aura::WindowObserver> window_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WindowCycleItemView);
 };
@@ -414,7 +411,7 @@ class WindowCycleView : public views::WidgetDelegateView {
 };
 
 WindowCycleList::WindowCycleList(const WindowList& windows)
-    : windows_(windows), screen_observer_(this) {
+    : windows_(windows) {
   if (!ShouldShowUi())
     Shell::Get()->mru_window_tracker()->SetIgnoreActivations(true);
 
@@ -441,7 +438,7 @@ WindowCycleList::~WindowCycleList() {
   if (!windows_.empty() && user_did_accept_) {
     auto* target_window = windows_[current_index_];
     target_window->Show();
-    WindowState::Get(target_window)->Activate();
+    SelectWindow(target_window);
   }
 
   if (cycle_ui_widget_)
@@ -464,8 +461,7 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   // window is minimized, we should also show it.
   if (windows_.size() == 1) {
     ::wm::AnimateWindow(windows_[0], ::wm::WINDOW_ANIMATION_TYPE_BOUNCE);
-    windows_[0]->Show();
-    WindowState::Get(windows_[0])->Activate();
+    SelectWindow(windows_[0]);
     return;
   }
 
@@ -570,11 +566,20 @@ void WindowCycleList::InitWindowCycleView() {
                     (widget_rect.height() - widget_height) / 2);
   widget_rect.set_height(widget_height);
   params.bounds = widget_rect;
-  widget->Init(params);
+  widget->Init(std::move(params));
 
   screen_observer_.Add(display::Screen::GetScreen());
   widget->Show();
   cycle_ui_widget_ = widget;
+}
+
+void WindowCycleList::SelectWindow(aura::Window* window) {
+  window->Show();
+  auto* window_state = WindowState::Get(window);
+  if (window_util::IsArcPipWindow(window))
+    window_state->Restore();
+  else
+    window_state->Activate();
 }
 
 }  // namespace ash

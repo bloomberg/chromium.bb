@@ -10,26 +10,23 @@
 #include "base/optional.h"
 #include "base/threading/thread_restrictions.h"
 #include "media/audio/audio_output_device_thread_callback.h"
-#include "media/mojo/interfaces/audio_data_pipe.mojom.h"
-#include "media/mojo/interfaces/audio_logging.mojom.h"
+#include "media/mojo/mojom/audio_data_pipe.mojom.h"
+#include "media/mojo/mojom/audio_logging.mojom.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/audio/public/mojom/constants.mojom.h"
 
 namespace audio {
 
 OutputDevice::OutputDevice(
-    std::unique_ptr<service_manager::Connector> connector,
+    mojo::PendingRemote<mojom::StreamFactory> stream_factory,
     const media::AudioParameters& params,
     media::AudioRendererSink::RenderCallback* render_callback,
     const std::string& device_id)
     : audio_parameters_(params),
       render_callback_(render_callback),
-      weak_factory_(this) {
+      stream_factory_(std::move(stream_factory)) {
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK(params.IsValid());
-  connector->Connect(audio::mojom::kServiceName,
-                     stream_factory_.BindNewPipeAndPassReceiver());
 
   stream_factory_->CreateOutputStream(
       stream_.BindNewPipeAndPassReceiver(), mojo::NullAssociatedRemote(),

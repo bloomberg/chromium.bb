@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/observer_list_threadsafe.h"
@@ -43,7 +44,14 @@ class ProxyModelTypeControllerDelegate;
 class SyncableService;
 }
 
+using StateSubscription =
+    base::CallbackList<void(const std::string& username)>::Subscription;
+
 namespace password_manager {
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
+using metrics_util::GaiaPasswordHashChange;
+#endif
 
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
@@ -180,6 +188,12 @@ class PasswordStore : protected PasswordStoreSync,
   virtual void GetLogins(const FormDigest& form,
                          PasswordStoreConsumer* consumer);
 
+  // Searches for credentials with the specified |plain_text_password|, and
+  // notifies |consumer| on completion. The request will be cancelled if the
+  // consumer is destroyed.
+  virtual void GetLoginsByPassword(const base::string16& plain_text_password,
+                                   PasswordStoreConsumer* consumer);
+
   // Gets the complete list of PasswordForms that are not blacklist entries--and
   // are thus auto-fillable. |consumer| will be notified on completion.
   // The request will be cancelled if the consumer is destroyed.
@@ -258,12 +272,12 @@ class PasswordStore : protected PasswordStoreSync,
                           const std::string& domain,
                           PasswordReuseDetectorConsumer* consumer);
 
-  // Saves |username| and a hash of |password| for Gaia password reuse checking.
+  // Saves |username| and a hash of |password| for GAIA password reuse checking.
   // |event| is used for metric logging and for distinguishing sync password
-  // hash change event and other non-sync Gaia password change event.
+  // hash change event and other non-sync GAIA password change event.
   virtual void SaveGaiaPasswordHash(const std::string& username,
                                     const base::string16& password,
-                                    metrics_util::SyncPasswordHashChange event);
+                                    GaiaPasswordHashChange event);
 
   // Saves |username| and a hash of |password| for enterprise password reuse
   // checking.
@@ -273,16 +287,25 @@ class PasswordStore : protected PasswordStoreSync,
   // Saves |sync_password_data| for sync password reuse checking.
   // |event| is used for metric logging.
   virtual void SaveSyncPasswordHash(const PasswordHashData& sync_password_data,
-                                    metrics_util::SyncPasswordHashChange event);
+                                    GaiaPasswordHashChange event);
 
-  // Clears the saved Gaia password hash for |username|.
+  // Clears the saved GAIA password hash for |username|.
   virtual void ClearGaiaPasswordHash(const std::string& username);
 
-  // Clears all the Gaia password hash.
+  // Clears all the GAIA password hash.
   virtual void ClearAllGaiaPasswordHash();
 
-  // Clears all (non-Gaia) enterprise password hash.
+  // Clears all (non-GAIA) enterprise password hash.
   virtual void ClearAllEnterprisePasswordHash();
+
+  // Clear all GAIA password hash that is not associated with a Gmail account.
+  virtual void ClearAllNonGmailPasswordHash();
+
+  // Adds a listener on |hash_password_manager_| for when |kHashPasswordData|
+  // list might have changed. Should only be called on the UI thread.
+  virtual std::unique_ptr<StateSubscription>
+  RegisterStateCallbackOnHashPasswordManager(
+      const base::Callback<void(const std::string& username)>& callback);
 
   // Shouldn't be called more than once, |notifier| must be not nullptr.
   void SetPasswordStoreSigninNotifier(
@@ -398,6 +421,11 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
   FillMatchingLogins(const FormDigest& form) = 0;
 
+  // Finds and returns all not-blacklisted PasswordForms with the specified
+  // |plain_text_password| stored in the credential database.
+  virtual std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillMatchingLoginsByPassword(const base::string16& plain_text_password) = 0;
+
   // Synchronous implementation for manipulating with statistics.
   virtual void AddSiteStatsImpl(const InteractionsStats& stats) = 0;
   virtual void RemoveSiteStatsImpl(const GURL& origin_domain) = 0;
@@ -426,7 +454,7 @@ class PasswordStore : protected PasswordStoreSync,
   void SaveProtectedPasswordHash(const std::string& username,
                                  const base::string16& password,
                                  bool is_gaia_password,
-                                 metrics_util::SyncPasswordHashChange event);
+                                 GaiaPasswordHashChange event);
 
   // Synchronous implementation of CheckReuse().
   void CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
@@ -449,11 +477,14 @@ class PasswordStore : protected PasswordStoreSync,
   // Synchronous implementation of ClearGaiaPasswordHash(...).
   void ClearGaiaPasswordHashImpl(const std::string& username);
 
-  // Synchronous implementation of ClearAllGaiaPasswordHashImpl().
+  // Synchronous implementation of ClearAllGaiaPasswordHash().
   void ClearAllGaiaPasswordHashImpl();
 
-  // Synchronous implementation of ClearAllEnterprisePasswordHashImpl().
+  // Synchronous implementation of ClearAllEnterprisePasswordHash().
   void ClearAllEnterprisePasswordHashImpl();
+
+  // Synchronous implementation of ClearAllNonGmailPasswordHash().
+  void ClearAllNonGmailPasswordHashImpl();
 #endif
 
   scoped_refptr<base::SequencedTaskRunner> main_task_runner() const {
@@ -536,6 +567,11 @@ class PasswordStore : protected PasswordStoreSync,
   // Note: subclasses should implement FillMatchingLogins() instead.
   std::vector<std::unique_ptr<autofill::PasswordForm>> GetLoginsImpl(
       const FormDigest& form);
+
+  // Finds all credentials with the specified |plain_text_password|.
+  // Note: subclasses should implement FillMatchingLoginsByPassword() instead.
+  std::vector<std::unique_ptr<autofill::PasswordForm>> GetLoginsByPasswordImpl(
+      const base::string16& plain_text_password);
 
   // Finds all non-blacklist PasswordForms and returns the result.
   std::vector<std::unique_ptr<autofill::PasswordForm>>

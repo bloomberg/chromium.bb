@@ -6,8 +6,8 @@ import logging
 import os
 from absl import flags
 
-from chrome_ent_test.ent_tests import ChromeEnterpriseTestCase
 from chrome_ent_test.infra.core import environment, before_all, test
+from infra import ChromeEnterpriseTestCase
 
 FLAGS = flags.FLAGS
 
@@ -16,7 +16,7 @@ FLAGS = flags.FLAGS
 class BookmarkBarEnabledTest(ChromeEnterpriseTestCase):
   """Test the BookmarkBarEnabled
 
-    https://www.chromium.org/administrators/policy-list-3#BookmarkBarEnabled.
+    https://cloud.google.com/docs/chrome-enterprise/policies/?policy=BookmarkBarEnabled.
 
     If this setting is left not set the user can decide to use this function
     or not.

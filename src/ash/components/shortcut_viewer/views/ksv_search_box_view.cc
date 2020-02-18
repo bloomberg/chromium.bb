@@ -39,7 +39,7 @@ KSVSearchBoxView::KSVSearchBoxView(search_box::SearchBoxViewDelegate* delegate)
   search_box()->set_placeholder_text_draw_flags(gfx::Canvas::TEXT_ALIGN_CENTER);
   const base::string16 search_box_name(
       l10n_util::GetStringUTF16(IDS_KSV_SEARCH_BOX_ACCESSIBILITY_NAME));
-  search_box()->set_placeholder_text(search_box_name);
+  search_box()->SetPlaceholderText(search_box_name);
   search_box()->SetAccessibleName(search_box_name);
   SetSearchIconImage(
       gfx::CreateVectorIcon(kKsvSearchBarIcon, gfx::kGoogleGrey900));
@@ -89,7 +89,7 @@ void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
 void KSVSearchBoxView::UpdateSearchBoxBorder() {
   // TODO(wutao): Rename this function or create another function in base class.
   // It updates many things in addition to the border.
-  if (!search_box()->HasFocus() && search_box()->text().empty())
+  if (!search_box()->HasFocus() && search_box()->GetText().empty())
     SetSearchBoxActive(false, ui::ET_UNKNOWN);
 
   constexpr int kBorderThichness = 2;

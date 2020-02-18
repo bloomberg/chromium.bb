@@ -10,11 +10,11 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "media/cast/constants.h"
 #include "media/cast/net/cast_transport.h"
 #include "media/cast/test/utility/default_config.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,7 +103,7 @@ class FakeTransport : public media::cast::CastTransport {
 class CastRemotingSenderTest : public ::testing::Test {
  protected:
   CastRemotingSenderTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         expecting_error_callback_run_(false) {
     media::cast::FrameSenderConfig video_config =
         media::cast::GetDefaultVideoSenderConfig();
@@ -258,7 +258,7 @@ class CastRemotingSenderTest : public ::testing::Test {
  private:
   void OnError() { CHECK(expecting_error_callback_run_); }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   media::cast::CastTransportRtpConfig transport_config_;
   FakeTransport transport_;
   std::unique_ptr<CastRemotingSender> remoting_sender_;

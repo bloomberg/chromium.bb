@@ -26,6 +26,7 @@ from dashboard.pinpoint.models import errors
 from dashboard.pinpoint.models import job_state
 from dashboard.pinpoint.models import results2
 from dashboard.pinpoint.models import scheduler
+from dashboard.pinpoint.models import timing_record
 from dashboard.services import gerrit_service
 from dashboard.services import issue_tracker_service
 
@@ -46,12 +47,20 @@ _MAX_RECOVERABLE_RETRIES = 3
 
 OPTION_STATE = 'STATE'
 OPTION_TAGS = 'TAGS'
+OPTION_ESTIMATE = 'ESTIMATE'
 
 
 COMPARISON_MODES = job_state.COMPARISON_MODES
 
 RETRY_OPTIONS = taskqueue.TaskRetryOptions(task_retry_limit=8,
                                            min_backoff_seconds=2)
+
+CREATED_COMMENT_FORMAT = u'''{title}
+{url}
+
+The job has been scheduled on the "{configuration}" queue which currently has
+{pending} pending jobs.
+'''
 
 
 def JobFromId(job_id):
@@ -100,6 +109,11 @@ class Job(ndb.Model):
   #####
 
   created = ndb.DateTimeProperty(required=True, auto_now_add=True)
+
+  # This differs from "created" since there may be a lag between the time it
+  # was queued and when the scheduler actually starts the job.
+  started_time = ndb.DateTimeProperty(required=False)
+
   # Don't use `auto_now` for `updated`. When we do data migration, we need
   # to be able to modify the Job without changing the Job's completion time.
   updated = ndb.DateTimeProperty(required=True, auto_now_add=True)
@@ -197,7 +211,35 @@ class Job(ndb.Model):
       job.AddChange(c)
 
     job.put()
+
+    # At this point we already have an ID, so we should go through each of the
+    # quests associated with the state, and provide the Job ID through a common
+    # API.
+    job.state.PropagateJob(job)
+    job.put()
     return job
+
+  def PostCreationUpdate(self):
+    title = _ROUND_PUSHPIN + ' Pinpoint job created and queued.'
+    pending = 0
+    if self.configuration:
+      try:
+        pending = scheduler.QueueStats(self.configuration).get('queued_jobs', 0)
+      except (scheduler.QueueNotFound, ndb.BadRequestError) as e:
+        logging.warning('Error encountered fetching queue named "%s": %s ',
+                        self.configuration, e)
+
+    comment = CREATED_COMMENT_FORMAT.format(
+        title=title,
+        url=self.url,
+        configuration=self.configuration if self.configuration else '(None)',
+        pending=pending)
+    deferred.defer(
+        _PostBugCommentDeferred,
+        self.bug_id,
+        comment,
+        send_email=True,
+        _retry_options=RETRY_OPTIONS)
 
   @property
   def job_id(self):
@@ -268,6 +310,7 @@ class Job(ndb.Model):
     """
     self._Schedule()
     self.started = True
+    self.started_time = datetime.datetime.now()
     self.put()
 
     title = _ROUND_PUSHPIN + ' Pinpoint job started.'
@@ -276,9 +319,12 @@ class Job(ndb.Model):
         _PostBugCommentDeferred, self.bug_id, comment, send_email=False,
         _retry_options=RETRY_OPTIONS)
 
+  def _IsTryJob(self):
+    return not self.comparison_mode or self.comparison_mode == job_state.TRY
+
   def _Complete(self):
     logging.debug('Job [%s]: Completed', self.job_id)
-    if self.comparison_mode:
+    if not self._IsTryJob():
       self.difference_count = len(self.state.Differences())
 
     try:
@@ -291,7 +337,7 @@ class Job(ndb.Model):
     scheduler.Complete(self)
 
   def _FormatAndPostBugCommentOnComplete(self):
-    if not self.comparison_mode:
+    if self._IsTryJob():
       # There is no comparison metric.
       title = "<b>%s Job complete. See results below.</b>" % _ROUND_PUSHPIN
       deferred.defer(
@@ -406,7 +452,7 @@ class Job(ndb.Model):
     self.task = None  # In case an exception is thrown.
 
     try:
-      if self.comparison_mode:
+      if not self._IsTryJob():
         self.state.Explore()
       work_left = self.state.ScheduleWork()
 
@@ -430,6 +476,10 @@ class Job(ndb.Model):
       # Don't use `auto_now` for `updated`. When we do data migration, we need
       # to be able to modify the Job without changing the Job's completion time.
       self.updated = datetime.datetime.now()
+
+      if self.completed:
+        timing_record.RecordJobTiming(self)
+
       try:
         self.put()
       except (datastore_errors.Timeout,
@@ -476,9 +526,22 @@ class Job(ndb.Model):
 
     if OPTION_STATE in options:
       d.update(self.state.AsDict())
+    if OPTION_ESTIMATE in options and not self.started:
+      d.update(self._GetRunTimeEstimate())
     if OPTION_TAGS in options:
       d['tags'] = {'tags': self.tags}
     return d
+
+  def _GetRunTimeEstimate(self):
+    result = timing_record.GetSimilarHistoricalTimings(self)
+    if not result:
+      return {}
+
+    timings = [t.total_seconds() for t in result.timings]
+    return {
+        'estimate': {'timings': timings, 'tags': result.tags},
+        'queue_stats': scheduler.QueueStats(self.configuration)
+    }
 
   def Cancel(self, user, reason):
     # We cannot cancel an already cancelled job.

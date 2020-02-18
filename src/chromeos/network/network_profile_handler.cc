@@ -9,6 +9,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
 #include "chromeos/dbus/shill/shill_manager_client.h"
@@ -202,9 +203,7 @@ const NetworkProfile* NetworkProfileHandler::GetDefaultUserProfile() const {
   return NULL;
 }
 
-NetworkProfileHandler::NetworkProfileHandler()
-    : weak_ptr_factory_(this) {
-}
+NetworkProfileHandler::NetworkProfileHandler() {}
 
 void NetworkProfileHandler::Init() {
   ShillManagerClient::Get()->AddPropertyChangedObserver(this);
@@ -217,6 +216,14 @@ void NetworkProfileHandler::Init() {
 
 NetworkProfileHandler::~NetworkProfileHandler() {
   ShillManagerClient::Get()->RemovePropertyChangedObserver(this);
+}
+
+// static
+std::unique_ptr<NetworkProfileHandler>
+NetworkProfileHandler::InitializeForTesting() {
+  auto* handler = new NetworkProfileHandler();
+  handler->Init();
+  return base::WrapUnique(handler);
 }
 
 }  // namespace chromeos

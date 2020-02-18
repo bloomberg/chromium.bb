@@ -47,7 +47,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
 using content::Referrer;
@@ -219,9 +219,10 @@ void SSLErrorControllerClient::LaunchDateAndTimeSettings() {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
       ProfileManager::GetActiveUserProfile(), chrome::kDateTimeSubPage);
 #else
-  base::PostTaskWithTraits(FROM_HERE,
-                           {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
-                           base::BindOnce(&LaunchDateAndTimeSettingsImpl));
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+      base::BindOnce(&LaunchDateAndTimeSettingsImpl));
 #endif
 }
 

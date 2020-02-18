@@ -33,7 +33,6 @@
 #include "chrome/browser/favicon/history_ui_favicon_request_handler_factory.h"
 #include "chrome/browser/feature_engagement/tracker_factory.h"
 #include "chrome/browser/google/google_search_domain_mixing_metrics_emitter_factory.h"
-#include "chrome/browser/google/google_url_tracker_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/top_sites_factory.h"
 #include "chrome/browser/invalidation/deprecated_profile_invalidation_provider_factory.h"
@@ -88,6 +87,7 @@
 #include "chrome/browser/web_data_service_factory.h"
 #include "chrome/common/buildflags.h"
 #include "components/feature_engagement/buildflags.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -110,7 +110,9 @@
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
+#include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
+#include "chrome/browser/chromeos/plugin_vm/plugin_vm_engagement_metrics_service.h"
 #include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder_factory.h"
 #include "chrome/browser/chromeos/policy/user_network_configuration_updater_factory.h"
@@ -175,8 +177,12 @@
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
+#endif
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+#include "chrome/browser/sync/sync_clipboard_service_factory.h"
 #endif
 
 namespace chrome {
@@ -271,8 +277,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   chromeos::SyncedPrintersManagerFactory::GetInstance();
   chromeos::smb_client::SmbServiceFactory::GetInstance();
   crostini::CrostiniRegistryServiceFactory::GetInstance();
-  TetherServiceFactory::GetInstance();
+  extensions::SessionStateChangedEventDispatcher::GetFactoryInstance();
   extensions::VerifyTrustAPI::GetFactoryInstance();
+  TetherServiceFactory::GetInstance();
 #endif
   FaviconServiceFactory::GetInstance();
   HistoryUiFaviconRequestHandlerFactory::GetInstance();
@@ -288,7 +295,6 @@ void ChromeBrowserMainExtraPartsProfiles::
   GlobalErrorServiceFactory::GetInstance();
 #endif
   GoogleSearchDomainMixingMetricsEmitterFactory::GetInstance();
-  GoogleURLTrackerFactory::GetInstance();
   HistoryServiceFactory::GetInstance();
   HostContentSettingsMapFactory::GetInstance();
   IdentityManagerFactory::EnsureFactoryAndDependeeFactoriesBuilt();
@@ -345,6 +351,9 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if BUILDFLAG(ENABLE_PLUGINS)
   PluginPrefsFactory::GetInstance();
 #endif
+#if defined(OS_CHROMEOS)
+  plugin_vm::PluginVmEngagementMetricsService::Factory::GetInstance();
+#endif
   PrefsTabHelper::GetServiceInstance();
 #if defined(OS_CHROMEOS)
   chromeos::OwnerSettingsServiceChromeOSFactory::GetInstance();
@@ -366,7 +375,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #if !defined(OS_ANDROID)
   resource_coordinator::LocalSiteCharacteristicsDataStoreFactory::GetInstance();
 #endif
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   safe_browsing::AdvancedProtectionStatusManagerFactory::GetInstance();
 #endif
 #if defined(OS_ANDROID)
@@ -389,6 +398,9 @@ void ChromeBrowserMainExtraPartsProfiles::
   SpellcheckServiceFactory::GetInstance();
 #endif
   suggestions::SuggestionsServiceFactory::GetInstance();
+#if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX)
+  SyncClipboardServiceFactory::GetInstance();
+#endif
   TabRestoreServiceFactory::GetInstance();
   TemplateURLFetcherFactory::GetInstance();
   TemplateURLServiceFactory::GetInstance();

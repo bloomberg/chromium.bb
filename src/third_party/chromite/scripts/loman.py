@@ -108,8 +108,8 @@ def _AddProjectsToManifestGroups(options, new_group):
 
 def _AssertNotMiniLayout():
   cros_build_lib.Die(
-      "Your repository checkout is using the old minilayout.xml workflow; "
-      "Autoupdate is no longer supported, reinstall your tree.")
+      'Your repository checkout is using the old minilayout.xml workflow; '
+      'Autoupdate is no longer supported, reinstall your tree.')
 
 
 def GetParser():
@@ -139,8 +139,8 @@ def main(argv):
   options = parser.parse_args(argv)
   repo_dir = git.FindRepoDir(os.getcwd())
   if not repo_dir:
-    parser.error("This script must be invoked from within a repository "
-                 "checkout.")
+    parser.error('This script must be invoked from within a repository '
+                 'checkout.')
 
   options.git_config = os.path.join(repo_dir, 'manifests.git', 'config')
   options.local_manifest_path = os.path.join(repo_dir, 'local_manifest.xml')
@@ -186,18 +186,18 @@ def main(argv):
   elif main_element:
     if options.remote is not None:
       # Likely this project wasn't meant to be remote, so workon main element
-      print("Project already exists in manifest. Using that as workon project.")
+      print('Project already exists in manifest. Using that as workon project.')
       _AddProjectsToManifestGroups(
           options, [checkout['name'] for checkout in main_element])
     else:
       # Conflict will occur; complain.
-      parser.error("Requested project name=%r path=%r will conflict with "
-                   "your current manifest %s" % (
+      parser.error('Requested project name=%r path=%r will conflict with '
+                   'your current manifest %s' % (
                        name, path, main_manifest.manifest_path))
 
   elif local_manifest.GetProject(name, path=path) is not None:
-    parser.error("Requested project name=%r path=%r conflicts with "
-                 "your local_manifest.xml" % (name, path))
+    parser.error('Requested project name=%r path=%r conflicts with '
+                 'your local_manifest.xml' % (name, path))
 
   else:
     element = local_manifest.AddNonWorkonProject(name=name, path=path,

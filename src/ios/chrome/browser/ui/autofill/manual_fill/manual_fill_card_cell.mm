@@ -10,10 +10,10 @@
 #import "ios/chrome/browser/ui/autofill/manual_fill/card_list_delegate.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/credit_card.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_cell_utils.h"
-#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_delegate.h"
+#import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_content_injector.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -25,8 +25,8 @@
 @interface ManualFillCardItem ()
 
 // The content delegate for this item.
-@property(nonatomic, weak, readonly) id<ManualFillContentDelegate>
-    contentDelegate;
+@property(nonatomic, weak, readonly) id<ManualFillContentInjector>
+    contentInjector;
 
 // The navigation delegate for this item.
 @property(nonatomic, weak, readonly) id<CardListDelegate> navigationDelegate;
@@ -39,12 +39,12 @@
 @implementation ManualFillCardItem
 
 - (instancetype)initWithCreditCard:(ManualFillCreditCard*)card
-                   contentDelegate:
-                       (id<ManualFillContentDelegate>)contentDelegate
+                   contentInjector:
+                       (id<ManualFillContentInjector>)contentInjector
                 navigationDelegate:(id<CardListDelegate>)navigationDelegate {
   self = [super initWithType:kItemTypeEnumZero];
   if (self) {
-    _contentDelegate = contentDelegate;
+    _contentInjector = contentInjector;
     _navigationDelegate = navigationDelegate;
     _card = card;
     self.cellClass = [ManualFillCardCell class];
@@ -56,7 +56,7 @@
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   [cell setUpWithCreditCard:self.card
-            contentDelegate:self.contentDelegate
+            contentInjector:self.contentInjector
          navigationDelegate:self.navigationDelegate];
 }
 
@@ -87,7 +87,7 @@
 @property(nonatomic, strong) UIButton* expirationYearButton;
 
 // The content delegate for this item.
-@property(nonatomic, weak) id<ManualFillContentDelegate> contentDelegate;
+@property(nonatomic, weak) id<ManualFillContentInjector> contentInjector;
 
 // The navigation delegate for this item.
 @property(nonatomic, weak) id<CardListDelegate> navigationDelegate;
@@ -116,14 +116,14 @@
   self.cardNumberButton.hidden = NO;
   self.cardholderButton.hidden = NO;
 
-  self.contentDelegate = nil;
+  self.contentInjector = nil;
   self.navigationDelegate = nil;
   self.cardIcon.image = nil;
   self.card = nil;
 }
 
 - (void)setUpWithCreditCard:(ManualFillCreditCard*)card
-            contentDelegate:(id<ManualFillContentDelegate>)contentDelegate
+            contentInjector:(id<ManualFillContentInjector>)contentInjector
          navigationDelegate:(id<CardListDelegate>)navigationDelegate {
   if (!self.dynamicConstraints) {
     self.dynamicConstraints = [[NSMutableArray alloc] init];
@@ -132,7 +132,7 @@
   if (self.contentView.subviews.count == 0) {
     [self createViewHierarchy];
   }
-  self.contentDelegate = contentDelegate;
+  self.contentInjector = contentInjector;
   self.navigationDelegate = navigationDelegate;
   self.card = card;
 
@@ -148,7 +148,8 @@
       [[NSMutableAttributedString alloc]
           initWithString:cardName
               attributes:@{
-                NSForegroundColorAttributeName : UIColor.cr_labelColor,
+                NSForegroundColorAttributeName :
+                    [UIColor colorNamed:kTextPrimaryColor],
                 NSFontAttributeName :
                     [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]
               }];
@@ -239,8 +240,7 @@
   UILabel* expirationSeparatorLabel = CreateLabel();
   expirationSeparatorLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleHeadline];
-  [expirationSeparatorLabel
-      setTextColor:UIColor.cr_secondarySystemBackgroundColor];
+  [expirationSeparatorLabel setTextColor:[UIColor colorNamed:kSeparatorColor]];
   expirationSeparatorLabel.text = @"/";
   [self.contentView addSubview:expirationSeparatorLabel];
   AppendHorizontalConstraintsForViews(
@@ -262,7 +262,7 @@
 
 - (void)userDidTapCardNumber:(UIButton*)sender {
   NSString* number = self.card.number;
-  if (![self.contentDelegate canUserInjectInPasswordField:NO
+  if (![self.contentInjector canUserInjectInPasswordField:NO
                                             requiresHTTPS:YES]) {
     return;
   }
@@ -271,7 +271,7 @@
   if (!number.length) {
     [self.navigationDelegate requestFullCreditCard:self.card];
   } else {
-    [self.contentDelegate userDidPickContent:number
+    [self.contentInjector userDidPickContent:number
                                passwordField:NO
                                requiresHTTPS:YES];
   }
@@ -289,7 +289,7 @@
   DCHECK(metricsAction);
   base::RecordAction(base::UserMetricsAction(metricsAction));
 
-  [self.contentDelegate userDidPickContent:sender.titleLabel.text
+  [self.contentInjector userDidPickContent:sender.titleLabel.text
                              passwordField:NO
                              requiresHTTPS:NO];
 }

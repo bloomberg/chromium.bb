@@ -21,7 +21,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/common/host_id.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -70,7 +70,7 @@ class ExtensionUserScriptLoaderTest : public testing::Test,
   base::ReadOnlySharedMemoryRegion* shared_memory_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionUserScriptLoaderTest);

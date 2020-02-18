@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "net/base/mime_util.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 #include "url/url_constants.h"
@@ -227,7 +228,7 @@ base::Optional<CorsErrorStatus> CheckAccess(
 bool ShouldCheckCors(const GURL& request_url,
                      const base::Optional<url::Origin>& request_initiator,
                      mojom::RequestMode request_mode) {
-  if (request_mode == network::mojom::RequestMode::kNavigate ||
+  if (IsNavigationRequestMode(request_mode) ||
       request_mode == network::mojom::RequestMode::kNoCors) {
     return false;
   }
@@ -360,7 +361,17 @@ bool IsCorsSafelistedContentType(const std::string& media_type) {
   return IsCorsSafelistedLowerCaseContentType(base::ToLowerASCII(media_type));
 }
 
-bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
+bool IsCorsSafelistedHeader(
+    const std::string& name,
+    const std::string& value,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
+  const std::string lower_name = base::ToLowerASCII(name);
+
+  if (extra_safelisted_header_names.find(lower_name) !=
+      extra_safelisted_header_names.end()) {
+    return true;
+  }
+
   // If |value|’s length is greater than 128, then return false.
   if (value.size() > 128)
     return false;
@@ -413,7 +424,6 @@ bool IsCorsSafelistedHeader(const std::string& name, const std::string& value) {
       "sec-ch-ua-arch",
       "sec-ch-ua-model",
   };
-  const std::string lower_name = base::ToLowerASCII(name);
   if (std::find(std::begin(safe_names), std::end(safe_names), lower_name) ==
       std::end(safe_names))
     return false;
@@ -491,7 +501,8 @@ std::vector<std::string> CorsUnsafeRequestHeaderNames(
 
 std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
     const net::HttpRequestHeaders::HeaderVector& headers,
-    bool is_revalidating) {
+    bool is_revalidating,
+    const base::flat_set<std::string>& extra_safelisted_header_names) {
   std::vector<std::string> header_names;
   std::vector<std::string> potentially_unsafe_names;
 
@@ -510,7 +521,8 @@ std::vector<std::string> CorsUnsafeNotForbiddenRequestHeaderNames(
         continue;
       }
     }
-    if (!IsCorsSafelistedHeader(name, header.value)) {
+    if (!IsCorsSafelistedHeader(name, header.value,
+                                extra_safelisted_header_names)) {
       header_names.push_back(name);
     } else {
       potentially_unsafe_names.push_back(name);

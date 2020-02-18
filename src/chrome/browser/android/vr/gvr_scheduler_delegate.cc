@@ -83,8 +83,7 @@ GvrSchedulerDelegate::GvrSchedulerDelegate(GlBrowserInterface* browser,
       graphics_(graphics),
       webvr_render_time_(sliding_time_size),
       webvr_js_time_(sliding_time_size),
-      webvr_js_wait_time_(sliding_time_size),
-      weak_ptr_factory_(this) {
+      webvr_js_wait_time_(sliding_time_size) {
   if (cardboard_gamepad_ && webxr_mode())
     browser_->ToggleCardboardGamepad(true);
 }
@@ -237,7 +236,6 @@ GvrSchedulerDelegate::GetWebXrFrameTransportOptions(
   }
 
   DVLOG(1) << __func__ << ": render_path=" << static_cast<int>(render_path);
-  MetricsUtilAndroid::LogXrRenderPathUsed(render_path);
 
   device::mojom::XRPresentationTransportOptionsPtr transport_options =
       device::mojom::XRPresentationTransportOptions::New();

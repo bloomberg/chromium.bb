@@ -7,9 +7,10 @@ package org.chromium.chrome.browser.customtabs.dependency_injection;
 import org.chromium.chrome.browser.browserservices.trustedwebactivityui.TrustedWebActivityCoordinator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityLifecycleUmaTracker;
 import org.chromium.chrome.browser.customtabs.CustomTabBottomBarDelegate;
+import org.chromium.chrome.browser.customtabs.CustomTabCompositorContentInitializer;
 import org.chromium.chrome.browser.customtabs.CustomTabStatusBarColorProvider;
 import org.chromium.chrome.browser.customtabs.CustomTabTabPersistencePolicy;
-import org.chromium.chrome.browser.customtabs.content.CustomTabActivityInitialPageLoader;
+import org.chromium.chrome.browser.customtabs.content.CustomTabIntentHandler;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityNavigationController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabController;
 import org.chromium.chrome.browser.customtabs.content.CustomTabActivityTabFactory;
@@ -38,11 +39,12 @@ public interface CustomTabActivityComponent extends ChromeActivityComponent {
     CustomTabActivityTabController resolveTabController();
     CustomTabActivityTabFactory resolveTabFactory();
     CustomTabActivityLifecycleUmaTracker resolveUmaTracker();
-    CustomTabActivityInitialPageLoader resolveInitialPageLoader();
+    CustomTabIntentHandler resolveIntentHandler();
     CustomTabActivityNavigationController resolveNavigationController();
     CustomTabActivityTabProvider resolveTabProvider();
     CustomTabStatusBarColorProvider resolveCustomTabStatusBarColorProvider();
     CustomTabToolbarCoordinator resolveToolbarCoordinator();
+    CustomTabCompositorContentInitializer resolveCompositorContentInitializer();
 
     CustomTabTabPersistencePolicy resolveTabPersistencePolicy(); // For testing
 }

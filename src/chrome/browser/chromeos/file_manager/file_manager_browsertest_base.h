@@ -60,13 +60,13 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Optional overrides for each File Manager test extension type.
   virtual bool GetTabletMode() const;
   virtual bool GetEnableDriveFs() const;
-  virtual bool GetEnableMyFilesVolume() const;
   virtual bool GetEnableDocumentsProvider() const;
   virtual bool GetEnableArc() const;
   virtual bool GetEnableFormatDialog() const;
   virtual bool GetRequiresStartupBrowser() const;
   virtual bool GetNeedsZipSupport() const;
   virtual bool GetIsOffline() const;
+  virtual bool GetEnableFilesNg() const;
   virtual bool GetEnableNativeSmb() const;
   virtual bool GetStartWithNoVolumesMounted() const;
 
@@ -99,14 +99,14 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   // Returns true if the test requires ARC++.
   bool IsArcTest() const { return GetEnableArc(); }
 
-  // Returns true if the test MyFilesVolume feature is enabled.
-  bool IsMyFilesVolume() const { return GetEnableMyFilesVolume(); }
-
   // Returns true if the test requires zip/unzip support.
   bool IsZipTest() const { return GetNeedsZipSupport(); }
 
   // Returns true if Drive should act as if offline.
   bool IsOfflineTest() const { return GetIsOffline(); }
+
+  // Returns true if the test needs the files-ng feature.
+  bool IsFilesNgTest() const { return GetEnableFilesNg(); }
 
   // Returns true if the test needs a native SMB file system provider.
   bool IsNativeSmbTest() const { return GetEnableNativeSmb(); }
@@ -148,9 +148,6 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
 
   // Called during tests to determine if SMB file shares is enabled.
   bool IsSmbEnabled() const;
-
-  // Creates ARC services for testing that are keyed to the current |profile()|.
-  void CreateArcServices();
 
   base::test::ScopedFeatureList feature_list_;
 

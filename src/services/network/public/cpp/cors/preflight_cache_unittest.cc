@@ -4,8 +4,8 @@
 
 #include "services/network/public/cpp/cors/preflight_cache.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "net/http/http_request_headers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -53,7 +53,7 @@ class PreflightCacheTest : public testing::Test {
   void SetUp() override { PreflightResult::SetTickClockForTesting(&clock_); }
   void TearDown() override { PreflightResult::SetTickClockForTesting(nullptr); }
 
-  base::test::ScopedTaskEnvironment env_;
+  base::test::TaskEnvironment env_;
   PreflightCache cache_;
   base::SimpleTestTickClock clock_;
 };

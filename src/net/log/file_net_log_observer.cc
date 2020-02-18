@@ -41,8 +41,8 @@ scoped_refptr<base::SequencedTaskRunner> CreateFileTaskRunner() {
   //
   // These intentionally block shutdown to ensure the log file has finished
   // being written.
-  return base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  return base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::BLOCK_SHUTDOWN});
 }
 
@@ -386,9 +386,9 @@ void FileNetLogObserver::StopObserving(std::unique_ptr<base::Value> polled_data,
   net_log()->RemoveObserver(this);
 
   base::OnceClosure bound_flush_then_stop =
-      base::Bind(&FileNetLogObserver::FileWriter::FlushThenStop,
-                 base::Unretained(file_writer_.get()), write_queue_,
-                 base::Passed(&polled_data));
+      base::BindOnce(&FileNetLogObserver::FileWriter::FlushThenStop,
+                     base::Unretained(file_writer_.get()), write_queue_,
+                     std::move(polled_data));
 
   // Note that PostTaskAndReply() requires a non-null closure.
   if (!optional_callback.is_null()) {

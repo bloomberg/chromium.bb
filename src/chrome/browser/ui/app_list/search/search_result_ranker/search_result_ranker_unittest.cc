@@ -19,12 +19,15 @@
 #include "base/stl_util.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/chrome_search_result.h"
 #include "chrome/browser/ui/app_list/search/mixer.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/app_launch_data.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/histogram_util.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/ranking_item_util.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_predictor.h"
 #include "chrome/browser/ui/app_list/search/search_result_ranker/recurrence_ranker.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_database_params.h"
@@ -32,7 +35,7 @@
 #include "components/history/core/browser/history_types.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/history/core/test/test_history_database.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/data_decoder/public/cpp/test_data_decoder_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,6 +48,7 @@ using ResultType = ash::SearchResultType;
 using base::ScopedTempDir;
 using base::test::ScopedFeatureList;
 using testing::ElementsAre;
+using testing::StrEq;
 using testing::UnorderedElementsAre;
 using testing::WhenSorted;
 
@@ -75,11 +79,21 @@ class TestSearchResult : public ChromeSearchResult {
 int TestSearchResult::instantiation_count = 0;
 
 MATCHER_P(HasId, id, "") {
-  return base::UTF16ToUTF8(arg.result->title()) == id;
+  bool match = base::UTF16ToUTF8(arg.result->title()) == id;
+  if (!match)
+    *result_listener << "HasId wants '" << id << "', but got '"
+                     << arg.result->title() << "'";
+  return match;
 }
 
 MATCHER_P2(HasIdScore, id, score, "") {
-  return base::UTF16ToUTF8(arg.result->title()) == id && arg.score == score;
+  bool match =
+      base::UTF16ToUTF8(arg.result->title()) == id && arg.score == score;
+  if (!match)
+    *result_listener << "HasIdScore wants (" << id << ", " << score
+                     << "), but got (" << arg.result->title() << ", "
+                     << arg.result->title() << ")";
+  return match;
 }
 
 }  // namespace
@@ -87,8 +101,7 @@ MATCHER_P2(HasIdScore, id, score, "") {
 class SearchResultRankerTest : public testing::Test {
  public:
   SearchResultRankerTest()
-      : thread_bundle_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME) {}
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
   ~SearchResultRankerTest() override {}
 
   // testing::Test overrides:
@@ -105,20 +118,25 @@ class SearchResultRankerTest : public testing::Test {
     Wait();
   }
 
-  std::unique_ptr<SearchResultRanker> MakeRanker(
-      bool query_based_mixed_types_enabled,
-      const std::map<std::string, std::string>& params = {}) {
-    if (query_based_mixed_types_enabled) {
-      scoped_feature_list_.InitAndEnableFeatureWithParameters(
-          app_list_features::kEnableQueryBasedMixedTypesRanker, params);
-    } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          app_list_features::kEnableQueryBasedMixedTypesRanker);
-    }
+  void DisableAllFeatures() {
+    scoped_feature_list_.InitWithFeaturesAndParameters({}, all_feature_flags_);
+  }
 
-    auto ranker = std::make_unique<SearchResultRanker>(
-        profile_.get(), history_service_.get(), dd_service_.connector());
-    return ranker;
+  void EnableOneFeature(const base::Feature& feature,
+                        const std::map<std::string, std::string>& params = {}) {
+    std::vector<base::Feature> disabled;
+    for (const auto& f : all_feature_flags_) {
+      if (f.name != feature.name)
+        disabled.push_back(f);
+    }
+    scoped_feature_list_.InitWithFeaturesAndParameters({{feature, params}},
+                                                       disabled);
+  }
+
+  std::unique_ptr<SearchResultRanker> MakeRanker() {
+    dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
+    return std::make_unique<SearchResultRanker>(
+        profile_.get(), history_service_.get(), dd_service_->connector());
   }
 
   Mixer::SortedResults MakeSearchResults(const std::vector<std::string>& ids,
@@ -134,29 +152,39 @@ class SearchResultRankerTest : public testing::Test {
 
   history::HistoryService* history_service() { return history_service_.get(); }
 
-  void Wait() { thread_bundle_.RunUntilIdle(); }
-
-  content::TestBrowserThreadBundle thread_bundle_;
+  void Wait() { task_environment_.RunUntilIdle(); }
 
   // This is used only to make the ownership clear for the TestSearchResult
   // objects that the return value of MakeSearchResults() contains raw pointers
   // to.
   std::list<TestSearchResult> test_search_results_;
 
-  data_decoder::TestDataDecoderService dd_service_;
+  content::BrowserTaskEnvironment task_environment_;
+
+  std::unique_ptr<data_decoder::TestDataDecoderService> dd_service_;
 
   ScopedFeatureList scoped_feature_list_;
   ScopedTempDir temp_dir_;
-  std::unique_ptr<history::HistoryService> history_service_;
 
+  std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<Profile> profile_;
 
+  const base::HistogramTester histogram_tester_;
+
  private:
+  // All the relevant feature flags for the SearchResultRanker. New experiments
+  // should add their flag here.
+  std::vector<base::Feature> all_feature_flags_ = {
+      app_list_features::kEnableAppRanker,
+      app_list_features::kEnableQueryBasedMixedTypesRanker,
+      app_list_features::kEnableZeroStateMixedTypesRanker};
+
   DISALLOW_COPY_AND_ASSIGN(SearchResultRankerTest);
 };
 
 TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
-  auto ranker = MakeRanker(false);
+  DisableAllFeatures();
+  auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
@@ -182,8 +210,10 @@ TEST_F(SearchResultRankerTest, MixedTypesRankersAreDisabledWithFlag) {
 }
 
 TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
-  auto ranker = MakeRanker(
-      true, {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+  EnableOneFeature(
+      app_list_features::kEnableQueryBasedMixedTypesRanker,
+      {{"use_category_model", "true"}, {"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->InitializeRankers();
   Wait();
 
@@ -207,12 +237,62 @@ TEST_F(SearchResultRankerTest, CategoryModelImprovesScores) {
                                               HasId("B"), HasId("A"))));
 }
 
+TEST_F(SearchResultRankerTest, AppModelImprovesScores) {
+  const std::string json = R"({
+      "min_seconds_between_saves": 250,
+      "target_limit": 100,
+      "target_decay": 0.5,
+      "condition_limit": 50,
+      "condition_decay": 0.7,
+      "predictor": {
+        "predictor_type": "frecency",
+        "decay_coeff": 0.8
+      }
+    })";
+
+  EnableOneFeature(app_list_features::kEnableAppRanker,
+                   {{"use_recurrence_ranker", "true"}, {"config", json}});
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  AppLaunchData app_A;
+  app_A.id = "A";
+  app_A.ranking_item_type = RankingItemType::kApp;
+
+  AppLaunchData app_B;
+  app_B.id = "B";
+  app_B.ranking_item_type = RankingItemType::kApp;
+
+  for (int i = 0; i < 20; ++i) {
+    ranker->Train(app_A);
+    ranker->Train(app_B);
+    ranker->Train(app_A);
+  }
+  ranker->FetchRankings(base::string16());
+
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kInstalledApp, ResultType::kInstalledApp,
+                         ResultType::kInstalledApp, ResultType::kInstalledApp},
+                        {0.1f, 0.2f, 0.3f, 0.4f});
+
+  ranker->Rank(&results);
+  // The relevance scores put D > C > B > A, but we've trained on A the most,
+  // B half as much, and C and D not at all. So we expect A > B > D > C.
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("A"), HasId("B"),
+                                              HasId("D"), HasId("C"))));
+}
+
 TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
   // Without the |use_category_model| parameter, the ranker defaults to the item
   // model.  With the |config| parameter, the ranker uses the default predictor
   // for the RecurrenceRanker.
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}});
+
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -249,6 +329,9 @@ TEST_F(SearchResultRankerTest, DefaultQueryMixedModelImprovesScores) {
 // URL IDs should ignore the query and fragment, and URLs for google docs should
 // ignore a trailing /view or /edit.
 TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}});
+
   // We want |url_1| and |_3| to be equivalent to |url_2| and |_4|. So, train on
   // 1 and 3 but rank 2 and 4. Even with zero relevance, they should be at the
   // top of the rankings.
@@ -258,7 +341,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelNormalizesUrlIds) {
   const std::string& url_4 = "some.domain.com";
 
   base::RunLoop run_loop;
-  auto ranker = MakeRanker(true, {{"boost_coefficient", "1.0"}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -309,9 +392,11 @@ TEST_F(SearchResultRankerTest, QueryMixedModelConfigDeployment) {
       }
     })";
 
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}, {"config", json}});
+
   base::RunLoop run_loop;
-  auto ranker =
-      MakeRanker(true, {{"boost_coefficient", "1.0"}, {"config", json}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -337,9 +422,11 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
       }
     })";
 
+  EnableOneFeature(app_list_features::kEnableQueryBasedMixedTypesRanker,
+                   {{"boost_coefficient", "1.0"}, {"config", json}});
+
   base::RunLoop run_loop;
-  auto ranker =
-      MakeRanker(true, {{"boost_coefficient", "1.0"}, {"config", json}});
+  auto ranker = MakeRanker();
   ranker->set_json_config_parsed_for_testing(run_loop.QuitClosure());
   ranker->InitializeRankers();
   run_loop.Run();
@@ -379,6 +466,7 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   // Now delete |url_1| from the history service and ensure we save the model to
   // disk.
+  base::DeleteFile(model_path, false);
   EXPECT_FALSE(base::PathExists(model_path));
   history_service()->AddPage(GURL(url_1), base::Time::Now(),
                              history::VisitSource::SOURCE_BROWSED);
@@ -406,8 +494,9 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
 
   // Load a new ranker from disk and ensure |url_1| hasn't been retained.
   base::RunLoop new_run_loop;
+  dd_service_ = std::make_unique<data_decoder::TestDataDecoderService>();
   auto new_ranker = std::make_unique<SearchResultRanker>(
-      profile_.get(), history_service(), dd_service_.connector());
+      profile_.get(), history_service(), dd_service_->connector());
   new_ranker->set_json_config_parsed_for_testing(new_run_loop.QuitClosure());
   new_ranker->InitializeRankers();
   new_run_loop.Run();
@@ -424,6 +513,398 @@ TEST_F(SearchResultRankerTest, QueryMixedModelDeletesURLCorrectly) {
                                               HasIdScore(url_2, 1.0f),
                                               HasIdScore("untrained", 0.5f)));
   }
+}
+
+TEST_F(SearchResultRankerTest, ZeroStateGroupModelDisabledWithFlag) {
+  DisableAllFeatures();
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // TODO(959679): Update the types used in this test once zero-state-related
+  // search providers have been implemented.
+
+  AppLaunchData app_launch_data_a;
+  app_launch_data_a.id = "A";
+  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_a.query = "";
+
+  for (int i = 0; i < 10; ++i) {
+    ranker->Train(app_launch_data_a);
+  }
+  ranker->FetchRankings(base::string16());
+
+  // C and D should be ranked first because their group score should be higher.
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kLauncher, ResultType::kLauncher,
+                         ResultType::kOmnibox, ResultType::kOmnibox},
+                        {0.1f, 0.2f, 0.5f, 0.6f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("D"), HasId("C"),
+                                              HasId("B"), HasId("A"))));
+}
+
+TEST_F(SearchResultRankerTest, ZeroStateGroupTrainingImprovesScores) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
+  // A and B should be ranked first because their group score should be higher.
+  auto results =
+      MakeSearchResults({"A", "B", "C", "D"},
+                        {ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+                         ResultType::kOmnibox, ResultType::kOmnibox},
+                        {0.1f, 0.2f, 0.1f, 0.2f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results, WhenSorted(ElementsAre(HasId("B"), HasId("A"),
+                                              HasId("D"), HasId("C"))));
+}
+
+// Without training, the zero state group ranker should produce default scores
+// that slightly favour some providers, to break scoring ties. Scores are in
+// order Drive > ZeroStateFile > Omnibox. This order should only be changed with
+// care.
+TEST_F(SearchResultRankerTest, ZeroStateColdStart) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  ranker->FetchRankings(base::string16());
+  auto results =
+      MakeSearchResults({"Z", "O", "D"},
+                        {ResultType::kZeroStateFile, ResultType::kOmnibox,
+                         ResultType::kDriveQuickAccess},
+                        {-0.1f, 0.2f, 0.1f});
+  ranker->Rank(&results);
+
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("D"), HasId("Z"), HasId("O"))));
+}
+
+// If results from all groups are present, the model should not force any
+// changes to the ranking.
+TEST_F(SearchResultRankerTest, ZeroStateAllGroupsPresent) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "0.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  auto results = MakeSearchResults(
+      {"A2", "O1", "Z1", "Z2", "A1", "D1"},
+      {ResultType::kInstalledApp, ResultType::kOmnibox,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kInstalledApp, ResultType::kDriveQuickAccess},
+      {8.1f, 0.4f, 0.8f, 0.2f, 8.2f, 0.1f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("O1"), HasId("D1"), HasId("Z2"))));
+}
+
+// If one group won't have shown results, but has a high-scoring new result
+// in the list, it should replace the bottom-most shown result.
+TEST_F(SearchResultRankerTest, ZeroStateMissingGroupAdded) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "10.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
+  auto results = MakeSearchResults(
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1", "D2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.3f, 0.7f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  // Z3 and D1 should be swapped.
+  EXPECT_THAT(results,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                     HasId("D2"), HasId("Z5"), HasId("D1"))));
+}
+
+// If two group won't have shown results but meet the conditions for inclusion,
+// both should have a result in the list.
+TEST_F(SearchResultRankerTest, ZeroStateTwoMissingGroupsAdded) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "10.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
+  auto results =
+      MakeSearchResults({"Z1", "Z2", "Z3", "Z4", "Z5", "D1", "O1"},
+                        {ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+                         ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+                         ResultType::kZeroStateFile,
+                         ResultType::kDriveQuickAccess, ResultType::kOmnibox},
+                        {1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.75f, 0.7f});
+
+  ranker->Rank(&results);
+  ranker->OverrideZeroStateResults(&results);
+  EXPECT_THAT(results, WhenSorted(ElementsAre(
+                           HasId("Z1"), HasId("Z2"), HasId("Z3"), HasId("D1"),
+                           HasId("O1"), HasId("Z4"), HasId("Z5"))));
+}
+
+// If one group won't have shown results and has a new result in the list, but
+// that result has recently been shown twice, it shouldn't be shown.
+TEST_F(SearchResultRankerTest, ZeroStateStaleResultIgnored) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "10.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
+  const auto results = MakeSearchResults(
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f});
+
+  for (int i = 0; i < 3; ++i) {
+    auto results_copy = results;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should be swapped.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D1"), HasId("Z5"))));
+    // D1 should increment its cache counter.
+    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+  }
+
+  auto results_copy = results;
+  ranker->Rank(&results_copy);
+  ranker->OverrideZeroStateResults(&results_copy);
+  // Z3 and D1 should NOT be swapped because D1's cache count is too high.
+  EXPECT_THAT(results_copy,
+              WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                     HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                     HasId("Z5"), HasId("D1"))));
+}
+
+// If a group's top result changes, its cache count should reset.
+TEST_F(SearchResultRankerTest, ZeroStateCacheResetWhenTopResultChanges) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "10.0"},
+                       {"paired_coeff", "0.0"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Train on files enough that they should dominate the zero state results.
+  AppLaunchData launch;
+  launch.id = "A";
+  launch.ranking_item_type = RankingItemType::kZeroStateFile;
+  launch.query = "";
+  for (int i = 0; i < 10; ++i)
+    ranker->Train(launch);
+  ranker->FetchRankings(base::string16());
+
+  const auto results_1 = MakeSearchResults(
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D1", "D2"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
+  const auto results_2 = MakeSearchResults(
+      {"A1", "A2", "Z1", "Z2", "Z3", "Z4", "Z5", "D2", "D1"},
+      {ResultType::kInstalledApp, ResultType::kInstalledApp,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kZeroStateFile,
+       ResultType::kZeroStateFile, ResultType::kDriveQuickAccess,
+       ResultType::kDriveQuickAccess},
+      {8.2f, 8.1f, 1.0f, 0.95f, 0.9f, 0.85f, 0.8f, 0.7f, 0.1f});
+
+  for (int i = 0; i < 3; ++i) {
+    auto results_copy = results_1;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should be swapped.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D1"), HasId("Z5"), HasId("D2"))));
+    // D1 should increment its cache counter.
+    ranker->ZeroStateResultsDisplayed({{"D1", 0.0f}});
+  }
+
+  {
+    auto results_copy = results_1;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // Z3 and D1 should NOT be swapped because D1's cache count is too high.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("Z5"), HasId("D1"), HasId("D2"))));
+  }
+
+  {
+    auto results_copy = results_2;
+    ranker->Rank(&results_copy);
+    ranker->OverrideZeroStateResults(&results_copy);
+    // D2 should override Z3 because the Drive cache count is reset.
+    EXPECT_THAT(results_copy,
+                WhenSorted(ElementsAre(HasId("A1"), HasId("A2"), HasId("Z1"),
+                                       HasId("Z2"), HasId("Z3"), HasId("Z4"),
+                                       HasId("D2"), HasId("Z5"), HasId("D1"))));
+  }
+}
+
+TEST_F(SearchResultRankerTest, ZeroStateGroupRankerUsesFinchConfig) {
+  const std::string json = R"({
+      "min_seconds_between_saves": 250,
+      "target_limit": 100,
+      "target_decay": 0.5,
+      "condition_limit": 50,
+      "condition_decay": 0.7,
+      "predictor": {
+        "predictor_type": "fake"
+      }
+    })";
+
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {{"config", json}});
+
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // We expect a FakePredictor to have been loaded because predictor_type is set
+  // to "fake" in the json config.
+  ASSERT_THAT(ranker->zero_state_group_ranker_->GetPredictorNameForTesting(),
+              StrEq(FakePredictor::kPredictorName));
+}
+
+// The zero state result type should be logged whenever a zero state item is
+// clicked and trained on.
+TEST_F(SearchResultRankerTest, ZeroStateClickedTypeMetrics) {
+  EnableOneFeature(app_list_features::kEnableZeroStateMixedTypesRanker,
+                   {
+                       {"item_coeff", "1.0"},
+                       {"group_coeff", "1.0"},
+                       {"paired_coeff", "0.0"},
+                       {"default_group_score", "0.1"},
+                   });
+  auto ranker = MakeRanker();
+  ranker->InitializeRankers();
+  Wait();
+
+  // Zero state types should be logged during training.
+
+  AppLaunchData app_launch_data_a;
+  app_launch_data_a.id = "A";
+  app_launch_data_a.ranking_item_type = RankingItemType::kFile;
+  app_launch_data_a.query = "";
+
+  ranker->Train(app_launch_data_a);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kUnanticipated, 1);
+
+  AppLaunchData app_launch_data_b;
+  app_launch_data_b.id = "B";
+  app_launch_data_b.ranking_item_type = RankingItemType::kOmniboxGeneric;
+  app_launch_data_b.query = "";
+
+  ranker->Train(app_launch_data_b);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kOmniboxSearch, 1);
+
+  AppLaunchData app_launch_data_c;
+  app_launch_data_c.id = "D";
+  app_launch_data_c.ranking_item_type = RankingItemType::kDriveQuickAccess;
+  app_launch_data_c.query = "";
+
+  ranker->Train(app_launch_data_c);
+  histogram_tester_.ExpectBucketCount(
+      "Apps.AppList.ZeroStateResults.LaunchedItemType",
+      ZeroStateResultType::kDriveQuickAccess, 1);
 }
 
 }  // namespace app_list

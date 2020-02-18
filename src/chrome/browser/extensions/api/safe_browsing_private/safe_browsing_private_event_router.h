@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/values.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/prefs/pref_change_registrar.h"
 
 namespace content {
 class BrowserContext;
@@ -29,6 +30,10 @@ class GURL;
 
 namespace policy {
 class CloudPolicyClient;
+}
+
+namespace safe_browsing {
+class DlpDeepScanningVerdict;
 }
 
 namespace extensions {
@@ -52,11 +57,15 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   static const char kKeyReason[];
   static const char kKeyNetErrorCode[];
   static const char kKeyClickedThrough[];
+  static const char kKeyTriggeredRules[];
+  static const char kKeyThreatType[];
 
   static const char kKeyPasswordReuseEvent[];
   static const char kKeyPasswordChangedEvent[];
   static const char kKeyDangerousDownloadEvent[];
   static const char kKeyInterstitialEvent[];
+  static const char kKeySensitiveDataEvent[];
+  static const char kKeyLargeUnscannedFileEvent[];
 
   explicit SafeBrowsingPrivateEventRouter(content::BrowserContext* context);
 
@@ -86,6 +95,24 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
                                        const std::string& reason,
                                        int net_error_code);
 
+  // Notifies listeners that deep scanning detected a dangerous download.
+  void OnDangerousDeepScanningResult(const GURL& url,
+                                     const std::string& file_name,
+                                     const std::string& download_digest_sha256,
+                                     const std::string& threat_type);
+
+  // Notifies listeners that scanning for sensitive data detected a violation.
+  void OnSensitiveDataEvent(
+      const safe_browsing::DlpDeepScanningVerdict& verdict,
+      const GURL& url,
+      const std::string& file_name,
+      const std::string& download_digest_sha256);
+
+  // Notifies listeners that deep scanning failed, since the file was too large.
+  void OnLargeUnscannedFileEvent(const GURL& url,
+                                 const std::string& file_name,
+                                 const std::string& download_digest_sha256);
+
   void SetCloudPolicyClientForTesting(
       std::unique_ptr<policy::CloudPolicyClient> client);
 
@@ -94,6 +121,12 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   // if real-time reporting is enabled, the machine is properly reigistered
   // with CBCM and the appropriate policies are enabled.
   void InitRealtimeReportingClient();
+
+  // Determines if the real-time reporting feature is enabled.
+  bool IsRealtimeReportingEnabled();
+
+  // Called whenever the real-time reporting policy changes.
+  void RealtimeReportingPrefChanged(const std::string& pref);
 
   // Report safe browsing event through real-time reporting channel, if enabled.
   void ReportRealtimeEvent(const char* name, base::Value event);
@@ -106,6 +139,7 @@ class SafeBrowsingPrivateEventRouter : public KeyedService {
   signin::IdentityManager* identity_manager_ = nullptr;
   EventRouter* event_router_ = nullptr;
   std::unique_ptr<policy::CloudPolicyClient> client_;
+  PrefChangeRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingPrivateEventRouter);
 };

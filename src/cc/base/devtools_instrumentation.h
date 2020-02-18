@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "base/trace_event/traced_value.h"
@@ -67,10 +68,12 @@ class CC_BASE_EXPORT ScopedImageDecodeTask {
  public:
   enum DecodeType { kSoftware, kGpu };
   enum TaskType { kInRaster, kOutOfRaster };
+  enum ImageType { kWebP, kJpeg, kOther };
 
   ScopedImageDecodeTask(const void* image_ptr,
                         DecodeType decode_type,
-                        TaskType task_type);
+                        TaskType task_type,
+                        ImageType image_type);
   ScopedImageDecodeTask(const ScopedImageDecodeTask&) = delete;
   ~ScopedImageDecodeTask();
 
@@ -85,6 +88,7 @@ class CC_BASE_EXPORT ScopedImageDecodeTask {
   const TaskType task_type_;
   const base::TimeTicks start_time_;
   bool suppress_metrics_ = false;
+  const ImageType image_type_;
 };
 
 class CC_BASE_EXPORT ScopedLayerTreeTask {

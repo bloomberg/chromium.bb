@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 
+import static org.chromium.chrome.browser.util.UrlUtilities.stripScheme;
+
 import android.support.v7.widget.RecyclerView;
 import android.text.method.PasswordTransformationMethod;
 import android.view.View;
@@ -14,6 +16,7 @@ import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData
 import org.chromium.chrome.browser.keyboard_accessory.data.UserInfoField;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece;
 import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabViewBinder.ElementViewHolder;
+import org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.PasswordAccessorySheetViewBinder.FaviconHelper;
 import org.chromium.ui.modelutil.ListModel;
 import org.chromium.ui.widget.ChipView;
 
@@ -50,16 +53,15 @@ class PasswordAccessorySheetModernViewBinder {
             bindChipView(view.getUsername(), info.getFields().get(0));
             bindChipView(view.getPassword(), info.getFields().get(1));
 
-            view.getTitle().setVisibility(info.getTitle().isEmpty() ? View.GONE : View.VISIBLE);
-            view.getTitle().setText(info.getTitle());
+            view.getTitle().setVisibility(info.getOrigin().isEmpty() ? View.GONE : View.VISIBLE);
+            // Strip the trailing slash (for aesthetic reasons):
+            view.getTitle().setText(stripScheme(info.getOrigin()).replaceFirst("/$", ""));
 
-            view.setIconForBitmap(null); // Set the default icon, then try to get a better one.
-            if (info.getFaviconProvider() != null) {
-                info.getFaviconProvider().fetchFavicon(
-                        itemView.getContext().getResources().getDimensionPixelSize(
-                                R.dimen.keyboard_accessory_suggestion_icon_size),
-                        view::setIconForBitmap);
-            }
+            // Set the default icon, then try to get a better one.
+            FaviconHelper faviconHelper =
+                    new FaviconHelper(view.getContext(), info.getFaviconProvider());
+            view.setIconForBitmap(faviconHelper.getDefaultDrawable());
+            faviconHelper.fetchFavicon(info.getOrigin(), view::setIconForBitmap);
         }
 
         void bindChipView(ChipView chip, UserInfoField field) {
@@ -75,6 +77,6 @@ class PasswordAccessorySheetModernViewBinder {
 
     static void initializeView(RecyclerView view, AccessorySheetTabModel model) {
         view.setAdapter(PasswordAccessorySheetCoordinator.createModernAdapter(model));
-        view.addItemDecoration(new PasswordAccessoryInfoView.DynamicBottomSpacer());
+        view.addItemDecoration(new DynamicInfoViewBottomSpacer(PasswordAccessoryInfoView.class));
     }
 }

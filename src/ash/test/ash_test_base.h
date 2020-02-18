@@ -9,15 +9,18 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/test/ash_test_helper.h"
 #include "ash/wm/desks/desks_util.h"
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/template_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/traits_bag.h"
 #include "components/user_manager/user_type.h"
@@ -35,7 +38,7 @@ class WindowDelegate;
 
 namespace base {
 namespace test {
-class ScopedTaskEnvironment;
+class TaskEnvironment;
 }
 }  // namespace base
 
@@ -73,20 +76,19 @@ class WorkAreaInsets;
 class AshTestBase : public testing::Test {
  public:
   // Constructs an AshTestBase with |traits| being forwarded to its
-  // ScopedTaskEnvironment. MainThreadType always defaults to UI and must not be
+  // TaskEnvironment. MainThreadType always defaults to UI and must not be
   // specified.
-  template <typename... ScopedTaskEnvironmentTraits>
-  explicit AshTestBase(ScopedTaskEnvironmentTraits... traits)
-      : scoped_task_environment_(
-            base::in_place,
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            traits...) {}
+  template <typename... TaskEnvironmentTraits>
+  NOINLINE explicit AshTestBase(TaskEnvironmentTraits&&... traits)
+      : task_environment_(base::in_place,
+                          base::test::TaskEnvironment::MainThreadType::UI,
+                          std::forward<TaskEnvironmentTraits>(traits)...) {}
 
   // Alternatively a subclass may pass this tag to ask this AshTestBase not to
-  // instantiate a ScopedTaskEnvironment. The subclass is then responsible to
+  // instantiate a TaskEnvironment. The subclass is then responsible to
   // instantiate one before AshTestBase::SetUp().
   struct SubclassManagesTaskEnvironment {};
-  AshTestBase(SubclassManagesTaskEnvironment tag);
+  explicit AshTestBase(SubclassManagesTaskEnvironment tag);
 
   ~AshTestBase() override;
 
@@ -119,6 +121,18 @@ class AshTestBase : public testing::Test {
       int container_id = desks_util::GetActiveDeskContainerId(),
       const gfx::Rect& bounds = gfx::Rect(),
       bool show = true);
+
+  // Creates a widget with a visible WINDOW_TYPE_NORMAL window with the given
+  // |app_type|. If |app_type| is AppType::NON_APP, this window is considered a
+  // non-app window.
+  // If |bounds_in_screen| is empty the window is added to the primary root
+  // window, otherwise the window is added to the display matching
+  // |bounds_in_screen|. |shell_window_id| is the shell window id to give to
+  // the new window.
+  std::unique_ptr<aura::Window> CreateAppWindow(
+      const gfx::Rect& bounds_in_screen = gfx::Rect(),
+      AppType app_type = AppType::SYSTEM_APP,
+      int shell_window_id = kShellWindowId_Invalid);
 
   // Creates a visible window in the appropriate container. If
   // |bounds_in_screen| is empty the window is added to the primary root
@@ -258,8 +272,8 @@ class AshTestBase : public testing::Test {
   // Swap the primary display with the secondary.
   void SwapPrimaryDisplay();
 
-  display::Display GetPrimaryDisplay();
-  display::Display GetSecondaryDisplay();
+  display::Display GetPrimaryDisplay() const;
+  display::Display GetSecondaryDisplay() const;
 
  private:
   void CreateWindowTreeIfNecessary();
@@ -281,14 +295,14 @@ class AshTestBase : public testing::Test {
   // protected so it can be accesssed by test subclasses to drive the task
   // environment.
  protected:
-  // |scoped_task_environment_| is initialized-once at construction time but
+  // |task_environment_| is initialized-once at construction time but
   // subclasses may elect to provide their own. Declare it last to ensure its
   // initialization/destruction semantics are identical in the
   // SubclassManagesTaskEnvironment mode.
-  base::Optional<base::test::ScopedTaskEnvironment> scoped_task_environment_;
+  base::Optional<base::test::TaskEnvironment> task_environment_;
 
   // Private again for DISALLOW_COPY_AND_ASSIGN; additional members should be
-  // added in the first private section to be before |scoped_task_environment_|.
+  // added in the first private section to be before |task_environment_|.
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestBase);
 };

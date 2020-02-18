@@ -31,6 +31,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/menu_model_test.h"
+#include "components/sessions/content/content_test_helper.h"
 #include "components/sessions/core/serialized_navigation_entry_test_helper.h"
 #include "components/sessions/core/session_types.h"
 #include "components/sessions/core/tab_restore_service_impl.h"
@@ -285,16 +286,14 @@ TEST_F(RecentTabsSubMenuModelTest,
                                            base::WrapUnique(session_service));
   SessionID tab_id = SessionID::FromSerializedValue(1);
   SessionID window_id = SessionID::FromSerializedValue(2);
-  session_service->SetWindowType(window_id,
-                                 Browser::TYPE_TABBED,
-                                 SessionService::TYPE_NORMAL);
+  session_service->SetWindowType(window_id, Browser::TYPE_NORMAL);
   session_service->SetTabWindow(window_id, tab_id);
   session_service->SetTabIndexInWindow(window_id, tab_id, 0);
   session_service->SetSelectedTabInWindow(window_id, 0);
   session_service->UpdateTabNavigation(
       window_id, tab_id,
-      sessions::SerializedNavigationEntryTestHelper::CreateNavigation(
-          "http://wnd1/tab0", "title"));
+      sessions::ContentTestHelper::CreateNavigation("http://wnd1/tab0",
+                                                    "title"));
   // Set this, otherwise previous session won't be loaded.
   profile()->set_last_session_exited_cleanly(false);
   // Move this session to the last so that TabRestoreService will load it as the

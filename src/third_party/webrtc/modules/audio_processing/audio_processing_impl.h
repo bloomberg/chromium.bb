@@ -193,7 +193,7 @@ class AudioProcessingImpl : public AudioProcessing {
     bool RenderMultiBandSubModulesActive() const;
     bool RenderFullBandProcessingActive() const;
     bool RenderMultiBandProcessingActive() const;
-    bool LowCutFilteringRequired() const;
+    bool HighPassFilteringRequired() const;
 
    private:
     const bool capture_post_processor_enabled_ = false;
@@ -238,7 +238,7 @@ class AudioProcessingImpl : public AudioProcessing {
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_, crit_capture_);
   void InitializeResidualEchoDetector()
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_, crit_capture_);
-  void InitializeLowCutFilter() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
+  void InitializeHighPassFilter() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
   void InitializeEchoController()
       RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_render_, crit_capture_);
   void InitializeGainController2() RTC_EXCLUSIVE_LOCKS_REQUIRED(crit_capture_);
@@ -394,6 +394,12 @@ class AudioProcessingImpl : public AudioProcessing {
     int playout_volume;
     int prev_playout_volume;
     AudioProcessingStats stats;
+    struct KeyboardInfo {
+      void Extract(const float* const* data, const StreamConfig& stream_config);
+      size_t num_keyboard_frames = 0;
+      const float* keyboard_data = nullptr;
+    } keyboard_info;
+    AudioFrame::VADActivity vad_activity = AudioFrame::kVadUnknown;
   } capture_ RTC_GUARDED_BY(crit_capture_);
 
   struct ApmCaptureNonLockedState {

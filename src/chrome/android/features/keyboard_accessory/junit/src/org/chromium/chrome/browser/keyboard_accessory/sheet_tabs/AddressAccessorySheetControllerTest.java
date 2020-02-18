@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -19,9 +20,11 @@ import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.Accessor
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.Type.TITLE;
 import static org.chromium.chrome.browser.keyboard_accessory.sheet_tabs.AccessorySheetTabModel.AccessorySheetDataPiece.getType;
 
+import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -30,9 +33,11 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.metrics.test.ShadowRecordHistogram;
 import org.chromium.base.task.test.CustomShadowAsyncTask;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData;
@@ -51,10 +56,14 @@ import java.util.HashMap;
 @Config(manifest = Config.NONE,
         shadows = {CustomShadowAsyncTask.class, ShadowRecordHistogram.class})
 public class AddressAccessorySheetControllerTest {
+    @Rule
+    public JniMocker mocker = new JniMocker();
     @Mock
     private RecyclerView mMockView;
     @Mock
     private ListObservable.ListObserver<Void> mMockItemListObserver;
+    @Mock
+    private RecordHistogram.Natives mMockRecordHistogramNatives;
 
     private AddressAccessorySheetCoordinator mCoordinator;
     private AccessorySheetTabModel mSheetDataPieces;
@@ -63,6 +72,8 @@ public class AddressAccessorySheetControllerTest {
     public void setUp() {
         ShadowRecordHistogram.reset();
         MockitoAnnotations.initMocks(this);
+        mocker.mock(RecordHistogramJni.TEST_HOOKS, mMockRecordHistogramNatives);
+        AccessorySheetTabCoordinator.IconProvider.setIconForTesting(mock(Drawable.class));
         setAutofillFeature(true);
         mCoordinator = new AddressAccessorySheetCoordinator(RuntimeEnvironment.application, null);
         assertNotNull(mCoordinator);
@@ -96,13 +107,13 @@ public class AddressAccessorySheetControllerTest {
 
         // If the coordinator receives a set of initial items, the model should report an insertion.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses", ""));
         verify(mMockItemListObserver).onItemRangeInserted(mSheetDataPieces, 0, 1);
         assertThat(mSheetDataPieces.size(), is(1));
 
         // If the coordinator receives a new set of items, the model should report a change.
         testProvider.notifyObservers(
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses"));
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Other Addresses", ""));
         verify(mMockItemListObserver).onItemRangeChanged(mSheetDataPieces, 0, 1, null);
         assertThat(mSheetDataPieces.size(), is(1));
 
@@ -120,7 +131,7 @@ public class AddressAccessorySheetControllerTest {
     public void testSplitsTabDataToList() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses for this site", "");
         testData.getUserInfoList().add(new UserInfo("", null));
         testData.getUserInfoList().get(0).addField(
                 new UserInfoField("Name", "Name", "", false, null));
@@ -139,7 +150,7 @@ public class AddressAccessorySheetControllerTest {
     public void testUsesTitleElementForEmptyState() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         final AccessorySheetData testData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses", "");
         mCoordinator.registerDataProvider(testProvider);
 
         testProvider.notifyObservers(testData);
@@ -161,7 +172,7 @@ public class AddressAccessorySheetControllerTest {
     }
 
     @Test
-    public void testRecordsSuggestionsImpressionsWhenShown() {
+    public void testRecordsNoSuggestionsImpressionsWithoutInteractiveElements() {
         final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
         mCoordinator.registerDataProvider(testProvider);
         assertThat(RecordHistogram.getHistogramTotalCountForTesting(
@@ -172,12 +183,39 @@ public class AddressAccessorySheetControllerTest {
 
         // If the tab is shown without interactive item, log "0" samples.
         AccessorySheetData accessorySheetData =
-                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!");
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "No addresses!", "");
         testProvider.notifyObservers(accessorySheetData);
         mCoordinator.onTabShown();
 
         assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 0), is(1));
         assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 0), is(1));
+    }
+
+    @Test
+    public void testRecordsSelectableSuggestionsImpressionsWhenShown() {
+        final PropertyProvider<AccessorySheetData> testProvider = new PropertyProvider<>();
+        mCoordinator.registerDataProvider(testProvider);
+        assertThat(RecordHistogram.getHistogramTotalCountForTesting(
+                           UMA_KEYBOARD_ACCESSORY_SHEET_SUGGESTIONS),
+                is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 1), is(0));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 1), is(0));
+
+        // Add only two interactive items - the third one should not be recorded.
+        AccessorySheetData accessorySheetData =
+                new AccessorySheetData(AccessoryTabType.ADDRESSES, "Addresses", "");
+        accessorySheetData.getUserInfoList().add(new UserInfo("", null));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Todd Tester", "Todd Tester", "0", false, result -> {}));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Main Street", "Main Street", "1", false, result -> {}));
+        accessorySheetData.getUserInfoList().get(0).addField(
+                new UserInfoField("Unselectable", "Unselectable", "-1", false, null));
+        testProvider.notifyObservers(accessorySheetData);
+        mCoordinator.onTabShown();
+
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ADDRESSES, 2), is(1));
+        assertThat(getSuggestionsImpressions(AccessoryTabType.ALL, 2), is(1));
     }
 
     private int getSuggestionsImpressions(@AccessoryTabType int type, int sample) {

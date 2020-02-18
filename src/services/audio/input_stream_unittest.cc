@@ -9,7 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/audio/audio_io.h"
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
@@ -198,7 +198,7 @@ class AudioServiceInputStreamTest : public testing::Test {
   MOCK_METHOD1(BadMessageCallback, void(const std::string&));
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_env_;
+  base::test::TaskEnvironment scoped_task_env_;
   media::MockAudioManager audio_manager_;
   StreamFactory stream_factory_;
   mojo::Remote<mojom::StreamFactory> remote_stream_factory_;

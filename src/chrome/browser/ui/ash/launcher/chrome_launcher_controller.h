@@ -18,7 +18,6 @@
 #include "chrome/browser/ui/app_icon_loader_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
-#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/discover_window_observer.h"
 #include "chrome/browser/ui/ash/launcher/launcher_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/settings_window_observer.h"
@@ -31,6 +30,7 @@ class AppWindowLauncherController;
 class BrowserShortcutLauncherItemController;
 class BrowserStatusMonitor;
 class ChromeLauncherControllerUserSwitchObserver;
+class CrostiniAppWindowShelfController;
 class GURL;
 class Profile;
 class LauncherControllerHelper;
@@ -120,6 +120,9 @@ class ChromeLauncherController
 
   // Returns true if the specified item is for a platform app.
   bool IsPlatformApp(const ash::ShelfID& id);
+
+  // Whether the user has permission to modify the given app's settings.
+  bool UninstallAllowed(const std::string& app_id);
 
   // Opens a new instance of the application identified by the ShelfID.
   // Used by the app-list, and by pinned-app shelf items. |display_id| is id of
@@ -243,6 +246,13 @@ class ChromeLauncherController
   void PinAppWithID(const std::string& app_id);
   bool IsAppPinned(const std::string& app_id);
   void UnpinAppWithID(const std::string& app_id);
+
+  // Whether the controller supports a Show App Info flow.
+  bool CanDoShowAppInfoFlow();
+
+  // Show the dialog with the application's information. Call only if
+  // CanDoShowAppInfoFlow() returns true.
+  void DoShowAppInfoFlow(Profile* profile, const std::string& extension_id);
 
   // LauncherAppUpdater::Delegate:
   void OnAppInstalled(content::BrowserContext* browser_context,
@@ -420,7 +430,7 @@ class ChromeLauncherController
   using RunningAppListIdMap = std::map<std::string, RunningAppListIds>;
   RunningAppListIdMap last_used_running_application_order_;
 
-  base::WeakPtrFactory<ChromeLauncherController> weak_ptr_factory_;
+  base::WeakPtrFactory<ChromeLauncherController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherController);
 };

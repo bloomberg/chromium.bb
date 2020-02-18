@@ -11,8 +11,8 @@
 #include "android_webview/browser/aw_contents_io_thread_client.h"
 #include "android_webview/browser/aw_cookie_access_policy.h"
 #include "android_webview/browser/input_stream.h"
-#include "android_webview/browser/net/aw_web_resource_response.h"
 #include "android_webview/browser/network_service/android_stream_reader_url_loader.h"
+#include "android_webview/browser/network_service/aw_web_resource_response.h"
 #include "android_webview/browser/network_service/net_helpers.h"
 #include "android_webview/browser/renderer_host/auto_login_parser.h"
 #include "android_webview/common/url_constants.h"
@@ -25,9 +25,9 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/global_request_id.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/url_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
@@ -59,9 +59,9 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void Restart();
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;
@@ -75,7 +75,6 @@ class InterceptedRequest : public network::mojom::URLLoader,
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -145,7 +144,7 @@ class InterceptedRequest : public network::mojom::URLLoader,
   network::mojom::URLLoaderPtr target_loader_;
   network::mojom::URLLoaderFactoryPtr target_factory_;
 
-  base::WeakPtrFactory<InterceptedRequest> weak_factory_;
+  base::WeakPtrFactory<InterceptedRequest> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(InterceptedRequest);
 };
@@ -272,8 +271,7 @@ InterceptedRequest::InterceptedRequest(
       proxied_loader_binding_(this, std::move(loader_request)),
       target_client_(std::move(client)),
       proxied_client_binding_(this),
-      target_factory_(std::move(target_factory)),
-      weak_factory_(this) {
+      target_factory_(std::move(target_factory)) {
   // If there is a client error, clean up the request.
   target_client_.set_connection_error_handler(base::BindOnce(
       &InterceptedRequest::OnURLLoaderClientError, base::Unretained(this)));
@@ -489,18 +487,18 @@ void OnNewLoginRequestOnUiThread(int process_id,
 // URLLoaderClient methods.
 
 void InterceptedRequest::OnReceiveResponse(
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // intercept response headers here
   // pause/resume proxied_client_binding_ if necessary
 
-  if (head.headers && head.headers->response_code() >= 400) {
+  if (head->headers && head->headers->response_code() >= 400) {
     // In Android WebView the WebViewClient.onReceivedHttpError callback
     // is invoked for any resource (main page, iframe, image, etc.) with
     // status code >= 400.
     std::unique_ptr<AwContentsClientBridge::HttpErrorInfo> error_info =
-        AwContentsClientBridge::ExtractHttpErrorInfo(head.headers.get());
+        AwContentsClientBridge::ExtractHttpErrorInfo(head->headers.get());
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&OnReceivedHttpErrorOnUiThread, process_id_,
                        request_.render_frame_id, AwWebResourceRequest(request_),
@@ -512,12 +510,12 @@ void InterceptedRequest::OnReceiveResponse(
     // Check for x-auto-login-header
     HeaderData header_data;
     std::string header_string;
-    if (head.headers && head.headers->GetNormalizedHeader(kAutoLoginHeaderName,
-                                                          &header_string)) {
+    if (head->headers && head->headers->GetNormalizedHeader(
+                             kAutoLoginHeaderName, &header_string)) {
       if (ParseHeader(header_string, ALLOW_ANY_REALM, &header_data)) {
         // TODO(timvolodine): consider simplifying this and above callback
         // code, crbug.com/897149.
-        base::PostTaskWithTraits(
+        base::PostTask(
             FROM_HERE, {content::BrowserThread::UI},
             base::BindOnce(&OnNewLoginRequestOnUiThread, process_id_,
                            request_.render_frame_id, header_data.realm,
@@ -526,15 +524,15 @@ void InterceptedRequest::OnReceiveResponse(
     }
   }
 
-  target_client_->OnReceiveResponse(head);
+  target_client_->OnReceiveResponse(std::move(head));
 }
 
 void InterceptedRequest::OnReceiveRedirect(
     const net::RedirectInfo& redirect_info,
-    const network::ResourceResponseHead& head) {
+    network::mojom::URLResponseHeadPtr head) {
   // TODO(timvolodine): handle redirect override.
   request_was_redirected_ = true;
-  target_client_->OnReceiveRedirect(redirect_info, head);
+  target_client_->OnReceiveRedirect(redirect_info, std::move(head));
   request_.url = redirect_info.new_url;
   request_.method = redirect_info.new_method;
   request_.site_for_cookies = redirect_info.new_site_for_cookies;
@@ -586,11 +584,6 @@ void InterceptedRequest::FollowRedirect(
     return;
 
   Restart();
-}
-
-void InterceptedRequest::ProceedWithResponse() {
-  if (target_loader_)
-    target_loader_->ProceedWithResponse();
 }
 
 void InterceptedRequest::SetPriority(net::RequestPriority priority,
@@ -698,7 +691,7 @@ void InterceptedRequest::SendErrorCallback(int error_code,
     return;
 
   sent_error_callback_ = true;
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(&OnReceivedErrorOnUiThread, process_id_,
                      request_.render_frame_id, AwWebResourceRequest(request_),
@@ -716,9 +709,7 @@ AwProxyingURLLoaderFactory::AwProxyingURLLoaderFactory(
     network::mojom::URLLoaderFactoryRequest loader_request,
     network::mojom::URLLoaderFactoryPtrInfo target_factory_info,
     bool intercept_only)
-    : process_id_(process_id),
-      intercept_only_(intercept_only),
-      weak_factory_(this) {
+    : process_id_(process_id), intercept_only_(intercept_only) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   DCHECK(!(intercept_only_ && target_factory_info));
   if (target_factory_info) {

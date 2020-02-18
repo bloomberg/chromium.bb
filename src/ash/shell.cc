@@ -23,7 +23,6 @@
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/assistant/assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
-#include "ash/dbus/ash_dbus_helper.h"
 #include "ash/dbus/ash_dbus_services.h"
 #include "ash/detachable_base/detachable_base_handler.h"
 #include "ash/detachable_base/detachable_base_notification_controller.h"
@@ -73,7 +72,6 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/voice_interaction_controller.h"
 #include "ash/root_window_controller.h"
 #include "ash/screenshot_delegate.h"
 #include "ash/session/session_controller_impl.h"
@@ -354,6 +352,10 @@ bool Shell::IsSystemModalWindowOpen() {
   return GetOpenSystemModalWindowContainerId() >= 0;
 }
 
+AssistantController* Shell::assistant_controller() {
+  return assistant_controller_.get();
+}
+
 display::DisplayConfigurator* Shell::display_configurator() {
   return display_manager_->configurator();
 }
@@ -477,12 +479,6 @@ void Shell::ShowContextMenu(const gfx::Point& location_in_screen,
                                                          source_type);
 }
 
-void Shell::RemoveAppListController() {
-  // AppListController must no longer be the HomeScreenController delegate.
-  DCHECK_NE(home_screen_controller_->delegate(), app_list_controller_.get());
-  app_list_controller_.reset();
-}
-
 void Shell::AddShellObserver(ShellObserver* observer) {
   shell_observers_.AddObserver(observer);
 }
@@ -552,6 +548,7 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
           std::make_unique<KeyboardBrightnessController>()),
       locale_update_controller_(std::make_unique<LocaleUpdateControllerImpl>()),
       media_controller_(std::make_unique<MediaControllerImpl>(connector)),
+      ash_color_provider_(std::make_unique<AshColorProvider>()),
       session_controller_(std::make_unique<SessionControllerImpl>()),
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),
@@ -559,14 +556,14 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),
-      native_cursor_manager_(nullptr),
-      weak_factory_(this) {
+      native_cursor_manager_(nullptr) {
   // Ash doesn't properly remove pre-target-handlers.
   ui::EventHandler::DisableCheckTargets();
 
   AccelerometerReader::GetInstance()->Initialize(
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN}));
 
   login_screen_controller_ =
@@ -664,8 +661,7 @@ Shell::~Shell() {
   // Destroy |assistant_controller_| earlier than |tablet_mode_controller_| so
   // that the former will destroy the Assistant view hierarchy which has a
   // dependency on the latter.
-  if (chromeos::switches::IsAssistantEnabled())
-    assistant_controller_.reset();
+  assistant_controller_.reset();
 
   // Destroy tablet mode controller early on since it has some observers which
   // need to be removed.
@@ -754,7 +750,6 @@ Shell::~Shell() {
   laser_pointer_controller_.reset();
   partial_magnification_controller_.reset();
   highlighter_controller_.reset();
-  voice_interaction_controller_.reset();
   key_accessibility_enabler_.reset();
 
   display_speaker_controller_.reset();
@@ -981,8 +976,6 @@ void Shell::Init(
       display::Screen::GetScreen()->GetPrimaryDisplay());
 
   accelerator_controller_ = std::make_unique<AcceleratorControllerImpl>();
-  voice_interaction_controller_ =
-      std::make_unique<VoiceInteractionController>();
 
   shelf_controller_ = std::make_unique<ShelfController>();
 
@@ -1057,13 +1050,11 @@ void Shell::Init(
 
   magnification_controller_ = std::make_unique<MagnificationController>();
   mru_window_tracker_ = std::make_unique<MruWindowTracker>();
-  assistant_controller_ = chromeos::switches::IsAssistantEnabled()
-                              ? std::make_unique<AssistantController>()
-                              : nullptr;
+  assistant_controller_ = std::make_unique<AssistantController>();
 
   // |assistant_controller_| is put before |ambient_controller_| as it will be
   // used by the latter.
-  if (chromeos::switches::IsAmbientModeEnabled())
+  if (chromeos::features::IsAmbientModeEnabled())
     ambient_controller_ = std::make_unique<AmbientController>();
 
   home_screen_controller_ = std::make_unique<HomeScreenController>();
@@ -1114,7 +1105,7 @@ void Shell::Init(
   // |system_tray_model_| should be available before
   // |system_notification_controller_| is initialized and Shelf is created by
   // WindowTreeHostManager::InitHosts.
-  system_tray_model_ = std::make_unique<SystemTrayModel>(connector_);
+  system_tray_model_ = std::make_unique<SystemTrayModel>();
   system_notification_controller_ =
       std::make_unique<SystemNotificationController>();
 
@@ -1146,17 +1137,9 @@ void Shell::Init(
       std::make_unique<ScreenOrientationController>();
   screen_layout_observer_.reset(new ScreenLayoutObserver());
   sms_observer_.reset(new SmsObserver());
-
   split_view_controller_.reset(new SplitViewController());
-
   snap_controller_ = std::make_unique<SnapControllerImpl>();
-
   key_accessibility_enabler_ = std::make_unique<KeyAccessibilityEnabler>();
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kAshColorMode)) {
-    ash_color_provider_ = std::make_unique<AshColorProvider>();
-  }
 
   // The compositor thread and main message loop have to be running in
   // order to create mirror window. Run it after the main message loop
@@ -1174,7 +1157,7 @@ void Shell::Init(
   user_metrics_recorder_->OnShellInitialized();
 
   // Initialize the D-Bus bus and services for ash.
-  ash_dbus_helper_ = AshDBusHelper::CreateWithExistingBus(dbus_bus);
+  dbus_bus_ = dbus_bus;
   ash_dbus_services_ = std::make_unique<AshDBusServices>(dbus_bus.get());
 
   // By this point ash shell should have initialized its D-Bus signal

@@ -69,7 +69,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="1383876407941801731">Search</translation>
 <translation id="1385214448885562192">Press enter to accept or escape to cancel, down for next and up for previous.</translation>
 <translation id="1396114365388024581">tablst</translation>
-<translation id="139902759009894363">Announce rich text attributes</translation>
 <translation id="1405567553485452995">Light green</translation>
 <translation id="1417889266572670458">Navy</translation>
 <translation id="1431911867058218151">Plum</translation>
@@ -170,6 +169,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2223693656926968778">Take action on current item</translation>
 <translation id="225732394367814946">Increase rate of speech</translation>
+<translation id="2267538686624070261">Leaving misspelled</translation>
 <translation id="2267945578749931355">Next Character</translation>
 <translation id="2278490101488436824">Swipe three fingers left</translation>
 <translation id="2281234842553884450">Previous slider</translation>
@@ -208,6 +208,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="257674075312929031">Group</translation>
 <translation id="2582407057977008361">Aside</translation>
 <translation id="2592212930811759050">Double-tap to start editing</translation>
+<translation id="2598495320872286378">Grammar error</translation>
 <translation id="2606210917827248971">with {COUNT,plural, =1{# item}other{# items}}</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Open learn mode</translation>
@@ -423,7 +424,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4039983576244166038">Empty row header</translation>
 <translation id="4042843249978639960">No next level 2 heading.</translation>
 <translation id="4043348641337972076">No previous ARIA landmark.</translation>
-<translation id="4045764028670444336">Misspelling start</translation>
 <translation id="4047216625641135770">Mark</translation>
 <translation id="404803211695627272"><ph name="V1" />–<ph name="V2" /></translation>
 <translation id="4053520724192563562">Lime Green</translation>
@@ -485,6 +485,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4372705107434148843">Stop speech</translation>
 <translation id="4373197658375206385">No previous item that isn't a link.</translation>
 <translation id="4376316291247992553">View Graphic As Braille</translation>
+<translation id="437809255587011096">Announce text styling</translation>
 <translation id="4378308539633073595">Scroll forwards</translation>
 <translation id="4384583879834880242">Q&amp;A</translation>
 <translation id="4391478986194775161">cntntinfo</translation>
@@ -505,7 +506,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="4547556996012970016">Next level 5 heading</translation>
 <translation id="4562381607973973258">Header</translation>
 <translation id="4569941707103739422">Press up or down arrow to navigate; enter to activate.</translation>
-<translation id="4570424871453628777">Misspelling end</translation>
 <translation id="4591507479202817876">, selected</translation>
 <translation id="4597532268155981612">form</translation>
 <translation id="4597896406374528575">April</translation>
@@ -728,7 +728,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6037602951055904232">Pan forward</translation>
 <translation id="6042826534790431634">Press Search+Space to activate.</translation>
 <translation id="6044160928851315051">Darken screen</translation>
-<translation id="6065293622157674001">Grammar error start</translation>
 <translation id="6082768461603900813">Basic Navigation</translation>
 <translation id="6118126368611144850">Android apps for Chrome. If you have Play Store on your device, get a sneak peek at ChromeVox with Android apps. Try the experimental support by downloading Google Chrome Canary from the Play Store.</translation>
 <translation id="611827076493383239">vtd</translation>
@@ -761,7 +760,6 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6348869651006731065">Dim Grey</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{bullet}other{# bullets}}</translation>
 <translation id="6355910664415701303">No previous list item.</translation>
-<translation id="6360318852623800555">Rich Text Attributes</translation>
 <translation id="6364795331201459219">h6</translation>
 <translation id="6368143427468974988">Previous heading</translation>
 <translation id="6376999910001533545">Maroon</translation>
@@ -825,6 +823,7 @@ If you've finished with the tutorial, use ChromeVox to navigate to the Close but
 <translation id="6833103209700200188">Footer</translation>
 <translation id="6858047746862060282">Prologue</translation>
 <translation id="6859876496651143278">Swipe one finger left</translation>
+<translation id="6865519907510167493">Misspelled</translation>
 <translation id="6871161210040114857">Ignoring case.</translation>
 <translation id="6877435256196695200">No next graphic.</translation>
 <translation id="6897341342232909480">Move left</translation>
@@ -870,7 +869,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="7143207342074048698">Connecting ...</translation>
 <translation id="7153618581592392745">Lavender</translation>
 <translation id="7157306005867877619">Abstract</translation>
-<translation id="7161425887892204659">Text match end</translation>
 <translation id="7161771961008409533">Pop-up button</translation>
 <translation id="7165714724802225287">Current display style is interleave.</translation>
 <translation id="7167657087543110">character echo</translation>
@@ -908,7 +906,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="737396357417333429">clk</translation>
 <translation id="7374104575779636480">Leaving table.</translation>
 <translation id="738899727977260036">Slate Blue</translation>
-<translation id="7392145451309930991">Text match start</translation>
 <translation id="739763518212184081">Previous Line</translation>
 <translation id="7400575256015741911">Spelling mistake detected</translation>
 <translation id="7408482676469142474">tbl</translation>
@@ -1087,7 +1084,6 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8153880621934657047">Not inside table.</translation>
 <translation id="817440585505441544">{COUNT,plural, =1{underscore}other{# underscores}}</translation>
 <translation id="8179976553408161302">Enter</translation>
-<translation id="8183813379996435469">Automatically detect and switch ChromeVox language.</translation>
 <translation id="8184828902145951186">row</translation>
 <translation id="8186185314313222077">toggle full screen</translation>
 <translation id="8199231515320852133">Announce the headers of the current cell</translation>
@@ -1118,12 +1114,13 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="8446884382197647889">Learn More</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">has access key, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Leaving grammar error</translation>
 <translation id="847154984256717791">busy</translation>
 <translation id="8476408756881832830">Pause playback when ChromeVox is speaking</translation>
 <translation id="8476508772960940536">window overview</translation>
 <translation id="8503360654911991865">Decrease navigation granularity</translation>
-<translation id="8504695234784218301">Grammar error end</translation>
 <translation id="8520472399088452386">Spin button</translation>
+<translation id="8534394844575788431">Formatting</translation>
 <translation id="8538744478902126321">Make a guess at the row header of the current cell</translation>
 <translation id="8540054775867439484">Wrapped to top</translation>
 <translation id="8542271685829952264">To explore all ChromeVox commands and shortcuts, press Search + Full Stop, then use the Arrow keys to navigate the menus, and Enter to activate a command. Return here by pressing Search+O then T.</translation>
@@ -1203,6 +1200,7 @@ To open the Chrome browser menu, press Alt+F.</translation>
 <translation id="9149560530563164529">sctn</translation>
 <translation id="9150735707954472829">Tab</translation>
 <translation id="9151211641321628915">Announces a brief description of the current position</translation>
+<translation id="9151249085738989067">Automatically switch ChromeVox voice based on language</translation>
 <translation id="9153606228985488238">Pitch <ph name="PERCENT" /> percent</translation>
 <translation id="9160096769946561184">Go to end of the current column</translation>
 <translation id="9173115498289768110">Volume <ph name="PERCENT" /> percent</translation>

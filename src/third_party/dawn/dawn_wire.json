@@ -48,6 +48,10 @@
             { "name": "handle create info length", "type": "uint64_t" },
             { "name": "handle create info", "type": "uint8_t", "annotation": "const*", "length": "handle create info length", "skip_serialize": true}
         ],
+        "device pop error scope": [
+            { "name": "device", "type": "device" },
+            { "name": "request serial", "type": "uint64_t" }
+        ],
         "destroy object": [
             { "name": "object type", "type": "ObjectType" },
             { "name": "object id", "type": "ObjectId" }
@@ -66,7 +70,13 @@
             { "name": "request serial", "type": "uint32_t" },
             { "name": "status", "type": "uint32_t" }
         ],
-        "device error callback": [
+        "device uncaptured error callback": [
+            { "name": "type", "type": "error type"},
+            { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
+        ],
+        "device pop error scope callback": [
+            { "name": "request serial", "type": "uint64_t" },
+            { "name": "type", "type": "error type" },
             { "name": "message", "type": "char", "annotation": "const*", "length": "strlen" }
         ],
         "fence update completed value": [
@@ -88,6 +98,8 @@
             "DeviceCreateBuffer",
             "DeviceCreateBufferMapped",
             "DeviceCreateBufferMappedAsync",
+            "DevicePushErrorScope",
+            "DevicePopErrorScope",
             "QueueCreateFence",
             "FenceGetCompletedValue",
             "QueueSignal"

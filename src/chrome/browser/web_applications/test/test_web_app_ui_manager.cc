@@ -17,16 +17,18 @@ TestWebAppUiManager::TestWebAppUiManager() = default;
 
 TestWebAppUiManager::~TestWebAppUiManager() = default;
 
-WebAppDialogManager& TestWebAppUiManager::dialog_manager() {
-  // TODO(crbug.com/973324): Implement a TestWebAppDialogManager to return here.
-  NOTIMPLEMENTED();
-  static WebAppDialogManager* manager = nullptr;
-  return *manager;
-}
-
 void TestWebAppUiManager::SetNumWindowsForApp(const AppId& app_id,
                                               size_t num_windows_for_app) {
   app_id_to_num_windows_map_[app_id] = num_windows_for_app;
+}
+
+bool TestWebAppUiManager::DidUninstallAndReplace(const AppId& from_app,
+                                                 const AppId& to_app) {
+  return uninstall_and_replace_map_[from_app] == to_app;
+}
+
+WebAppUiManagerImpl* TestWebAppUiManager::AsImpl() {
+  return nullptr;
 }
 
 size_t TestWebAppUiManager::GetNumWindowsForApp(const AppId& app_id) {
@@ -44,5 +46,34 @@ void TestWebAppUiManager::NotifyOnAllAppWindowsClosed(
                        std::move(callback).Run();
                      }));
 }
+
+void TestWebAppUiManager::UninstallAndReplace(
+    const std::vector<AppId>& from_apps,
+    const AppId& to_app) {
+  for (const AppId& from_app : from_apps) {
+    uninstall_and_replace_map_[from_app] = to_app;
+  }
+}
+
+bool TestWebAppUiManager::CanAddAppToQuickLaunchBar() const {
+  return false;
+}
+
+void TestWebAppUiManager::AddAppToQuickLaunchBar(const AppId& app_id) {}
+
+bool TestWebAppUiManager::IsInAppWindow(
+    content::WebContents* web_contents) const {
+  return false;
+}
+
+bool TestWebAppUiManager::CanReparentAppTabToWindow(
+    const AppId& app_id,
+    bool shortcut_created) const {
+  return false;
+}
+
+void TestWebAppUiManager::ReparentAppTabToWindow(content::WebContents* contents,
+                                                 const AppId& app_id,
+                                                 bool shortcut_created) {}
 
 }  // namespace web_app

@@ -4,9 +4,9 @@
 
 #include "base/bind.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/test/perf_time_logger.h"
+#include "base/test/task_environment.h"
 #include "net/base/io_buffer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
@@ -74,12 +74,12 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
   memset(io_buffer->data(), 'G', kPacketSize);
 
   while (num_of_packets) {
-    int rv =
-        socket->Write(io_buffer.get(), io_buffer->size(),
-                      base::Bind(&UDPSocketPerfTest::DoneWritePacketsToSocket,
-                                 weak_factory_.GetWeakPtr(), socket,
-                                 num_of_packets - 1, done_callback),
-                      TRAFFIC_ANNOTATION_FOR_TESTS);
+    int rv = socket->Write(
+        io_buffer.get(), io_buffer->size(),
+        base::BindOnce(&UDPSocketPerfTest::DoneWritePacketsToSocket,
+                       weak_factory_.GetWeakPtr(), socket, num_of_packets - 1,
+                       done_callback),
+        TRAFFIC_ANNOTATION_FOR_TESTS);
     if (rv == ERR_IO_PENDING)
       break;
     --num_of_packets;
@@ -91,7 +91,8 @@ void UDPSocketPerfTest::WritePacketsToSocket(UDPClientSocket* socket,
 }
 
 void UDPSocketPerfTest::WriteBenchmark(bool use_nonblocking_io) {
-  base::MessageLoopForIO message_loop;
+  base::test::TaskEnvironment task_environment(
+      base::test::TaskEnvironment::MainThreadType::IO);
   const uint16_t kPort = 9999;
 
   // Setup the server to listen.

@@ -8,7 +8,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_command_line.h"
-#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
@@ -16,7 +15,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/prefs/testing_pref_service.h"
@@ -28,7 +27,7 @@
 #include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_type.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/events/devices/device_data_manager.h"
@@ -99,13 +98,9 @@ class ScopedLogIn {
       default:
         NOTREACHED();
     }
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(true);
   }
 
-  ~ScopedLogIn() {
-    fake_user_manager_->testing_profile_manager()->SetLoggedIn(false);
-    LogOut();
-  }
+  ~ScopedLogIn() { fake_user_manager_->RemoveUserFromList(account_id_); }
 
  private:
   void LogIn() {
@@ -132,8 +127,6 @@ class ScopedLogIn {
     fake_user_manager_->LoginUser(account_id_);
   }
 
-  void LogOut() { fake_user_manager_->RemoveUserFromList(account_id_); }
-
   FakeUserManagerWithLocalState* fake_user_manager_;
   signin::IdentityTestEnvironment* identity_test_env_;
   const AccountId account_id_;
@@ -150,7 +143,6 @@ class ChromeAssistantUtilTest : public testing::Test {
 
   void SetUp() override {
     command_line_ = std::make_unique<base::test::ScopedCommandLine>();
-    feature_list_.InitAndEnableFeature(chromeos::switches::kAssistantFeature);
 
     ASSERT_TRUE(data_dir_.CreateUniqueTempDir());
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -190,8 +182,7 @@ class ChromeAssistantUtilTest : public testing::Test {
 
  private:
   std::unique_ptr<base::test::ScopedCommandLine> command_line_;
-  base::test::ScopedFeatureList feature_list_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir data_dir_;
   std::unique_ptr<IdentityTestEnvironmentProfileAdaptor>
       identity_test_env_adaptor_;

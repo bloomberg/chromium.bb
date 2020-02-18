@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""""ChromeOS key unittests"""
+"""ChromeOS key unittests"""
 
 from __future__ import print_function
 
@@ -23,11 +23,11 @@ MOCK_SHA1SUM = 'e2c1c92d7d7aa7dfed5e8375edd30b7ae52b7450'
 def MockVbutilKey(rc, sha1sum=MOCK_SHA1SUM):
   """Adds vbutil_key mocks to |rc|"""
 
-  cmd_output = textwrap.dedent('''
+  cmd_output = textwrap.dedent("""
     Public Key file:   firmware_data_key.vbpubk
     Algorithm:         7 RSA4096 SHA256
     Key Version:       1
-    Key sha1sum:       ''' + sha1sum)
+    Key sha1sum:       """ + sha1sum)
 
   rc.AddCmdResult(partial_mock.ListRegex('vbutil_key --unpack .*'),
                   output=cmd_output)
@@ -54,19 +54,22 @@ class KeysetMock(keys.Keyset):
 
   def __init__(self, key_dir, has_loem_ini=True):
     """Create a Keyset with root_of_trust-specific keys, and populate it."""
+    # We do not actually create files for the KeyPairs, since the tests care.
+
+    # Create the key_dir.
+    osutils.SafeMakedirs(key_dir)
 
     # This will create the Keyset without root_of_trust-specific keys, since
-    # that is determined by having loem.ini, and the directory does not exist
-    # yet, let alone loem.ini.
-    # We do not actually create files for the KeyPairs, since the tests care.
+    # that is determined by having loem.ini which does not exist yet.
     super(KeysetMock, self).__init__(key_dir)
+    # Save key.versions.
+    self._versions.Save()
 
-    osutils.SafeMakedirs(key_dir)
-    self.has_loem_ini = has_loem_ini
-
-    # By default, we have root_of_trust-specific keys.  If not, don't create
-    # them.
-    if not has_loem_ini:
+    # By default, we have root_of_trust-specific keys, and want loem.ini.  If
+    # not, don't create them.
+    if has_loem_ini:
+      self.WriteIniFile()
+    else:
       self.KEYS_WITH_ROOT_OF_TRUST_ALIASES = ()
       self.ROOT_OF_TRUST_ALIASES = ()
       self.ROOT_OF_TRUST_NAMES = ()
@@ -78,27 +81,25 @@ class KeysetMock(keys.Keyset):
 
     for name in self.KEYS_WITH_ROOT_OF_TRUST_ALIASES:
       for root_of_trust in self.ROOT_OF_TRUST_ALIASES:
-        key = keys.KeyPair("%s.%s" % (name, root_of_trust), key_dir)
+        key = keys.KeyPair('%s.%s' % (name, root_of_trust), key_dir)
         self.AddRootOfTrustKey(name, root_of_trust, key)
 
     for alias, root_of_trust in zip(
         self.ROOT_OF_TRUST_NAMES, self.ROOT_OF_TRUST_ALIASES):
       self.root_of_trust_map[alias] = root_of_trust
       self.root_of_trust_map[root_of_trust] = root_of_trust
-    self.WriteIniFile()
 
   # TODO(lamontjones): This may eventually make sense to move into
   # keys.Keyset(), if it ever becomes the thing that creates a keyset directory.
   # Today, we only read the keyset from the directory, we do not update it.
   def WriteIniFile(self):
     """Writes alias to file"""
-    if not self.has_loem_ini:
-      return
-    lines = ['[loem]']
-    lines += ['%d = %s' % (i, name)
-              for i, name in enumerate(self.ROOT_OF_TRUST_NAMES, 1)]
-    contents = '\n'.join(lines) + '\n'
-    osutils.WriteFile(os.path.join(self.key_dir, 'loem.ini'), contents)
+    if self.ROOT_OF_TRUST_NAMES:
+      lines = ['[loem]']
+      lines += ['%d = %s' % (i, name)
+                for i, name in enumerate(self.ROOT_OF_TRUST_NAMES, 1)]
+      contents = '\n'.join(lines) + '\n'
+      osutils.WriteFile(os.path.join(self.key_dir, 'loem.ini'), contents)
 
   def CreateDummyKeys(self):
     """Creates dummy keys from stored keys."""
@@ -288,7 +289,7 @@ class TestKeyPair(cros_test_lib.RunCommandTempDirTestCase):
     self.assertTrue(k1.KeyblockExists())
 
   def testGetSha1sumEmpty(self):
-    """"Test GetSha1sum with bad cmd output."""
+    """Test GetSha1sum with bad cmd output."""
     k1 = keys.KeyPair('key1', self.tempdir)
 
     with self.assertRaises(keys.SignerKeyError):
@@ -310,6 +311,7 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
 
   # used for several tests
   expected = {
+      'name': 'test',
       'firmware_key_version': 2,
       'firmware_version': 3,
       'kernel_key_version': 4,
@@ -319,7 +321,7 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
 
   def _CreateVersionsFile(self, values):
     kv_path = os.path.join(self.tempdir, 'key.versions')
-    lines = ['%s=%d' % (k, v) for k, v in values.items()]
+    lines = ['%s=%s' % (k, str(v)) for k, v in values.items()]
     contents = '\n'.join(lines) + '\n'
     osutils.WriteFile(kv_path, contents)
     return kv_path
@@ -329,6 +331,7 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
     kv = keys.KeyVersions(kv_path)
     self.assertFalse(os.path.exists(kv_path))
     expected = {
+        'name': 'unknown',
         'firmware_key_version': 1,
         'firmware_version': 1,
         'kernel_key_version': 1,
@@ -363,16 +366,26 @@ class TestKeyVersions(cros_test_lib.TempDirTestCase):
     self.assertEqual('B_version', kv._KeyName(kv._KeyName('B_data_key.loem1')))
     self.assertEqual('B_version', kv._KeyName(kv._KeyName('B_version')))
 
+  def testKeyNameCorrectlyAppends_version(self):
+    """Does not append _version if there is a key with the name already."""
+    kv_path = self._CreateVersionsFile({})
+    kv = keys.KeyVersions(kv_path)
+    kv._versions['foo'] = 'bar'
+    kv._versions['bar'] = 2
+    self.assertEqual('foo', kv._KeyName('foo'))
+    self.assertEqual('bar', kv._KeyName('bar'))
+    self.assertEqual('baz_version', kv._KeyName('baz'))
+
   def testGetReturnsValue(self):
     kv_path = self._CreateVersionsFile(self.expected)
     kv = keys.KeyVersions(kv_path)
     self.assertEqual(
         self.expected['firmware_version'], kv.Get('firmware_data_key'))
 
-  def testGetReturnsOneForUnknown(self):
+  def testGetReturnsNoneForUnknown(self):
     kv_path = self._CreateVersionsFile(self.expected)
     kv = keys.KeyVersions(kv_path)
-    self.assertEqual(1, kv.Get('invalid'))
+    self.assertEqual(None, kv.Get('invalid'))
 
   def testSetSetsValue(self):
     kv_path = self._CreateVersionsFile({})
@@ -447,6 +460,7 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     self.assertIsInstance(ks.keys, dict)
     self.assertIsInstance(ks._root_of_trust_keys, dict)
     self.assertIsInstance(ks.root_of_trust_map, dict)
+    self.assertEqual(ks.name, 'unknown')
 
   def testInitWithEmptyDir(self):
     """Call Keyset() with an uncreated directory."""
@@ -457,10 +471,14 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
 
   def testInitWithPopulatedDirectory(self):
     """Keyset() loads a populated keyset directory correctly."""
+    contents = 'name=testname\n'
+    osutils.WriteFile(os.path.join(self.tempdir, 'key.versions'), contents)
     ks0 = KeysetMock(self.tempdir)
+    self.assertEqual('testname', ks0.name)
     ks0.CreateDummyKeys()
 
     ks1 = keys.Keyset(self.tempdir)
+    self.assertEqual('testname', ks1.name)
     self.assertDictEqual(ks0.keys, ks1.keys, msg='Incorrect keys')
     self.assertDictEqual(ks0._root_of_trust_keys, ks1._root_of_trust_keys,
                          msg='Incorrect root_of_trust_keys')
@@ -568,23 +586,23 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
   def testKeyExistsPublicAndPrivate(self):
     ks0 = self._get_keyset()
     CreateDummyKeys(ks0.keys['key1'])
-    self.assertTrue(ks0.KeyExists('key1'), msg="key1 should exist")
+    self.assertTrue(ks0.KeyExists('key1'), msg='key1 should exist')
     self.assertTrue(ks0.KeyExists('key1', require_public=True),
-                    msg="key1 public key should exist")
+                    msg='key1 public key should exist')
     self.assertTrue(ks0.KeyExists('key1', require_private=True),
-                    msg="key1 private key should exist")
+                    msg='key1 private key should exist')
     self.assertTrue(ks0.KeyExists('key1',
                                   require_public=True,
                                   require_private=True),
-                    msg="key1 keys should exist")
+                    msg='key1 keys should exist')
 
   def testKeyExistsPrivate(self):
     ks0 = self._get_keyset()
     CreateDummyPrivateKey(ks0.keys['key2'])
     self.assertTrue(ks0.KeyExists('key2'),
-                    msg="should pass with only private key")
+                    msg='should pass with only private key')
     self.assertTrue(ks0.KeyExists('key2', require_private=True),
-                    msg="Should exist with only private key")
+                    msg='Should exist with only private key')
     self.assertFalse(ks0.KeyExists('key2', require_public=True),
                      msg="Shouldn't pass with only private key")
 
@@ -592,9 +610,9 @@ class TestKeyset(cros_test_lib.TempDirTestCase):
     ks0 = self._get_keyset()
     CreateDummyPublic(ks0.keys['key3'])
     self.assertTrue(ks0.KeyExists('key3'),
-                    msg="should pass with only public key")
+                    msg='should pass with only public key')
     self.assertTrue(ks0.KeyExists('key3', require_public=True),
-                    msg="Should exist with only public key")
+                    msg='Should exist with only public key')
     self.assertFalse(ks0.KeyExists('key3', require_private=True),
                      msg="Shouldn't pass with only public key")
 

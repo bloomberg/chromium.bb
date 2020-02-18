@@ -15,9 +15,10 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "media/capture/mojom/image_capture.mojom.h"
+#include "media/capture/video/chromeos/camera_app_device_impl.h"
 #include "media/capture/video/chromeos/camera_device_delegate.h"
-#include "media/capture/video/chromeos/mojo/camera3.mojom.h"
-#include "media/capture/video/chromeos/reprocess_manager.h"
+#include "media/capture/video/chromeos/mojom/camera3.mojom.h"
+#include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #include "media/capture/video/chromeos/request_builder.h"
 #include "media/capture/video/chromeos/stream_buffer_manager.h"
 #include "media/capture/video_capture_types.h"
@@ -125,7 +126,8 @@ class CAPTURE_EXPORT RequestManager final
                  VideoCaptureBufferType buffer_type,
                  std::unique_ptr<CameraBufferFactory> camera_buffer_factory,
                  BlobifyCallback blobify_callback,
-                 scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner);
+                 scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner,
+                 CameraAppDeviceImpl* camera_app_device);
   ~RequestManager() override;
 
   // Sets up the stream context and allocate buffers according to the
@@ -302,6 +304,15 @@ class CAPTURE_EXPORT RequestManager final
   // shot.
   uint32_t partial_result_count_;
 
+  // The pipeline depth reported in the ANDROID_REQUEST_PIPELINE_MAX_DEPTH
+  // metadata.
+  size_t pipeline_depth_;
+
+  // The number of preview buffers queued to the camera service.  The request
+  // manager needs to try its best to queue |pipeline_depth_| preview buffers to
+  // avoid camera frame drops.
+  size_t preview_buffers_queued_;
+
   // The shutter time of the first frame.  We derive the |timestamp| of a
   // frame using the difference between the frame's shutter time and
   // |first_frame_shutter_time_|.
@@ -360,7 +371,9 @@ class CAPTURE_EXPORT RequestManager final
   // duplicate or out of order of frames.
   std::map<StreamType, uint32_t> last_received_frame_number_map_;
 
-  base::WeakPtrFactory<RequestManager> weak_ptr_factory_;
+  CameraAppDeviceImpl* camera_app_device_;  // Weak.
+
+  base::WeakPtrFactory<RequestManager> weak_ptr_factory_{this};
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(RequestManager);
 };

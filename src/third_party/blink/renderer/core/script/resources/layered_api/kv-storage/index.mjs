@@ -73,12 +73,13 @@ export class StorageArea {
 
   async clear() {
     if (!this.#databasePromise) {
-      // Don't try to delete, and clear the promise, while we're opening the database; wait for that
-      // first.
+      // Don't try to delete, and clear the promise, while we're opening the
+      // database; wait for that first.
       try {
         await this.#databasePromise;
       } catch {
-        // If the database failed to initialize, then that's fine, we'll still try to delete it.
+        // If the database failed to initialize, then that's fine, we'll still
+        // try to delete it.
       }
 
       this.#databasePromise = undefined;
@@ -89,6 +90,7 @@ export class StorageArea {
 
   keys() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -100,6 +102,7 @@ export class StorageArea {
 
   values() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -111,6 +114,7 @@ export class StorageArea {
 
   entries() {
     // Brand check: throw if there is no such private field.
+    // eslint-disable-next-line no-unused-expressions
     this.#databaseName;
 
     return createStorageAreaAsyncIterator(
@@ -125,7 +129,7 @@ export class StorageArea {
       this.#backingStoreObject = Object.freeze({
         database: this.#databaseName,
         store: DEFAULT_IDB_STORE_NAME,
-        version: 1
+        version: 1,
       });
     }
 
@@ -149,7 +153,7 @@ Object.defineProperties(StorageArea.prototype, {
   entries: {enumerable: true},
   backingStore: {enumerable: true},
   [Symbol.asyncIterator]: {enumerable: false},
-  [Symbol.toStringTag]: {writable: false, enumerable: false}
+  [Symbol.toStringTag]: {writable: false, enumerable: false},
 });
 
 export default new StorageArea(DEFAULT_STORAGE_AREA_NAME);

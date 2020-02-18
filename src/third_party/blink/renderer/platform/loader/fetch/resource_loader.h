@@ -33,7 +33,8 @@
 #include "base/containers/span.h"
 #include "base/gtest_prod_util.h"
 #include "base/single_thread_task_runner.h"
-#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/base/big_buffer.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/mojom/blob/blob_registry.mojom-blink.h"
 #include "third_party/blink/public/platform/web_url_loader.h"
@@ -124,25 +125,23 @@ class PLATFORM_EXPORT ResourceLoader final
   void DidSendData(uint64_t bytes_sent,
                    uint64_t total_bytes_to_be_sent) override;
   void DidReceiveResponse(const WebURLResponse&) override;
-  void DidReceiveCachedMetadata(const char* data, int length) override;
+  void DidReceiveCachedMetadata(mojo_base::BigBuffer data) override;
   void DidReceiveData(const char*, int) override;
   void DidReceiveTransferSizeUpdate(int transfer_size_diff) override;
   void DidStartLoadingResponseBody(
       mojo::ScopedDataPipeConsumerHandle body) override;
-  void DidFinishLoading(
-      base::TimeTicks response_end,
-      int64_t encoded_data_length,
-      int64_t encoded_body_length,
-      int64_t decoded_body_length,
-      bool should_report_corb_blocking,
-      const WebVector<network::cors::PreflightTimingInfo>&) override;
+  void DidFinishLoading(base::TimeTicks response_end,
+                        int64_t encoded_data_length,
+                        int64_t encoded_body_length,
+                        int64_t decoded_body_length,
+                        bool should_report_corb_blocking) override;
   void DidFail(const WebURLError&,
                int64_t encoded_data_length,
                int64_t encoded_body_length,
                int64_t decoded_body_length) override;
 
   blink::mojom::CodeCacheType GetCodeCacheType() const;
-  void SendCachedCodeToResource(base::span<const uint8_t> data);
+  void SendCachedCodeToResource(mojo_base::BigBuffer data);
   void ClearCachedCode();
 
   void HandleError(const ResourceError&);
@@ -228,7 +227,8 @@ class PLATFORM_EXPORT ResourceLoader final
 
   bool should_use_isolated_code_cache_ = false;
   bool is_downloading_to_blob_ = false;
-  mojo::AssociatedBinding<mojom::blink::ProgressClient> progress_binding_;
+  mojo::AssociatedReceiver<mojom::blink::ProgressClient> progress_receiver_{
+      this};
   bool blob_finished_ = false;
   bool blob_response_started_ = false;
   bool has_seen_end_of_body_ = false;
@@ -239,7 +239,6 @@ class PLATFORM_EXPORT ResourceLoader final
   struct DeferredFinishLoadingInfo {
     base::TimeTicks response_end;
     bool should_report_corb_blocking;
-    WebVector<network::cors::PreflightTimingInfo> cors_preflight_timing_info;
   };
   base::Optional<DeferredFinishLoadingInfo> deferred_finish_loading_info_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_for_body_loader_;

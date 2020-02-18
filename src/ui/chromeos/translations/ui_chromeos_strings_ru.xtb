@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Разрешение изображения</translation>
 <translation id="1943097386230153518">Установить новый сервис</translation>
 <translation id="1947424002851288782">Немецкая раскладка</translation>
+<translation id="1972984168337863910">Развернуть панель с информацией о файлах</translation>
 <translation id="197560921582345123">Редактирование</translation>
 <translation id="1984603991036629094">Армянская фонетическая раскладка клавиатуры</translation>
 <translation id="2001796770603320721">Открыть на Google Диске</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Для доступа к файлу необходимо подключение к Интернету.</translation>
 <translation id="4212740939091998969">Папка "<ph name="FOLDER_NAME" />" уже существует. Укажите другое название.</translation>
 <translation id="4215448920900139318">Сохранение файлов (<ph name="FILE_COUNT" />)…</translation>
-<translation id="4242533952199664413">Открыть настройки</translation>
 <translation id="426015154560005552">Арабская раскладка</translation>
 <translation id="4261901459838235729">Презентация Google</translation>
 <translation id="4290535918735525311">Linux предоставлен доступ к 1 папке</translation>
-<translation id="42981349822642051">Развернуть</translation>
 <translation id="4298972503445160211">Датская раскладка</translation>
 <translation id="4299729908419173967">бразильская</translation>
 <translation id="4309915981827077375">Общая информация</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Автокоррекция</translation>
 <translation id="4881695831933465202">Открыть</translation>
 <translation id="4886021172213954916">Тамильская раскладка ("Печатная машинка")</translation>
-<translation id="4892969127351273348">Не удалось открыть файл с помощью приложения "<ph name="APP_NAME" />"</translation>
 <translation id="4905417359854579806">Файлы (<ph name="FILE_COUNT" />) готовы к сохранению</translation>
 <translation id="4924638091161556692">Исправлено</translation>
 <translation id="4935975195727477204">Гацания</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">Швейцарская (французская)</translation>
 <translation id="5234764350956374838">Закрыть</translation>
 <translation id="5241298539944515331">Вьетнамская раскладка (VIQR)</translation>
-<translation id="52446585071384036">Чтобы открыть файлы с помощью приложения "<ph name="APP_NAME" />", скопируйте их в папку с файлами Linux.</translation>
 <translation id="5253070652067921974">Автор</translation>
 <translation id="5257456363153333584">Стрекоза</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Работайте со своими файлами откуда угодно даже без подключения к Интернету.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Корейский</translation>
 <translation id="5819442873484330149">Корейская раскладка (Sebeolsik Final)</translation>
 <translation id="5833610766403489739">Файл не найден. Проверьте параметр места для скачивания и повторите попытку.</translation>
-<translation id="5838051104334203064">Приложениям из Play Маркета закрыт доступ к этому устройству.</translation>
 <translation id="5838451609423551646">Выбор отменен.</translation>
 <translation id="5838825566232597749">США (Workman, международная)</translation>
 <translation id="5850516540536751549">Файлы этого типа не поддерживаются. Попробуйте найти приложение, с помощью которого их можно открыть, в <ph name="BEGIN_LINK" />Интернет-магазине Chrome<ph name="END_LINK" />.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Чтобы работать с этими файлами в офлайн-режиме, подключитесь к Интернету, нажмите правой кнопкой мыши на каждый документ и выберите вариант "<ph name="OFFLINE_CHECKBOX_NAME" />".</translation>
 <translation id="8249296373107784235">Отмена</translation>
 <translation id="8261506727792406068">Удалить</translation>
+<translation id="8269755669432358899">Свернуть панель с информацией о файлах</translation>
 <translation id="8279388322240498158">Раскладка сорани (латиница)</translation>
 <translation id="8280151743281770066">Армянская (фонетическая)</translation>
 <translation id="8294431847097064396">Источник</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Выберите файл</translation>
 <translation id="8579285237314169903">Синхронизация файлов (<ph name="NUMBER_OF_FILES" />)...</translation>
 <translation id="8600173386174225982">Файлы отображаются в виде значков.</translation>
+<translation id="8601932370724196034">Графический файл Crostini</translation>
 <translation id="8669949407341943408">Перемещение...</translation>
 <translation id="8671210955687109937">Комментирование</translation>
 <translation id="8686213429977032554">К этому файлу на Диске пока нет доступа</translation>

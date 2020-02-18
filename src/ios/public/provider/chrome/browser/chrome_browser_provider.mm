@@ -68,8 +68,7 @@ std::string ChromeBrowserProvider::GetRiskData() {
   return std::string();
 }
 
-UITextField<TextFieldStyling>* ChromeBrowserProvider::CreateStyledTextField(
-    CGRect frame) const {
+UITextField* ChromeBrowserProvider::CreateStyledTextField() const {
   return nil;
 }
 
@@ -97,10 +96,6 @@ OmahaServiceProvider* ChromeBrowserProvider::GetOmahaServiceProvider() const {
 }
 
 UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
-  return nullptr;
-}
-
-SpecialUserProvider* ChromeBrowserProvider::GetSpecialUserProvider() const {
   return nullptr;
 }
 

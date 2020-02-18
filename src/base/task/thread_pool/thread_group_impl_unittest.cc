@@ -303,15 +303,18 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
       kMaxTasks,
       BindOnce(&WaitableEvent::Signal, Unretained(&threads_running)));
 
-  auto task_source = base::MakeRefCounted<test::MockJobTaskSource>(
-      FROM_HERE,
-      BindLambdaForTesting([&threads_running_barrier, &threads_continue]() {
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running_barrier, &threads_continue](
+                               experimental::JobDelegate* delegate) {
         threads_running_barrier.Run();
         test::WaitWithoutBlockingObserver(&threads_continue);
       }),
-      TaskPriority::USER_VISIBLE, /* num_tasks_to_run */ kMaxTasks,
-      /* max_concurrency */ kMaxTasks);
-  auto registered_task_source = task_tracker_.WillQueueTaskSource(task_source);
+      /* num_tasks_to_run */ kMaxTasks);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE},
+      &mock_pooled_task_runner_delegate_);
+
+  auto registered_task_source = task_tracker_.RegisterTaskSource(task_source);
   ASSERT_TRUE(registered_task_source);
   static_cast<ThreadGroup*>(thread_group_.get())
       ->PushTaskSourceAndWakeUpWorkers(
@@ -325,7 +328,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   // Note: This is only true because this test is using a single ThreadGroup.
   //       Under the ThreadPool this wouldn't be racy because BEST_EFFORT tasks
   //       run in an independent ThreadGroup.
-  test::CreateTaskRunner(TaskPriority::BEST_EFFORT,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::BEST_EFFORT},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -336,7 +339,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
   EXPECT_FALSE(thread_group_->ShouldYield(TaskPriority::USER_BLOCKING));
 
   // Posting a USER_VISIBLE task should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(
@@ -348,7 +351,7 @@ TEST_F(ThreadGroupImplImplTest, ShouldYieldFloodedUserVisible) {
 
   // Posting a USER_BLOCKING task should cause BEST_EFFORT and USER_VISIBLE
   // tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    // Once this task got to start, no other task needs to yield.
@@ -617,92 +620,6 @@ class ThreadGroupImplHistogramTest : public ThreadGroupImplImplTest {
 };
 
 }  // namespace
-
-TEST_F(ThreadGroupImplHistogramTest, NumTasksBetweenWaits) {
-  WaitableEvent event;
-  CreateAndStartThreadGroup(TimeDelta::Max(), kMaxTasks);
-  auto task_runner =
-      test::CreateSequencedTaskRunner({ThreadPool(), WithBaseSyncPrimitives()},
-                                      &mock_pooled_task_runner_delegate_);
-
-  // Post a task.
-  task_runner->PostTask(FROM_HERE, BindOnce(&test::WaitWithoutBlockingObserver,
-                                            Unretained(&event)));
-
-  // Post 2 more tasks while the first task hasn't completed its execution. It
-  // is guaranteed that these tasks will run immediately after the first task,
-  // without allowing the worker to sleep.
-  task_runner->PostTask(FROM_HERE, DoNothing());
-  task_runner->PostTask(FROM_HERE, DoNothing());
-
-  // Allow tasks to run and wait until the WorkerThread is idle.
-  event.Signal();
-  thread_group_->WaitForAllWorkersIdleForTesting();
-
-  // Wake up the WorkerThread that just became idle by posting a task and
-  // wait until it becomes idle again. The WorkerThread should record the
-  // ThreadPool.NumTasksBetweenWaits.* histogram on wake up.
-  task_runner->PostTask(FROM_HERE, DoNothing());
-  thread_group_->WaitForAllWorkersIdleForTesting();
-
-  // Verify that counts were recorded to the histogram as expected.
-  const auto* histogram = thread_group_->num_tasks_between_waits_histogram();
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  EXPECT_EQ(1, histogram->SnapshotSamples()->GetCount(3));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
-}
-
-// Verifies that NumTasksBetweenWaits histogram is logged as expected across
-// idle and cleanup periods.
-TEST_F(ThreadGroupImplHistogramTest,
-       NumTasksBetweenWaitsWithIdlePeriodAndCleanup) {
-  WaitableEvent tasks_can_exit_event;
-  CreateAndStartThreadGroup(kReclaimTimeForCleanupTests, kMaxTasks);
-
-  WaitableEvent workers_continue;
-
-  FloodPool(&workers_continue);
-
-  const auto* histogram = thread_group_->num_tasks_between_waits_histogram();
-
-  // NumTasksBetweenWaits shouldn't be logged until idle.
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(1));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
-
-  // Make all workers go idle.
-  workers_continue.Signal();
-  thread_group_->WaitForAllWorkersIdleForTesting();
-
-  // All workers should have reported a single hit in the "1" bucket per the the
-  // histogram being reported when going idle and each worker having processed
-  // precisely 1 task per the controlled flooding logic above.
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  EXPECT_EQ(static_cast<int>(kMaxTasks),
-            histogram->SnapshotSamples()->GetCount(1));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
-
-  thread_group_->WaitForWorkersCleanedUpForTesting(kMaxTasks - 1);
-
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  EXPECT_EQ(static_cast<int>(kMaxTasks),
-            histogram->SnapshotSamples()->GetCount(1));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
-
-  // Flooding the thread group once again (without letting any workers go idle)
-  // shouldn't affect the counts either.
-
-  workers_continue.Reset();
-  FloodPool(&workers_continue);
-
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(0));
-  EXPECT_EQ(static_cast<int>(kMaxTasks),
-            histogram->SnapshotSamples()->GetCount(1));
-  EXPECT_EQ(0, histogram->SnapshotSamples()->GetCount(10));
-
-  workers_continue.Signal();
-  thread_group_->WaitForAllWorkersIdleForTesting();
-}
 
 TEST_F(ThreadGroupImplHistogramTest, NumTasksBeforeCleanup) {
   CreateThreadGroup();
@@ -1338,7 +1255,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_VISIBLE task that can't run since workers are saturated. This
   // should cause BEST_EFFORT tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_VISIBLE,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_VISIBLE},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(
           FROM_HERE, BindLambdaForTesting([&]() {
@@ -1348,7 +1265,7 @@ TEST_P(ThreadGroupImplBlockingTest, ThreadBlockedUnblockedShouldYield) {
 
   // Post a USER_BLOCKING task that can't run since workers are saturated. This
   // should cause USER_VISIBLE tasks to yield.
-  test::CreateTaskRunner(TaskPriority::USER_BLOCKING,
+  test::CreateTaskRunner({ThreadPool(), TaskPriority::USER_BLOCKING},
                          &mock_pooled_task_runner_delegate_)
       ->PostTask(FROM_HERE, BindLambdaForTesting([&]() {
                    EXPECT_FALSE(

@@ -13,7 +13,7 @@
 #include "base/stl_util.h"
 #include "base/task/post_task.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -64,8 +64,7 @@ class FileWriteWatcherTest : public testing::Test {
   // By using the IO_MAINLOOP test thread bundle, the main thread is used
   // both as UI and FILE thread, with TYPE_IO message loop.
   FileWriteWatcherTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {
-  }
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override { ASSERT_TRUE(temp_dir_.CreateUniqueTempDir()); }
 
@@ -74,7 +73,7 @@ class FileWriteWatcherTest : public testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
 };
 
@@ -91,7 +90,7 @@ TEST_F(FileWriteWatcherTest, WatchThreeFiles) {
 
   // Set up the watcher.
   scoped_refptr<base::SequencedTaskRunner> task_runner =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   FileWriteWatcher watcher(task_runner.get());
   watcher.DisableDelayForTesting();
 

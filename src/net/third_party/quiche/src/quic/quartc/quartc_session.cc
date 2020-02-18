@@ -24,7 +24,11 @@ QuartcSession::QuartcSession(std::unique_ptr<QuicConnection> connection,
                              const QuicConfig& config,
                              const ParsedQuicVersionVector& supported_versions,
                              const QuicClock* clock)
-    : QuicSession(connection.get(), visitor, config, supported_versions),
+    : QuicSession(connection.get(),
+                  visitor,
+                  config,
+                  supported_versions,
+                  /*num_expected_unidirectional_static_streams = */ 0),
       connection_(std::move(connection)),
       clock_(clock),
       per_packet_options_(QuicMakeUnique<QuartcPerPacketOptions>()) {
@@ -152,10 +156,7 @@ bool QuartcSession::SendProbingData() {
 void QuartcSession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
   switch (event) {
-    case ENCRYPTION_FIRST_ESTABLISHED:
-    case ENCRYPTION_REESTABLISHED:
-      // 1-rtt setup triggers 'ENCRYPTION_REESTABLISHED' (after REJ, when the
-      // CHLO is sent).
+    case ENCRYPTION_ESTABLISHED:
       DCHECK(IsEncryptionEstablished());
       DCHECK(session_delegate_);
       session_delegate_->OnConnectionWritable();
@@ -207,7 +208,7 @@ void QuartcSession::OnCongestionWindowChange(QuicTime /*now*/) {
 
 bool QuartcSession::ShouldKeepConnectionAlive() const {
   // TODO(mellem): Quartc may want different keepalive logic than HTTP.
-  return GetNumOpenDynamicStreams() > 0;
+  return GetNumActiveStreams() > 0;
 }
 
 void QuartcSession::OnConnectionClosed(const QuicConnectionCloseFrame& frame,
@@ -301,7 +302,8 @@ std::unique_ptr<QuartcStream> QuartcSession::InitializeDataStream(
   // Register the stream to the QuicWriteBlockedList. |priority| is clamped
   // between 0 and 7, with 0 being the highest priority and 7 the lowest
   // priority.
-  write_blocked_streams()->UpdateStreamPriority(stream->id(), priority);
+  write_blocked_streams()->UpdateStreamPriority(
+      stream->id(), spdy::SpdyStreamPrecedence(priority));
 
   if (IsIncomingStream(stream->id())) {
     DCHECK(session_delegate_);

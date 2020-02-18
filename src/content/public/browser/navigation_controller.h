@@ -24,6 +24,7 @@
 #include "content/public/browser/session_storage_namespace.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/referrer.h"
+#include "content/public/common/was_activated_option.mojom.h"
 #include "services/network/public/cpp/resource_request_body.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "ui/base/page_transition_types.h"
@@ -38,9 +39,9 @@ class RefCountedString;
 
 namespace content {
 
-enum class WasActivatedOption;
 class BrowserContext;
 class NavigationEntry;
+class RenderFrameHost;
 class WebContents;
 
 // A NavigationController maintains the back-forward list for a WebContents and
@@ -223,7 +224,7 @@ class NavigationController {
 
     // Set to |kYes| if the navigation should propagate user activation. This
     // is used by embedders where the activation has occurred outside the page.
-    WasActivatedOption was_activated;
+    mojom::WasActivatedOption was_activated;
 
     // If this navigation was initiated from a link that specified the
     // hrefTranslate attribute, this contains the attribute's value (a BCP47
@@ -371,6 +372,14 @@ class NavigationController {
   // history and the current page has not loaded yet or if the load was
   // explicitly requested using SetNeedsReload().
   virtual void LoadIfNecessary() = 0;
+
+  // Navigates directly to an error page, with |error_page_html| as the
+  // contents, and |url| as the url. |error| is the code that will be used
+  // when triggering the error page.
+  virtual void LoadErrorPage(RenderFrameHost* render_frame_host,
+                             const GURL& url,
+                             const std::string& error_page_html,
+                             net::Error error) = 0;
 
   // Renavigation --------------------------------------------------------------
 

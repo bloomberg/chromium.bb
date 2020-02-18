@@ -53,7 +53,7 @@ class ChildModalWindow : public views::WidgetDelegateView {
     AddChildView(modal_child_textfield);
     modal_child_textfield->SetBounds(kTextfieldLeft, kTextfieldTop,
                                      kTextfieldWidth, kTextfieldHeight);
-    modal_child_textfield->set_placeholder_text(
+    modal_child_textfield->SetPlaceholderText(
         base::ASCIIToUTF16("modal child window"));
   }
   ~ChildModalWindow() override = default;
@@ -82,7 +82,7 @@ TestChildModalParent* TestChildModalParent::Show(aura::Window* context) {
   params.context = context;
   params.bounds =
       gfx::Rect(kWindowLeft, kWindowTop, kWindowWidth, kWindowHeight);
-  widget->Init(params);
+  widget->Init(std::move(params));
   widget->Show();
   return test_child_modal_parent;
 }
@@ -91,18 +91,18 @@ TestChildModalParent::TestChildModalParent(aura::Window* context)
     : modal_parent_(std::make_unique<Widget>()),
       textfield_(new views::Textfield),
       host_(new views::NativeViewHost) {
-  textfield_->set_placeholder_text(base::ASCIIToUTF16("top level window"));
+  textfield_->SetPlaceholderText(base::ASCIIToUTF16("top level window"));
   Widget::InitParams params(Widget::InitParams::TYPE_CONTROL);
   params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.context = context;
-  modal_parent_->Init(params);
+  modal_parent_->Init(std::move(params));
   modal_parent_->GetRootView()->SetBackground(
       views::CreateSolidBackground(kModalParentColor));
   auto* modal_parent_textfield = new views::Textfield;
   modal_parent_->GetRootView()->AddChildView(modal_parent_textfield);
   modal_parent_textfield->SetBounds(kTextfieldLeft, kTextfieldTop,
                                     kTextfieldWidth, kTextfieldHeight);
-  modal_parent_textfield->set_placeholder_text(
+  modal_parent_textfield->SetPlaceholderText(
       base::ASCIIToUTF16("modal parent window"));
   modal_parent_->GetNativeView()->SetName("ModalParent");
   auto button = views::MdTextButton::Create(

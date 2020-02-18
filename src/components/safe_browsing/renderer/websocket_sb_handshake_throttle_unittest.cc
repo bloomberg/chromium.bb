@@ -8,7 +8,7 @@
 
 #include "base/callback.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
 #include "content/public/common/resource_type.h"
 #include "ipc/ipc_message.h"
@@ -109,7 +109,7 @@ class WebSocketSBHandshakeThrottleTest : public ::testing::Test {
         safe_browsing_ptr_.get(), MSG_ROUTING_NONE);
   }
 
-  base::test::ScopedTaskEnvironment message_loop_;
+  base::test::TaskEnvironment message_loop_;
   FakeSafeBrowsing safe_browsing_;
   mojo::Binding<mojom::SafeBrowsing> mojo_binding_;
   mojom::SafeBrowsingPtr safe_browsing_ptr_;

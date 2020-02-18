@@ -10,7 +10,7 @@
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/api/permissions/permissions_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -430,7 +430,7 @@ class ContentScriptPolicyStartupTest : public ExtensionApiTest {
     // ExtensionManagementPolicyUpdater requires a single-threaded context to
     // call RunLoop::RunUntilIdle internally, and it isn't ready at this setup
     // moment.
-    base::test::ScopedTaskEnvironment env;
+    base::test::TaskEnvironment env;
     ExtensionManagementPolicyUpdater management_policy(&policy_provider_);
     management_policy.AddPolicyBlockedHost("*", "*://example.com");
   }

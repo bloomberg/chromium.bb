@@ -7,7 +7,7 @@
 #include "base/bind_helpers.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/constants.h"
@@ -23,7 +23,7 @@ constexpr char kTestServiceName[] = "test service";
 }  // namespace
 
 TEST(ServiceManagerConnectionImplTest, ServiceLaunchThreading) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   base::Thread io_thread("ServiceManagerConnectionImplTest IO Thread");
   io_thread.Start();
   service_manager::mojom::ServicePtr service;

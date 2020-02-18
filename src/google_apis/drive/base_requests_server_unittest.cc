@@ -10,7 +10,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "google_apis/drive/dummy_auth_service.h"
 #include "google_apis/drive/request_sender.h"
 #include "google_apis/drive/task_util.h"
@@ -70,7 +70,7 @@ class BaseRequestsServerTest : public testing::Test {
 
     request_sender_ = std::make_unique<RequestSender>(
         std::make_unique<DummyAuthService>(), test_shared_loader_factory_,
-        scoped_task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
+        task_environment_.GetMainThreadTaskRunner(), kTestUserAgent,
         TRAFFIC_ANNOTATION_FOR_TESTS);
 
     ASSERT_TRUE(test_server_.InitializeAndListen());
@@ -86,8 +86,8 @@ class BaseRequestsServerTest : public testing::Test {
     return temp_dir_.GetPath().Append(file_name);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::IO};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   net::EmbeddedTestServer test_server_;
   std::unique_ptr<RequestSender> request_sender_;
   std::unique_ptr<network::mojom::NetworkService> network_service_;

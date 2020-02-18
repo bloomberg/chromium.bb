@@ -203,7 +203,7 @@ void AutofillAgent::DidChangeScrollOffset() {
         ->PostTask(FROM_HERE,
                    base::BindOnce(&AutofillAgent::DidChangeScrollOffsetImpl,
                                   weak_ptr_factory_.GetWeakPtr(), element_));
-  } else if (!IsKeyboardAccessoryEnabled()) {
+  } else {
     HidePopup();
   }
 }
@@ -224,8 +224,7 @@ void AutofillAgent::DidChangeScrollOffsetImpl(
   }
 
   // Ignore subsequent scroll offset changes.
-  if (!IsKeyboardAccessoryEnabled())
-    HidePopup();
+  HidePopup();
 }
 
 void AutofillAgent::FocusedElementChanged(const WebElement& element) {
@@ -639,8 +638,7 @@ void AutofillAgent::ShowSuggestions(const WebFormControlElement& element,
   // criteria are not met.
   WebString value = element.EditingValue();
   if (value.length() > kMaxDataLength ||
-      (!IsKeyboardAccessoryEnabled() && !options.autofill_on_empty_values &&
-       value.IsEmpty()) ||
+      (!options.autofill_on_empty_values && value.IsEmpty()) ||
       (options.requires_caret_at_end &&
        (element.SelectionStart() != element.SelectionEnd() ||
         element.SelectionEnd() != static_cast<int>(value.length())))) {
@@ -840,6 +838,10 @@ void AutofillAgent::HidePopup() {
   is_popup_possibly_visible_ = false;
   is_generation_popup_possibly_visible_ = false;
 
+  // The keyboard accessory has a separate, more complex hiding logic.
+  if (IsKeyboardAccessoryEnabled())
+    return;
+
   GetAutofillDriver()->HidePopup();
 }
 
@@ -910,9 +912,12 @@ void AutofillAgent::SelectFieldOptionsChanged(
                           weak_ptr_factory_.GetWeakPtr(), element));
 }
 
-bool AutofillAgent::TryToShowTouchToFill(const WebFormControlElement& element) {
-  // This is currently only implemented for passwords. Consider supporting other
-  // autofill types in the future as well.
+bool AutofillAgent::ShouldSuppressKeyboard(
+    const WebFormControlElement& element) {
+  // The keyboard should be suppressed if we can show the Touch To Fill UI.
+  //
+  // Note: This is currently only implemented for passwords. Consider supporting
+  // other autofill types in the future as well.
   return IsTouchToFillEnabled() &&
          password_autofill_agent_->TryToShowTouchToFill(element);
 }

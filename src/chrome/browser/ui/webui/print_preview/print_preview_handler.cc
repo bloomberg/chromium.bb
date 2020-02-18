@@ -79,9 +79,11 @@
 #include "third_party/icu/source/i18n/unicode/ulocdata.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
+#include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "services/identity/public/cpp/scope_set.h"
 #endif
@@ -221,12 +223,12 @@ const char kIsInKioskAutoPrintMode[] = "isInKioskAutoPrintMode";
 const char kIsInAppKioskMode[] = "isInAppKioskMode";
 // Name of a dictionary field holding the UI locale.
 const char kUiLocale[] = "uiLocale";
-// Name of a dictionary field holding the thousands delimeter according to the
+// Name of a dictionary field holding the thousands delimiter according to the
 // locale.
-const char kThousandsDelimeter[] = "thousandsDelimeter";
-// Name of a dictionary field holding the decimal delimeter according to the
+const char kThousandsDelimiter[] = "thousandsDelimiter";
+// Name of a dictionary field holding the decimal delimiter according to the
 // locale.
-const char kDecimalDelimeter[] = "decimalDelimeter";
+const char kDecimalDelimiter[] = "decimalDelimiter";
 // Name of a dictionary field holding the measurement system according to the
 // locale.
 const char kUnitType[] = "unitType";
@@ -830,7 +832,25 @@ void PrintPreviewHandler::HandleSignin(const base::ListValue* args) {
   bool add_account = false;
   CHECK(args->GetBoolean(0, &add_account));
 
-  chrome::ScopedTabbedBrowserDisplayer displayer(Profile::FromWebUI(web_ui()));
+  Profile* profile = Profile::FromWebUI(web_ui());
+  DCHECK(profile);
+
+#if defined(OS_CHROMEOS)
+  if (chromeos::IsAccountManagerAvailable(profile)) {
+    // Chrome OS Account Manager is enabled on this Profile and hence, all
+    // account management flows will go through native UIs and not through a
+    // tabbed browser window.
+    if (add_account) {
+      chromeos::InlineLoginHandlerDialogChromeOS::Show();
+    } else {
+      chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
+          profile, chrome::kAccountManagerSubPage);
+    }
+    return;
+  }
+#endif
+
+  chrome::ScopedTabbedBrowserDisplayer displayer(profile);
   print_dialog_cloud::CreateCloudPrintSigninTab(
       displayer.browser(), add_account,
       base::BindOnce(&PrintPreviewHandler::OnSignInTabClosed,
@@ -894,7 +914,7 @@ void PrintPreviewHandler::HandleClosePreviewDialog(
 void PrintPreviewHandler::HandleOpenPrinterSettings(
     const base::ListValue* args) {
   chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
-      Profile::FromWebUI(web_ui()), chrome::kPrintingSettingsSubPage);
+      Profile::FromWebUI(web_ui()), chrome::kNativePrintingSettingsSubPage);
 }
 #endif
 
@@ -913,8 +933,15 @@ void PrintPreviewHandler::GetLocaleInformation(base::Value* settings) {
   // Getting the number formatting based on the locale and writing to
   // dictionary.
   base::string16 number_format = base::FormatDouble(123456.78, 2);
-  settings->SetStringKey(kDecimalDelimeter, number_format.substr(7, 1));
-  settings->SetStringKey(kThousandsDelimeter, number_format.substr(3, 1));
+  size_t thousands_pos = number_format.find('3') + 1;
+  base::string16 thousands_delimiter = number_format.substr(thousands_pos, 1);
+  if (number_format[thousands_pos] == '4')
+    thousands_delimiter.clear();
+  size_t decimal_pos = number_format.find('6') + 1;
+  DCHECK_NE(number_format[decimal_pos], '7');
+  base::string16 decimal_delimiter = number_format.substr(decimal_pos, 1);
+  settings->SetStringKey(kDecimalDelimiter, decimal_delimiter);
+  settings->SetStringKey(kThousandsDelimiter, thousands_delimiter);
   settings->SetIntKey(kUnitType, system);
 }
 

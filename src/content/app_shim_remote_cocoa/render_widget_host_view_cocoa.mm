@@ -380,6 +380,8 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   [touchBarItem
       updateWithInsertionPointVisibility:textSelectionRange_.is_empty()];
+  if (textInputType_ == ui::TEXT_INPUT_TYPE_PASSWORD)
+    return;
   if (!touchBarItem.candidateListVisible)
     return;
   if (!textSelectionRange_.IsValid() ||
@@ -2192,13 +2194,16 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)invalidateTouchBar {
+  // Work around a crash (https://crbug.com/822427).
+  [candidateListTouchBarItem_ setCandidates:@[]
+                           forSelectedRange:NSMakeRange(NSNotFound, 0)
+                                   inString:nil];
   candidateListTouchBarItem_.reset();
   self.touchBar = nil;
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE &&
-      textInputType_ != ui::TEXT_INPUT_TYPE_PASSWORD) {
+  if (textInputType_ != ui::TEXT_INPUT_TYPE_NONE) {
     candidateListTouchBarItem_.reset([[NSCandidateListTouchBarItem alloc]
         initWithIdentifier:NSTouchBarItemIdentifierCandidateList]);
     auto* candidateListItem = candidateListTouchBarItem_.get();

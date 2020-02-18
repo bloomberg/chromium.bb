@@ -14,7 +14,6 @@
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_menubar_tracker.h"
 #include "chrome/browser/ui/cocoa/fullscreen/fullscreen_toolbar_controller_views.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
@@ -23,6 +22,7 @@
 #include "chrome/browser/ui/views/frame/hosted_app_button_container.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
@@ -68,9 +68,7 @@ BrowserNonClientFrameViewMac::BrowserNonClientFrameViewMac(
   }
 
   if (browser_view->IsBrowserTypeHostedApp()) {
-    if (browser_view->browser()
-            ->app_controller()
-            ->ShouldShowHostedAppButtonContainer()) {
+    if (browser_view->browser()->app_controller()->HasTitlebarToolbar()) {
       set_hosted_app_button_container(new HostedAppButtonContainer(
           frame, browser_view, GetCaptionColor(kActive),
           GetCaptionColor(kInactive), kHostedAppMenuMargin));
@@ -281,7 +279,7 @@ void BrowserNonClientFrameViewMac::UpdateMinimumSize() {
 
 gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
   gfx::Size client_size = frame()->client_view()->GetMinimumSize();
-  if (browser_view()->browser()->is_type_tabbed())
+  if (browser_view()->browser()->is_type_normal())
     client_size.SetToMax(browser_view()->tabstrip()->GetMinimumSize());
 
   // macOS apps generally don't allow their windows to get shorter than a

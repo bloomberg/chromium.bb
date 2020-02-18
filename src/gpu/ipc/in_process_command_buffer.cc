@@ -227,7 +227,6 @@ class InProcessCommandBuffer::SharedImageInterface
     return mailbox;
   }
 
-#if defined(OS_WIN)
   SwapChainMailboxes CreateSwapChain(viz::ResourceFormat format,
                                      const gfx::Size& size,
                                      const gfx::ColorSpace& color_space,
@@ -240,7 +239,17 @@ class InProcessCommandBuffer::SharedImageInterface
                         const Mailbox& mailbox) override {
     NOTREACHED();
   }
-#endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+  void RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token) override {
+    NOTREACHED();
+  }
+  void ReleaseSysmemBufferCollection(
+      gfx::SysmemBufferCollectionId id) override {
+    NOTREACHED();
+  }
+#endif  // defined(OS_FUCHSIA)
 
   void UpdateSharedImage(const SyncToken& sync_token,
                          const Mailbox& mailbox) override {

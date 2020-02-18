@@ -61,6 +61,7 @@
 #include "content/test/fake_compositor_dependencies.h"
 #include "content/test/mock_keyboard.h"
 #include "content/test/test_render_frame.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/net_errors.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_util.h"
@@ -77,6 +78,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/public/web/web_autofill_client.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
 #include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_content_dumper.h"
@@ -213,15 +215,15 @@ FrameReplicationState ReconstructReplicationStateForTesting(
   return result;
 }
 
-// Returns CommonNavigationParams for a normal navigation to a data: url, with
-// navigation_start set to Now() plus the given offset.
-CommonNavigationParams MakeCommonNavigationParams(
+// Returns mojom::CommonNavigationParams for a normal navigation to a data: url,
+// with navigation_start set to Now() plus the given offset.
+mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(
     TimeDelta navigation_start_offset) {
-  CommonNavigationParams params;
-  params.url = GURL("data:text/html,<div>Page</div>");
-  params.navigation_start = base::TimeTicks::Now() + navigation_start_offset;
-  params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  params.transition = ui::PAGE_TRANSITION_TYPED;
+  auto params = CreateCommonNavigationParams();
+  params->url = GURL("data:text/html,<div>Page</div>");
+  params->navigation_start = base::TimeTicks::Now() + navigation_start_offset;
+  params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  params->transition = ui::PAGE_TRANSITION_TYPED;
   return params;
 }
 
@@ -274,17 +276,17 @@ class RenderViewImplTest : public RenderViewTest {
 
   void GoToOffsetWithParams(int offset,
                             const PageState& state,
-                            const CommonNavigationParams common_params,
-                            CommitNavigationParams commit_params) {
-    EXPECT_TRUE(common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK);
+                            mojom::CommonNavigationParamsPtr common_params,
+                            mojom::CommitNavigationParamsPtr commit_params) {
+    EXPECT_TRUE(common_params->transition & ui::PAGE_TRANSITION_FORWARD_BACK);
     int pending_offset = offset + view()->history_list_offset_;
 
-    commit_params.page_state = state;
-    commit_params.nav_entry_id = pending_offset + 1;
-    commit_params.pending_history_list_offset = pending_offset;
-    commit_params.current_history_list_offset = view()->history_list_offset_;
-    commit_params.current_history_list_length = view()->history_list_length_;
-    frame()->Navigate(common_params, commit_params);
+    commit_params->page_state = state;
+    commit_params->nav_entry_id = pending_offset + 1;
+    commit_params->pending_history_list_offset = pending_offset;
+    commit_params->current_history_list_offset = view()->history_list_offset_;
+    commit_params->current_history_list_length = view()->history_list_length_;
+    frame()->Navigate(std::move(common_params), std::move(commit_params));
 
     // The load actually happens asynchronously, so we pump messages to process
     // the pending continuation.
@@ -433,17 +435,6 @@ class RenderViewImplTest : public RenderViewTest {
            webview->MainFrame()->VisibleContentRect().width;
   }
 
-  // Closes a view created during the test, i.e. not the |view()|. Checks that
-  // the main frame is detached and deleted, and makes sure the view does not
-  // leak.
-  void CloseRenderWidget(RenderWidget* widget) {
-    WidgetMsg_Close msg(widget->routing_id());
-    widget->OnMessageReceived(msg);
-
-    // WidgetMsg_Close posts a task to do the actual closing. Let that run.
-    base::RunLoop().RunUntilIdle();
-  }
-
  private:
   std::unique_ptr<MockKeyboard> mock_keyboard_;
 };
@@ -480,7 +471,7 @@ class RenderViewImplScaleFactorTest : public RenderViewImplTest {
     VisualProperties visual_properties;
     visual_properties.screen_info.device_scale_factor = dsf;
     visual_properties.new_size = gfx::Size(100, 100);
-    visual_properties.compositor_viewport_pixel_size = gfx::Size(200, 200);
+    visual_properties.compositor_viewport_pixel_rect = gfx::Rect(200, 200);
     visual_properties.visible_viewport_size = visual_properties.new_size;
     visual_properties.auto_resize_enabled =
         view()->GetWidget()->auto_resize_mode();
@@ -631,12 +622,11 @@ TEST_F(RenderViewImplTest, OnNavStateChanged) {
 
 TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   // An http url will trigger a resource load so cannot be used here.
-  CommonNavigationParams common_params;
-  CommitNavigationParams commit_params;
-  common_params.url = GURL("data:text/html,<div>Page</div>");
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  common_params.method = "POST";
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL("data:text/html,<div>Page</div>");
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->transition = ui::PAGE_TRANSITION_TYPED;
+  common_params->method = "POST";
 
   // Set up post data.
   const char raw_data[] = "post \0\ndata";
@@ -644,9 +634,9 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
   scoped_refptr<network::ResourceRequestBody> post_data(
       new network::ResourceRequestBody);
   post_data->AppendBytes(raw_data, length);
-  common_params.post_data = post_data;
+  common_params->post_data = post_data;
 
-  frame()->Navigate(common_params, commit_params);
+  frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
   auto last_commit_params = frame()->TakeLastCommitParams();
@@ -677,18 +667,18 @@ TEST_F(RenderViewImplTest, OnNavigationHttpPost) {
 
 #if defined(OS_ANDROID)
 TEST_F(RenderViewImplTest, OnNavigationLoadDataWithBaseURL) {
-  CommonNavigationParams common_params;
-  common_params.url = GURL("data:text/html,");
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  common_params.base_url_for_data_url = GURL("about:blank");
-  common_params.history_url_for_data_url = GURL("about:blank");
-  CommitNavigationParams commit_params;
-  commit_params.data_url_as_string =
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL("data:text/html,");
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->transition = ui::PAGE_TRANSITION_TYPED;
+  common_params->base_url_for_data_url = GURL("about:blank");
+  common_params->history_url_for_data_url = GURL("about:blank");
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->data_url_as_string =
       "data:text/html,<html><head><title>Data page</title></head></html>";
 
   render_thread_->sink().ClearMessages();
-  frame()->Navigate(common_params, commit_params);
+  frame()->Navigate(std::move(common_params), std::move(commit_params));
   const IPC::Message* frame_title_msg = nullptr;
   do {
     base::RunLoop().RunUntilIdle();
@@ -867,9 +857,6 @@ TEST_F(RenderViewImplTest, BeginNavigationForWebUI) {
       ->BeginNavigation(std::move(popup_navigation_info));
   EXPECT_TRUE(render_thread_->sink().GetUniqueMessageMatching(
       FrameHostMsg_OpenURL::ID));
-
-  RenderWidget* render_widget = new_view->GetWidget();
-  CloseRenderWidget(render_widget);
 }
 
 class AlwaysForkingRenderViewTest : public RenderViewImplTest {
@@ -1050,19 +1037,25 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
-  blink::mojom::DocumentInterfaceBrokerPtr
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       stub_document_interface_broker_content;
-  mojo::MakeRequest(&stub_document_interface_broker_content);
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
-  mojo::MakeRequest(&stub_document_interface_broker_blink);
+  ignore_result(
+      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      stub_document_interface_broker_blink;
+  ignore_result(
+      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      stub_browser_interface_broker;
+  ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = view()->GetRoutingID();
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
-      std::move(stub_document_interface_broker_blink), kProxyRoutingId,
+      std::move(stub_document_interface_broker_blink),
+      std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
       widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
@@ -1071,13 +1064,13 @@ TEST_F(RenderViewImplEnableZoomForDSFTest, UpdateDSFAfterSwapIn) {
   EXPECT_TRUE(provisional_frame);
 
   // Navigate to other page, which triggers the swap in.
-  CommonNavigationParams common_params;
-  CommitNavigationParams commit_params;
-  common_params.url = GURL("data:text/html,<div>Page</div>");
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.transition = ui::PAGE_TRANSITION_TYPED;
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL("data:text/html,<div>Page</div>");
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->transition = ui::PAGE_TRANSITION_TYPED;
 
-  provisional_frame->Navigate(common_params, commit_params);
+  provisional_frame->Navigate(std::move(common_params),
+                              CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(device_scale, view()->GetDeviceScaleFactor());
@@ -1119,19 +1112,25 @@ TEST_F(RenderViewImplTest, DetachingProxyAlsoDestroysProvisionalFrame) {
   int routing_id = kProxyRoutingId + 1;
   service_manager::mojom::InterfaceProviderPtr stub_interface_provider;
   mojo::MakeRequest(&stub_interface_provider);
-  blink::mojom::DocumentInterfaceBrokerPtr
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
       stub_document_interface_broker_content;
-  mojo::MakeRequest(&stub_document_interface_broker_content);
-  blink::mojom::DocumentInterfaceBrokerPtr stub_document_interface_broker_blink;
-  mojo::MakeRequest(&stub_document_interface_broker_blink);
+  ignore_result(
+      stub_document_interface_broker_content.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
+      stub_document_interface_broker_blink;
+  ignore_result(
+      stub_document_interface_broker_blink.InitWithNewPipeAndPassReceiver());
+  mojo::PendingRemote<blink::mojom::BrowserInterfaceBroker>
+      stub_browser_interface_broker;
+  ignore_result(stub_browser_interface_broker.InitWithNewPipeAndPassReceiver());
 
   mojom::CreateFrameWidgetParams widget_params;
   widget_params.routing_id = MSG_ROUTING_NONE;
-  widget_params.hidden = false;
   RenderFrameImpl::CreateFrame(
       routing_id, std::move(stub_interface_provider),
       std::move(stub_document_interface_broker_content),
-      std::move(stub_document_interface_broker_blink), kProxyRoutingId,
+      std::move(stub_document_interface_broker_blink),
+      std::move(stub_browser_interface_broker), kProxyRoutingId,
       MSG_ROUTING_NONE, frame()->GetRoutingID(), MSG_ROUTING_NONE,
       base::UnguessableToken::Create(), replication_state, nullptr,
       widget_params, FrameOwnerProperties(), /*has_committed_real_load=*/true);
@@ -1284,6 +1283,59 @@ TEST_F(RenderViewImplTest, OnImeTypeChanged) {
       EXPECT_EQ(test_case->expected_mode, input_mode);
     }
   }
+}
+
+TEST_F(RenderViewImplTest, ShouldSuppressKeyboardIsPropagated) {
+  class TestAutofillClient : public blink::WebAutofillClient {
+   public:
+    TestAutofillClient() = default;
+    ~TestAutofillClient() override = default;
+
+    bool ShouldSuppressKeyboard(const blink::WebFormControlElement&) override {
+      return should_suppress_keyboard_;
+    }
+
+    void SetShouldSuppressKeyboard(bool should_suppress_keyboard) {
+      should_suppress_keyboard_ = should_suppress_keyboard;
+    }
+
+   private:
+    bool should_suppress_keyboard_ = false;
+  };
+
+  // Set-up the fake autofill client.
+  TestAutofillClient client;
+  GetMainFrame()->SetAutofillClient(&client);
+
+  // Load an HTML page consisting of one input fields.
+  LoadHTML(
+      "<html>"
+      "<head>"
+      "</head>"
+      "<body>"
+      "<input id=\"test\" type=\"text\"></input>"
+      "</body>"
+      "</html>");
+
+  // Focus the text field, trigger a state update and check that the right IPC
+  // is sent.
+  ExecuteJavaScriptForTests("document.getElementById('test').focus();");
+  base::RunLoop().RunUntilIdle();
+  view()->GetWidget()->UpdateTextInputState();
+  auto params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_FALSE(std::get<0>(params).always_hide_ime);
+  render_thread_->sink().ClearMessages();
+
+  // Tell the client to suppress the keyboard. Check whether always_hide_ime is
+  // set correctly.
+  client.SetShouldSuppressKeyboard(true);
+  view()->GetWidget()->UpdateTextInputState();
+  params = ProcessAndReadIPC<WidgetHostMsg_TextInputStateChanged>();
+  EXPECT_TRUE(std::get<0>(params).always_hide_ime);
+
+  // Explicitly clean-up the autofill client, as otherwise a use-after-free
+  // happens.
+  GetMainFrame()->SetAutofillClient(nullptr);
 }
 
 // Test that our IME backend can compose CJK words.
@@ -1481,10 +1533,10 @@ TEST_F(RenderViewImplTest, DidFailProvisionalLoadWithErrorForCancellation) {
 
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
-  frame()->Navigate(common_params, CommitNavigationParams());
+  auto common_params = CreateCommonNavigationParams();
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->url = GURL("data:text/html,test data");
+  frame()->Navigate(std::move(common_params), CreateCommitNavigationParams());
 
   // A cancellation occurred.
   view()->GetMainRenderFrame()->DidFailProvisionalLoad(error, "GET");
@@ -1861,21 +1913,21 @@ TEST_F(RenderViewImplTest, NavigateSubframe) {
   LoadHTML("hello <iframe srcdoc='fail' name='frame'></iframe>");
 
   // Navigate the frame only.
-  CommonNavigationParams common_params;
-  CommitNavigationParams commit_params;
-  common_params.url = GURL("data:text/html,world");
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.transition = ui::PAGE_TRANSITION_TYPED;
-  common_params.navigation_start = base::TimeTicks::FromInternalValue(1);
-  commit_params.current_history_list_length = 1;
-  commit_params.current_history_list_offset = 0;
-  commit_params.pending_history_list_offset = 1;
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL("data:text/html,world");
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->transition = ui::PAGE_TRANSITION_TYPED;
+  common_params->navigation_start = base::TimeTicks::FromInternalValue(1);
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->current_history_list_length = 1;
+  commit_params->current_history_list_offset = 0;
+  commit_params->pending_history_list_offset = 1;
 
   TestRenderFrame* subframe =
       static_cast<TestRenderFrame*>(RenderFrameImpl::FromWebFrame(
           frame()->GetWebFrame()->FindFrameByName("frame")));
   FrameLoadWaiter waiter(subframe);
-  subframe->Navigate(common_params, commit_params);
+  subframe->Navigate(std::move(common_params), std::move(commit_params));
   waiter.Wait();
 
   // Copy the document content to std::string and compare with the
@@ -1975,13 +2027,13 @@ class RendererErrorPageTest : public RenderViewImplTest {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("http://example.com/suppress");
+  auto common_params = CreateCommonNavigationParams();
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->url = GURL("http://example.com/suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->NavigateWithError(common_params, CommitNavigationParams(),
-                                net::ERR_FILE_NOT_FOUND,
-                                "A suffusion of yellow.");
+  main_frame->NavigateWithError(
+      std::move(common_params), CreateCommitNavigationParams(),
+      net::ERR_FILE_NOT_FOUND, "A suffusion of yellow.");
 
   const int kMaxOutputCharacters = 22;
   EXPECT_EQ("", WebFrameContentDumper::DumpWebViewAsText(view()->GetWebView(),
@@ -1997,13 +2049,13 @@ TEST_F(RendererErrorPageTest, MAYBE_Suppresses) {
 #endif
 
 TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("http://example.com/dont-suppress");
+  auto common_params = CreateCommonNavigationParams();
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->url = GURL("http://example.com/dont-suppress");
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->NavigateWithError(common_params, CommitNavigationParams(),
-                                net::ERR_FILE_NOT_FOUND,
-                                "A suffusion of yellow.");
+  main_frame->NavigateWithError(
+      std::move(common_params), CreateCommitNavigationParams(),
+      net::ERR_FILE_NOT_FOUND, "A suffusion of yellow.");
 
   // The error page itself is loaded asynchronously.
   FrameLoadWaiter(main_frame).Wait();
@@ -2024,9 +2076,9 @@ TEST_F(RendererErrorPageTest, MAYBE_DoesNotSuppress) {
 TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
   // Start a load that will reach provisional state synchronously,
   // but won't complete synchronously.
-  CommonNavigationParams common_params;
-  common_params.navigation_type = FrameMsg_Navigate_Type::DIFFERENT_DOCUMENT;
-  common_params.url = GURL("data:text/html,test data");
+  auto common_params = CreateCommonNavigationParams();
+  common_params->navigation_type = mojom::NavigationType::DIFFERENT_DOCUMENT;
+  common_params->url = GURL("data:text/html,test data");
 
   // Emulate a 503 main resource response with an empty body.
   network::ResourceResponseHead head;
@@ -2036,7 +2088,8 @@ TEST_F(RendererErrorPageTest, MAYBE_HttpStatusCodeErrorWithEmptyBody) {
       net::HttpUtil::AssembleRawHeaders(headers));
 
   TestRenderFrame* main_frame = static_cast<TestRenderFrame*>(frame());
-  main_frame->Navigate(head, common_params, CommitNavigationParams());
+  main_frame->Navigate(head, std::move(common_params),
+                       CreateCommitNavigationParams());
   main_frame->DidFinishDocumentLoad();
   main_frame->RunScriptsAtDocumentReady(true);
 
@@ -2142,11 +2195,11 @@ TEST_F(RenderViewImplTest, BrowserNavigationStart) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
 
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params, CommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
   waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_EQ(common_params.navigation_start,
+  EXPECT_EQ(common_params->navigation_start,
             navigation_state->common_params().navigation_start);
 }
 
@@ -2158,9 +2211,9 @@ TEST_F(RenderViewImplTest, BrowserNavigationStartSanitized) {
   // days from now is *not* reported as one that starts in the future; as we
   // sanitize the override allowing a maximum of ::Now().
   auto late_common_params = MakeCommonNavigationParams(TimeDelta::FromDays(42));
-  late_common_params.method = "POST";
+  late_common_params->method = "POST";
 
-  frame()->Navigate(late_common_params, CommitNavigationParams());
+  frame()->Navigate(late_common_params.Clone(), CreateCommitNavigationParams());
   base::RunLoop().RunUntilIdle();
   base::Time after_navigation =
       base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -2180,11 +2233,11 @@ TEST_F(RenderViewImplTest, NavigationStartWhenInitialDocumentWasAccessed) {
 
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params, CommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
   waiter.Wait();
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_EQ(common_params.navigation_start,
+  EXPECT_EQ(common_params->navigation_start,
             navigation_state->common_params().navigation_start);
 }
 
@@ -2195,22 +2248,22 @@ TEST_F(RenderViewImplTest, NavigationStartForReload) {
   base::RunLoop().RunUntilIdle();
   render_thread_->sink().ClearMessages();
 
-  CommonNavigationParams common_params;
-  common_params.url = GURL(url_string);
-  common_params.navigation_type =
-      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL;
-  common_params.transition = ui::PAGE_TRANSITION_RELOAD;
+  auto common_params = CreateCommonNavigationParams();
+  common_params->url = GURL(url_string);
+  common_params->navigation_type =
+      mojom::NavigationType::RELOAD_ORIGINAL_REQUEST_URL;
+  common_params->transition = ui::PAGE_TRANSITION_RELOAD;
 
   // The browser navigation_start should not be used because beforeunload will
   // be fired during Navigate.
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params, CommitNavigationParams());
+  frame()->Navigate(common_params.Clone(), CreateCommitNavigationParams());
   waiter.Wait();
 
   // The browser navigation_start is always used.
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_EQ(common_params.navigation_start,
+  EXPECT_EQ(common_params->navigation_start,
             navigation_state->common_params().navigation_start);
 }
 
@@ -2224,56 +2277,56 @@ TEST_F(RenderViewImplTest, NavigationStartForSameProcessHistoryNavigation) {
   render_thread_->sink().ClearMessages();
 
   // Go back.
-  CommonNavigationParams common_params_back;
-  common_params_back.url =
+  auto common_params_back = CreateCommonNavigationParams();
+  common_params_back->url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page B</div>");
-  common_params_back.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  common_params_back.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
-  GoToOffsetWithParams(-1, back_state, common_params_back,
-                       CommitNavigationParams());
+  common_params_back->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params_back->navigation_type =
+      mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
+  GoToOffsetWithParams(-1, back_state, common_params_back.Clone(),
+                       CreateCommitNavigationParams());
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
 
   // The browser navigation_start is always used.
-  EXPECT_EQ(common_params_back.navigation_start,
+  EXPECT_EQ(common_params_back->navigation_start,
             navigation_state->common_params().navigation_start);
 
   // Go forward.
-  CommonNavigationParams common_params_forward;
-  common_params_forward.url =
+  auto common_params_forward = CreateCommonNavigationParams();
+  common_params_forward->url =
       GURL("data:text/html;charset=utf-8,<div id=pagename>Page C</div>");
-  common_params_forward.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  common_params_forward.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
-  GoToOffsetWithParams(1, forward_state, common_params_forward,
-                       CommitNavigationParams());
+  common_params_forward->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params_forward->navigation_type =
+      mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
+  GoToOffsetWithParams(1, forward_state, common_params_forward.Clone(),
+                       CreateCommitNavigationParams());
   navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_EQ(common_params_forward.navigation_start,
+  EXPECT_EQ(common_params_forward->navigation_start,
             navigation_state->common_params().navigation_start);
 }
 
 TEST_F(RenderViewImplTest, NavigationStartForCrossProcessHistoryNavigation) {
   auto common_params = MakeCommonNavigationParams(-TimeDelta::FromSeconds(1));
-  common_params.transition = ui::PAGE_TRANSITION_FORWARD_BACK;
-  common_params.navigation_type =
-      FrameMsg_Navigate_Type::HISTORY_DIFFERENT_DOCUMENT;
+  common_params->transition = ui::PAGE_TRANSITION_FORWARD_BACK;
+  common_params->navigation_type =
+      mojom::NavigationType::HISTORY_DIFFERENT_DOCUMENT;
 
-  CommitNavigationParams commit_params;
-  commit_params.page_state =
-      PageState::CreateForTesting(common_params.url, false, nullptr, nullptr);
-  commit_params.nav_entry_id = 42;
-  commit_params.pending_history_list_offset = 1;
-  commit_params.current_history_list_offset = 0;
-  commit_params.current_history_list_length = 1;
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->page_state =
+      PageState::CreateForTesting(common_params->url, false, nullptr, nullptr);
+  commit_params->nav_entry_id = 42;
+  commit_params->pending_history_list_offset = 1;
+  commit_params->current_history_list_offset = 0;
+  commit_params->current_history_list_length = 1;
   FrameLoadWaiter waiter(frame());
-  frame()->Navigate(common_params, commit_params);
+  frame()->Navigate(common_params.Clone(), std::move(commit_params));
   waiter.Wait();
 
   NavigationState* navigation_state = NavigationState::FromDocumentLoader(
       frame()->GetWebFrame()->GetDocumentLoader());
-  EXPECT_EQ(common_params.navigation_start,
+  EXPECT_EQ(common_params->navigation_start,
             navigation_state->common_params().navigation_start);
 }
 
@@ -2327,10 +2380,10 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnNavigation) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  CommitNavigationParams commit_params;
-  commit_params.current_history_list_offset = 1;
-  commit_params.current_history_list_length = 2;
-  frame()->Navigate(CommonNavigationParams(), commit_params);
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->current_history_list_offset = 1;
+  commit_params->current_history_list_length = 2;
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(1, view()->HistoryBackListCount());
@@ -2346,12 +2399,12 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnHistoryNavigation) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  CommitNavigationParams commit_params;
-  commit_params.current_history_list_offset = 1;
-  commit_params.current_history_list_length = 25;
-  commit_params.pending_history_list_offset = 12;
-  commit_params.nav_entry_id = 777;
-  frame()->Navigate(CommonNavigationParams(), commit_params);
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->current_history_list_offset = 1;
+  commit_params->current_history_list_length = 25;
+  commit_params->pending_history_list_offset = 12;
+  commit_params->nav_entry_id = 777;
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(12, view()->HistoryBackListCount());
@@ -2367,11 +2420,11 @@ TEST_F(RenderViewImplTest, HistoryIsProperlyUpdatedOnShouldClearHistoryList) {
                    view()->HistoryForwardListCount() + 1);
 
   // Receive a CommitNavigation message with history parameters.
-  CommitNavigationParams commit_params;
-  commit_params.current_history_list_offset = 12;
-  commit_params.current_history_list_length = 25;
-  commit_params.should_clear_history_list = true;
-  frame()->Navigate(CommonNavigationParams(), commit_params);
+  auto commit_params = CreateCommitNavigationParams();
+  commit_params->current_history_list_offset = 12;
+  commit_params->current_history_list_length = 25;
+  commit_params->should_clear_history_list = true;
+  frame()->Navigate(CreateCommonNavigationParams(), std::move(commit_params));
 
   // The current history list in RenderView is updated.
   EXPECT_EQ(0, view()->HistoryBackListCount());

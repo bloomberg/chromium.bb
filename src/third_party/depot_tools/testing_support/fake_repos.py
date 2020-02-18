@@ -30,7 +30,7 @@ import subprocess2
 
 def write(path, content):
   f = open(path, 'wb')
-  f.write(content)
+  f.write(content.encode())
   f.close()
 
 
@@ -46,18 +46,18 @@ def read_tree(tree_root):
     for f in [join(root, f) for f in files if not f.startswith('.')]:
       filepath = f[len(tree_root) + 1:].replace(os.sep, '/')
       assert len(filepath), f
-      tree[filepath] = open(join(root, f), 'rU').read()
+      tree[filepath] = gclient_utils.FileRead(join(root, f))
   return tree
 
 
 def dict_diff(dict1, dict2):
   diff = {}
-  for k, v in dict1.iteritems():
+  for k, v in dict1.items():
     if k not in dict2:
       diff[k] = v
     elif v != dict2[k]:
       diff[k] = (v, dict2[k])
-  for k, v in dict2.iteritems():
+  for k, v in dict2.items():
     if k not in dict1:
       diff[k] = v
   return diff
@@ -68,7 +68,8 @@ def commit_git(repo):
   subprocess2.check_call(['git', 'add', '-A', '-f'], cwd=repo)
   subprocess2.check_call(['git', 'commit', '-q', '--message', 'foo'], cwd=repo)
   rev = subprocess2.check_output(
-      ['git', 'show-ref', '--head', 'HEAD'], cwd=repo).split(' ', 1)[0]
+      ['git', 'show-ref', '--head', 'HEAD'], cwd=repo).split(b' ', 1)[0]
+  rev = rev.decode('utf-8')
   logging.debug('At revision %s' % rev)
   return rev
 
@@ -221,7 +222,7 @@ class FakeReposBase(object):
     """For a dictionary of file contents, generate a filesystem."""
     if not os.path.isdir(root):
       os.makedirs(root)
-    for (k, v) in tree_dict.iteritems():
+    for (k, v) in tree_dict.items():
       k_os = k.replace('/', os.sep)
       k_arr = k_os.split(os.sep)
       if len(k_arr) > 1:
@@ -301,7 +302,7 @@ class FakeReposBase(object):
     repo_root = join(self.git_root, repo)
     logging.debug('%s: fast-import %s', repo, data)
     subprocess2.check_call(
-        ['git', 'fast-import', '--quiet'], cwd=repo_root, stdin=data)
+        ['git', 'fast-import', '--quiet'], cwd=repo_root, stdin=data.encode())
 
   def check_port_is_free(self, port):
     sock = socket.socket()
@@ -930,7 +931,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
   def checkString(self, expected, result, msg=None):
     """Prints the diffs to ease debugging."""
-    self.assertEquals(expected.splitlines(), result.splitlines(), msg)
+    self.assertEqual(expected.splitlines(), result.splitlines(), msg)
     if expected != result:
       # Strip the begining
       while expected and result and expected[0] == result[0]:
@@ -939,13 +940,13 @@ class FakeReposTestBase(trial_dir.TestCase):
       # The exception trace makes it hard to read so dump it too.
       if '\n' in result:
         print(result)
-    self.assertEquals(expected, result, msg)
+    self.assertEqual(expected, result, msg)
 
   def check(self, expected, results):
     """Checks stdout, stderr, returncode."""
     self.checkString(expected[0], results[0])
     self.checkString(expected[1], results[1])
-    self.assertEquals(expected[2], results[2])
+    self.assertEqual(expected[2], results[2])
 
   def assertTree(self, tree, tree_root=None):
     """Diff the checkout tree with a dict."""
@@ -957,7 +958,7 @@ class FakeReposTestBase(trial_dir.TestCase):
       logging.error('Actual %s\n%s' % (tree_root, pprint.pformat(actual)))
       logging.error('Expected\n%s' % pprint.pformat(tree))
       logging.error('Diff\n%s' % pprint.pformat(diff))
-    self.assertEquals(diff, {})
+    self.assertEqual(diff, {})
 
   def mangle_git_tree(self, *args):
     """Creates a 'virtual directory snapshot' to compare with the actual result
@@ -966,7 +967,7 @@ class FakeReposTestBase(trial_dir.TestCase):
     for item, new_root in args:
       repo, rev = item.split('@', 1)
       tree = self.gittree(repo, rev)
-      for k, v in tree.iteritems():
+      for k, v in tree.items():
         result[join(new_root, k)] = v
     return result
 
@@ -980,7 +981,7 @@ class FakeReposTestBase(trial_dir.TestCase):
 
   def gitrevparse(self, repo):
     """Returns the actual revision for a given repo."""
-    return self.FAKE_REPOS._git_rev_parse(repo)
+    return self.FAKE_REPOS._git_rev_parse(repo).decode('utf-8')
 
 
 def main(argv):

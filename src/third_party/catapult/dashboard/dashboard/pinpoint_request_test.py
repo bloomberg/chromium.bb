@@ -33,14 +33,13 @@ class PinpointNewPrefillRequestHandlerTest(testing_common.TestCase):
           pinpoint_request.PinpointNewPrefillRequestHandler)])
     self.testapp = webtest.TestApp(app)
 
-  @mock.patch.object(
-      pinpoint_request.start_try_job, 'GuessStoryFilter')
-  def testPost_CallsGuessStoryFilter(self, mock_story_filter):
-    mock_story_filter.return_value = 'bar'
-    response = self.testapp.post('/pinpoint/new/prefill', {'test_path': 'foo'})
+  def testPost_UsesUnescapedStoryName(self):
+    t = graph_data.TestMetadata(id='M/B/S/foo', unescaped_story_name='foo:bar')
+    t.put()
+    response = self.testapp.post(
+        '/pinpoint/new/prefill', {'test_path': 'M/B/S/foo'})
     self.assertEqual(
-        {'story_filter': 'bar'}, json.loads(response.body))
-    mock_story_filter.assert_called_with('foo')
+        {'story_filter': 'foo:bar'}, json.loads(response.body))
 
 
 class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
@@ -97,6 +96,20 @@ class PinpointNewPerfTryRequestHandlerTest(testing_common.TestCase):
     results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
 
     self.assertEqual('story', results['story'])
+
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  def testPinpointParams_ComparisonMode_Try(self):
+    params = {
+        'test_path': 'ChromiumPerf/android-webview-nexus5x/system_health/foo',
+        'start_commit': 'abcd1234',
+        'end_commit': 'efgh5678',
+        'extra_test_args': '',
+        'story_filter': '',
+    }
+    results = pinpoint_request.PinpointParamsFromPerfTryParams(params)
+
+    self.assertEqual('try', results['comparison_mode'])
 
   @mock.patch.object(
       utils, 'IsValidSheriffUser', mock.MagicMock(return_value=False))
@@ -262,6 +275,22 @@ class PinpointNewBisectRequestHandlerTest(testing_common.TestCase):
     self.assertEqual(
         {u'error': u'User "foo@chromium.org" not authorized.'},
         json.loads(response.body))
+
+  @mock.patch.object(
+      utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))
+  @mock.patch.object(pinpoint_service, 'NewJob')
+  @mock.patch.object(
+      pinpoint_request, 'PinpointParamsFromBisectParams',
+      mock.MagicMock(return_value={'test': 'result'}))
+  def testPost_NewJob_Fails(self, mock_pinpoint):
+    mock_pinpoint.return_value = {'error': 'something'}
+    self.SetCurrentUser('foo@chromium.org')
+    params = {'a': 'b', 'c': 'd'}
+    response = self.testapp.post('/pinpoint/new', params)
+
+    expected_args = mock.call({'test': 'result'})
+    self.assertEqual([expected_args], mock_pinpoint.call_args_list)
+    self.assertEqual({'error': 'something'}, json.loads(response.body))
 
   @mock.patch.object(
       utils, 'IsValidSheriffUser', mock.MagicMock(return_value=True))

@@ -27,8 +27,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ipc/ipc_message.h"
 
-class TabGroupData;
-
 namespace chrome {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -133,23 +131,6 @@ bool BrowserTabStripModelDelegate::RunUnloadListenerBeforeClosing(
 bool BrowserTabStripModelDelegate::ShouldRunUnloadListenerBeforeClosing(
     content::WebContents* contents) {
   return browser_->ShouldRunUnloadListenerBeforeClosing(contents);
-}
-
-bool BrowserTabStripModelDelegate::CanBookmarkAllTabs() const {
-  return chrome::CanBookmarkAllTabs(browser_);
-}
-
-void BrowserTabStripModelDelegate::BookmarkAllTabs() {
-  chrome::BookmarkAllTabs(browser_);
-}
-
-TabStripModelDelegate::RestoreTabType
-BrowserTabStripModelDelegate::GetRestoreTabType() {
-  return chrome::GetRestoreTabType(browser_);
-}
-
-void BrowserTabStripModelDelegate::RestoreTab() {
-  chrome::RestoreTab(browser_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

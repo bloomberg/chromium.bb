@@ -13,12 +13,12 @@
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/common/content_export.h"
-#include "content/common/possibly_associated_interface_ptr.h"
-#include "content/public/common/url_loader_throttle.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/loader/url_loader_throttle.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -39,7 +39,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // by throttles.
   static std::unique_ptr<ThrottlingURLLoader> CreateLoaderAndStart(
       scoped_refptr<network::SharedURLLoaderFactory> factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       int32_t routing_id,
       int32_t request_id,
       uint32_t options,
@@ -50,12 +50,15 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   ~ThrottlingURLLoader() override;
 
-  void FollowRedirect(const std::vector<std::string>& removed_headers,
-                      const net::HttpRequestHeaders& modified_headers);
   // Follows a redirect, calling CreateLoaderAndStart() on the factory. This
   // is useful if the factory uses different loaders for different URLs.
   void FollowRedirectForcingRestart();
+
+  void FollowRedirect(const std::vector<std::string>& removed_headers,
+                      const net::HttpRequestHeaders& modified_headers);
   void SetPriority(net::RequestPriority priority, int32_t intra_priority_value);
+  void PauseReadingBodyFromNet();
+  void ResumeReadingBodyFromNet();
 
   // Restarts the load immediately with |factory| and |url_loader_options|.
   // It must only be called when the following conditions are met:
@@ -86,7 +89,7 @@ class CONTENT_EXPORT ThrottlingURLLoader
   class ForwardingThrottleDelegate;
 
   ThrottlingURLLoader(
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       network::mojom::URLLoaderClient* client,
       const net::NetworkTrafficAnnotationTag& traffic_annotation);
 
@@ -104,23 +107,26 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // the blocking set if it deferred and updating |*should_defer| accordingly.
   // Returns |true| if the request should continue to be processed (regardless
   // of whether it's been deferred) or |false| if it's been cancelled.
-  bool HandleThrottleResult(URLLoaderThrottle* throttle,
+  bool HandleThrottleResult(blink::URLLoaderThrottle* throttle,
                             bool throttle_deferred,
                             bool* should_defer);
 
   // Stops a given throttle from deferring the request. If this was not the last
   // deferring throttle, the request remains deferred. Otherwise it resumes
   // progress.
-  void StopDeferringForThrottle(URLLoaderThrottle* throttle);
+  void StopDeferringForThrottle(blink::URLLoaderThrottle* throttle);
 
   void RestartWithFlags(int additional_load_flags);
 
+  // Restart the request using |original_url_|.
+  void RestartWithURLResetAndFlags(int additional_load_flags);
+
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
-      const network::ResourceResponseHead& response_head) override;
+      network::mojom::URLResponseHeadPtr response_head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback ack_callback) override;
@@ -135,11 +141,12 @@ class CONTENT_EXPORT ThrottlingURLLoader
   void Resume();
   void SetPriority(net::RequestPriority priority);
   void UpdateDeferredRequestHeaders(
-      const net::HttpRequestHeaders& modified_request_headers);
+      const net::HttpRequestHeaders& modified_request_headers,
+      const net::HttpRequestHeaders& modified_cors_exempt_request_headers);
   void UpdateDeferredResponseHead(
       const network::ResourceResponseHead& new_response_head);
-  void PauseReadingBodyFromNet(URLLoaderThrottle* throttle);
-  void ResumeReadingBodyFromNet(URLLoaderThrottle* throttle);
+  void PauseReadingBodyFromNet(blink::URLLoaderThrottle* throttle);
+  void ResumeReadingBodyFromNet(blink::URLLoaderThrottle* throttle);
   void InterceptResponse(
       network::mojom::URLLoaderPtr new_loader,
       network::mojom::URLLoaderClientRequest new_client_request,
@@ -162,22 +169,24 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   struct ThrottleEntry {
     ThrottleEntry(ThrottlingURLLoader* loader,
-                  std::unique_ptr<URLLoaderThrottle> the_throttle);
+                  std::unique_ptr<blink::URLLoaderThrottle> the_throttle);
     ThrottleEntry(ThrottleEntry&& other);
     ~ThrottleEntry();
 
     ThrottleEntry& operator=(ThrottleEntry&& other);
 
     std::unique_ptr<ForwardingThrottleDelegate> delegate;
-    std::unique_ptr<URLLoaderThrottle> throttle;
+    std::unique_ptr<blink::URLLoaderThrottle> throttle;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(ThrottleEntry);
   };
 
   std::vector<ThrottleEntry> throttles_;
-  std::set<URLLoaderThrottle*> deferring_throttles_;
-  std::set<URLLoaderThrottle*> pausing_reading_body_from_net_throttles_;
+  std::set<blink::URLLoaderThrottle*> deferring_throttles_;
+  // nullptr is used when this loader is directly requested to pause reading
+  // body from net by calling PauseReadingBodyFromNet().
+  std::set<blink::URLLoaderThrottle*> pausing_reading_body_from_net_throttles_;
 
   // NOTE: This may point to a native implementation (instead of a Mojo proxy
   // object). And it is possible that the implementation of |forwarding_client_|
@@ -248,6 +257,11 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // Set if a throttle changed the URL in WillRedirectRequest.
   // Only supported with the network service.
   GURL throttle_will_redirect_redirect_url_;
+
+  // Set if the request should be made using the |original_url_|.
+  bool throttle_will_start_original_url_ = false;
+  // The first URL seen by the throttle.
+  GURL original_url_;
 
   const net::NetworkTrafficAnnotationTag traffic_annotation_;
 

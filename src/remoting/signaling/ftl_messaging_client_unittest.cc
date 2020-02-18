@@ -17,7 +17,7 @@
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "remoting/base/grpc_support/grpc_async_executor.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/base/grpc_test_support/grpc_async_test_server.h"
@@ -165,13 +165,13 @@ class FtlMessagingClientTest : public testing::Test {
   MockMessageReceptionChannel* mock_message_reception_channel_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockRegistrationManager mock_registration_manager_;
 };
 
 void FtlMessagingClientTest::SetUp() {
   server_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   server_ = std::make_unique<test::GrpcAsyncTestServer>(
       std::make_unique<Messaging::AsyncService>());
   FtlGrpcContext::SetChannelForTesting(server_->CreateInProcessChannel());

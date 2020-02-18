@@ -73,23 +73,31 @@ struct PaintPropertyTreeBuilderFragmentContext;
 // to the outer viewport. The inner viewport is always contained in the outer
 // viewport and can pan within it.
 //
-// When attached, the tree will look like this:
+// When attached, the layer tree will look like this:
+// (pre-CompositeAfterPaint only)
 //
-// VV::m_rootTransformLayer
-//  +- VV::m_innerViewportContainerLayer
-//     +- VV::m_overscrollElasticityLayer
-//     |   +- VV::m_pageScaleLayer
-//     |       +- VV::m_innerViewportScrollLayer
-//     |           +-- PLC::m_overflowControlsHostLayer
-//     |               +-- PLC::m_containerLayer (fixed pos container)
-//     |                   +-- PLC::m_scrollLayer
-//     |                       +-- PLC::m_rootContentLayer
-//     |                           +-- LayoutView CompositedLayerMapping layers
-//     +- PageOverlay for InspectorOverlay
-//     +- PageOverlay for ColorOverlay
-//     +- PLC::m_layerForHorizontalScrollbar
-//     +- PLC::m_layerForVerticalScrollbar
-//     +- PLC::m_layerForScrollCorner (non-overlay only)
+//  root_transform_layer_
+//  +- container_layer_ (transform: DET_or_parent)
+//     +- page_scale_layer_ (transform: page_scale_node_)
+//     |  +- scroll_layer_ (transform: scroll_translation_node_)
+//     |     +- LayoutView CompositedLayerMapping layers
+//     +- overlay_scrollbar_horizontal_ (optional, transform: DET_or_parent)
+//     +- overlay_scrollbar_vertical_ (optional, transform: DET_or_parent)
+//  (DET_or_parent: device_emulation_transform_node_ if exists,
+//   or the parent transform state)
+//
+// After PrePaint, the property trees will look like this:
+//
+// Transform tree:
+//  parent transform state
+//  +- device_emulation_transform_node_ (optional)
+//     +- overscroll_elasticity_transform_node_
+//        +- page_scale_node__
+//           +- scroll_translation_node_ (scroll: scroll_node_)
+// Effect tree:
+//  parent effect state
+//  +- horizontal_scrollbar_effect_node_
+//  +- vertical_scrollbar_effect_node_
 //
 class CORE_EXPORT VisualViewport final
     : public GarbageCollectedFinalized<VisualViewport>,
@@ -107,14 +115,9 @@ class CORE_EXPORT VisualViewport final
   void AttachLayerTree(GraphicsLayer*);
 
   GraphicsLayer* RootGraphicsLayer() { return root_transform_layer_.get(); }
-  GraphicsLayer* ContainerLayer() {
-    return inner_viewport_container_layer_.get();
-  }
-  GraphicsLayer* ScrollLayer() { return inner_viewport_scroll_layer_.get(); }
+  GraphicsLayer* ContainerLayer() { return container_layer_.get(); }
+  GraphicsLayer* ScrollLayer() { return scroll_layer_.get(); }
   GraphicsLayer* PageScaleLayer() { return page_scale_layer_.get(); }
-  GraphicsLayer* OverscrollElasticityLayer() {
-    return overscroll_elasticity_layer_.get();
-  }
 
   void InitializeScrollbars();
 
@@ -229,6 +232,7 @@ class CORE_EXPORT VisualViewport final
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
+  WebColorScheme UsedColorScheme() const override;
 
   // VisualViewport scrolling may involve pinch zoom and gets routed through
   // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
@@ -257,6 +261,8 @@ class CORE_EXPORT VisualViewport final
 
   ScrollbarTheme& GetPageScrollbarTheme() const override;
   bool VisualViewportSuppliesScrollbars() const override;
+
+  const Document* GetDocument() const override;
 
   TransformPaintPropertyNode* GetDeviceEmulationTransformNode() const;
   TransformPaintPropertyNode* GetOverscrollElasticityTransformNode() const;
@@ -335,10 +341,9 @@ class CORE_EXPORT VisualViewport final
 
   Member<Page> page_;
   std::unique_ptr<GraphicsLayer> root_transform_layer_;
-  std::unique_ptr<GraphicsLayer> inner_viewport_container_layer_;
-  std::unique_ptr<GraphicsLayer> overscroll_elasticity_layer_;
+  std::unique_ptr<GraphicsLayer> container_layer_;
   std::unique_ptr<GraphicsLayer> page_scale_layer_;
-  std::unique_ptr<GraphicsLayer> inner_viewport_scroll_layer_;
+  std::unique_ptr<GraphicsLayer> scroll_layer_;
 
   // The layers of the ScrollbarLayerGroups are referenced from the
   // GraphicsLayers, so the GraphicsLayers must be destructed first (declared
@@ -353,8 +358,8 @@ class CORE_EXPORT VisualViewport final
   scoped_refptr<TransformPaintPropertyNode> device_emulation_transform_node_;
   scoped_refptr<TransformPaintPropertyNode>
       overscroll_elasticity_transform_node_;
-  scoped_refptr<TransformPaintPropertyNode> scale_transform_node_;
-  scoped_refptr<TransformPaintPropertyNode> translation_transform_node_;
+  scoped_refptr<TransformPaintPropertyNode> page_scale_node__;
+  scoped_refptr<TransformPaintPropertyNode> scroll_translation_node_;
   scoped_refptr<ScrollPaintPropertyNode> scroll_node_;
   scoped_refptr<EffectPaintPropertyNode> horizontal_scrollbar_effect_node_;
   scoped_refptr<EffectPaintPropertyNode> vertical_scrollbar_effect_node_;

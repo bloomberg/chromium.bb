@@ -6,9 +6,9 @@
 
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_bypass_protocol.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_server.h"
@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace data_reduction_proxy {
@@ -81,7 +82,7 @@ class MockMojoDataReductionProxy : public mojom::DataReductionProxy {
   DISALLOW_COPY_AND_ASSIGN(MockMojoDataReductionProxy);
 };
 
-class MockDelegate : public content::URLLoaderThrottle::Delegate {
+class MockDelegate : public blink::URLLoaderThrottle::Delegate {
  public:
   MockDelegate() = default;
 
@@ -139,7 +140,7 @@ class DataReductionProxyURLLoaderThrottleTest : public ::testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockMojoDataReductionProxy mock_mojo_data_reduction_proxy_;
 };
 
@@ -156,8 +157,7 @@ TEST_F(DataReductionProxyURLLoaderThrottleTest,
       (net::HttpRequestHeaders()), manager.get());
   throttle->DetachFromCurrentSequence();
 
-  auto task_runner =
-      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+  auto task_runner = base::CreateSequencedTaskRunner({base::ThreadPool()});
   task_runner->DeleteSoon(FROM_HERE, throttle.release());
 }
 

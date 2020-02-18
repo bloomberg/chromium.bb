@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/workers/worklet_global_scope.h"
 
 #include <memory>
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_code.h"
 #include "third_party/blink/renderer/bindings/core/v8/source_location.h"
@@ -75,6 +76,7 @@ WorkletGlobalScope::WorkletGlobalScope(
           creation_params->parent_devtools_token,
           creation_params->v8_cache_options,
           creation_params->worker_clients,
+          std::move(creation_params->content_settings_client),
           std::move(creation_params->web_worker_fetch_context),
           reporting_proxy),
       url_(creation_params->script_url),
@@ -114,6 +116,11 @@ WorkletGlobalScope::WorkletGlobalScope(
 }
 
 WorkletGlobalScope::~WorkletGlobalScope() = default;
+
+BrowserInterfaceBrokerProxy& WorkletGlobalScope::GetBrowserInterfaceBroker() {
+  NOTIMPLEMENTED();
+  return GetEmptyBrowserInterfaceBroker();
+}
 
 bool WorkletGlobalScope::IsMainThreadWorkletGlobalScope() const {
   return thread_type_ == ThreadType::kMainThread;

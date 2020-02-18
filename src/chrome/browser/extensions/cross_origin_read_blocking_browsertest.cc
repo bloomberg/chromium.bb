@@ -5,15 +5,15 @@
 #include "chrome/browser/extensions/extension_action_runner.h"
 
 #include "base/bind.h"
-#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/strings/string16.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/extensions/api/tabs/tabs_api.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_function_test_utils.h"
@@ -23,8 +23,6 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
@@ -33,12 +31,13 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "extensions/browser/browsertest_util.h"
-#include "extensions/common/extension_features.h"
+#include "extensions/browser/url_loader_factory_manager.h"
 #include "extensions/test/test_extension_dir.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/http_request.h"
 #include "services/network/cross_origin_read_blocking.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -73,7 +72,7 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
           "content_scripts": [{
             "all_frames": true,
             "match_about_blank": true,
-            "matches": ["*://*/*"],
+            "matches": ["*://fetch-initiator.com/*"],
             "js": ["content_script.js"]
           }],
     )";
@@ -83,7 +82,15 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
           "name": "CrossOriginReadBlockingTest - Extension",
           "version": "1.0",
           "manifest_version": 2,
-          "permissions": ["tabs", "*://*/*"],
+          "permissions": [
+              "tabs",
+              "*://fetch-initiator.com/*",
+              "*://127.0.0.1/*",  // Initiator in AppCache tests.
+              "*://cross-site.com/*",
+              "*://other-with-permission.com/*"
+              // This list intentionally does NOT include
+              // other-without-permission.com.
+          ],
           %s
           "background": {"scripts": ["background_script.js"]}
         } )";
@@ -322,7 +329,8 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
   std::string FetchHelper(const GURL& url, FetchCallback fetch_callback) {
     content::DOMMessageQueue message_queue;
 
-    // Inject a content script that performs a cross-origin XHR to bar.com.
+    // Inject a content script that performs a cross-origin XHR to
+    // cross-site.com.
     EXPECT_TRUE(std::move(fetch_callback).Run(CreateFetchScript(url)));
 
     // Wait until the message comes back and extract result from the message.
@@ -335,13 +343,9 @@ class CrossOriginReadBlockingExtensionTest : public ExtensionBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlockingExtensionTest);
 };
 
-struct AllowlistingParam {
-  AllowlistingParam(bool feature_enabled, bool test_extension_allowlisted)
-      : feature_enabled(feature_enabled),
-        test_extension_allowlisted(test_extension_allowlisted) {}
-
-  bool feature_enabled;
-  bool test_extension_allowlisted;
+enum class AllowlistingParam {
+  kAllowlisted,
+  kNotAllowlisted,
 };
 
 class CrossOriginReadBlockingExtensionAllowlistingTest
@@ -352,9 +356,8 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
 
   CrossOriginReadBlockingExtensionAllowlistingTest() {}
 
-  bool IsAllowlistFeatureEnabled() { return GetParam().feature_enabled; }
   bool IsExtensionAllowlisted() {
-    return GetParam().test_extension_allowlisted;
+    return GetParam() == AllowlistingParam::kAllowlisted;
   }
 
   const Extension* InstallExtension(
@@ -362,30 +365,22 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
     const Extension* extension = Base::InstallExtension(
         resource_to_fetch_from_declarative_content_script);
 
-    if (IsAllowlistFeatureEnabled()) {
-      if (IsExtensionAllowlisted()) {
-        scoped_feature_list_.InitAndEnableFeatureWithParameters(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist,
-            {{extensions_features::kBypassCorbAllowlistParamName,
-              extension->hashed_id().value()}});
-      } else {
-        scoped_feature_list_.InitAndEnableFeature(
-            extensions_features::kBypassCorbOnlyForExtensionsAllowlist);
-      }
+    if (IsExtensionAllowlisted()) {
+      URLLoaderFactoryManager::AddExtensionToAllowlistForTesting(*extension);
     } else {
-      scoped_feature_list_.InitAndDisableFeature(
-          extensions_features::kBypassCorbOnlyForExtensionsAllowlist);
+      URLLoaderFactoryManager::RemoveExtensionFromAllowlistForTesting(
+          *extension);
     }
 
     return extension;
   }
 
   bool AreContentScriptFetchesExpectedToBeBlocked() {
-    return IsAllowlistFeatureEnabled() && !IsExtensionAllowlisted();
+    return !IsExtensionAllowlisted();
   }
 
   bool IsCorbExpectedToBeTurnedOffAltogether() {
-    return (IsExtensionAllowlisted() || !IsAllowlistFeatureEnabled());
+    return IsExtensionAllowlisted();
   }
 
   void VerifyFetchFromContentScriptWasBlocked(
@@ -445,8 +440,6 @@ class CrossOriginReadBlockingExtensionAllowlistingTest
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(CrossOriginReadBlockingExtensionAllowlistingTest);
 };
 
@@ -454,7 +447,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
                        FromDeclarativeContentScript_NoSniffXml) {
   // Load the test extension.
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
   ASSERT_TRUE(InstallExtension(cross_site_resource));
 
   // Test case #1: Declarative script injected after a browser-initiated
@@ -464,9 +457,9 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     base::HistogramTester histograms;
     content::DOMMessageQueue message_queue;
 
-    // Navigate to a foo.com page - this should trigger execution of the
-    // |content_script| declared in the extension manifest.
-    GURL page_url = GetTestPageUrl("foo.com");
+    // Navigate to a fetch-initiator.com page - this should trigger execution of
+    // the |content_script| declared in the extension manifest.
+    GURL page_url = GetTestPageUrl("fetch-initiator.com");
     ui_test_utils::NavigateToURL(browser(), page_url);
     EXPECT_EQ(page_url,
               active_web_contents()->GetMainFrame()->GetLastCommittedURL());
@@ -516,18 +509,18 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a cross-origin XHR to bar.com.
+  // Inject a content script that performs a cross-origin XHR to cross-site.com.
   base::HistogramTester histograms;
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
   std::string fetch_result =
       FetchViaContentScript(cross_site_resource, active_web_contents());
 
@@ -535,6 +528,33 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // various factors - see the body of VerifyFetchFromContentScript).
   VerifyFetchFromContentScript(histograms, fetch_result,
                                "nosniff.xml - body\n");
+}
+
+// Test that verifies CORS-allowed fetches work for targets that are not
+// covered by the extension permissions.
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       FromProgrammaticContentScript_NoPermissionToTarget) {
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a cross-origin XHR to cross-site.com.
+  base::HistogramTester histograms;
+  GURL cross_site_resource(embedded_test_server()->GetURL(
+      "other-without-permission.com", "/cors-ok.txt"));
+  std::string fetch_result =
+      FetchViaContentScript(cross_site_resource, active_web_contents());
+
+  // Verify whether the fetch worked or not.
+  EXPECT_EQ("cors-ok.txt - body\n", fetch_result);
+  VerifyFetchFromContentScriptWasAllowed(histograms);
 }
 
 // Tests that same-origin fetches (same-origin relative to the webpage the
@@ -545,18 +565,19 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a same-origin XHR to foo.com.
+  // Inject a content script that performs a same-origin XHR to
+  // fetch-initiator.com.
   base::HistogramTester histograms;
   GURL same_origin_resource(
-      embedded_test_server()->GetURL("foo.com", "/nosniff.xml"));
+      embedded_test_server()->GetURL("fetch-initiator.com", "/nosniff.xml"));
   std::string fetch_result =
       FetchViaContentScript(same_origin_resource, active_web_contents());
 
@@ -573,21 +594,21 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a cross-origin XHR to bar.com.
+  // Inject a content script that performs a cross-origin XHR to cross-site.com.
   //
   // StartsWith (rather than equality) is used in the verification step to
   // account for \n VS \r\n difference on Windows.
   base::HistogramTester histograms;
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/save_page/text.txt"));
+      embedded_test_server()->GetURL("cross-site.com", "/save_page/text.txt"));
   std::string fetch_result =
       FetchViaContentScript(cross_site_resource, active_web_contents());
 
@@ -606,18 +627,18 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a cross-origin XHR to bar.com.
+  // Inject a content script that performs a cross-origin XHR to cross-site.com.
   base::HistogramTester histograms;
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.empty"));
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.empty"));
   EXPECT_EQ(std::string(),
             FetchViaContentScript(cross_site_resource, active_web_contents()));
 
@@ -638,7 +659,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   // Performs a cross-origin XHR from the background page.
   base::HistogramTester histograms;
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
   std::string fetch_result = FetchViaBackgroundPage(cross_site_resource);
 
   // Verify that no blocking occurred.
@@ -662,7 +683,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // Perform a cross-origin XHR from the foreground extension page.
     base::HistogramTester histograms;
     GURL cross_site_resource(
-        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
     std::string fetch_result =
         FetchViaWebContents(cross_site_resource, active_web_contents());
 
@@ -676,7 +697,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // Perform a cross-origin XHR from the foreground extension page.
     base::HistogramTester histograms;
     GURL cross_site_resource(
-        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
     std::string fetch_result = FetchViaSrcDocFrame(
         cross_site_resource, active_web_contents()->GetMainFrame());
 
@@ -698,9 +719,9 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   // prefix to the body of each response.
   const char kServiceWorkerScript[] = R"(
       self.addEventListener('fetch', function(event) {
-          // Intercept all http requests to bar.com and inject
+          // Intercept all http requests to cross-site.com and inject
           // 'SERVICE WORKER INTERCEPT:' prefix.
-          if (event.request.url.startsWith('http://bar.com')) {
+          if (event.request.url.startsWith('http://cross-site.com')) {
             event.respondWith(
                 // By using the 'fetch' call below, the service worker initiates
                 // a network request that will go through the URLLoaderFactory
@@ -748,7 +769,7 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // This should be intercepted by the service worker installed above.
     base::HistogramTester histograms;
     GURL cross_site_resource_intercepted_by_service_worker(
-        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
     std::string fetch_result =
         FetchViaWebContents(cross_site_resource_intercepted_by_service_worker,
                             active_web_contents());
@@ -770,7 +791,8 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
     // This should be intercepted by the service worker installed above.
     base::HistogramTester histograms;
     GURL cross_site_resource_ignored_by_service_worker(
-        embedded_test_server()->GetURL("other.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("other-with-permission.com",
+                                       "/nosniff.xml"));
     std::string fetch_result = FetchViaWebContents(
         cross_site_resource_ignored_by_service_worker, active_web_contents());
 
@@ -909,8 +931,11 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
 
   // Load the main page twice. The second navigation should have AppCache
   // initialized for the page.
+  //
+  // Note that localhost / 127.0.0.1 need to be used, because Application Cache
+  // is restricted to secure contexts.
   GURL main_url = content_test_data_server.GetURL(
-      "/appcache/simple_page_with_manifest.html");
+      "127.0.0.1", "/appcache/simple_page_with_manifest.html");
   ui_test_utils::NavigateToURL(browser(), main_url);
   base::string16 expected_title = base::ASCIIToUTF16("AppCache updated");
   content::TitleWatcher title_watcher(active_web_contents(), expected_title);
@@ -939,7 +964,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     GURL cross_site_resource(
-        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
     std::string fetch_result =
         FetchViaContentScript(cross_site_resource, active_web_contents());
 
@@ -972,7 +997,7 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
     base::HistogramTester histograms;
     GURL cross_site_resource(
-        embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+        embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
     std::string fetch_result =
         FetchViaContentScript(cross_site_resource, active_web_contents());
 
@@ -997,10 +1022,12 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
   content::WebContents* app_contents = nullptr;
   {
     content::WebContentsAddedObserver new_contents_observer;
-    OpenApplication(AppLaunchParams(browser()->profile(), app->id(),
-                                    LaunchContainer::kLaunchContainerNone,
-                                    WindowOpenDisposition::NEW_WINDOW,
-                                    extensions::AppLaunchSource::kSourceTest));
+    apps::LaunchService::Get(browser()->profile())
+        ->OpenApplication(
+            AppLaunchParams(browser()->profile(), app->id(),
+                            LaunchContainer::kLaunchContainerNone,
+                            WindowOpenDisposition::NEW_WINDOW,
+                            apps::mojom::AppLaunchSource::kSourceTest));
     app_contents = new_contents_observer.GetWebContents();
   }
   ASSERT_TRUE(content::WaitForLoadStop(app_contents));
@@ -1018,13 +1045,14 @@ IN_PROC_BROWSER_TEST_F(CrossOriginReadBlockingExtensionTest,
           run_at: 'document_start'}]);
   )";
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/nosniff.xml"));
+      embedded_test_server()->GetURL("cross-site.com", "/nosniff.xml"));
   std::string web_view_injection_script = content::JsReplace(
       kWebViewInjectionScriptTemplate, CreateFetchScript(cross_site_resource));
   ASSERT_TRUE(ExecuteScript(app_contents, web_view_injection_script));
 
   // Navigate <webview>, which should trigger content script execution.
-  GURL guest_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
+  GURL guest_url(
+      embedded_test_server()->GetURL("fetch-initiator.com", "/title1.html"));
   const char kWebViewNavigationScriptTemplate[] = R"(
       var webview = document.querySelector('webview');
       webview.src = $1;
@@ -1047,17 +1075,18 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a cross-origin GET XHR to bar.com.
+  // Inject a content script that performs a cross-origin GET XHR to
+  // cross-site.com.
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/echoall"));
+      embedded_test_server()->GetURL("cross-site.com", "/echoall"));
   const char* kScriptTemplate = R"(
       fetch($1, {method: 'GET', mode:'cors'})
           .then(response => response.text())
@@ -1084,7 +1113,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     // TODO(lukasza): https://crbug.com/920638: Non-allowlisted extension
     // should use the website's origin in the CORS request.
     // TODO: EXPECT_THAT(fetch_result,
-    //                   ::testing::HasSubstr("Origin: http://foo.com"));
+    //                   ::testing::HasSubstr("Origin:
+    //                   http://fetch-initiator.com"));
     EXPECT_THAT(fetch_result, ::testing::Not(::testing::HasSubstr("Origin:")));
   }
 
@@ -1098,17 +1128,18 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a cross-origin POST XHR to bar.com.
+  // Inject a content script that performs a cross-origin POST XHR to
+  // cross-site.com.
   GURL cross_site_resource(
-      embedded_test_server()->GetURL("bar.com", "/echoall"));
+      embedded_test_server()->GetURL("cross-site.com", "/echoall"));
   const char* kScriptTemplate = R"(
       fetch($1, {method: 'POST', mode:'cors'})
           .then(response => response.text())
@@ -1128,7 +1159,8 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
     // regardless of AreContentScriptFetchesExpectedToBeBlocked.
     EXPECT_EQ("", fetch_result);
   } else {
-    EXPECT_THAT(fetch_result, ::testing::HasSubstr("Origin: http://foo.com"));
+    EXPECT_THAT(fetch_result,
+                ::testing::HasSubstr("Origin: http://fetch-initiator.com"));
   }
 
   // Regression test against https://crbug.com/944704.
@@ -1141,17 +1173,18 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   // Load the test extension.
   ASSERT_TRUE(InstallExtension());
 
-  // Navigate to a foo.com page.
-  GURL page_url = GetTestPageUrl("foo.com");
+  // Navigate to a fetch-initiator.com page.
+  GURL page_url = GetTestPageUrl("fetch-initiator.com");
   ui_test_utils::NavigateToURL(browser(), page_url);
   ASSERT_EQ(page_url,
             active_web_contents()->GetMainFrame()->GetLastCommittedURL());
   ASSERT_EQ(url::Origin::Create(page_url),
             active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
 
-  // Inject a content script that performs a same-origin POST XHR to foo.com.
+  // Inject a content script that performs a same-origin POST XHR to
+  // fetch-initiator.com.
   GURL same_origin_resource(
-      embedded_test_server()->GetURL("foo.com", "/echoall"));
+      embedded_test_server()->GetURL("fetch-initiator.com", "/echoall"));
   const char* kScriptTemplate = R"(
       fetch($1, {method: 'POST', mode:'cors'})
           .then(response => response.text())
@@ -1168,21 +1201,69 @@ IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
   //
   // According to the Fetch spec, POST should always set the Origin header (even
   // for same-origin requests).
-  EXPECT_THAT(fetch_result, ::testing::HasSubstr("Origin: http://foo.com"));
+  EXPECT_THAT(fetch_result,
+              ::testing::HasSubstr("Origin: http://fetch-initiator.com"));
 
   // Regression test against https://crbug.com/944704.
   EXPECT_THAT(fetch_result,
               ::testing::Not(::testing::HasSubstr("Origin: chrome-extension")));
 }
 
-INSTANTIATE_TEST_SUITE_P(AllowlistingDisabled,
-                         CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(false, false)));
+IN_PROC_BROWSER_TEST_P(CrossOriginReadBlockingExtensionAllowlistingTest,
+                       RequestHeaders_InSameOriginXhr_FromContentScript) {
+  // Sec-Fetch-Site only works on secure origins - setting up a https test
+  // server to help with this.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(GetChromeTestDataDir());
+  https_server.SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
+  net::test_server::ControllableHttpResponse subresource_request(
+      &https_server, "/subresource");
+  ASSERT_TRUE(https_server.Start());
+
+  // Load the test extension.
+  ASSERT_TRUE(InstallExtension());
+
+  // Navigate to https test page.
+  GURL page_url = https_server.GetURL("/title1.html");
+  ui_test_utils::NavigateToURL(browser(), page_url);
+  ASSERT_EQ(page_url,
+            active_web_contents()->GetMainFrame()->GetLastCommittedURL());
+  ASSERT_EQ(url::Origin::Create(page_url),
+            active_web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+
+  // Inject a content script that performs a same-origin GET XHR.
+  GURL same_origin_resource(https_server.GetURL("/subresource"));
+  EXPECT_EQ(url::Origin::Create(page_url),
+            url::Origin::Create(same_origin_resource));
+  const char* kScriptTemplate = R"(
+      fetch($1, {method: 'GET', mode: 'no-cors'}) )";
+  ExecuteContentScript(
+      active_web_contents(),
+      content::JsReplace(kScriptTemplate, same_origin_resource));
+
+  // Verify the Referrer and Sec-Fetch-* header values.
+  subresource_request.WaitForRequest();
+  const char* expected_sec_fetch_site = "same-origin";
+  if (IsExtensionAllowlisted()) {
+    expected_sec_fetch_site = "cross-site";
+  } else {
+    // TODO(lukasza): https://crbug.com/998247: Once the default factory uses
+    // request_initiator=website, we should get the desired behavior below -
+    // 'same-origin'.
+    expected_sec_fetch_site = "cross-site";
+  }
+  EXPECT_THAT(subresource_request.http_request()->headers,
+              testing::IsSupersetOf(
+                  {testing::Pair("Referer", page_url.spec().c_str()),
+                   testing::Pair("Sec-Fetch-Mode", "no-cors"),
+                   testing::Pair("Sec-Fetch-Site", expected_sec_fetch_site)}));
+}
+
 INSTANTIATE_TEST_SUITE_P(Allowlisted,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(true, true)));
+                         ::testing::Values(AllowlistingParam::kAllowlisted));
 INSTANTIATE_TEST_SUITE_P(NotAllowlisted,
                          CrossOriginReadBlockingExtensionAllowlistingTest,
-                         ::testing::Values(AllowlistingParam(true, false)));
+                         ::testing::Values(AllowlistingParam::kNotAllowlisted));
 
 }  // namespace extensions

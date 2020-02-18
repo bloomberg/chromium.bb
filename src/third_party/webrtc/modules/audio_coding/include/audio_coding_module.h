@@ -92,14 +92,6 @@ class AudioCodingModule {
     });
   }
 
-  ///////////////////////////////////////////////////////////////////////////
-  // Sets the bitrate to the specified value in bits/sec. If the value is not
-  // supported by the codec, it will choose another appropriate value.
-  //
-  // This is only used in test code that rely on old ACM APIs.
-  // TODO(minyue): Remove it when possible.
-  virtual void SetBitRate(int bitrate_bps) = 0;
-
   // int32_t RegisterTransportCallback()
   // Register a transport callback which will be called to deliver
   // the encoded buffers whenever Process() is called and a
@@ -193,40 +185,9 @@ class AudioCodingModule {
   //
   virtual int32_t InitializeReceiver() = 0;
 
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t ReceiveFrequency()
-  // Get sampling frequency of the last received payload.
-  //
-  // Return value:
-  //   non-negative the sampling frequency in Hertz.
-  //   -1 if an error has occurred.
-  //
-  virtual int32_t ReceiveFrequency() const = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t PlayoutFrequency()
-  // Get sampling frequency of audio played out.
-  //
-  // Return value:
-  //   the sampling frequency in Hertz.
-  //
-  virtual int32_t PlayoutFrequency() const = 0;
-
   // Replace any existing decoders with the given payload type -> decoder map.
   virtual void SetReceiveCodecs(
       const std::map<int, SdpAudioFormat>& codecs) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // absl::optional<std::pair<int, SdpAudioFormat>> ReceiveCodec()
-  // Get the codec info associated with last received payload.
-  //
-  // Return value:
-  //    A payload type and SdpAudioFormat describing the format associated with
-  //    the last received payload.
-  //    An empty Optional if no payload has yet been received.
-  //
-  virtual absl::optional<std::pair<int, SdpAudioFormat>> ReceiveCodec()
-      const = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   // int32_t IncomingPacket()
@@ -245,66 +206,6 @@ class AudioCodingModule {
   virtual int32_t IncomingPacket(const uint8_t* incoming_payload,
                                  const size_t payload_len_bytes,
                                  const RTPHeader& rtp_header) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int SetMinimumPlayoutDelay()
-  // Set a minimum for the playout delay, used for lip-sync. NetEq maintains
-  // such a delay unless channel condition yields to a higher delay.
-  //
-  // Input:
-  //   -time_ms            : minimum delay in milliseconds.
-  //
-  // Return value:
-  //   -1 if failed to set the delay,
-  //    0 if the minimum delay is set.
-  //
-  virtual int SetMinimumPlayoutDelay(int time_ms) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int SetMaximumPlayoutDelay()
-  // Set a maximum for the playout delay
-  //
-  // Input:
-  //   -time_ms            : maximum delay in milliseconds.
-  //
-  // Return value:
-  //   -1 if failed to set the delay,
-  //    0 if the maximum delay is set.
-  //
-  virtual int SetMaximumPlayoutDelay(int time_ms) = 0;
-
-  // Sets a base minimum for the playout delay. Base minimum delay sets lower
-  // bound minimum delay value which is set via SetMinimumPlayoutDelay.
-  //
-  // Returns true if value was successfully set, false overwise.
-  virtual bool SetBaseMinimumPlayoutDelayMs(int delay_ms) = 0;
-
-  // Returns current value of base minimum delay in milliseconds.
-  virtual int GetBaseMinimumPlayoutDelayMs() const = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int32_t PlayoutTimestamp()
-  // The send timestamp of an RTP packet is associated with the decoded
-  // audio of the packet in question. This function returns the timestamp of
-  // the latest audio obtained by calling PlayoutData10ms(), or empty if no
-  // valid timestamp is available.
-  //
-  virtual absl::optional<uint32_t> PlayoutTimestamp() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int FilteredCurrentDelayMs()
-  // Returns the current total delay from NetEq (packet buffer and sync buffer)
-  // in ms, with smoothing applied to even out short-time fluctuations due to
-  // jitter. The packet buffer part of the delay is not updated during DTX/CNG
-  // periods.
-  //
-  virtual int FilteredCurrentDelayMs() const = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int FilteredCurrentDelayMs()
-  // Returns the current target delay for NetEq in ms.
-  //
-  virtual int TargetDelayMs() const = 0;
 
   ///////////////////////////////////////////////////////////////////////////
   // int32_t PlayoutData10Ms(
@@ -331,47 +232,6 @@ class AudioCodingModule {
                                   bool* muted) = 0;
 
   ///////////////////////////////////////////////////////////////////////////
-  //   Codec specific
-  //
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int SetOpusMaxPlaybackRate()
-  // If current send codec is Opus, informs it about maximum playback rate the
-  // receiver will render. Opus can use this information to optimize the bit
-  // rate and increase the computation efficiency.
-  //
-  // Input:
-  //   -frequency_hz            : maximum playback rate in Hz.
-  //
-  // Return value:
-  //   -1 if current send codec is not Opus or
-  //      error occurred in setting the maximum playback rate,
-  //    0 if maximum bandwidth is set successfully.
-  //
-  virtual int SetOpusMaxPlaybackRate(int frequency_hz) = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // EnableOpusDtx()
-  // Enable the DTX, if current send codec is Opus.
-  //
-  // Return value:
-  //   -1 if current send codec is not Opus or error occurred in enabling the
-  //      Opus DTX.
-  //    0 if Opus DTX is enabled successfully.
-  //
-  virtual int EnableOpusDtx() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
-  // int DisableOpusDtx()
-  // If current send codec is Opus, disables its internal DTX.
-  //
-  // Return value:
-  //   -1 if current send codec is not Opus or error occurred in disabling DTX.
-  //    0 if Opus DTX is disabled successfully.
-  //
-  virtual int DisableOpusDtx() = 0;
-
-  ///////////////////////////////////////////////////////////////////////////
   //   statistics
   //
 
@@ -389,37 +249,6 @@ class AudioCodingModule {
   //
   virtual int32_t GetNetworkStatistics(
       NetworkStatistics* network_statistics) = 0;
-
-  //
-  // Enable NACK and set the maximum size of the NACK list. If NACK is already
-  // enable then the maximum NACK list size is modified accordingly.
-  //
-  // If the sequence number of last received packet is N, the sequence numbers
-  // of NACK list are in the range of [N - |max_nack_list_size|, N).
-  //
-  // |max_nack_list_size| should be positive (none zero) and less than or
-  // equal to |Nack::kNackListSizeLimit|. Otherwise, No change is applied and -1
-  // is returned. 0 is returned at success.
-  //
-  virtual int EnableNack(size_t max_nack_list_size) = 0;
-
-  // Disable NACK.
-  virtual void DisableNack() = 0;
-
-  //
-  // Get a list of packets to be retransmitted. |round_trip_time_ms| is an
-  // estimate of the round-trip-time (in milliseconds). Missing packets which
-  // will be playout in a shorter time than the round-trip-time (with respect
-  // to the time this API is called) will not be included in the list.
-  //
-  // Negative |round_trip_time_ms| results is an error message and empty list
-  // is returned.
-  //
-  virtual std::vector<uint16_t> GetNackList(
-      int64_t round_trip_time_ms) const = 0;
-
-  virtual void GetDecodingCallStatistics(
-      AudioDecodingCallStats* call_stats) const = 0;
 
   virtual ANAStats GetANAStats() const = 0;
 };

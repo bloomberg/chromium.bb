@@ -21,12 +21,36 @@ namespace webrtc {
 namespace {
 constexpr char kFieldTrial[] = "WebRTC-Video-BalancedDegradationSettings";
 constexpr int kMinFps = 1;
-constexpr int kMaxFps = 100;
+constexpr int kMaxFps = 100;  // 100 means unlimited fps.
 
 std::vector<BalancedDegradationSettings::Config> DefaultConfigs() {
-  return {{320 * 240, 7, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
-          {480 * 270, 10, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}},
-          {640 * 480, 15, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}, {0, 0, 0}}};
+  return {{320 * 240,
+           7,
+           0,
+           0,
+           BalancedDegradationSettings::kNoFpsDiff,
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0}},
+          {480 * 270,
+           10,
+           0,
+           0,
+           BalancedDegradationSettings::kNoFpsDiff,
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0}},
+          {640 * 480,
+           15,
+           0,
+           0,
+           BalancedDegradationSettings::kNoFpsDiff,
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0},
+           {0, 0, 0}}};
 }
 
 bool IsValidConfig(
@@ -73,6 +97,16 @@ bool IsValid(const std::vector<BalancedDegradationSettings::Config>& configs) {
     if (config.fps < kMinFps || config.fps > kMaxFps) {
       RTC_LOG(LS_WARNING) << "Unsupported fps setting, value ignored.";
       return false;
+    }
+  }
+  int last_kbps = configs[0].kbps;
+  for (size_t i = 1; i < configs.size(); ++i) {
+    if (configs[i].kbps > 0) {
+      if (configs[i].kbps < last_kbps) {
+        RTC_LOG(LS_WARNING) << "Invalid bitrate value provided.";
+        return false;
+      }
+      last_kbps = configs[i].kbps;
     }
   }
   for (size_t i = 1; i < configs.size(); ++i) {
@@ -164,7 +198,9 @@ int GetFps(VideoCodecType type,
       break;
   }
 
-  return fps.value_or(config->fps);
+  const int framerate = fps.value_or(config->fps);
+
+  return (framerate == kMaxFps) ? std::numeric_limits<int>::max() : framerate;
 }
 }  // namespace
 
@@ -187,12 +223,18 @@ BalancedDegradationSettings::Config::Config() = default;
 
 BalancedDegradationSettings::Config::Config(int pixels,
                                             int fps,
+                                            int kbps,
+                                            int kbps_res,
+                                            int fps_diff,
                                             CodecTypeSpecific vp8,
                                             CodecTypeSpecific vp9,
                                             CodecTypeSpecific h264,
                                             CodecTypeSpecific generic)
     : pixels(pixels),
       fps(fps),
+      kbps(kbps),
+      kbps_res(kbps_res),
+      fps_diff(fps_diff),
       vp8(vp8),
       vp9(vp9),
       h264(h264),
@@ -202,6 +244,11 @@ BalancedDegradationSettings::BalancedDegradationSettings() {
   FieldTrialStructList<Config> configs(
       {FieldTrialStructMember("pixels", [](Config* c) { return &c->pixels; }),
        FieldTrialStructMember("fps", [](Config* c) { return &c->fps; }),
+       FieldTrialStructMember("kbps", [](Config* c) { return &c->kbps; }),
+       FieldTrialStructMember("kbps_res",
+                              [](Config* c) { return &c->kbps_res; }),
+       FieldTrialStructMember("fps_diff",
+                              [](Config* c) { return &c->fps_diff; }),
        FieldTrialStructMember("vp8_qp_low",
                               [](Config* c) { return &c->vp8.qp_low; }),
        FieldTrialStructMember("vp8_qp_high",
@@ -261,6 +308,63 @@ BalancedDegradationSettings::GetMaxFpsConfig(int pixels) const {
   for (size_t i = 0; i < configs_.size() - 1; ++i) {
     if (pixels <= configs_[i].pixels)
       return configs_[i + 1];
+  }
+  return absl::nullopt;
+}
+
+absl::optional<int> BalancedDegradationSettings::NextHigherBitrateKbps(
+    int pixels) const {
+  for (size_t i = 0; i < configs_.size() - 1; ++i) {
+    if (pixels <= configs_[i].pixels) {
+      return (configs_[i + 1].kbps > 0)
+                 ? absl::optional<int>(configs_[i + 1].kbps)
+                 : absl::nullopt;
+    }
+  }
+  return absl::nullopt;
+}
+
+absl::optional<int>
+BalancedDegradationSettings::ResolutionNextHigherBitrateKbps(int pixels) const {
+  for (size_t i = 0; i < configs_.size() - 1; ++i) {
+    if (pixels <= configs_[i].pixels) {
+      return (configs_[i + 1].kbps_res > 0)
+                 ? absl::optional<int>(configs_[i + 1].kbps_res)
+                 : absl::nullopt;
+    }
+  }
+  return absl::nullopt;
+}
+
+bool BalancedDegradationSettings::CanAdaptUp(int pixels,
+                                             uint32_t bitrate_bps) const {
+  absl::optional<int> next_layer_min_kbps = NextHigherBitrateKbps(pixels);
+  if (!next_layer_min_kbps.has_value() || bitrate_bps == 0) {
+    return true;  // No limit configured or bitrate provided.
+  }
+  return bitrate_bps >=
+         static_cast<uint32_t>(next_layer_min_kbps.value() * 1000);
+}
+
+bool BalancedDegradationSettings::CanAdaptUpResolution(
+    int pixels,
+    uint32_t bitrate_bps) const {
+  absl::optional<int> next_layer_min_kbps =
+      ResolutionNextHigherBitrateKbps(pixels);
+  if (!next_layer_min_kbps.has_value() || bitrate_bps == 0) {
+    return true;  // No limit configured or bitrate provided.
+  }
+  return bitrate_bps >=
+         static_cast<uint32_t>(next_layer_min_kbps.value() * 1000);
+}
+
+absl::optional<int> BalancedDegradationSettings::MinFpsDiff(int pixels) const {
+  for (const auto& config : configs_) {
+    if (pixels <= config.pixels) {
+      return (config.fps_diff > kNoFpsDiff)
+                 ? absl::optional<int>(config.fps_diff)
+                 : absl::nullopt;
+    }
   }
   return absl::nullopt;
 }

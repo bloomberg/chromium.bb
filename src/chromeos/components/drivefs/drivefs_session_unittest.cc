@@ -9,8 +9,8 @@
 #include "base/run_loop.h"
 #include "base/strings/strcat.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
 #include "chromeos/components/drivefs/mojom/drivefs.mojom-test-utils.h"
@@ -323,7 +323,7 @@ class DriveFsSessionTest : public ::testing::Test,
     holder_.reset();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   struct PointerHolder {
     MockDiskMounter* mounter = nullptr;

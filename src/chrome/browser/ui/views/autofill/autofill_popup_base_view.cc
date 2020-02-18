@@ -89,7 +89,7 @@ void AutofillPopupBaseView::DoShow() {
     // Ensure the bubble border is not painted on an opaque background.
     params.opacity = views::Widget::InitParams::TRANSLUCENT_WINDOW;
     params.shadow_type = views::Widget::InitParams::SHADOW_TYPE_NONE;
-    widget->Init(params);
+    widget->Init(std::move(params));
     widget->AddObserver(this);
 
     // No animation for popup appearance (too distracting).
@@ -288,26 +288,6 @@ void AutofillPopupBaseView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kPane;
   node_data->SetName(
       l10n_util::GetStringUTF16(IDS_AUTOFILL_POPUP_ACCESSIBLE_NODE_DATA));
-}
-
-void AutofillPopupBaseView::VisibilityChanged(View* starting_from,
-                                              bool is_visible) {
-  if (is_visible) {
-    // Announce that the suggestions are available before the pop up is open.
-    // The password generation pop up relies on this call.
-    ui::AXPlatformNode::OnInputSuggestionsAvailable();
-    // Fire these the first time a menu is visible. By firing these and the
-    // matching end events, we are telling screen readers that the focus
-    // is only changing temporarily, and the screen reader will restore the
-    // focus back to the appropriate textfield when the menu closes.
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuStart, true);
-  } else {
-    // TODO(https://crbug.com/848427) Only call if suggestions are actually no
-    // longer available. The suggestions could be hidden but still available, as
-    // is the case when the Escape key is pressed.
-    ui::AXPlatformNode::OnInputSuggestionsUnavailable();
-    NotifyAccessibilityEvent(ax::mojom::Event::kMenuEnd, true);
-  }
 }
 
 void AutofillPopupBaseView::SetSelection(const gfx::Point& point) {

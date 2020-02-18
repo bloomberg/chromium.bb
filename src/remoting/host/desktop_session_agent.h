@@ -127,6 +127,7 @@ class DesktopSessionAgent
   // ClientSessionControl interface.
   const std::string& client_jid() const override;
   void DisconnectSession(protocol::ErrorCode error) override;
+  void OnLocalKeyPressed(uint32_t usb_keycode) override;
   void OnLocalPointerMoved(const webrtc::DesktopVector& position,
                            ui::EventType type) override;
   void SetDisableInputs(bool disable_inputs) override;
@@ -241,7 +242,7 @@ class DesktopSessionAgent
   CurrentProcessStatsAgent current_process_stats_;
 
   // Used to disable callbacks to |this|.
-  base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;
+  base::WeakPtrFactory<DesktopSessionAgent> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DesktopSessionAgent);
 };

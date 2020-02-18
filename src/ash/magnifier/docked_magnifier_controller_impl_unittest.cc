@@ -20,7 +20,12 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -362,6 +367,38 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
+TEST_P(DockedMagnifierTest, OverviewTabbing) {
+  auto window = CreateTestWindow();
+  controller()->SetEnabled(true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const auto* desk_bar_view = GetOverviewSession()
+                                  ->GetGridWithRootWindow(root_window)
+                                  ->desks_bar_view();
+
+  // Tab once. The viewport should be centered on the center of the new desk
+  // button.
+  SendKey(ui::VKEY_TAB);
+  TestMagnifierLayerTransform(
+      desk_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
+      root_window);
+
+  // Tab one more time. The viewport should be centered on the beginning of the
+  // overview item's title.
+  SendKey(ui::VKEY_TAB);
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(item);
+  const auto label_bounds_in_screen =
+      item->caption_container_view()->title_label()->GetBoundsInScreen();
+  const gfx::Point expected_point_of_interest(
+      label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
+  TestMagnifierLayerTransform(expected_point_of_interest, root_window);
+}
+
 // Test that we exist split view and over view modes when a single window is
 // snapped and the other snap region is hosting overview mode.
 TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
@@ -650,6 +687,37 @@ TEST_P(DockedMagnifierTest, TextInputFieldEvents) {
   GetEventGenerator()->ReleaseKey(ui::VKEY_A, 0);
   gfx::Point new_caret_center(text_input_helper.GetCaretBounds().CenterPoint());
   TestMagnifierLayerTransform(new_caret_center, root_windows[0]);
+}
+
+// Tests that there are no crashes observed when the docked magnifier switches
+// displays, moving away from a display with a maximized window that has a
+// focused text input field. Changing the old display's work area bounds should
+// not cause recursive caret bounds change notifications into the docked
+// magnifier. https://crbug.com/1000903.
+TEST_P(DockedMagnifierTest, NoCrashDueToRecursion) {
+  UpdateDisplay("600x900,800x600");
+  const auto roots = Shell::GetAllRootWindows();
+  ASSERT_EQ(2u, roots.size());
+
+  MagnifierTextInputTestHelper text_input_helper;
+  text_input_helper.CreateAndShowTextInputViewInRoot(gfx::Rect(0, 0, 600, 900),
+                                                     roots[0]);
+  text_input_helper.MaximizeWidget();
+
+  // Enable the docked magnifier.
+  controller()->SetEnabled(true);
+  const float scale1 = 2.0f;
+  controller()->SetScale(scale1);
+  EXPECT_TRUE(controller()->GetEnabled());
+  EXPECT_FLOAT_EQ(scale1, controller()->GetScale());
+
+  // Focus on the text input field.
+  text_input_helper.FocusOnTextInputView();
+  gfx::Point caret_center(text_input_helper.GetCaretBounds().CenterPoint());
+  TestMagnifierLayerTransform(caret_center, roots[0]);
+
+  // Move the mouse to the second display and expect no crashes.
+  GetEventGenerator()->MoveMouseTo(1000, 300);
 }
 
 TEST_P(DockedMagnifierTest, FocusChangeEvents) {

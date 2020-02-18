@@ -16,6 +16,7 @@
 #include "base/strings/string_util.h"
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
+#include "build/branding_buildflags.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,7 @@
 #include "chrome/grit/browser_resources.h"
 #include "extensions/browser/extension_pref_value_map.h"
 #include "extensions/browser/extension_pref_value_map_factory.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_constants.h"
@@ -39,44 +41,53 @@ struct WhitelistedComponentExtensionIME {
   const char* id;
   int manifest_resource_id;
 } whitelisted_component_extension[] = {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     {
         // Official Google XKB Input.
-        extension_ime_util::kXkbExtensionId, IDR_GOOGLE_XKB_MANIFEST,
+        extension_ime_util::kXkbExtensionId,
+        IDR_GOOGLE_XKB_MANIFEST,
     },
 #else
     {
         // Open-sourced ChromeOS xkb extension.
-        extension_ime_util::kXkbExtensionId, IDR_XKB_MANIFEST,
+        extension_ime_util::kXkbExtensionId,
+        IDR_XKB_MANIFEST,
     },
     {
         // Open-sourced ChromeOS Keyboards extension.
-        extension_ime_util::kM17nExtensionId, IDR_M17N_MANIFEST,
+        extension_ime_util::kM17nExtensionId,
+        IDR_M17N_MANIFEST,
     },
     {
         // Open-sourced Pinyin Chinese Input Method.
-        extension_ime_util::kChinesePinyinExtensionId, IDR_PINYIN_MANIFEST,
+        extension_ime_util::kChinesePinyinExtensionId,
+        IDR_PINYIN_MANIFEST,
     },
     {
         // Open-sourced Zhuyin Chinese Input Method.
-        extension_ime_util::kChineseZhuyinExtensionId, IDR_ZHUYIN_MANIFEST,
+        extension_ime_util::kChineseZhuyinExtensionId,
+        IDR_ZHUYIN_MANIFEST,
     },
     {
         // Open-sourced Cangjie Chinese Input Method.
-        extension_ime_util::kChineseCangjieExtensionId, IDR_CANGJIE_MANIFEST,
+        extension_ime_util::kChineseCangjieExtensionId,
+        IDR_CANGJIE_MANIFEST,
     },
     {
         // Open-sourced Japanese Mozc Input.
-        extension_ime_util::kMozcExtensionId, IDR_MOZC_MANIFEST,
+        extension_ime_util::kMozcExtensionId,
+        IDR_MOZC_MANIFEST,
     },
     {
         // Open-sourced Hangul Input.
-        extension_ime_util::kHangulExtensionId, IDR_HANGUL_MANIFEST,
+        extension_ime_util::kHangulExtensionId,
+        IDR_HANGUL_MANIFEST,
     },
 #endif
     {
         // Braille hardware keyboard IME that works together with ChromeVox.
-        extension_ime_util::kBrailleImeExtensionId, IDR_BRAILLE_MANIFEST,
+        extension_ime_util::kBrailleImeExtensionId,
+        IDR_BRAILLE_MANIFEST,
     },
 };
 
@@ -94,12 +105,11 @@ void DoLoadExtension(Profile* profile,
                      const std::string& extension_id,
                      const std::string& manifest,
                      const base::FilePath& file_path) {
-  extensions::ExtensionSystem* extension_system =
-      extensions::ExtensionSystem::Get(profile);
-  extensions::ExtensionService* extension_service =
-      extension_system->extension_service();
-  DCHECK(extension_service);
-  if (extension_service->GetExtensionById(extension_id, false)) {
+  extensions::ExtensionRegistry* extension_registry =
+      extensions::ExtensionRegistry::Get(profile);
+  DCHECK(extension_registry);
+  if (extension_registry->GetExtensionById(
+          extension_id, extensions::ExtensionRegistry::ENABLED)) {
     VLOG(1) << "the IME extension(id=\"" << extension_id
             << "\") is already enabled";
     return;
@@ -119,6 +129,11 @@ void DoLoadExtension(Profile* profile,
                           true,          // is_enabled.
                           true);         // is_incognito_enabled.
   DCHECK_EQ(loaded_extension_id, extension_id);
+  extensions::ExtensionSystem* extension_system =
+      extensions::ExtensionSystem::Get(profile);
+  extensions::ExtensionService* extension_service =
+      extension_system->extension_service();
+  DCHECK(extension_service);
   if (!extension_service->IsExtensionEnabled(loaded_extension_id)) {
     LOG(ERROR) << "An IME extension(id=\"" << loaded_extension_id
                << "\") is not enabled after loading";
@@ -163,10 +178,11 @@ void ComponentExtensionIMEManagerImpl::Load(Profile* profile,
   // and InputMethodEngine creation, so that the virtual keyboard web content
   // url won't be override by IME component extensions.
   base::FilePath* copied_file_path = new base::FilePath(file_path);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       // USER_BLOCKING because it is on the critical path of displaying the
       // virtual keyboard. See https://crbug.com/976542
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_BLOCKING},
       base::Bind(&CheckFilePath, base::Unretained(copied_file_path)),
       base::Bind(&OnFilePathChecked, base::Unretained(profile),
                  base::Owned(new std::string(extension_id)),

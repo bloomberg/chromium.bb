@@ -42,6 +42,7 @@
 #include "net/base/ip_endpoint.h"
 #include "net/http/http_response_headers.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/referrer.mojom.h"
 #include "url/gurl.h"
 
 using content::BrowserThread;
@@ -146,7 +147,7 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
     // csd-whitelist check has to be done on the IO thread because it
     // uses the SafeBrowsing service class.
     if (ShouldClassifyForPhishing() || ShouldClassifyForMalware()) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&ShouldClassifyUrlRequest::CheckSafeBrowsingDatabase,
                          this, url_));
@@ -262,10 +263,9 @@ class ClientSideDetectionHost::ShouldClassifyUrlRequest
                << " because it matches the csd whitelist";
       phishing_reason = NO_CLASSIFY_MATCH_CSD_WHITELIST;
     }
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
-                       phishing_reason, malware_reason));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&ShouldClassifyUrlRequest::CheckCache, this,
+                                  phishing_reason, malware_reason));
   }
 
   void CheckCache(PreClassificationCheckFailures phishing_reason,
@@ -576,9 +576,6 @@ void ClientSideDetectionHost::PhishingDetectionDone(
       browse_info_.get() &&
       verdict->ParseFromString(verdict_str) &&
       verdict->IsInitialized()) {
-    UMA_HISTOGRAM_BOOLEAN(
-        "SBClientPhishing.ClientDeterminesPhishing",
-        verdict->is_phishing());
     // We only send phishing verdict to the server if the verdict is phishing or
     // if a SafeBrowsing interstitial was already shown for this site.  E.g., a
     // malware or phishing interstitial was shown but the user clicked
@@ -600,11 +597,6 @@ void ClientSideDetectionHost::PhishingDetectionDone(
 void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
                                                        bool is_phishing) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DVLOG(2) << "Received server phishing verdict for URL:" << phishing_url
-           << " is_phishing:" << is_phishing;
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientPhishing.ServerDeterminesPhishing",
-      is_phishing);
   if (is_phishing) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {

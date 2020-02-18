@@ -12,8 +12,8 @@
 #include "base/message_loop/message_loop.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "google_apis/gcm/base/mcs_util.h"
 #include "google_apis/gcm/engine/fake_connection_handler.h"
@@ -301,7 +301,7 @@ class ConnectionFactoryImplTest
 
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestConnectionFactoryImpl factory_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
@@ -315,8 +315,7 @@ class ConnectionFactoryImplTest
 ConnectionFactoryImplTest::ConnectionFactoryImplTest()
     : network_connection_tracker_(
           network::TestNetworkConnectionTracker::CreateInstance()),
-      scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
       factory_(base::BindRepeating(
                    &ConnectionFactoryImplTest::GetProxyResolvingSocketFactory,
                    base::Unretained(this)),

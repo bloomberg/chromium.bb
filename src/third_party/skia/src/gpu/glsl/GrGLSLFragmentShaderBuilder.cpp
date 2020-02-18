@@ -5,7 +5,7 @@
  * found in the LICENSE file.
  */
 
-#include "include/gpu/GrRenderTarget.h"
+#include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrRenderTargetPriv.h"
 #include "src/gpu/GrShaderCaps.h"
 #include "src/gpu/gl/GrGLGpu.h"
@@ -154,6 +154,38 @@ void GrGLSLFragmentShaderBuilder::applyFnToMultisampleMask(
     this->maskOffMultisampleCoverage("mask", scopeFlags);
 
     this->codeAppendf("}");
+}
+
+SkString GrGLSLFPFragmentBuilder::writeProcessorFunction(GrGLSLFragmentProcessor* fp,
+                                                         GrGLSLFragmentProcessor::EmitArgs& args) {
+    this->onBeforeChildProcEmitCode();
+    this->nextStage();
+    if (!args.fFp.computeLocalCoordsInVertexShader() && args.fTransformedCoords.count() > 0) {
+        // we currently only support overriding a single coordinate pair
+        SkASSERT(args.fTransformedCoords.count() == 1);
+        const GrGLSLProgramDataManager::UniformHandle& mat =
+                                                          args.fTransformedCoords[0].fUniformMatrix;
+        if (mat.isValid()) {
+            args.fUniformHandler->updateUniformVisibility(mat, kFragment_GrShaderFlag);
+            this->codeAppendf("_coords = (float3(_coords, 1) * %s).xy;\n",
+                              args.fTransformedCoords[0].fMatrixCode.c_str());
+        }
+    }
+    this->codeAppendf("half4 %s;\n", args.fOutputColor);
+    fp->emitCode(args);
+    this->codeAppendf("return %s;\n", args.fOutputColor);
+    GrShaderVar params[] = { GrShaderVar(args.fInputColor, kHalf4_GrSLType),
+                             GrShaderVar("_coords", kFloat2_GrSLType) };
+    SkString result;
+    this->emitFunction(kHalf4_GrSLType,
+                       "stage",
+                       args.fFp.computeLocalCoordsInVertexShader() ? 1 : 2,
+                       params,
+                       this->code().c_str(),
+                       &result);
+    this->deleteStage();
+    this->onAfterChildProcEmitCode();
+    return result;
 }
 
 const char* GrGLSLFragmentShaderBuilder::dstColor() {

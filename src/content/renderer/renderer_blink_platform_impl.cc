@@ -40,7 +40,6 @@
 #include "content/public/common/webplugininfo.h"
 #include "content/public/renderer/content_renderer_client.h"
 #include "content/public/renderer/render_frame.h"
-#include "content/renderer/blob_storage/webblobregistry_impl.h"
 #include "content/renderer/loader/child_url_loader_factory_bundle.h"
 #include "content/renderer/loader/code_cache_loader_impl.h"
 #include "content/renderer/loader/resource_dispatcher.h"
@@ -48,8 +47,9 @@
 #include "content/renderer/media/audio/audio_device_factory.h"
 #include "content/renderer/media/audio_decoder.h"
 #include "content/renderer/media/renderer_webaudiodevice_impl.h"
+#include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
+#include "content/renderer/media/webrtc/peer_connection_tracker.h"
 #include "content/renderer/media/webrtc/transmission_encoding_info_handler.h"
-#include "content/renderer/mojo/blink_interface_provider_impl.h"
 #include "content/renderer/p2p/port_allocator.h"
 #include "content/renderer/render_thread_impl.h"
 #include "content/renderer/storage_util.h"
@@ -65,9 +65,8 @@
 #include "media/blink/webcontentdecryptionmodule_impl.h"
 #include "media/filters/stream_parser_factory.h"
 #include "media/video/gpu_video_accelerator_factories.h"
+#include "media/webrtc/webrtc_switches.h"
 #include "mojo/public/cpp/base/big_buffer.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
@@ -79,14 +78,15 @@
 #include "storage/common/database/database_identifier.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/indexeddb/indexeddb.mojom.h"
 #include "third_party/blink/public/platform/blame_context.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
+#include "third_party/blink/public/platform/interface_provider.h"
+#include "third_party/blink/public/platform/modules/video_capture/web_video_capture_impl_manager.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_audio_latency_hint.h"
-#include "third_party/blink/public/platform/web_blob_registry.h"
-#include "third_party/blink/public/platform/web_media_stream_center.h"
 #include "third_party/blink/public/platform/web_rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
@@ -95,6 +95,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_local_frame.h"
+#include "third_party/blink/public/web/web_user_media_request.h"
 #include "third_party/sqlite/sqlite3.h"
 #include "ui/gl/buildflags.h"
 #include "url/gurl.h"
@@ -109,6 +110,10 @@
 #include "base/file_descriptor_posix.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/win/windows_version.h"
+#endif
+
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
 #include "content/renderer/media/webrtc/rtc_certificate_generator.h"
 #include "third_party/blink/public/platform/modules/mediastream/webrtc_uma_histograms.h"
@@ -116,8 +121,6 @@
 using blink::Platform;
 using blink::WebAudioDevice;
 using blink::WebAudioLatencyHint;
-using blink::WebBlobRegistry;
-using blink::WebMediaStreamCenter;
 using blink::WebMediaStreamTrack;
 using blink::WebRTCPeerConnectionHandler;
 using blink::WebRTCPeerConnectionHandlerClient;
@@ -129,8 +132,6 @@ using blink::WebVector;
 namespace content {
 
 namespace {
-
-bool g_sandbox_enabled = true;
 
 media::AudioParameters GetAudioHardwareParams() {
   blink::WebLocalFrame* const web_frame =
@@ -181,25 +182,28 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   // RenderThread may not exist in some tests.
   if (RenderThreadImpl::current()) {
     io_runner_ = RenderThreadImpl::current()->GetIOTaskRunner();
-    connector_ = RenderThreadImpl::current()
-                     ->GetServiceManagerConnection()
-                     ->GetConnector()
-                     ->Clone();
     thread_safe_sender_ = RenderThreadImpl::current()->thread_safe_sender();
-    blob_registry_.reset(new WebBlobRegistryImpl(thread_safe_sender_.get()));
 #if defined(OS_LINUX)
-    font_loader_ = sk_make_sp<font_service::FontLoader>(connector_.get());
+    mojo::PendingRemote<font_service::mojom::FontService> font_service;
+    RenderThreadImpl::current()->BindHostReceiver(
+        font_service.InitWithNewPipeAndPassReceiver());
+    font_loader_ =
+        sk_make_sp<font_service::FontLoader>(std::move(font_service));
     SkFontConfigInterface::SetGlobal(font_loader_);
 #endif
-  } else {
-    service_manager::mojom::ConnectorRequest request;
-    connector_ = service_manager::Connector::Create(&request);
   }
 
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-  if (g_sandbox_enabled && sandboxEnabled()) {
+  if (sandboxEnabled()) {
 #if defined(OS_MACOSX)
-    sandbox_support_.reset(new WebSandboxSupportMac(connector_.get()));
+    std::unique_ptr<service_manager::Connector> sandbox_connector;
+    if (auto* thread = RenderThreadImpl::current()) {
+      sandbox_connector = thread->GetConnector()->Clone();
+    } else {
+      service_manager::mojom::ConnectorRequest request;
+      sandbox_connector = service_manager::Connector::Create(&request);
+    }
+    sandbox_support_.reset(new WebSandboxSupportMac(sandbox_connector.get()));
 #else
     sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #endif
@@ -208,13 +212,11 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
   }
 #endif
 
-  blink_interface_provider_.reset(
-      new BlinkInterfaceProviderImpl(connector_.get()));
   top_level_blame_context_.Initialize();
   main_thread_scheduler_->SetTopLevelBlameContext(&top_level_blame_context_);
 
-  GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&code_cache_host_info_));
+  GetBrowserInterfaceBrokerProxy()->GetInterface(
+      code_cache_host_remote_.InitWithNewPipeAndPassReceiver());
 }
 
 RendererBlinkPlatformImpl::~RendererBlinkPlatformImpl() {
@@ -276,23 +278,13 @@ RendererBlinkPlatformImpl::CreateDefaultURLLoaderFactoryBundle() {
                      base::Unretained(this)));
 }
 
-PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
+network::mojom::URLLoaderFactoryPtr
 RendererBlinkPlatformImpl::CreateNetworkURLLoaderFactory() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
   DCHECK(render_thread);
-  PossiblyAssociatedInterfacePtr<network::mojom::URLLoaderFactory>
-      url_loader_factory;
-
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    network::mojom::URLLoaderFactoryPtr factory_ptr;
-    connector_->BindInterface(mojom::kBrowserServiceName, &factory_ptr);
-    url_loader_factory = std::move(factory_ptr);
-  } else {
-    network::mojom::URLLoaderFactoryAssociatedPtr factory_ptr;
-    render_thread->channel()->GetRemoteAssociatedInterface(&factory_ptr);
-    url_loader_factory = std::move(factory_ptr);
-  }
-  return url_loader_factory;
+  network::mojom::URLLoaderFactoryPtr factory_ptr;
+  ChildThread::Get()->BindHostReceiver(mojo::MakeRequest(&factory_ptr));
+  return factory_ptr;
 }
 
 void RendererBlinkPlatformImpl::SetDisplayThreadPriority(
@@ -391,7 +383,7 @@ void RendererBlinkPlatformImpl::FetchCachedCode(
       base::BindOnce(
           [](FetchCachedCodeCallback callback, base::Time time,
              mojo_base::BigBuffer data) {
-            std::move(callback).Run(time, data);
+            std::move(callback).Run(time, std::move(data));
           },
           std::move(callback)));
 }
@@ -507,14 +499,9 @@ std::unique_ptr<WebAudioDevice> RendererBlinkPlatformImpl::CreateAudioDevice(
   if (layout == media::CHANNEL_LAYOUT_UNSUPPORTED)
     layout = media::CHANNEL_LAYOUT_DISCRETE;
 
-  int session_id = 0;
-  if (input_device_id.IsNull() ||
-      !base::StringToInt(input_device_id.Utf8(), &session_id)) {
-    session_id = 0;
-  }
-
-  return RendererWebAudioDeviceImpl::Create(layout, channels, latency_hint,
-                                            callback, session_id);
+  return RendererWebAudioDeviceImpl::Create(
+      layout, channels, latency_hint, callback,
+      /*session_id=*/base::UnguessableToken());
 }
 
 bool RendererBlinkPlatformImpl::DecodeAudioFileData(
@@ -523,13 +510,6 @@ bool RendererBlinkPlatformImpl::DecodeAudioFileData(
     size_t data_size) {
   return content::DecodeAudioFileData(destination_bus, audio_file_data,
                                       data_size);
-}
-
-//------------------------------------------------------------------------------
-
-WebBlobRegistry* RendererBlinkPlatformImpl::GetBlobRegistry() {
-  // blob_registry_ can be NULL when running some tests.
-  return blob_registry_.get();
 }
 
 //------------------------------------------------------------------------------
@@ -578,24 +558,6 @@ RendererBlinkPlatformImpl::CreateRTCCertificateGenerator() {
 
 //------------------------------------------------------------------------------
 
-std::unique_ptr<WebMediaStreamCenter>
-RendererBlinkPlatformImpl::CreateMediaStreamCenter() {
-  RenderThreadImpl* render_thread = RenderThreadImpl::current();
-  DCHECK(render_thread);
-  if (!render_thread)
-    return nullptr;
-  return render_thread->CreateMediaStreamCenter();
-}
-
-// static
-bool RendererBlinkPlatformImpl::SetSandboxEnabledForTesting(bool enable) {
-  bool was_enabled = g_sandbox_enabled;
-  g_sandbox_enabled = enable;
-  return was_enabled;
-}
-
-//------------------------------------------------------------------------------
-
 scoped_refptr<base::SingleThreadTaskRunner>
 RendererBlinkPlatformImpl::GetWebRtcWorkerThread() {
   RenderThreadImpl* render_thread = RenderThreadImpl::current();
@@ -613,6 +575,16 @@ rtc::Thread* RendererBlinkPlatformImpl::GetWebRtcWorkerThreadRtcThread() {
       render_thread->GetPeerConnectionDependencyFactory();
   rtc_dependency_factory->EnsureInitialized();
   return rtc_dependency_factory->GetWebRtcWorkerThreadRtcThread();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+RendererBlinkPlatformImpl::GetWebRtcSignalingTaskRunner() {
+  RenderThreadImpl* render_thread = RenderThreadImpl::current();
+  DCHECK(render_thread);
+  PeerConnectionDependencyFactory* rtc_dependency_factory =
+      render_thread->GetPeerConnectionDependencyFactory();
+  rtc_dependency_factory->EnsureInitialized();
+  return rtc_dependency_factory->GetWebRtcSignalingThread();
 }
 
 std::unique_ptr<cricket::PortAllocator>
@@ -691,12 +663,58 @@ RendererBlinkPlatformImpl::GetAudioSourceLatencyType(
   return AudioDeviceFactory::GetSourceLatencyType(source_type);
 }
 
-//------------------------------------------------------------------------------
+blink::WebRtcAudioDeviceImpl*
+RendererBlinkPlatformImpl::GetWebRtcAudioDevice() {
+  PeerConnectionDependencyFactory* pc_dependency_factory =
+      RenderThreadImpl::current()->GetPeerConnectionDependencyFactory();
+  return pc_dependency_factory->GetWebRtcAudioDevice();
+}
 
-std::unique_ptr<blink::WebSpeechSynthesizer>
-RendererBlinkPlatformImpl::CreateSpeechSynthesizer(
-    blink::WebSpeechSynthesizerClient* client) {
-  return GetContentClient()->renderer()->OverrideSpeechSynthesizer(client);
+base::Optional<std::string>
+RendererBlinkPlatformImpl::GetWebRTCAudioProcessingConfiguration() {
+  return GetContentClient()
+      ->renderer()
+      ->WebRTCPlatformSpecificAudioProcessingConfiguration();
+}
+
+base::Optional<int> RendererBlinkPlatformImpl::GetAgcStartupMinimumVolume() {
+  std::string min_volume_str =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kAgcStartupMinVolume);
+  int startup_min_volume;
+  if (min_volume_str.empty() ||
+      !base::StringToInt(min_volume_str, &startup_min_volume)) {
+    return base::Optional<int>();
+  }
+  return base::Optional<int>(startup_min_volume);
+}
+
+void RendererBlinkPlatformImpl::TrackGetUserMedia(
+    const blink::WebUserMediaRequest& web_request) {
+  RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
+      web_request);
+}
+
+bool RendererBlinkPlatformImpl::IsWebRtcHWH264DecodingEnabled(
+    webrtc::VideoCodecType video_codec_type) {
+#if defined(OS_WIN)
+  // Do not use hardware decoding for H.264 on Win7, due to high latency.
+  // See https://crbug.com/webrtc/5717.
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableWin7WebRtcHWH264Decoding) &&
+      video_codec_type == webrtc::kVideoCodecH264 &&
+      base::win::GetVersion() == base::win::Version::WIN7) {
+    DVLOG(1) << "H.264 HW decoding is not supported on Win7";
+    return false;
+  }
+#endif  // defined(OS_WIN)
+  return true;
+}
+
+blink::WebVideoCaptureImplManager*
+RendererBlinkPlatformImpl::GetVideoCaptureImplManager() {
+  RenderThreadImpl* thread = RenderThreadImpl::current();
+  return thread ? thread->video_capture_impl_manager() : nullptr;
 }
 
 //------------------------------------------------------------------------------
@@ -877,14 +895,6 @@ void RendererBlinkPlatformImpl::RecordRapporURL(const char* metric,
   GetContentClient()->renderer()->RecordRapporURL(metric, url);
 }
 
-service_manager::Connector* RendererBlinkPlatformImpl::GetConnector() {
-  return connector_.get();
-}
-
-blink::InterfaceProvider* RendererBlinkPlatformImpl::GetInterfaceProvider() {
-  return blink_interface_provider_.get();
-}
-
 //------------------------------------------------------------------------------
 
 blink::WebTransmissionEncodingInfoHandler*
@@ -951,12 +961,12 @@ RendererBlinkPlatformImpl::GetGpuFactories() {
 
 blink::mojom::CodeCacheHost& RendererBlinkPlatformImpl::GetCodeCacheHost() {
   if (!code_cache_host_) {
-    code_cache_host_ = blink::mojom::ThreadSafeCodeCacheHostPtr::Create(
-        std::move(code_cache_host_info_),
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::WithBaseSyncPrimitives()}));
+    code_cache_host_ = mojo::SharedRemote<blink::mojom::CodeCacheHost>(
+        std::move(code_cache_host_remote_),
+        base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::WithBaseSyncPrimitives()}));
   }
-  return **code_cache_host_;
+  return *code_cache_host_;
 }
 
 }  // namespace content

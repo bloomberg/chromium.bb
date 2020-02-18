@@ -13,7 +13,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "media/base/mock_filters.h"
 #include "media/base/pipeline.h"
@@ -158,7 +158,7 @@ class PipelineControllerTest : public ::testing::Test, public Pipeline::Client {
   void OnAudioDecoderChange(const PipelineDecoderInfo& info) override {}
   void OnVideoDecoderChange(const PipelineDecoderInfo& info) override {}
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   NiceMock<MockDemuxer> demuxer_;
   StrictMock<MockPipeline>* pipeline_;

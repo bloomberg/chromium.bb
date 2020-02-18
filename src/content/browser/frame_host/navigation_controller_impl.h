@@ -28,7 +28,6 @@
 struct FrameHostMsg_DidCommitProvisionalLoad_Params;
 
 namespace content {
-enum class WasActivatedOption;
 class FrameTreeNode;
 class RenderFrameHostImpl;
 class SiteInstance;
@@ -67,6 +66,10 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
                const std::string& extra_headers) override;
   void LoadURLWithParams(const LoadURLParams& params) override;
   void LoadIfNecessary() override;
+  void LoadErrorPage(RenderFrameHost* render_frame_host,
+                     const GURL& url,
+                     const std::string& error_page_html,
+                     net::Error error) override;
   bool CanGoBack() override;
   bool CanGoForward() override;
   bool CanGoToOffset(int offset) override;
@@ -438,9 +441,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Removes the entry at |index|, as long as it is not the current entry.
   void RemoveEntryAtIndexInternal(int index);
 
-  // Discards both the pending and transient entries.
-  void DiscardNonCommittedEntriesInternal();
-
   // Discards only the transient entry.
   void DiscardTransientEntry();
 
@@ -465,11 +465,6 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // Returns the navigation index that differs from the current entry by the
   // specified |offset|.  The index returned is not guaranteed to be valid.
   int GetIndexForOffset(int offset);
-
-  // BackForwardCache:
-  // Notify observers a document was restored from the bfcache.
-  // This updates the URL bar and the history buttons.
-  void CommitRestoreFromBackForwardCache();
 
   // History Manipulation intervention:
   // The previous document that started this navigation needs to be skipped in

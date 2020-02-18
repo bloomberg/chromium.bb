@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 #include "v8/include/v8.h"
@@ -548,20 +548,27 @@ bool ImageResourceContent::IsAcceptableCompressionRatio(
     UMA_HISTOGRAM_ENUMERATION("Blink.UseCounter.FeaturePolicy.ImageFormats",
                               compression_format);
   }
+
+  // Pass image url to reporting API.
+  const String& image_url = Url().GetString();
+
   if (compression_format == ImageDecoder::kLossyFormat) {
     // Enforce the lossy image policy.
     return context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLossyImages,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
   }
   if (compression_format == ImageDecoder::kLosslessFormat) {
     // Enforce the lossless image policy.
     bool enabled_by_10k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImages,
-        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_10k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
     bool enabled_by_1k_policy = context.IsFeatureEnabled(
         mojom::FeaturePolicyFeature::kUnoptimizedLosslessImagesStrict,
-        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure);
+        PolicyValue(compression_ratio_1k), ReportOptions::kReportOnFailure,
+        g_empty_string, image_url);
     return enabled_by_10k_policy && enabled_by_1k_policy;
   }
 

@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
@@ -211,7 +211,7 @@ class ProxyResolverImplTest : public testing::Test {
   ~ProxyResolverImplTest() override = default;
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockProxyResolverV8Tracing* mock_proxy_resolver_;
 
   std::unique_ptr<ProxyResolverImpl> resolver_impl_;

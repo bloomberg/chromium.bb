@@ -21,7 +21,8 @@
 #include "ui/gfx/swap_result.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
-#include "ui/ozone/public/interfaces/wayland/wayland_buffer_manager.mojom.h"
+#include "ui/ozone/platform/wayland/host/wayland_window_observer.h"
+#include "ui/ozone/public/mojom/wayland/wayland_buffer_manager.mojom.h"
 
 namespace ui {
 
@@ -32,13 +33,15 @@ class WaylandWindow;
 // accelerated compositing) or shared memory (software compositing) and uses
 // internal representation of surfaces, which are used to store buffers
 // associated with the WaylandWindow.
-class WaylandBufferManagerHost : ozone::mojom::WaylandBufferManagerHost {
+class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
+                                 public WaylandWindowObserver {
  public:
   explicit WaylandBufferManagerHost(WaylandConnection* connection);
   ~WaylandBufferManagerHost() override;
 
-  void OnWindowAdded(WaylandWindow* window);
-  void OnWindowRemoved(WaylandWindow* window);
+  // WaylandWindowObserver implements:
+  void OnWindowAdded(WaylandWindow* window) override;
+  void OnWindowRemoved(WaylandWindow* window) override;
 
   void SetTerminateGpuCallback(
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
@@ -65,7 +68,7 @@ class WaylandBufferManagerHost : ozone::mojom::WaylandBufferManagerHost {
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   void CreateDmabufBasedBuffer(gfx::AcceleratedWidget widget,
                                mojo::ScopedHandle dmabuf_fd,
                                const gfx::Size& size,
@@ -77,7 +80,7 @@ class WaylandBufferManagerHost : ozone::mojom::WaylandBufferManagerHost {
                                uint32_t buffer_id) override;
   // Called by the GPU and asks to import a wl_buffer based on a shared memory
   // file descriptor using wl_shm protocol. Check comments in the
-  // ui/ozone/public/interfaces/wayland/wayland_connection.mojom.
+  // ui/ozone/public/mojom/wayland/wayland_connection.mojom.
   void CreateShmBasedBuffer(gfx::AcceleratedWidget widget,
                             mojo::ScopedHandle shm_fd,
                             uint64_t length,

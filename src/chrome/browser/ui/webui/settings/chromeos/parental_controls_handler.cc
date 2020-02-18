@@ -9,8 +9,9 @@
 #include "base/values.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
@@ -18,7 +19,7 @@
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "components/arc/arc_util.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/display/types/display_constants.h"
@@ -81,19 +82,32 @@ void ParentalControlsHandler::HandleLaunchFamilyLinkSettings(
     proxy->Launch(app_id, ui::EventFlags::EF_NONE,
                   apps::mojom::LaunchSource::kFromParentalControls,
                   display::kDefaultDisplayId);
-  } else if (arc::IsArcAvailable() &&
-             arc::ArcSessionManager::Get()->IsAllowed()) {
-    // No FLH app installed, but ARC is enabled so launch Play Store
-    // to FLH app install page.
-    arc::LaunchPlayStoreWithUrl(kFamilyLinkChildHelperAppPlayStoreURL);
-  } else {
-    // As a last resort, launch browser to the family link site.
-    NavigateParams params(profile_, GURL(kFamilyLinkSiteURL),
-                          ui::PAGE_TRANSITION_FROM_API);
-    params.disposition = WindowOpenDisposition::NEW_WINDOW;
-    params.window_action = NavigateParams::SHOW_WINDOW;
-    Navigate(&params);
+    return;
   }
+  // No FLH app installed, so try to launch Play Store to FLH app install page.
+  // If there is no Play Store available  LaunchPlayStoreWithUrl() will return
+  // false.
+  if (arc::LaunchPlayStoreWithUrl(kFamilyLinkChildHelperAppPlayStoreURL)) {
+    return;
+  }
+  // As a last resort, launch browser to the family link site.
+  NavigateParams params(profile_, GURL(kFamilyLinkSiteURL),
+                        ui::PAGE_TRANSITION_FROM_API);
+  params.disposition = WindowOpenDisposition::NEW_WINDOW;
+  params.window_action = NavigateParams::SHOW_WINDOW;
+  Navigate(&params);
+}
+
+bool ShouldShowParentalControls(Profile* profile) {
+  // Show Parental controls for regular and child accounts that are the
+  // primary profile.  Do not show it to any secondary profiles, managed
+  // accounts that aren't child accounts (i.e. enterprise and EDU accounts),
+  // OTR accounts, or legacy supervised user accounts.
+  return chromeos::features::IsParentalControlsSettingsEnabled() &&
+         profile == ProfileManager::GetPrimaryUserProfile() &&
+         !profile->IsLegacySupervised() && !profile->IsGuestSession() &&
+         (profile->IsChild() ||
+          !profile->GetProfilePolicyConnector()->IsManaged());
 }
 
 }  // namespace settings

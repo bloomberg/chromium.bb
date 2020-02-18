@@ -28,6 +28,7 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
+#include "third_party/blink/renderer/core/dom/pointer_lock_options.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -39,7 +40,9 @@ namespace blink {
 PointerLockController::PointerLockController(Page* page)
     : page_(page), lock_pending_(false) {}
 
-void PointerLockController::RequestPointerLock(Element* target) {
+void PointerLockController::RequestPointerLock(
+    Element* target,
+    const PointerLockOptions* options) {
   if (!target || !target->isConnected() ||
       document_of_removed_element_while_waiting_for_unlock_) {
     EnqueueEvent(event_type_names::kPointerlockerror, target);
@@ -51,6 +54,10 @@ void PointerLockController::RequestPointerLock(Element* target) {
   if (target->IsInShadowTree()) {
     UseCounter::Count(target->GetDocument(),
                       WebFeature::kElementRequestPointerLockInShadow);
+  }
+  if (options && options->unadjustedMovement()) {
+    UseCounter::Count(target->GetDocument(),
+                      WebFeature::kPointerLockUnadjustedMovement);
   }
 
   if (target->GetDocument().IsSandboxed(WebSandboxFlags::kPointerLock)) {
@@ -73,7 +80,8 @@ void PointerLockController::RequestPointerLock(Element* target) {
     EnqueueEvent(event_type_names::kPointerlockchange, target);
     element_ = target;
   } else if (page_->GetChromeClient().RequestPointerLock(
-                 target->GetDocument().GetFrame())) {
+                 target->GetDocument().GetFrame(),
+                 (options ? options->unadjustedMovement() : false))) {
     lock_pending_ = true;
     element_ = target;
   } else {

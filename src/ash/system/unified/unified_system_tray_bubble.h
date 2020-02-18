@@ -36,13 +36,14 @@ class UnifiedSystemTrayView;
 // Shows the bubble on the constructor, and closes the bubble on the destructor.
 // It is possible that the bubble widget is closed on deactivation. In such
 // case, this class calls UnifiedSystemTray::CloseBubble() to delete itself.
-class UnifiedSystemTrayBubble : public TrayBubbleBase,
-                                public ash::ScreenLayoutObserver,
-                                public views::WidgetObserver,
-                                public ShelfObserver,
-                                public ::wm::ActivationChangeObserver,
-                                public TimeToClickRecorder::Delegate,
-                                public TabletModeObserver {
+class ASH_EXPORT UnifiedSystemTrayBubble
+    : public TrayBubbleBase,
+      public ash::ScreenLayoutObserver,
+      public views::WidgetObserver,
+      public ShelfObserver,
+      public ::wm::ActivationChangeObserver,
+      public TimeToClickRecorder::Delegate,
+      public TabletModeObserver {
  public:
 
   explicit UnifiedSystemTrayBubble(UnifiedSystemTray* tray, bool show_by_click);
@@ -75,6 +76,14 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // resizing of the bubble during animation.
   void UpdateTransform();
 
+  // Return the maximum height available for both the system tray and
+  // the message center.
+  int CalculateMaxHeight() const;
+
+  // Return the current visible height of the tray, even when partially
+  // collapsed / expanded.
+  int GetCurrentTrayHeight() const;
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;
@@ -100,6 +109,8 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
 
   // ShelfObserver:
   void OnAutoHideStateChanged(ShelfAutoHideState new_state) override;
+
+  UnifiedSystemTrayView* unified_view() { return unified_view_; }
 
  private:
   friend class UnifiedSystemTrayTestApi;
@@ -140,9 +151,6 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
 
   TrayBubbleView* bubble_view_ = nullptr;
   UnifiedSystemTrayView* unified_view_ = nullptr;
-
- private:
-  int CalculateMaxHeight() const;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayBubble);
 };

@@ -11,10 +11,10 @@
 #include <vector>
 
 #include "build/build_config.h"
-#include "core/fpdfapi/cpdf_modulemgr.h"
 #include "core/fpdfapi/page/cpdf_docpagedata.h"
 #include "core/fpdfapi/page/cpdf_occontext.h"
 #include "core/fpdfapi/page/cpdf_page.h"
+#include "core/fpdfapi/page/cpdf_pagemodule.h"
 #include "core/fpdfapi/parser/cpdf_array.h"
 #include "core/fpdfapi/parser/cpdf_dictionary.h"
 #include "core/fpdfapi/parser/cpdf_document.h"
@@ -41,7 +41,7 @@
 #include "fpdfsdk/cpdfsdk_formfillenvironment.h"
 #include "fpdfsdk/cpdfsdk_helpers.h"
 #include "fpdfsdk/cpdfsdk_pageview.h"
-#include "fpdfsdk/ipdfsdk_pauseadapter.h"
+#include "fpdfsdk/cpdfsdk_pauseadapter.h"
 #include "fxjs/ijs_runtime.h"
 #include "public/fpdf_formfill.h"
 #include "third_party/base/ptr_util.h"
@@ -54,12 +54,7 @@
 #endif  // PDF_ENABLE_XFA
 
 #if defined(OS_WIN)
-#include "core/fxcodec/basic/basicmodule.h"
-#include "core/fxcodec/fax/faxmodule.h"
-#include "core/fxcodec/flate/flatemodule.h"
-#include "core/fxcodec/jpeg/jpegmodule.h"
-#include "core/fxge/cfx_windowsrenderdevice.h"
-#include "core/fxge/win32/cfx_psrenderer.h"
+#include "core/fpdfapi/render/cpdf_windowsrenderdevice.h"
 #include "public/fpdf_edit.h"
 
 // These checks are here because core/ and public/ cannot depend on each other.
@@ -83,19 +78,13 @@ namespace {
 
 bool g_bLibraryInitialized = false;
 
-#if defined(OS_WIN)
-constexpr EncoderIface kEncoderIface = {
-    BasicModule::A85Encode, FaxModule::FaxEncode, FlateModule::Encode,
-    JpegModule::JpegEncode, BasicModule::RunLengthEncode};
-#endif  // defined(OS_WIN)
-
 void RenderPageImpl(CPDF_PageRenderContext* pContext,
                     CPDF_Page* pPage,
                     const CFX_Matrix& matrix,
                     const FX_RECT& clipping_rect,
                     int flags,
                     bool bNeedToRestore,
-                    IPDFSDK_PauseAdapter* pause) {
+                    CPDFSDK_PauseAdapter* pause) {
   if (!pContext->m_pOptions)
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
 
@@ -179,7 +168,7 @@ FPDF_InitLibraryWithConfig(const FPDF_LIBRARY_CONFIG* config) {
 
   FXMEM_InitializePartitionAlloc();
   CFX_GEModule::Create(config ? config->m_pUserFontPaths : nullptr);
-  CPDF_ModuleMgr::Create();
+  CPDF_PageModule::Create();
 
 #ifdef PDF_ENABLE_XFA
   BC_Library_Init();
@@ -198,7 +187,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_DestroyLibrary() {
   BC_Library_Destroy();
 #endif  // PDF_ENABLE_XFA
 
-  CPDF_ModuleMgr::Destroy();
+  CPDF_PageModule::Destroy();
   CFX_GEModule::Destroy();
   IJS_Runtime::Destroy();
 
@@ -207,7 +196,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_DestroyLibrary() {
 
 FPDF_EXPORT void FPDF_CALLCONV FPDF_SetSandBoxPolicy(FPDF_DWORD policy,
                                                      FPDF_BOOL enable) {
-  return FSDK_SetSandBoxPolicy(policy, enable);
+  return SetPDFSandboxPolicy(policy, enable);
 }
 
 #if defined(OS_WIN)
@@ -563,8 +552,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pOptions->GetOptions().bBreakForMasks = true;
     }
   } else {
-    pContext->m_pDevice =
-        pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc, &kEncoderIface);
+    pContext->m_pDevice = pdfium::MakeUnique<CPDF_WindowsRenderDevice>(dc);
   }
 
   RenderPageWithContext(pContext, page, start_x, start_y, size_x, size_y,
@@ -592,8 +580,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
     pOwnedContext = pdfium::MakeUnique<CPDF_PageRenderContext>();
     pContext = pOwnedContext.get();
     pPage->SetRenderContext(std::move(pOwnedContext));
-    pContext->m_pDevice =
-        pdfium::MakeUnique<CFX_WindowsRenderDevice>(dc, &kEncoderIface);
+    pContext->m_pDevice = pdfium::MakeUnique<CPDF_WindowsRenderDevice>(dc);
     pContext->m_pOptions = pdfium::MakeUnique<CPDF_RenderOptions>();
     pContext->m_pOptions->GetOptions().bBreakForMasks = true;
 
@@ -610,7 +597,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_RenderPage(HDC dc,
       pContext->m_pRenderer->Continue(nullptr);
     }
   } else if (bNewBitmap) {
-    CFX_WindowsRenderDevice WinDC(dc, &kEncoderIface);
+    CPDF_WindowsRenderDevice WinDC(dc);
     bool bitsStretched = false;
     if (WinDC.GetDeviceType() == DeviceType::kPrinter) {
       auto pDst = pdfium::MakeRetain<CFX_DIBitmap>();
@@ -755,7 +742,7 @@ FPDF_EXPORT void FPDF_CALLCONV FPDF_CloseDocument(FPDF_DOCUMENT document) {
 }
 
 FPDF_EXPORT unsigned long FPDF_CALLCONV FPDF_GetLastError() {
-  return GetLastError();
+  return FXSYS_GetLastError();
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDF_DeviceToPage(FPDF_PAGE page,
@@ -917,7 +904,7 @@ void RenderPageWithContext(CPDF_PageRenderContext* pContext,
                            int rotate,
                            int flags,
                            bool bNeedToRestore,
-                           IPDFSDK_PauseAdapter* pause) {
+                           CPDFSDK_PauseAdapter* pause) {
   CPDF_Page* pPage = CPDFPageFromFPDFPage(page);
   if (!pPage)
     return;

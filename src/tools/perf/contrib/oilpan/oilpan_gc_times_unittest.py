@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import shutil
+import tempfile
+
 from contrib.oilpan import oilpan_gc_times
 
 from telemetry import decorators
@@ -28,16 +31,12 @@ class TestOilpanGCTimesPage(page_module.Page):
 
 class OilpanGCTimesTestData(object):
 
-  def __init__(self, thread_name):
+  def __init__(self, page, thread_name):
+    self._page = page
     self._model = model.TimelineModel()
     self._renderer_process = self._model.GetOrCreateProcess(1)
     self._renderer_thread = self._renderer_process.GetOrCreateThread(2)
     self._renderer_thread.name = thread_name
-    self._results = page_test_results.PageTestResults()
-
-  @property
-  def results(self):
-    return self._results
 
   def AddSlice(self, name, timestamp, duration, args):
     new_slice = slice_data.Slice(
@@ -65,8 +64,20 @@ class OilpanGCTimesTestData(object):
     self._renderer_thread.async_slices.append(new_slice)
     return new_slice
 
-  def ClearResults(self):
-    self._results = page_test_results.PageTestResults()
+  def RunMeasurement(self):
+    # pylint: disable=protected-access
+    measurement = oilpan_gc_times._OilpanGCTimesBase()
+    results = page_test_results.PageTestResults()
+    tab = mock.MagicMock()
+    with mock.patch(
+        'contrib.oilpan.oilpan_gc_times.TimelineModel') as MockTimelineModel:
+      MockTimelineModel.return_value = self._model
+      results.WillRunPage(self._page)
+      try:
+        measurement.ValidateAndMeasurePage(self._page, tab, results)
+      finally:
+        results.DidRunPage(self._page)
+    return results
 
 
 class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
@@ -84,7 +95,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
   _GC_REASONS = ['precise', 'conservative', 'idle']
 
   def setUp(self):
-    self._options = options_for_unittests.GetCopy()
+    self._options = options_for_unittests.GetRunOptions(
+        output_dir=tempfile.mkdtemp())
+
+  def tearDowmn(self):
+    shutil.rmtree(self._options.output_dir)
 
   # Disable for accessing private API of _OilpanGCTimesBase.
   # pylint: disable=protected-access
@@ -95,16 +110,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
       return metrics[0].values
 
     data = self._GenerateDataForParsingOldFormat()
-
-    measurement = oilpan_gc_times._OilpanGCTimesBase()
-
-    tab = mock.MagicMock()
-    with mock.patch(
-        'contrib.oilpan.oilpan_gc_times.TimelineModel') as MockTimelineModel:
-      MockTimelineModel.return_value = data._model
-      measurement.ValidateAndMeasurePage(None, tab, data.results)
-
-    results = data.results
+    results = data.RunMeasurement()
     self.assertEquals(3, len(getMetric(results, 'oilpan_precise_mark')))
     self.assertEquals(3, len(getMetric(results, 'oilpan_precise_lazy_sweep')))
     self.assertEquals(3, len(getMetric(results,
@@ -128,16 +134,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
       return metrics[0].values
 
     data = self._GenerateDataForParsing()
-
-    measurement = oilpan_gc_times._OilpanGCTimesBase()
-    measurement._timeline_model = data._model
-    tab = mock.MagicMock()
-    with mock.patch(
-        'contrib.oilpan.oilpan_gc_times.TimelineModel') as MockTimelineModel:
-      MockTimelineModel.return_value = data._model
-      measurement.ValidateAndMeasurePage(None, tab, data.results)
-
-    results = data.results
+    results = data.RunMeasurement()
     self.assertEquals(4, len(getMetric(results, 'oilpan_precise_mark')))
     self.assertEquals(4, len(getMetric(results, 'oilpan_precise_lazy_sweep')))
     self.assertEquals(4, len(getMetric(results,
@@ -158,10 +155,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('all')
   def testForSmoothness(self):
-    ps = self.CreateStorySetFromFileInUnittestDataDir(
+    story_set = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForSmoothness()
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    results = self.RunMeasurement(
+        measurement, story_set, run_options=self._options)
     self.assertFalse(results.had_failures)
 
     gc_events = []
@@ -172,10 +170,11 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
 
   @decorators.Disabled('all')
   def testForBlinkPerf(self):
-    ps = self.CreateStorySetFromFileInUnittestDataDir(
+    story_set = self.CreateStorySetFromFileInUnittestDataDir(
         'create_many_objects.html')
     measurement = oilpan_gc_times.OilpanGCTimesForBlinkPerf()
-    results = self.RunMeasurement(measurement, ps, options=self._options)
+    results = self.RunMeasurement(
+        measurement, story_set, run_options=self._options)
     self.assertFalse(results.had_failures)
 
     gc_events = []
@@ -189,11 +188,7 @@ class OilpanGCTimesTest(page_test_test_case.PageTestTestCase):
     page = TestOilpanGCTimesPage(page_set)
     page_set.AddStory(page)
 
-    data = OilpanGCTimesTestData('CrRendererMain')
-    # Pretend we are about to run the tests to silence lower level asserts.
-    data.results.WillRunPage(page)
-
-    return data
+    return OilpanGCTimesTestData(page, 'CrRendererMain')
 
   def _GenerateDataForParsingOldFormat(self):
     data = self._GenerateDataForEmptyPageSet()

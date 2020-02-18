@@ -24,7 +24,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -250,7 +250,7 @@ class TabDesktopMediaListTest : public testing::Test {
   std::unique_ptr<TabDesktopMediaList> list_;
   std::vector<WebContents*> manually_added_web_contents_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
 #if defined(OS_CHROMEOS)
   chromeos::ScopedCrosSettingsTestHelper cros_settings_test_helper_;

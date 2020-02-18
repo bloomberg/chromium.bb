@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
 #include "net/dns/mock_host_resolver.h"
@@ -77,7 +77,8 @@ void RunSingleRoundAuthTest(
 
   scoped_refptr<HttpAuthController> controller(new HttpAuthController(
       HttpAuth::AUTH_PROXY, GURL("http://example.com"), &dummy_auth_cache,
-      &auth_handler_factory, host_resolver.get()));
+      &auth_handler_factory, host_resolver.get(),
+      HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, net_log));
@@ -102,7 +103,7 @@ void RunSingleRoundAuthTest(
 // permanent error, the HttpAuthController should disable the scheme
 // used and retry the request.
 TEST(HttpAuthControllerTest, PermanentErrors) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   // Run a synchronous handler that returns
   // ERR_UNEXPECTED_SECURITY_LIBRARY_STATUS.  We expect a return value
@@ -133,7 +134,7 @@ TEST(HttpAuthControllerTest, PermanentErrors) {
 
 // Verify that the controller logs appropriate lifetime events.
 TEST(HttpAuthControllerTest, Logging) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   BoundTestNetLog net_log;
 
   RunSingleRoundAuthTest(RUN_HANDLER_SYNC, OK, OK, SCHEME_IS_ENABLED,
@@ -259,7 +260,8 @@ TEST(HttpAuthControllerTest, NoExplicitCredentialsAllowed) {
 
   scoped_refptr<HttpAuthController> controller(new HttpAuthController(
       HttpAuth::AUTH_SERVER, GURL("http://example.com"), &dummy_auth_cache,
-      &auth_handler_factory, host_resolver.get()));
+      &auth_handler_factory, host_resolver.get(),
+      HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS));
   SSLInfo null_ssl_info;
   ASSERT_EQ(OK, controller->HandleAuthChallenge(headers, null_ssl_info, false,
                                                 false, dummy_log));

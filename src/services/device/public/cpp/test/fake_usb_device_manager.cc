@@ -10,6 +10,7 @@
 
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/device/public/cpp/test/fake_usb_device.h"
 #include "services/device/public/cpp/test/mock_usb_mojo_device.h"
 #include "services/device/public/cpp/usb/usb_utils.h"
@@ -23,7 +24,7 @@ FakeUsbDeviceManager::FakeUsbDeviceManager() {}
 FakeUsbDeviceManager::~FakeUsbDeviceManager() {}
 
 void FakeUsbDeviceManager::EnumerateDevicesAndSetClient(
-    mojom::UsbDeviceManagerClientAssociatedPtrInfo client,
+    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client,
     EnumerateDevicesAndSetClientCallback callback) {
   GetDevices(nullptr, std::move(callback));
   SetClient(std::move(client));
@@ -47,14 +48,15 @@ void FakeUsbDeviceManager::GetDevices(mojom::UsbEnumerationOptionsPtr options,
   std::move(callback).Run(std::move(device_infos));
 }
 
-void FakeUsbDeviceManager::GetDevice(const std::string& guid,
-                                     mojom::UsbDeviceRequest device_request,
-                                     mojom::UsbDeviceClientPtr device_client) {
+void FakeUsbDeviceManager::GetDevice(
+    const std::string& guid,
+    mojo::PendingReceiver<device::mojom::UsbDevice> device_receiver,
+    mojo::PendingRemote<mojom::UsbDeviceClient> device_client) {
   auto it = devices_.find(guid);
   if (it == devices_.end())
     return;
 
-  FakeUsbDevice::Create(it->second, std::move(device_request),
+  FakeUsbDevice::Create(it->second, std::move(device_receiver),
                         std::move(device_client));
 }
 
@@ -88,15 +90,14 @@ void FakeUsbDeviceManager::OpenFileDescriptor(
 #endif  // defined(OS_CHROMEOS)
 
 void FakeUsbDeviceManager::SetClient(
-    mojom::UsbDeviceManagerClientAssociatedPtrInfo client) {
+    mojo::PendingAssociatedRemote<mojom::UsbDeviceManagerClient> client) {
   DCHECK(client);
-  mojom::UsbDeviceManagerClientAssociatedPtr client_ptr;
-  client_ptr.Bind(std::move(client));
-  clients_.AddPtr(std::move(client_ptr));
+  clients_.Add(std::move(client));
 }
 
-void FakeUsbDeviceManager::AddBinding(mojom::UsbDeviceManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void FakeUsbDeviceManager::AddReceiver(
+    mojo::PendingReceiver<mojom::UsbDeviceManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
@@ -107,10 +108,8 @@ mojom::UsbDeviceInfoPtr FakeUsbDeviceManager::AddDevice(
   auto device_info = device->GetDeviceInfo().Clone();
 
   // Notify all the clients.
-  clients_.ForAllPtrs(
-      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
-        client->OnDeviceAdded(device_info->Clone());
-      });
+  for (auto& client : clients_)
+    client->OnDeviceAdded(device_info->Clone());
   return device_info;
 }
 
@@ -123,10 +122,8 @@ void FakeUsbDeviceManager::RemoveDevice(
   devices_.erase(device->guid());
 
   // Notify all the clients
-  clients_.ForAllPtrs(
-      [&device_info](device::mojom::UsbDeviceManagerClient* client) {
-        client->OnDeviceRemoved(device_info->Clone());
-      });
+  for (auto& client : clients_)
+    client->OnDeviceRemoved(device_info->Clone());
 
   device->NotifyDeviceRemoved();
 }

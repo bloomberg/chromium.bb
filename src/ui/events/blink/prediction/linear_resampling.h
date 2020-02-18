@@ -38,6 +38,9 @@ class LinearResampling : public InputPredictor {
   bool GeneratePrediction(base::TimeTicks frame_time,
                           InputData* result) const override;
 
+  // Return the average time delta in the event queue.
+  base::TimeDelta TimeInterval() const override;
+
  private:
   static constexpr size_t kNumEventsForResampling = 2;
 

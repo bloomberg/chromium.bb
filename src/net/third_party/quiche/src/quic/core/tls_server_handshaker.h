@@ -58,9 +58,12 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
   const QuicCryptoNegotiatedParameters& crypto_negotiated_params()
       const override;
   CryptoMessageParser* crypto_message_parser() override;
+  size_t BufferSizeLimitForLevel(EncryptionLevel level) const override;
 
  protected:
-  TlsConnection* tls_connection() override { return &tls_connection_; }
+  const TlsConnection* tls_connection() const override {
+    return &tls_connection_;
+  }
 
   // Called when a new message is received on the crypto stream and is available
   // for the TLS stack to read.
@@ -123,6 +126,7 @@ class QUIC_EXPORT_PRIVATE TlsServerHandshaker
 
   bool encryption_established_ = false;
   bool handshake_confirmed_ = false;
+  bool valid_alpn_received_ = false;
   QuicReferenceCountedPointer<QuicCryptoNegotiatedParameters>
       crypto_negotiated_params_;
   TlsServerConnection tls_connection_;

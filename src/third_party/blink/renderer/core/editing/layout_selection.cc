@@ -178,7 +178,7 @@ struct OldSelectedNodes {
  public:
   OldSelectedNodes()
       : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
-  OldSelectedNodes(OldSelectedNodes&& other) {
+  OldSelectedNodes(OldSelectedNodes&& other) noexcept {
     paint_range = other.paint_range;
     selected_map = std::move(other.selected_map);
   }
@@ -205,7 +205,8 @@ struct NewPaintRangeAndSelectedNodes {
       HeapHashSet<Member<const Node>>&& passed_selected_objects)
       : paint_range(passed_paint_range),
         selected_objects(std::move(passed_selected_objects)) {}
-  NewPaintRangeAndSelectedNodes(NewPaintRangeAndSelectedNodes&& other) {
+  NewPaintRangeAndSelectedNodes(
+      NewPaintRangeAndSelectedNodes&& other) noexcept {
     paint_range = other.paint_range;
     selected_objects = std::move(other.selected_objects);
   }
@@ -471,7 +472,7 @@ static base::Optional<unsigned> ComputeEndOffset(
 static bool IsPositionValidText(const Position& position) {
   if (position.AnchorNode()->IsTextNode() && position.IsOffsetInAnchor())
     return true;
-  if ((IsHTMLBRElement(position.AnchorNode()) ||
+  if ((IsA<HTMLBRElement>(position.AnchorNode()) ||
        IsHTMLWBRElement(position.AnchorNode())) &&
       (position.IsBeforeAnchor() || position.IsAfterAnchor()))
     return true;
@@ -506,7 +507,7 @@ static base::Optional<unsigned> GetTextContentOffsetStart(
     return GetTextContentOffset(Position(node, node_offset.value()));
   }
 
-  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(IsHTMLWBRElement(node) || IsA<HTMLBRElement>(node)) << node;
   DCHECK(!node_offset.has_value()) << node;
   return GetTextContentOffset(Position::BeforeNode(node));
 }
@@ -523,7 +524,7 @@ static base::Optional<unsigned> GetTextContentOffsetEnd(
     return GetTextContentOffset(Position(node, node_offset.value()));
   }
 
-  DCHECK(IsHTMLWBRElement(node) || IsHTMLBRElement(node)) << node;
+  DCHECK(IsHTMLWBRElement(node) || IsA<HTMLBRElement>(node)) << node;
   DCHECK(!node_offset.has_value()) << node;
   return GetTextContentOffset(Position::AfterNode(node));
 }

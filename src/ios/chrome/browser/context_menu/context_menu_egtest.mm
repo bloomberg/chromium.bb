@@ -24,8 +24,8 @@
 #import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/earl_grey/web_view_matchers.h"
 #include "ios/web/public/test/element_selector.h"
-#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/web_state.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "url/gurl.h"
@@ -39,6 +39,7 @@ using chrome_test_util::ContextMenuCopyButton;
 using chrome_test_util::OmniboxText;
 using chrome_test_util::OpenLinkInNewTabButton;
 using chrome_test_util::SystemSelectionCalloutCopyButton;
+using chrome_test_util::WebViewMatcher;
 
 namespace {
 // Directory containing the |kLogoPagePath| and |kLogoPageImageSourcePath|
@@ -124,9 +125,7 @@ void WaitForContextMenuItemDisappeared(
 
 // Long press on |element_id| to trigger context menu.
 void LongPressElement(const char* element_id) {
-  id<GREYMatcher> web_view_matcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:chrome_test_util::LongPressElementForContextMenu(
                         [ElementSelector selectorWithElementID:element_id],
                         true /* menu should appear */)];
@@ -162,6 +161,13 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
 @end
 
 @implementation ContextMenuTestCase
+
+// TODO(crbug.com/989550) Disable broken context menu tests on Xcode 11 beta 5.
++ (NSArray*)testInvocations {
+  if (@available(iOS 13, *))
+    return @[];
+  return [super testInvocations];
+}
 
 + (void)setUp {
   [super setUp];
@@ -257,9 +263,7 @@ void SelectTabAtIndexInCurrentMode(NSUInteger index) {
       CGRectGetMidX([chrome_test_util::GetActiveViewController() view].bounds),
       topInset + 20.0);
 
-  id<GREYMatcher> web_view_matcher =
-      web::WebViewInWebState(chrome_test_util::GetCurrentWebState());
-  [[EarlGrey selectElementWithMatcher:web_view_matcher]
+  [[EarlGrey selectElementWithMatcher:WebViewMatcher()]
       performAction:grey_longPressAtPointWithDuration(
                         point, kGREYLongPressDefaultDuration)];
 

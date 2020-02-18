@@ -24,6 +24,7 @@
 #include "chrome/browser/android/feed/feed_host_service_factory.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
+#include "chrome/browser/availability/availability_prober.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browsing_data/browsing_data_helper.h"
@@ -38,6 +39,9 @@
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_blocklist.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service.h"
+#include "chrome/browser/heavy_ad_intervention/heavy_ad_service_factory.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/history/web_history_service_factory.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
@@ -45,6 +49,8 @@
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager.h"
 #include "chrome/browser/ntp_snippets/content_suggestions_service_factory.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
+#include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
 #include "chrome/browser/permissions/permission_decision_auto_blocker.h"
 #include "chrome/browser/prerender/prerender_manager.h"
@@ -99,6 +105,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_transaction_factory.h"
 
 #if defined(OS_ANDROID)
@@ -154,13 +161,13 @@ const base::TimeDelta kSlowTaskTimeout = base::TimeDelta::FromSeconds(180);
 // Generic functions but currently only used when ENABLE_NACL.
 #if BUILDFLAG(ENABLE_NACL)
 void UIThreadTrampolineHelper(base::OnceClosure callback) {
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI}, std::move(callback));
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
 }
 
 // Convenience method to create a callback that can be run on any thread and
 // will post the given |callback| back to the UI thread.
 base::OnceClosure UIThreadTrampoline(base::OnceClosure callback) {
-  // We could directly bind &base::PostTaskWithTraits, but that would require
+  // We could directly bind &base::PostTask, but that would require
   // evaluating FROM_HERE when this method is called, as opposed to when the
   // task is actually posted.
   return base::BindOnce(&UIThreadTrampolineHelper, std::move(callback));
@@ -252,9 +259,10 @@ bool DoesOriginMatchEmbedderMask(int origin_type_mask,
 // Callback for when cookies have been deleted. Invokes NotifyIfDone.
 // Receiving |cookie_manager| as a parameter so that the receive pipe is
 // not deleted before the response is received.
-void OnClearedCookies(base::OnceClosure done,
-                      network::mojom::CookieManagerPtr cookie_manager,
-                      uint32_t num_deleted) {
+void OnClearedCookies(
+    base::OnceClosure done,
+    mojo::Remote<network::mojom::CookieManager> cookie_manager,
+    uint32_t num_deleted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::move(done).Run();
 }
@@ -325,9 +333,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
   slow_pending_tasks_closure_.Reset(base::BindRepeating(
       &ChromeBrowsingDataRemoverDelegate::RecordUnfinishedSubTasks,
       weak_ptr_factory_.GetWeakPtr()));
-  base::PostDelayedTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                                  slow_pending_tasks_closure_.callback(),
-                                  kSlowTaskTimeout);
+  base::PostDelayedTask(FROM_HERE, {BrowserThread::UI},
+                        slow_pending_tasks_closure_.callback(),
+                        kSlowTaskTimeout);
 
   // Embedder-defined DOM-accessible storage currently contains only
   // one datatype, which is the durable storage permission.
@@ -517,8 +525,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         data_manager->Refresh();
     }
 
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(
             &webrtc_logging::DeleteOldAndRecentWebRtcLogFiles,
             webrtc_logging::TextLogList::
@@ -527,8 +537,10 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
         CreateTaskCompletionClosure(TracingDataType::kWebrtcLogs));
 
 #if defined(OS_ANDROID)
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE,
+        {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+         base::MayBlock()},
         base::BindOnce(&ClearPrecacheInBackground, profile_),
         CreateTaskCompletionClosure(TracingDataType::kPrecache));
 
@@ -562,6 +574,19 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     if (previews_service)
       previews_service->ClearBlackList(delete_begin_, delete_end_);
 
+    HeavyAdService* heavy_ad_service =
+        HeavyAdServiceFactory::GetForBrowserContext(profile_);
+    if (heavy_ad_service && heavy_ad_service->heavy_ad_blocklist()) {
+      heavy_ad_service->heavy_ad_blocklist()->ClearBlackList(delete_begin_,
+                                                             delete_end_);
+    }
+
+    OptimizationGuideKeyedService* optimization_guide_keyed_service =
+        OptimizationGuideKeyedServiceFactory::GetForProfile(profile_);
+    if (optimization_guide_keyed_service)
+      optimization_guide_keyed_service->ClearData();
+
+    AvailabilityProber::ClearData(prefs);
 
 #if defined(OS_ANDROID)
     OomInterventionDecider* oom_intervention_decider =
@@ -645,9 +670,9 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
       safe_browsing::SafeBrowsingService* sb_service =
           g_browser_process->safe_browsing_service();
       if (sb_service) {
-        network::mojom::CookieManagerPtr cookie_manager;
+        mojo::Remote<network::mojom::CookieManager> cookie_manager;
         sb_service->GetNetworkContext()->GetCookieManager(
-            mojo::MakeRequest(&cookie_manager));
+            cookie_manager.BindNewPipeAndPassReceiver());
 
         network::mojom::CookieManager* manager_ptr = cookie_manager.get();
 
@@ -878,12 +903,12 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
     web_cache::WebCacheManager::GetInstance()->ClearCache();
 
 #if BUILDFLAG(ENABLE_NACL)
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ClearNaClCacheOnIOThread,
                        UIThreadTrampoline(CreateTaskCompletionClosure(
                            TracingDataType::kNaclCache))));
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&ClearPnaclCacheOnIOThread, delete_begin_, delete_end_,
                        UIThreadTrampoline(CreateTaskCompletionClosure(

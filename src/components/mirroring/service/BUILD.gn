@@ -56,14 +56,13 @@ component("mirroring_service") {
     "//media/gpu",
     "//media/mojo/clients",
     "//media/mojo/common:common",
-    "//media/mojo/interfaces",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom",
+    "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
-    "//services/service_manager/public/cpp:cpp",
     "//services/viz/public/cpp/gpu",
     "//ui/base",
     "//ui/gfx",
@@ -103,8 +102,8 @@ source_set("unittests") {
     "//media/cast:net",
     "//media/cast:sender",
     "//media/cast:test_support",
-    "//media/mojo/interfaces",
-    "//media/mojo/interfaces:remoting",
+    "//media/mojo/mojom",
+    "//media/mojo/mojom:remoting",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network:test_support",
@@ -112,19 +111,5 @@ source_set("unittests") {
     "//services/viz/public/cpp/gpu",
     "//testing/gmock",
     "//testing/gtest",
-  ]
-}
-
-source_set("manifest") {
-  sources = [
-    "manifest.cc",
-    "manifest.h",
-  ]
-
-  deps = [
-    "//base",
-    "//components/mirroring/mojom:constants",
-    "//components/mirroring/mojom:service",
-    "//services/service_manager/public/cpp",
   ]
 }

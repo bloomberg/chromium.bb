@@ -4,8 +4,10 @@
 
 #include "ash/system/unified/rounded_label_button.h"
 
-#include "ash/system/tray/tray_constants.h"
+#include "ash/style/ash_color_provider.h"
+#include "ash/style/default_color_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
+#include "ash/system/unified/unified_system_tray_view.h"
 #include "ui/gfx/canvas.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_highlight.h"
@@ -19,7 +21,8 @@ namespace ash {
 RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
                                        const base::string16& text)
     : views::LabelButton(listener, text) {
-  SetEnabledTextColors(kUnifiedMenuTextColor);
+  SetEnabledTextColors(AshColorProvider::Get()->DeprecatedGetContentLayerColor(
+      AshColorProvider::ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
   label()->SetSubpixelRenderingEnabled(false);
@@ -48,7 +51,9 @@ void RoundedLabelButton::PaintButtonContents(gfx::Canvas* canvas) {
   gfx::Rect rect(GetContentsBounds());
   cc::PaintFlags flags;
   flags.setAntiAlias(true);
-  flags.setColor(kUnifiedMenuButtonColor);
+  flags.setColor(AshColorProvider::Get()->DeprecatedGetControlsLayerColor(
+      AshColorProvider::ControlsLayerType::kInactiveControlBackground,
+      kUnifiedMenuButtonColor));
   flags.setStyle(cc::PaintFlags::kFill_Style);
   canvas->DrawRoundRect(rect, kTrayItemSize / 2, flags);
 
@@ -63,13 +68,15 @@ std::unique_ptr<views::InkDropRipple> RoundedLabelButton::CreateInkDropRipple()
     const {
   return TrayPopupUtils::CreateInkDropRipple(
       TrayPopupInkDropStyle::FILL_BOUNDS, this,
-      GetInkDropCenterBasedOnLastEvent(), kUnifiedMenuIconColor);
+      GetInkDropCenterBasedOnLastEvent(),
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 RoundedLabelButton::CreateInkDropHighlight() const {
   return TrayPopupUtils::CreateInkDropHighlight(
-      TrayPopupInkDropStyle::FILL_BOUNDS, this, kUnifiedMenuIconColor);
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      UnifiedSystemTrayView::GetBackgroundColor());
 }
 
 std::unique_ptr<views::InkDropMask> RoundedLabelButton::CreateInkDropMask()

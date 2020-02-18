@@ -19,6 +19,7 @@ import {LogExists, LogExistsKey} from '../common/logs';
 import {QueryResponse} from '../common/queries';
 import {TimeSpan} from '../common/time';
 
+import {ChromeSliceDetailsPanel} from './chrome_slice_panel';
 import {copyToClipboard} from './clipboard';
 import {DragGestureHandler} from './drag_gesture_handler';
 import {globals} from './globals';
@@ -31,6 +32,7 @@ import {Panel} from './panel';
 import {AnyAttrsVnode, PanelContainer} from './panel_container';
 import {SliceDetailsPanel} from './slice_panel';
 import {ThreadStatePanel} from './thread_state_panel';
+import {TickmarkPanel} from './tickmark_panel';
 import {TimeAxisPanel} from './time_axis_panel';
 import {computeZoom} from './time_scale';
 import {TimeSelectionPanel} from './time_selection_panel';
@@ -43,6 +45,7 @@ const DRAG_HANDLE_HEIGHT_PX = 28;
 const DEFAULT_DETAILS_HEIGHT_PX = 230 + DRAG_HANDLE_HEIGHT_PX;
 const UP_ICON = 'keyboard_arrow_up';
 const DOWN_ICON = 'keyboard_arrow_down';
+const SIDEBAR_WIDTH = 256;
 
 function hasLogs(): boolean {
   const data = globals.trackDataStore.get(LogExistsKey) as LogExists;
@@ -122,6 +125,7 @@ class DragHandle implements m.ClassComponent<DragHandleAttrs> {
   oncreate({dom, attrs}: m.CVnodeDOM<DragHandleAttrs>) {
     this.resize = attrs.resize;
     this.height = attrs.height;
+    this.isClosed = this.height <= DRAG_HANDLE_HEIGHT_PX;
     const elem = dom as HTMLElement;
     new DragGestureHandler(
         elem,
@@ -133,6 +137,7 @@ class DragHandle implements m.ClassComponent<DragHandleAttrs> {
   onupdate({attrs}: m.CVnodeDOM<DragHandleAttrs>) {
     this.resize = attrs.resize;
     this.height = attrs.height;
+    this.isClosed = this.height <= DRAG_HANDLE_HEIGHT_PX;
   }
 
   onDrag(_x: number, y: number) {
@@ -209,7 +214,7 @@ class TraceViewer implements m.ClassComponent {
 
     this.zoomContent = new PanAndZoomHandler({
       element: panZoomEl,
-      contentOffsetX: TRACK_SHELL_WIDTH,
+      contentOffsetX: SIDEBAR_WIDTH,
       onPanned: (pannedPx: number) => {
         this.keepCurrentSelection = true;
         const traceTime = globals.state.traceTime;
@@ -296,13 +301,17 @@ class TraceViewer implements m.ClassComponent {
             utid: curSelection.utid,
           }));
           break;
+        case 'CHROME_SLICE':
+          detailsPanels.push(m(ChromeSliceDetailsPanel));
+          break;
         case 'THREAD_STATE':
           detailsPanels.push(m(ThreadStatePanel, {
             key: 'thread_state',
             ts: curSelection.ts,
             dur: curSelection.dur,
             utid: curSelection.utid,
-            state: curSelection.state
+            state: curSelection.state,
+            cpu: curSelection.cpu
           }));
           break;
         default:
@@ -312,7 +321,13 @@ class TraceViewer implements m.ClassComponent {
       detailsPanels.push(m(LogPanel, {}));
     }
 
+    const wasShowing = this.showDetailsPanel;
     this.showDetailsPanel = detailsPanels.length > 0;
+    // Pop up details panel on first selection.
+    if (!wasShowing && this.showDetailsPanel &&
+        this.detailsHeight === DRAG_HANDLE_HEIGHT_PX) {
+      this.detailsHeight = DEFAULT_DETAILS_HEIGHT_PX;
+    }
 
     return m(
         '.page',
@@ -335,6 +350,7 @@ class TraceViewer implements m.ClassComponent {
                   m(TimeAxisPanel, {key: 'timeaxis'}),
                   m(TimeSelectionPanel, {key: 'timeselection'}),
                   m(NotesPanel, {key: 'notes'}),
+                  m(TickmarkPanel, {key: 'searchTickmarks'}),
                   ...globals.state.pinnedTracks.map(
                       id => m(TrackPanel, {key: id, id})),
                 ],

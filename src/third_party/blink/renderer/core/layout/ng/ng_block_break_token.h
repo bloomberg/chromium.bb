@@ -26,9 +26,10 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // anonymous box.
   static scoped_refptr<NGBlockBreakToken> Create(
       NGLayoutInputNode node,
-      LayoutUnit used_block_size,
+      LayoutUnit consumed_block_size,
       const NGBreakTokenVector& child_break_tokens,
-      bool has_last_resort_break = false) {
+      bool has_last_resort_break,
+      bool has_seen_all_children) {
     // We store the children list inline in the break token as a flexible
     // array. Therefore, we need to make sure to allocate enough space for
     // that array here, which requires a manual allocation + placement new.
@@ -36,27 +37,20 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
         sizeof(NGBlockBreakToken) +
             child_break_tokens.size() * sizeof(NGBreakToken*),
         ::WTF::GetStringWithTypeName<NGBlockBreakToken>());
-    new (data) NGBlockBreakToken(node, used_block_size, child_break_tokens,
-                                 has_last_resort_break);
+    new (data) NGBlockBreakToken(node, consumed_block_size, child_break_tokens,
+                                 has_last_resort_break, has_seen_all_children);
     return base::AdoptRef(static_cast<NGBlockBreakToken*>(data));
-  }
-
-  // Creates a break token for a node which cannot produce any more fragments.
-  static scoped_refptr<NGBlockBreakToken> Create(
-      NGLayoutInputNode node,
-      LayoutUnit used_block_size,
-      bool has_last_resort_break = false) {
-    return base::AdoptRef(
-        new NGBlockBreakToken(node, used_block_size, has_last_resort_break));
   }
 
   // Creates a break token for a node that needs to produce its first fragment
   // in the next fragmentainer. In this case we create a break token for a node
   // that hasn't yet produced any fragments.
   static scoped_refptr<NGBlockBreakToken> CreateBreakBefore(
-      NGLayoutInputNode node) {
+      NGLayoutInputNode node,
+      bool is_forced_break) {
     auto* token = new NGBlockBreakToken(node);
     token->is_break_before_ = true;
+    token->is_forced_break_ = is_forced_break;
     return base::AdoptRef(token);
   }
 
@@ -65,12 +59,14 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
       token->Release();
   }
 
-  // Represents the amount of block size used in previous fragments.
+  // Represents the amount of block-size consumed by previous fragments.
   //
-  // E.g. if the layout block specifies a block size of 200px, and the previous
-  // fragments of this block used 150px (used block size), the next fragment
-  // should have a size of 50px (assuming no additional fragmentation).
-  LayoutUnit UsedBlockSize() const { return used_block_size_; }
+  // E.g. if the node specifies a block-size of 200px, and the previous
+  // fragments generated for this box consumed 150px in total (which is what
+  // this method would return then), there's 50px left to consume. The next
+  // fragment will become 50px tall, assuming no additional fragmentation (if
+  // the fragmentainer is shorter than 50px, for instance).
+  LayoutUnit ConsumedBlockSize() const { return consumed_block_size_; }
 
   // Return true if this is a break token that was produced without any
   // "preceding" fragment. This happens when we determine that the first
@@ -78,7 +74,15 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // one it was it was first encountered, due to block space shortage.
   bool IsBreakBefore() const { return is_break_before_; }
 
+  bool IsForcedBreak() const { return is_forced_break_; }
+
   bool HasLastResortBreak() const { return has_last_resort_break_; }
+
+  // Return true if all children have been "seen". When we have reached this
+  // point, and resume layout in a fragmentainer, we should only process child
+  // break tokens, if any, and not attempt to start laying out nodes that don't
+  // have one (since all children are either finished, or have a break token).
+  bool HasSeenAllChildren() const { return has_seen_all_children_; }
 
   // The break tokens for children of the layout node.
   //
@@ -88,7 +92,7 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // this child).
   //
   // A child which we haven't visited yet doesn't have a break token here.
-  const base::span<NGBreakToken* const> ChildBreakTokens() const {
+  const base::span<const NGBreakToken* const> ChildBreakTokens() const {
     return base::make_span(child_break_tokens_, num_children_);
   }
 
@@ -104,21 +108,18 @@ class CORE_EXPORT NGBlockBreakToken final : public NGBreakToken {
   // Must only be called from Create(), because it assumes that enough space
   // has been allocated in the flexible array to store the children.
   NGBlockBreakToken(NGLayoutInputNode node,
-                    LayoutUnit used_block_size,
+                    LayoutUnit consumed_block_size,
                     const NGBreakTokenVector& child_break_tokens,
-                    bool has_last_resort_break);
-
-  NGBlockBreakToken(NGLayoutInputNode node,
-                    LayoutUnit used_block_size,
-                    bool has_last_resort_break);
+                    bool has_last_resort_break,
+                    bool has_seen_all_children);
 
   explicit NGBlockBreakToken(NGLayoutInputNode node);
 
-  LayoutUnit used_block_size_;
+  LayoutUnit consumed_block_size_;
 
   wtf_size_t num_children_;
   // This must be the last member, because it is a flexible array.
-  NGBreakToken* child_break_tokens_[];
+  const NGBreakToken* child_break_tokens_[];
 };
 
 template <>

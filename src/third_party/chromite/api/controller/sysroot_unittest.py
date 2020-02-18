@@ -9,6 +9,7 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import api_config
 from chromite.api import controller
 from chromite.api.controller import sysroot as sysroot_controller
 from chromite.api.gen.chromite.api import sysroot_pb2
@@ -21,7 +22,7 @@ from chromite.lib import sysroot_lib
 from chromite.service import sysroot as sysroot_service
 
 
-class CreateTest(cros_test_lib.MockTestCase):
+class CreateTest(cros_test_lib.MockTestCase, api_config.ApiConfigMixin):
   """Create function tests."""
 
   def _InputProto(self, build_target=None, profile=None, replace=False,
@@ -43,20 +44,34 @@ class CreateTest(cros_test_lib.MockTestCase):
     """Helper to build output proto instance."""
     return sysroot_pb2.SysrootCreateResponse()
 
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'Create')
+
+    board = 'board'
+    profile = None
+    force = False
+    upgrade_chroot = True
+    in_proto = self._InputProto(build_target=board, profile=profile,
+                                replace=force, current=not upgrade_chroot)
+    sysroot_controller.Create(in_proto, self._OutputProto(),
+                              self.validate_only_config)
+    patch.assert_not_called()
+
   def testArgumentValidation(self):
     """Test the input argument validation."""
     # Error when no name provided.
     in_proto = self._InputProto()
     out_proto = self._OutputProto()
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.Create(in_proto, out_proto)
+      sysroot_controller.Create(in_proto, out_proto, self.api_config)
 
     # Valid when board passed.
     result = sysroot_lib.Sysroot('/sysroot/path')
     patch = self.PatchObject(sysroot_service, 'Create', return_value=result)
     in_proto = self._InputProto('board')
     out_proto = self._OutputProto()
-    sysroot_controller.Create(in_proto, out_proto)
+    sysroot_controller.Create(in_proto, out_proto, self.api_config)
     patch.assert_called_once()
 
   def testArgumentHandling(self):
@@ -77,7 +92,7 @@ class CreateTest(cros_test_lib.MockTestCase):
     in_proto = self._InputProto(build_target=board, profile=profile,
                                 replace=force, current=not upgrade_chroot)
     out_proto = self._OutputProto()
-    sysroot_controller.Create(in_proto, out_proto)
+    sysroot_controller.Create(in_proto, out_proto, self.api_config)
 
     # Default value checks.
     target_patch.assert_called_with(name=board, profile=profile)
@@ -94,7 +109,7 @@ class CreateTest(cros_test_lib.MockTestCase):
     in_proto = self._InputProto(build_target=board, profile=profile,
                                 replace=force, current=not upgrade_chroot)
     out_proto = self._OutputProto()
-    sysroot_controller.Create(in_proto, out_proto)
+    sysroot_controller.Create(in_proto, out_proto, self.api_config)
 
     # Not default value checks.
     target_patch.assert_called_with(name=board, profile=profile)
@@ -103,7 +118,8 @@ class CreateTest(cros_test_lib.MockTestCase):
     self.assertEqual(sysroot_path, out_proto.sysroot.path)
 
 
-class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
+class InstallToolchainTest(cros_test_lib.MockTempDirTestCase,
+                           api_config.ApiConfigMixin):
   """Install toolchain function tests."""
 
   def setUp(self):
@@ -132,6 +148,16 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     """Helper to build output proto instance."""
     return sysroot_pb2.InstallToolchainResponse()
 
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'InstallToolchain')
+
+    in_proto = self._InputProto(build_target=self.board,
+                                sysroot_path=self.sysroot)
+    sysroot_controller.InstallToolchain(in_proto, self._OutputProto(),
+                                        self.validate_only_config)
+    patch.assert_not_called()
+
   def testArgumentValidation(self):
     """Test the argument validation."""
     # Test errors on missing inputs.
@@ -139,23 +165,23 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     # Both missing.
     in_proto = self._InputProto()
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallToolchain(in_proto, out_proto)
+      sysroot_controller.InstallToolchain(in_proto, out_proto, self.api_config)
 
     # Sysroot path missing.
     in_proto = self._InputProto(build_target=self.board)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallToolchain(in_proto, out_proto)
+      sysroot_controller.InstallToolchain(in_proto, out_proto, self.api_config)
 
     # Build target name missing.
     in_proto = self._InputProto(sysroot_path=self.sysroot)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallToolchain(in_proto, out_proto)
+      sysroot_controller.InstallToolchain(in_proto, out_proto, self.api_config)
 
     # Both provided, but invalid sysroot path.
     in_proto = self._InputProto(build_target=self.board,
                                 sysroot_path=self.invalid_sysroot)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallToolchain(in_proto, out_proto)
+      sysroot_controller.InstallToolchain(in_proto, out_proto, self.api_config)
 
   def testSuccessOutputHandling(self):
     """Test the output is processed and recorded correctly."""
@@ -164,7 +190,8 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
     in_proto = self._InputProto(build_target=self.board,
                                 sysroot_path=self.sysroot)
 
-    rc = sysroot_controller.InstallToolchain(in_proto, out_proto)
+    rc = sysroot_controller.InstallToolchain(in_proto, out_proto,
+                                             self.api_config)
     self.assertFalse(rc)
     self.assertFalse(out_proto.failed_packages)
 
@@ -183,7 +210,8 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
                                             tc_info=err_cpvs)
     self.PatchObject(sysroot_service, 'InstallToolchain', side_effect=err)
 
-    rc = sysroot_controller.InstallToolchain(in_proto, out_proto)
+    rc = sysroot_controller.InstallToolchain(in_proto, out_proto,
+                                             self.api_config)
     self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     self.assertTrue(out_proto.failed_packages)
     for package in out_proto.failed_packages:
@@ -191,7 +219,8 @@ class InstallToolchainTest(cros_test_lib.MockTempDirTestCase):
       self.assertIn(cat_pkg, expected)
 
 
-class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
+class InstallPackagesTest(cros_test_lib.MockTempDirTestCase,
+                          api_config.ApiConfigMixin):
   """InstallPackages tests."""
 
   def setUp(self):
@@ -220,26 +249,36 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
     """Helper to build an empty output proto instance."""
     return sysroot_pb2.InstallPackagesResponse()
 
+  def testValidateOnly(self):
+    """Sanity check that a validate only call does not execute any logic."""
+    patch = self.PatchObject(sysroot_service, 'BuildPackages')
+
+    in_proto = self._InputProto(build_target=self.build_target,
+                                sysroot_path=self.sysroot)
+    sysroot_controller.InstallPackages(in_proto, self._OutputProto(),
+                                       self.validate_only_config)
+    patch.assert_not_called()
+
   def testArgumentValidationAllMissing(self):
     """Test missing all arguments."""
     out_proto = self._OutputProto()
     in_proto = self._InputProto()
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallPackages(in_proto, out_proto)
+      sysroot_controller.InstallPackages(in_proto, out_proto, self.api_config)
 
   def testArgumentValidationNoSysroot(self):
     """Test missing sysroot path."""
     out_proto = self._OutputProto()
     in_proto = self._InputProto(build_target=self.build_target)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallPackages(in_proto, out_proto)
+      sysroot_controller.InstallPackages(in_proto, out_proto, self.api_config)
 
   def testArgumentValidationNoBuildTarget(self):
     """Test missing build target name."""
     out_proto = self._OutputProto()
     in_proto = self._InputProto(sysroot_path=self.sysroot)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallPackages(in_proto, out_proto)
+      sysroot_controller.InstallPackages(in_proto, out_proto, self.api_config)
 
   def testArgumentValidationInvalidSysroot(self):
     """Test sysroot that hasn't had the toolchain installed."""
@@ -249,7 +288,7 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
     self.PatchObject(sysroot_lib.Sysroot, 'IsToolchainInstalled',
                      return_value=False)
     with self.assertRaises(cros_build_lib.DieSystemExit):
-      sysroot_controller.InstallPackages(in_proto, out_proto)
+      sysroot_controller.InstallPackages(in_proto, out_proto, self.api_config)
 
   def testSuccessOutputHandling(self):
     """Test successful call output handling."""
@@ -262,7 +301,8 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
     out_proto = self._OutputProto()
     self.PatchObject(sysroot_service, 'BuildPackages')
 
-    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
     self.assertFalse(rc)
     self.assertFalse(out_proto.failed_packages)
 
@@ -287,7 +327,8 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
                                             packages=err_cpvs)
     self.PatchObject(sysroot_service, 'BuildPackages', side_effect=error)
 
-    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
     # This needs to return 2 to indicate the available error response.
     self.assertEqual(controller.RETURN_CODE_UNSUCCESSFUL_RESPONSE_AVAILABLE, rc)
     for package in out_proto.failed_packages:
@@ -310,7 +351,8 @@ class InstallPackagesTest(cros_test_lib.MockTempDirTestCase):
                                             packages=[])
     self.PatchObject(sysroot_service, 'BuildPackages', side_effect=error)
 
-    rc = sysroot_controller.InstallPackages(in_proto, out_proto)
+    rc = sysroot_controller.InstallPackages(in_proto, out_proto,
+                                            self.api_config)
     # All we really care about is it's not 0 or 2 (response available), so
     # test for that rather than a specific return code.
     self.assertTrue(rc)

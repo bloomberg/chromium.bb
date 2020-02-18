@@ -8,7 +8,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/signin/public/base/signin_pref_names.h"
@@ -133,7 +133,7 @@ class AccountInvestigatorTest : public testing::Test {
 
  private:
   // Timer needs a message loop.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
@@ -145,9 +145,9 @@ class AccountInvestigatorTest : public testing::Test {
 
 namespace {
 
-ListedAccount Account(const std::string& id) {
+ListedAccount Account(const CoreAccountId& account_id) {
   ListedAccount account;
-  account.id = id;
+  account.id = account_id;
   return account;
 }
 
@@ -166,9 +166,9 @@ const std::string kGaiaId1 = signin::GetTestGaiaIdForEmail("1@mail.com");
 const std::string kGaiaId2 = signin::GetTestGaiaIdForEmail("2@mail.com");
 const std::string kGaiaId3 = signin::GetTestGaiaIdForEmail("3@mail.com");
 
-const ListedAccount one(Account(kGaiaId1));
-const ListedAccount two(Account(kGaiaId2));
-const ListedAccount three(Account(kGaiaId3));
+const ListedAccount one(Account(CoreAccountId(kGaiaId1)));
+const ListedAccount two(Account(CoreAccountId(kGaiaId2)));
+const ListedAccount three(Account(CoreAccountId(kGaiaId3)));
 
 const std::vector<ListedAccount> no_accounts{};
 const std::vector<ListedAccount> just_one{one};

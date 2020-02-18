@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/test_password_store.h"
@@ -198,17 +198,16 @@ TEST(PasswordManagerUtil, FindBestMatches) {
       matches.push_back(&match);
 
     std::map<base::string16, const PasswordForm*> best_matches;
-    std::vector<const PasswordForm*> not_best_matches;
     const PasswordForm* preferred_match = nullptr;
 
-    FindBestMatches(matches, &best_matches, &not_best_matches,
-                    &preferred_match);
+    std::vector<const PasswordForm*> same_scheme_matches;
+    FindBestMatches(matches, PasswordForm::Scheme::kHtml, &same_scheme_matches,
+                    &best_matches, &preferred_match);
 
     if (test_case.expected_preferred_match_index == kNotFound) {
       // Case of empty |matches|.
       EXPECT_FALSE(preferred_match);
       EXPECT_TRUE(best_matches.empty());
-      EXPECT_TRUE(not_best_matches.empty());
     } else {
       // Check |preferred_match|.
       EXPECT_EQ(matches[test_case.expected_preferred_match_index],
@@ -228,18 +227,6 @@ TEST(PasswordManagerUtil, FindBestMatches) {
             std::find(matches.begin(), matches.end(), username_match.second));
         EXPECT_EQ(expected_index, actual_index);
       }
-
-      // Check non-best matches.
-      ASSERT_EQ(matches.size(), best_matches.size() + not_best_matches.size());
-      for (const PasswordForm* form : not_best_matches) {
-        // A non-best match form must not be in |best_matches|.
-        EXPECT_NE(best_matches[form->username_value], form);
-
-        base::Erase(matches, form);
-      }
-      // Expect that all non-best matches were found in |matches| and only best
-      // matches left.
-      EXPECT_EQ(best_matches.size(), matches.size());
     }
   }
 }

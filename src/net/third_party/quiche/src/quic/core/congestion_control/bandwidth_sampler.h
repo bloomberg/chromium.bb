@@ -5,11 +5,14 @@
 #ifndef QUICHE_QUIC_CORE_CONGESTION_CONTROL_BANDWIDTH_SAMPLER_H_
 #define QUICHE_QUIC_CORE_CONGESTION_CONTROL_BANDWIDTH_SAMPLER_H_
 
+#include "net/third_party/quiche/src/quic/core/congestion_control/send_algorithm_interface.h"
+#include "net/third_party/quiche/src/quic/core/congestion_control/windowed_filter.h"
 #include "net/third_party/quiche/src/quic/core/packet_number_indexed_queue.h"
 #include "net/third_party/quiche/src/quic/core/quic_bandwidth.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/quic/core/quic_time.h"
 #include "net/third_party/quiche/src/quic/core/quic_types.h"
+#include "net/third_party/quiche/src/quic/core/quic_unacked_packet_map.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_export.h"
 
 namespace quic {
@@ -73,6 +76,43 @@ struct QUIC_EXPORT_PRIVATE BandwidthSample {
 
   BandwidthSample()
       : bandwidth(QuicBandwidth::Zero()), rtt(QuicTime::Delta::Zero()) {}
+};
+
+// MaxAckHeightTracker is part of the BandwidthSampler. It is called after every
+// ack event to keep track the degree of ack aggregation(a.k.a "ack height").
+class QUIC_EXPORT_PRIVATE MaxAckHeightTracker {
+ public:
+  explicit MaxAckHeightTracker(QuicRoundTripCount initial_filter_window)
+      : max_ack_height_filter_(initial_filter_window, 0, 0) {}
+
+  QuicByteCount Get() const { return max_ack_height_filter_.GetBest(); }
+
+  QuicByteCount Update(QuicBandwidth bandwidth_estimate,
+                       QuicRoundTripCount round_trip_count,
+                       QuicTime ack_time,
+                       QuicByteCount bytes_acked);
+
+  void SetFilterWindowLength(QuicRoundTripCount length) {
+    max_ack_height_filter_.SetWindowLength(length);
+  }
+
+  void Reset(QuicByteCount new_height, QuicRoundTripCount new_time) {
+    max_ack_height_filter_.Reset(new_height, new_time);
+  }
+
+ private:
+  // Tracks the maximum number of bytes acked faster than the estimated
+  // bandwidth.
+  typedef WindowedFilter<QuicByteCount,
+                         MaxFilter<QuicByteCount>,
+                         QuicRoundTripCount,
+                         QuicRoundTripCount>
+      MaxAckHeightFilter;
+  MaxAckHeightFilter max_ack_height_filter_;
+
+  // The time this aggregation started and the number of bytes acked during it.
+  QuicTime aggregation_epoch_start_time_ = QuicTime::Zero();
+  QuicByteCount aggregation_epoch_bytes_ = 0;
 };
 
 // An interface common to any class that can provide bandwidth samples from the
@@ -204,7 +244,8 @@ class QUIC_EXPORT_PRIVATE BandwidthSamplerInterface {
 // connection is app-limited, the approach works in other cases too.
 class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
  public:
-  BandwidthSampler();
+  BandwidthSampler(const QuicUnackedPacketMap* unacked_packet_map,
+                   QuicRoundTripCount max_height_tracker_window_length);
   ~BandwidthSampler() override;
 
   void OnPacketSent(QuicTime sent_time,
@@ -214,6 +255,8 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
                     HasRetransmittableData has_retransmittable_data) override;
   BandwidthSample OnPacketAcknowledged(QuicTime ack_time,
                                        QuicPacketNumber packet_number) override;
+  QuicByteCount OnAckEventEnd(QuicBandwidth bandwidth_estimate,
+                              QuicRoundTripCount round_trip_count);
   SendTimeState OnPacketLost(QuicPacketNumber packet_number) override;
 
   void OnAppLimited() override;
@@ -227,6 +270,21 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
   bool is_app_limited() const override;
 
   QuicPacketNumber end_of_app_limited_phase() const override;
+
+  QuicByteCount max_ack_height() const { return max_ack_height_tracker_.Get(); }
+
+  void SetMaxAckHeightTrackerWindowLength(QuicRoundTripCount length) {
+    max_ack_height_tracker_.SetFilterWindowLength(length);
+  }
+
+  void ResetMaxAckHeightTracker(QuicByteCount new_height,
+                                QuicRoundTripCount new_time) {
+    max_ack_height_tracker_.Reset(new_height, new_time);
+  }
+
+  bool quic_track_ack_height_in_bandwidth_sampler() const {
+    return quic_track_ack_height_in_bandwidth_sampler_;
+  }
 
  private:
   friend class test::BandwidthSamplerPeer;
@@ -327,12 +385,23 @@ class QUIC_EXPORT_PRIVATE BandwidthSampler : public BandwidthSamplerInterface {
   // Maximum number of tracked packets.
   const QuicPacketCount max_tracked_packets_;
 
+  // The main unacked packet map.  Used for outputting extra debugging details.
+  // May be null.
+  // TODO(vasilvv): remove this once it's no longer useful for debugging.
+  const QuicUnackedPacketMap* unacked_packet_map_;
+
   // Handles the actual bandwidth calculations, whereas the outer method handles
   // retrieving and removing |sent_packet|.
   BandwidthSample OnPacketAcknowledgedInner(
       QuicTime ack_time,
       QuicPacketNumber packet_number,
       const ConnectionStateOnSentPacket& sent_packet);
+
+  MaxAckHeightTracker max_ack_height_tracker_;
+  QuicByteCount total_bytes_acked_after_last_ack_event_;
+
+  // Latched value of --quic_track_ack_height_in_bandwidth_sampler2.
+  const bool quic_track_ack_height_in_bandwidth_sampler_;
 };
 
 }  // namespace quic

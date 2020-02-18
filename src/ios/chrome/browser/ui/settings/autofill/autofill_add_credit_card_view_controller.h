@@ -7,14 +7,27 @@
 
 #import <UIKit/UIKit.h>
 
-#import "ios/chrome/browser/ui/settings/settings_root_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/autofill/autofill_edit_table_view_controller.h"
+#import "ios/chrome/browser/ui/settings/credit_card_scanner/credit_card_consumer.h"
+
+@protocol AddCreditCardViewControllerDelegate;
 
 // The view controller for adding new credit card.
-@interface AutofillAddCreditCardViewController : SettingsRootTableViewController
+@interface AutofillAddCreditCardViewController
+    : AutofillEditTableViewController <CreditCardConsumer>
 
-// Initializes a AutofillAddCreditCardViewController with
-// A default style and |ChromeTableViewControllerStyleNoAppBar|.
-- (instancetype)init;
+// Initializes a AutofillAddCreditCardViewController with passed delegate.
+- (instancetype)initWithDelegate:
+    (id<AddCreditCardViewControllerDelegate>)delegate NS_DESIGNATED_INITIALIZER;
+
+- (instancetype)initWithTableViewStyle:(UITableViewStyle)style
+                           appBarStyle:
+                               (ChromeTableViewControllerStyle)appBarStyle
+    NS_UNAVAILABLE;
+
+// Returns "YES" if any of tableview cells has user input.
+@property(nonatomic, getter=tableViewHasUserInput, readonly)
+    BOOL tableViewHasUserInput;
 
 @end
 

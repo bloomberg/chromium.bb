@@ -19,7 +19,6 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/runtime/chrome_runtime_api_delegate.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
-#include "chrome/browser/extensions/chrome_extension_api_frame_id_map_helper.h"
 #include "chrome/browser/extensions/chrome_extension_host_delegate.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/extensions/chrome_extensions_browser_api_provider.h"
@@ -52,7 +51,6 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/browser/core_extensions_browser_api_provider.h"
 #include "extensions/browser/extension_prefs.h"
@@ -353,10 +351,11 @@ ChromeExtensionsBrowserClient::GetComponentExtensionResourceManager() {
 void ChromeExtensionsBrowserClient::BroadcastEventToRenderers(
     events::HistogramValue histogram_value,
     const std::string& event_name,
-    std::unique_ptr<base::ListValue> args) {
+    std::unique_ptr<base::ListValue> args,
+    bool dispatch_to_off_the_record_profiles) {
   g_browser_process->extension_event_router_forwarder()
       ->BroadcastEventToRenderers(histogram_value, event_name, std::move(args),
-                                  GURL());
+                                  GURL(), dispatch_to_off_the_record_profiles);
 }
 
 ExtensionCache* ChromeExtensionsBrowserClient::GetExtensionCache() {
@@ -449,12 +448,6 @@ ChromeExtensionsBrowserClient::CreateUpdateClient(
     content::BrowserContext* context) {
   return update_client::UpdateClientFactory(
       ChromeUpdateClientConfig::Create(context));
-}
-
-std::unique_ptr<ExtensionApiFrameIdMapHelper>
-ChromeExtensionsBrowserClient::CreateExtensionApiFrameIdMapHelper(
-    ExtensionApiFrameIdMap* map) {
-  return std::make_unique<ChromeExtensionApiFrameIdMapHelper>(map);
 }
 
 std::unique_ptr<content::BluetoothChooser>

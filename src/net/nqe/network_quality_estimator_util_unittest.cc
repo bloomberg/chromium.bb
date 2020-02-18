@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "base/optional.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/test_completion_callback.h"
@@ -29,7 +29,7 @@ namespace {
 // Verify that the cached network qualities from the prefs are not used if the
 // reading of the network quality prefs is not enabled..
 TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<BoundTestNetLog> net_log =
       std::make_unique<BoundTestNetLog>();
@@ -81,7 +81,7 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHost) {
 // resolution is not cached. Further, once the resolution is cached, verify that
 // the cached entry is used.
 TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<BoundTestNetLog> net_log =
       std::make_unique<BoundTestNetLog>();
@@ -113,7 +113,7 @@ TEST(NetworkQualityEstimatorUtilTest, ReservedHostUncached) {
 
 // Verify that IsPrivateHost() returns correct results for local hosts.
 TEST(NetworkQualityEstimatorUtilTest, Localhost) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
 
   std::unique_ptr<BoundTestNetLog> net_log =
       std::make_unique<BoundTestNetLog>();

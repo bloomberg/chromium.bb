@@ -14,7 +14,6 @@
 #include "base/time/default_clock.h"
 #include "build/build_config.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_features.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_params.h"
@@ -24,7 +23,6 @@
 #include "components/prefs/pref_service.h"
 #include "net/base/network_change_notifier.h"
 #include "net/http/http_request_headers.h"
-#include "services/network/public/cpp/features.h"
 
 namespace {
 
@@ -52,7 +50,6 @@ namespace data_reduction_proxy {
 
 DataReductionProxySettings::DataReductionProxySettings()
     : unreachable_(false),
-      deferred_initialization_(false),
       prefs_(nullptr),
       config_(nullptr),
       clock_(base::DefaultClock::GetInstance()) {}
@@ -61,17 +58,14 @@ DataReductionProxySettings::~DataReductionProxySettings() = default;
 
 void DataReductionProxySettings::InitDataReductionProxySettings(
     PrefService* prefs,
-    DataReductionProxyIOData* io_data,
     std::unique_ptr<DataReductionProxyService> data_reduction_proxy_service) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(prefs);
-  DCHECK(io_data);
-  DCHECK(io_data->config());
   DCHECK(data_reduction_proxy_service);
+  DCHECK(data_reduction_proxy_service->config());
   prefs_ = prefs;
-  config_ = io_data->config();
+  config_ = data_reduction_proxy_service->config();
   data_reduction_proxy_service_ = std::move(data_reduction_proxy_service);
-  data_reduction_proxy_service_->AddObserver(this);
   RecordDataReductionInit();
 
   registrar_.Init(prefs_);
@@ -89,19 +83,11 @@ void DataReductionProxySettings::InitDataReductionProxySettings(
 
   for (auto& observer : observers_)
     observer.OnSettingsInitialized();
-}
 
-void DataReductionProxySettings::OnServiceInitialized() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  if (!deferred_initialization_)
-    return;
-  deferred_initialization_ = false;
-  // Technically, this is not "at startup", but this is the first chance that
-  // IO data objects can be called.
-  UpdateIOData(true);
-  if (proxy_config_client_) {
-    data_reduction_proxy_service_->SetCustomProxyConfigClient(
-        std::move(proxy_config_client_));
+  while (!proxy_config_clients_.empty()) {
+    data_reduction_proxy_service_->AddCustomProxyConfigClient(
+        std::move(proxy_config_clients_.back()));
+    proxy_config_clients_.pop_back();
   }
 }
 
@@ -142,8 +128,7 @@ void DataReductionProxySettings::SetDataSaverEnabledForTesting(
 }
 
 bool DataReductionProxySettings::IsDataReductionProxyEnabled() const {
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      !params::IsEnabledWithNetworkService()) {
+  if (!params::IsEnabledWithNetworkService()) {
     return false;
   }
   return IsDataSaverEnabledByUser(GetOriginalProfilePrefs());
@@ -236,11 +221,6 @@ void DataReductionProxySettings::ResetDataReductionStatistics() {
   data_reduction_proxy_service_->compression_stats()->ResetStatistics();
 }
 
-void DataReductionProxySettings::UpdateIOData(bool at_startup) {
-  data_reduction_proxy_service_->SetProxyPrefs(IsDataReductionProxyEnabled(),
-                                               at_startup);
-}
-
 void DataReductionProxySettings::MaybeActivateDataReductionProxy(
     bool at_startup) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -301,11 +281,9 @@ void DataReductionProxySettings::MaybeActivateDataReductionProxy(
       RecordSettingsEnabledState(DATA_REDUCTION_SETTINGS_ACTION_ON_TO_OFF);
     }
   }
-  // Configure use of the data reduction proxy if it is enabled.
-  if (at_startup && !data_reduction_proxy_service_->Initialized())
-    deferred_initialization_ = true;
-  else
-    UpdateIOData(at_startup);
+
+  data_reduction_proxy_service_->SetProxyPrefs(IsDataReductionProxyEnabled(),
+                                               at_startup);
 }
 
 const net::HttpRequestHeaders&
@@ -322,24 +300,14 @@ void DataReductionProxySettings::SetProxyRequestHeaders(
     observer.OnProxyRequestHeadersChanged(headers);
 }
 
-void DataReductionProxySettings::SetConfiguredProxies(
-    const net::ProxyList& proxies) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  configured_proxies_ = proxies;
-}
-
-void DataReductionProxySettings::SetProxiesForHttp(
-    const std::vector<DataReductionProxyServer>& proxies_for_http) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  proxies_for_http_ = proxies_for_http;
-}
-
 bool DataReductionProxySettings::IsConfiguredDataReductionProxy(
     const net::ProxyServer& proxy_server) const {
   if (proxy_server.is_direct() || !proxy_server.is_valid())
     return false;
 
-  for (const auto& drp_proxy : configured_proxies_.GetAll()) {
+  net::ProxyList proxies =
+      data_reduction_proxy_service_->config()->GetAllConfiguredProxies();
+  for (const auto& drp_proxy : proxies.GetAll()) {
     if (drp_proxy.host_port_pair().Equals(proxy_server.host_port_pair()))
       return true;
   }
@@ -358,9 +326,15 @@ void DataReductionProxySettings::RemoveDataReductionProxySettingsObserver(
   observers_.RemoveObserver(observer);
 }
 
-void DataReductionProxySettings::SetCustomProxyConfigClient(
-    network::mojom::CustomProxyConfigClientPtrInfo proxy_config_client) {
-  proxy_config_client_ = std::move(proxy_config_client);
+void DataReductionProxySettings::AddCustomProxyConfigClient(
+    mojo::Remote<network::mojom::CustomProxyConfigClient> proxy_config_client) {
+  if (data_reduction_proxy_service_) {
+    data_reduction_proxy_service_->AddCustomProxyConfigClient(
+        std::move(proxy_config_client));
+    return;
+  }
+
+  proxy_config_clients_.push_back(std::move(proxy_config_client));
 }
 
 // Metrics methods

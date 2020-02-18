@@ -12,6 +12,7 @@
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
@@ -28,7 +29,7 @@
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_util.h"
-#include "chromeos/services/network_config/public/mojom/constants.mojom.h"
+#include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "components/device_event_log/device_event_log.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -69,14 +70,19 @@ bool IsSecondaryUser() {
          !session_controller->IsUserPrimary();
 }
 
+SkColor GetIconColor() {
+  return AshColorProvider::Get()->GetContentLayerColor(
+      AshColorProvider::ContentLayerType::kIconPrimary,
+      AshColorProvider::AshColorMode::kDark);
+}
+
 }  // namespace
 
 // NetworkListView:
 
 NetworkListView::NetworkListView(DetailedViewDelegate* delegate,
                                  LoginStatus login)
-    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login),
-      model_(Shell::Get()->system_tray_model()->network_state_model()) {}
+    : NetworkStateListDetailedView(delegate, LIST_TYPE_NETWORK, login) {}
 
 NetworkListView::~NetworkListView() {
   network_icon::NetworkIconAnimation::GetInstance()->RemoveObserver(this);
@@ -84,7 +90,7 @@ NetworkListView::~NetworkListView() {
 
 void NetworkListView::UpdateNetworkList() {
   CHECK(scroll_content());
-  model_->cros_network_config()->GetNetworkStateList(
+  model()->cros_network_config()->GetNetworkStateList(
       NetworkFilter::New(FilterType::kVisible, NetworkType::kAll,
                          chromeos::network_config::mojom::kNoLimit),
       base::BindOnce(&NetworkListView::OnGetNetworkStateList,
@@ -131,7 +137,7 @@ void NetworkListView::OnGetNetworkStateList(
         network->cellular ? network->cellular->activation_state
                           : ActivationStateType::kUnknown;
     if (network->type == NetworkType::kCellular &&
-        model_->GetDeviceState(NetworkType::kCellular) !=
+        model()->GetDeviceState(NetworkType::kCellular) !=
             DeviceStateType::kEnabled &&
         activation_state == ActivationStateType::kNoService) {
       continue;
@@ -223,7 +229,7 @@ NetworkListView::UpdateNetworkListEntries() {
   // Keep an index where the next child should be inserted.
   int index = 0;
 
-  const NetworkStateProperties* default_network = model_->default_network();
+  const NetworkStateProperties* default_network = model()->default_network();
   bool using_proxy = default_network &&
                      default_network->proxy_mode == ProxyMode::kFixedServers;
   // Show a warning that the connection might be monitored if connected to a VPN
@@ -270,7 +276,7 @@ NetworkListView::UpdateNetworkListEntries() {
     wifi_header_view_ = new WifiSectionHeaderView();
 
   bool wifi_enabled =
-      model_->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
+      model()->GetDeviceState(NetworkType::kWiFi) == DeviceStateType::kEnabled;
   index = UpdateNetworkSectionHeader(NetworkType::kWiFi, wifi_enabled, index,
                                      wifi_header_view_, &wifi_separator_view_);
 
@@ -308,12 +314,12 @@ NetworkListView::UpdateNetworkListEntries() {
 
 bool NetworkListView::ShouldMobileDataSectionBeShown() {
   // The section should always be shown if Cellular networks are available.
-  if (model_->GetDeviceState(NetworkType::kCellular) !=
+  if (model()->GetDeviceState(NetworkType::kCellular) !=
       DeviceStateType::kUnavailable) {
     return true;
   }
 
-  DeviceStateType tether_state = model_->GetDeviceState(NetworkType::kTether);
+  DeviceStateType tether_state = model()->GetDeviceState(NetworkType::kTether);
   // Hide the section if both Cellular and Tether are UNAVAILABLE.
   if (tether_state == DeviceStateType::kUnavailable)
     return false;
@@ -340,8 +346,7 @@ void NetworkListView::UpdateViewForNetwork(HoverHighlightView* view,
     // "X" icon superimposed so that it is clear that they are disconnected.
     network_image = gfx::ImageSkiaOperations::CreateSuperimposedImage(
         info.image, gfx::CreateVectorIcon(kNetworkMobileNotConnectedXIcon,
-                                          info.image.height(),
-                                          kMobileNotConnectedXIconColor));
+                                          info.image.height(), GetIconColor()));
   } else {
     network_image = info.image;
   }
@@ -379,12 +384,15 @@ views::View* NetworkListView::CreatePowerStatusView(const NetworkInfo& info) {
   if (info.type != NetworkType::kTether)
     return nullptr;
 
-  views::ImageView* icon = TrayPopupUtils::CreateMoreImageView();
+  views::ImageView* icon = new views::ImageView;
+  const SkColor icon_color = GetIconColor();
+  icon->SetPreferredSize(gfx::Size(kMenuIconSize, kMenuIconSize));
+  icon->EnableCanvasFlippingForRTLUI(true);
   PowerStatus::BatteryImageInfo icon_info;
   icon_info.charge_percent = info.battery_percentage;
-  icon->SetImage(
-      PowerStatus::GetBatteryImage(icon_info, kMobileNetworkBatteryIconSize,
-                                   kMenuIconColorDisabled, kMenuIconColor));
+  icon->SetImage(PowerStatus::GetBatteryImage(
+      icon_info, kMobileNetworkBatteryIconSize,
+      AshColorProvider::GetSecondToneColor(icon_color), icon_color));
 
   // Show the numeric battery percentage on hover.
   icon->set_tooltip_text(base::FormatPercent(info.battery_percentage));
@@ -400,7 +408,7 @@ views::View* NetworkListView::CreatePolicyView(const NetworkInfo& info) {
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuBusinessIcon, kMenuIconColor));
+      gfx::CreateVectorIcon(kSystemMenuBusinessIcon, GetIconColor()));
   return controlled_icon;
 }
 
@@ -411,7 +419,7 @@ views::View* NetworkListView::CreateControlledByExtensionView(
 
   views::ImageView* controlled_icon = TrayPopupUtils::CreateMainImageView();
   controlled_icon->SetImage(
-      gfx::CreateVectorIcon(kCaptivePortalIcon, kMenuIconColor));
+      gfx::CreateVectorIcon(kCaptivePortalIcon, GetIconColor()));
   controlled_icon->set_tooltip_text(l10n_util::GetStringFUTF16(
       IDS_ASH_STATUS_TRAY_EXTENSION_CONTROLLED_WIFI,
       base::UTF8ToUTF16(info.captive_portal_provider_name)));
@@ -533,7 +541,7 @@ TriView* NetworkListView::CreateConnectionWarning() {
   // Set 'info' icon on left side.
   views::ImageView* image_view = TrayPopupUtils::CreateMainImageView();
   image_view->SetImage(
-      gfx::CreateVectorIcon(kSystemMenuInfoIcon, kMenuIconColor));
+      gfx::CreateVectorIcon(kSystemMenuInfoIcon, GetIconColor()));
   image_view->SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
   connection_warning->AddView(TriView::Container::START, image_view);
 

@@ -134,8 +134,7 @@ net::NetworkTrafficAnnotationTag CreateIceConfigRequestAnnotation() {
 }  // namespace
 
 CRDHostDelegate::CRDHostDelegate()
-    : OAuth2AccessTokenManager::Consumer("crd_host_delegate"),
-      weak_factory_(this) {}
+    : OAuth2AccessTokenManager::Consumer("crd_host_delegate") {}
 
 CRDHostDelegate::~CRDHostDelegate() {
 }
@@ -242,8 +241,7 @@ void CRDHostDelegate::FetchICEConfig(
 
   auto ice_request = std::make_unique<network::ResourceRequest>();
   ice_request->url = GURL(kICEConfigURL);
-  ice_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  ice_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   ice_request->headers.SetHeader(net::HttpRequestHeaders::kAuthorization,
                                  "Bearer " + oauth_token);
@@ -322,10 +320,8 @@ void CRDHostDelegate::StartCRDHostAndGetCode(
 
   // TODO(antrim): set up watchdog timer (reasonable cutoff).
   host_ = remoting::CreateIt2MeNativeMessagingHostForChromeOS(
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::IO}),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       g_browser_process->policy_service());
   host_->Start(this);
 

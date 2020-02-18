@@ -29,11 +29,13 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_object_cache_impl.h"
 
 #include "base/memory/scoped_refptr.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom-blink.h"
 #include "third_party/blink/public/mojom/permissions/permission_status.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
+#include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/editing_utilities.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -113,8 +115,7 @@ AXObjectCacheImpl::AXObjectCacheImpl(Document& document)
       modification_count_(0),
       validation_message_axid_(0),
       relation_cache_(std::make_unique<AXRelationCache>(this)),
-      accessibility_event_permission_(mojom::PermissionStatus::ASK),
-      permission_observer_binding_(this) {
+      accessibility_event_permission_(mojom::PermissionStatus::ASK) {
   if (document_->LoadEventFinished())
     AddPermissionStatusListener();
   documents_.insert(&document);
@@ -139,6 +140,8 @@ void AXObjectCacheImpl::Dispose() {
       continue;
     document->View()->UnregisterFromLifecycleNotifications(this);
   }
+
+  permission_observer_receiver_.reset();
 
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
@@ -200,7 +203,7 @@ AXObject* AXObjectCacheImpl::FocusedObject() {
     focused_node = document_;
 
   // If it's an image map, get the focused link within the image map.
-  if (auto* area = ToHTMLAreaElementOrNull(focused_node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(focused_node))
     return FocusedImageMapUIElement(area);
 
   // See if there's a page popup, for example a calendar picker.
@@ -231,6 +234,22 @@ AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
 
   AXID ax_id = layout_object_mapping_.at(layout_object);
   DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
+
+  Node* node = layout_object->GetNode();
+  if (node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // It's in a locked subtree so we need to search by node instead of by
+    // layout object.
+    if (ax_id) {
+      // We previously saved the node in the cache with its layout object,
+      // but now it's in a locked subtree so we should remove the entry with its
+      // layout object and replace it with an AXNodeObject created from the node
+      // instead.
+      Remove(ax_id);
+      return GetOrCreate(node);
+    }
+    return Get(node);
+  }
+
   if (!ax_id)
     return nullptr;
 
@@ -257,7 +276,7 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   // Menu list option and HTML area elements are indexed by DOM node, never by
   // layout object.
   LayoutObject* layout_object = node->GetLayoutObject();
-  if (IsMenuListOption(node) || IsHTMLAreaElement(node))
+  if (IsMenuListOption(node) || IsA<HTMLAreaElement>(node))
     layout_object = nullptr;
 
   AXID layout_id = layout_object ? layout_object_mapping_.at(layout_object) : 0;
@@ -266,8 +285,19 @@ AXObject* AXObjectCacheImpl::Get(const Node* node) {
   AXID node_id = node_object_mapping_.at(node);
   DCHECK(!HashTraits<AXID>::IsDeletedValue(node_id));
 
+  if (layout_object &&
+      DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
+    // The node is in a display locked subtree, but we've previously put it in
+    // the cache with its layout object.
+    if (layout_id) {
+      Remove(layout_id);
+      layout_id = 0;
+    }
+    layout_object = nullptr;
+  }
+
   if (layout_object && node_id && !layout_id && !IsMenuListOption(node) &&
-      !IsHTMLAreaElement(node)) {
+      !IsA<HTMLAreaElement>(node)) {
     // This can happen if an AXNodeObject is created for a node that's not laid
     // out, but later something changes and it gets a layoutObject (like if it's
     // reparented). It's also possible the layout object changed.
@@ -361,7 +391,7 @@ AXObject* AXObjectCacheImpl::CreateFromRenderer(LayoutObject* layout_object) {
   if (NodeHasRole(node, "list") || NodeHasRole(node, "directory") ||
       (NodeHasRole(node, g_null_atom) &&
        (IsHTMLUListElement(node) || IsHTMLOListElement(node) ||
-        IsHTMLDListElement(node))))
+        IsA<HTMLDListElement>(node))))
     return MakeGarbageCollected<AXList>(layout_object, *this);
 
   // media element
@@ -405,7 +435,7 @@ AXObject* AXObjectCacheImpl::CreateFromNode(Node* node) {
                                                   *this);
   }
 
-  if (auto* area = ToHTMLAreaElementOrNull(node))
+  if (auto* area = DynamicTo<HTMLAreaElement>(node))
     return MakeGarbageCollected<AXImageMapLink>(area, *this);
 
   return MakeGarbageCollected<AXNodeObject>(node, *this);
@@ -444,15 +474,17 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
     return obj;
 
   // If the node has a layout object, prefer using that as the primary key for
-  // the AXObject, with the exception of an HTMLAreaElement, which is
-  // created based on its node.
-  if (node->GetLayoutObject() && !IsHTMLAreaElement(node))
+  // the AXObject, with the exception of the HTMLAreaElement and nodes within
+  // a locked subtree, which are created based on its node.
+  if (node->GetLayoutObject() && !IsA<HTMLAreaElement>(node) &&
+      !DisplayLockUtilities::NearestLockedExclusiveAncestor(*node)) {
     return GetOrCreate(node->GetLayoutObject());
+  }
 
   if (!LayoutTreeBuilderTraversal::Parent(*node))
     return nullptr;
 
-  if (IsHTMLHeadElement(node))
+  if (IsA<HTMLHeadElement>(node))
     return nullptr;
 
   AXObject* new_obj = CreateFromNode(node);
@@ -461,7 +493,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(Node* node) {
   DCHECK(!Get(node));
 
   const AXID ax_id = GetOrCreateAXID(new_obj);
-
+  DCHECK(!HashTraits<AXID>::IsDeletedValue(ax_id));
   node_object_mapping_.Set(node, ax_id);
   new_obj->Init();
   new_obj->SetLastKnownIsIgnoredValue(new_obj->AccessibilityIsIgnored());
@@ -482,8 +514,11 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   // Area elements are never created based on layout objects (see |Get|), so we
   // really should never get here.
   Node* node = layout_object->GetNode();
-  if (node && (IsMenuListOption(node) || IsHTMLAreaElement(node)))
+  if (node && (IsMenuListOption(node) || IsA<HTMLAreaElement>(node)))
     return nullptr;
+
+  if (node && DisplayLockUtilities::NearestLockedExclusiveAncestor(*node))
+    return GetOrCreate(layout_object->GetNode());
 
   AXObject* new_obj = CreateFromRenderer(layout_object);
 
@@ -500,7 +535,7 @@ AXObject* AXObjectCacheImpl::GetOrCreate(LayoutObject* layout_object) {
   if (node && node->GetLayoutObject() == layout_object) {
     AXID prev_axid = node_object_mapping_.at(node);
     if (prev_axid != 0 && prev_axid != axid) {
-      Remove(node);
+      Remove(prev_axid);
       node_object_mapping_.Set(node, axid);
     }
     MaybeNewRelationTarget(node, new_obj);
@@ -1245,15 +1280,33 @@ bool AXObjectCacheImpl::HandleAttributeChanged(const QualifiedName& attr_name,
   DeferTreeUpdate(&AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout,
                   attr_name, element);
 
-  if (attr_name == kRoleAttr || attr_name == kTypeAttr ||
-      attr_name == kSizeAttr || attr_name == kAltAttr ||
-      attr_name == kTitleAttr ||
-      (attr_name == kForAttr && IsHTMLLabelElement(*element)) ||
-      attr_name == kIdAttr || attr_name == kTabindexAttr ||
-      attr_name == kDisabledAttr) {
-    return true;
+  if (attr_name != kRoleAttr && attr_name != kTypeAttr &&
+      attr_name != kSizeAttr && attr_name != kAltAttr &&
+      attr_name != kTitleAttr &&
+      (attr_name != kForAttr && !IsA<HTMLLabelElement>(*element)) &&
+      attr_name != kIdAttr && attr_name != kTabindexAttr &&
+      attr_name != kDisabledAttr &&
+      !attr_name.LocalName().StartsWith("aria-")) {
+    return false;
   }
-  return attr_name.LocalName().StartsWith("aria-");
+
+  // If this attribute is interesting for accessibility (e.g. `role` or
+  // `alt`), but doesn't trigger a lifecycle update on its own
+  // (e.g. because it doesn't make layout dirty), make sure we run
+  // lifecycle phases to update the computed accessibility tree.
+  auto* view = element->GetDocument().View();
+  auto* page = element->GetDocument().GetPage();
+  if (!view || !page)
+    return true;
+  if (!view->CanThrottleRendering()) {
+    page->Animator().ScheduleVisualUpdate(GetDocument().GetFrame());
+  }
+
+  // TODO(aboxhall): add a lifecycle phase for accessibility updates.
+  GetDocument().Lifecycle().EnsureStateAtMost(
+      DocumentLifecycle::kVisualUpdatePending);
+
+  return true;
 }
 
 void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
@@ -1268,7 +1321,7 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
     HandleRoleChangeIfNotEditableWithCleanLayout(element);
   } else if (attr_name == kAltAttr || attr_name == kTitleAttr) {
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == kForAttr && IsHTMLLabelElement(*element)) {
+  } else if (attr_name == kForAttr && IsA<HTMLLabelElement>(*element)) {
     LabelChangedWithCleanLayout(element);
   } else if (attr_name == kIdAttr) {
     MaybeNewRelationTarget(element, Get(element));
@@ -1321,12 +1374,6 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
   } else {
     PostNotification(element, ax::mojom::Event::kAriaAttributeChanged);
   }
-}
-
-void AXObjectCacheImpl::HandleAutofillStateChanged(Element* elem,
-                                                   bool is_available) {
-  if (AXObject* obj = Get(elem))
-    obj->HandleAutofillStateChanged(is_available);
 }
 
 AXObject* AXObjectCacheImpl::GetOrCreateValidationMessageObject() {
@@ -1724,14 +1771,17 @@ void AXObjectCacheImpl::AddPermissionStatusListener() {
     return;
   }
 
+  if (permission_service_.is_bound())
+    permission_service_.reset();
+
   ConnectToPermissionService(document_->GetExecutionContext(),
-                             mojo::MakeRequest(&permission_service_));
+                             permission_service_.BindNewPipeAndPassReceiver());
 
-  if (permission_observer_binding_.is_bound())
-    permission_observer_binding_.Close();
+  if (permission_observer_receiver_.is_bound())
+    permission_observer_receiver_.reset();
 
-  mojom::blink::PermissionObserverPtr observer;
-  permission_observer_binding_.Bind(mojo::MakeRequest(&observer));
+  mojo::PendingRemote<mojom::blink::PermissionObserver> observer;
+  permission_observer_receiver_.Bind(observer.InitWithNewPipeAndPassReceiver());
   permission_service_->AddPermissionObserver(
       CreatePermissionDescriptor(
           mojom::blink::PermissionName::ACCESSIBILITY_EVENTS),
@@ -1774,7 +1824,7 @@ void AXObjectCacheImpl::DidFinishLifecycleUpdate(const LocalFrameView& view) {
 
 void AXObjectCacheImpl::ContextDestroyed(ExecutionContext*) {
   permission_service_.reset();
-  permission_observer_binding_.Close();
+  permission_observer_receiver_.reset();
 }
 
 void AXObjectCacheImpl::Trace(blink::Visitor* visitor) {

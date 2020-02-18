@@ -26,8 +26,8 @@
 static void test_basic_draw_as_src(skiatest::Reporter* reporter, GrContext* context,
                                    sk_sp<GrTextureProxy> rectProxy, GrColorType colorType,
                                    uint32_t expectedPixelValues[]) {
-    sk_sp<GrRenderTargetContext> rtContext(context->priv().makeDeferredRenderTargetContext(
-            SkBackingFit::kExact, rectProxy->width(), rectProxy->height(), colorType, nullptr));
+    auto rtContext = context->priv().makeDeferredRenderTargetContext(
+            SkBackingFit::kExact, rectProxy->width(), rectProxy->height(), colorType, nullptr);
     for (auto filter : {GrSamplerState::Filter::kNearest,
                         GrSamplerState::Filter::kBilerp,
                         GrSamplerState::Filter::kMipMap}) {
@@ -150,7 +150,6 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         rectangleInfo.fFormat = GR_GL_RGBA8;
 
         GrBackendTexture rectangleTex(kWidth, kHeight, GrMipMapped::kNo, rectangleInfo);
-        rectangleTex.setPixelConfig(kRGBA_8888_GrPixelConfig);
 
         GrColor refPixels[kWidth * kHeight];
         for (int y = 0; y < kHeight; ++y) {
@@ -185,7 +184,7 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(RectangleTexture, reporter, ctxInfo) {
         test_copy_from_surface(reporter, context, rectProxy.get(), GrColorType::kRGBA_8888,
                                refPixels, "RectangleTexture-copy-from");
 
-        sk_sp<GrSurfaceContext> rectContext = context->priv().makeWrappedSurfaceContext(
+        auto rectContext = context->priv().makeWrappedSurfaceContext(
                 std::move(rectProxy), GrColorType::kRGBA_8888, kPremul_SkAlphaType);
         SkASSERT(rectContext);
 

@@ -18,7 +18,6 @@ using IconProto = notifications::proto::Icon;
 namespace notifications {
 namespace {
 
-const char kUuid[] = "123";
 const char kGuid[] = "testGuid";
 const char kData[] = "bitmapdata";
 
@@ -60,28 +59,24 @@ NotificationData::Button CreateButton(const char* text,
 
 TEST(ProtoConversionTest, IconEntryFromProto) {
   IconProto proto;
-  proto.set_uuid(kUuid);
   proto.set_icon(kData);
   IconEntry entry;
 
   IconEntryFromProto(&proto, &entry);
 
   // Verify entry data.
-  EXPECT_EQ(entry.uuid, kUuid);
   EXPECT_EQ(entry.data, kData);
 }
 
 TEST(ProtoConversionTest, IconEntryToProto) {
   IconEntry entry;
   entry.data = kData;
-  entry.uuid = kUuid;
   IconProto proto;
 
   IconEntryToProto(&entry, &proto);
 
   // Verify proto data.
   EXPECT_EQ(proto.icon(), kData);
-  EXPECT_EQ(proto.uuid(), kUuid);
 }
 
 // Verifies client state proto conversion.
@@ -154,6 +149,10 @@ TEST(ProtoConversionTest, ImpressionProtoConversion) {
   first_impression.impression_mapping[UserFeedback::kClick] =
       ImpressionResult::kNeutral;
   TestClientStateConversion(&client_state);
+
+  // Verify custom data.
+  first_impression.custom_data = {{"url", "https://www.example.com"}};
+  TestClientStateConversion(&client_state);
 }
 
 // Verifies multiple impressions are serialized correctly.
@@ -187,14 +186,14 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
   // Test notification data.
   entry.notification_data.title = base::UTF8ToUTF16("title");
   entry.notification_data.message = base::UTF8ToUTF16("message");
-  entry.icons_uuid = {"icon_uuid_0", "icon_uuid_1"};
+  entry.icons_uuid.emplace(IconType::kSmallIcon, "small_icon_uuid");
+  entry.icons_uuid.emplace(IconType::kLargeIcon, "large_icon_uuid");
   entry.notification_data.custom_data = {{"url", "https://www.example.com"}};
   TestNotificationEntryConversion(&entry);
 
   // Test scheduling params.
   const ScheduleParams::Priority priorities[] = {
-      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kHigh,
-      ScheduleParams::Priority::kNoThrottle};
+      ScheduleParams::Priority::kLow, ScheduleParams::Priority::kNoThrottle};
   for (auto priority : priorities) {
     entry.schedule_params.priority = priority;
     TestNotificationEntryConversion(&entry);
@@ -203,6 +202,12 @@ TEST(ProtoConversionTest, NotificationEntryConversion) {
       ImpressionResult::kPositive;
   entry.schedule_params.impression_mapping[UserFeedback::kClick] =
       ImpressionResult::kNeutral;
+  TestNotificationEntryConversion(&entry);
+
+  entry.schedule_params.deliver_time_start = entry.create_time;
+  entry.schedule_params.deliver_time_end =
+      entry.create_time + base::TimeDelta::FromMinutes(10);
+
   TestNotificationEntryConversion(&entry);
 }
 

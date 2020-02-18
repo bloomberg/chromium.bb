@@ -278,6 +278,11 @@ cr.define('device_page_tests', function() {
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
           },
+          acceleration: {
+            key: 'settings.touchpad.acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
+          },
           sensitivity2: {
             key: 'settings.touchpad.sensitivity2',
             type: chrome.settingsPrivate.PrefType.NUMBER,
@@ -294,6 +299,11 @@ cr.define('device_page_tests', function() {
             key: 'settings.mouse.reverse_scroll',
             type: chrome.settingsPrivate.PrefType.BOOLEAN,
             value: false,
+          },
+          acceleration: {
+            key: 'settings.mouse.acceleration',
+            type: chrome.settingsPrivate.PrefType.BOOLEAN,
+            value: true,
           },
           sensitivity2: {
             key: 'settings.mouse.sensitivity2',
@@ -575,7 +585,7 @@ cr.define('device_page_tests', function() {
 
         // Enter on the link shouldn't enable the radio button either.
         triggerKeyEvents(a, 'Enter', 'Enter');
-        PolymerTest.flushTasks();
+        test_util.flushTasks();
         expectNaturalScrollValue(pointersPage, false);
 
         pointersPage.$$('settings-radio-group').selected = '';
@@ -583,7 +593,7 @@ cr.define('device_page_tests', function() {
         assertTrue(!!falseRadio);
         assertFalse(falseRadio.checked);
         triggerKeyEvents(naturalScrollOff, 'Space', ' ');
-        PolymerTest.flushTasks();
+        test_util.flushTasks();
         expectNaturalScrollValue(pointersPage, false);
       });
     });
@@ -684,18 +694,18 @@ cr.define('device_page_tests', function() {
 
       // Test sliders change when prefs change.
       set('xkb_auto_repeat_delay_r2', 1500);
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       expectEquals(1500, keyboardPage.$$('#delaySlider').pref.value);
       set('xkb_auto_repeat_interval_r2', 2000);
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       expectEquals(2000, keyboardPage.$$('#repeatRateSlider').pref.value);
 
       // Test sliders round to nearest value when prefs change.
       set('xkb_auto_repeat_delay_r2', 600);
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       expectEquals(500, keyboardPage.$$('#delaySlider').pref.value);
       set('xkb_auto_repeat_interval_r2', 45);
-      await PolymerTest.flushTasks();
+      await test_util.flushTasks();
       expectEquals(50, keyboardPage.$$('#repeatRateSlider').pref.value);
 
       set('xkb_auto_repeat_enabled_r2', false);

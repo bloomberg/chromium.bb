@@ -36,7 +36,6 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -288,7 +287,7 @@ bool ResourceResponse::HasCacheValidatorFields() const {
          !http_header_fields_.Get(kETagHeader).IsEmpty();
 }
 
-double ResourceResponse::CacheControlMaxAge() const {
+base::Optional<base::TimeDelta> ResourceResponse::CacheControlMaxAge() const {
   if (!cache_control_header_.parsed) {
     cache_control_header_ = ParseCacheControlDirectives(
         http_header_fields_.Get(kCacheControlHeader),
@@ -297,35 +296,37 @@ double ResourceResponse::CacheControlMaxAge() const {
   return cache_control_header_.max_age;
 }
 
-double ResourceResponse::CacheControlStaleWhileRevalidate() const {
+base::TimeDelta ResourceResponse::CacheControlStaleWhileRevalidate() const {
   if (!cache_control_header_.parsed) {
     cache_control_header_ = ParseCacheControlDirectives(
         http_header_fields_.Get(kCacheControlHeader),
         http_header_fields_.Get(kPragmaHeader));
   }
-  if (!std::isfinite(cache_control_header_.stale_while_revalidate) ||
-      cache_control_header_.stale_while_revalidate < 0) {
-    return 0;
+  if (!cache_control_header_.stale_while_revalidate ||
+      cache_control_header_.stale_while_revalidate.value() <
+          base::TimeDelta()) {
+    return base::TimeDelta();
   }
-  return cache_control_header_.stale_while_revalidate;
+  return cache_control_header_.stale_while_revalidate.value();
 }
 
-static double ParseDateValueInHeader(const HTTPHeaderMap& headers,
-                                     const AtomicString& header_name) {
+static base::Optional<base::Time> ParseDateValueInHeader(
+    const HTTPHeaderMap& headers,
+    const AtomicString& header_name) {
   const AtomicString& header_value = headers.Get(header_name);
   if (header_value.IsEmpty())
-    return std::numeric_limits<double>::quiet_NaN();
+    return base::nullopt;
   // This handles all date formats required by RFC2616:
   // Sun, 06 Nov 1994 08:49:37 GMT  ; RFC 822, updated by RFC 1123
   // Sunday, 06-Nov-94 08:49:37 GMT ; RFC 850, obsoleted by RFC 1036
   // Sun Nov  6 08:49:37 1994       ; ANSI C's asctime() format
-  double date_in_milliseconds = ParseDate(header_value);
-  if (!std::isfinite(date_in_milliseconds))
-    return std::numeric_limits<double>::quiet_NaN();
-  return date_in_milliseconds / 1000;
+  base::Optional<base::Time> date = ParseDate(header_value);
+  if (date && date.value().is_max())
+    return base::nullopt;
+  return date;
 }
 
-double ResourceResponse::Date() const {
+base::Optional<base::Time> ResourceResponse::Date() const {
   if (!have_parsed_date_header_) {
     static const char kHeaderName[] = "date";
     date_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -334,20 +335,23 @@ double ResourceResponse::Date() const {
   return date_;
 }
 
-double ResourceResponse::Age() const {
+base::Optional<base::TimeDelta> ResourceResponse::Age() const {
   if (!have_parsed_age_header_) {
     static const char kHeaderName[] = "age";
     const AtomicString& header_value = http_header_fields_.Get(kHeaderName);
     bool ok;
-    age_ = header_value.ToDouble(&ok);
-    if (!ok)
-      age_ = std::numeric_limits<double>::quiet_NaN();
+    double seconds = header_value.ToDouble(&ok);
+    if (!ok) {
+      age_ = base::nullopt;
+    } else {
+      age_ = base::TimeDelta::FromSecondsD(seconds);
+    }
     have_parsed_age_header_ = true;
   }
   return age_;
 }
 
-double ResourceResponse::Expires() const {
+base::Optional<base::Time> ResourceResponse::Expires() const {
   if (!have_parsed_expires_header_) {
     static const char kHeaderName[] = "expires";
     expires_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -356,7 +360,7 @@ double ResourceResponse::Expires() const {
   return expires_;
 }
 
-double ResourceResponse::LastModified() const {
+base::Optional<base::Time> ResourceResponse::LastModified() const {
   if (!have_parsed_last_modified_header_) {
     static const char kHeaderName[] = "last-modified";
     last_modified_ = ParseDateValueInHeader(http_header_fields_, kHeaderName);
@@ -377,7 +381,7 @@ bool ResourceResponse::IsAttachment() const {
 
 AtomicString ResourceResponse::HttpContentType() const {
   return ExtractMIMETypeFromMediaType(
-      HttpHeaderField(http_names::kContentType).DeprecatedLower());
+      HttpHeaderField(http_names::kContentType).LowerASCII());
 }
 
 bool ResourceResponse::WasCached() const {

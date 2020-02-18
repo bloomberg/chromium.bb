@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -176,7 +176,7 @@ static void RunDemuxerBenchmark(const std::string& filename) {
   NullMediaLog media_log_;
   for (int i = 0; i < kBenchmarkIterations; ++i) {
     // Setup.
-    base::test::ScopedTaskEnvironment scoped_task_environment_;
+    base::test::TaskEnvironment task_environment_;
     DemuxerHostImpl demuxer_host;
     FileDataSource data_source;
     ASSERT_TRUE(data_source.Initialize(file_path));

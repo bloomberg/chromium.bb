@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
+<translation id="1036550831858290950">Сохранить текущую вкладку в закладках</translation>
 <translation id="104962181688258143">Открыть приложение "Файлы"</translation>
-<translation id="1098295134904615027">Включить виртуальный рабочий стол справа</translation>
 <translation id="1122869341872663659">Результатов поиска по запросу "<ph name="QUERY" />": <ph name="N" /></translation>
 <translation id="1195667586424773550">Перетащить ссылку в адресную строку вкладки</translation>
 <translation id="1204450209689312104">Открыть новое окно в режиме инкогнито</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Добавить www. и .com к тексту в адресной строке и открыть веб-страницу</translation>
+<translation id="1872219238824176091">Удалить текущий рабочий стол</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> или <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Включить виртуальный рабочий стол слева</translation>
 <translation id="1996162290124031907">Перейти на следующую вкладку</translation>
 <translation id="2010818616644390445">Перейти на последнюю вкладку в окне</translation>
 <translation id="2040706009561734834">Открыть или закрыть панель запуска</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">Перейти в другое окно</translation>
 <translation id="2454251766545114447">Уменьшить масштаб экрана</translation>
 <translation id="2478303094958140141">Включить или отключить ChromeVox (озвучивание действий)</translation>
+<translation id="2488661730534396940">Включить рабочий стол слева</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Прокрутить веб-страницу вниз</translation>
 <translation id="2574014812750545982">Восстановить исходный масштаб страницы</translation>
 <translation id="2596078834055697711">Сделать скриншот окна</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="TAB" /> или <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">Сохранить веб-страницу в закладках</translation>
 <translation id="2750942583782703988">Обновить страницу</translation>
 <translation id="2764005613199379871">Переместить курсор в адресную строку.</translation>
+<translation id="2774822903829597107">Создать рабочий стол</translation>
 <translation id="2789868185375229787">Уменьшить масштаб страницы</translation>
 <translation id="2804480015716812239">Нажать <ph name="ALT" /> и перейти по ссылке</translation>
 <translation id="2830827904629746450">Закрепить окно справа</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Скриншот</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Курсор в адресную строку</translation>
-<translation id="3165428420335997629">Создать виртуальный рабочий стол</translation>
 <translation id="3256109297135787951">Снять выделение с объекта на панели запуска.</translation>
 <translation id="3288816184963444640">Закрыть активное окно</translation>
 <translation id="3407560819924487926">Открыть диспетчер задач</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Сделать скриншот части экрана</translation>
 <translation id="4698850295812410683">Показать инструменты стилуса</translation>
 <translation id="4801989101741319327">Перейти к концу следующего слова</translation>
+<translation id="4866066940972151697">Включить рабочий стол справа</translation>
 <translation id="4916163929714267752">Открыть ссылку в новом окне</translation>
 <translation id="5030659775136592441">Открыть диспетчер закладок</translation>
 <translation id="5034421018520995080">Перейти к верхней части экрана</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Повернуть экран на 90 градусов</translation>
 <translation id="8241665785394195545">правая скобка</translation>
 <translation id="8264941229485248811">Показать или скрыть инспектор инструментов разработчика</translation>
-<translation id="8355937569537581904">Удалить текущий виртуальный рабочий стол</translation>
 <translation id="836869401750819675">Открыть страницу "Скачанные файлы"</translation>
 <translation id="8388247778047144397">Перетащить ссылку в пустую область на панели вкладок</translation>
 <translation id="8389638407792712197">Открыть новое окно</translation>

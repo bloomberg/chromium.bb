@@ -15,14 +15,6 @@
 // devices. This implementation is for Android.
 class BluetoothScanningPromptAndroid : public content::BluetoothScanningPrompt {
  public:
-  // A Java counterpart will be generated for this enum.
-  // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.device_dialog
-  enum BluetoothScanningPermissionEvent {
-    ALLOW = 0,
-    BLOCK = 1,
-    CANCELED = 2,
-  };
-
   BluetoothScanningPromptAndroid(
       content::RenderFrameHost* frame,
       const content::BluetoothScanningPrompt::EventHandler& event_handler);
@@ -35,7 +27,6 @@ class BluetoothScanningPromptAndroid : public content::BluetoothScanningPrompt {
 
   // Report the dialog's result.
   void OnDialogFinished(JNIEnv* env,
-                        const base::android::JavaParamRef<jobject>& obj,
                         jint event_type);
 
  private:

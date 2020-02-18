@@ -194,7 +194,8 @@ void ProfileSyncServiceHarness::ExitSyncPausedStateForPrimaryAccount() {
 
 bool ProfileSyncServiceHarness::SetupSync() {
   bool result =
-      SetupSyncNoWaitForCompletion(syncer::UserSelectableTypeSet::All()) &&
+      SetupSyncNoWaitForCompletion(
+          service()->GetUserSettings()->GetRegisteredSelectableTypes()) &&
       AwaitSyncSetupCompletion();
   if (!result) {
     LOG(ERROR) << profile_debug_name_ << ": SetupSync failed. Syncer status:\n"
@@ -255,10 +256,11 @@ bool ProfileSyncServiceHarness::SetupSyncImpl(
   if (!AwaitEngineInitialization()) {
     return false;
   }
-  // Choose the datatypes to be synced. If all datatypes are to be synced,
-  // set sync_everything to true; otherwise, set it to false.
+  // Choose the datatypes to be synced. If all registered datatypes are to be
+  // synced, set sync_everything to true; otherwise, set it to false.
   bool sync_everything =
-      (selected_types == syncer::UserSelectableTypeSet::All());
+      (selected_types ==
+       service()->GetUserSettings()->GetRegisteredSelectableTypes());
   service()->GetUserSettings()->SetSelectedTypes(sync_everything,
                                                  selected_types);
 
@@ -338,18 +340,6 @@ bool ProfileSyncServiceHarness::StartSyncService() {
   }
 
   return true;
-}
-
-bool ProfileSyncServiceHarness::HasUnsyncedItems() {
-  base::RunLoop loop;
-  bool result = false;
-  service()->HasUnsyncedItemsForTest(
-      base::BindLambdaForTesting([&](bool has_unsynced_items) {
-        result = has_unsynced_items;
-        loop.Quit();
-      }));
-  loop.Run();
-  return result;
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(
@@ -500,8 +490,8 @@ bool ProfileSyncServiceHarness::DisableSyncForType(
   return false;
 }
 
-bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
-  DVLOG(1) << GetClientInfoString("EnableSyncForAllDatatypes");
+bool ProfileSyncServiceHarness::EnableSyncForRegisteredDatatypes() {
+  DVLOG(1) << GetClientInfoString("EnableSyncForRegisteredDatatypes");
 
   if (!IsSyncEnabledByUser()) {
     bool result = SetupSync();
@@ -511,20 +501,21 @@ bool ProfileSyncServiceHarness::EnableSyncForAllDatatypes() {
   }
 
   if (service() == nullptr) {
-    LOG(ERROR) << "EnableSyncForAllDatatypes(): service() is null.";
+    LOG(ERROR) << "EnableSyncForRegisteredDatatypes(): service() is null.";
     return false;
   }
 
   service()->GetUserSettings()->SetSelectedTypes(
-      true, syncer::UserSelectableTypeSet::All());
+      true, service()->GetUserSettings()->GetRegisteredSelectableTypes());
 
   if (AwaitSyncSetupCompletion()) {
-    DVLOG(1) << "EnableSyncForAllDatatypes(): Enabled sync for all datatypes "
-             << "on " << profile_debug_name_ << ".";
+    DVLOG(1)
+        << "EnableSyncForRegisteredDatatypes(): Enabled sync for all datatypes "
+        << "on " << profile_debug_name_ << ".";
     return true;
   }
 
-  DVLOG(0) << GetClientInfoString("EnableSyncForAllDatatypes failed");
+  DVLOG(0) << GetClientInfoString("EnableSyncForRegisteredDatatypes failed");
   return false;
 }
 

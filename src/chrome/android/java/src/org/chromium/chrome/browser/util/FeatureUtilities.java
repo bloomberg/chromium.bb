@@ -80,17 +80,19 @@ public class FeatureUtilities {
     private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sIsLabeledBottomToolbarEnabled;
     private static Boolean sIsNightModeAvailable;
+    private static Boolean sNightModeDefaultToLight;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
+    private static Boolean sIsStartSurfaceEnabled;
     private static Boolean sIsTabGroupsAndroidEnabled;
     private static Boolean sIsTabToGtsAnimationEnabled;
     private static Boolean sFeedEnabled;
     private static Boolean sServiceManagerForBackgroundPrefetch;
-    private static Boolean sIsNetworkServiceEnabled;
     private static Boolean sIsNetworkServiceWarmUpEnabled;
     private static Boolean sIsImmersiveUiModeEnabled;
     private static Boolean sServiceManagerForDownloadResumption;
+    private static Boolean sIsClickToCallOpenDialerDirectlyEnabled;
 
     private static Boolean sDownloadAutoResumptionEnabledInNative;
 
@@ -183,15 +185,17 @@ public class FeatureUtilities {
         cacheAdaptiveToolbarEnabled();
         cacheLabeledBottomToolbarEnabled();
         cacheNightModeAvailable();
+        cacheNightModeDefaultToLight();
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
         cacheFeedEnabled();
-        cacheNetworkService();
         cacheNetworkServiceWarmUpEnabled();
         cacheImmersiveUiModeEnabled();
         cacheSwapPixelFormatToFixConvertFromTranslucentEnabled();
         cacheReachedCodeProfilerTrialGroup();
+        cacheStartSurfaceEnabled();
+        cacheClickToCallOpenDialerDirectlyEnabled();
 
         if (isHighEndPhone()) cacheGridTabSwitcherEnabled();
         if (isHighEndPhone()) cacheTabGroupsAndroidEnabled();
@@ -256,23 +260,6 @@ public class FeatureUtilities {
         sIsHomePageButtonForceEnabled = null;
     }
 
-    private static void cacheNetworkService() {
-        boolean networkService = ChromeFeatureList.isEnabled(ChromeFeatureList.NETWORK_SERVICE);
-
-        ChromePreferenceManager.getInstance().writeBoolean(
-                ChromePreferenceManager.NETWORK_SERVICE_KEY, networkService);
-    }
-
-    private static boolean isNetworkServiceEnabled() {
-        if (sIsNetworkServiceEnabled == null) {
-            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
-
-            sIsNetworkServiceEnabled =
-                    prefManager.readBoolean(ChromePreferenceManager.NETWORK_SERVICE_KEY, false);
-        }
-        return sIsNetworkServiceEnabled;
-    }
-
     private static void cacheServiceManagerForDownloadResumption() {
         boolean resumptionDownloadInReducedMode =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.SERVICE_MANAGER_FOR_DOWNLOAD);
@@ -292,7 +279,7 @@ public class FeatureUtilities {
             sServiceManagerForDownloadResumption = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_DOWNLOAD_RESUMPTION_KEY, false);
         }
-        return sServiceManagerForDownloadResumption && isNetworkServiceEnabled();
+        return sServiceManagerForDownloadResumption;
     }
 
     public static void cacheServiceManagerForBackgroundPrefetch() {
@@ -314,7 +301,7 @@ public class FeatureUtilities {
             sServiceManagerForBackgroundPrefetch = prefManager.readBoolean(
                     ChromePreferenceManager.SERVICE_MANAGER_FOR_BACKGROUND_PREFETCH_KEY, false);
         }
-        return sServiceManagerForBackgroundPrefetch && isFeedEnabled() && isNetworkServiceEnabled();
+        return sServiceManagerForBackgroundPrefetch && isFeedEnabled();
     }
 
     /**
@@ -532,6 +519,50 @@ public class FeatureUtilities {
     }
 
     /**
+     * Cache whether or not to default to the light theme when the night mode feature is enabled.
+     */
+    public static void cacheNightModeDefaultToLight() {
+        // Do not cache on Q (where defaulting to light theme does not apply) or if night mode is
+        // not enabled.
+        if (BuildInfo.isAtLeastQ()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE)) {
+            return;
+        }
+
+        String lightModeDefaultParam = "default_light_theme";
+        boolean lightModeAsDefault = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.ANDROID_NIGHT_MODE, lightModeDefaultParam, false);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NIGHT_MODE_DEFAULT_TO_LIGHT, lightModeAsDefault);
+    }
+
+    /**
+     * @return Whether or not to default to the light theme when the night mode feature is enabled.
+     */
+    public static boolean isNightModeDefaultToLight() {
+        if (BuildInfo.isAtLeastQ()) sNightModeDefaultToLight = false;
+
+        if (sNightModeDefaultToLight == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sNightModeDefaultToLight = prefManager.readBoolean(
+                    ChromePreferenceManager.NIGHT_MODE_DEFAULT_TO_LIGHT, false);
+        }
+
+        return sNightModeDefaultToLight;
+    }
+
+    /**
+     * Toggles whether the night mode experiment is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setNightModeDefaultToLightForTesting(@Nullable Boolean available) {
+        sNightModeDefaultToLight = available;
+    }
+
+    /**
      * Cache whether or not night mode is available for custom tabs (i.e. night mode experiment is
      * enabled), so the value is immediately available on next start-up.
      */
@@ -579,6 +610,25 @@ public class FeatureUtilities {
      */
     public static boolean isDownloadProgressInfoBarEnabled() {
         return ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR);
+    }
+
+    private static void cacheStartSurfaceEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.START_SURFACE_ENABLED_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.START_SURFACE_ANDROID));
+    }
+
+    /**
+     * @return Whether the Start Surface is enabled.
+     */
+    public static boolean isStartSurfaceEnabled() {
+        if (sIsStartSurfaceEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sIsStartSurfaceEnabled = prefManager.readBoolean(
+                    ChromePreferenceManager.START_SURFACE_ENABLED_KEY, false);
+        }
+        return sIsStartSurfaceEnabled;
     }
 
     private static void cacheGridTabSwitcherEnabled() {
@@ -789,6 +839,38 @@ public class FeatureUtilities {
                 ChromePreferenceManager.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT,
                 ChromeFeatureList.isEnabled(
                         ChromeFeatureList.SWAP_PIXEL_FORMAT_TO_FIX_CONVERT_FROM_TRANSLUCENT));
+    }
+
+    /**
+     * Cache the value of the flag whether or not to directly open the dialer for click to call.
+     */
+    public static void cacheClickToCallOpenDialerDirectlyEnabled() {
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY,
+                ChromeFeatureList.isEnabled(ChromeFeatureList.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY));
+    }
+
+    /**
+     * @return Whether or not we should directly open dialer for click to call (based on the cached
+     *         value in SharedPrefs).
+     */
+    public static boolean isClickToCallOpenDialerDirectlyEnabled() {
+        if (sIsClickToCallOpenDialerDirectlyEnabled == null) {
+            sIsClickToCallOpenDialerDirectlyEnabled =
+                    ChromePreferenceManager.getInstance().readBoolean(
+                            ChromePreferenceManager.CLICK_TO_CALL_OPEN_DIALER_DIRECTLY_KEY, false);
+        }
+        return sIsClickToCallOpenDialerDirectlyEnabled;
+    }
+
+    /**
+     * Toggles whether experiment for opening dialer directly in click to call is enabled for
+     * testing. Should be reset back to null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setIsClickToCallOpenDialerDirectlyEnabledForTesting(
+            @Nullable Boolean isEnabled) {
+        sIsClickToCallOpenDialerDirectlyEnabled = isEnabled;
     }
 
     /**

@@ -27,6 +27,7 @@
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_desktop_util.h"
 #include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing/click_to_call/feature.h"
+#include "chrome/browser/sharing/shared_clipboard/feature_flags.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service.h"
@@ -39,7 +40,6 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
-#include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
@@ -66,6 +66,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/autofill/core/common/autofill_payments_features.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/dom_distiller/core/dom_distiller_switches.h"
 #include "components/favicon/content/content_favicon_driver.h"
 #include "components/omnibox/browser/location_bar_model.h"
@@ -232,6 +233,8 @@ void LocationBarView::Init() {
       params.types_enabled.push_back(PageActionIconType::kSendTabToSelf);
     if (base::FeatureList::IsEnabled(kClickToCallUI))
       params.types_enabled.push_back(PageActionIconType::kClickToCall);
+    if (base::FeatureList::IsEnabled(kSharedClipboardUI))
+      params.types_enabled.push_back(PageActionIconType::kSharedClipboard);
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       params.types_enabled.push_back(PageActionIconType::kManagePasswords);
@@ -249,8 +252,13 @@ void LocationBarView::Init() {
 
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kEnableDomDistiller) &&
-        !browser_->is_type_popup()) {
+        browser_->is_type_normal()) {
       params.types_enabled.push_back(PageActionIconType::kReaderMode);
+    }
+
+    if (base::FeatureList::IsEnabled(
+            content_settings::kImprovedCookieControls)) {
+      params.types_enabled.push_back(PageActionIconType::kCookieControls);
     }
   }
   params.icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
@@ -269,14 +277,14 @@ void LocationBarView::Init() {
     if (!base::FeatureList::IsEnabled(
             autofill::features::kAutofillEnableToolbarStatusChip)) {
       auto save_credit_card_icon_view =
-          std::make_unique<autofill::SaveCardIconView>(
-              command_updater(), browser_, this, font_list);
+          std::make_unique<autofill::SaveCardIconView>(command_updater(), this,
+                                                       font_list);
       save_credit_card_icon_view_ = save_credit_card_icon_view.get();
       page_action_icons.push_back(std::move(save_credit_card_icon_view));
 
       auto local_card_migration_icon_view =
           std::make_unique<autofill::LocalCardMigrationIconView>(
-              command_updater(), browser_, this, font_list);
+              command_updater(), this, font_list);
       local_card_migration_icon_view_ = local_card_migration_icon_view.get();
       page_action_icons.push_back(std::move(local_card_migration_icon_view));
     }
@@ -1182,7 +1190,7 @@ void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
 void LocationBarView::OnChanged() {
   location_icon_view_->Update(/*suppress_animations=*/false);
   clear_all_button_->SetVisible(IsLocationBarUserInputInProgress() &&
-                                !omnibox_view_->text().empty() &&
+                                !omnibox_view_->GetText().empty() &&
                                 IsVirtualKeyboardVisible(GetWidget()));
   Layout();
   SchedulePaint();
@@ -1243,7 +1251,7 @@ void LocationBarView::OnOmniboxHovered(bool is_hovering) {
 }
 
 OmniboxTint LocationBarView::CalculateTint() const {
-  if (GetNativeTheme()->SystemDarkModeEnabled())
+  if (GetNativeTheme()->ShouldUseDarkColors())
     return OmniboxTint::DARK;
   ThemeService* theme_service = ThemeServiceFactory::GetForProfile(profile());
   return (theme_service->UsingDefaultTheme() && profile()->IsIncognitoProfile())
@@ -1285,10 +1293,11 @@ bool LocationBarView::IsEditingOrEmpty() const {
 
 void LocationBarView::OnLocationIconPressed(const ui::MouseEvent& event) {
   if (event.IsOnlyMiddleMouseButton() &&
-      ui::Clipboard::IsSupportedClipboardType(ui::ClipboardType::kSelection)) {
+      ui::Clipboard::IsSupportedClipboardBuffer(
+          ui::ClipboardBuffer::kSelection)) {
     base::string16 text;
     ui::Clipboard::GetForCurrentThread()->ReadText(
-        ui::ClipboardType::kSelection, &text);
+        ui::ClipboardBuffer::kSelection, &text);
     text = OmniboxView::SanitizeTextForPaste(text);
 
     if (!GetOmniboxView()->model()->CanPasteAndGo(text)) {

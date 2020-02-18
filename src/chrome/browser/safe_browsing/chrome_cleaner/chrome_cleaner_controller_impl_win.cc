@@ -112,9 +112,9 @@ void OnChromeCleanerFetched(
     ChromeCleanerControllerDelegate::FetchedCallback fetched_callback,
     base::FilePath downloaded_path,
     ChromeCleanerFetchStatus fetch_status) {
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(VerifyAndRenameDownloadedCleaner, downloaded_path,
                      fetch_status),
@@ -401,7 +401,7 @@ void ChromeCleanerControllerImpl::RequestUserInitiatedScan(Profile* profile) {
   if (cached_reporter_invocations_) {
     SwReporterInvocationSequence copied_sequence(*cached_reporter_invocations_);
 
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(
             &safe_browsing::MaybeStartSwReporter, invocation_type,
@@ -532,8 +532,7 @@ bool ChromeCleanerControllerImpl::IsReportingManagedByPolicy(Profile* profile) {
 
 ChromeCleanerControllerImpl::ChromeCleanerControllerImpl()
     : real_delegate_(std::make_unique<ChromeCleanerControllerDelegate>()),
-      delegate_(real_delegate_.get()),
-      weak_factory_(this) {
+      delegate_(real_delegate_.get()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 

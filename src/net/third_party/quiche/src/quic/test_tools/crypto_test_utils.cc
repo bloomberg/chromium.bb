@@ -232,9 +232,6 @@ int HandshakeWithFakeServer(QuicConfig* server_quic_config,
               CanAcceptClientHello(testing::_, testing::_, testing::_,
                                    testing::_, testing::_))
       .Times(testing::AnyNumber());
-  EXPECT_CALL(*server_session.helper(),
-              GenerateConnectionIdForReject(testing::_, testing::_))
-      .Times(testing::AnyNumber());
   EXPECT_CALL(*server_conn, OnCanWrite()).Times(testing::AnyNumber());
   EXPECT_CALL(*client_conn, OnCanWrite()).Times(testing::AnyNumber());
 
@@ -679,9 +676,13 @@ void MovePackets(PacketSavingConnection* source_conn,
                  PacketSavingConnection* dest_conn,
                  Perspective dest_perspective) {
   SimpleQuicFramer framer(source_conn->supported_versions(), dest_perspective);
+  QuicFramerPeer::SetLastSerializedServerConnectionId(framer.framer(),
+                                                      TestConnectionId());
 
   SimpleQuicFramer null_encryption_framer(source_conn->supported_versions(),
                                           dest_perspective);
+  QuicFramerPeer::SetLastSerializedServerConnectionId(
+      null_encryption_framer.framer(), TestConnectionId());
 
   size_t index = *inout_packet_index;
   for (; index < source_conn->encrypted_packets_.size(); index++) {
@@ -691,6 +692,8 @@ void MovePackets(PacketSavingConnection* source_conn,
     // them into |framer|, perform the decryption with them, and then swap ther
     // back.
     QuicConnectionPeer::SwapCrypters(dest_conn, framer.framer());
+    QuicConnectionPeer::AddBytesReceived(
+        dest_conn, source_conn->encrypted_packets_[index]->length());
     if (!framer.ProcessPacket(*source_conn->encrypted_packets_[index])) {
       // The framer will be unable to decrypt forward-secure packets sent after
       // the handshake is complete. Don't treat them as handshake packets.
@@ -721,7 +724,11 @@ void MovePackets(PacketSavingConnection* source_conn,
     QuicConnectionPeer::SetCurrentPacket(
         dest_conn, source_conn->encrypted_packets_[index]->AsStringPiece());
     for (const auto& stream_frame : framer.stream_frames()) {
-      dest_stream->OnStreamFrame(*stream_frame);
+      // Ignore stream frames that are sent on other streams in the crypto
+      // event.
+      if (stream_frame->stream_id == dest_stream->id()) {
+        dest_stream->OnStreamFrame(*stream_frame);
+      }
     }
     for (const auto& crypto_frame : framer.crypto_frames()) {
       dest_stream->OnCryptoFrame(*crypto_frame);

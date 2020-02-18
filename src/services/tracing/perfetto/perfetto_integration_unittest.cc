@@ -9,7 +9,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/tracing/perfetto/perfetto_service.h"
 #include "services/tracing/perfetto/producer_host.h"
@@ -48,12 +48,12 @@ class PerfettoIntegrationTest : public testing::Test {
   void TearDown() override { perfetto_service_.reset(); }
 
   PerfettoService* perfetto_service() const { return perfetto_service_.get(); }
-  void RunUntilIdle() { scoped_task_environment_.RunUntilIdle(); }
+  void RunUntilIdle() { task_environment_.RunUntilIdle(); }
 
  protected:
   std::unique_ptr<TestDataSource> data_source_;
   std::unique_ptr<PerfettoService> perfetto_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(PerfettoIntegrationTest, ProducerDatasourceInitialized) {
@@ -98,7 +98,7 @@ TEST_F(PerfettoIntegrationTest, ClientEnabledAndDisabled) {
   client_disabled_callback.Run();
 
   on_trace_packets.Run();
-  EXPECT_EQ(0u, consumer.received_packets());
+  EXPECT_EQ(0u, consumer.received_test_packets());
 
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }
@@ -135,7 +135,7 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndProducerFirst) {
 
   no_more_packets_runloop.Run();
 
-  EXPECT_EQ(kNumPackets, consumer.received_packets());
+  EXPECT_EQ(kNumPackets, consumer.received_test_packets());
 
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }
@@ -169,7 +169,7 @@ TEST_F(PerfettoIntegrationTest, PacketsEndToEndConsumerFirst) {
 
   no_more_packets_runloop.Run();
 
-  EXPECT_EQ(kNumPackets, consumer.received_packets());
+  EXPECT_EQ(kNumPackets, consumer.received_test_packets());
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 
@@ -249,7 +249,7 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
 
   client_disabled_callback.Run();
   no_more_packets_runloop.Run();
-  EXPECT_EQ(kNumPackets, consumer.received_packets());
+  EXPECT_EQ(kNumPackets, consumer.received_test_packets());
 
   consumer.FreeBuffers();
 
@@ -270,7 +270,7 @@ TEST_F(PerfettoIntegrationTest, TracingRestarted) {
   consumer.StopTracing();
   client_redisabled_callback.Run();
 
-  EXPECT_EQ(kNumPackets * 2, consumer.received_packets());
+  EXPECT_EQ(kNumPackets * 2, consumer.received_test_packets());
 
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }
@@ -304,7 +304,7 @@ TEST_F(PerfettoIntegrationTest, NoPacketsReceivedOnWrongSourceName) {
 
   no_more_packets_runloop.Run();
 
-  EXPECT_EQ(0u, consumer.received_packets());
+  EXPECT_EQ(0u, consumer.received_test_packets());
   ProducerClient::DeleteSoonForTesting(std::move(client));
 }
 

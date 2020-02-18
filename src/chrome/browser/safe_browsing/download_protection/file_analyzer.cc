@@ -10,12 +10,12 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
+#include "chrome/browser/file_util_service.h"
 #include "chrome/common/safe_browsing/archive_analyzer_results.h"
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/safe_browsing/features.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/system_connector.h"
 
 namespace safe_browsing {
 
@@ -48,12 +48,7 @@ FileAnalyzer::Results ExtractFileFeatures(
     scoped_refptr<BinaryFeatureExtractor> binary_feature_extractor,
     base::FilePath file_path) {
   FileAnalyzer::Results results;
-  base::TimeTicks start_time = base::TimeTicks::Now();
   binary_feature_extractor->CheckSignature(file_path, &results.signature_info);
-  bool is_signed = (results.signature_info.certificate_chain_size() > 0);
-  UMA_HISTOGRAM_BOOLEAN("SBClientDownload.SignedBinaryDownload", is_signed);
-  UMA_HISTOGRAM_TIMES("SBClientDownload.ExtractSignatureFeaturesTime",
-                      base::TimeTicks::Now() - start_time);
 
   if (!binary_feature_extractor->ExtractImageFeatures(
           file_path, BinaryFeatureExtractor::kDefaultOptions,
@@ -107,8 +102,10 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
     // Checks for existence of "koly" signature even if file doesn't have
     // archive-type extension, then calls ExtractFileOrDmgFeatures() with
     // result.
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(),
+         base::TaskPriority::USER_VISIBLE},
         base::BindOnce(DiskImageTypeSnifferMac::IsAppleDiskImage, tmp_path_),
         base::BindOnce(&FileAnalyzer::ExtractFileOrDmgFeatures,
                        weakptr_factory_.GetWeakPtr()));
@@ -121,9 +118,9 @@ void FileAnalyzer::Start(const base::FilePath& target_path,
 void FileAnalyzer::StartExtractFileFeatures() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::BindOnce(&ExtractFileFeatures, binary_feature_extractor_,
                      tmp_path_),
@@ -147,7 +144,7 @@ void FileAnalyzer::StartExtractZipFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnZipAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   zip_analyzer_->Start();
 }
 
@@ -220,7 +217,7 @@ void FileAnalyzer::StartExtractRarFeatures() {
       tmp_path_,
       base::BindRepeating(&FileAnalyzer::OnRarAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   rar_analyzer_->Start();
 }
 
@@ -283,7 +280,7 @@ void FileAnalyzer::StartExtractDmgFeatures() {
       FileTypePolicies::GetInstance()->GetMaxFileSizeToAnalyze("dmg"),
       base::BindRepeating(&FileAnalyzer::OnDmgAnalysisFinished,
                           weakptr_factory_.GetWeakPtr()),
-      content::GetSystemConnector());
+      LaunchFileUtilService());
   dmg_analyzer_->Start();
   dmg_analysis_start_time_ = base::TimeTicks::Now();
 }
@@ -292,10 +289,6 @@ void FileAnalyzer::ExtractFileOrDmgFeatures(
     bool download_file_has_koly_signature) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  UMA_HISTOGRAM_BOOLEAN(
-      "SBClientDownload."
-      "DownloadFileWithoutDiskImageExtensionHasKolySignature",
-      download_file_has_koly_signature);
   if (download_file_has_koly_signature)
     StartExtractDmgFeatures();
   else
@@ -331,19 +324,7 @@ void FileAnalyzer::OnDmgAnalysisFinished(
                              uma_file_type);
     results_.type = ClientDownloadRequest::MAC_EXECUTABLE;
   } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileFailureByType",
-                             uma_file_type);
     results_.type = ClientDownloadRequest::MAC_ARCHIVE_FAILED_PARSING;
-  }
-
-  if (results_.archived_executable) {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasExecutableByType",
-                             uma_file_type);
-    UMA_HISTOGRAM_COUNTS_1M("SBClientDownload.DmgFileArchivedBinariesCount",
-                            archive_results.archived_binary.size());
-  } else {
-    base::UmaHistogramSparse("SBClientDownload.DmgFileHasNoExecutableByType",
-                             uma_file_type);
   }
 
   UMA_HISTOGRAM_MEDIUM_TIMES("SBClientDownload.ExtractDmgFeaturesTimeMedium",

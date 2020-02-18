@@ -23,20 +23,6 @@ bool HasSubstringAt(const std::string& path,
   return path.compare(start_index, search.length(), search) == 0;
 }
 
-bool ParseIsIconUrl(const std::string& url_type, bool* is_icon_url) {
-  if (url_type == "page_url") {
-    *is_icon_url = false;
-    return true;
-  }
-
-  if (url_type == "icon_url") {
-    *is_icon_url = true;
-    return true;
-  }
-
-  return false;
-}
-
 // Parse with legacy FaviconUrlFormat::kFavicon format.
 bool ParseFaviconPathWithLegacyFormat(const std::string& path,
                                       chrome::ParsedFaviconPath* parsed) {
@@ -45,14 +31,7 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
   const char kIconURLParameter[] = "iconurl/";
   const char kSizeParameter[] = "size/";
 
-  parsed->is_icon_url = false;
-  parsed->url = "";
-  parsed->size_in_dip = gfx::kFaviconSize;
-  parsed->device_scale_factor = 1.0f;
-  parsed->path_index = std::string::npos;
-  // Use of the favicon server is never exposed for the legacy format (only used
-  // by extensions).
-  parsed->allow_favicon_server_fallback = false;
+  *parsed = chrome::ParsedFaviconPath();
 
   if (path.empty())
     return false;
@@ -89,10 +68,9 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
 
   if (HasSubstringAt(path, parsed_index, kIconURLParameter)) {
     parsed_index += strlen(kIconURLParameter);
-    parsed->is_icon_url = true;
-    parsed->url = path.substr(parsed_index);
+    parsed->icon_url = path.substr(parsed_index);
   } else {
-    parsed->url = path.substr(parsed_index);
+    parsed->page_url = path.substr(parsed_index);
   }
 
   // The parsed index needs to be returned in order to allow Instant Extended
@@ -108,56 +86,43 @@ bool ParseFaviconPathWithLegacyFormat(const std::string& path,
 // Parse with FaviconUrlFormat::kFavicon2 format.
 bool ParseFaviconPathWithFavicon2Format(const std::string& path,
                                         chrome::ParsedFaviconPath* parsed) {
-  // Parameters which can be used in chrome://favicon2 path. See file
-  // "favicon_url_parser.h" for a description of what each one does.
-  const std::string kSizeParameter = "size";
-  const std::string kScaleParameter = "scale_factor";
-  const std::string kUrlTypeParameter = "url_type";
-  const std::string kUrlParameter = "url";
-  const std::string kAllowFallbackParameter = "allow_google_server_fallback";
-
   if (path.empty())
     return false;
 
-  GURL query_url("chrome://favicon2/" + path);
+  GURL query_url = GURL("chrome://favicon2/").Resolve(path);
 
-  std::string size_str;
-  if (!net::GetValueForKeyInQuery(query_url, kSizeParameter, &size_str))
-    parsed->size_in_dip = gfx::kFaviconSize;
-  else if (!base::StringToInt(size_str, &parsed->size_in_dip))
-    return false;
+  *parsed = chrome::ParsedFaviconPath();
 
-  std::string scale_str;
-  if (!net::GetValueForKeyInQuery(query_url, kScaleParameter, &scale_str))
-    parsed->device_scale_factor = 1.0f;
-  else if (!webui::ParseScaleFactor(scale_str, &parsed->device_scale_factor))
-    return false;
-
-  std::string url_type;
-  if (!net::GetValueForKeyInQuery(query_url, kUrlTypeParameter, &url_type))
-    parsed->is_icon_url = false;
-  else if (!ParseIsIconUrl(url_type, &parsed->is_icon_url))
-    return false;
-
-  std::string url;
-  if (!net::GetValueForKeyInQuery(query_url, kUrlParameter, &url))
-    return false;
-  parsed->url = url;
-
-  if (parsed->is_icon_url) {
-    // Fallback is never allowed for icon urls, since the server is queried by
-    // page url.
-    parsed->allow_favicon_server_fallback = false;
-    return true;
+  for (net::QueryIterator it(query_url); !it.IsAtEnd(); it.Advance()) {
+    const std::string key = it.GetKey();
+    // Note: each of these keys can be used in chrome://favicon2 path. See file
+    // "favicon_url_parser.h" for a description of what each one does.
+    if (key == "allow_google_server_fallback") {
+      const std::string val = it.GetUnescapedValue();
+      if (!(val == "0" || val == "1"))
+        return false;
+      parsed->allow_favicon_server_fallback = val == "1";
+    } else if (key == "icon_url") {
+      parsed->icon_url = it.GetUnescapedValue();
+    } else if (key == "page_url") {
+      parsed->page_url = it.GetUnescapedValue();
+    } else if (key == "scale_factor" &&
+               !webui::ParseScaleFactor(it.GetUnescapedValue(),
+                                        &parsed->device_scale_factor)) {
+      return false;
+    } else if (key == "size" && !base::StringToInt(it.GetUnescapedValue(),
+                                                   &parsed->size_in_dip)) {
+      return false;
+    }
   }
 
-  // Check optional |kAllowFallbackParameter|.
-  std::string allow_favicon_server_fallback;
-  if (!net::GetValueForKeyInQuery(query_url, kAllowFallbackParameter,
-                                  &allow_favicon_server_fallback)) {
-    parsed->allow_favicon_server_fallback = false;
-  } else if (!base::StringToInt(allow_favicon_server_fallback,
-                                (int*)&parsed->allow_favicon_server_fallback)) {
+  if (parsed->page_url.empty() && parsed->icon_url.empty())
+    return false;
+
+  if (parsed->allow_favicon_server_fallback && parsed->page_url.empty()) {
+    // Since the server is queried by page url, we'll fail if no non-empty page
+    // url is provided and the fallback parameter is still set to true.
+    NOTIMPLEMENTED();
     return false;
   }
 
@@ -165,6 +130,8 @@ bool ParseFaviconPathWithFavicon2Format(const std::string& path,
 }
 
 }  // namespace
+
+ParsedFaviconPath::ParsedFaviconPath() = default;
 
 bool ParseFaviconPath(const std::string& path,
                       FaviconUrlFormat format,

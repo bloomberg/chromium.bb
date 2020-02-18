@@ -784,7 +784,7 @@ void HTMLSelectElement::RecalcListItems() const {
     if (IsHTMLOptionElement(*current_html_element))
       list_items_.push_back(current_html_element);
 
-    if (IsHTMLHRElement(*current_html_element))
+    if (IsA<HTMLHRElement>(*current_html_element))
       list_items_.push_back(current_html_element);
 
     // In conforming HTML code, only <optgroup> and <option> will be found
@@ -1300,6 +1300,11 @@ bool HTMLSelectElement::ShouldOpenPopupForKeyPressEvent(
 }
 
 void HTMLSelectElement::MenuListDefaultEventHandler(Event& event) {
+  // We need to make the layout tree up-to-date to have GetLayoutObject() give
+  // the correct result below. An author event handler may have set display to
+  // some element to none which will cause a layout tree detach.
+  GetDocument().UpdateStyleAndLayoutTree();
+
   if (event.type() == event_type_names::kKeydown) {
     if (!GetLayoutObject() || !event.IsKeyboardEvent())
       return;

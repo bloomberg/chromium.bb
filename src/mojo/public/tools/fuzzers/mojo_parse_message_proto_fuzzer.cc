@@ -6,9 +6,10 @@
 // multiple messages per run.
 
 #include "base/bind.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/tools/fuzzers/fuzz_impl.h"
@@ -47,7 +48,7 @@ void FuzzMessage(const MojoFuzzerMessages& mojo_fuzzer_messages,
 // ThreadPool, because Mojo messages must be sent and processed from
 // TaskRunners.
 struct Environment {
-  Environment() : main_task_executor(base::MessagePump::Type::UI) {
+  Environment() : main_task_executor(base::MessagePumpType::UI) {
     base::ThreadPoolInstance::CreateAndStartWithDefaultParams(
         "MojoParseMessageFuzzerProcess");
     mojo::core::Init();

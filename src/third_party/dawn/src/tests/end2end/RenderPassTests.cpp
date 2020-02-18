@@ -27,7 +27,7 @@ protected:
 
         // Shaders to draw a bottom-left triangle in blue.
         dawn::ShaderModule vsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     const vec2 pos[3] = vec2[3](
@@ -36,7 +36,7 @@ protected:
                  })");
 
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(location = 0) out vec4 fragColor;
                 void main() {
@@ -44,7 +44,7 @@ protected:
                 })");
 
         utils::ComboRenderPipelineDescriptor descriptor(device);
-        descriptor.cVertexStage.module = vsModule;
+        descriptor.vertexStage.module = vsModule;
         descriptor.cFragmentStage.module = fsModule;
         descriptor.primitiveTopology = dawn::PrimitiveTopology::TriangleStrip;
         descriptor.cColorStates[0]->format = kFormat;
@@ -62,7 +62,7 @@ protected:
         descriptor.sampleCount = 1;
         descriptor.format = kFormat;
         descriptor.mipLevelCount = 1;
-        descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+        descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
         return device.CreateTexture(&descriptor);
     }
 
@@ -88,7 +88,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
     {
         // In the first render pass we clear renderTarget1 to red and draw a blue triangle in the
         // bottom left of renderTarget1.
-        utils::ComboRenderPassDescriptor renderPass({renderTarget1.CreateDefaultView()});
+        utils::ComboRenderPassDescriptor renderPass({renderTarget1.CreateView()});
         renderPass.cColorAttachmentsInfoPtr[0]->clearColor = {1.0f, 0.0f, 0.0f, 1.0f};
 
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);
@@ -100,7 +100,7 @@ TEST_P(RenderPassTest, TwoRenderPassesInOneCommandBuffer) {
     {
         // In the second render pass we clear renderTarget2 to green and draw a blue triangle in the
         // bottom left of renderTarget2.
-        utils::ComboRenderPassDescriptor renderPass({renderTarget2.CreateDefaultView()});
+        utils::ComboRenderPassDescriptor renderPass({renderTarget2.CreateView()});
         renderPass.cColorAttachmentsInfoPtr[0]->clearColor = {0.0f, 1.0f, 0.0f, 1.0f};
 
         dawn::RenderPassEncoder pass = encoder.BeginRenderPass(&renderPass);

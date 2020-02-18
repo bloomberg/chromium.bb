@@ -10,9 +10,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/web/grit/ios_web_resources.h"
 #import "ios/web/public/navigation/navigation_manager.h"
-#include "ios/web/public/service/web_state_interface_provider.h"
 #import "ios/web/public/test/navigation_test_util.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 #include "ios/web/public/webui/web_ui_ios_controller.h"
 #include "ios/web/public/webui/web_ui_ios_controller_factory.h"
 #include "ios/web/public/webui/web_ui_ios_data_source.h"
@@ -20,7 +19,7 @@
 #include "ios/web/test/mojo_test.mojom.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_int_test.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
@@ -76,12 +75,12 @@ class TestUIHandler : public TestUIHandlerMojo {
     }
   }
 
-  void BindTestUIHandlerMojoRequest(TestUIHandlerMojoRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void BindTestHandler(mojo::PendingReceiver<TestUIHandlerMojo> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
  private:
-  mojo::BindingSet<TestUIHandlerMojo> bindings_;
+  mojo::ReceiverSet<TestUIHandlerMojo> receivers_;
   TestPagePtr page_ = nullptr;
   // |true| if "syn" has been received.
   bool syn_received_ = false;
@@ -107,10 +106,12 @@ class TestUI : public WebUIIOSController {
     web::WebState* web_state = web_ui->GetWebState();
     web::WebUIIOSDataSource::Add(web_state->GetBrowserState(), source);
 
-    web_state->GetWebStateInterfaceProvider()->registry()->AddInterface(
-        base::Bind(&TestUIHandler::BindTestUIHandlerMojoRequest,
-                   base::Unretained(ui_handler)));
+    web_state->GetInterfaceBinderForMainFrame()->AddInterface(
+        base::BindRepeating(&TestUIHandler::BindTestHandler,
+                            base::Unretained(ui_handler)));
   }
+
+  ~TestUI() override = default;
 };
 
 // Factory that creates TestUI controller.
@@ -162,11 +163,11 @@ class WebUIMojoTest : public WebIntTest {
       // WebState owns CRWWebUIManager. When WebState is destroyed,
       // CRWWebUIManager is autoreleased and will be destroyed upon autorelease
       // pool purge. However in this test, WebTest destructor is called before
-      // PlatformTest, thus CRWWebUIManager outlives the WebThreadBundle.
+      // PlatformTest, thus CRWWebUIManager outlives the WebTaskenvironment.
       // However, CRWWebUIManager owns a URLFetcherImpl, which DCHECKs that its
       // destructor is called on UI web thread. Hence, URLFetcherImpl has to
-      // outlive the WebThreadBundle, since [NSThread mainThread] will not be
-      // WebThread::UI once WebThreadBundle is destroyed.
+      // outlive the WebTaskenvironment, since [NSThread mainThread] will not be
+      // WebThread::UI once WebTaskenvironment is destroyed.
       web_state_.reset();
       ui_handler_.reset();
       WebUIIOSControllerFactory::DeregisterFactory(factory_.get());

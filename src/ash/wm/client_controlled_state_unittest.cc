@@ -118,7 +118,7 @@ class ClientControlledStateTest : public AshTestBase {
     params.delegate = widget_delegate_;
 
     widget_ = std::make_unique<views::Widget>();
-    widget_->Init(params);
+    widget_->Init(std::move(params));
     WindowState* window_state = WindowState::Get(window());
     window_state->set_allow_set_bounds_direct(true);
     auto delegate = std::make_unique<TestClientControlledStateDelegate>();
@@ -575,6 +575,21 @@ TEST_F(ClientControlledStateTest, HandleBoundsEventsUpdatesPipRestoreBounds) {
   EXPECT_TRUE(window_state()->HasRestoreBounds());
   EXPECT_EQ(gfx::Rect(0, 0, 50, 50),
             window_state()->GetRestoreBoundsInParent());
+}
+
+// Make sure disconnecting primary notifies the display id change.
+TEST_F(ClientControlledStateTest, DisconnectPrimary) {
+  UpdateDisplay("500x500,500x500");
+  SwapPrimaryDisplay();
+  auto* screen = display::Screen::GetScreen();
+  auto old_primary_id = screen->GetPrimaryDisplay().id();
+  EXPECT_EQ(old_primary_id, window_state()->GetDisplay().id());
+  gfx::Rect bounds = window()->bounds();
+
+  UpdateDisplay("500x500");
+  ASSERT_NE(old_primary_id, screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(delegate()->display_id(), screen->GetPrimaryDisplay().id());
+  EXPECT_EQ(bounds, delegate()->requested_bounds());
 }
 
 }  // namespace ash

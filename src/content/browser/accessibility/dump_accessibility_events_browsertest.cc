@@ -241,6 +241,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaButtonExpand) {
+  RunEventTest(FILE_PATH_LITERAL("aria-button-expand.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaComboBoxCollapse) {
   RunEventTest(FILE_PATH_LITERAL("aria-combo-box-collapse.html"));
 }
@@ -280,6 +285,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsAriaHasPopupChanged) {
   RunEventTest(FILE_PATH_LITERAL("aria-haspopup-changed.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsAriaHiddenChanged) {
+  RunEventTest(FILE_PATH_LITERAL("aria-hidden-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -471,6 +481,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsCSSCollapse) {
+  RunEventTest(FILE_PATH_LITERAL("css-visibility-collapse.html"));
+}
+
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsDescriptionChange) {
   RunEventTest(FILE_PATH_LITERAL("description-change.html"));
 }
@@ -485,18 +500,9 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("disabled-state-changed.html"));
 }
 
-// http://crbug.com/982998
-// Test fails on Mac due to https://crbug.com/985925.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#define MAYBE_AccessibilityEventsExpandedChange \
-  DISABLED_AccessibilityEventsExpandedChange
-#else
-#define MAYBE_AccessibilityEventsExpandedChange \
-  AccessibilityEventsExpandedChange
-#endif
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
-                       MAYBE_AccessibilityEventsExpandedChange) {
-  RunEventTest(FILE_PATH_LITERAL("expanded-change.html"));
+                       AccessibilityEventsExpandedChanged) {
+  RunEventTest(FILE_PATH_LITERAL("expanded-changed.html"));
 }
 
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
@@ -554,6 +560,7 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("live-region-elem-reparent.html"));
 }
 
+// TODO(aboxhall): Fix flakiness.
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsLiveRegionIgnoresClick) {
   RunEventTest(FILE_PATH_LITERAL("live-region-ignores-click.html"));
@@ -732,6 +739,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
   RunEventTest(FILE_PATH_LITERAL("tbody-focus.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
+                       AccessibilityEventsVisibilityHiddenChanged) {
+  RunEventTest(FILE_PATH_LITERAL("visibility-hidden-changed.html"));
+}
+
 // Even with the deflaking in WaitForAccessibilityTreeToContainNodeWithName,
 // this test is still flaky on Windows.
 // TODO(aboxhall, dmazzoni, meredithl): re-enable with better fix for above.
@@ -794,6 +806,16 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest,
                        AccessibilityEventsSelectAddRemove) {
   RunEventTest(FILE_PATH_LITERAL("select-selected-add-remove.html"));
+}
+
+// Test is flaky on Linux. See crbug.com/990847 for more details.
+#if defined(OS_LINUX)
+#define MAYBE_DeleteSubtree DISABLED_DeleteSubtree
+#else
+#define MAYBE_DeleteSubtree DeleteSubtree
+#endif
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityEventsTest, MAYBE_DeleteSubtree) {
+  RunEventTest(FILE_PATH_LITERAL("delete-subtree.html"));
 }
 
 }  // namespace content

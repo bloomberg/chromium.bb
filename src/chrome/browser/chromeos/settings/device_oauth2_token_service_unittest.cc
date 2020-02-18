@@ -11,7 +11,7 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/policy/device_policy_builder.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -28,7 +28,7 @@
 #include "components/ownership/mock_owner_key_util.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "google_apis/gaia/gaia_oauth_client.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -172,7 +172,7 @@ class DeviceOAuth2TokenServiceTest : public testing::Test {
     inline void operator()(DeviceOAuth2TokenService* ptr) const { delete ptr; }
   };
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   ScopedStubInstallAttributes scoped_stub_install_attributes_;
   ScopedTestingLocalState scoped_testing_local_state_;
   ScopedTestDeviceSettingsService scoped_device_settings_service_;

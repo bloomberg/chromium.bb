@@ -17,9 +17,12 @@ namespace network {
 class SharedURLLoaderFactory;
 }  // namespace network
 
+namespace blink {
+class URLLoaderThrottle;
+}  // namespace blink
+
 namespace content {
 
-class URLLoaderThrottle;
 class ThrottlingURLLoader;
 
 // Sends a ping to the given |validity_url|. Current implementation is
@@ -34,7 +37,7 @@ class CONTENT_EXPORT SignedExchangeValidityPinger
   static std::unique_ptr<SignedExchangeValidityPinger> CreateAndStart(
       const GURL& validity_url,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       const base::Optional<base::UnguessableToken>& throttling_profile_id,
       base::OnceClosure callback);
 
@@ -45,13 +48,13 @@ class CONTENT_EXPORT SignedExchangeValidityPinger
   void Start(
       const GURL& validity_url,
       scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       const base::Optional<base::UnguessableToken>& throttling_profile_id);
 
   // network::mojom::URLLoaderClient
-  void OnReceiveResponse(const network::ResourceResponseHead& head) override;
+  void OnReceiveResponse(network::mojom::URLResponseHeadPtr head) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
-                         const network::ResourceResponseHead& head) override;
+                         network::mojom::URLResponseHeadPtr head) override;
   void OnUploadProgress(int64_t current_position,
                         int64_t total_size,
                         OnUploadProgressCallback callback) override;

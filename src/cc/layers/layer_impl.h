@@ -26,7 +26,6 @@
 #include "cc/layers/draw_properties.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_impl_test_properties.h"
-#include "cc/layers/layer_position_constraint.h"
 #include "cc/layers/performance_properties.h"
 #include "cc/layers/render_surface_impl.h"
 #include "cc/layers/touch_action_region.h"
@@ -90,7 +89,7 @@ class CC_EXPORT LayerImpl {
   bool IsActive() const;
 
   void SetHasTransformNode(bool val) { has_transform_node_ = val; }
-  bool has_transform_node() { return has_transform_node_; }
+  bool has_transform_node() const { return has_transform_node_; }
 
   void set_property_tree_sequence_number(int sequence_number) {}
 

@@ -349,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   // Attempt to navigate the second tab to a.com.  This will attempt to reuse
   // the hung process.
   base::TimeDelta kTimeout = base::TimeDelta::FromMilliseconds(100);
-  NavigationHandleImpl::SetCommitTimeoutForTesting(kTimeout);
+  NavigationRequest::SetCommitTimeoutForTesting(kTimeout);
   GURL hung_url(embedded_test_server()->GetURL("a.com", "/title3.html"));
   UnresponsiveRendererObserver unresponsive_renderer_observer(new_contents);
   EXPECT_TRUE(
@@ -363,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   EXPECT_FALSE(hung_process);
 
   // Reset the timeout.
-  NavigationHandleImpl::SetCommitTimeoutForTesting(base::TimeDelta());
+  NavigationRequest::SetCommitTimeoutForTesting(base::TimeDelta());
 }
 
 // Test that unload handlers in iframes are run, even when the removed subtree
@@ -570,6 +570,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, UnloadNestedPendingDeletion) {
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::NotRun, rfh_b->unload_state_);
   EXPECT_EQ(RenderFrameHostImpl::UnloadState::InProgress, rfh_c->unload_state_);
   RenderFrameHostImpl* rfh_d = rfh_b->child_at(0)->current_frame_host();
+  // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
+  // fire before we call OnDetach().
+  rfh_d->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   RenderFrameDeletedObserver delete_d(rfh_d);
 
@@ -632,6 +635,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, PartialUnloadHandler) {
   b1->GetProcess()->AddFilter(detach_filter_b.get());
 
   a1->DisableSwapOutTimerForTesting();
+  // Set an arbitrarily long timeout to ensure the subframe unload timer doesn't
+  // fire before we call OnDetach().
+  b1->SetSubframeUnloadTimeoutForTesting(base::TimeDelta::FromSeconds(30));
 
   // Add unload handler on A2, but not on the other frames.
   UnloadPrint(a2->frame_tree_node(), "A2");

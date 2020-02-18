@@ -11,7 +11,7 @@
 #include "base/memory/free_deleter.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -61,7 +61,7 @@ void ClearReference(base::OnceClosure cb) {}
 // on the message loop, not during the original Run.
 class BindToCurrentLoopTest : public ::testing::Test {
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 };
 
 TEST_F(BindToCurrentLoopTest, RepeatingClosure) {

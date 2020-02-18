@@ -12,7 +12,7 @@ Polymer({
 
   behaviors: [
     CrNetworkListenerBehavior,
-    CrPolicyNetworkBehavior,
+    CrPolicyNetworkBehaviorMojo,
   ],
 
   properties: {
@@ -64,15 +64,14 @@ Polymer({
    * This UI will use both the networkingPrivate extension API and the
    * networkConfig mojo API until we provide all of the required functionality
    * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigProxy}
+   * @private {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote}
    */
-  networkConfigProxy_: null,
+  networkConfig_: null,
 
   /** @override */
   created: function() {
-    this.networkConfigProxy_ =
-        network_config.MojoInterfaceProviderImpl.getInstance()
-            .getMojoServiceProxy();
+    this.networkConfig_ = network_config.MojoInterfaceProviderImpl.getInstance()
+                              .getMojoServiceRemote();
   },
 
   /** CrosNetworkConfigObserver impl */
@@ -99,7 +98,7 @@ Polymer({
       limit: chromeos.networkConfig.mojom.kNoLimit,
       networkType: OncMojo.getNetworkTypeFromString(this.networkType),
     };
-    this.networkConfigProxy_.getNetworkStateList(filter).then(response => {
+    this.networkConfig_.getNetworkStateList(filter).then(response => {
       this.networkStateList_ = response.result;
     });
   },
@@ -147,7 +146,7 @@ Polymer({
    * @private
    */
   getNetworkDisplayName_: function(networkState) {
-    return OncMojo.getNetworkDisplayName(networkState);
+    return OncMojo.getNetworkStateDisplayName(networkState);
   },
 
   /**
@@ -162,14 +161,15 @@ Polymer({
     // We need to make a round trip to Chrome in order to retrieve the managed
     // properties for the network. The delay is not noticeable (~5ms) and is
     // preferable to initiating a query for every known network at load time.
-    this.networkingPrivate.getManagedProperties(
-        this.selectedGuid_, properties => {
-          if (chrome.runtime.lastError || !properties) {
-            console.error(
-                'Unexpected error: ' + chrome.runtime.lastError.message);
+    this.networkConfig_.getManagedProperties(this.selectedGuid_)
+        .then(response => {
+          const properties = response.result;
+          if (!properties) {
+            console.error('Properties not found for: ' + this.selectedGuid_);
             return;
           }
-          if (this.isNetworkPolicyEnforced(properties.Priority)) {
+          if (properties.priority &&
+              this.isNetworkPolicyEnforced(properties.priority)) {
             this.showAddPreferred_ = false;
             this.showRemovePreferred_ = false;
           } else {
@@ -177,22 +177,37 @@ Polymer({
             this.showAddPreferred_ = !preferred;
             this.showRemovePreferred_ = preferred;
           }
-          this.enableForget_ = !this.isPolicySource(properties.Source);
+          this.enableForget_ = !this.isPolicySource(networkState.source);
           /** @type {!CrActionMenuElement} */ (this.$.dotsMenu)
               .showAt(/** @type {!Element} */ (button));
         });
     event.stopPropagation();
   },
 
+  /**
+   * @param {!chromeos.networkConfig.mojom.ConfigProperties} config
+   * @private
+   */
+  setProperties_: function(config) {
+    this.networkConfig_.setProperties(this.selectedGuid_, config)
+        .then(response => {
+          if (!response.success) {
+            console.error(
+                'Unable to set properties for: ' + this.selectedGuid_ + ': ' +
+                JSON.stringify(config));
+          }
+        });
+  },
+
   /** @private */
   onRemovePreferredTap_: function() {
-    this.networkingPrivate.setProperties(this.selectedGuid_, {Priority: 0});
+    this.setProperties_({priority: {value: 0}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 
   /** @private */
   onAddPreferredTap_: function() {
-    this.networkingPrivate.setProperties(this.selectedGuid_, {Priority: 1});
+    this.setProperties_({priority: {value: 1}});
     /** @type {!CrActionMenuElement} */ (this.$.dotsMenu).close();
   },
 

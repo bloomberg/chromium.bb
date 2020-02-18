@@ -687,6 +687,22 @@
             }
           ]
         },
+        "test": "gwp_asan_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.10"
+            }
+          ]
+        },
         "test": "headless_browsertests"
       },
       {
@@ -1527,7 +1543,7 @@
               "os": "Mac-10.10.5"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -2193,6 +2209,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.11"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -3048,7 +3080,7 @@
               "os": "Mac-10.11.6"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -3714,6 +3746,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0a2e",
+              "os": "Mac-10.12.6"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -4614,7 +4662,7 @@
               "os": "Mac-10.12.6"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ]
@@ -5280,6 +5328,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -6158,7 +6222,7 @@
               "os": "Mac-10.13.6"
             }
           ],
-          "shards": 12
+          "shards": 20
         }
       }
     ],
@@ -6836,6 +6900,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {
@@ -8361,6 +8441,22 @@
           ]
         },
         "test": "gpu_unittests"
+      },
+      {
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "none",
+              "os": "Mac-10.13.6"
+            }
+          ]
+        },
+        "test": "gwp_asan_unittests"
       },
       {
         "merge": {

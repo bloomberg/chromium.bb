@@ -22,6 +22,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -29,6 +30,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_navigation_observer_manager.h"
+#include "chrome/browser/safe_browsing/services_delegate.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
@@ -37,17 +39,17 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/browser/safe_browsing_network_context.h"
-#include "components/safe_browsing/browser/safe_browsing_url_request_context_getter.h"
+#include "components/safe_browsing/buildflags.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/ping_manager.h"
+#include "components/safe_browsing/realtime/policy_engine.h"
 #include "components/safe_browsing/triggers/trigger_manager.h"
 #include "components/safe_browsing/verdict_cache_manager.h"
 #include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/browser/resource_request_info.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/preferences/public/mojom/tracked_preference_validation_delegate.mojom.h"
@@ -56,7 +58,7 @@
 #include "chrome/install_static/install_util.h"
 #endif
 
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
 #include "chrome/browser/safe_browsing/client_side_detection_service.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/incident_reporting/binary_integrity_analyzer.h"
@@ -69,36 +71,6 @@ using content::BrowserThread;
 using content::NonNestable;
 
 namespace safe_browsing {
-
-#if defined(FULL_SAFE_BROWSING)
-namespace {
-
-// 50 was chosen as an arbitrary upper bound on the likely font sizes. For
-// reference, the "Font size" dropdown in settings lets you select between 9,
-// 12, 16, 20, or 24.
-const int kMaximumTrackedFontSize = 50;
-
-void RecordFontSizeMetrics(const PrefService& pref_service) {
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "SafeBrowsing.FontSize.Default",
-      pref_service.GetInteger(prefs::kWebKitDefaultFontSize),
-      kMaximumTrackedFontSize);
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "SafeBrowsing.FontSize.DefaultFixed",
-      pref_service.GetInteger(prefs::kWebKitDefaultFixedFontSize),
-      kMaximumTrackedFontSize);
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "SafeBrowsing.FontSize.Minimum",
-      pref_service.GetInteger(prefs::kWebKitMinimumFontSize),
-      kMaximumTrackedFontSize);
-  UMA_HISTOGRAM_EXACT_LINEAR(
-      "SafeBrowsing.FontSize.MinimumLogical",
-      pref_service.GetInteger(prefs::kWebKitMinimumLogicalFontSize),
-      kMaximumTrackedFontSize);
-}
-
-}  // namespace
-#endif
 
 // static
 base::FilePath SafeBrowsingService::GetCookieFilePathForTesting() {
@@ -138,7 +110,7 @@ void SafeBrowsingService::Initialize() {
 
   network_context_ =
       std::make_unique<safe_browsing::SafeBrowsingNetworkContext>(
-          nullptr, user_data_dir,
+          user_data_dir,
           base::BindRepeating(&SafeBrowsingService::CreateNetworkContextParams,
                               base::Unretained(this)));
 
@@ -256,7 +228,7 @@ SafeBrowsingUIManager* SafeBrowsingService::CreateUIManager() {
 }
 
 void SafeBrowsingService::RegisterAllDelayedAnalysis() {
-#if defined(FULL_SAFE_BROWSING)
+#if BUILDFLAG(FULL_SAFE_BROWSING)
   RegisterBinaryIntegrityAnalysis();
 #endif
 }
@@ -275,6 +247,13 @@ VerdictCacheManager* SafeBrowsingService::GetVerdictCacheManager(
   return nullptr;
 }
 
+BinaryUploadService* SafeBrowsingService::GetBinaryUploadService(
+    Profile* profile) const {
+  if (profile->GetPrefs()->GetBoolean(prefs::kSafeBrowsingEnabled))
+    return services_delegate_->GetBinaryUploadService(profile);
+  return nullptr;
+}
+
 std::string SafeBrowsingService::GetProtocolConfigClientName() const {
   std::string client_name;
   // On Windows, get the safe browsing client name from the browser
@@ -283,7 +262,7 @@ std::string SafeBrowsingService::GetProtocolConfigClientName() const {
 #if defined(OS_WIN)
   client_name = install_static::GetSafeBrowsingName();
 #else
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   client_name = "googlechrome";
 #else
   client_name = "chromium";
@@ -336,7 +315,7 @@ void SafeBrowsingService::Start() {
         PingManager::Create(GetURLLoaderFactory(), GetV4ProtocolConfig());
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(
           &SafeBrowsingService::StartOnIOThread, this,
@@ -347,7 +326,7 @@ void SafeBrowsingService::Start() {
 void SafeBrowsingService::Stop(bool shutdown) {
   ping_manager_.reset();
   ui_manager_->Stop(shutdown);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&SafeBrowsingService::StopOnIOThread, this, shutdown));
 }
@@ -364,6 +343,7 @@ void SafeBrowsingService::Observe(int type,
       services_delegate_->CreateTelemetryService(profile);
       if (!profile->IsOffTheRecord())
         AddPrefService(profile->GetPrefs());
+      services_delegate_->CreateBinaryUploadService(profile);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_DESTROYED: {
@@ -374,6 +354,7 @@ void SafeBrowsingService::Observe(int type,
       services_delegate_->RemoveTelemetryService();
       if (!profile->IsOffTheRecord())
         RemovePrefService(profile->GetPrefs());
+      services_delegate_->RemoveBinaryUploadService(profile);
       break;
     }
     default:
@@ -394,6 +375,9 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
   registrar->Add(
       prefs::kSafeBrowsingScoutReportingEnabled,
       base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
+  registrar->Add(
+      prefs::kSafeBrowsingRealTimeLookupEnabled,
+      base::Bind(&SafeBrowsingService::RefreshState, base::Unretained(this)));
   prefs_map_[pref_service] = std::move(registrar);
   RefreshState();
 
@@ -402,10 +386,6 @@ void SafeBrowsingService::AddPrefService(PrefService* pref_service) {
                         pref_service->GetBoolean(prefs::kSafeBrowsingEnabled));
   // Extended Reporting metrics are handled together elsewhere.
   RecordExtendedReportingMetrics(*pref_service);
-
-#if defined(FULL_SAFE_BROWSING)
-  RecordFontSizeMetrics(*pref_service);
-#endif
 }
 
 void SafeBrowsingService::RemovePrefService(PrefService* pref_service) {
@@ -429,17 +409,26 @@ void SafeBrowsingService::RefreshState() {
   // Check if any profile requires the service to be active.
   enabled_by_prefs_ = false;
   estimated_extended_reporting_by_prefs_ = SBER_LEVEL_OFF;
+  bool is_real_time_lookup_enabled = false;
   for (const auto& pref : prefs_map_) {
     if (pref.first->GetBoolean(prefs::kSafeBrowsingEnabled)) {
       enabled_by_prefs_ = true;
+
       ExtendedReportingLevel erl =
           safe_browsing::GetExtendedReportingLevel(*pref.first);
       if (erl != SBER_LEVEL_OFF) {
         estimated_extended_reporting_by_prefs_ = erl;
-        break;
+      }
+
+      if (pref.first->GetBoolean(prefs::kSafeBrowsingRealTimeLookupEnabled)) {
+        is_real_time_lookup_enabled = true;
       }
     }
   }
+
+  // TODO(crbug.com/991394): This enables real-time URL lookup if it is enabled
+  // for any of the active profiles. This should be fixed.
+  RealTimePolicyEngine::SetEnabled(is_real_time_lookup_enabled);
 
   if (enabled_by_prefs_)
     Start();

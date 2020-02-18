@@ -8,6 +8,7 @@
 #include <limits>
 
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_constants.h"
+#include "net/third_party/quiche/src/quic/core/qpack/qpack_index_conversions.h"
 #include "net/third_party/quiche/src/quic/core/qpack/qpack_required_insert_count.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_logging.h"
 #include "net/third_party/quiche/src/quic/platform/api/quic_ptr_util.h"
@@ -16,6 +17,7 @@ namespace quic {
 
 QpackProgressiveDecoder::QpackProgressiveDecoder(
     QuicStreamId stream_id,
+    BlockedStreamLimitEnforcer* enforcer,
     QpackHeaderTable* header_table,
     QpackDecoderStreamSender* decoder_stream_sender,
     HeadersHandlerInterface* handler)
@@ -23,6 +25,7 @@ QpackProgressiveDecoder::QpackProgressiveDecoder(
       prefix_decoder_(
           QuicMakeUnique<QpackInstructionDecoder>(QpackPrefixLanguage(), this)),
       instruction_decoder_(QpackRequestStreamLanguage(), this),
+      enforcer_(enforcer),
       header_table_(header_table),
       decoder_stream_sender_(decoder_stream_sender),
       handler_(handler),
@@ -116,6 +119,7 @@ void QpackProgressiveDecoder::OnInsertCountReachedThreshold() {
   }
 
   blocked_ = false;
+  enforcer_->OnStreamUnblocked(stream_id_);
 
   if (!decoding_) {
     FinishDecoding();
@@ -125,8 +129,8 @@ void QpackProgressiveDecoder::OnInsertCountReachedThreshold() {
 bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
   if (!instruction_decoder_.s_bit()) {
     uint64_t absolute_index;
-    if (!RequestStreamRelativeIndexToAbsoluteIndex(
-            instruction_decoder_.varint(), &absolute_index)) {
+    if (!QpackRequestStreamRelativeIndexToAbsoluteIndex(
+            instruction_decoder_.varint(), base_, &absolute_index)) {
       OnError("Invalid relative index.");
       return false;
     }
@@ -164,8 +168,8 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldInstruction() {
 
 bool QpackProgressiveDecoder::DoIndexedHeaderFieldPostBaseInstruction() {
   uint64_t absolute_index;
-  if (!PostBaseIndexToAbsoluteIndex(instruction_decoder_.varint(),
-                                    &absolute_index)) {
+  if (!QpackPostBaseIndexToAbsoluteIndex(instruction_decoder_.varint(), base_,
+                                         &absolute_index)) {
     OnError("Invalid post-base index.");
     return false;
   }
@@ -193,8 +197,8 @@ bool QpackProgressiveDecoder::DoIndexedHeaderFieldPostBaseInstruction() {
 bool QpackProgressiveDecoder::DoLiteralHeaderFieldNameReferenceInstruction() {
   if (!instruction_decoder_.s_bit()) {
     uint64_t absolute_index;
-    if (!RequestStreamRelativeIndexToAbsoluteIndex(
-            instruction_decoder_.varint(), &absolute_index)) {
+    if (!QpackRequestStreamRelativeIndexToAbsoluteIndex(
+            instruction_decoder_.varint(), base_, &absolute_index)) {
       OnError("Invalid relative index.");
       return false;
     }
@@ -232,8 +236,8 @@ bool QpackProgressiveDecoder::DoLiteralHeaderFieldNameReferenceInstruction() {
 
 bool QpackProgressiveDecoder::DoLiteralHeaderFieldPostBaseInstruction() {
   uint64_t absolute_index;
-  if (!PostBaseIndexToAbsoluteIndex(instruction_decoder_.varint(),
-                                    &absolute_index)) {
+  if (!QpackPostBaseIndexToAbsoluteIndex(instruction_decoder_.varint(), base_,
+                                         &absolute_index)) {
     OnError("Invalid post-base index.");
     return false;
   }
@@ -286,6 +290,10 @@ bool QpackProgressiveDecoder::DoPrefixInstruction() {
 
   if (required_insert_count_ > header_table_->inserted_entry_count()) {
     blocked_ = true;
+    if (!enforcer_->OnStreamBlocked(stream_id_)) {
+      OnError("Limit on number of blocked streams exceeded.");
+      return false;
+    }
     header_table_->RegisterObserver(this, required_insert_count_);
   }
 
@@ -316,7 +324,10 @@ void QpackProgressiveDecoder::FinishDecoding() {
     return;
   }
 
-  decoder_stream_sender_->SendHeaderAcknowledgement(stream_id_);
+  if (required_insert_count_ > 0) {
+    decoder_stream_sender_->SendHeaderAcknowledgement(stream_id_);
+  }
+
   handler_->OnDecodingCompleted();
 }
 
@@ -337,29 +348,6 @@ bool QpackProgressiveDecoder::DeltaBaseToBase(bool sign,
     return false;
   }
   *base = required_insert_count_ + delta_base;
-  return true;
-}
-
-bool QpackProgressiveDecoder::RequestStreamRelativeIndexToAbsoluteIndex(
-    uint64_t relative_index,
-    uint64_t* absolute_index) const {
-  if (relative_index == std::numeric_limits<uint64_t>::max() ||
-      relative_index + 1 > base_) {
-    return false;
-  }
-
-  *absolute_index = base_ - 1 - relative_index;
-  return true;
-}
-
-bool QpackProgressiveDecoder::PostBaseIndexToAbsoluteIndex(
-    uint64_t post_base_index,
-    uint64_t* absolute_index) const {
-  if (post_base_index >= std::numeric_limits<uint64_t>::max() - base_) {
-    return false;
-  }
-
-  *absolute_index = base_ + post_base_index;
   return true;
 }
 

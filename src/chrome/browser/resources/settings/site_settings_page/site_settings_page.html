@@ -66,15 +66,13 @@
             '$i18nPolymer{siteSettingsAskBeforeAccessing}',
             '$i18nPolymer{siteSettingsBlocked}')]]"></cr-link-row>
 
-    <template is="dom-if" if="[[enableSensorsContentSetting_]]">
-      <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SENSORS"
-          id="sensors" label="$i18n{siteSettingsSensors}"
-          on-click="onTapNavigate_" start-icon="settings:sensors"
-          sub-label="[[defaultSettingLabel_(
-              default_.sensors,
-              '$i18nPolymer{siteSettingsSensorsAllow}',
-              '$i18nPolymer{siteSettingsSensorsBlock}')]]"></cr-link-row>
-    </template>
+    <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_SENSORS"
+        id="sensors" label="$i18n{siteSettingsSensors}"
+        on-click="onTapNavigate_" start-icon="settings:sensors"
+        sub-label="[[defaultSettingLabel_(
+            default_.sensors,
+            '$i18nPolymer{siteSettingsSensorsAllow}',
+            '$i18nPolymer{siteSettingsSensorsBlock}')]]"></cr-link-row>
 
     <cr-link-row class="hr two-line" data-route="SITE_SETTINGS_NOTIFICATIONS"
         id="notifications" label="$i18n{siteSettingsNotifications}"
@@ -204,6 +202,19 @@
               default_.serialPorts,
               '$i18nPolymer{siteSettingsSerialPortsAsk}',
               '$i18nPolymer{siteSettingsSerialPortsBlock}')]]">
+      </cr-link-row>
+    </template>
+
+    <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
+      <cr-link-row class="hr two-line"
+          data-route="SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"
+          icon-class="subpage-arrow" id="native-file-system-write"
+          label="$i18n{siteSettingsNativeFileSystemWrite}"
+          on-click="onTapNavigate_" start-icon="settings:save-original"
+          sub-label="[[defaultSettingLabel_(
+              default_.filesystem,
+              '$i18nPolymer{siteSettingsNativeFileSystemWriteAsk}',
+              '$i18nPolymer{siteSettingsNativeFileSystemWriteBlock}')]]">
       </cr-link-row>
     </template>
 

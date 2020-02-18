@@ -1,4 +1,4 @@
-#!/usr/bin/env vpython
+#!/usr/bin/env python
 # Copyright (c) 2012 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -94,7 +94,6 @@ import platform
 import posixpath
 import pprint
 import re
-import six
 import sys
 import time
 
@@ -117,6 +116,7 @@ import subcommand
 import subprocess2
 import setup_color
 
+from third_party import six
 
 
 # TODO(crbug.com/953884): Remove this when python3 migration is done.
@@ -252,8 +252,9 @@ class Hook(object):
 
     try:
       start_time = time.time()
-      gclient_utils.CheckCallAndFilterAndHeader(
-          cmd, cwd=self.effective_cwd, always=self._verbose)
+      gclient_utils.CheckCallAndFilter(
+          cmd, cwd=self.effective_cwd, print_stdout=True, show_header=True,
+          always_show_header=self._verbose)
     except (gclient_utils.Error, subprocess2.CalledProcessError) as e:
       # Use a discrete exit status code of 2 to indicate that a hook action
       # failed.  Users of this script may wish to treat hook action failures
@@ -1979,7 +1980,7 @@ class CipdDependency(Dependency):
       ])
       for p in sorted(
           self._cipd_root.packages(self._cipd_subdir),
-          cmp=lambda x, y: cmp(x.name, y.name)):
+          key=lambda x: x.name):
         s.extend([
             '      {',
             '        "package": "%s",' % escape_cipd_var(p.name),

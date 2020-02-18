@@ -97,6 +97,9 @@ NET_EXPORT std::string SerializeRequestCookieLine(
 // the user directly interacting with the browser UI, e.g. entering a URL
 // or selecting a bookmark.
 //
+// If |attach_same_site_cookies| is specified, all SameSite cookies will be
+// attached.
+//
 // See also documentation for corresponding methods on net::URLRequest.
 //
 // |http_method| is used to enforce the requirement that, in a context that's
@@ -144,45 +147,22 @@ NET_EXPORT CookieOptions::SameSiteCookieContext
 ComputeSameSiteContextForSubresource(const GURL& url,
                                      const GURL& site_for_cookies);
 
-// Checks whether a cookie would be excluded due to SameSite restrictions,
-// assuming SameSiteByDefaultCookies and CookiesWithoutSameSiteMustBeSecure
-// were turned on. This should be called on a cookie that is in fact included,
-// (presumably because SameSiteByDefaultCookies and
-// CookiesWithoutSameSiteMustBeSecure are not actually enabled). If the
-// return value is not INCLUDE, the cookie should be added to the excluded
-// cookies list so that an appropriate warning message can be shown in the
-// console.
-NET_EXPORT CanonicalCookie::CookieInclusionStatus
-CookieWouldBeExcludedDueToSameSite(const CanonicalCookie& cookie,
-                                   const CookieOptions& options);
-
-// Takes a OnceCallback with only a CookieList and binds it to a callback that
-// also accepts a CookieStatusList, making it compatible with
-// CookieStore::GetCookieListCallback.
-//
-// Can be used when the CookieWithStatus list (the list of
-// cookies excluded from being sent) is not needed and therefore isn't in the
-// callback signature. Also useful if you're using
-NET_EXPORT base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-IgnoreCookieStatusList(base::OnceCallback<void(const CookieList&)> callback);
-
-// Takes a CookieStore::GetCookieListCallback and binds a function that only
-// takes a CookieList, sending an empty CookieStatusList.
-//
-// Can be used if you have a callback that's used with both GetCookieList and
-// GetAllCookies and you want to use the excluded cookies list when you have it.
-NET_EXPORT base::OnceCallback<void(const CookieList&)> AddCookieStatusList(
-    base::OnceCallback<void(const CookieList&, const CookieStatusList&)>
-        callback);
+// Returns whether the respective SameSite feature is enabled.
+NET_EXPORT bool IsSameSiteByDefaultCookiesEnabled();
+NET_EXPORT bool IsCookiesWithoutSameSiteMustBeSecureEnabled();
 
 // Takes a callback accepting a CookieInclusionStatus and returns a callback
 // that accepts a bool, setting the bool to true if the CookieInclusionStatus
-// was set to INCLUDE, else sending false.
+// was set to "include", else sending false.
 //
 // Can be used with SetCanonicalCookie when you don't need to know why a cookie
-// was blocked, only if it was blocked.
+// was blocked, only whether it was blocked.
 NET_EXPORT base::OnceCallback<void(CanonicalCookie::CookieInclusionStatus)>
 AdaptCookieInclusionStatusToBool(base::OnceCallback<void(bool)> callback);
+
+// Turn a CookieStatusList into a CookieList by stripping out the statuses
+// (for callers who don't care about the statuses).
+NET_EXPORT CookieList StripStatuses(const CookieStatusList& cookie_status_list);
 
 }  // namespace cookie_util
 }  // namespace net

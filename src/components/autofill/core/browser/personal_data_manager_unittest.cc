@@ -16,7 +16,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/i18n/time_formatting.h"
 #include "base/rand_util.h"
@@ -26,8 +25,8 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -150,8 +149,7 @@ class PersonalDataManagerTestBase {
   void SetUpTest() {
     OSCryptMocker::SetUp();
     prefs_ = test::PrefServiceForTesting();
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
+    base::FilePath path(WebDatabase::kInMemoryPath);
     profile_web_database_ =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
@@ -299,11 +297,8 @@ class PersonalDataManagerTestBase {
     run_loop.Run();
   }
 
-  // The temporary directory should be deleted at the end to ensure that
-  // files are not used anymore and deletion succeeds.
-  base::ScopedTempDir temp_dir_;
-  base::test::ScopedTaskEnvironment task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
   std::unique_ptr<PrefService> prefs_;
   network::TestURLLoaderFactory test_url_loader_factory_;
   signin::IdentityTestEnvironment identity_test_env_;
@@ -6745,11 +6740,6 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode) {
 // Make sure that the opt in is necessary to show server cards if the
 // appropriate feature is disabled.
 TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
-  // Disable the feature that always shows server cards in sync transport.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndDisableFeature(
-      features::kAutofillAlwaysShowServerCardsInSyncTransport);
-
   // Set up PersonalDataManager in transport mode.
   ResetPersonalDataManager(USER_MODE_NORMAL,
                            /*use_sync_transport_mode=*/true);
@@ -6768,29 +6758,6 @@ TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NeedOptIn) {
   // Opt-in to seeing server card in sync transport mode.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
       prefs_.get(), active_info.account_id, true);
-
-  // Check that the server cards are available for suggestion.
-  EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
-  EXPECT_EQ(
-      3U, personal_data_->GetCreditCardsToSuggest(/*include_server_cards=*/true)
-              .size());
-  EXPECT_EQ(1U, personal_data_->GetLocalCreditCards().size());
-  EXPECT_EQ(2U, personal_data_->GetServerCreditCards().size());
-}
-
-// Make sure that the opt in is not necessary to show server cards if the
-// appropriate feature is enabled.
-TEST_F(PersonalDataManagerTest, ServerCardsShowInTransportMode_NoOptInNeeded) {
-  // Enable the feature that always shows server cards in sync transport.
-  base::test::ScopedFeatureList scoped_features;
-  scoped_features.InitAndEnableFeature(
-      features::kAutofillAlwaysShowServerCardsInSyncTransport);
-
-  // Set up PersonalDataManager in transport mode.
-  ResetPersonalDataManager(USER_MODE_NORMAL,
-                           /*use_sync_transport_mode=*/true);
-  SetUpThreeCardTypes();
-  AccountInfo active_info = SetActiveSecondaryAccount();
 
   // Check that the server cards are available for suggestion.
   EXPECT_EQ(3U, personal_data_->GetCreditCards().size());
@@ -7654,18 +7621,6 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
     histogram_tester.ExpectUniqueSample(kHistogramName, false, 1);
   }
 
-  // Enable feature to always show server cards. The function should now return
-  // false.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillEnableAccountWalletStorage,
-         features::kAutofillAlwaysShowServerCardsInSyncTransport},
-        /*disabled_features=*/{});
-    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-  }
-
   // Set that the user already opted-in. Check that the function now returns
   // false.
   ::autofill::prefs::SetUserOptedInWalletSyncTransport(
@@ -7771,18 +7726,6 @@ TEST_F(PersonalDataManagerTest, ShouldShowCardsFromAccountOption) {
 
   // Make sure the function returns false.
   EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-
-  // Enable feature to always show server cards. The function should still
-  // return false.
-  {
-    base::test::ScopedFeatureList scoped_features;
-    scoped_features.InitWithFeatures(
-        /*enabled_features=*/
-        {features::kAutofillEnableAccountWalletStorage,
-         features::kAutofillAlwaysShowServerCardsInSyncTransport},
-        /*disabled_features=*/{});
-    EXPECT_FALSE(personal_data_->ShouldShowCardsFromAccountOption());
-  }
 
   // Set that the user already opted-in. Check that the function still returns
   // false.
@@ -7924,6 +7867,10 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   // Make sure there are no opt-ins recorded yet.
   ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
                                                        active_info.account_id));
+
+  // Account wallet storage only makes sense together with support for
+  // unconsented primary accounts, i.e. on Win/Mac/Linux.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
   {
     base::test::ScopedFeatureList scoped_features;
     scoped_features.InitAndEnableFeature(
@@ -7967,6 +7914,7 @@ TEST_F(PersonalDataManagerTest, OnUserAcceptedUpstreamOffer) {
   prefs::ClearSyncTransportOptIns(prefs_.get());
   ASSERT_FALSE(prefs::IsUserOptedInWalletSyncTransport(prefs_.get(),
                                                        active_info.account_id));
+#endif  // !defined(OS_CHROMEOS) && !defined(OS_ANDROID) && !defined(OS_IOS)
 
   ///////////////////////////////////////////////////////////
   // kSignedOut

@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "chrome/browser/notifications/scheduler/internal/notification_scheduler.h"
+#include "chrome/browser/notifications/scheduler/internal/stats.h"
 #include "chrome/browser/notifications/scheduler/public/notification_params.h"
 
 namespace notifications {
@@ -58,21 +59,10 @@ void NotificationScheduleServiceImpl::OnStopTask(SchedulerTaskTime task_time) {
   scheduler_->OnStopTask(task_time);
 }
 
-void NotificationScheduleServiceImpl::OnClick(SchedulerClientType type,
-                                              const std::string& guid) {
-  scheduler_->OnClick(type, guid);
-}
-
-void NotificationScheduleServiceImpl::OnActionClick(
-    SchedulerClientType type,
-    const std::string& guid,
-    ActionButtonType button_type) {
-  scheduler_->OnActionClick(type, guid, button_type);
-}
-
-void NotificationScheduleServiceImpl::OnDismiss(SchedulerClientType type,
-                                                const std::string& guid) {
-  scheduler_->OnDismiss(type, guid);
+void NotificationScheduleServiceImpl::OnUserAction(
+    const UserActionData& action_data) {
+  stats::LogUserAction(action_data);
+  scheduler_->OnUserAction(action_data);
 }
 
 void NotificationScheduleServiceImpl::OnInitialized(bool success) {

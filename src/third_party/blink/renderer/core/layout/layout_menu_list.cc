@@ -283,10 +283,10 @@ void LayoutMenuList::SetText(const String& s) {
     // s.impl() into the text and have things align correctly...
     // crbug.com/485982
     is_empty_ = true;
-    button_text_->SetText(StringImpl::Create(" ", 1), true);
+    button_text_->ForceSetText(StringImpl::Create(" ", 1));
   } else {
     is_empty_ = false;
-    button_text_->SetText(s.Impl(), true);
+    button_text_->ForceSetText(s.Impl());
   }
   // LayoutMenuList::ControlClipRect() depends on inner_block_->ContentsSize().
   SetNeedsPaintPropertyUpdate();
@@ -334,7 +334,7 @@ void LayoutMenuList::ComputeLogicalHeight(
     LayoutUnit logical_height,
     LayoutUnit logical_top,
     LogicalExtentComputedValues& computed_values) const {
-  if (StyleRef().HasAppearance())
+  if (StyleRef().HasEffectiveAppearance())
     logical_height = inner_block_height_ + BorderAndPaddingHeight();
   LayoutBox::ComputeLogicalHeight(logical_height, logical_top, computed_values);
 }

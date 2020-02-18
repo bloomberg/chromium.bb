@@ -52,7 +52,6 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/container_annotations.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 #ifdef ANNOTATE_CONTIGUOUS_CONTAINER
 
@@ -253,7 +252,7 @@ void BaseArena::PrepareForSweep() {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void BaseArena::PoisonArena() {
+void BaseArena::PoisonUnmarkedObjects() {
   for (BasePage* page : unswept_pages_) {
     page->PoisonUnmarkedObjects();
   }
@@ -536,7 +535,9 @@ void NormalPageArena::SweepAndCompact() {
 #if DEBUG_HEAP_COMPACTION
     if (!freed_page_count)
       stream << "Releasing:";
-    stream << " [" << available_pages << ", " << (available_pages + page_size)
+    stream << " [" << available_pages << ", "
+           << static_cast<void*>(reinterpret_cast<char*>(available_pages) +
+                                 page_size)
            << "]";
 #endif
     freed_size += page_size;

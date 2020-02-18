@@ -92,7 +92,7 @@ void ExternalPolicyDataFetcher::Job::Start(
   resource_request->url = url;
   resource_request->load_flags =
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE;
-  resource_request->allow_credentials = false;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("external_policy_fetcher", R"(
@@ -174,10 +174,9 @@ void ExternalPolicyDataFetcher::Job::OnComplete(bool /* success */) {
       url_loader->NetError() == net::ERR_CONNECTION_CLOSED) {
     // The connection was interrupted.
     result = CONNECTION_INTERRUPTED;
-  } else if (url_loader->NetError() == net::ERR_FAILED && response_code != 0 &&
-             response_code != 200) {
-    // net::ERR_FAILED may signal that a non-2xx HTTP response has been
-    // received.
+  } else if (url_loader->NetError() == net::ERR_HTTP_RESPONSE_CODE_FAILURE) {
+    // net::ERR_HTTP_RESPONSE_CODE_FAILURE signals that a non-2xx HTTP response
+    // has been received.
     if (response_code >= 500) {
       // Problem at the server.
       result = SERVER_ERROR;

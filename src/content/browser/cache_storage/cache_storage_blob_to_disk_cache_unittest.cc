@@ -20,13 +20,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "net/disk_cache/disk_cache.h"
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/blob_storage_context.h"
-#include "storage/browser/blob/blob_url_request_job_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -63,7 +62,7 @@ class TestCacheStorageBlobToDiskCache : public CacheStorageBlobToDiskCache {
 class CacheStorageBlobToDiskCacheTest : public testing::Test {
  protected:
   CacheStorageBlobToDiskCacheTest()
-      : browser_thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
         browser_context_(new TestBrowserContext()),
         cache_storage_blob_to_disk_cache_(
             new TestCacheStorageBlobToDiskCache()),
@@ -102,12 +101,10 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     EXPECT_EQ(net::OK, rv);
     EXPECT_TRUE(cache_backend_);
 
-    std::unique_ptr<disk_cache::Entry*> entry(new disk_cache::Entry*());
-    disk_cache::Entry** entry_ptr = entry.get();
-    rv = cache_backend_->CreateEntry(kEntryKey, net::HIGHEST, entry_ptr,
-                                     base::DoNothing());
-    EXPECT_EQ(net::OK, rv);
-    disk_cache_entry_.reset(*entry);
+    disk_cache::EntryResult result =
+        cache_backend_->CreateEntry(kEntryKey, net::HIGHEST, base::DoNothing());
+    EXPECT_EQ(net::OK, result.net_error());
+    disk_cache_entry_.reset(result.ReleaseEntry());
   }
 
   std::string ReadCacheContent() {
@@ -145,7 +142,7 @@ class CacheStorageBlobToDiskCacheTest : public testing::Test {
     callback_called_ = true;
   }
 
-  TestBrowserThreadBundle browser_thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   storage::BlobStorageContext* blob_storage_context_;
   std::unique_ptr<storage::BlobDataHandle> blob_handle_;

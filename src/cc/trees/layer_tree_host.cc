@@ -566,12 +566,20 @@ LayerTreeHost::DeferMainFrameUpdate() {
   return std::make_unique<ScopedDeferMainFrameUpdate>(this);
 }
 
+void LayerTreeHost::OnDeferMainFrameUpdatesChanged(bool defer_status) {
+  client_->OnDeferMainFrameUpdatesChanged(defer_status);
+}
+
 void LayerTreeHost::StartDeferringCommits(base::TimeDelta timeout) {
   proxy_->StartDeferringCommits(timeout);
 }
 
 void LayerTreeHost::StopDeferringCommits(PaintHoldingCommitTrigger trigger) {
   proxy_->StopDeferringCommits(trigger);
+}
+
+void LayerTreeHost::OnDeferCommitsChanged(bool defer_status) {
+  client_->OnDeferCommitsChanged(defer_status);
 }
 
 DISABLE_CFI_PERF
@@ -789,24 +797,17 @@ bool LayerTreeHost::DoUpdateLayers() {
 
   UpdateHudLayer(debug_state_.ShowHudInfo());
 
-  // The non-layer-list mode is used when blink provides cc with a layer tree
-  // and cc needs to compute property trees from that.
-  // In layer lists mode, blink sends cc property trees directly so they do not
-  // need to be built here. Layer lists mode is used by BlinkGenPropertyTrees
-  // and CompositeAfterPaint.
+  // In layer lists mode, the cc property trees are built directly and do not
+  // need to be built here.
   if (!IsUsingLayerLists()) {
     TRACE_EVENT0("cc", "LayerTreeHost::UpdateLayers::BuildPropertyTrees");
-    Layer* root_scroll =
-        PropertyTreeBuilder::FindFirstScrollableLayer(root_layer_.get());
     Layer* page_scale_layer = viewport_layers_.page_scale.get();
-    if (!page_scale_layer && root_scroll)
-      page_scale_layer = root_scroll->parent();
     gfx::Transform identity_transform;
     PropertyTreeBuilder::BuildPropertyTrees(
         root_layer_.get(), page_scale_layer, inner_viewport_scroll_layer(),
         outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
         elastic_overscroll_, page_scale_factor_, device_scale_factor_,
-        gfx::Rect(device_viewport_size_), identity_transform, &property_trees_);
+        device_viewport_rect_, identity_transform, &property_trees_);
     TRACE_EVENT_INSTANT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
                          "LayerTreeHost::UpdateLayers_BuiltPropertyTrees",
                          TRACE_EVENT_SCOPE_THREAD, "property_trees",
@@ -1180,8 +1181,8 @@ void LayerTreeHost::SetEventListenerProperties(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetViewportSizeAndScale(
-    const gfx::Size& device_viewport_size,
+void LayerTreeHost::SetViewportRectAndScale(
+    const gfx::Rect& device_viewport_rect,
     float device_scale_factor,
     const viz::LocalSurfaceIdAllocation&
         local_surface_id_allocation_from_parent) {
@@ -1190,10 +1191,10 @@ void LayerTreeHost::SetViewportSizeAndScale(
   SetLocalSurfaceIdAllocationFromParent(
       local_surface_id_allocation_from_parent);
 
-  bool device_viewport_size_changed = false;
-  if (device_viewport_size_ != device_viewport_size) {
-    device_viewport_size_ = device_viewport_size;
-    device_viewport_size_changed = true;
+  bool device_viewport_rect_changed = false;
+  if (device_viewport_rect_ != device_viewport_rect) {
+    device_viewport_rect_ = device_viewport_rect;
+    device_viewport_rect_changed = true;
   }
   bool painted_device_scale_factor_changed = false;
   bool device_scale_factor_changed = false;
@@ -1211,7 +1212,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
     }
   }
 
-  if (device_viewport_size_changed || painted_device_scale_factor_changed ||
+  if (device_viewport_rect_changed || painted_device_scale_factor_changed ||
       device_scale_factor_changed) {
     SetPropertyTreesNeedRebuild();
     SetNeedsCommit();
@@ -1225,7 +1226,7 @@ void LayerTreeHost::SetViewportSizeAndScale(
         << new_local_surface_id_request_ << " !valid_parent_id "
         << !local_surface_id_allocation_from_parent_.IsValid()
         << ". Changed state: device_viewport_size "
-        << device_viewport_size_changed << " painted_device_scale_factor "
+        << device_viewport_rect_changed << " painted_device_scale_factor "
         << painted_device_scale_factor_changed << " device_scale_factor "
         << device_scale_factor_changed << " cached LSId "
         << previous_local_surface_id.ToString() << " new LSId "
@@ -1239,8 +1240,6 @@ void LayerTreeHost::SetViewportVisibleRect(const gfx::Rect& visible_rect) {
     return;
 
   viewport_visible_rect_ = visible_rect;
-  SetPropertyTreesNeedRebuild();
-  SetNeedsCommit();
 }
 
 void LayerTreeHost::SetBrowserControlsHeight(float top_height,
@@ -1513,7 +1512,7 @@ void LayerTreeHost::UpdateHudLayer(bool show_hud_info) {
       hud_layer_ = HeadsUpDisplayLayer::Create();
     if (root_layer_.get() && !hud_layer_->parent())
       root_layer_->AddChild(hud_layer_);
-    hud_layer_->UpdateLocationAndSize(device_viewport_size_,
+    hud_layer_->UpdateLocationAndSize(device_viewport_rect_.size(),
                                       device_scale_factor_);
   } else if (hud_layer_.get()) {
     hud_layer_->RemoveFromParent();
@@ -1561,19 +1560,21 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
       ids.overscroll_elasticity_element_id =
           viewport_layers_.overscroll_elasticity_element_id;
     }
-    ids.page_scale = viewport_layers_.page_scale->id();
-    if (viewport_layers_.inner_viewport_container)
+    if (viewport_layers_.page_scale) {
+      ids.page_scale = viewport_layers_.page_scale->id();
+    }
+    if (viewport_layers_.inner_viewport_container) {
       ids.inner_viewport_container =
           viewport_layers_.inner_viewport_container->id();
-    if (viewport_layers_.outer_viewport_container)
+    }
+    if (viewport_layers_.outer_viewport_container) {
       ids.outer_viewport_container =
           viewport_layers_.outer_viewport_container->id();
+    }
     ids.inner_viewport_scroll = viewport_layers_.inner_viewport_scroll->id();
     if (viewport_layers_.outer_viewport_scroll)
       ids.outer_viewport_scroll = viewport_layers_.outer_viewport_scroll->id();
     tree_impl->SetViewportLayersFromIds(ids);
-    DCHECK(IsUsingLayerLists() || viewport_layers_.inner_viewport_scroll
-                                      ->IsContainerForFixedPositionLayers());
   } else {
     tree_impl->ClearViewportLayers();
   }
@@ -1600,8 +1601,7 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
 
   tree_impl->set_painted_device_scale_factor(painted_device_scale_factor_);
   tree_impl->SetDeviceScaleFactor(device_scale_factor_);
-  tree_impl->SetDeviceViewportSize(device_viewport_size_);
-  tree_impl->SetViewportVisibleRect(viewport_visible_rect_);
+  tree_impl->SetDeviceViewportRect(device_viewport_rect_);
 
   if (TakeNewLocalSurfaceIdRequest())
     tree_impl->RequestNewLocalSurfaceId();
@@ -1619,6 +1619,15 @@ void LayerTreeHost::PushLayerTreePropertiesTo(LayerTreeImpl* tree_impl) {
     tree_impl->RequestForceSendMetadata();
 
   tree_impl->set_has_ever_been_drawn(false);
+
+  // TODO(ericrk): The viewport changes caused by |top_controls_shown_ratio_|
+  // changes should propagate back to the main tree. This does not currently
+  // happen, so we must force the impl tree to update its viewports if
+  // |top_controls_shown_ratio_| is greater than 0.0f and less than 1.0f
+  // (partially shown). crbug.com/875943
+  if (top_controls_shown_ratio_ > 0.0f && top_controls_shown_ratio_ < 1.0f) {
+    tree_impl->UpdateViewportContainerSizes();
+  }
 }
 
 void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
@@ -1689,7 +1698,7 @@ void LayerTreeHost::BuildPropertyTreesForTesting() {
       root_layer(), page_scale_layer(), inner_viewport_scroll_layer(),
       outer_viewport_scroll_layer(), overscroll_elasticity_element_id(),
       elastic_overscroll(), page_scale_factor(), device_scale_factor(),
-      gfx::Rect(device_viewport_size()), identity_transform, property_trees());
+      device_viewport_rect(), identity_transform, property_trees());
 }
 
 bool LayerTreeHost::IsElementInPropertyTrees(ElementId element_id,

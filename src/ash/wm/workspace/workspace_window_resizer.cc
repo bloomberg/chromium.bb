@@ -14,6 +14,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/desks/desks_util.h"
@@ -141,6 +142,10 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
 
   // A resizer already exists; don't create a new one.
   if (window_state->drag_details())
+    return nullptr;
+
+  // When running in single app mode, we should not create window resizer.
+  if (Shell::Get()->session_controller()->IsRunningInAppMode())
     return nullptr;
 
   if (window_state->IsPip()) {
@@ -644,8 +649,7 @@ WorkspaceWindowResizer::WorkspaceWindowResizer(
       total_initial_size_(0),
       snap_type_(SNAP_NONE),
       num_mouse_moves_since_bounds_change_(0),
-      magnetism_window_(NULL),
-      weak_ptr_factory_(this) {
+      magnetism_window_(nullptr) {
   DCHECK(details().is_resizable);
 
   // A mousemove should still show the cursor even if the window is

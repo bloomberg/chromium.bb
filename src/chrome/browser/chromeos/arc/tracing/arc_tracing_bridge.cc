@@ -24,16 +24,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/tracing/public/cpp/perfetto/perfetto_producer.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
+#include "services/tracing/public/cpp/perfetto/system_trace_writer.h"
 #include "services/tracing/public/mojom/constants.mojom.h"
 #include "services/tracing/public/mojom/perfetto_service.mojom.h"
-#include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
-#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
-#include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
-
-using ChromeEventBundleHandle =
-    protozero::MessageHandle<perfetto::protos::pbzero::ChromeEventBundle>;
 
 namespace arc {
 
@@ -128,7 +122,7 @@ class ArcTracingDataSource
       const perfetto::DataSourceConfig& data_source_config) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
     // |producer| is a singleton that is never destroyed.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&ArcTracingDataSource::StartTracingOnUI,
                        base::Unretained(this), producer, data_source_config));
@@ -136,11 +130,10 @@ class ArcTracingDataSource
 
   void StopTracing(base::OnceClosure stop_complete_callback) override {
     // |this| never gets destructed, so it's OK to bind an unretained pointer.
-    base::PostTaskWithTraits(
-        FROM_HERE, {content::BrowserThread::UI},
-        base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
-                       base::Unretained(this),
-                       std::move(stop_complete_callback)));
+    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                   base::BindOnce(&ArcTracingDataSource::StopTracingOnUI,
+                                  base::Unretained(this),
+                                  std::move(stop_complete_callback)));
   }
 
   void Flush(base::RepeatingClosure flush_complete_callback) override {
@@ -222,24 +215,32 @@ class ArcTracingDataSource
     DCHECK(producer_);
 
     if (!data.empty()) {
-      std::unique_ptr<perfetto::TraceWriter> trace_writer =
-          producer_->CreateTraceWriter(data_source_config_.target_buffer());
-      DCHECK(trace_writer);
-      perfetto::TraceWriter::TracePacketHandle trace_packet_handle =
-          trace_writer->NewTracePacket();
-      ChromeEventBundleHandle event_bundle =
-          ChromeEventBundleHandle(trace_packet_handle->set_chrome_events());
-      auto* legacy_json_trace = event_bundle->add_legacy_json_trace();
-      legacy_json_trace->set_type(
-          perfetto::protos::pbzero::ChromeLegacyJsonTrace::USER_TRACE);
-      legacy_json_trace->set_data(data.data(), data.length());
+      if (!trace_writer_) {
+        trace_writer_ =
+            std::make_unique<tracing::SystemTraceWriter<std::string>>(
+                producer_, data_source_config_.target_buffer(),
+                tracing::SystemTraceWriter<std::string>::TraceType::kJson);
+      } else {
+        trace_writer_->WriteData(",");
+      }
+      trace_writer_->WriteData(data);
     }
 
     if (AreAllBridgesStopped()) {
-      producer_ = nullptr;
-      perfetto_task_runner_->PostTask(FROM_HERE,
-                                      std::move(stop_complete_callback_));
+      if (!trace_writer_) {
+        OnTraceDataCommittedOnUI();
+        return;
+      }
+      trace_writer_->Flush(
+          base::BindOnce(&ArcTracingDataSource::OnTraceDataCommittedOnUI,
+                         base::Unretained(this)));
     }
+  }
+
+  void OnTraceDataCommittedOnUI() {
+    producer_ = nullptr;
+    perfetto_task_runner_->PostTask(FROM_HERE,
+                                    std::move(stop_complete_callback_));
   }
 
   bool IsAnyBridgeStarting() const {
@@ -268,6 +269,7 @@ class ArcTracingDataSource
   // PerfettoProducer.
   base::OnceClosure stop_complete_callback_;
   perfetto::DataSourceConfig data_source_config_;
+  std::unique_ptr<tracing::SystemTraceWriter<std::string>> trace_writer_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcTracingDataSource);
 };
@@ -291,8 +293,7 @@ ArcTracingBridge::ArcTracingBridge(content::BrowserContext* context,
                                    ArcBridgeService* bridge_service)
     : arc_bridge_service_(bridge_service),
       agent_(this),
-      reader_(std::make_unique<ArcTracingReader>()),
-      weak_ptr_factory_(this) {
+      reader_(std::make_unique<ArcTracingReader>()) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   arc_bridge_service_->tracing()->AddObserver(this);
   ArcTracingDataSource::GetInstance()->RegisterBridgeOnUI(this);
@@ -304,7 +305,7 @@ ArcTracingBridge::~ArcTracingBridge() {
   arc_bridge_service_->tracing()->RemoveObserver(this);
 
   // Delete the reader on the IO thread.
-  base::CreateSingleThreadTaskRunnerWithTraits({content::BrowserThread::IO})
+  base::CreateSingleThreadTaskRunner({content::BrowserThread::IO})
       ->DeleteSoon(FROM_HERE, reader_.release());
 }
 
@@ -380,7 +381,7 @@ void ArcTracingBridge::StartTracing(const std::string& config,
 
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&ArcTracingReader::StartTracing,
                      base::Unretained(reader_.get()), std::move(read_fd)));
@@ -425,7 +426,7 @@ void ArcTracingBridge::OnArcTracingStopped(
   }
   // |reader_| will be destroyed after us on the IO thread, so it's OK to use an
   // unretained pointer.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&ArcTracingReader::StopTracing,
                      base::Unretained(reader_.get())),

@@ -69,7 +69,8 @@ class POLICY_EXPORT CloudPolicyClient {
   // A callback which receives fetched remote commands.
   using RemoteCommandCallback = base::OnceCallback<void(
       DeviceManagementStatus,
-      const std::vector<enterprise_management::RemoteCommand>&)>;
+      const std::vector<enterprise_management::RemoteCommand>&,
+      const std::vector<enterprise_management::SignedData>&)>;
 
   // A callback for fetching device robot OAuth2 authorization tokens.
   // Only occurs during enrollment, after the device is registered.
@@ -262,10 +263,10 @@ class POLICY_EXPORT CloudPolicyClient {
           chrome_desktop_report,
       const StatusCallback& callback);
 
-  // Uploads |event| using the real-time reporting API.  As above, the client
+  // Uploads |report| using the real-time reporting API.  As above, the client
   // must be in a registered state.  The |callback| will be called when the
   // operation completes.
-  virtual void UploadRealtimeReport(base::Value event,
+  virtual void UploadRealtimeReport(base::Value report,
                                     const StatusCallback& callback);
 
   // Uploads a report on the status of app push-installs. The client must be in

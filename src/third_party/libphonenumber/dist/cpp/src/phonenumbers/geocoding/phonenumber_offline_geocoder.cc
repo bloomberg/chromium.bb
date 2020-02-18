@@ -17,7 +17,6 @@
 #include "phonenumbers/geocoding/phonenumber_offline_geocoder.h"
 
 #include <algorithm>
-#include <map>
 #include <string>
 
 #include <unicode/unistr.h>  // NOLINT(build/include_order)
@@ -32,7 +31,6 @@ namespace i18n {
 namespace phonenumbers {
 
 using icu::UnicodeString;
-using std::map;
 using std::string;
 
 namespace {
@@ -77,7 +75,7 @@ void PhoneNumberOfflineGeocoder::Init(
 }
 
 PhoneNumberOfflineGeocoder::~PhoneNumberOfflineGeocoder() {
-  STLDeleteContainerPairSecondPointers(
+  gtl::STLDeleteContainerPairSecondPointers(
       available_maps_.begin(), available_maps_.end());
 }
 
@@ -166,8 +164,13 @@ string PhoneNumberOfflineGeocoder::GetDescriptionForValidNumber(
 
 string PhoneNumberOfflineGeocoder::GetDescriptionForNumber(
     const PhoneNumber& number, const Locale& locale) const {
-  if (!phone_util_->IsValidNumber(number)) {
+  PhoneNumberUtil::PhoneNumberType number_type =
+      phone_util_->GetNumberType(number);
+  if (number_type == PhoneNumberUtil::UNKNOWN) {
     return "";
+  } else if (!phone_util_->IsNumberGeographical(number_type,
+                                                number.country_code())) {
+    return GetCountryNameForNumber(number, locale);
   }
   return GetDescriptionForValidNumber(number, locale);
 }
@@ -175,8 +178,13 @@ string PhoneNumberOfflineGeocoder::GetDescriptionForNumber(
 string PhoneNumberOfflineGeocoder::GetDescriptionForNumber(
     const PhoneNumber& number, const Locale& language,
     const string& user_region) const {
-  if (!phone_util_->IsValidNumber(number)) {
+  PhoneNumberUtil::PhoneNumberType number_type =
+      phone_util_->GetNumberType(number);
+  if (number_type == PhoneNumberUtil::UNKNOWN) {
     return "";
+  } else if (!phone_util_->IsNumberGeographical(number_type,
+                                                number.country_code())) {
+    return GetCountryNameForNumber(number, language);
   }
   return GetDescriptionForValidNumber(number, language, user_region);
 }

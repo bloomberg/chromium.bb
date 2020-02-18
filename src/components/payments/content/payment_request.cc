@@ -78,7 +78,7 @@ PaymentRequest::PaymentRequest(
     std::unique_ptr<ContentPaymentRequestDelegate> delegate,
     PaymentRequestWebContentsManager* manager,
     PaymentRequestDisplayManager* display_manager,
-    mojo::InterfaceRequest<mojom::PaymentRequest> request,
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver,
     ObserverForTest* observer_for_testing)
     : web_contents_(web_contents),
       log_(web_contents_),
@@ -86,8 +86,7 @@ PaymentRequest::PaymentRequest(
       manager_(manager),
       display_manager_(display_manager),
       display_handle_(nullptr),
-      binding_(this, std::move(request)),
-      payment_handler_host_(this),
+      payment_handler_host_(web_contents_, this),
       top_level_origin_(url_formatter::FormatUrlForSecurityDisplay(
           web_contents_->GetLastCommittedURL())),
       frame_origin_(url_formatter::FormatUrlForSecurityDisplay(
@@ -95,21 +94,23 @@ PaymentRequest::PaymentRequest(
       observer_for_testing_(observer_for_testing),
       journey_logger_(delegate_->IsIncognito(),
                       ukm::GetSourceIdForWebContentsDocument(web_contents)) {
+  receiver_.Bind(std::move(receiver));
   // OnConnectionTerminated will be called when the Mojo pipe is closed. This
   // will happen as a result of many renderer-side events (both successful and
   // erroneous in nature).
   // TODO(crbug.com/683636): Investigate using
   // set_connection_error_with_reason_handler with Binding::CloseWithReason.
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PaymentRequest::OnConnectionTerminated, weak_ptr_factory_.GetWeakPtr()));
 }
 
 PaymentRequest::~PaymentRequest() {}
 
-void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
-                          std::vector<mojom::PaymentMethodDataPtr> method_data,
-                          mojom::PaymentDetailsPtr details,
-                          mojom::PaymentOptionsPtr options) {
+void PaymentRequest::Init(
+    mojo::PendingRemote<mojom::PaymentRequestClient> client,
+    std::vector<mojom::PaymentMethodDataPtr> method_data,
+    mojom::PaymentDetailsPtr details,
+    mojom::PaymentOptionsPtr options) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   if (is_initialized_) {
@@ -119,7 +120,7 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   }
 
   is_initialized_ = true;
-  client_ = std::move(client);
+  client_.Bind(std::move(client));
 
   const GURL last_committed_url = delegate_->GetLastCommittedURL();
   if (!content::IsOriginSecure(last_committed_url)) {
@@ -165,12 +166,14 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
   }
 
   spec_ = std::make_unique<PaymentRequestSpec>(
-      std::move(options), std::move(details), std::move(method_data), this,
-      delegate_->GetApplicationLocale());
+      std::move(options), std::move(details), std::move(method_data),
+      /*observer=*/this, delegate_->GetApplicationLocale());
   state_ = std::make_unique<PaymentRequestState>(
-      web_contents_, top_level_origin_, frame_origin_, spec_.get(), this,
-      delegate_->GetApplicationLocale(), delegate_->GetPersonalDataManager(),
-      delegate_.get(), &journey_logger_);
+      web_contents_, top_level_origin_, frame_origin_, spec_.get(),
+      /*delegate=*/this, delegate_->GetApplicationLocale(),
+      delegate_->GetPersonalDataManager(), delegate_.get(),
+      /*sw_identity_observer=*/weak_ptr_factory_.GetWeakPtr(),
+      &journey_logger_);
 
   journey_logger_.SetRequestedInformation(
       spec_->request_shipping(), spec_->request_payer_email(),
@@ -194,6 +197,8 @@ void PaymentRequest::Init(mojom::PaymentRequestClientPtr client,
                          android_pay_url),
       /*requested_method_other=*/non_google_it !=
           spec_->url_payment_method_identifiers().end());
+
+  payment_handler_host_.set_payment_request_id_for_logs(*spec_->details().id);
 }
 
 void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
@@ -210,6 +215,7 @@ void PaymentRequest::Show(bool is_user_gesture, bool wait_for_updated_details) {
   }
 
   is_show_called_ = true;
+  journey_logger_.SetTriggerTime();
 
   // A tab can display only one PaymentRequest UI at a time.
   display_handle_ = display_manager_->TryShow(delegate_.get());
@@ -433,7 +439,7 @@ void PaymentRequest::Complete(mojom::PaymentComplete result) {
   }
 }
 
-void PaymentRequest::CanMakePayment(bool legacy_mode) {
+void PaymentRequest::CanMakePayment() {
   if (!IsInitialized()) {
     log_.Error(errors::kCannotCallCanMakePaymentWithoutInit);
     OnConnectionTerminated();
@@ -447,12 +453,11 @@ void PaymentRequest::CanMakePayment(bool legacy_mode) {
 
   if (!delegate_->GetPrefService()->GetBoolean(kCanMakePaymentEnabled) ||
       !state_) {
-    CanMakePaymentCallback(legacy_mode, /*can_make_payment=*/false);
+    CanMakePaymentCallback(/*can_make_payment=*/false);
   } else {
     state_->CanMakePayment(
-        legacy_mode,
         base::BindOnce(&PaymentRequest::CanMakePaymentCallback,
-                       weak_ptr_factory_.GetWeakPtr(), legacy_mode));
+                       weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
@@ -513,7 +518,7 @@ void PaymentRequest::AreRequestedMethodsSupportedCallback(
 
 bool PaymentRequest::IsInitialized() const {
   return is_initialized_ && client_ && client_.is_bound() &&
-         binding_.is_bound();
+         receiver_.is_bound();
 }
 
 bool PaymentRequest::IsThisPaymentRequestShowing() const {
@@ -616,6 +621,12 @@ void PaymentRequest::OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) {
   client_->OnPayerDetailChange(std::move(payer_info));
 }
 
+void PaymentRequest::SetInvokedServiceWorkerIdentity(const url::Origin& origin,
+                                                     int64_t registration_id) {
+  payment_handler_host_.set_sw_origin_for_logs(origin);
+  payment_handler_host_.set_registration_id_for_logs(registration_id);
+}
+
 void PaymentRequest::UserCancelled() {
   // If |client_| is not bound, then the object is already being destroyed as
   // a result of a renderer event.
@@ -632,7 +643,7 @@ void PaymentRequest::UserCancelled() {
 
   // We close all bindings and ask to be destroyed.
   client_.reset();
-  binding_.Close();
+  receiver_.reset();
   payment_handler_host_.Disconnect();
   if (observer_for_testing_)
     observer_for_testing_->OnConnectionTerminated();
@@ -648,12 +659,12 @@ void PaymentRequest::DidStartMainFrameNavigationToDifferentDocument(
 
 void PaymentRequest::OnConnectionTerminated() {
   // We are here because of a browser-side error, or likely as a result of the
-  // connection_error_handler on |binding_|, which can mean that the renderer
+  // disconnect_handler on |receiver_|, which can mean that the renderer
   // has decided to close the pipe for various reasons (see all uses of
   // PaymentRequest::clearResolversAndCloseMojoConnection() in Blink). We close
   // the binding and the dialog, and ask to be deleted.
   client_.reset();
-  binding_.Close();
+  receiver_.reset();
   payment_handler_host_.Disconnect();
   delegate_->CloseDialog();
   if (observer_for_testing_)
@@ -690,31 +701,10 @@ void PaymentRequest::RecordFirstAbortReason(
   }
 }
 
-void PaymentRequest::CanMakePaymentCallback(bool legacy_mode,
-                                            bool can_make_payment) {
-  // Only need to enforce query quota in legacy mode. Per-method quota not
-  // supported.
-  if (legacy_mode && spec_ &&
-      !CanMakePaymentQueryFactory::GetInstance()
-           ->GetForContext(web_contents_->GetBrowserContext())
-           ->CanQuery(top_level_origin_, frame_origin_,
-                      spec_->stringified_method_data(),
-                      /*per_method_quota=*/false)) {
-    if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {
-      client_->OnCanMakePayment(
-          can_make_payment
-              ? CanMakePaymentQueryResult::WARNING_CAN_MAKE_PAYMENT
-              : CanMakePaymentQueryResult::WARNING_CANNOT_MAKE_PAYMENT);
-    } else {
-      client_->OnCanMakePayment(
-          CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED);
-    }
-  } else {
-    client_->OnCanMakePayment(
-        can_make_payment
-            ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
-            : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
-  }
+void PaymentRequest::CanMakePaymentCallback(bool can_make_payment) {
+  client_->OnCanMakePayment(
+      can_make_payment ? mojom::CanMakePaymentQueryResult::CAN_MAKE_PAYMENT
+                       : mojom::CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT);
 
   journey_logger_.SetCanMakePaymentValue(can_make_payment);
 
@@ -725,11 +715,10 @@ void PaymentRequest::CanMakePaymentCallback(bool legacy_mode,
 void PaymentRequest::HasEnrolledInstrumentCallback(
     bool per_method_quota,
     bool has_enrolled_instrument) {
-  if (!spec_ ||
-      CanMakePaymentQueryFactory::GetInstance()
-          ->GetForContext(web_contents_->GetBrowserContext())
-          ->CanQuery(top_level_origin_, frame_origin_,
-                     spec_->stringified_method_data(), per_method_quota)) {
+  if (!spec_ || CanMakePaymentQueryFactory::GetInstance()
+                    ->GetForContext(web_contents_->GetBrowserContext())
+                    ->CanQuery(top_level_origin_, frame_origin_,
+                               spec_->query_for_quota(), per_method_quota)) {
     RespondToHasEnrolledInstrumentQuery(has_enrolled_instrument,
                                         /*warn_local_development=*/false);
   } else if (UrlUtil::IsLocalDevelopmentUrl(frame_origin_)) {

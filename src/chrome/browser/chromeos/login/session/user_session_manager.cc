@@ -23,6 +23,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/single_thread_task_runner.h"
@@ -36,6 +37,7 @@
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/account_manager/account_manager_migrator.h"
+#include "chrome/browser/chromeos/account_manager/account_manager_util.h"
 #include "chrome/browser/chromeos/arc/arc_migration_guide_notification.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_util.h"
@@ -106,12 +108,15 @@
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/channel_info.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/assistant/buildflags.h"
+#include "chromeos/components/account_manager/account_manager.h"
+#include "chromeos/components/account_manager/account_manager_factory.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
@@ -492,8 +497,7 @@ UserSessionManager::UserSessionManager()
       should_obtain_handles_(true),
       should_launch_browser_(true),
       waiting_for_child_account_status_(false),
-      attempt_restart_closure_(base::BindRepeating(&CallChromeAttemptRestart)),
-      weak_factory_(this) {
+      attempt_restart_closure_(base::BindRepeating(&CallChromeAttemptRestart)) {
   user_manager::UserManager::Get()->AddSessionStateObserver(this);
   user_manager::UserManager::Get()->AddObserver(this);
   content::GetNetworkConnectionTrackerFromUIThread(
@@ -699,9 +703,9 @@ void UserSessionManager::InitRlz(Profile* profile) {
         base::Bind(&UserSessionManager::InitRlz, AsWeakPtr(), profile));
     return;
   }
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
       base::Bind(&CollectRlzParams),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
@@ -1160,17 +1164,33 @@ void UserSessionManager::UpdateArcFileSystemCompatibilityAndPrepareProfile() {
   arc::UpdateArcFileSystemCompatibilityPrefIfNeeded(
       user_context_.GetAccountId(),
       ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
-      base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr()));
+      base::BindOnce(&UserSessionManager::InitializeAccountManager,
+                     AsWeakPtr()));
 }
 
-void UserSessionManager::PrepareProfile() {
+void UserSessionManager::InitializeAccountManager() {
+  base::FilePath profile_path =
+      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash());
+
+  if (features::IsAccountManagerEnabled() &&
+      ProfileHelper::IsRegularProfilePath(profile_path)) {
+    chromeos::InitializeAccountManager(
+        profile_path,
+        base::BindOnce(&UserSessionManager::PrepareProfile, AsWeakPtr(),
+                       profile_path) /* initialization_callback */);
+  } else {
+    PrepareProfile(profile_path);
+  }
+}
+
+void UserSessionManager::PrepareProfile(const base::FilePath& profile_path) {
   const bool is_demo_session =
       DemoAppLauncher::IsDemoAppSession(user_context_.GetAccountId());
 
   // TODO(nkostylev): Figure out whether demo session is using the right profile
   // path or not. See https://codereview.chromium.org/171423009
   g_browser_process->profile_manager()->CreateProfileAsync(
-      ProfileHelper::GetProfilePathByUserIdHash(user_context_.GetUserIDHash()),
+      profile_path,
       base::Bind(&UserSessionManager::OnProfileCreated, AsWeakPtr(),
                  user_context_, is_demo_session),
       base::string16(), std::string());
@@ -1301,17 +1321,17 @@ void UserSessionManager::InitProfilePreferences(
     profile->GetPrefs()->SetString(prefs::kSupervisedUserId,
                                    supervised_user_sync_id);
   } else if (user_manager->IsLoggedInAsUserWithGaiaAccount()) {
-    // Get the Gaia ID from the user context.  If it's not available, this may
-    // not be available when unlocking a previously opened profile, or when
-    // creating a supervised users.  However, in these cases the gaia_id should
-    // be already available in the account tracker.
+    // Get the Gaia ID from the user context. This may not be available when
+    // unlocking a previously opened profile, or when creating a supervised
+    // user. However, in these cases the gaia_id should be already available in
+    // |IdentityManager|.
     signin::IdentityManager* identity_manager =
         IdentityManagerFactory::GetForProfile(profile);
     std::string gaia_id = user_context.GetGaiaID();
     if (gaia_id.empty()) {
       base::Optional<AccountInfo> maybe_account_info =
           identity_manager
-              ->FindAccountInfoForAccountWithRefreshTokenByEmailAddress(
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByEmailAddress(
                   user_context.GetAccountId().GetUserEmail());
 
       DCHECK(maybe_account_info.has_value() || IsRunningTest());
@@ -1325,12 +1345,97 @@ void UserSessionManager::InitProfilePreferences(
       DCHECK(!gaia_id.empty());
     }
 
-    // Make sure that the google service username is properly set (we do this
-    // on every sign in, not just the first login, to deal with existing
-    // profiles that might not have it set yet).
-    identity_manager->GetPrimaryAccountMutator()
-        ->SetPrimaryAccountAndUpdateAccountInfo(
-            gaia_id, user_context.GetAccountId().GetUserEmail());
+    bool should_use_legacy_flow = false;
+    if (!features::IsAccountManagerEnabled()) {
+      // Always use the legacy flow if Account Manager has not been enabled yet.
+      should_use_legacy_flow = true;
+    } else if (!identity_manager
+                    ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                        gaia_id)
+                    .has_value() &&
+               user_context.GetRefreshToken().empty()) {
+      // Edge case: |AccountManager| is enabled but neither |IdentityManager|
+      // nor |user_context| has the refresh token. This means that an existing
+      // user has switched on Account Manager for the first time and has not
+      // undergone the migration flow yet. This migration will be done shorty
+      // in-session.
+      // TODO(https://crbug.com/987955): Remove this.
+      should_use_legacy_flow = true;
+    }
+    base::UmaHistogramBoolean(
+        "AccountManager.LegacySetPrimaryAccountAndUpdateAccountInfo",
+        should_use_legacy_flow);
+
+    if (!should_use_legacy_flow) {
+      // We need to set the Primary Account. This is handled by
+      // |IdentityManager|, which enforces the invariant that only an account
+      // previously known to |IdentityManager| can be set as the Primary
+      // Account. |IdentityManager| gets its knowledge of accounts from
+      // |AccountManager| and hence, before we set the Primary Account, we need
+      // to make sure that:
+      // 1. The account is present in |AccountManager|, and
+      // 2. |IdentityManager| has been notified about it.
+
+      AccountManager* account_manager =
+          g_browser_process->platform_part()
+              ->GetAccountManagerFactory()
+              ->GetAccountManager(profile->GetPath().value());
+
+      // |AccountManager| MUST have been fully initialized at this point (via
+      // |UserSessionManager::InitializeAccountManager|), otherwise we cannot
+      // guarantee that |IdentityManager| will have this account in Step (2).
+      // Reason: |AccountManager::UpsertAccount| is an async API that can
+      // technically take an arbitrarily long amount of time to complete and
+      // notify |AccountManager|'s observers. However, if |AccountManager| has
+      // been fully initialized, |AccountManager::UpsertAccount| and the
+      // associated notifications happen synchronously. We are relying on that
+      // (undocumented) behaviour here.
+      // TODO(sinhak): This is a leaky abstraction. Explore if
+      // |UserSessionManager::InitProfilePreferences| can handle an asynchronous
+      // callback and continue.
+      DCHECK(account_manager->IsInitialized());
+
+      // 1. Make sure that the account is present in |AccountManager|.
+      if (!user_context.GetRefreshToken().empty()) {
+        // |AccountManager::UpsertAccount| is idempotent. We can safely call it
+        // without checking for re-auth cases.
+        // We MUST NOT revoke old Device Account tokens (|revoke_old_token| =
+        // |false|), otherwise Gaia will revoke all tokens associated to this
+        // user's device id, including |refresh_token_| and the user will be
+        // stuck performing an online auth with Gaia at every login. See
+        // https://crbug.com/952570 and https://crbug.com/865189 for context.
+        account_manager->UpsertAccount(
+            AccountManager::AccountKey{
+                gaia_id, account_manager::AccountType::ACCOUNT_TYPE_GAIA},
+            user->GetDisplayEmail() /* raw_email */,
+            user_context.GetRefreshToken(), false /* revoke_old_token */);
+      }
+      // else: If |user_context| does not contain a refresh token, then we are
+      // restoring an existing Profile, in which case the account will be
+      // already present in |AccountManager|.
+
+      // 2. Make sure that IdentityManager has been notified about it.
+      base::Optional<AccountInfo> maybe_account_info =
+          identity_manager
+              ->FindExtendedAccountInfoForAccountWithRefreshTokenByGaiaId(
+                  gaia_id);
+      DCHECK(maybe_account_info.has_value());
+      // Make sure that the google service username is properly set (we do this
+      // on every sign in, not just the first login, to deal with existing
+      // profiles that might not have it set yet).
+      identity_manager->GetPrimaryAccountMutator()->SetPrimaryAccount(
+          maybe_account_info->account_id);
+    } else {
+      // Make sure that the google service username is properly set (we do this
+      // on every sign in, not just the first login, to deal with existing
+      // profiles that might not have it set yet).
+      // TODO(https://crbug.com/987955): Check the UMA stat and remove it when
+      // all users have been migrated to Account Manager.
+      identity_manager->GetPrimaryAccountMutator()
+          ->DeprecatedSetPrimaryAccountAndUpdateAccountInfo(
+              gaia_id, user_context.GetAccountId().GetUserEmail());
+    }
+
     std::string account_id = identity_manager->GetPrimaryAccountId();
     VLOG(1) << "Seed IdentityManager with the authenticated account info, "
             << "success=" << !account_id.empty();
@@ -2074,8 +2179,7 @@ void UserSessionManager::OnChildPolicyReady(
   InitializeBrowser(profile);
 }
 
-void UserSessionManager::ActiveUserChanged(
-    const user_manager::User* active_user) {
+void UserSessionManager::ActiveUserChanged(user_manager::User* active_user) {
   if (!user_manager::UserManager::Get()->IsCurrentUserNew())
     SendUserPodsMetrics();
 
@@ -2360,7 +2464,8 @@ void UserSessionManager::MaybeShowReleaseNotesNotification(Profile* profile) {
   if (!release_notes_notification_) {
     release_notes_notification_ =
         std::make_unique<ReleaseNotesNotification>(profile);
-    release_notes_notification_->MaybeShowReleaseNotes();
+    if (chrome::GetChannel() == version_info::Channel::STABLE)
+      release_notes_notification_->MaybeShowReleaseNotes();
   }
 }
 

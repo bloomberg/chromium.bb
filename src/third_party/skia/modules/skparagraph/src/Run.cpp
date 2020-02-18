@@ -4,18 +4,29 @@
 #include "include/core/SkFontMetrics.h"
 #include "modules/skparagraph/src/ParagraphImpl.h"
 #include <algorithm>
+#include "src/utils/SkUTF.h"
+
+namespace {
+
+SkUnichar utf8_next(const char** ptr, const char* end) {
+    SkUnichar val = SkUTF::NextUTF8(ptr, end);
+    return val < 0 ? 0xFFFD : val;
+}
+}
 
 namespace skia {
 namespace textlayout {
 
 Run::Run(ParagraphImpl* master,
          const SkShaper::RunHandler::RunInfo& info,
+         size_t firstChar,
          SkScalar lineHeight,
          size_t index,
          SkScalar offsetX)
         : fMaster(master)
-        , fTextRange(info.utf8Range.begin(), info.utf8Range.end())
-        , fClusterRange(EMPTY_CLUSTERS) {
+        , fTextRange(firstChar + info.utf8Range.begin(), firstChar + info.utf8Range.end())
+        , fClusterRange(EMPTY_CLUSTERS)
+        , fFirstChar(firstChar) {
     fFont = info.fFont;
     fHeightMultiplier = lineHeight;
     fBidiLevel = info.fBidiLevel;
@@ -32,6 +43,7 @@ Run::Run(ParagraphImpl* master,
     // To make edge cases easier:
     fPositions[info.glyphCount] = fOffset + fAdvance;
     fClusterIndexes[info.glyphCount] = info.utf8Range.end();
+    fEllipsis = false;
 }
 
 SkShaper::RunHandler::Buffer Run::newRunBuffer() {
@@ -69,7 +81,7 @@ void Run::copyTo(SkTextBlobBuilder& builder, size_t pos, size_t size, SkVector o
     }
 }
 
-std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange text) {
+std::tuple<bool, ClusterIndex, ClusterIndex> Run::findLimitingClusters(TextRange text) const {
     auto less = [](const Cluster& c1, const Cluster& c2) {
         return c1.textRange().end <= c2.textRange().start;
     };
@@ -116,8 +128,8 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
 
             visitor(start,
                     glyph,
-                    cluster,
-                    nextCluster,
+                    fFirstChar + cluster,
+                    fFirstChar + nextCluster,
                     this->calculateWidth(start, glyph, glyph == size()),
                     this->calculateHeight());
 
@@ -136,8 +148,8 @@ void Run::iterateThroughClustersInTextOrder(const ClusterVisitor& visitor) {
 
             visitor(start,
                     glyph,
-                    cluster,
-                    nextCluster,
+                    fFirstChar + cluster,
+                    fFirstChar + nextCluster,
                     this->calculateWidth(start, glyph, glyph == 0),
                     this->calculateHeight());
 
@@ -197,13 +209,69 @@ void Run::shift(const Cluster* cluster, SkScalar offset) {
     }
 }
 
+void Run::updateMetrics(LineMetrics* endlineMetrics) {
+
+    // Difference between the placeholder baseline and the line bottom
+    SkScalar baselineAdjustment = 0;
+    switch (fPlaceholder->fBaseline) {
+        case TextBaseline::kAlphabetic:
+            break;
+
+        case TextBaseline::kIdeographic:
+            baselineAdjustment = endlineMetrics->deltaBaselines() / 2;
+            break;
+    }
+
+    auto height = fPlaceholder->fHeight;
+    auto offset = fPlaceholder->fBaselineOffset;
+
+    fFontMetrics.fLeading = 0;
+    switch (fPlaceholder->fAlignment) {
+        case PlaceholderAlignment::kBaseline:
+            fFontMetrics.fAscent = baselineAdjustment - offset;
+            fFontMetrics.fDescent = baselineAdjustment + height - offset;
+            break;
+
+        case PlaceholderAlignment::kAboveBaseline:
+            fFontMetrics.fAscent = baselineAdjustment - height;
+            fFontMetrics.fDescent = baselineAdjustment;
+            break;
+
+        case PlaceholderAlignment::kBelowBaseline:
+            fFontMetrics.fAscent = baselineAdjustment;
+            fFontMetrics.fDescent = baselineAdjustment +height;
+            break;
+
+        case PlaceholderAlignment::kTop:
+            fFontMetrics.fAscent = - endlineMetrics->alphabeticBaseline();
+            fFontMetrics.fDescent = height - endlineMetrics->alphabeticBaseline();
+            break;
+
+        case PlaceholderAlignment::kBottom:
+            fFontMetrics.fDescent = endlineMetrics->deltaBaselines();
+            fFontMetrics.fAscent = - height + endlineMetrics->deltaBaselines();
+            break;
+
+        case PlaceholderAlignment::kMiddle:
+            double mid = (endlineMetrics->ascent() + endlineMetrics->descent())/ 2;
+            fFontMetrics.fDescent = mid + height/2;
+            fFontMetrics.fAscent =  mid - height/2;
+            break;
+    }
+
+    // Make sure the placeholder can fit the line
+    endlineMetrics->add(this);
+}
+
 void Cluster::setIsWhiteSpaces() {
-    auto text = fMaster->text();
-    auto pos = fTextRange.end;
-    while (--pos >= fTextRange.start) {
-        auto ch = text[pos];
-        if (!u_isspace(ch) && u_charType(ch) != U_CONTROL_CHAR &&
-            u_charType(ch) != U_NON_SPACING_MARK) {
+
+    fWhiteSpaces = false;
+
+    auto span = fMaster->text(fTextRange);
+    const char* ch = span.begin();
+    while (ch < span.end()) {
+        auto unichar = utf8_next(&ch, span.end());
+        if (!u_isWhitespace(unichar)) {
             return;
         }
     }
@@ -267,6 +335,7 @@ Cluster::Cluster(ParagraphImpl* master,
         : fMaster(master)
         , fRunIndex(runIndex)
         , fTextRange(text.begin() - fMaster->text().begin(), text.end() - fMaster->text().begin())
+        , fGraphemeRange(EMPTY_RANGE)
         , fStart(start)
         , fEnd(end)
         , fWidth(width)

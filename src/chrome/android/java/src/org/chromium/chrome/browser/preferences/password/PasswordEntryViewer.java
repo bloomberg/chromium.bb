@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.support.annotation.IdRes;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
 import android.support.v7.content.res.AppCompatResources;
@@ -35,7 +36,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
-import org.chromium.chrome.browser.preferences.PreferencesLauncher;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.components.sync.AndroidSyncSettings;
 import org.chromium.ui.text.SpanApplier;
@@ -44,7 +44,8 @@ import org.chromium.ui.widget.Toast;
 /**
  * Password entry viewer that allows to view and delete passwords stored in Chrome.
  */
-public class PasswordEntryViewer extends Fragment {
+public class PasswordEntryViewer
+        extends Fragment implements PasswordManagerHandler.PasswordListObserver {
     // Constants used to log UMA enum histogram, must stay in sync with
     // PasswordManagerAndroidPasswordEntryActions. Further actions can only be appended, existing
     // entries must not be overwritten.
@@ -112,7 +113,6 @@ public class PasswordEntryViewer extends Fragment {
 
         mException = (name == null);
         final String url = mExtras.getString(SavePasswordsPreferences.PASSWORD_LIST_URL);
-        getActivity().setTitle(R.string.password_entry_viewer_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
         View inflatedView =
@@ -123,20 +123,16 @@ public class PasswordEntryViewer extends Fragment {
         getActivity().setTitle(R.string.password_entry_viewer_title);
         mClipboard = (ClipboardManager) getActivity().getApplicationContext().getSystemService(
                 Context.CLIPBOARD_SERVICE);
-        View urlRowsView = mView.findViewById(R.id.url_row);
-        TextView dataView = urlRowsView.findViewById(R.id.password_entry_viewer_row_data);
-        dataView.setText(url);
+        setRowText(R.id.url_row, url);
         mView.getViewTreeObserver().addOnScrollChangedListener(
                 PreferenceUtils.getShowShadowOnScrollListener(
                         mView, inflatedView.findViewById(R.id.shadow)));
 
-        hookupCopySiteButton(urlRowsView);
+        hookupCopySiteButton(mView.findViewById(R.id.url_row));
         if (!mException) {
-            View usernameView = mView.findViewById(R.id.username_row);
-            TextView usernameDataView =
-                    usernameView.findViewById(R.id.password_entry_viewer_row_data);
-            usernameDataView.setText(name);
-            hookupCopyUsernameButton(usernameView);
+            getActivity().setTitle(R.string.password_entry_viewer_title);
+            setRowText(R.id.username_row, name);
+            hookupCopyUsernameButton(mView.findViewById(R.id.username_row));
             if (ReauthenticationManager.isReauthenticationApiAvailable()) {
                 hidePassword();
                 hookupPasswordButtons();
@@ -182,10 +178,12 @@ public class PasswordEntryViewer extends Fragment {
             }
 
         } else {
+            getActivity().setTitle(R.string.section_saved_passwords_exceptions);
             RecordHistogram.recordEnumeratedHistogram(
                     "PasswordManager.Android.PasswordExceptionEntry", PASSWORD_ENTRY_ACTION_VIEWED,
                     PASSWORD_ENTRY_ACTION_BOUNDARY);
         }
+
         return inflatedView;
     }
 
@@ -198,6 +196,13 @@ public class PasswordEntryViewer extends Fragment {
 
             if (mCopyButtonPressed) copyPassword();
         }
+        PasswordManagerHandlerProvider.getInstance().addObserver(this);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        PasswordManagerHandlerProvider.getInstance().removeObserver(this);
     }
 
     private boolean isPasswordSyncingUser() {
@@ -210,8 +215,8 @@ public class PasswordEntryViewer extends Fragment {
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.password_entry_viewer_action_bar_menu, menu);
         menu.findItem(R.id.action_edit_saved_password)
-                .setVisible(
-                        ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID));
+                .setVisible(ChromeFeatureList.isEnabled(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+                        && !mException);
     }
 
     @Override
@@ -222,7 +227,9 @@ public class PasswordEntryViewer extends Fragment {
             return true;
         }
         if (id == R.id.action_edit_saved_password) {
-            PreferencesLauncher.launchSettingsPageCompat(getActivity(), PasswordEntryEditor.class);
+            PasswordManagerHandlerProvider.getInstance()
+                    .getPasswordManagerHandler()
+                    .showPasswordEntryEditingView(getContext(), mID);
             return true;
         }
         return super.onOptionsItemSelected(item);
@@ -413,4 +420,25 @@ public class PasswordEntryViewer extends Fragment {
             }
         });
     }
+
+    private void setRowText(@IdRes int rowId, String text) {
+        View rowView = mView.findViewById(rowId);
+        TextView dataView = rowView.findViewById(R.id.password_entry_viewer_row_data);
+        dataView.setText(text);
+    }
+
+    @Override
+    public void passwordListAvailable(int count) {
+        if (mException) return;
+        TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
+        SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
+                                                        .getPasswordManagerHandler()
+                                                        .getSavedPasswordEntry(mID);
+        setRowText(R.id.url_row, SavedPasswordEntry.getUrl());
+        setRowText(R.id.username_row, SavedPasswordEntry.getUserName());
+        passwordsLinkTextView.setText(SavedPasswordEntry.getPassword());
+    }
+
+    @Override
+    public void passwordExceptionListAvailable(int count) {}
 }

@@ -19,6 +19,11 @@
 #include "WSI/VkSwapchainKHR.hpp"
 #include "Device/Renderer.hpp"
 
+#include "Yarn/Defer.hpp"
+#include "Yarn/Scheduler.hpp"
+#include "Yarn/Thread.hpp"
+#include "Yarn/Trace.hpp"
+
 #include <cstring>
 
 namespace
@@ -74,9 +79,9 @@ VkSubmitInfo* DeepCopySubmitInfo(uint32_t submitCount, const VkSubmitInfo* pSubm
 namespace vk
 {
 
-Queue::Queue() : renderer()
+Queue::Queue(Device* device, yarn::Scheduler *scheduler) : device(device)
 {
-	queueThread = std::thread(TaskLoop, this);
+	queueThread = std::thread(&Queue::taskLoop, this, scheduler);
 }
 
 Queue::~Queue()
@@ -110,13 +115,13 @@ VkResult Queue::submit(uint32_t submitCount, const VkSubmitInfo* pSubmits, Fence
 	return VK_SUCCESS;
 }
 
-void Queue::TaskLoop(vk::Queue* queue)
-{
-	queue->taskLoop();
-}
-
 void Queue::submitQueue(const Task& task)
 {
+	if (renderer == nullptr)
+	{
+		renderer.reset(new sw::Renderer(device));
+	}
+
 	for(uint32_t i = 0; i < task.submitCount; i++)
 	{
 		auto& submitInfo = task.pSubmits[i];
@@ -127,7 +132,7 @@ void Queue::submitQueue(const Task& task)
 
 		{
 			CommandBuffer::ExecutionState executionState;
-			executionState.renderer = &renderer;
+			executionState.renderer = renderer.get();
 			executionState.events = task.events;
 			for(uint32_t j = 0; j < submitInfo.commandBufferCount; j++)
 			{
@@ -150,13 +155,17 @@ void Queue::submitQueue(const Task& task)
 	{
 		// TODO: fix renderer signaling so that work submitted separately from (but before) a fence
 		// is guaranteed complete by the time the fence signals.
-		renderer.synchronize();
+		renderer->synchronize();
 		task.events->finish();
 	}
 }
 
-void Queue::taskLoop()
+void Queue::taskLoop(yarn::Scheduler* scheduler)
 {
+	yarn::Thread::setName("Queue<%p>", this);
+	scheduler->bind();
+	defer(scheduler->unbind());
+
 	while(true)
 	{
 		Task task = pending.take();

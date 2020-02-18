@@ -8,7 +8,7 @@
 from __future__ import print_function
 
 import copy
-import cPickle
+import pickle
 import json
 
 from chromite.lib import config_lib
@@ -290,7 +290,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
     for x in tests + [[tests]]:
       copy_x = copy.deepcopy(x)
       self.AssertDeepCopy(x, copy_x, copy.deepcopy(x))
-      self.AssertDeepCopy(x, copy_x, cPickle.loads(cPickle.dumps(x, -1)))
+      self.AssertDeepCopy(x, copy_x, pickle.loads(pickle.dumps(x, -1)))
       self.assertRaises(AssertionError, self.AssertDeepCopy, x,
                         copy_x, x)
       if not isinstance(x, set):
@@ -299,7 +299,7 @@ class BuildConfigClassTest(cros_test_lib.TestCase):
 
   def testPickle(self):
     bc1 = MockBuildConfig()
-    bc2 = cPickle.loads(cPickle.dumps(bc1))
+    bc2 = pickle.loads(pickle.dumps(bc1))
 
     self.assertEquals(bc1.boards, bc2.boards)
     self.assertEquals(bc1.name, bc2.name)
@@ -812,7 +812,7 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
   """Test GE build config related methods."""
 
   def setUp(self):
-    self._fake_ge_build_config_json = '''
+    self._fake_ge_build_config_json = """
 {
   "metadata_version": "1.0",
   "reference_board_unified_builds": [
@@ -847,7 +847,7 @@ class GEBuildConfigTests(cros_test_lib.TestCase):
     }
   ]
 }
-    '''
+    """
     self._fake_ge_build_config = json.loads(self._fake_ge_build_config_json)
 
   def testGetArchBoardDict(self):

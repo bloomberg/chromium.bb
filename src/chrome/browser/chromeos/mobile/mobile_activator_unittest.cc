@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/network_connection_handler.h"
@@ -140,7 +140,7 @@ class MobileActivatorTest : public testing::Test {
     cellular_network_.connection_state_ = state;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   NetworkState cellular_network_;
   TestMobileActivator mobile_activator_;
 

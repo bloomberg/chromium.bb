@@ -57,7 +57,8 @@ class FakeQuicConnection final : public QuicConnection {
   std::unique_ptr<FakeQuicStream> MakeIncomingStream();
 
   // QuicConnection overrides.
-  void OnDataReceived(const platform::UdpPacket& packet) override;
+  void OnRead(platform::UdpPacket data,
+              platform::NetworkRunner* network_runner) override;
   std::unique_ptr<QuicStream> MakeOutgoingStream(
       QuicStream::Delegate* delegate) override;
   void Close() override;

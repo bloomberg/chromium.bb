@@ -4,6 +4,8 @@
 
 source_set("components") {
   sources = [
+    "app_icon_manager.cc",
+    "app_icon_manager.h",
     "app_registrar.cc",
     "app_registrar.h",
     "app_registrar_observer.h",
@@ -11,12 +13,17 @@ source_set("components") {
     "external_install_options.h",
     "externally_installed_web_app_prefs.cc",
     "externally_installed_web_app_prefs.h",
+    "file_handler_manager.h",
     "install_bounce_metric.cc",
     "install_bounce_metric.h",
+    "install_finalizer.cc",
     "install_finalizer.h",
     "install_manager.cc",
     "install_manager.h",
-    "install_manager_observer.h",
+    "manifest_update_manager.cc",
+    "manifest_update_manager.h",
+    "manifest_update_task.cc",
+    "manifest_update_task.h",
     "pending_app_manager.cc",
     "pending_app_manager.h",
     "policy/web_app_policy_constants.cc",
@@ -25,6 +32,7 @@ source_set("components") {
     "policy/web_app_policy_manager.h",
     "web_app_audio_focus_id_map.cc",
     "web_app_audio_focus_id_map.h",
+    "web_app_constants.cc",
     "web_app_constants.h",
     "web_app_data_retriever.cc",
     "web_app_data_retriever.h",
@@ -45,8 +53,8 @@ source_set("components") {
     "web_app_shortcut_mac.mm",
     "web_app_shortcut_win.cc",
     "web_app_shortcut_win.h",
-    "web_app_tab_helper_base.cc",
-    "web_app_tab_helper_base.h",
+    "web_app_tab_helper.cc",
+    "web_app_tab_helper.h",
     "web_app_ui_manager.h",
     "web_app_url_loader.cc",
     "web_app_url_loader.h",
@@ -131,13 +139,16 @@ source_set("browser_tests") {
   testonly = true
 
   sources = [
+    "manifest_update_manager_browsertest.cc",
     "web_app_url_loader_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
-    "//chrome/browser/web_applications/components",
+    ":components",
+    "//chrome/app:command_ids",
+    "//chrome/browser/web_applications:web_applications_test_support",
     "//chrome/test:test_support",
     "//chrome/test:test_support_ui",
     "//net:test_support",

@@ -9,26 +9,38 @@
 
 // SettingsAccessibilityTest fixture.
 GEN_INCLUDE([
+  '//chrome/test/data/webui/polymer_browser_test_base.js',
   'settings_accessibility_test.js',
 ]);
 
-GEN('#include "chromeos/constants/chromeos_switches.h"');
+GEN('#include "chromeos/constants/chromeos_features.h"');
 
 // eslint-disable-next-line no-var
-var GoogleAssistantAccessibilityTest = class extends SettingsAccessibilityTest {
+var GoogleAssistantA11yTest = class extends PolymerTest {
   /** @override */
   get featureList() {
-    return {enabled: ['chromeos::switches::kAssistantFeature']};
+    // Always test with SplitSettings on because the pages are the same in the
+    // legacy combined settings and we don't want to test everything twice.
+    return {
+      enabled: [
+        'chromeos::features::kSplitSettings'
+      ]
+    };
+  }
+
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/';
   }
 };
 
-AccessibilityTest.define('GoogleAssistantAccessibilityTest', {
+AccessibilityTest.define('GoogleAssistantA11yTest', {
   /** @override */
   name: 'GOOGLE_ASSISTANT',
   /** @override */
-  axeOptions: GoogleAssistantAccessibilityTest.axeOptions,
+  axeOptions: SettingsAccessibilityTest.axeOptions,
   /** @override */
-  violationFilter: GoogleAssistantAccessibilityTest.violationFilter,
+  violationFilter: SettingsAccessibilityTest.violationFilter,
 
   /** @override */
   setup: function() {

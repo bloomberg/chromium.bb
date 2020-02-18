@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">చిత్ర రిజల్యూషన్</translation>
 <translation id="1943097386230153518">కొత్త సేవను ఇన్‌స్టాల్ చేయి</translation>
 <translation id="1947424002851288782">జర్మన్ కీబోర్డ్</translation>
+<translation id="1972984168337863910">అభిప్రాయ ప్యానెల్‌ల ఫైల్‌లు విస్తరించు</translation>
 <translation id="197560921582345123">సవరించగలరు</translation>
 <translation id="1984603991036629094">అర్మేనియన్ ఫొనెటిక్ కీబోర్డ్</translation>
 <translation id="2001796770603320721">డిస్క్‌లో నిర్వహించు</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">ఈ ఫైల్‌ను యాక్సెస్ చేయడానికి మీరు తప్పనిసరిగా ఆన్‌లైన్‌లో ఉండాలి.</translation>
 <translation id="4212740939091998969">"<ph name="FOLDER_NAME" />" పేరు గల ఫోల్డర్ ఇప్పటికే ఉంది. దయచేసి వేరే పేరును ఎంచుకోండి.</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" /> వాటిని బ్యాకప్ చేస్తోంది</translation>
-<translation id="4242533952199664413">సెట్టింగ్‌లను తెరువు</translation>
 <translation id="426015154560005552">అరబిక్ కీబోర్డ్</translation>
 <translation id="4261901459838235729">Google ప్రెజెంటేషన్</translation>
 <translation id="4290535918735525311">Linuxతో 1 ఫోల్డర్ షేర్ చేయబడింది</translation>
-<translation id="42981349822642051">విస్తరించు</translation>
 <translation id="4298972503445160211">డానిష్ కీబోర్డ్</translation>
 <translation id="4299729908419173967">బ్రెజిలియన్</translation>
 <translation id="4309915981827077375">సాధారణ సమాచారం</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">స్వీయ పరిష్కరణ</translation>
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4886021172213954916">తమిళ కీబోర్డ్ (టైప్‌రైటర్)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" />తో తెరవడం సాధ్యపడలేదు</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" /> వాటిని బ్యాకప్ చేయడానికి సిద్ధంగా ఉంది</translation>
 <translation id="4924638091161556692">స్థిరపరచబడింది</translation>
 <translation id="4935975195727477204">గజేనియా పుష్పం</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">స్విస్ ఫ్రెంచ్</translation>
 <translation id="5234764350956374838">తొలగించు</translation>
 <translation id="5241298539944515331">వియత్నామీస్ కీబోర్డ్ (VIQR)</translation>
-<translation id="52446585071384036"><ph name="APP_NAME" />తో ఫైల్‌లను తెరవడానికి, ముందుగా Linux ఫైల్‌ల ఫోల్డర్‌లకు కాపీ చేయండి.</translation>
 <translation id="5253070652067921974">సృష్టించినవారు</translation>
 <translation id="5257456363153333584">తూనీగ</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />ఫైల్‌లను ఎక్కడి నుండైనా యాక్సెస్ చేయండి, ఆఫ్‌లైన్‌లో ఉన్నా కూడా.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">కొరియన్</translation>
 <translation id="5819442873484330149">హాంగుల్ 3 సెట్ (తుది)</translation>
 <translation id="5833610766403489739">ఈ ఫైల్ ఉన్న స్థలం తెలియదు. దయచేసి మీ డౌన్‌లోడ్ స్థానం సెట్టింగ్‌ను తనిఖీ చేసి, మళ్లీ ప్రయత్నించండి.</translation>
-<translation id="5838051104334203064">Play స్టోర్ అప్లికేషన్‌లు ఈ పరికరాన్ని యాక్సెస్ చేయలేవు</translation>
 <translation id="5838451609423551646">అన్ని నమోదుల ఎంపిక తీసివేయబడింది.</translation>
 <translation id="5838825566232597749">US వర్క్‌మాన్ అంతర్జాతీయం</translation>
 <translation id="5850516540536751549">ఈ ఫైల్ రకానికి మద్దతు లేదు. దయచేసి ఈ రకమైన ఫైల్‌ను తెరవగల యాప్‌ను కనుగొనడానికి <ph name="BEGIN_LINK" />Chrome వెబ్ స్టోర్<ph name="END_LINK" />ను సందర్శించండి.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">ఈ ఫైల్‌లను ఆఫ్‌లైన్‌లో ఉపయోగించేందుకు వాటిని సేవ్ చేయడానికి, తిరిగి ఆన్‌లైన్‌లోకి వచ్చి, ఫైల్‌లపై కుడి-క్లిక్ చేసి, ఆపై <ph name="OFFLINE_CHECKBOX_NAME" /> ఎంపికను ఎంచుకోండి.</translation>
 <translation id="8249296373107784235">రద్దుచేయి</translation>
 <translation id="8261506727792406068">తొలగించు</translation>
+<translation id="8269755669432358899">అభిప్రాయ ప్యానెల్‌ల ఫైల్‌లు కుదించు</translation>
 <translation id="8279388322240498158">సొరానీ కుర్డిష్ ఆంగ్ల-ఆధారిత కీబోర్డ్</translation>
 <translation id="8280151743281770066">ఆర్మేనియన్ ఫోనెటిక్</translation>
 <translation id="8294431847097064396">మూలం</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">తెరవడానికి ఫైల్‌ని ఎంచుకోండి</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" /> అంశాలను సమకాలీకరిస్తోంది...</translation>
 <translation id="8600173386174225982">ఫైల్ జాబితా, "సూక్ష్మచిత్ర వీక్షణ"కు మార్చబడింది.</translation>
+<translation id="8601932370724196034">Crostini చిత్రం ఫైల్</translation>
 <translation id="8669949407341943408">తరలించబడుతున్నాయి...</translation>
 <translation id="8671210955687109937">వ్యాఖ్యానించవచ్చు</translation>
 <translation id="8686213429977032554">ఈ డిస్క్ ఫైల్ ఇంకా భాగస్వామ్యం చేయబడలేదు</translation>

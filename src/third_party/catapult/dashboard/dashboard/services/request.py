@@ -21,8 +21,15 @@ _CACHE_DURATION = 60 * 60 * 24 * 7  # 1 week.
 _VULNERABILITY_PREFIX = ")]}'\n"
 
 
-class NotFoundError(httplib.HTTPException):
+class RequestError(httplib.HTTPException):
+  def __init__(self, msg, content):
+    super(RequestError, self).__init__(msg)
+    self.content = content
+
+
+class NotFoundError(RequestError):
   """Raised when a request gives a HTTP 404 error."""
+
 
 
 def RequestJson(*args, **kwargs):
@@ -112,10 +119,12 @@ def _RequestAndProcessHttpErrors(url, use_auth, scope, **kwargs):
   response, content = http.request(url, **kwargs)
 
   if response['status'] == '404':
-    raise NotFoundError('HTTP status code %s: %s' %
-                        (response['status'], content))
+    raise NotFoundError(
+        'HTTP status code %s: %s' % (response['status'], repr(content[0:100])),
+        content)
   if not response['status'].startswith('2'):
-    raise httplib.HTTPException('HTTP status code %s: %s' %
-                                (response['status'], content))
+    raise RequestError(
+        'Failure in request for `%s`; HTTP status code %s: %s' %
+        (url, response['status'], repr(content[0:100])), content)
 
   return content

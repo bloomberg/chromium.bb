@@ -16,17 +16,48 @@
 
 #include <mach/mach.h>
 #endif
+#if defined(OS_ANDROID)
+#include <sys/prctl.h>
+#endif
 #if defined(OS_LINUX)
 #include <sys/resource.h>
 
 #include <algorithm>
 #endif
 
+#include "base/allocator/partition_allocator/page_allocator.h"
+
 #ifndef MAP_ANONYMOUS
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
 namespace base {
+
+#if defined(OS_ANDROID)
+namespace {
+const char* PageTagToName(PageTag tag) {
+  // Important: All the names should be string literals. As per prctl.h in
+  // //third_party/android_ndk the kernel keeps a pointer to the name instead
+  // of copying it.
+  //
+  // Having the name in .rodata ensures that the pointer remains valid as
+  // long as the mapping is alive.
+  switch (tag) {
+    case PageTag::kBlinkGC:
+      return "blink_gc";
+    case PageTag::kPartitionAlloc:
+      return "partition_alloc";
+    case PageTag::kChromium:
+      return "chromium";
+    case PageTag::kV8:
+      return "v8";
+    default:
+      DCHECK(false);
+      return "";
+  }
+}
+}  // namespace
+#endif  // defined(OS_ANDROID)
 
 // |mmap| uses a nearby address if the hint address is blocked.
 constexpr bool kHintIsAdvisory = true;
@@ -91,6 +122,17 @@ void* SystemAllocPagesInternal(void* hint,
     s_allocPageErrorCode = errno;
     ret = nullptr;
   }
+
+#if defined(OS_ANDROID)
+  // On Android, anonymous mappings can have a name attached to them. This is
+  // useful for debugging, and double-checking memory attribution.
+  if (ret) {
+    // No error checking on purpose, testing only.
+    prctl(PR_SET_VMA, PR_SET_VMA_ANON_NAME, ret, length,
+          PageTagToName(page_tag));
+  }
+#endif
+
   return ret;
 }
 

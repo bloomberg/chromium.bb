@@ -318,7 +318,7 @@ class GitWrapper(SCMWrapper):
       files = self._Capture(
           ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
       file_list.extend(
-          [os.path.join(self.checkout_path, f.decode()) for f in files])
+          [os.path.join(self.checkout_path, f) for f in files])
 
   def _DisableHooks(self):
     hook_dir = os.path.join(self.checkout_path, '.git', 'hooks')
@@ -448,7 +448,7 @@ class GitWrapper(SCMWrapper):
             target_rev, patch_rev, base_rev))
         self.Print('Current dir is %r' % self.checkout_path)
         self.Print('git returned non-zero exit status %s:\n%s' % (
-            e.returncode, e.stderr))
+            e.returncode, e.stderr.decode('utf-8')))
         # Print the current status so that developers know what changes caused
         # the patch failure, since git cherry-pick doesn't show that
         # information.
@@ -553,7 +553,7 @@ class GitWrapper(SCMWrapper):
         files = self._Capture(
             ['-c', 'core.quotePath=false', 'ls-files']).splitlines()
         file_list.extend(
-            [os.path.join(self.checkout_path, f.decode()) for f in files])
+            [os.path.join(self.checkout_path, f) for f in files])
       if mirror:
         self._Capture(
             ['remote', 'set-url', '--push', 'origin', mirror.url])
@@ -761,7 +761,8 @@ class GitWrapper(SCMWrapper):
         merge_output = self._Capture(merge_args)
       except subprocess2.CalledProcessError as e:
         rebase_files = []
-        if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
+        if re.match(b'fatal: Not possible to fast-forward, aborting.',
+                    e.stderr):
           if not printed_path:
             self.Print('_____ %s at %s' % (self.relpath, revision),
                        timestamp=False)
@@ -791,19 +792,19 @@ class GitWrapper(SCMWrapper):
               return
             else:
               self.Print('Input not recognized')
-        elif re.match("error: Your local changes to '.*' would be "
-                      "overwritten by merge.  Aborting.\nPlease, commit your "
-                      "changes or stash them before you can merge.\n",
+        elif re.match(b"error: Your local changes to '.*' would be "
+                      b"overwritten by merge.  Aborting.\nPlease, commit your "
+                      b"changes or stash them before you can merge.\n",
                       e.stderr):
           if not printed_path:
             self.Print('_____ %s at %s' % (self.relpath, revision),
                        timestamp=False)
             printed_path = True
-          raise gclient_utils.Error(e.stderr)
+          raise gclient_utils.Error(e.stderr.decode('utf-8'))
         else:
           # Some other problem happened with the merge
           logging.error("Error during fast-forward merge in %s!" % self.relpath)
-          self.Print(e.stderr)
+          self.Print(e.stderr.decode('utf-8'))
           raise
       else:
         # Fast-forward merge was successful
@@ -912,7 +913,7 @@ class GitWrapper(SCMWrapper):
         merge_base = []
       self._Run(
           ['-c', 'core.quotePath=false', 'diff', '--name-status'] + merge_base,
-          options, stdout=self.out_fh, always=options.verbose)
+          options, always_show_header=options.verbose)
       if file_list is not None:
         files = self._GetDiffFilenames(merge_base[0] if merge_base else None)
         file_list.extend([os.path.join(self.checkout_path, f) for f in files])
@@ -1037,12 +1038,12 @@ class GitWrapper(SCMWrapper):
       clone_cmd.append(tmp_dir)
       if self.print_outbuf:
         print_stdout = True
-        stdout = gclient_utils.WriteToStdout(self.out_fh)
+        filter_fn = None
       else:
         print_stdout = False
-        stdout = self.out_fh
+        filter_fn = self.filter
       self._Run(clone_cmd, options, cwd=self._root_dir, retry=True,
-                print_stdout=print_stdout, stdout=stdout)
+                print_stdout=print_stdout, filter_fn=filter_fn)
       gclient_utils.safe_makedirs(self.checkout_path)
       gclient_utils.safe_rename(os.path.join(tmp_dir, '.git'),
                                 os.path.join(self.checkout_path, '.git'))
@@ -1117,8 +1118,8 @@ class GitWrapper(SCMWrapper):
     try:
       rebase_output = scm.GIT.Capture(rebase_cmd, cwd=self.checkout_path)
     except subprocess2.CalledProcessError as e:
-      if (re.match(r'cannot rebase: you have unstaged changes', e.stderr) or
-          re.match(r'cannot rebase: your index contains uncommitted changes',
+      if (re.match(br'cannot rebase: you have unstaged changes', e.stderr) or
+          re.match(br'cannot rebase: your index contains uncommitted changes',
                    e.stderr)):
         while True:
           rebase_action = self._AskForData(
@@ -1136,18 +1137,19 @@ class GitWrapper(SCMWrapper):
                                       "cd %s && git " % self.checkout_path
                                       + "%s" % ' '.join(rebase_cmd))
           elif re.match(r'show|s', rebase_action, re.I):
-            self.Print('%s' % e.stderr.strip())
+            self.Print('%s' % e.stderr.decode('utf-8').strip())
             continue
           else:
             gclient_utils.Error("Input not recognized")
             continue
-      elif re.search(r'^CONFLICT', e.stdout, re.M):
+      elif re.search(br'^CONFLICT', e.stdout, re.M):
         raise gclient_utils.Error("Conflict while rebasing this branch.\n"
                                   "Fix the conflict and run gclient again.\n"
                                   "See 'man git-rebase' for details.\n")
       else:
-        self.Print(e.stdout.strip())
-        self.Print('Rebase produced error output:\n%s' % e.stderr.strip())
+        self.Print(e.stdout.decode('utf-8').strip())
+        self.Print('Rebase produced error output:\n%s' %
+        e.stderr.decode('utf-8').strip())
         raise gclient_utils.Error("Unrecognized error, please merge or rebase "
                                   "manually.\ncd %s && git " %
                                   self.checkout_path
@@ -1177,7 +1179,7 @@ class GitWrapper(SCMWrapper):
     try:
       self._Capture(['rev-list', '-n', '1', 'HEAD'])
     except subprocess2.CalledProcessError as e:
-      if ('fatal: bad object HEAD' in e.stderr
+      if (b'fatal: bad object HEAD' in e.stderr
           and self.cache_dir and self.cache_dir in url):
         self.Print((
           'Likely due to DEPS change with git cache_dir, '
@@ -1358,18 +1360,14 @@ class GitWrapper(SCMWrapper):
       revision = self._Capture(['rev-parse', 'FETCH_HEAD'])
     return revision
 
-  def _Run(self, args, options, show_header=True, **kwargs):
+  def _Run(self, args, options, **kwargs):
     # Disable 'unused options' warning | pylint: disable=unused-argument
     kwargs.setdefault('cwd', self.checkout_path)
-    kwargs.setdefault('stdout', self.out_fh)
-    kwargs['filter_fn'] = self.filter
-    kwargs.setdefault('print_stdout', False)
+    kwargs.setdefault('filter_fn', self.filter)
+    kwargs.setdefault('show_header', True)
     env = scm.GIT.ApplyEnvVars(kwargs)
     cmd = ['git'] + args
-    if show_header:
-      gclient_utils.CheckCallAndFilterAndHeader(cmd, env=env, **kwargs)
-    else:
-      gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
+    gclient_utils.CheckCallAndFilter(cmd, env=env, **kwargs)
 
 
 class CipdPackage(object):
@@ -1480,7 +1478,8 @@ class CipdRoot(object):
             '-root', self.root_dir,
             '-ensure-file', ensure_file,
         ]
-        gclient_utils.CheckCallAndFilterAndHeader(cmd)
+        gclient_utils.CheckCallAndFilter(
+            cmd, print_stdout=True, show_header=True)
 
   def run(self, command):
     if command == 'update':
@@ -1565,8 +1564,7 @@ class CipdWrapper(SCMWrapper):
           '-version', self._package.version,
           '-json-output', describe_json_path
       ]
-      gclient_utils.CheckCallAndFilter(
-          cmd, filter_fn=lambda _line: None, print_stdout=False)
+      gclient_utils.CheckCallAndFilter(cmd)
       with open(describe_json_path) as f:
         describe_json = json.load(f)
       return describe_json.get('result', {}).get('pin', {}).get('instance_id')

@@ -150,10 +150,18 @@ void CompositorFrameSinkSupport::OnSurfaceActivated(Surface* surface) {
   MaybeEvictSurfaces();
 }
 
-void CompositorFrameSinkSupport::OnSurfaceDrawn(Surface* surface) {
+void CompositorFrameSinkSupport::OnSurfaceWillDraw(Surface* surface) {
   if (last_drawn_frame_index_ >= surface->GetActiveFrameIndex())
     return;
   last_drawn_frame_index_ = surface->GetActiveFrameIndex();
+}
+
+void CompositorFrameSinkSupport::OnSurfaceWasDrawn(
+    uint32_t frame_token,
+    base::TimeTicks draw_start_timestamp) {
+  auto frame_timing_details = pending_frame_timing_details_.find(frame_token);
+  DCHECK(frame_timing_details != pending_frame_timing_details_.end());
+  frame_timing_details->second.draw_start_timestamp = draw_start_timestamp;
 }
 
 void CompositorFrameSinkSupport::OnFrameTokenChanged(uint32_t frame_token) {
@@ -382,6 +390,11 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
     UpdateNeedsBeginFramesInternal();
   }
 
+  base::TimeTicks now_time = base::TimeTicks::Now();
+  FrameTimingDetails details;
+  details.received_compositor_frame_timestamp = now_time;
+  pending_frame_timing_details_.emplace(frame.metadata.frame_token, details);
+
   // Ensure no CopyOutputRequests have been submitted if they are banned.
   if (!allow_copy_output_requests_ && frame.HasCopyOutputRequests()) {
     TRACE_EVENT_INSTANT0("viz", "CopyOutputRequests not allowed",
@@ -407,7 +420,8 @@ SubmitResult CompositorFrameSinkSupport::MaybeSubmitCompositorFrameInternal(
   }
   for (ui::LatencyInfo& latency : frame.metadata.latency_info) {
     if (latency.latency_components().size() > 0) {
-      latency.AddLatencyNumber(ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT);
+      latency.AddLatencyNumberWithTimestamp(
+          ui::DISPLAY_COMPOSITOR_RECEIVED_FRAME_COMPONENT, now_time);
     }
   }
 
@@ -555,24 +569,35 @@ void CompositorFrameSinkSupport::DidReceiveCompositorFrameAck() {
 }
 
 void CompositorFrameSinkSupport::DidPresentCompositorFrame(
-    uint32_t presentation_token,
+    uint32_t frame_token,
     const gfx::PresentationFeedback& feedback) {
-  DCHECK(presentation_token);
-  FrameTimingDetails details;
+  DCHECK(frame_token);
+
+  DCHECK_LE(pending_frame_timing_details_.size(), 25u);
+  auto pending_details = pending_frame_timing_details_.find(frame_token);
+  DCHECK(pending_details != pending_frame_timing_details_.end());
+
+  FrameTimingDetails details = pending_details->second;
   details.presentation_feedback = feedback;
-  frame_timing_details_.emplace(presentation_token, details);
+
+  pending_frame_timing_details_.erase(pending_details);
+
+  // We should only ever get one PresentationFeedback per frame_token.
+  DCHECK(frame_timing_details_.find(frame_token) ==
+         frame_timing_details_.end());
+  frame_timing_details_.emplace(frame_token, details);
+
   UpdateNeedsBeginFramesInternal();
 }
 
 void CompositorFrameSinkSupport::DidRejectCompositorFrame(
-    uint32_t presentation_token,
+    uint32_t frame_token,
     std::vector<TransferableResource> frame_resource_list) {
   std::vector<ReturnedResource> resources =
       TransferableResource::ReturnResources(frame_resource_list);
   ReturnResources(resources);
   DidReceiveCompositorFrameAck();
-  DidPresentCompositorFrame(presentation_token,
-                            gfx::PresentationFeedback::Failure());
+  DidPresentCompositorFrame(frame_token, gfx::PresentationFeedback::Failure());
 }
 
 void CompositorFrameSinkSupport::UpdateDisplayRootReference(

@@ -468,14 +468,15 @@ bool NetErrorHelperCore::IsReloadableError(
          // handshake_failure alert.
          // https://crbug.com/431387
          info.error.reason() != net::ERR_SSL_PROTOCOL_ERROR &&
-         // Do not trigger for XSS Auditor violations.
-         info.error.reason() != net::ERR_BLOCKED_BY_XSS_AUDITOR &&
          // Do not trigger for blacklisted URLs.
          // https://crbug.com/803839
          info.error.reason() != net::ERR_BLOCKED_BY_ADMINISTRATOR &&
          // Do not trigger for requests that were blocked by the browser itself.
          info.error.reason() != net::ERR_BLOCKED_BY_CLIENT &&
          !info.was_failed_post &&
+         // Do not trigger for this error code because it is used by Chrome
+         // while an auth prompt is being displayed.
+         info.error.reason() != net::ERR_INVALID_AUTH_CREDENTIALS &&
          // Don't auto-reload non-http/https schemas.
          // https://crbug.com/471713
          url.SchemeIsHTTPOrHTTPS();

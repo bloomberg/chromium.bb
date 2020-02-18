@@ -12,22 +12,22 @@ namespace media {
 
 CodecSurfaceBundle::CodecSurfaceBundle()
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
-          base::SequencedTaskRunnerHandle::Get()),
-      weak_factory_(this) {}
+          base::SequencedTaskRunnerHandle::Get()) {}
 
 CodecSurfaceBundle::CodecSurfaceBundle(std::unique_ptr<AndroidOverlay> overlay)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
-      overlay_(std::move(overlay)),
-      weak_factory_(this) {}
+      overlay_(std::move(overlay)) {}
 
 CodecSurfaceBundle::CodecSurfaceBundle(
-    scoped_refptr<TextureOwner> texture_owner)
+    scoped_refptr<gpu::TextureOwner> texture_owner)
     : RefCountedDeleteOnSequence<CodecSurfaceBundle>(
           base::SequencedTaskRunnerHandle::Get()),
-      texture_owner_(std::move(texture_owner)),
-      texture_owner_surface_(texture_owner_->CreateJavaSurface()),
-      weak_factory_(this) {}
+      codec_buffer_wait_coordinator_(
+          base::MakeRefCounted<CodecBufferWaitCoordinator>(
+              std::move(texture_owner))),
+      texture_owner_surface_(codec_buffer_wait_coordinator_->texture_owner()
+                                 ->CreateJavaSurface()) {}
 
 CodecSurfaceBundle::~CodecSurfaceBundle() {
   // Explicitly free the surface first, just to be sure that it's deleted before
@@ -35,16 +35,18 @@ CodecSurfaceBundle::~CodecSurfaceBundle() {
   texture_owner_surface_ = gl::ScopedJavaSurface();
 
   // Also release the back buffers.
-  if (!texture_owner_)
+  if (!codec_buffer_wait_coordinator_)
     return;
 
-  auto task_runner = texture_owner_->task_runner();
+  auto task_runner =
+      codec_buffer_wait_coordinator_->texture_owner()->task_runner();
   if (task_runner->RunsTasksInCurrentSequence()) {
-    texture_owner_->ReleaseBackBuffers();
+    codec_buffer_wait_coordinator_->texture_owner()->ReleaseBackBuffers();
   } else {
     task_runner->PostTask(
         FROM_HERE,
-        base::BindRepeating(&TextureOwner::ReleaseBackBuffers, texture_owner_));
+        base::BindRepeating(&gpu::TextureOwner::ReleaseBackBuffers,
+                            codec_buffer_wait_coordinator_->texture_owner()));
   }
 }
 

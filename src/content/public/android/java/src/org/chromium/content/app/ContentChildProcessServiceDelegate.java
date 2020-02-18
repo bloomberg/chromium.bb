@@ -18,7 +18,9 @@ import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
+import org.chromium.base.library_loader.LibraryLoaderConfig;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.memory.MemoryPressureUma;
@@ -81,11 +83,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         mCpuFeatures = connectionBundle.getLong(ContentChildProcessConstants.EXTRA_CPU_FEATURES);
         assert mCpuCount > 0;
 
-        if (LibraryLoader.useCrazyLinker() && !LibraryLoader.getInstance().isLoadedByZygote()) {
+        if (LibraryLoaderConfig.useChromiumLinker()
+                && !LibraryLoader.getInstance().isLoadedByZygote()) {
             Bundle sharedRelros = connectionBundle.getBundle(Linker.EXTRA_LINKER_SHARED_RELROS);
-            if (sharedRelros != null) {
-                getLinker().useSharedRelros(sharedRelros);
-            }
+            if (sharedRelros != null) getLinker().provideSharedRelros(sharedRelros);
         }
     }
 
@@ -107,7 +108,7 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
         Linker linker = null;
         boolean requestedSharedRelro = false;
-        if (LibraryLoader.useCrazyLinker()) {
+        if (LibraryLoaderConfig.useChromiumLinker()) {
             assert mLinkerParams != null;
             linker = getLinker();
             if (mLinkerParams.mWaitForSharedRelro) {
@@ -158,7 +159,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         // Now that the library is loaded, get the FD map,
         // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain
         // so it's called before FDs are registered.
-        nativeRetrieveFileDescriptorsIdsToKeys();
+        ContentChildProcessServiceDelegateJni.get().retrieveFileDescriptorsIdsToKeys(
+                ContentChildProcessServiceDelegate.this);
 
         return true;
     }
@@ -171,7 +173,8 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     @Override
     public void onBeforeMain() {
-        nativeInitChildProcess(mCpuCount, mCpuFeatures);
+        ContentChildProcessServiceDelegateJni.get().initChildProcess(
+                ContentChildProcessServiceDelegate.this, mCpuCount, mCpuFeatures);
         PostTask.postTask(
                 UiThreadTaskTraits.DEFAULT, () -> MemoryPressureUma.initializeForChildService());
     }
@@ -183,11 +186,12 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
 
     // Return a Linker instance. If testing, the Linker needs special setup.
     private Linker getLinker() {
-        if (Linker.areTestsEnabled()) {
+        if (LibraryLoaderConfig.areTestsEnabled()) {
             // For testing, set the Linker implementation and the test runner
             // class name to match those used by the parent.
             assert mLinkerParams != null;
-            Linker.setupForTesting(mLinkerParams.mTestRunnerClassNameForTesting);
+            Linker.setupForTesting(mLinkerParams.mLinkerImplementationForTesting,
+                    mLinkerParams.mTestRunnerClassNameForTesting);
         }
         return Linker.getInstance();
     }
@@ -237,14 +241,18 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
         }
     }
 
-    /**
-     * Initializes the native parts of the service.
-     *
-     * @param cpuCount The number of CPUs.
-     * @param cpuFeatures The CPU features.
-     */
-    private native void nativeInitChildProcess(int cpuCount, long cpuFeatures);
+    @NativeMethods
+    interface Natives {
+        /**
+         * Initializes the native parts of the service.
+         *
+         * @param cpuCount The number of CPUs.
+         * @param cpuFeatures The CPU features.
+         */
+        void initChildProcess(
+                ContentChildProcessServiceDelegate caller, int cpuCount, long cpuFeatures);
 
-    // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
-    private native void nativeRetrieveFileDescriptorsIdsToKeys();
+        // Retrieves the FD IDs to keys map and set it by calling setFileDescriptorsIdsToKeys().
+        void retrieveFileDescriptorsIdsToKeys(ContentChildProcessServiceDelegate caller);
+    }
 }

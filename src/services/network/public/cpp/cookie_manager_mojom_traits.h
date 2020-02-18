@@ -29,12 +29,13 @@ struct EnumTraits<network::mojom::CookieSameSite, net::CookieSameSite> {
 };
 
 template <>
-struct EnumTraits<network::mojom::CookieInclusionStatus,
-                  net::CanonicalCookie::CookieInclusionStatus> {
-  static network::mojom::CookieInclusionStatus ToMojom(
-      net::CanonicalCookie::CookieInclusionStatus input);
-  static bool FromMojom(network::mojom::CookieInclusionStatus input,
-                        net::CanonicalCookie::CookieInclusionStatus* output);
+struct EnumTraits<network::mojom::CookieInclusionStatusWarningReason,
+                  net::CanonicalCookie::CookieInclusionStatus::WarningReason> {
+  static network::mojom::CookieInclusionStatusWarningReason ToMojom(
+      net::CanonicalCookie::CookieInclusionStatus::WarningReason input);
+  static bool FromMojom(
+      network::mojom::CookieInclusionStatusWarningReason input,
+      net::CanonicalCookie::CookieInclusionStatus::WarningReason* output);
 };
 
 template <>
@@ -58,11 +59,6 @@ struct StructTraits<network::mojom::CookieOptionsDataView, net::CookieOptions> {
   }
   static bool update_access_time(const net::CookieOptions& o) {
     return o.update_access_time();
-  }
-  static base::Optional<base::Time> server_time(const net::CookieOptions& o) {
-    if (!o.has_server_time())
-      return base::nullopt;
-    return base::Optional<base::Time>(o.server_time());
   }
   static bool return_excluded_cookies(const net::CookieOptions& o) {
     return o.return_excluded_cookies();
@@ -107,6 +103,21 @@ struct StructTraits<network::mojom::CanonicalCookieDataView,
 
   static bool Read(network::mojom::CanonicalCookieDataView cookie,
                    net::CanonicalCookie* out);
+};
+
+template <>
+struct StructTraits<network::mojom::CookieInclusionStatusDataView,
+                    net::CanonicalCookie::CookieInclusionStatus> {
+  static uint32_t exclusion_reasons(
+      const net::CanonicalCookie::CookieInclusionStatus& s) {
+    return s.exclusion_reasons();
+  }
+  static net::CanonicalCookie::CookieInclusionStatus::WarningReason warning(
+      const net::CanonicalCookie::CookieInclusionStatus& s) {
+    return s.warning();
+  }
+  static bool Read(network::mojom::CookieInclusionStatusDataView status,
+                   net::CanonicalCookie::CookieInclusionStatus* out);
 };
 
 template <>

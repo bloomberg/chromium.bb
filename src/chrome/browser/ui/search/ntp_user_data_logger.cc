@@ -117,19 +117,6 @@ VoiceError LoggingEventToVoiceError(NTPLoggingEventType event) {
   }
 }
 
-// Logs BackgroundCustomization availability on the NTP.
-void LogBackgroundCustomizationAvailability(
-    BackgroundCustomization availability) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Backgrounds",
-                            availability);
-}
-
-// Logs ShortcutCustomization availability on the NTP.
-void LogShortcutCustomizationAvailability(ShortcutCustomization availability) {
-  UMA_HISTOGRAM_ENUMERATION("NewTabPage.CustomizationAvailability.Shortcuts",
-                            availability);
-}
-
 // Logs CustomizedShortcutSettings on the NTP.
 void LogCustomizedShortcutSettings(std::pair<bool, bool> settings) {
   bool using_most_visited = settings.first;
@@ -274,16 +261,12 @@ const char* LoggingEventToBackgroundUserActionName(NTPLoggingEventType event) {
       return "NTPRicherPicker.Backgrounds.CollectionClicked";
     case NTP_BACKGROUND_SELECT_IMAGE:
       return "NTPRicherPicker.Backgrounds.BackgroundSelected";
-    case NTP_BACKGROUND_DESELECT_IMAGE:
-      return "NTPRicherPicker.Backgrounds.BackgroundDeselected";
     case NTP_BACKGROUND_IMAGE_SET:
       return "NTPRicherPicker.Backgrounds.BackgroundSet";
     case NTP_BACKGROUND_BACK_CLICK:
       return "NTPRicherPicker.Backgrounds.BackClicked";
     case NTP_BACKGROUND_DEFAULT_SELECTED:
       return "NTPRicherPicker.Backgrounds.DefaultSelected";
-    case NTP_BACKGROUND_DEFAULT_DESELECTED:
-      return "NTPRicherPicker.Backgrounds.DefaultDeselected";
     case NTP_BACKGROUND_UPLOAD_CANCEL:
       return "NTPRicherPicker.Backgrounds.UploadCanceled";
     case NTP_BACKGROUND_UPLOAD_DONE:
@@ -528,11 +511,9 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
     case NTP_BACKGROUND_UPLOAD_FROM_DEVICE:
     case NTP_BACKGROUND_OPEN_COLLECTION:
     case NTP_BACKGROUND_SELECT_IMAGE:
-    case NTP_BACKGROUND_DESELECT_IMAGE:
     case NTP_BACKGROUND_IMAGE_SET:
     case NTP_BACKGROUND_BACK_CLICK:
     case NTP_BACKGROUND_DEFAULT_SELECTED:
-    case NTP_BACKGROUND_DEFAULT_DESELECTED:
     case NTP_BACKGROUND_UPLOAD_CANCEL:
     case NTP_BACKGROUND_UPLOAD_DONE:
     case NTP_BACKGROUND_IMAGE_RESET:
@@ -701,19 +682,7 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     UMA_HISTOGRAM_LOAD_TIME("NewTabPage.LoadTime.NewTab", load_time);
   }
 
-  if (!is_google) {
-    // TODO(crbug.com/869931): This is only emitted upon search engine change.
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::
-            BACKGROUND_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-    LogShortcutCustomizationAvailability(
-        ShortcutCustomization::
-            SHORTCUT_CUSTOMIZATION_UNAVAILABLE_SEARCH_PROVIDER);
-  } else {
-    LogBackgroundCustomizationAvailability(
-        BackgroundCustomization::BACKGROUND_CUSTOMIZATION_AVAILABLE);
-    LogShortcutCustomizationAvailability(
-        ShortcutCustomization::SHORTCUT_CUSTOMIZATION_AVAILABLE);
+  if (is_google) {
     LogCustomizedShortcutSettings(GetCurrentShortcutSettings());
 
     if (AreShortcutsCustomized()) {

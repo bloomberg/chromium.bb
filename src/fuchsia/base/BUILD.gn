@@ -12,9 +12,11 @@ import("//testing/test.gni")
 source_set("base") {
   sources = [
     "mem_buffer_util.cc",
+    "string_util.cc",
   ]
   public = [
     "mem_buffer_util.h",
+    "string_util.h",
   ]
   deps = [
     "//base",
@@ -37,6 +39,7 @@ source_set("modular") {
   ]
   public_deps = [
     "//third_party/fuchsia-sdk/sdk:modular",
+    "//third_party/fuchsia-sdk/sdk:sys_cpp",
   ]
 }
 
@@ -66,6 +69,8 @@ source_set("test_support") {
     "frame_test_util.cc",
     "frame_test_util.h",
     "result_receiver.h",
+    "test_devtools_list_fetcher.cc",
+    "test_devtools_list_fetcher.h",
     "test_navigation_listener.cc",
     "test_navigation_listener.h",
   ]
@@ -73,6 +78,8 @@ source_set("test_support") {
     ":base",
     ":modular",
     "//base",
+    "//net",
+    "//net:test_support",
     "//third_party/fuchsia-sdk/sdk:modular",
     "//third_party/fuchsia-sdk/sdk:web",
     "//url",
@@ -90,6 +97,7 @@ test("cr_fuchsia_base_unittests") {
     "//base",
     "//base:testfidl",
     "//base/test:run_all_unittests",
+    "//base/test:test_support",
     "//testing/gtest",
   ]
 }

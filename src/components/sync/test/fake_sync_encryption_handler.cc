@@ -60,7 +60,7 @@ bool FakeSyncEncryptionHandler::ApplyNigoriUpdate(
 
 void FakeSyncEncryptionHandler::UpdateNigoriFromEncryptedTypes(
     sync_pb::NigoriSpecifics* nigori,
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   syncable::UpdateNigoriFromEncryptedTypes(encrypted_types_,
                                            encrypt_everything_, nigori);
 }
@@ -85,8 +85,13 @@ bool FakeSyncEncryptionHandler::SetKeystoreKeys(
   return true;
 }
 
+const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
+    const syncable::BaseTransaction* const trans) const {
+  return &cryptographer_;
+}
+
 ModelTypeSet FakeSyncEncryptionHandler::GetEncryptedTypes(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return encrypted_types_;
 }
 
@@ -122,7 +127,7 @@ bool FakeSyncEncryptionHandler::IsEncryptEverythingEnabled() const {
 }
 
 PassphraseType FakeSyncEncryptionHandler::GetPassphraseType(
-    syncable::BaseTransaction* const trans) const {
+    const syncable::BaseTransaction* const trans) const {
   return passphrase_type_;
 }
 
@@ -130,16 +135,12 @@ base::Time FakeSyncEncryptionHandler::GetKeystoreMigrationTime() const {
   return base::Time();
 }
 
-Cryptographer* FakeSyncEncryptionHandler::GetCryptographerUnsafe() {
-  return &cryptographer_;
-}
-
 KeystoreKeysHandler* FakeSyncEncryptionHandler::GetKeystoreKeysHandler() {
   return this;
 }
 
-syncable::NigoriHandler* FakeSyncEncryptionHandler::GetNigoriHandler() {
-  return this;
+Cryptographer* FakeSyncEncryptionHandler::GetMutableCryptographer() {
+  return &cryptographer_;
 }
 
 }  // namespace syncer

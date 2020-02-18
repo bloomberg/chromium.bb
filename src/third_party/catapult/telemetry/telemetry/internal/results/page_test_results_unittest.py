@@ -2,15 +2,18 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import codecs
 import json
-import StringIO
+import os
+import shutil
+import sys
+import tempfile
 import unittest
 
-from py_utils import tempfile_ext
 import mock
 
 from telemetry import story
-from telemetry.internal.results import base_test_results_unittest
+from telemetry.core import exceptions
 from telemetry.internal.results import chart_json_output_formatter
 from telemetry.internal.results import histogram_set_json_output_formatter
 from telemetry.internal.results import html_output_formatter
@@ -18,6 +21,7 @@ from telemetry.internal.results import page_test_results
 from telemetry.internal.results import results_processor
 from telemetry import page as page_module
 from telemetry.value import improvement_direction
+from telemetry.value import list_of_scalar_values
 from telemetry.value import scalar
 from tracing.trace_data import trace_data
 from tracing.value import histogram as histogram_module
@@ -27,35 +31,65 @@ from tracing.value.diagnostics import generic_set
 from tracing.value.diagnostics import reserved_infos
 
 
-class StringIOWithName(StringIO.StringIO):
-  @property
-  def name(self):
-    return 'name_of_file'
+def _CreateException():
+  try:
+    raise exceptions.IntentionalException
+  except Exception: # pylint: disable=broad-except
+    return sys.exc_info()
 
 
-class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
+class _PageTestResultsTestBase(unittest.TestCase):
   def setUp(self):
     story_set = story.StorySet()
+    story_set.AddStory(page_module.Page("http://www.foo.com/", story_set,
+                                        name='http://www.foo.com/'))
     story_set.AddStory(page_module.Page("http://www.bar.com/", story_set,
                                         name='http://www.bar.com/'))
     story_set.AddStory(page_module.Page("http://www.baz.com/", story_set,
                                         name='http://www.baz.com/'))
-    story_set.AddStory(page_module.Page("http://www.foo.com/", story_set,
-                                        name='http://www.foo.com/'))
     self.story_set = story_set
+    self._output_dir = tempfile.mkdtemp()
+    self._time_module = mock.patch(
+        'telemetry.internal.results.page_test_results.time').start()
+    self._time_module.time.return_value = 0
+
+  def tearDown(self):
+    shutil.rmtree(self._output_dir)
+    mock.patch.stopall()
 
   @property
   def pages(self):
     return self.story_set.stories
 
-  def testFailures(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.Fail(self.CreateException())
-    results.DidRunPage(self.pages[0])
+  @property
+  def mock_time(self):
+    return self._time_module.time
 
-    results.WillRunPage(self.pages[1])
-    results.DidRunPage(self.pages[1])
+  @property
+  def intermediate_dir(self):
+    return os.path.join(self._output_dir, 'artifacts', 'test_run')
+
+  def CreateResults(self, **kwargs):
+    kwargs.setdefault('output_dir', self._output_dir)
+    kwargs.setdefault('intermediate_dir', self.intermediate_dir)
+    return page_test_results.PageTestResults(**kwargs)
+
+  def GetResultRecords(self):
+    results_file = os.path.join(
+        self.intermediate_dir, page_test_results.TELEMETRY_RESULTS)
+    with open(results_file) as f:
+      return [json.loads(line) for line in f]
+
+
+class PageTestResultsTest(_PageTestResultsTestBase):
+  def testFailures(self):
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.Fail(_CreateException())
+      results.DidRunPage(self.pages[0])
+
+      results.WillRunPage(self.pages[1])
+      results.DidRunPage(self.pages[1])
 
     all_story_runs = list(results.IterStoryRuns())
     self.assertEqual(len(all_story_runs), 2)
@@ -64,13 +98,13 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
     self.assertTrue(all_story_runs[1].ok)
 
   def testSkips(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.Skip('testing reason')
-    results.DidRunPage(self.pages[0])
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.Skip('testing reason')
+      results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    results.DidRunPage(self.pages[1])
+      results.WillRunPage(self.pages[1])
+      results.DidRunPage(self.pages[1])
 
     all_story_runs = list(results.IterStoryRuns())
     self.assertTrue(all_story_runs[0].skipped)
@@ -82,26 +116,27 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
     self.assertTrue(all_story_runs[1].ok)
 
   def testBenchmarkInterruption(self):
-    results = page_test_results.PageTestResults()
     reason = 'This is a reason'
-    self.assertIsNone(results.benchmark_interruption)
-    self.assertFalse(results.benchmark_interrupted)
-    results.InterruptBenchmark('This is a reason')
+    with self.CreateResults() as results:
+      self.assertIsNone(results.benchmark_interruption)
+      self.assertFalse(results.benchmark_interrupted)
+      results.InterruptBenchmark(reason)
+
     self.assertEqual(results.benchmark_interruption, reason)
     self.assertTrue(results.benchmark_interrupted)
 
   def testPassesNoSkips(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.Fail(self.CreateException())
-    results.DidRunPage(self.pages[0])
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.Fail(_CreateException())
+      results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    results.DidRunPage(self.pages[1])
+      results.WillRunPage(self.pages[1])
+      results.DidRunPage(self.pages[1])
 
-    results.WillRunPage(self.pages[2])
-    results.Skip('testing reason')
-    results.DidRunPage(self.pages[2])
+      results.WillRunPage(self.pages[2])
+      results.Skip('testing reason')
+      results.DidRunPage(self.pages[2])
 
     all_story_runs = list(results.IterStoryRuns())
     self.assertEqual(3, len(all_story_runs))
@@ -109,100 +144,109 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
     self.assertTrue(all_story_runs[1].ok)
     self.assertTrue(all_story_runs[2].skipped)
 
-  def testAddValueWithStoryGroupingKeys(self):
-    results = page_test_results.PageTestResults()
-    self.pages[0].grouping_keys['foo'] = 'bar'
-    self.pages[0].grouping_keys['answer'] = '42'
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
-
-    results.PrintSummary()
+  def testAddScalarValueSameAsMeasurement(self):
+    # Test that AddValue for legacy scalar values still works, and is
+    # equivalent to adding measurements.
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.AddValue(scalar.ScalarValue(self.pages[0], 'a', 'seconds', 3))
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
 
     values = list(results.IterAllLegacyValues())
-    self.assertEquals(1, len(values))
-    self.assertEquals(values[0].grouping_label, '42_bar')
+    self.assertEqual(len(values), 2)
+    self.assertEqual(values[0], values[1])
 
-  def testUrlIsInvalidValue(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    self.assertRaises(
-        AssertionError,
-        lambda: results.AddValue(scalar.ScalarValue(
-            self.pages[0], 'url', 'string', 'foo',
-            improvement_direction=improvement_direction.UP)))
+  def testAddListOfScalarValuesSameAsMeasurement(self):
+    # Test that AddValue for legacy lists of scalar values still works, and is
+    # equivalent to adding measurements.
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.AddValue(list_of_scalar_values.ListOfScalarValues(
+          self.pages[0], 'a', 'seconds', [1, 2, 3]))
+      results.AddMeasurement('a', 'seconds', [1, 2, 3])
+      results.DidRunPage(self.pages[0])
+
+    values = list(results.IterAllLegacyValues())
+    self.assertEqual(len(values), 2)
+    self.assertEqual(values[0], values[1])
+
+  def testAddMeasurementWithStoryGroupingKeys(self):
+    with self.CreateResults() as results:
+      self.pages[0].grouping_keys['foo'] = 'bar'
+      self.pages[0].grouping_keys['answer'] = '42'
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
+
+    values = list(results.IterAllLegacyValues())
+    self.assertEqual(1, len(values))
+    self.assertEqual(values[0].grouping_label, '42_bar')
+
+  def testNonNumericMeasurementIsInvalid(self):
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      with self.assertRaises(AssertionError):
+        results.AddMeasurement('url', 'string', 'foo')
+      results.DidRunPage(self.pages[0])
 
   def testAddSummaryValueWithPageSpecified(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    self.assertRaises(
-        AssertionError,
-        lambda: results.AddSummaryValue(scalar.ScalarValue(
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      with self.assertRaises(AssertionError):
+        # Invalid because should have no page.
+        results.AddSummaryValue(scalar.ScalarValue(
             self.pages[0], 'a', 'units', 3,
-            improvement_direction=improvement_direction.UP)))
+            improvement_direction=improvement_direction.UP))
+      results.DidRunPage(self.pages[0])
 
-  def testUnitChange(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
+  def testMeasurementUnitChangeRaises(self):
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    self.assertRaises(
-        AssertionError,
-        lambda: results.AddValue(scalar.ScalarValue(
-            self.pages[1], 'a', 'foobgrobbers', 3,
-            improvement_direction=improvement_direction.UP)))
+      results.WillRunPage(self.pages[1])
+      with self.assertRaises(AssertionError):
+        results.AddMeasurement('a', 'foobgrobbers', 3)
+      results.DidRunPage(self.pages[1])
 
   def testNoSuccessesWhenAllPagesFailOrSkip(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.Fail('message')
-    results.DidRunPage(self.pages[0])
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.Fail('message')
+      results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    results.Skip('message')
-    results.DidRunPage(self.pages[1])
+      results.WillRunPage(self.pages[1])
+      results.Skip('message')
+      results.DidRunPage(self.pages[1])
 
-    results.PrintSummary()
     self.assertFalse(results.had_successes)
 
   def testIterAllLegacyValuesForSuccessfulPages(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    value1 = scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP)
-    results.AddValue(value1)
-    results.DidRunPage(self.pages[0])
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    value2 = scalar.ScalarValue(
-        self.pages[1], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP)
-    results.AddValue(value2)
-    results.DidRunPage(self.pages[1])
+      results.WillRunPage(self.pages[1])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[1])
 
-    results.WillRunPage(self.pages[2])
-    value3 = scalar.ScalarValue(
-        self.pages[2], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP)
-    results.AddValue(value3)
-    results.DidRunPage(self.pages[2])
+      results.WillRunPage(self.pages[2])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[2])
 
-    self.assertEquals(
-        [value1, value2, value3], list(results.IterAllLegacyValues()))
+    expected = [
+        (v.page, v.name, v.units, v.value)
+        for v in results.IterAllLegacyValues()]
+    self.assertEqual([
+        (self.pages[0], 'a', 'seconds', 3),
+        (self.pages[1], 'a', 'seconds', 3),
+        (self.pages[2], 'a', 'seconds', 3)], expected)
 
   def testAddTraces(self):
-    with tempfile_ext.NamedTemporaryDirectory() as tempdir:
-      results = page_test_results.PageTestResults(output_dir=tempdir)
+    with self.CreateResults() as results:
       results.WillRunPage(self.pages[0])
       results.AddTraces(trace_data.CreateTestTrace(1))
       results.DidRunPage(self.pages[0])
@@ -211,57 +255,53 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
       results.AddTraces(trace_data.CreateTestTrace(2))
       results.DidRunPage(self.pages[1])
 
-      runs = list(results.IterRunsWithTraces())
-      self.assertEquals(2, len(runs))
+    runs = list(results.IterRunsWithTraces())
+    self.assertEqual(2, len(runs))
 
   def testAddTracesForSamePage(self):
-    with tempfile_ext.NamedTemporaryDirectory() as tempdir:
-      results = page_test_results.PageTestResults(output_dir=tempdir)
+    with self.CreateResults() as results:
       results.WillRunPage(self.pages[0])
       results.AddTraces(trace_data.CreateTestTrace(1))
       results.AddTraces(trace_data.CreateTestTrace(2))
       results.DidRunPage(self.pages[0])
 
-      runs = list(results.IterRunsWithTraces())
-      self.assertEquals(1, len(runs))
+    runs = list(results.IterRunsWithTraces())
+    self.assertEqual(1, len(runs))
 
-  def testPrintSummaryEmptyResults_ChartJSON(self):
-    chartjson_output_stream = StringIOWithName()
-    formatter = chart_json_output_formatter.ChartJsonOutputFormatter(
-        chartjson_output_stream)
-    results = page_test_results.PageTestResults(
-        output_formatters=[formatter],
-        benchmark_name='fake_benchmark_name',
-        benchmark_description='benchmark_description')
-    results.PrintSummary()
-    chartjson_output = json.loads(chartjson_output_stream.getvalue())
+  def testOutputEmptyResults_ChartJSON(self):
+    output_file = os.path.join(self._output_dir, 'chart.json')
+    with open(output_file, 'w') as stream:
+      formatter = chart_json_output_formatter.ChartJsonOutputFormatter(stream)
+      with self.CreateResults(
+          output_formatters=[formatter],
+          benchmark_name='fake_benchmark_name'):
+        pass
+
+    with open(output_file) as f:
+      chartjson_output = json.load(f)
+
     self.assertFalse(chartjson_output['enabled'])
     self.assertEqual(chartjson_output['benchmark_name'], 'fake_benchmark_name')
 
-  def testPrintSummaryEmptyResults_HTML(self):
-    html_output_stream = StringIOWithName()
-    formatter = html_output_formatter.HtmlOutputFormatter(
-        html_output_stream, reset_results=True)
-    results = page_test_results.PageTestResults(
-        output_formatters=[formatter],
-        benchmark_name='fake_benchmark_name',
-        benchmark_description='benchmark_description')
-    results.PrintSummary()
-    html_output = html_output_stream.getvalue()
-    self.assertGreater(len(html_output), 0)
+  def testOutputEmptyResults_HTML(self):
+    output_file = os.path.join(self._output_dir, 'results.html')
+    with codecs.open(output_file, 'w', encoding='utf-8') as stream:
+      formatter = html_output_formatter.HtmlOutputFormatter(stream)
+      with self.CreateResults(output_formatters=[formatter]):
+        pass
 
-  def testPrintSummaryEmptyResults_Histograms(self):
-    histograms_output_stream = StringIOWithName()
-    formatter = histogram_set_json_output_formatter.\
-        HistogramSetJsonOutputFormatter(
-            histograms_output_stream, reset_results=False)
-    results = page_test_results.PageTestResults(
-        output_formatters=[formatter],
-        benchmark_name='fake_benchmark_name',
-        benchmark_description='benchmark_description')
-    results.PrintSummary()
-    histograms_output = histograms_output_stream.getvalue()
-    self.assertEqual(histograms_output, '[]')
+    self.assertGreater(os.stat(output_file).st_size, 0)
+
+  def testOutputEmptyResults_Histograms(self):
+    output_file = os.path.join(self._output_dir, 'histograms.json')
+    with open(output_file, 'w') as stream:
+      formatter = histogram_set_json_output_formatter.\
+          HistogramSetJsonOutputFormatter(stream)
+      with self.CreateResults(output_formatters=[formatter]):
+        pass
+
+    with open(output_file) as f:
+      self.assertEqual(f.read(), '[]')
 
   def testImportHistogramDicts(self):
     hs = histogram_set.HistogramSet()
@@ -269,68 +309,50 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
     hs.AddSharedDiagnosticToAllHistograms(
         'bar', generic_set.GenericSet(['baz']))
     histogram_dicts = hs.AsDicts()
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.ImportHistogramDicts(histogram_dicts)
-    results.DidRunPage(self.pages[0])
-    self.assertEqual(results.AsHistogramDicts(), histogram_dicts)
 
-  def testImportHistogramDicts_DelayedImport(self):
-    hs = histogram_set.HistogramSet()
-    hs.AddHistogram(histogram_module.Histogram('foo', 'count'))
-    hs.AddSharedDiagnosticToAllHistograms(
-        'bar', generic_set.GenericSet(['baz']))
-    histogram_dicts = hs.AsDicts()
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.ImportHistogramDicts(histogram_dicts, import_immediately=False)
-    results.DidRunPage(self.pages[0])
-    self.assertEqual(len(results.AsHistogramDicts()), 0)
-    results.PopulateHistogramSet()
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results._ImportHistogramDicts(histogram_dicts)
+      results.DidRunPage(self.pages[0])
+
     self.assertEqual(results.AsHistogramDicts(), histogram_dicts)
 
   def testAddSharedDiagnosticToAllHistograms(self):
-    results = page_test_results.PageTestResults(
-        benchmark_name='benchmark_name')
-    results.WillRunPage(self.pages[0])
-    results.DidRunPage(self.pages[0])
-    results.AddSharedDiagnosticToAllHistograms(
-        reserved_infos.BENCHMARKS.name,
-        generic_set.GenericSet(['benchmark_name']))
-
-    results.PopulateHistogramSet()
+    with self.CreateResults(benchmark_name='benchmark_name') as results:
+      results.WillRunPage(self.pages[0])
+      results.DidRunPage(self.pages[0])
+      results.AddSharedDiagnosticToAllHistograms(
+          reserved_infos.BENCHMARKS.name,
+          generic_set.GenericSet(['benchmark_name']))
+      results.PopulateHistogramSet()
 
     histogram_dicts = results.AsHistogramDicts()
-    self.assertEquals(1, len(histogram_dicts))
+    self.assertEqual(1, len(histogram_dicts))
 
     diag = diagnostic.Diagnostic.FromDict(histogram_dicts[0])
     self.assertIsInstance(diag, generic_set.GenericSet)
 
   def testPopulateHistogramSet_UsesScalarValueData(self):
-    results = page_test_results.PageTestResults()
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
-
-    results.PopulateHistogramSet()
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
+      results.PopulateHistogramSet()
 
     hs = histogram_set.HistogramSet()
     hs.ImportDicts(results.AsHistogramDicts())
-    self.assertEquals(1, len(hs))
-    self.assertEquals('a', hs.GetFirstHistogram().name)
+    self.assertEqual(1, len(hs))
+    self.assertEqual('a', hs.GetFirstHistogram().name)
 
   def testPopulateHistogramSet_UsesHistogramSetData(self):
-    results = page_test_results.PageTestResults(
-        benchmark_name='benchmark_name')
-    results.WillRunPage(self.pages[0])
-    results.AddHistogram(histogram_module.Histogram('foo', 'count'))
-    results.DidRunPage(self.pages[0])
-    results.PopulateHistogramSet()
+    with self.CreateResults(benchmark_name='benchmark_name') as results:
+      results.WillRunPage(self.pages[0])
+      results.AddHistogram(histogram_module.Histogram('foo', 'count'))
+      results.DidRunPage(self.pages[0])
+      results.PopulateHistogramSet()
 
     histogram_dicts = results.AsHistogramDicts()
-    self.assertEquals(8, len(histogram_dicts))
+    self.assertEqual(8, len(histogram_dicts))
 
     hs = histogram_set.HistogramSet()
     hs.ImportDicts(histogram_dicts)
@@ -339,107 +361,121 @@ class PageTestResultsTest(base_test_results_unittest.BaseTestResultsUnittest):
     self.assertItemsEqual(hist.diagnostics[reserved_infos.BENCHMARKS.name],
                           ['benchmark_name'])
 
+  def testBeginFinishBenchmarkRecords(self):
+    self.mock_time.side_effect = [1234567890.987]
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.DidRunPage(self.pages[0])
+      results.WillRunPage(self.pages[1])
+      results.DidRunPage(self.pages[1])
 
-class PageTestResultsFilterTest(unittest.TestCase):
-  def setUp(self):
-    story_set = story.StorySet()
-    story_set.AddStory(
-        page_module.Page('http://www.foo.com/', story_set,
-                         name='http://www.foo.com'))
-    story_set.AddStory(
-        page_module.Page('http://www.bar.com/', story_set,
-                         name='http://www.bar.com/'))
-    self.story_set = story_set
+    records = self.GetResultRecords()
+    self.assertEqual(len(records), 4)  # Start, Result, Result, Finish.
+    self.assertEqual(records[0], {
+        'benchmarkRun': {
+            'startTime': '2009-02-13T23:31:30.987000Z',
+            'diagnostics': {},
+        }
+    })
+    self.assertEqual(records[1]['testResult']['status'], 'PASS')
+    self.assertEqual(records[2]['testResult']['status'], 'PASS')
+    self.assertEqual(records[3], {
+        'benchmarkRun': {
+            'finalized': True,
+            'interrupted': False
+        }
+    })
 
-  @property
-  def pages(self):
-    return self.story_set.stories
+  def testBeginFinishBenchmarkRecords_interrupted(self):
+    self.mock_time.side_effect = [1234567890.987]
+    with self.CreateResults() as results:
+      results.WillRunPage(self.pages[0])
+      results.Fail('fatal error')
+      results.DidRunPage(self.pages[0])
+      results.InterruptBenchmark('some reason')
 
+    records = self.GetResultRecords()
+    self.assertEqual(len(records), 3)  # Start, Result, Finish.
+    self.assertEqual(records[0], {
+        'benchmarkRun': {
+            'startTime': '2009-02-13T23:31:30.987000Z',
+            'diagnostics': {},
+        }
+    })
+    self.assertEqual(records[1]['testResult']['status'], 'FAIL')
+    self.assertEqual(records[2], {
+        'benchmarkRun': {
+            'finalized': True,
+            'interrupted': True
+        }
+    })
+
+
+class PageTestResultsFilterTest(_PageTestResultsTestBase):
   def testFilterValue(self):
     def AcceptValueNamed_a(name, _):
       return name == 'a'
-    results = page_test_results.PageTestResults(
-        should_add_value=AcceptValueNamed_a)
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'b', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
 
-    results.WillRunPage(self.pages[1])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'd', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[1])
-    results.PrintSummary()
-    self.assertEquals(
+    with self.CreateResults(should_add_value=AcceptValueNamed_a) as results:
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.AddMeasurement('b', 'seconds', 3)
+      results.DidRunPage(self.pages[0])
+
+      results.WillRunPage(self.pages[1])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.AddMeasurement('d', 'seconds', 3)
+      results.DidRunPage(self.pages[1])
+
+    self.assertEqual(
         [('a', 'http://www.foo.com/'), ('a', 'http://www.bar.com/')],
         [(v.name, v.page.url) for v in results.IterAllLegacyValues()])
 
   def testFilterValueWithImportHistogramDicts(self):
     def AcceptValueStartsWith_a(name, _):
       return name.startswith('a')
+
     hs = histogram_set.HistogramSet()
     hs.AddHistogram(histogram_module.Histogram('a', 'count'))
     hs.AddHistogram(histogram_module.Histogram('b', 'count'))
-    results = page_test_results.PageTestResults(
-        should_add_value=AcceptValueStartsWith_a)
-    results.WillRunPage(self.pages[0])
-    results.ImportHistogramDicts(hs.AsDicts())
-    results.DidRunPage(self.pages[0])
+
+    with self.CreateResults(
+        should_add_value=AcceptValueStartsWith_a) as results:
+      results.WillRunPage(self.pages[0])
+      results._ImportHistogramDicts(hs.AsDicts())
+      results.DidRunPage(self.pages[0])
 
     new_hs = histogram_set.HistogramSet()
     new_hs.ImportDicts(results.AsHistogramDicts())
-    self.assertEquals(len(new_hs), 1)
+    self.assertEqual(len(new_hs), 1)
 
   def testFilterIsFirstResult(self):
     def AcceptSecondValues(_, is_first_result):
       return not is_first_result
-    results = page_test_results.PageTestResults(
-        should_add_value=AcceptSecondValues)
 
-    # First results (filtered out)
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 7,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'b', 'seconds', 8,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
-    results.WillRunPage(self.pages[1])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'a', 'seconds', 5,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'd', 'seconds', 6,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[1])
+    with self.CreateResults(should_add_value=AcceptSecondValues) as results:
+      # First results (filtered out)
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 7)
+      results.AddMeasurement('b', 'seconds', 8)
+      results.DidRunPage(self.pages[0])
 
-    # Second results
-    results.WillRunPage(self.pages[0])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'a', 'seconds', 3,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[0], 'b', 'seconds', 4,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[0])
-    results.WillRunPage(self.pages[1])
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'a', 'seconds', 1,
-        improvement_direction=improvement_direction.UP))
-    results.AddValue(scalar.ScalarValue(
-        self.pages[1], 'd', 'seconds', 2,
-        improvement_direction=improvement_direction.UP))
-    results.DidRunPage(self.pages[1])
-    results.PrintSummary()
+      results.WillRunPage(self.pages[1])
+      results.AddMeasurement('a', 'seconds', 5)
+      results.AddMeasurement('d', 'seconds', 6)
+      results.DidRunPage(self.pages[1])
+
+      # Second results
+      results.WillRunPage(self.pages[0])
+      results.AddMeasurement('a', 'seconds', 3)
+      results.AddMeasurement('b', 'seconds', 4)
+      results.DidRunPage(self.pages[0])
+
+      results.WillRunPage(self.pages[1])
+      results.AddMeasurement('a', 'seconds', 1)
+      results.AddMeasurement('d', 'seconds', 2)
+      results.DidRunPage(self.pages[1])
+
     expected_values = [
         ('a', 'http://www.foo.com/', 3),
         ('b', 'http://www.foo.com/', 4),
@@ -447,21 +483,22 @@ class PageTestResultsFilterTest(unittest.TestCase):
         ('d', 'http://www.bar.com/', 2)]
     actual_values = [(v.name, v.page.url, v.value)
                      for v in results.IterAllLegacyValues()]
-    self.assertEquals(expected_values, actual_values)
+    self.assertEqual(expected_values, actual_values)
 
   def testFilterHistogram(self):
     def AcceptValueNamed_a(name, _):
       return name.startswith('a')
-    results = page_test_results.PageTestResults(
-        should_add_value=AcceptValueNamed_a)
-    results.WillRunPage(self.pages[0])
-    hist0 = histogram_module.Histogram('a', 'count')
-    # Necessary to make sure avg is added
-    hist0.AddSample(0)
-    results.AddHistogram(hist0)
-    hist1 = histogram_module.Histogram('b', 'count')
-    hist1.AddSample(0)
-    results.AddHistogram(hist1)
+
+    with self.CreateResults(should_add_value=AcceptValueNamed_a) as results:
+      results.WillRunPage(self.pages[0])
+      hist0 = histogram_module.Histogram('a', 'count')
+      # Necessary to make sure avg is added
+      hist0.AddSample(0)
+      results.AddHistogram(hist0)
+      hist1 = histogram_module.Histogram('b', 'count')
+      hist1.AddSample(0)
+      results.AddHistogram(hist1)
+      results.DidRunPage(self.pages[0])
 
     # Filter out the diagnostics
     dicts = results.AsHistogramDicts()
@@ -470,23 +507,24 @@ class PageTestResultsFilterTest(unittest.TestCase):
       if 'name' in d:
         histogram_dicts.append(d)
 
-    self.assertEquals(len(histogram_dicts), 1)
-    self.assertEquals(histogram_dicts[0]['name'], 'a')
+    self.assertEqual(len(histogram_dicts), 1)
+    self.assertEqual(histogram_dicts[0]['name'], 'a')
 
   def testFilterHistogram_AllStatsNotFiltered(self):
     def AcceptNonAverage(name, _):
       return not name.endswith('avg')
-    results = page_test_results.PageTestResults(
-        should_add_value=AcceptNonAverage)
-    results.WillRunPage(self.pages[0])
-    hist0 = histogram_module.Histogram('a', 'count')
-    # Necessary to make sure avg is added
-    hist0.AddSample(0)
-    results.AddHistogram(hist0)
-    hist1 = histogram_module.Histogram('a_avg', 'count')
-    # Necessary to make sure avg is added
-    hist1.AddSample(0)
-    results.AddHistogram(hist1)
+
+    with self.CreateResults(should_add_value=AcceptNonAverage) as results:
+      results.WillRunPage(self.pages[0])
+      hist0 = histogram_module.Histogram('a', 'count')
+      # Necessary to make sure avg is added
+      hist0.AddSample(0)
+      results.AddHistogram(hist0)
+      hist1 = histogram_module.Histogram('a_avg', 'count')
+      # Necessary to make sure avg is added
+      hist1.AddSample(0)
+      results.AddHistogram(hist1)
+      results.DidRunPage(self.pages[0])
 
     # Filter out the diagnostics
     dicts = results.AsHistogramDicts()
@@ -495,85 +533,74 @@ class PageTestResultsFilterTest(unittest.TestCase):
       if 'name' in d:
         histogram_dicts.append(d)
 
-    self.assertEquals(len(histogram_dicts), 2)
+    self.assertEqual(len(histogram_dicts), 2)
     histogram_dicts.sort(key=lambda h: h['name'])
 
-    self.assertEquals(len(histogram_dicts), 2)
-    self.assertEquals(histogram_dicts[0]['name'], 'a')
-    self.assertEquals(histogram_dicts[1]['name'], 'a_avg')
+    self.assertEqual(len(histogram_dicts), 2)
+    self.assertEqual(histogram_dicts[0]['name'], 'a')
+    self.assertEqual(histogram_dicts[1]['name'], 'a_avg')
 
   @mock.patch('py_utils.cloud_storage.Insert')
-  def testUploadArtifactsToCloud(self, cloud_storage_insert_patch):
+  def testUploadArtifactsToCloud(self, cs_insert_mock):
     cs_path_name = 'https://cs_foo'
-    cloud_storage_insert_patch.return_value = cs_path_name
-    with tempfile_ext.NamedTemporaryDirectory(
-        prefix='artifact_tests') as tempdir:
-
-      results = page_test_results.PageTestResults(
-          upload_bucket='abc', output_dir=tempdir)
-
+    cs_insert_mock.return_value = cs_path_name
+    with self.CreateResults(upload_bucket='abc') as results:
       results.WillRunPage(self.pages[0])
-      with results.CreateArtifact('screenshot') as screenshot1:
+      with results.CreateArtifact('screenshot.png') as screenshot1:
         pass
       results.DidRunPage(self.pages[0])
 
       results.WillRunPage(self.pages[1])
-      with results.CreateArtifact('log') as log2:
+      with results.CreateArtifact('log.txt') as log2:
         pass
       results.DidRunPage(self.pages[1])
 
       results_processor.UploadArtifactsToCloud(results)
-      cloud_storage_insert_patch.assert_has_calls(
-          [mock.call('abc', mock.ANY, screenshot1.name),
-           mock.call('abc', mock.ANY, log2.name)],
-          any_order=True)
 
-      # Assert that the path is now the cloud storage path
-      for run in results.IterStoryRuns():
-        for artifact in run.IterArtifacts():
-          self.assertEquals(cs_path_name, artifact.url)
+    cs_insert_mock.assert_has_calls(
+        [mock.call('abc', mock.ANY, screenshot1.name),
+         mock.call('abc', mock.ANY, log2.name)],
+        any_order=True)
+
+    # Assert that the path is now the cloud storage path
+    for run in results.IterStoryRuns():
+      for artifact in run.IterArtifacts():
+        self.assertEqual(cs_path_name, artifact.url)
 
   @mock.patch('py_utils.cloud_storage.Insert')
-  def testUploadArtifactsToCloud_withNoOpArtifact(
-      self, cloud_storage_insert_patch):
-    del cloud_storage_insert_patch  # unused
+  def testUploadArtifactsToCloud_withNoOpArtifact(self, _):
+    with self.CreateResults(
+        upload_bucket='abc', output_dir=None, intermediate_dir=None) as results:
+      results.WillRunPage(self.pages[0])
+      with results.CreateArtifact('screenshot.png'):
+        pass
+      results.DidRunPage(self.pages[0])
 
-    results = page_test_results.PageTestResults(
-        upload_bucket='abc', output_dir=None)
+      results.WillRunPage(self.pages[1])
+      with results.CreateArtifact('log.txt'):
+        pass
+      results.DidRunPage(self.pages[1])
 
-
-    results.WillRunPage(self.pages[0])
-    with results.CreateArtifact('screenshot'):
-      pass
-    results.DidRunPage(self.pages[0])
-
-    results.WillRunPage(self.pages[1])
-    with results.CreateArtifact('log'):
-      pass
-    results.DidRunPage(self.pages[1])
-
-    # Just make sure that this does not crash
-    results_processor.UploadArtifactsToCloud(results)
+      # Just make sure that this does not crash
+      results_processor.UploadArtifactsToCloud(results)
 
   def testCreateArtifactsForDifferentPages(self):
-    with tempfile_ext.NamedTemporaryDirectory() as tempdir:
-      results = page_test_results.PageTestResults(output_dir=tempdir)
-
+    with self.CreateResults() as results:
       results.WillRunPage(self.pages[0])
-      with results.CreateArtifact('log') as log_file:
+      with results.CreateArtifact('log.txt') as log_file:
         log_file.write('page0\n')
       results.DidRunPage(self.pages[0])
 
       results.WillRunPage(self.pages[1])
-      with results.CreateArtifact('log') as log_file:
+      with results.CreateArtifact('log.txt') as log_file:
         log_file.write('page1\n')
       results.DidRunPage(self.pages[1])
 
-      all_story_runs = list(results.IterStoryRuns())
-      log0_path = all_story_runs[0].GetArtifact('log').local_path
-      with open(log0_path) as f:
-        self.assertEqual(f.read(), 'page0\n')
+    all_story_runs = list(results.IterStoryRuns())
+    log0_path = all_story_runs[0].GetArtifact('log.txt').local_path
+    with open(log0_path) as f:
+      self.assertEqual(f.read(), 'page0\n')
 
-      log1_path = all_story_runs[1].GetArtifact('log').local_path
-      with open(log1_path) as f:
-        self.assertEqual(f.read(), 'page1\n')
+    log1_path = all_story_runs[1].GetArtifact('log.txt').local_path
+    with open(log1_path) as f:
+      self.assertEqual(f.read(), 'page1\n')

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
 #include "third_party/blink/renderer/core/fileapi/file_error.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -46,7 +47,6 @@
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -97,7 +97,7 @@ class FileReader::ThrottlingController final
     if (!controller)
       return;
 
-    probe::AsyncTaskScheduled(context, "FileReader", reader);
+    probe::AsyncTaskScheduled(context, "FileReader", reader->async_task_id());
     controller->PushReader(reader);
   }
 
@@ -118,7 +118,7 @@ class FileReader::ThrottlingController final
       return;
 
     controller->FinishReader(reader, next_step);
-    probe::AsyncTaskCanceled(context, reader);
+    probe::AsyncTaskCanceled(context, reader->async_task_id());
   }
 
   explicit ThrottlingController(ExecutionContext& context)
@@ -459,7 +459,7 @@ void FileReader::DidFail(FileErrorCode error_code) {
 }
 
 void FileReader::FireEvent(const AtomicString& type) {
-  probe::AsyncTask async_task(GetExecutionContext(), this, "event");
+  probe::AsyncTask async_task(GetExecutionContext(), async_task_id(), "event");
   if (!loader_) {
     DispatchEvent(*ProgressEvent::Create(type, false, 0, 0));
     return;

@@ -12,7 +12,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/theme_resources.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class WebUISourcesTest : public testing::Test {
@@ -24,18 +24,16 @@ class WebUISourcesTest : public testing::Test {
   size_t result_data_size() const { return result_data_size_; }
 
   void StartDataRequest(const std::string& source) {
-    theme_source()->StartDataRequest(
-        source,
-        content::ResourceRequestInfo::WebContentsGetter(),
-        callback_);
+    theme_source()->StartDataRequest(source, content::WebContents::Getter(),
+                                     callback_);
   }
 
   size_t result_data_size_;
 
  private:
   void SetUp() override {
-    profile_.reset(new TestingProfile());
-    theme_source_.reset(new ThemeSource(profile_.get()));
+    profile_ = std::make_unique<TestingProfile>();
+    theme_source_ = std::make_unique<ThemeSource>(profile_.get());
     callback_ = base::Bind(&WebUISourcesTest::SendResponse,
                            base::Unretained(this));
   }
@@ -51,7 +49,7 @@ class WebUISourcesTest : public testing::Test {
 
   content::URLDataSource::GotDataCallback callback_;
 
-  content::TestBrowserThreadBundle test_browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<ThemeSource> theme_source_;

@@ -181,9 +181,7 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       // If this node is ignored, notify from the platform parent if available,
       // since it will be unignored.
       BrowserAccessibility* target_node =
-          node->GetData().HasState(ax::mojom::State::kIgnored)
-              ? node->PlatformGetParent()
-              : node;
+          node->IsIgnored() ? node->PlatformGetParent() : node;
       if (target_node) {
         FireWinAccessibilityEvent(EVENT_OBJECT_REORDER, target_node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildrenReordered,
@@ -241,13 +239,14 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::IGNORED_CHANGED:
-      if (node->HasState(ax::mojom::State::kIgnored)) {
+      if (node->IsIgnored()) {
         FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, node);
       } else {
         FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
       }
+      aria_properties_events_.insert(node);
       break;
     case ui::AXEventGenerator::Event::IMAGE_ANNOTATION_CHANGED:
       FireWinAccessibilityEvent(EVENT_OBJECT_NAMECHANGE, node);
@@ -421,7 +420,7 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
       default:
         return;
     }
-  } else if (node->HasState(ax::mojom::State::kIgnored)) {
+  } else if (node->IsIgnored()) {
     return;
   }
 
@@ -445,8 +444,7 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
   if (!ShouldFireEventForNode(node))
     return;
   // Suppress events when |IGNORED_CHANGED|
-  if (node->HasState(ax::mojom::State::kIgnored) ||
-      base::Contains(ignored_changed_nodes_, node))
+  if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node))
     return;
 
   ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
@@ -460,10 +458,14 @@ void BrowserAccessibilityManagerWin::FireUiaPropertyChangedEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED|
-  if (node->HasState(ax::mojom::State::kIgnored) ||
-      base::Contains(ignored_changed_nodes_, node))
-    return;
+  // Suppress events when |IGNORED_CHANGED| with the exception for firing
+  // UIA_AriaPropertiesPropertyId-hidden event on non-text node marked as
+  // ignored.
+  if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node)) {
+    if (uia_property != UIA_AriaPropertiesPropertyId ||
+        node->IsTextOnlyObject())
+      return;
+  }
 
   // The old value is not used by the system
   VARIANT old_value = {};
@@ -494,7 +496,7 @@ void BrowserAccessibilityManagerWin::FireUiaStructureChangedEvent(
       default:
         return;
     }
-  } else if (node->HasState(ax::mojom::State::kIgnored)) {
+  } else if (node->IsIgnored()) {
     return;
   }
 

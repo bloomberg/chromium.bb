@@ -69,6 +69,7 @@
 #include "third_party/blink/renderer/core/inspector/inspector_io_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_layer_tree_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_log_agent.h"
+#include "third_party/blink/renderer/core/inspector/inspector_media_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_memory_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_network_agent.h"
 #include "third_party/blink/renderer/core/inspector/inspector_overlay_agent.h"
@@ -202,12 +203,6 @@ class ClientMessageLoopAdapter : public MainThreadDebugger::ClientMessageLoop {
     // If we've paused for Page.waitForDebugger, handle it ourselves.
     if (QuitForPageWait())
       return;
-
-    // Otherwise, pass to the client (embedded workers do it differently).
-    WebDevToolsAgentImpl* agent =
-        WebLocalFrameImpl::FromFrame(frame)->DevToolsAgentImpl();
-    if (agent && agent->worker_client_)
-      agent->worker_client_->ResumeStartup();
   }
 
   bool running_for_debug_break_;
@@ -292,6 +287,8 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
 
   session->Append(MakeGarbageCollected<InspectorAuditsAgent>(network_agent));
 
+  session->Append(MakeGarbageCollected<InspectorMediaAgent>(inspected_frames));
+
   // TODO(dgozman): we should actually pass the view instead of frame, but
   // during remote->local transition we cannot access mainFrameImpl() yet, so
   // we have to store the frame which will become the main frame later.
@@ -302,9 +299,6 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
   CoreInitializer::GetInstance().InitInspectorAgentSession(
       session, include_view_agents_, dom_agent, inspected_frames,
       web_local_frame_impl_->ViewImpl()->GetPage());
-
-  if (restore && worker_client_)
-    worker_client_->ResumeStartup();
 
   if (node_to_inspect_) {
     overlay_agent->Inspect(node_to_inspect_);
@@ -319,23 +313,19 @@ void WebDevToolsAgentImpl::AttachSession(DevToolsSession* session,
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForFrame(
     WebLocalFrameImpl* frame) {
-  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, IsMainFrame(frame),
-                                                    nullptr);
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, IsMainFrame(frame));
 }
 
 // static
 WebDevToolsAgentImpl* WebDevToolsAgentImpl::CreateForWorker(
-    WebLocalFrameImpl* frame,
-    WorkerClient* worker_client) {
-  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, true, worker_client);
+    WebLocalFrameImpl* frame) {
+  return MakeGarbageCollected<WebDevToolsAgentImpl>(frame, true);
 }
 
 WebDevToolsAgentImpl::WebDevToolsAgentImpl(
     WebLocalFrameImpl* web_local_frame_impl,
-    bool include_view_agents,
-    WorkerClient* worker_client)
-    : worker_client_(worker_client),
-      web_local_frame_impl_(web_local_frame_impl),
+    bool include_view_agents)
+    : web_local_frame_impl_(web_local_frame_impl),
       probe_sink_(web_local_frame_impl_->GetFrame()->GetProbeSink()),
       resource_content_loader_(
           MakeGarbageCollected<InspectorResourceContentLoader>(
@@ -352,9 +342,7 @@ WebDevToolsAgentImpl::WebDevToolsAgentImpl(
       Platform::Current()->GetIOTaskRunner());
 }
 
-WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {
-  DCHECK(!worker_client_);
-}
+WebDevToolsAgentImpl::~WebDevToolsAgentImpl() {}
 
 void WebDevToolsAgentImpl::Trace(blink::Visitor* visitor) {
   visitor->Trace(agent_);
@@ -374,7 +362,6 @@ void WebDevToolsAgentImpl::WillBeDestroyed() {
   DCHECK(inspected_frames_->Root()->View());
   agent_->Dispose();
   resource_content_loader_->Dispose();
-  worker_client_ = nullptr;
 }
 
 void WebDevToolsAgentImpl::BindRequest(
@@ -394,18 +381,10 @@ void WebDevToolsAgentImpl::DetachSession(DevToolsSession* session) {
 }
 
 void WebDevToolsAgentImpl::InspectElement(const WebPoint& point_in_local_root) {
-  WebPoint point = point_in_local_root;
-  // TODO(dgozman): the ViewImpl() check must not be necessary,
-  // but it is required when attaching early to a provisional frame.
-  // We should clean this up once provisional frames are gone.
-  // See https://crbug.com/578349.
-  if (web_local_frame_impl_->ViewImpl() &&
-      web_local_frame_impl_->ViewImpl()->Client()) {
-    WebFloatRect rect(point.x, point.y, 0, 0);
-    web_local_frame_impl_->ViewImpl()->WidgetClient()->ConvertWindowToViewport(
-        &rect);
-    point = WebPoint(rect.x, rect.y);
-  }
+  WebFloatRect rect(point_in_local_root.x, point_in_local_root.y, 0, 0);
+  web_local_frame_impl_->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
+      &rect);
+  WebPoint point(rect.x, rect.y);
 
   HitTestRequest::HitTestRequestType hit_type =
       HitTestRequest::kMove | HitTestRequest::kReadOnly |

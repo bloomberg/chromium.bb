@@ -10,10 +10,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/no_destructor.h"
-#include "content/browser/background_fetch/background_fetch_service_impl.h"
+#include "base/task/post_task.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_context.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/locks/lock_manager.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
@@ -24,22 +25,25 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/websockets/websocket_connector_impl.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "media/mojo/interfaces/video_decode_perf_history.mojom.h"
+#include "media/mojo/mojom/video_decode_perf_history.mojom.h"
 #include "media/mojo/services/video_decode_perf_history.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
+#include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom.h"
@@ -86,7 +90,7 @@ class RendererInterfaceBinders {
   void InitializeParameterizedBinderRegistry();
 
   static void CreateWebSocketConnector(
-      blink::mojom::WebSocketConnectorRequest request,
+      mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
       RenderProcessHost* host,
       const url::Origin& origin);
 
@@ -94,6 +98,48 @@ class RendererInterfaceBinders {
                                           const url::Origin&>
       parameterized_binder_registry_;
 };
+
+void BindShapeDetectionServiceOnIOThread(
+    mojo::PendingReceiver<shape_detection::mojom::ShapeDetectionService>
+        receiver) {
+  auto* gpu = GpuProcessHost::Get();
+  if (gpu)
+    gpu->RunService(std::move(receiver));
+}
+
+shape_detection::mojom::ShapeDetectionService* GetShapeDetectionService() {
+  static base::NoDestructor<
+      mojo::Remote<shape_detection::mojom::ShapeDetectionService>>
+      remote;
+  if (!*remote) {
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&BindShapeDetectionServiceOnIOThread,
+                                  remote->BindNewPipeAndPassReceiver()));
+    remote->reset_on_disconnect();
+  }
+
+  return remote->get();
+}
+
+void BindBarcodeDetectionProvider(
+    shape_detection::mojom::BarcodeDetectionProviderRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  GetShapeDetectionService()->BindBarcodeDetectionProvider(std::move(request));
+}
+
+void BindFaceDetectionProvider(
+    shape_detection::mojom::FaceDetectionProviderRequest request,
+    RenderProcessHost* host,
+    const url::Origin& origin) {
+  GetShapeDetectionService()->BindFaceDetectionProvider(std::move(request));
+}
+
+void BindTextDetection(shape_detection::mojom::TextDetectionRequest request,
+                       RenderProcessHost* host,
+                       const url::Origin& origin) {
+  GetShapeDetectionService()->BindTextDetection(std::move(request));
+}
 
 // Forwards service requests to Service Manager since the renderer cannot launch
 // out-of-process services on is own.
@@ -113,15 +159,13 @@ void ForwardServiceRequest(const char* service_name,
 // interface requests from frames, binders registered on the frame itself
 // override binders registered here.
 void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      &ForwardServiceRequest<shape_detection::mojom::BarcodeDetectionProvider>,
-      shape_detection::mojom::kServiceName));
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      &ForwardServiceRequest<shape_detection::mojom::FaceDetectionProvider>,
-      shape_detection::mojom::kServiceName));
   parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardServiceRequest<shape_detection::mojom::TextDetection>,
-                 shape_detection::mojom::kServiceName));
+      base::BindRepeating(&BindBarcodeDetectionProvider));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&BindFaceDetectionProvider));
+  parameterized_binder_registry_.AddInterface(
+      base::BindRepeating(&BindTextDetection));
+
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
                  device::mojom::kServiceName));
@@ -136,18 +180,18 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(CreateWebSocketConnector));
 
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](payments::mojom::PaymentManagerRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      [](mojo::PendingReceiver<payments::mojom::PaymentManager> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetPaymentAppContext()
-            ->CreatePaymentManager(std::move(request));
+            ->CreatePaymentManager(std::move(receiver));
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
-      [](blink::mojom::CacheStorageRequest request, RenderProcessHost* host,
-         const url::Origin& origin) {
+      [](mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
-            std::move(request), origin);
+            std::move(receiver), origin);
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::IDBFactoryRequest request, RenderProcessHost* host,
@@ -160,28 +204,34 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       [](blink::mojom::FileSystemManagerRequest request,
          RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)->BindFileSystemManager(
-            std::move(request));
+            origin, std::move(request));
       }));
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     parameterized_binder_registry_.AddInterface(base::BindRepeating(
-        [](blink::mojom::NativeFileSystemManagerRequest request,
+        [](mojo::PendingReceiver<blink::mojom::NativeFileSystemManager>
+               receiver,
            RenderProcessHost* host, const url::Origin& origin) {
           // This code path is only for workers, hence always pass in
           // MSG_ROUTING_NONE as frame ID. Frames themselves go through
           // RenderFrameHostImpl instead.
-          NativeFileSystemManagerImpl::BindRequestFromUIThread(
+          NativeFileSystemManagerImpl::BindReceiverFromUIThread(
               static_cast<StoragePartitionImpl*>(host->GetStoragePartition()),
-              NativeFileSystemManagerImpl::BindingContext(origin, host->GetID(),
-                                                          MSG_ROUTING_NONE),
-              std::move(request));
+              NativeFileSystemManagerImpl::BindingContext(
+                  origin,
+                  // TODO(https://crbug.com/989323): Obtain and use a better URL
+                  // for workers instead of the origin as source url. This URL
+                  // will be used for SafeBrowsing checks and for the Quarantine
+                  // Service.
+                  origin.GetURL(), host->GetID(), MSG_ROUTING_NONE),
+              std::move(receiver));
         }));
   }
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](blink::mojom::PermissionServiceRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::Bind(
+      [](mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
+         RenderProcessHost* host, const url::Origin& origin) {
         static_cast<RenderProcessHostImpl*>(host)
             ->permission_service_context()
-            .CreateServiceForWorker(std::move(request), origin);
+            .CreateServiceForWorker(std::move(receiver), origin);
       }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::LockManagerRequest request, RenderProcessHost* host,
@@ -198,8 +248,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
             ->GetPlatformNotificationContext()
             ->CreateService(origin, std::move(request));
       }));
-  parameterized_binder_registry_.AddInterface(
-      base::BindRepeating(&BackgroundFetchServiceImpl::CreateForWorker));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&QuotaDispatcherHost::CreateForWorker));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
@@ -225,14 +273,14 @@ RendererInterfaceBinders& GetRendererInterfaceBinders() {
 }
 
 void RendererInterfaceBinders::CreateWebSocketConnector(
-    blink::mojom::WebSocketConnectorRequest request,
+    mojo::PendingReceiver<blink::mojom::WebSocketConnector> receiver,
     RenderProcessHost* host,
     const url::Origin& origin) {
   // TODO(jam): is it ok to not send extraHeaders for sockets created from
   // shared and service workers?
-  mojo::MakeStrongBinding(std::make_unique<WebSocketConnectorImpl>(
-                              host->GetID(), MSG_ROUTING_NONE, origin),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<WebSocketConnectorImpl>(
+                                  host->GetID(), MSG_ROUTING_NONE, origin),
+                              std::move(receiver));
 }
 
 }  // namespace

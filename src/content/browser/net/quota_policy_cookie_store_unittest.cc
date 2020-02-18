@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/browser/net/quota_policy_cookie_store.h"
+
 #include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -11,9 +12,9 @@
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/time/time.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/cookies/cookie_util.h"
 #include "net/log/net_log_with_source.h"
 #include "net/ssl/ssl_client_cert_type.h"
@@ -77,7 +78,8 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
     scoped_refptr<net::SQLitePersistentCookieStore> sqlite_store(
         new net::SQLitePersistentCookieStore(
             temp_dir_.GetPath().Append(kTestCookiesFilename),
-            base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}),
+            base::CreateSequencedTaskRunner(
+                {base::ThreadPool(), base::MayBlock()}),
             background_task_runner_, true, nullptr));
     store_ = new QuotaPolicyCookieStore(sqlite_store.get(), storage_policy);
     Load(cookies);
@@ -109,9 +111,9 @@ class QuotaPolicyCookieStoreTest : public testing::Test {
     DestroyStore();
   }
 
-  TestBrowserThreadBundle bundle_;
+  BrowserTaskEnvironment task_environment_;
   const scoped_refptr<base::SequencedTaskRunner> background_task_runner_ =
-      base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()});
+      base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
   base::WaitableEvent loaded_event_;
   base::WaitableEvent destroy_event_;
   base::ScopedTempDir temp_dir_;

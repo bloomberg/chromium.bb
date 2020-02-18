@@ -27,6 +27,8 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool update_password) override;
+  bool ShowOnboarding(
+      std::unique_ptr<PasswordFormManagerForUI> form_to_save) override;
   void ShowManualFallbackForSaving(
       std::unique_ptr<PasswordFormManagerForUI> form_to_save,
       bool has_generated_password,
@@ -54,11 +56,19 @@ class StubPasswordManagerClient : public PasswordManagerClient {
   const GURL& GetLastCommittedEntryURL() const override;
   const CredentialsFilter* GetStoreResultFilter() const override;
   const autofill::LogManager* GetLogManager() const override;
-#if defined(FULL_SAFE_BROWSING)
+
+#if defined(ON_FOCUS_PING_ENABLED) || \
+    defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   safe_browsing::PasswordProtectionService* GetPasswordProtectionService()
       const override;
+#endif
+
+#if defined(ON_FOCUS_PING_ENABLED)
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override;
+#endif
+
+#if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   void CheckProtectedPasswordEntry(
       metrics_util::PasswordType reused_password_type,
       const std::string& username,
@@ -66,8 +76,11 @@ class StubPasswordManagerClient : public PasswordManagerClient {
       bool password_field_exists) override;
   void LogPasswordReuseDetectedEvent() override;
 #endif
+
   ukm::SourceId GetUkmSourceId() override;
   PasswordManagerMetricsRecorder* GetMetricsRecorder() override;
+  signin::IdentityManager* GetIdentityManager() override;
+  scoped_refptr<network::SharedURLLoaderFactory> GetURLLoaderFactory() override;
   bool IsIsolationForPasswordSitesEnabled() const override;
   bool IsNewTabPage() const override;
 

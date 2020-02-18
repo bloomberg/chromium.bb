@@ -6,7 +6,7 @@
 
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -18,7 +18,7 @@ class StreamTextureWrapperImplTest : public testing::Test {
   StreamTextureWrapperImplTest() {}
 
   // Necessary, or else GetSingleThreadTaskRunnerForTesting() fails.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(StreamTextureWrapperImplTest);

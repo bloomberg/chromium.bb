@@ -48,10 +48,13 @@ def test_repo():
     '/chrome/browser/defaults.h': '',
     '/chrome/gpu/OWNERS': owners_file(ken),
     '/chrome/gpu/gpu_channel.h': '',
+    '/chrome/comment/OWNERS': owners_file(file='//content/comment/OWNERS'),
     '/chrome/renderer/OWNERS': owners_file(peter),
     '/chrome/renderer/gpu/gpu_channel_host.h': '',
     '/chrome/renderer/safe_browsing/scorer.h': '',
     '/content/OWNERS': owners_file(john, darin, comment='foo', noparent=True),
+    '/content/comment/OWNERS': owners_file(john + '  # for comments',
+                                           darin + '  # for everything else'),
     '/content/content.gyp': '',
     '/content/bar/foo.cc': '',
     '/content/baz/OWNERS': owners_file(brett),
@@ -321,6 +324,10 @@ class OwnersDatabaseTest(_BaseTestCase):
     except owners.SyntaxErrorInOwnersFile as e:
       self.assertTrue(str(e).startswith('/ipc/OWNERS:1'))
 
+  def test_file_include_with_comment(self):
+    # See crbug.com/995474 for context.
+    self.assert_files_not_covered_by(['chrome/comment/comment.cc'], [darin], [])
+
   def assert_syntax_error(self, owners_file_contents):
     db = self.db()
     self.files['/foo/OWNERS'] = owners_file_contents
@@ -380,6 +387,14 @@ class OwnersDatabaseTest(_BaseTestCase):
         jochen: {'bar.*': 'comment preceeded by empty line'},
         john: {'': 'comment preceeded by empty line'},
         peter: {'': 'comment in the middle'}})
+
+  def test_owners_rooted_at_file(self):
+    self.files['/foo/OWNERS'] = owners_file(darin, file='//bar/OWNERS')
+    self.files['/bar/OWNERS'] = owners_file(john,
+        lines=['per-file nope.cc=' + ben])
+    db = self.db()
+    self.assertEqual(db.owners_rooted_at_file('foo/OWNERS'),
+                     set([john, darin]))
 
 
 class ReviewersForTest(_BaseTestCase):

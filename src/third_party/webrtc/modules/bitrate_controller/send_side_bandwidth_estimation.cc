@@ -16,9 +16,9 @@
 #include <string>
 
 #include "absl/memory/memory.h"
+#include "api/rtc_event_log/rtc_event_log.h"
 #include "logging/rtc_event_log/events/rtc_event.h"
 #include "logging/rtc_event_log/events/rtc_event_bwe_update_loss_based.h"
-#include "logging/rtc_event_log/rtc_event_log.h"
 #include "modules/remote_bitrate_estimator/include/bwe_defines.h"
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
@@ -112,10 +112,10 @@ LinkCapacityTracker::LinkCapacityTracker()
 
 LinkCapacityTracker::~LinkCapacityTracker() {}
 
-void LinkCapacityTracker::OnOveruse(DataRate acknowledged_rate,
+void LinkCapacityTracker::OnOveruse(DataRate delay_based_bitrate,
                                     Timestamp at_time) {
   capacity_estimate_bps_ =
-      std::min(capacity_estimate_bps_, acknowledged_rate.bps<double>());
+      std::min(capacity_estimate_bps_, delay_based_bitrate.bps<double>());
   last_link_capacity_update_ = at_time;
 }
 
@@ -327,11 +327,10 @@ void SendSideBandwidthEstimation::UpdateReceiverEstimate(Timestamp at_time,
 
 void SendSideBandwidthEstimation::UpdateDelayBasedEstimate(Timestamp at_time,
                                                            DataRate bitrate) {
-  if (acknowledged_rate_) {
-    if (bitrate < delay_based_bitrate_) {
-      link_capacity_.OnOveruse(*acknowledged_rate_, at_time);
-    }
+  if (bitrate < delay_based_bitrate_) {
+    link_capacity_.OnOveruse(bitrate, at_time);
   }
+
   delay_based_bitrate_ = bitrate;
   CapBitrateToThresholds(at_time, current_bitrate_);
 }

@@ -61,8 +61,7 @@ VrShellDelegateProviderFactory::CreateGvrDelegateProvider() {
 }  // namespace
 
 VrShellDelegate::VrShellDelegate(JNIEnv* env, jobject obj)
-    : task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      weak_ptr_factory_(this) {
+    : task_runner_(base::ThreadTaskRunnerHandle::Get()) {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   j_vr_shell_delegate_.Reset(env, obj);
   XRRuntimeManager::AddObserver(this);
@@ -151,7 +150,6 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
 
 void VrShellDelegate::RecordVrStartAction(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& obj,
     jint start_action) {
   VrStartAction action = static_cast<VrStartAction>(start_action);
 

@@ -197,7 +197,7 @@ namespace
 		return targetMachines.getOrCreate(static_cast<int>(optlevel), [&]() {
 			return TargetMachineSPtr(llvm::EngineBuilder()
 #ifdef ENABLE_RR_DEBUG_INFO
-				.setOptLevel(llvm::CodeGenOpt::None)
+				.setOptLevel(toLLVM(rr::Optimization::Level::None))
 #else
 				.setOptLevel(toLLVM(optlevel))
 #endif // ENABLE_RR_DEBUG_INFO
@@ -452,10 +452,10 @@ namespace
 			passManager->run(*module);
 		}
 
-		rr::Routine *acquireRoutine(llvm::Function **funcs, size_t count, const rr::Config &cfg)
+		std::shared_ptr<rr::Routine> acquireRoutine(llvm::Function **funcs, size_t count, const rr::Config &cfg)
 		{
 			ASSERT(module);
-			return new JITRoutine(std::move(module), funcs, count, cfg);
+			return std::make_shared<JITRoutine>(std::move(module), funcs, count, cfg);
 		}
 
 		const rr::Config config;
@@ -1229,7 +1229,7 @@ namespace rr
 		return ::defaultConfig();
 	}
 
-	Routine *Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+	std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
 	{
 		auto cfg = cfgEdit.apply(jit->config);
 
@@ -1329,7 +1329,7 @@ namespace rr
 		jit->function = rr::createFunction("", T(ReturnType), T(Params));
 
 #ifdef ENABLE_RR_DEBUG_INFO
-		jit->debugInfo = std::unique_ptr<DebugInfo>(new DebugInfo(jit->builder, jit->context, jit->module.get(), jit->function));
+		jit->debugInfo = std::unique_ptr<DebugInfo>(new DebugInfo(jit->builder.get(), &jit->context, jit->module.get(), jit->function));
 #endif // ENABLE_RR_DEBUG_INFO
 
 		jit->builder->SetInsertPoint(llvm::BasicBlock::Create(jit->context, "", jit->function));
@@ -1951,6 +1951,12 @@ namespace rr
 		}
 
 		return V(jit->builder->CreateBitCast(V(v), T(destType)));
+	}
+
+	Value *Nucleus::createPtrEQ(Value *lhs, Value *rhs)
+	{
+		RR_DEBUG_INFO_UPDATE_LOC();
+		return V(jit->builder->CreateICmpEQ(V(lhs), V(rhs)));
 	}
 
 	Value *Nucleus::createICmpEQ(Value *lhs, Value *rhs)
@@ -3502,6 +3508,18 @@ namespace rr
 		return T(Type_v2f32);
 	}
 
+	RValue<Float> Exp2(RValue<Float> v)
+	{
+		auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::exp2, { T(Float::getType()) } );
+		return RValue<Float>(V(jit->builder->CreateCall(func, V(v.value))));
+	}
+
+	RValue<Float> Log2(RValue<Float> v)
+	{
+		auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::log2, { T(Float::getType()) } );
+		return RValue<Float>(V(jit->builder->CreateCall(func, V(v.value))));
+	}
+
 	Float4::Float4(RValue<Float> rhs) : XYZW(this)
 	{
 		RR_DEBUG_INFO_UPDATE_LOC();
@@ -3796,12 +3814,12 @@ namespace rr
 
 	RValue<Float4> Sinh(RValue<Float4> v)
 	{
-		return TransformFloat4PerElement(v, "sinhf");
+		return Float4(0.5f) * (Exp(v) - Exp(-v));
 	}
 
 	RValue<Float4> Cosh(RValue<Float4> v)
 	{
-		return TransformFloat4PerElement(v, "coshf");
+		return Float4(0.5f) * (Exp(v) + Exp(-v));
 	}
 
 	RValue<Float4> Tanh(RValue<Float4> v)
@@ -3873,10 +3891,28 @@ namespace rr
 		return RValue<Float4>(V(jit->builder->CreateCall(func, V(v.value))));
 	}
 
+	RValue<UInt> Ctlz(RValue<UInt> v, bool isZeroUndef)
+	{
+		auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::ctlz, { T(UInt::getType()) } );
+		return RValue<UInt>(V(jit->builder->CreateCall2(func, ARGS(
+			V(v.value),
+			isZeroUndef ? ::llvm::ConstantInt::getTrue(jit->context) : ::llvm::ConstantInt::getFalse(jit->context)
+		))));
+	}
+
 	RValue<UInt4> Ctlz(RValue<UInt4> v, bool isZeroUndef)
 	{
 		auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::ctlz, { T(UInt4::getType()) } );
 		return RValue<UInt4>(V(jit->builder->CreateCall2(func, ARGS(
+			V(v.value),
+			isZeroUndef ? ::llvm::ConstantInt::getTrue(jit->context) : ::llvm::ConstantInt::getFalse(jit->context)
+		))));
+	}
+
+	RValue<UInt> Cttz(RValue<UInt> v, bool isZeroUndef)
+	{
+		auto func = llvm::Intrinsic::getDeclaration(jit->module.get(), llvm::Intrinsic::cttz, { T(UInt::getType()) } );
+		return RValue<UInt>(V(jit->builder->CreateCall2(func, ARGS(
 			V(v.value),
 			isZeroUndef ? ::llvm::ConstantInt::getTrue(jit->context) : ::llvm::ConstantInt::getFalse(jit->context)
 		))));
@@ -4787,7 +4823,7 @@ void Nucleus::yield(Value* val)
 	jit->builder->SetInsertPoint(resumeBlock);
 }
 
-Routine* Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
 {
 	bool isCoroutine = jit->coroutine.id != nullptr;
 	if (isCoroutine)

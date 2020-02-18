@@ -120,10 +120,6 @@ bool HTMLAnchorElement::SupportsFocus() const {
   return IsLink() || HTMLElement::SupportsFocus();
 }
 
-bool HTMLAnchorElement::MatchesEnabledPseudoClass() const {
-  return IsLink();
-}
-
 bool HTMLAnchorElement::ShouldHaveFocusAppearance() const {
   return (GetDocument().LastFocusType() != kWebFocusTypeMouse) ||
          HTMLElement::SupportsFocus();
@@ -422,8 +418,7 @@ void HTMLAnchorElement::HandleClick(Event& event) {
       !HasRel(kRelationNoReferrer)) {
     UseCounter::Count(GetDocument(),
                       WebFeature::kHTMLAnchorElementReferrerPolicyAttribute);
-    request.SetReferrerPolicy(
-        policy, ResourceRequest::SetReferrerPolicyLocation::kAnchorElement);
+    request.SetReferrerPolicy(policy);
   }
 
   // Ignore the download attribute if we either can't read the content, or

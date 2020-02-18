@@ -20,6 +20,8 @@ component("lib") {
   sources = [
     "assistant_manager_service.h",
     "assistant_settings_manager.h",
+    "assistant_state_proxy.cc",
+    "assistant_state_proxy.h",
     "constants.cc",
     "constants.h",
     "fake_assistant_manager_service_impl.cc",
@@ -60,7 +62,6 @@ component("lib") {
     "//chromeos/services/assistant/public/mojom",
     "//mojo/public/cpp/bindings:bindings",
     "//services/audio/public/cpp:cpp",
-    "//services/service_manager/public/cpp:cpp",
   ]
 
   if (enable_cros_libassistant) {
@@ -120,7 +121,6 @@ component("lib") {
       "//services/media_session/public/mojom",
       "//services/network/public/cpp",
       "//services/network/public/mojom",
-      "//services/service_manager/public/cpp",
       "//ui/base",
       "//url",
     ]
@@ -137,6 +137,7 @@ source_set("tests") {
   testonly = true
   deps = [
     ":lib",
+    "//ash/public/mojom",
     "//base",
     "//base/test:test_support",
     "//chromeos/audio",
@@ -150,12 +151,13 @@ source_set("tests") {
     "//services/identity/public/mojom",
     "//services/network:test_support",
     "//services/network/public/cpp:cpp",
-    "//services/service_manager/public/cpp",
-    "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
+
   sources = [
+    "fake_client.cc",
+    "fake_client.h",
     "service_unittest.cc",
   ]
 

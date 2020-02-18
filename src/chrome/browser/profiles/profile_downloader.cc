@@ -110,8 +110,9 @@ std::string ProfileDownloader::GetProfilePictureURL() const {
 void ProfileDownloader::StartFetchingImage() {
   VLOG(1) << "Fetching user entry with token: " << auth_token_;
   auto maybe_account_info =
-      identity_manager_->FindAccountInfoForAccountWithRefreshTokenByAccountId(
-          account_id_);
+      identity_manager_
+          ->FindExtendedAccountInfoForAccountWithRefreshTokenByAccountId(
+              account_id_);
   if (maybe_account_info.has_value())
     account_info_ = maybe_account_info.value();
 
@@ -213,8 +214,7 @@ void ProfileDownloader::FetchImageData() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = image_url_to_fetch;
-  resource_request->load_flags =
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   if (!auth_token_.empty()) {
     resource_request->headers.SetHeader(
         net::HttpRequestHeaders::kAuthorization,

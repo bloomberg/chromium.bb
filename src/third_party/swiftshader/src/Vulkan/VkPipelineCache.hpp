@@ -16,11 +16,13 @@
 #define VK_PIPELINE_CACHE_HPP_
 
 #include "VkObject.hpp"
+
 #include <cstring>
 #include <functional>
-#include <memory>
 #include <map>
+#include <memory>
 #include <mutex>
+#include <string>
 #include <vector>
 
 namespace sw
@@ -52,14 +54,18 @@ public:
 		struct SpecializationInfo
 		{
 			SpecializationInfo(const VkSpecializationInfo* specializationInfo);
-			~SpecializationInfo();
 
 			bool operator<(const SpecializationInfo& specializationInfo) const;
 
-			VkSpecializationInfo* get() const { return info; }
+			const VkSpecializationInfo* get() const { return info.get(); }
 
 		private:
-			VkSpecializationInfo* info = nullptr;
+			struct Deleter
+			{
+				void operator()(VkSpecializationInfo*) const;
+			};
+
+			std::shared_ptr<VkSpecializationInfo> info;
 		};
 
 		SpirvShaderKey(const VkShaderStageFlagBits pipelineStage,

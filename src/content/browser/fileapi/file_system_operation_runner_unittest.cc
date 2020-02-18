@@ -11,12 +11,12 @@
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -87,7 +87,7 @@ class FileSystemOperationRunnerTest : public testing::Test {
 
  private:
   base::ScopedTempDir base_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemOperationRunnerTest);
@@ -183,8 +183,7 @@ TEST_F(FileSystemOperationRunnerTest, CancelWithInvalidId) {
 class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
  public:
   MultiThreadFileSystemOperationRunnerTest()
-      : thread_bundle_(
-            content::TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP) {}
 
   void SetUp() override {
     ASSERT_TRUE(base_.CreateUniqueTempDir());
@@ -192,7 +191,8 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath();
     file_system_context_ = new FileSystemContext(
         base::ThreadTaskRunnerHandle::Get().get(),
-        base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()}).get(),
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()})
+            .get(),
         storage::ExternalMountPoints::CreateRefCounted().get(),
         base::MakeRefCounted<MockSpecialStoragePolicy>().get(), nullptr,
         std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
@@ -221,7 +221,7 @@ class MultiThreadFileSystemOperationRunnerTest : public testing::Test {
 
  private:
   base::ScopedTempDir base_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   scoped_refptr<FileSystemContext> file_system_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiThreadFileSystemOperationRunnerTest);

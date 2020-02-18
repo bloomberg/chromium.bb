@@ -153,6 +153,7 @@ bool SkDeferredDisplayListRecorder::init() {
     if (usesGLFBO0) {
         surfaceFlags |= GrInternalSurfaceFlags::kGLRTFBOIDIs0;
     }
+    // FIXME: Why do we use GrMipMapped::kNo instead of SkSurfaceCharacterization::fIsMipMapped?
     static constexpr GrProxyProvider::TextureInfo kTextureInfo{GrMipMapped::kNo,
                                                                GrTextureType::k2D};
     const GrProxyProvider::TextureInfo* optionalTextureInfo = nullptr;
@@ -166,7 +167,7 @@ bool SkDeferredDisplayListRecorder::init() {
                 // prior to the proxy backing the DLL's surface. Steal its GrRenderTarget.
                 SkASSERT(lazyProxyData->fReplayDest->peekSurface());
                 auto surface = sk_ref_sp<GrSurface>(lazyProxyData->fReplayDest->peekSurface());
-                return GrSurfaceProxy::LazyInstantiationResult(std::move(surface));
+                return GrSurfaceProxy::LazyCallbackResult(std::move(surface));
             },
             fCharacterization.backendFormat(),
             desc,
@@ -174,23 +175,25 @@ bool SkDeferredDisplayListRecorder::init() {
             fCharacterization.origin(),
             surfaceFlags,
             optionalTextureInfo,
+            GrMipMapsStatus::kNotAllocated,
             SkBackingFit::kExact,
             SkBudgeted::kYes,
             fCharacterization.isProtected(),
-            fCharacterization.vulkanSecondaryCBCompatible());
+            fCharacterization.vulkanSecondaryCBCompatible(),
+            GrSurfaceProxy::UseAllocator::kYes);
 
     if (!proxy) {
         return false;
     }
 
-    sk_sp<GrSurfaceContext> c = fContext->priv().makeWrappedSurfaceContext(
-            std::move(proxy),
-            grColorType,
-            kPremul_SkAlphaType,
-            fCharacterization.refColorSpace(),
-            &fCharacterization.surfaceProps());
-    fSurface = SkSurface_Gpu::MakeWrappedRenderTarget(fContext.get(),
-                                                      sk_ref_sp(c->asRenderTargetContext()));
+    auto c = fContext->priv().makeWrappedSurfaceContext(std::move(proxy),
+                                                        grColorType,
+                                                        kPremul_SkAlphaType,
+                                                        fCharacterization.refColorSpace(),
+                                                        &fCharacterization.surfaceProps());
+    SkASSERT(c->asRenderTargetContext());
+    std::unique_ptr<GrRenderTargetContext> rtc(c.release()->asRenderTargetContext());
+    fSurface = SkSurface_Gpu::MakeWrappedRenderTarget(fContext.get(), std::move(rtc));
     return SkToBool(fSurface.get());
 }
 
@@ -220,7 +223,7 @@ std::unique_ptr<SkDeferredDisplayList> SkDeferredDisplayListRecorder::detach() {
     auto ddl = std::unique_ptr<SkDeferredDisplayList>(
                            new SkDeferredDisplayList(fCharacterization, std::move(fLazyProxyData)));
 
-    fContext->priv().moveOpListsToDDL(ddl.get());
+    fContext->priv().moveRenderTasksToDDL(ddl.get());
 
     // We want a new lazy proxy target for each recorded DDL so force the (lazy proxy-backed)
     // SkSurface to be regenerated for each DDL.

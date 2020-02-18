@@ -25,7 +25,7 @@
 #include "url/gurl.h"
 
 #if !defined(OS_ANDROID)
-#include "chrome/browser/sharing/click_to_call/click_to_call_sharing_dialog_controller.h"
+#include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_utils.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -124,7 +124,7 @@ void LaunchUrlWithoutSecurityCheckWithDelegate(
   platform_util::OpenExternal(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()), url);
 
-#if !defined(OS_ANDROID)
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   // If the protocol navigation occurs in a new tab, close it.
   // Avoid calling CloseContents if the tab is not in this browser's tab strip
   // model; this can happen if the protocol was initiated by something
@@ -164,13 +164,14 @@ void OnDefaultProtocolClientWorkerFinished(
   // handling flow).
   bool chrome_is_default_handler = state == shell_integration::IS_DEFAULT;
 
-#if !defined(OS_ANDROID)
-  if (web_contents &&
-      ShouldOfferClickToCall(web_contents->GetBrowserContext(), escaped_url)) {
+  // On ChromeOS, Click to Call is integrated into the external protocol dialog.
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+  if (web_contents && ShouldOfferClickToCallForURL(
+                          web_contents->GetBrowserContext(), escaped_url)) {
     // Handle tel links by opening the Click to Call dialog. This will call back
     // into LaunchUrlWithoutSecurityCheck if the user selects a system handler.
-    ClickToCallSharingDialogController::ShowDialog(web_contents, escaped_url,
-                                                   chrome_is_default_handler);
+    ClickToCallUiController::ShowDialog(web_contents, escaped_url,
+                                        chrome_is_default_handler);
     return;
   }
 #endif

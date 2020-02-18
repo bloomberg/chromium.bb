@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import ConfigParser
 import os
+
+from six.moves import configparser
 
 from chromite.lib import constants
 
@@ -28,9 +29,9 @@ CROS_SIGNING_BIN_DIR = os.path.join(CROS_SIGNING_BASE_DIR,
 
 def GetDefaultVbootStableHash(config_file=None):
   """Get the default signer vboot_stable_hash config value."""
-  config = ConfigParser.ConfigParser()
+  config = configparser.ConfigParser()
   config.read(config_file or CROS_SIGNING_CONFIG)
   try:
     return config.get('signer', 'vboot_stable_hash')
-  except ConfigParser.Error:
+  except configparser.Error:
     return None

@@ -18,13 +18,14 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scoped_paint_chunk_properties.h"
+#include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
 
 namespace blink {
 
 void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
                                          const IntPoint& paint_offset,
                                          const CullRect& cull_rect) {
-  if (GetScrollableArea().GetLayoutBox()->StyleRef().Resize() == EResize::kNone)
+  if (!GetScrollableArea().GetLayoutBox()->StyleRef().HasResize())
     return;
 
   IntRect abs_rect = GetScrollableArea().ResizerCornerRect(
@@ -35,6 +36,18 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
   abs_rect.MoveBy(paint_offset);
 
+  const auto& client = DisplayItemClientForCorner();
+  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
+    IntRect touch_rect = scrollable_area_->ResizerCornerRect(
+        GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
+            scrollable_area_->Layer()->SubpixelAccumulation()),
+        kResizerForTouch);
+    touch_rect.MoveBy(paint_offset);
+    ScrollHitTestDisplayItem::Record(context, client,
+                                     DisplayItem::kResizerScrollHitTest,
+                                     nullptr, touch_rect);
+  }
+
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.Intersects(abs_rect))
       return;
@@ -44,7 +57,6 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
     return;
   }
 
-  const auto& client = DisplayItemClientForCorner();
   if (DrawingRecorder::UseCachedDrawingIfPossible(context, client,
                                                   DisplayItem::kResizer))
     return;
@@ -214,7 +226,8 @@ void ScrollableAreaPainter::PaintScrollCorner(GraphicsContext& context,
   }
 
   const auto& client = DisplayItemClientForCorner();
-  theme->PaintScrollCorner(context, client, abs_rect);
+  theme->PaintScrollCorner(context, client, abs_rect,
+                           GetScrollableArea().UsedColorScheme());
 }
 
 PaintLayerScrollableArea& ScrollableAreaPainter::GetScrollableArea() const {

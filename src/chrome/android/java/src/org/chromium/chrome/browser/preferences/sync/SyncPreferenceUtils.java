@@ -11,16 +11,19 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Browser;
 import android.support.annotation.Nullable;
-import android.support.customtabs.CustomTabsIntent;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
+
+import androidx.browser.customtabs.CustomTabsIntent;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
+import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
 import org.chromium.chrome.browser.customtabs.CustomTabIntentDataProvider;
 import org.chromium.chrome.browser.sync.GoogleServiceAuthError;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
@@ -87,6 +90,11 @@ public class SyncPreferenceUtils {
             return res.getString(R.string.sync_is_disabled_by_administrator);
         }
 
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && !profileSyncService.isFirstSetupComplete()) {
+            return res.getString(R.string.sync_settings_not_confirmed);
+        }
+
         if (profileSyncService.getAuthError() != GoogleServiceAuthError.State.NONE) {
             return res.getString(
                     GoogleServiceAuthError.getMessageID(profileSyncService.getAuthError()));
@@ -131,6 +139,12 @@ public class SyncPreferenceUtils {
         if (profileSyncService.isSyncDisabledByEnterprisePolicy()) {
             return UiUtils.getTintedDrawable(
                     context, R.drawable.ic_sync_error_40dp, R.color.default_icon_color);
+        }
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID)
+                && !profileSyncService.isFirstSetupComplete()) {
+            return UiUtils.getTintedDrawable(
+                    context, R.drawable.ic_sync_error_40dp, R.color.default_red);
         }
 
         if (profileSyncService.isEngineInitialized()
@@ -196,8 +210,7 @@ public class SyncPreferenceUtils {
         Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
                 activity, customTabIntent.intent);
         intent.setPackage(activity.getPackageName());
-        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE,
-                CustomTabIntentDataProvider.CustomTabsUiType.DEFAULT);
+        intent.putExtra(CustomTabIntentDataProvider.EXTRA_UI_TYPE, CustomTabsUiType.DEFAULT);
         intent.putExtra(Browser.EXTRA_APPLICATION_ID, activity.getPackageName());
         IntentHandler.addTrustedIntentExtras(intent);
 

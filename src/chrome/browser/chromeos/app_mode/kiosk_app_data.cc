@@ -86,8 +86,9 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
       : client_(client),
         crx_file_(crx_file),
         success_(false),
-        task_runner_(base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+        task_runner_(base::CreateSequencedTaskRunner(
+            {base::ThreadPool(), base::MayBlock(),
+             base::TaskPriority::BEST_EFFORT,
              base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
   void Start() {
@@ -152,13 +153,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
         std::move(connector), extensions::Manifest::INTERNAL,
         extensions::Extension::NO_FLAGS, temp_dir_.GetPath(),
         task_runner_.get(), this);
-    // Temporary allow CRX2 for kiosk apps.
-    // See https://crbug.com/960428. Note that we don't have user policies at
-    // this stage, so we have to explicitly allow CRX2 extension archive format.
-    // TODO(crbug.com/740715): remove in M77.
     unpacker->StartWithCrx(extensions::CRXFileInfo(
-        crx_file_, extensions::GetPolicyVerifierFormat(
-                       true /* insecure_updates_enabled */)));
+        crx_file_, extensions::GetPolicyVerifierFormat()));
   }
 
   void NotifyFinishedInThreadPool() {
@@ -169,9 +165,8 @@ class KioskAppData::CrxLoader : public extensions::SandboxedUnpackerClient {
                    << temp_dir_.GetPath().value();
     }
 
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&CrxLoader::NotifyFinishedOnUIThread, this));
   }
 
   void NotifyFinishedOnUIThread() {
@@ -281,8 +276,7 @@ KioskAppData::KioskAppData(KioskAppDataDelegate* delegate,
       delegate_(delegate),
       status_(STATUS_INIT),
       update_url_(update_url),
-      crx_file_(cached_crx),
-      weak_factory_(this) {
+      crx_file_(cached_crx) {
   if (ignore_kiosk_app_data_load_failures_for_testing) {
     LOG(WARNING) << "Force KioskAppData loaded for testing.";
     SetStatus(STATUS_LOADED);

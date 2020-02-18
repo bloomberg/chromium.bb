@@ -9,16 +9,19 @@ from __future__ import print_function
 
 import os
 
+from chromite.api import controller
+from chromite.api import validate
 from chromite.lib import cros_build_lib
 from chromite.service import sdk
 
 
-def Create(input_proto, output_proto):
+def Create(input_proto, output_proto, config):
   """Chroot creation, includes support for replacing an existing chroot.
 
   Args:
     input_proto (CreateRequest): The input proto.
     output_proto (CreateResponse): The output proto.
+    config (api_config.ApiConfig): The API call config.
   """
   replace = not input_proto.flags.no_replace
   bootstrap = input_proto.flags.bootstrap
@@ -29,6 +32,9 @@ def Create(input_proto, output_proto):
 
   if chroot_path and not os.path.isabs(chroot_path):
     cros_build_lib.Die('The chroot path must be absolute.')
+
+  if config.validate_only:
+    return controller.RETURN_CODE_VALID_INPUT
 
   paths = sdk.ChrootPaths(cache_dir=cache_dir, chroot_path=chroot_path)
   args = sdk.CreateArguments(replace=replace, bootstrap=bootstrap,
@@ -44,12 +50,14 @@ def Create(input_proto, output_proto):
                        'error creating the chroot that was not detected.')
 
 
-def Update(input_proto, output_proto):
+@validate.validation_complete
+def Update(input_proto, output_proto, _config):
   """Update the chroot.
 
   Args:
     input_proto (UpdateRequest): The input proto.
     output_proto (UpdateResponse): The output proto.
+    _config (api_config.ApiConfig): The API call config.
   """
   build_source = input_proto.flags.build_source
   targets = [target.name for target in input_proto.toolchain_targets]

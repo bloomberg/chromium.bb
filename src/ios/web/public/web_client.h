@@ -14,12 +14,10 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/values.h"
-#include "ios/web/public/user_agent.h"
-#include "mojo/public/cpp/system/message_pipe.h"
-#include "services/service_manager/public/cpp/manifest.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "ios/web/common/user_agent.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "ui/base/layout.h"
 #include "url/url_util.h"
 
@@ -34,10 +32,6 @@ class GURL;
 
 namespace net {
 class SSLInfo;
-}
-
-namespace service_manager {
-class Service;
 }
 
 namespace web {
@@ -107,9 +101,6 @@ class WebClient {
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id) const;
 
-  // Returns whether the contents of a resource are compressed (with gzip).
-  virtual bool IsDataResourceGzipped(int resource_id) const;
-
   // Returns a list of additional WebUI schemes, if any. These additional
   // schemes act as aliases to the about: scheme. The additional schemes may or
   // may not serve specific WebUI pages depending on the particular
@@ -141,34 +132,12 @@ class WebClient {
   virtual NSString* GetDocumentStartScriptForMainFrame(
       BrowserState* browser_state) const;
 
-  // Handles an incoming service request from the Service Manager.
-  virtual std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request);
-
-  // Allows the embedder to augment service manifests for existing services.
-  // Specifically, the sets of exposed and required capabilities, interface
-  // filter capabilities (deprecated), and packaged services will be taken from
-  // the returned Manifest and amended to those of the existing Manifest for the
-  // service named |name|.
-  //
-  // If no overlay is provided for the service, this returns |base::nullopt|.
-  virtual base::Optional<service_manager::Manifest> GetServiceManifestOverlay(
-      base::StringPiece name);
-
-  // Allows the embedder to provide manifests for additional services available
-  // at runtime. Any extra manifests returned by this method should have
-  // corresponding logic to actually run the service on-demand in
-  // |HandleServiceRequest()|.
-  virtual std::vector<service_manager::Manifest> GetExtraServiceManifests();
-
   // Allows the embedder to bind an interface request for a WebState-scoped
   // interface that originated from the main frame of |web_state|. Called if
-  // |web_state| could not bind the request for |interface_name| itself.
-  virtual void BindInterfaceRequestFromMainFrame(
+  // |web_state| could not bind the receiver itself.
+  virtual void BindInterfaceReceiverFromMainFrame(
       WebState* web_state,
-      const std::string& interface_name,
-      mojo::ScopedMessagePipeHandle interface_pipe) {}
+      mojo::GenericPendingReceiver receiver) {}
 
   // Informs the embedder that a certificate error has occurred. |cert_error| is
   // a network error code defined in //net/base/net_error_list.h. If
@@ -183,16 +152,17 @@ class WebClient {
       bool overridable,
       const base::Callback<void(bool)>& callback);
 
-  // Returns the information to display when a navigation error occurs.
-  // |error| and |error_html| are always valid pointers. Embedder may set
-  // |error_html| to an HTML page containing the details of the error and maybe
-  // links to more info.
+  // Calls the given |callback| with the contents of an error page to display
+  // when a navigation error occurs. |error| is always a valid pointer. The
+  // string passed to |callback| will be nil if no error page should be
+  // displayed. Otherwise, this string will contain the details of the error
+  // and maybe links to more info.
   virtual void PrepareErrorPage(WebState* web_state,
                                 const GURL& url,
                                 NSError* error,
                                 bool is_post,
                                 bool is_off_the_record,
-                                NSString** error_html);
+                                base::OnceCallback<void(NSString*)> callback);
 
   // Allows upper layers to inject experimental flags to the web layer.
   // TODO(crbug.com/734150): Clean up this flag after experiment. If need for a

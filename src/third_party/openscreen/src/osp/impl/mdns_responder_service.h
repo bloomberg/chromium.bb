@@ -17,8 +17,8 @@
 #include "osp/impl/service_listener_impl.h"
 #include "osp/impl/service_publisher_impl.h"
 #include "platform/api/network_interface.h"
+#include "platform/api/network_runner.h"
 #include "platform/base/ip_address.h"
-#include "platform/impl/event_loop.h"
 
 namespace openscreen {
 
@@ -29,15 +29,17 @@ class MdnsResponderAdapterFactory {
   virtual std::unique_ptr<mdns::MdnsResponderAdapter> Create() = 0;
 };
 
-class MdnsResponderService final : public ServiceListenerImpl::Delegate,
-                                   public ServicePublisherImpl::Delegate {
+class MdnsResponderService : public ServiceListenerImpl::Delegate,
+                             public ServicePublisherImpl::Delegate,
+                             public platform::UdpReadCallback {
  public:
-  explicit MdnsResponderService(
+  MdnsResponderService(
+      platform::NetworkRunner* network_runner,
       const std::string& service_name,
       const std::string& service_protocol,
       std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory,
       std::unique_ptr<MdnsPlatformService> platform);
-  ~MdnsResponderService() override;
+  virtual ~MdnsResponderService() override;
 
   void SetServiceConfig(
       const std::string& hostname,
@@ -46,7 +48,9 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
       const std::vector<platform::NetworkInterfaceIndex> whitelist,
       const std::map<std::string, std::string>& txt_data);
 
-  void HandleNewEvents(const std::vector<platform::UdpPacket>& packets);
+  // UdpReadCallback overrides.
+  void OnRead(platform::UdpPacket packet,
+              platform::NetworkRunner* network_runner) override;
 
   // ServiceListenerImpl::Delegate overrides.
   void StartListener() override;
@@ -55,7 +59,6 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   void SuspendListener() override;
   void ResumeListener() override;
   void SearchNow(ServiceListener::State from) override;
-  void RunTasksListener() override;
 
   // ServicePublisherImpl::Delegate overrides.
   void StartPublisher() override;
@@ -63,9 +66,30 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   void StopPublisher() override;
   void SuspendPublisher() override;
   void ResumePublisher() override;
-  void RunTasksPublisher() override;
+
+ protected:
+  void HandleMdnsEvents();
+
+  std::unique_ptr<mdns::MdnsResponderAdapter> mdns_responder_;
 
  private:
+  // Create internal versions of all public methods. These are used to push all
+  // calls to these methods to the task runner.
+  // TODO(rwkeane): Clean up these methods. Some result in multiple pushes to
+  // the task runner when just one would suffice.
+  // ServiceListenerImpl::Delegate overrides.
+  void StartListenerInternal();
+  void StartAndSuspendListenerInternal();
+  void StopListenerInternal();
+  void SuspendListenerInternal();
+  void ResumeListenerInternal();
+  void SearchNowInternal(ServiceListener::State from);
+  void StartPublisherInternal();
+  void StartAndSuspendPublisherInternal();
+  void StopPublisherInternal();
+  void SuspendPublisherInternal();
+  void ResumePublisherInternal();
+
   // NOTE: service_instance implicit in map key.
   struct ServiceInstance {
     platform::UdpSocket* ptr_socket = nullptr;
@@ -98,7 +122,6 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   using InstanceNameSet =
       std::set<mdns::DomainName, mdns::DomainNameComparator>;
 
-  void HandleMdnsEvents();
   void StartListening();
   void StopListening();
   void StartService();
@@ -148,7 +171,6 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
   std::map<std::string, std::string> service_txt_data_;
 
   std::unique_ptr<MdnsResponderAdapterFactory> mdns_responder_factory_;
-  std::unique_ptr<mdns::MdnsResponderAdapter> mdns_responder_;
   std::unique_ptr<MdnsPlatformService> platform_;
   std::vector<MdnsPlatformService::BoundInterface> bound_interfaces_;
 
@@ -170,6 +192,10 @@ class MdnsResponderService final : public ServiceListenerImpl::Delegate,
       network_scoped_domain_to_host_;
 
   std::map<std::string, ServiceInfo> receiver_info_;
+
+  platform::NetworkRunner* network_runner_;
+
+  friend class TestingMdnsResponderService;
 };
 
 }  // namespace openscreen

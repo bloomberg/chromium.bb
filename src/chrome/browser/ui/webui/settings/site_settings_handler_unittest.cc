@@ -48,10 +48,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/cpp/test/fake_usb_device_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -468,7 +469,7 @@ class SiteSettingsHandlerTest : public testing::Test {
   const std::string kFlash;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingProfile* incognito_profile_;
   content::TestWebUI web_ui_;
@@ -1009,8 +1010,7 @@ TEST_F(SiteSettingsHandlerTest, GetAndSetOriginPermissions) {
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 TEST_F(SiteSettingsHandlerTest, ChangingFlashSettingForSiteIsRemembered) {
-  ChromePluginServiceFilter::GetInstance()->RegisterResourceContext(
-      profile(), profile()->GetResourceContext());
+  ChromePluginServiceFilter::GetInstance()->RegisterProfile(profile());
   FlashContentSettingsChangeWaiter waiter(profile());
 
   const std::string origin_with_port("https://www.example.com:443");
@@ -1561,9 +1561,10 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
         6355, 0, "Google", "Widget", "789XYZ");
 
     auto* chooser_context = UsbChooserContextFactory::GetForProfile(profile());
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
-    chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
+    chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
     chooser_context->GetDevices(
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();
@@ -1603,9 +1604,10 @@ class SiteSettingsHandlerChooserExceptionTest : public SiteSettingsHandlerTest {
     CreateIncognitoProfile();
     auto* chooser_context =
         UsbChooserContextFactory::GetForProfile(incognito_profile());
-    device::mojom::UsbDeviceManagerPtr device_manager_ptr;
-    device_manager_.AddBinding(mojo::MakeRequest(&device_manager_ptr));
-    chooser_context->SetDeviceManagerForTesting(std::move(device_manager_ptr));
+    mojo::PendingRemote<device::mojom::UsbDeviceManager> device_manager;
+    device_manager_.AddReceiver(
+        device_manager.InitWithNewPipeAndPassReceiver());
+    chooser_context->SetDeviceManagerForTesting(std::move(device_manager));
     chooser_context->GetDevices(
         base::DoNothing::Once<std::vector<device::mojom::UsbDeviceInfoPtr>>());
     base::RunLoop().RunUntilIdle();

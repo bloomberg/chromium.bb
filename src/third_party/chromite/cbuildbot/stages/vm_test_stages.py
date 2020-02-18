@@ -14,7 +14,6 @@ archiving results and VM images in case of failure.
 from __future__ import print_function
 
 import datetime
-import fnmatch
 import os
 import re
 import shutil
@@ -32,6 +31,7 @@ from chromite.lib import moblab_vm
 from chromite.lib import osutils
 from chromite.lib import path_util
 from chromite.lib import timeout_util
+from chromite.service import artifacts as artifacts_svc
 
 _GCE_TEST_RESULTS = 'gce_test_results_%(attempt)s'
 _VM_TEST_RESULTS = 'vm_test_results_%(attempt)s'
@@ -329,7 +329,7 @@ class VMTestStage(generic_stages.BoardSpecificBuilderStage,
 class ForgivenVMTestStage(VMTestStage, generic_stages.ForgivingBuilderStage):
   """Stage that forgives vm test failures."""
 
-  stage_name = "ForgivenVMTest"
+  stage_name = 'ForgivenVMTest'
   category = constants.TEST_INFRA_STAGE
 
   def __init__(self, *args, **kwargs):
@@ -480,7 +480,7 @@ class MoblabVMTestStage(generic_stages.BoardSpecificBuilderStage,
             dut_target_image=dut_target_image,
             results_dir=results_dir,
             local_image_cache=payload_dir,
-            timeout_m=(self._PERFORM_TIMEOUT_S - elapsed) / 60,
+            timeout_m=(self._PERFORM_TIMEOUT_S - elapsed) // 60,
         )
 
       vms.Stop()
@@ -755,57 +755,7 @@ def ArchiveVMFiles(buildroot, test_results_dir, archive_path):
     The paths to the tarballs.
   """
   images_dir = os.path.join(buildroot, 'chroot', test_results_dir.lstrip('/'))
-  return ArchiveVMFilesFromImageDir(images_dir, archive_path)
-
-
-def ArchiveVMFilesFromImageDir(images_dir, archive_path):
-  """Archives the VM memory and disk images into tarballs.
-
-  This method performs the work that used to be done in ArchiveVMFiles, but
-  removes the dependence on the default chroot location. This was created for
-  the build api. Unless you're working on that you probably want the other one.
-
-  TODO(crbug.com/954344): Refactor to an appropriate lib module.
-
-  See:
-    ArchiveVMFiles()
-
-  Args:
-    images_dir (str): The directory containing the images to archive.
-    archive_path (str): The directory where the archives should be created.
-
-  Returns:
-    list[str] - The paths to the tarballs.
-  """
-  images = []
-  for path, _, filenames in os.walk(images_dir):
-    images.extend([
-        os.path.join(path, filename)
-        for filename in fnmatch.filter(filenames, constants.VM_DISK_PREFIX +
-                                       '*')
-    ])
-    images.extend([
-        os.path.join(path, filename)
-        for filename in fnmatch.filter(filenames, constants.VM_MEM_PREFIX + '*')
-    ])
-
-  tar_files = []
-  for image_path in images:
-    image_rel_path = os.path.relpath(image_path, images_dir)
-    image_parent_dir = os.path.dirname(image_path)
-    image_file = os.path.basename(image_path)
-    tarball_path = os.path.join(archive_path,
-                                "%s.tar" % image_rel_path.replace('/', '_'))
-    # Note that tar will chdir to |image_parent_dir|, so that |image_file|
-    # is at the top-level of the tar file.
-    cros_build_lib.CreateTarball(
-        tarball_path,
-        image_parent_dir,
-        compression=cros_build_lib.COMP_BZIP2,
-        inputs=[image_file])
-    tar_files.append(tarball_path)
-
-  return tar_files
+  return artifacts_svc.ArchiveFilesFromImageDir(images_dir, archive_path)
 
 
 def RunCrosVMTest(board, image_dir):

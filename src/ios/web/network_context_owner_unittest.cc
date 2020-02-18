@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -25,7 +25,7 @@ class NetworkContextOwnerTest : public PlatformTest {
   NetworkContextOwnerTest()
       : saw_connection_error_(false),
         context_getter_(base::MakeRefCounted<net::TestURLRequestContextGetter>(
-            base::CreateSingleThreadTaskRunnerWithTraits({WebThread::IO}))) {}
+            base::CreateSingleThreadTaskRunner({WebThread::IO}))) {}
 
   ~NetworkContextOwnerTest() override {
     // Tests should cleanup after themselves.
@@ -41,7 +41,7 @@ class NetworkContextOwnerTest : public PlatformTest {
   void SawError() { saw_connection_error_ = true; }
 
   bool saw_connection_error_;
-  TestWebThreadBundle test_web_thread_bundle_;
+  WebTaskEnvironment task_environment_;
   scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   network::mojom::NetworkContextPtr network_context_;
   std::unique_ptr<NetworkContextOwner> network_context_owner_;
@@ -79,7 +79,7 @@ TEST_F(NetworkContextOwnerTest, ShutdownHandling) {
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(saw_connection_error_);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(
           &net::TestURLRequestContextGetter::NotifyContextShuttingDown,

@@ -292,7 +292,10 @@ void ChromeClientImpl::DidOverscroll(const FloatSize& overscroll_delta,
                                      const FloatSize& velocity_in_viewport) {
   if (!web_view_->does_composite())
     return;
-  web_view_->WidgetClient()->DidOverscroll(
+
+  // TODO(darin): Change caller to pass LocalFrame.
+  DCHECK(web_view_->MainFrameImpl());
+  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->DidOverscroll(
       overscroll_delta, accumulated_overscroll, position_in_viewport,
       velocity_in_viewport);
 }
@@ -322,10 +325,10 @@ void ChromeClientImpl::SetOverscrollBehavior(
 }
 
 void ChromeClientImpl::Show(NavigationPolicy navigation_policy) {
-  if (web_view_->WidgetClient()) {
-    web_view_->WidgetClient()->Show(
-        static_cast<WebNavigationPolicy>(navigation_policy));
-  }
+  // TODO(darin): Change caller to pass LocalFrame.
+  DCHECK(web_view_->MainFrameImpl());
+  web_view_->MainFrameImpl()->FrameWidgetImpl()->Client()->Show(
+      static_cast<WebNavigationPolicy>(navigation_policy));
 }
 
 bool ChromeClientImpl::ShouldReportDetailedMessageForSource(
@@ -465,10 +468,23 @@ IntRect ChromeClientImpl::ViewportToScreen(
 }
 
 float ChromeClientImpl::WindowToViewportScalar(const float scalar_value) const {
-  if (!web_view_->WidgetClient())
+  // TODO(darin): Change callers to pass a LocalFrame.
+  return WindowToViewportScalar(web_view_->MainFrameImpl()
+                                    ? web_view_->MainFrameImpl()->GetFrame()
+                                    : nullptr,
+                                scalar_value);
+}
+
+float ChromeClientImpl::WindowToViewportScalar(LocalFrame* frame,
+                                               const float scalar_value) const {
+  // Note, FrameWidgetImpl() can be null during Scrollbar() construction.
+  WebLocalFrameImpl* local_frame = WebLocalFrameImpl::FromFrame(frame);
+  if (!local_frame || !local_frame->FrameWidgetImpl())
     return scalar_value;
+
   WebFloatRect viewport_rect(0, 0, scalar_value, 0);
-  web_view_->WidgetClient()->ConvertWindowToViewport(&viewport_rect);
+  local_frame->FrameWidgetImpl()->Client()->ConvertWindowToViewport(
+      &viewport_rect);
   return viewport_rect.width;
 }
 
@@ -620,7 +636,7 @@ DateTimeChooser* ChromeClientImpl::OpenDateTimeChooser(
 
   NotifyPopupOpeningObservers();
   if (RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()) {
-    return MakeGarbageCollected<DateTimeChooserImpl>(this, picker_client,
+    return MakeGarbageCollected<DateTimeChooserImpl>(frame, picker_client,
                                                      parameters);
   }
 
@@ -849,7 +865,7 @@ PopupMenu* ChromeClientImpl::OpenPopupMenu(LocalFrame& frame,
                                            HTMLSelectElement& select) {
   NotifyPopupOpeningObservers();
   if (WebViewImpl::UseExternalPopupMenus())
-    return MakeGarbageCollected<ExternalPopupMenu>(frame, select, *web_view_);
+    return MakeGarbageCollected<ExternalPopupMenu>(frame, select);
 
   DCHECK(RuntimeEnabledFeatures::PagePopupEnabled());
   return MakeGarbageCollected<InternalPopupMenu>(this, select);
@@ -870,6 +886,7 @@ DOMWindow* ChromeClientImpl::PagePopupWindowForTesting() const {
 void ChromeClientImpl::SetBrowserControlsState(float top_height,
                                                float bottom_height,
                                                bool shrinks_layout) {
+  DCHECK(web_view_->MainFrameWidget());
   WebSize size = web_view_->MainFrameWidget()->Size();
   if (shrinks_layout)
     size.height -= top_height + bottom_height;
@@ -912,13 +929,11 @@ bool ChromeClientImpl::ShouldOpenUIElementDuringPageDismissal(
   return false;
 }
 
-WebLayerTreeView* ChromeClientImpl::GetWebLayerTreeView(LocalFrame* frame) {
-  CHECK(frame);
-  WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
-  CHECK(web_frame);
-  if (WebFrameWidgetBase* frame_widget = web_frame->LocalRootFrameWidget())
-    return frame_widget->GetLayerTreeView();
-  return nullptr;
+viz::FrameSinkId ChromeClientImpl::GetFrameSinkId(LocalFrame* frame) {
+  WebFrameWidgetBase* widget =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget();
+  WebWidgetClient* client = widget->Client();
+  return client->GetFrameSinkId();
 }
 
 void ChromeClientImpl::RequestDecode(LocalFrame* frame,
@@ -963,6 +978,27 @@ void ChromeClientImpl::FallbackCursorModeSetCursorVisibility(LocalFrame* frame,
 
   if (WebWidgetClient* client = widget->Client())
     client->FallbackCursorModeSetCursorVisibility(visible);
+}
+
+void ChromeClientImpl::RequestBeginMainFrameNotExpected(LocalFrame& frame,
+                                                        bool request) {
+  // WebWidgetClient can be null when not compositing, and this behaviour only
+  // applies when compositing is enabled.
+  if (!web_view_->does_composite())
+    return;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  client->RequestBeginMainFrameNotExpected(request);
+}
+
+int ChromeClientImpl::GetLayerTreeId(LocalFrame& frame) {
+  // WebWidgetClient can be null when not compositing, and this method is only
+  // useful when compositing is enabled.
+  if (!web_view_->does_composite())
+    return 0;
+  WebWidgetClient* client =
+      WebLocalFrameImpl::FromFrame(frame)->LocalRootFrameWidget()->Client();
+  return client->GetLayerTreeId();
 }
 
 void ChromeClientImpl::SetEventListenerProperties(
@@ -1114,11 +1150,13 @@ void ChromeClientImpl::SetTouchAction(LocalFrame* frame,
     client->SetTouchAction(static_cast<TouchAction>(touch_action));
 }
 
-bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame) {
+bool ChromeClientImpl::RequestPointerLock(LocalFrame* frame,
+                                          bool request_unadjusted_movement) {
   return WebLocalFrameImpl::FromFrame(frame)
       ->LocalRootFrameWidget()
       ->Client()
-      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame));
+      ->RequestPointerLock(WebLocalFrameImpl::FromFrame(frame),
+                           request_unadjusted_movement);
 }
 
 void ChromeClientImpl::RequestPointerUnlock(LocalFrame* frame) {
@@ -1218,7 +1256,7 @@ void ChromeClientImpl::AjaxSucceeded(LocalFrame* frame) {
 }
 
 void ChromeClientImpl::RegisterViewportLayers() const {
-  if (web_view_->RootGraphicsLayer() && web_view_->LayerTreeView())
+  if (web_view_->RootGraphicsLayer())
     web_view_->RegisterViewportLayersWithCompositor();
 }
 

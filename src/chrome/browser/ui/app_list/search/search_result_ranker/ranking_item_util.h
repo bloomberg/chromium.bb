@@ -26,7 +26,9 @@ enum class RankingItemType {
   kOmniboxDocument,
   kOmniboxHistory,
   kOmniboxNavSuggest,
-  kOmniboxSearch
+  kOmniboxSearch,
+  kZeroStateFile,
+  kDriveQuickAccess
 };
 
 // Convert a |ChromeSearchResult| into its |RankingItemType|.
@@ -38,6 +40,11 @@ RankingItemType RankingItemTypeFromSearchResult(
 // trivially return |kApp|.
 RankingItemType RankingItemTypeFromChromeAppListItem(
     const ChromeAppListItem& item);
+
+// Normalizes app IDs by removing any scheme prefix and trailing slash:
+// "arc://[id]/" to "[id]". This is necessary because apps launched from
+// different parts of the launcher have differently formatted IDs.
+std::string NormalizeAppId(const std::string& id);
 
 // Given a search result ID representing a URL, removes some components of the
 // URL such as the query and fragment. This is intended to normalize URLs that

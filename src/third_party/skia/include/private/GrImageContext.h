@@ -14,9 +14,13 @@
 class GrImageContextPriv;
 class GrProxyProvider;
 
-class SK_API GrImageContext : public GrContext_Base {
+class GrImageContext : public GrContext_Base {
 public:
     ~GrImageContext() override;
+
+    GrBackendFormat defaultBackendFormat(SkColorType ct, GrRenderable renderable) const {
+        return INHERITED::defaultBackendFormat(ct, renderable);
+    }
 
     // Provides access to functions that aren't part of the public API.
     GrImageContextPriv priv();
@@ -27,8 +31,8 @@ protected:
 
     GrImageContext(GrBackendApi, const GrContextOptions&, uint32_t contextID);
 
-    virtual void abandonContext();
-    bool abandoned() const;
+    SK_API virtual void abandonContext();
+    SK_API bool abandoned() const;
 
     GrProxyProvider* proxyProvider() { return fProxyProvider.get(); }
     const GrProxyProvider* proxyProvider() const { return fProxyProvider.get(); }

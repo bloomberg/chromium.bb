@@ -627,7 +627,7 @@ namespace rr
 		return ::defaultConfig();
 	}
 
-	Routine *Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
+	std::shared_ptr<Routine> Nucleus::acquireRoutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */)
 	{
 		if(basicBlock->getInsts().empty() || basicBlock->getInsts().back().getKind() != Ice::Inst::Ret)
 		{
@@ -663,7 +663,7 @@ namespace rr
 		Routine *handoffRoutine = ::routine;
 		::routine = nullptr;
 
-		return handoffRoutine;
+		return std::shared_ptr<Routine>(handoffRoutine);
 	}
 
 	Value *Nucleus::allocateStackVariable(Type *t, int arraySize)
@@ -1220,6 +1220,11 @@ namespace rr
 		::basicBlock->appendInst(cmp);
 
 		return V(result);
+	}
+
+	Value *Nucleus::createPtrEQ(Value *lhs, Value *rhs)
+	{
+		return createIntCompare(Ice::InstIcmp::Eq, lhs, rhs);
 	}
 
 	Value *Nucleus::createICmpEQ(Value *lhs, Value *rhs)
@@ -3517,6 +3522,8 @@ namespace rr
 	void Nucleus::createMaskedStore(Value *ptr, Value *val, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createMaskedStore()"); }
 	Value *Nucleus::createGather(Value *base, Type *elTy, Value *offsets, Value *mask, unsigned int alignment, bool zeroMaskedLanes) { UNIMPLEMENTED("Subzero createGather()"); return nullptr; }
 	void Nucleus::createScatter(Value *base, Value *val, Value *offsets, Value *mask, unsigned int alignment) { UNIMPLEMENTED("Subzero createScatter()"); }
+	RValue<Float> Exp2(RValue<Float> x) { UNIMPLEMENTED("Subzero Exp2()"); return Float(0); }
+	RValue<Float> Log2(RValue<Float> x) { UNIMPLEMENTED("Subzero Log2()"); return Float(0); }
 	RValue<Float4> Sin(RValue<Float4> x) { UNIMPLEMENTED("Subzero Sin()"); return Float4(0); }
 	RValue<Float4> Cos(RValue<Float4> x) { UNIMPLEMENTED("Subzero Cos()"); return Float4(0); }
 	RValue<Float4> Tan(RValue<Float4> x) { UNIMPLEMENTED("Subzero Tan()"); return Float4(0); }
@@ -3535,7 +3542,9 @@ namespace rr
 	RValue<Float4> Log(RValue<Float4> x) { UNIMPLEMENTED("Subzero Log()"); return Float4(0); }
 	RValue<Float4> Exp2(RValue<Float4> x) { UNIMPLEMENTED("Subzero Exp2()"); return Float4(0); }
 	RValue<Float4> Log2(RValue<Float4> x) { UNIMPLEMENTED("Subzero Log2()"); return Float4(0); }
+	RValue<UInt> Ctlz(RValue<UInt> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Ctlz()"); return UInt(0); }
 	RValue<UInt4> Ctlz(RValue<UInt4> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Ctlz()"); return UInt4(0); }
+	RValue<UInt> Cttz(RValue<UInt> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Cttz()"); return UInt(0); }
 	RValue<UInt4> Cttz(RValue<UInt4> x, bool isZeroUndef) { UNIMPLEMENTED("Subzero Cttz()"); return UInt4(0); }
 
 	void EmitDebugLocation() {}
@@ -3543,7 +3552,7 @@ namespace rr
 	void FlushDebug() {}
 
 	void Nucleus::createCoroutine(Type *YieldType, std::vector<Type*> &Params) { UNIMPLEMENTED("createCoroutine"); }
-	Routine* Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
+	std::shared_ptr<Routine> Nucleus::acquireCoroutine(const char *name, const Config::Edit &cfgEdit /* = Config::Edit::None */) { UNIMPLEMENTED("acquireCoroutine"); return nullptr; }
 	void Nucleus::yield(Value* val) { UNIMPLEMENTED("Yield"); }
 
 }

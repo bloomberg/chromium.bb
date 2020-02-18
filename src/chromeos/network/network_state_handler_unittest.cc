@@ -18,7 +18,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/shill/shill_clients.h"
@@ -251,8 +251,8 @@ class TestTetherSortDelegate : public NetworkStateHandler::TetherSortDelegate {
 class NetworkStateHandlerTest : public testing::Test {
  public:
   NetworkStateHandlerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI),
         device_test_(nullptr),
         manager_test_(nullptr),
         profile_test_(nullptr),
@@ -347,7 +347,7 @@ class NetworkStateHandlerTest : public testing::Test {
         false /* visible_only */, limit, list);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<NetworkStateHandler> network_state_handler_;
   std::unique_ptr<TestObserver> test_observer_;
   ShillDeviceClient::TestInterface* device_test_;
@@ -728,20 +728,20 @@ TEST_F(NetworkStateHandlerTest, GetVisibleNetworks) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
-  // Disable a technology. Will immediately set the state to AVAILABLE and
+  // Disable a technology. Will immediately set the state to DISABLING and
   // notify observers.
   network_state_handler_->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), false, network_handler::ErrorCallback());
   EXPECT_EQ(1u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
-      NetworkStateHandler::TECHNOLOGY_AVAILABLE,
+      NetworkStateHandler::TECHNOLOGY_DISABLING,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  // Run the message loop. No additional notification should be received when
-  // Shill updates the enabled technologies since the state remains AVAILABLE.
+  // Run the message loop. When Shill updates the enabled technologies since
+  // the state should transition to AVAILABLE and observers should be notified.
   test_observer_->reset_change_counts();
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0u, test_observer_->device_list_changed_count());
+  EXPECT_EQ(1u, test_observer_->device_list_changed_count());
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
       network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
@@ -766,37 +766,40 @@ TEST_F(NetworkStateHandlerTest, TechnologyChanged) {
 }
 
 TEST_F(NetworkStateHandlerTest, TechnologyState) {
-  manager_test_->RemoveTechnology(shill::kTypeWimax);
+  manager_test_->RemoveTechnology(shill::kTypeWifi);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->AddTechnology(shill::kTypeWimax, false);
+  manager_test_->AddTechnology(shill::kTypeWifi, false);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_AVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->SetTechnologyInitializing(shill::kTypeWimax, true);
+  manager_test_->SetTechnologyInitializing(shill::kTypeWifi, true);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNINITIALIZED,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->SetTechnologyInitializing(shill::kTypeWimax, false);
+  manager_test_->SetTechnologyInitializing(shill::kTypeWifi, false);
   network_state_handler_->SetTechnologyEnabled(
-      NetworkTypePattern::Wimax(), true, network_handler::ErrorCallback());
+      NetworkTypePattern::WiFi(), true, network_handler::ErrorCallback());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_ENABLED,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
 
-  manager_test_->RemoveTechnology(shill::kTypeWimax);
+  manager_test_->RemoveTechnology(shill::kTypeWifi);
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(
       NetworkStateHandler::TECHNOLOGY_UNAVAILABLE,
-      network_state_handler_->GetTechnologyState(NetworkTypePattern::Wimax()));
+      network_state_handler_->GetTechnologyState(NetworkTypePattern::WiFi()));
+
+  // Restore wifi technology
+  manager_test_->AddTechnology(shill::kTypeWifi, true);
 }
 
 TEST_F(NetworkStateHandlerTest, TetherTechnologyState) {

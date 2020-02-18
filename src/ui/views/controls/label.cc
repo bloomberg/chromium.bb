@@ -36,6 +36,18 @@
 
 namespace {
 
+// An enum giving different RenderText properties unique keys for the
+// OnPropertyChanged call.
+enum LabelPropertyKey {
+  kLabelText = 1,
+  kLabelShadows,
+  kLabelHorizontalAlignment,
+  kLabelVerticalAlignment,
+  kLabelLineHeight,
+  kLabelObscured,
+  kLabelAllowCharacterBreak,
+};
+
 bool IsOpaque(SkColor color) {
   return SkColorGetA(color) == SK_AlphaOPAQUE;
 }
@@ -88,7 +100,7 @@ void Label::SetText(const base::string16& new_text) {
   if (new_text == GetText())
     return;
   full_text_->SetText(new_text);
-  OnPropertyChanged(&new_text, kPropertyEffectsLayout);
+  OnPropertyChanged(&full_text_ + kLabelText, kPropertyEffectsLayout);
   stored_selection_range_ = gfx::Range::InvalidRange();
 }
 
@@ -156,7 +168,7 @@ void Label::SetSelectionBackgroundColor(SkColor color) {
   OnPropertyChanged(&selection_background_color_, kPropertyEffectsPaint);
 }
 
-const gfx::ShadowValues& Label::shadows() const {
+const gfx::ShadowValues& Label::GetShadows() const {
   return full_text_->shadows();
 }
 
@@ -164,7 +176,7 @@ void Label::SetShadows(const gfx::ShadowValues& shadows) {
   if (full_text_->shadows() == shadows)
     return;
   full_text_->set_shadows(shadows);
-  ResetLayout();
+  OnPropertyChanged(&full_text_ + kLabelShadows, kPropertyEffectsLayout);
 }
 
 bool Label::GetSubpixelRenderingEnabled() const {
@@ -187,7 +199,21 @@ void Label::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   if (GetHorizontalAlignment() == alignment)
     return;
   full_text_->SetHorizontalAlignment(alignment);
-  ResetLayout();
+  OnPropertyChanged(&full_text_ + kLabelHorizontalAlignment,
+                    kPropertyEffectsLayout);
+}
+
+gfx::VerticalAlignment Label::GetVerticalAlignment() const {
+  return full_text_->vertical_alignment();
+}
+
+void Label::SetVerticalAlignment(gfx::VerticalAlignment alignment) {
+  if (GetVerticalAlignment() == alignment)
+    return;
+  full_text_->SetVerticalAlignment(alignment);
+  // TODO(dfried): consider if this should be kPropertyEffectsPaint instead.
+  OnPropertyChanged(&full_text_ + kLabelVerticalAlignment,
+                    kPropertyEffectsLayout);
 }
 
 int Label::GetLineHeight() const {
@@ -198,7 +224,7 @@ void Label::SetLineHeight(int height) {
   if (GetLineHeight() == height)
     return;
   full_text_->SetMinLineHeight(height);
-  OnPropertyChanged(&height, kPropertyEffectsLayout);
+  OnPropertyChanged(&full_text_ + kLabelLineHeight, kPropertyEffectsLayout);
 }
 
 bool Label::GetMultiLine() const {
@@ -237,7 +263,18 @@ void Label::SetObscured(bool obscured) {
   full_text_->SetObscured(obscured);
   if (obscured)
     SetSelectable(false);
-  OnPropertyChanged(&obscured, kPropertyEffectsLayout);
+  OnPropertyChanged(&full_text_ + kLabelObscured, kPropertyEffectsLayout);
+}
+
+bool Label::IsDisplayTextTruncated() const {
+  MaybeBuildDisplayText();
+  if (!full_text_ || full_text_->text().empty())
+    return false;
+  auto text_bounds = GetTextBounds();
+  return (display_text_ &&
+          display_text_->text() != display_text_->GetDisplayText()) ||
+         text_bounds.width() > GetContentsBounds().width() ||
+         text_bounds.height() > GetContentsBounds().height();
 }
 
 bool Label::GetAllowCharacterBreak() const {
@@ -251,7 +288,8 @@ void Label::SetAllowCharacterBreak(bool allow_character_break) {
   if (full_text_->word_wrap_behavior() == behavior)
     return;
   full_text_->SetWordWrapBehavior(behavior);
-  OnPropertyChanged(&allow_character_break, kPropertyEffectsLayout);
+  OnPropertyChanged(&full_text_ + kLabelAllowCharacterBreak,
+                    kPropertyEffectsLayout);
 }
 
 gfx::ElideBehavior Label::GetElideBehavior() const {
@@ -259,12 +297,12 @@ gfx::ElideBehavior Label::GetElideBehavior() const {
 }
 
 void Label::SetElideBehavior(gfx::ElideBehavior elide_behavior) {
-  DCHECK(!GetMultiLine() || (elide_behavior_ == gfx::ELIDE_TAIL ||
-                             elide_behavior_ == gfx::NO_ELIDE));
+  DCHECK(!GetMultiLine() || (elide_behavior == gfx::ELIDE_TAIL ||
+                             elide_behavior == gfx::NO_ELIDE));
   if (elide_behavior_ == elide_behavior)
     return;
   elide_behavior_ = elide_behavior;
-  ResetLayout();
+  OnPropertyChanged(&elide_behavior_, kPropertyEffectsLayout);
 }
 
 base::string16 Label::GetTooltipText() const {
@@ -532,16 +570,18 @@ std::unique_ptr<gfx::RenderText> Label::CreateRenderText() const {
 
   auto render_text = gfx::RenderText::CreateHarfBuzzInstance();
   render_text->SetHorizontalAlignment(GetHorizontalAlignment());
+  render_text->SetVerticalAlignment(GetVerticalAlignment());
   render_text->SetDirectionalityMode(full_text_->directionality_mode());
   render_text->SetElideBehavior(elide_behavior);
   render_text->SetObscured(GetObscured());
   render_text->SetMinLineHeight(GetLineHeight());
   render_text->SetFontList(font_list());
-  render_text->set_shadows(shadows());
+  render_text->set_shadows(GetShadows());
   render_text->SetCursorEnabled(false);
   render_text->SetText(GetText());
-  render_text->SetMultiline(GetMultiLine());
-  render_text->SetMaxLines(GetMultiLine() ? GetMaxLines() : 0);
+  const bool multiline = GetMultiLine();
+  render_text->SetMultiline(multiline);
+  render_text->SetMaxLines(multiline ? GetMaxLines() : 0);
   render_text->SetWordWrapBehavior(full_text_->word_wrap_behavior());
 
   // Setup render text for selection controller.
@@ -838,7 +878,7 @@ bool Label::PasteSelectionClipboard() {
 void Label::UpdateSelectionClipboard() {
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (!GetObscured()) {
-    ui::ScopedClipboardWriter(ui::ClipboardType::kSelection)
+    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kSelection)
         .WriteText(GetSelectedText());
   }
 #endif
@@ -951,7 +991,7 @@ void Label::MaybeBuildDisplayText() const {
   if (rect.IsEmpty())
     return;
 
-  rect.Inset(-gfx::ShadowValue::GetMargin(shadows()));
+  rect.Inset(-gfx::ShadowValue::GetMargin(GetShadows()));
   display_text_ = CreateRenderText();
   display_text_->SetDisplayRect(rect);
   stored_selection_range_ = gfx::Range::InvalidRange();
@@ -972,7 +1012,7 @@ gfx::Size Label::GetTextSize() const {
     full_text_->SetDisplayRect(gfx::Rect(0, 0, width(), 0));
     size = full_text_->GetStringSize();
   }
-  const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(shadows());
+  const gfx::Insets shadow_margin = -gfx::ShadowValue::GetMargin(GetShadows());
   size.Enlarge(shadow_margin.width(), shadow_margin.height());
   return size;
 }
@@ -1064,7 +1104,7 @@ base::string16 Label::GetSelectedText() const {
 void Label::CopyToClipboard() {
   if (!HasSelection() || GetObscured())
     return;
-  ui::ScopedClipboardWriter(ui::ClipboardType::kCopyPaste)
+  ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste)
       .WriteText(GetSelectedText());
 }
 
@@ -1079,10 +1119,14 @@ METADATA_PARENT_CLASS(View)
 ADD_PROPERTY_METADATA(Label, bool, AutoColorReadabilityEnabled)
 ADD_PROPERTY_METADATA(Label, base::string16, Text)
 ADD_PROPERTY_METADATA(Label, SkColor, EnabledColor)
+ADD_PROPERTY_METADATA(Label, gfx::ElideBehavior, ElideBehavior)
 ADD_PROPERTY_METADATA(Label, SkColor, BackgroundColor)
 ADD_PROPERTY_METADATA(Label, SkColor, SelectionTextColor)
 ADD_PROPERTY_METADATA(Label, SkColor, SelectionBackgroundColor)
 ADD_PROPERTY_METADATA(Label, bool, SubpixelRenderingEnabled)
+ADD_PROPERTY_METADATA(Label, gfx::ShadowValues, Shadows)
+ADD_PROPERTY_METADATA(Label, gfx::HorizontalAlignment, HorizontalAlignment)
+ADD_PROPERTY_METADATA(Label, gfx::VerticalAlignment, VerticalAlignment)
 ADD_PROPERTY_METADATA(Label, int, LineHeight)
 ADD_PROPERTY_METADATA(Label, bool, MultiLine)
 ADD_PROPERTY_METADATA(Label, int, MaxLines)

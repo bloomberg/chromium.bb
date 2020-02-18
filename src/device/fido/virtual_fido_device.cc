@@ -83,7 +83,9 @@ bool VirtualFidoDevice::State::InjectRegistration(
 bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
     device::PublicKeyCredentialRpEntity rp,
-    device::PublicKeyCredentialUserEntity user) {
+    device::PublicKeyCredentialUserEntity user,
+    int32_t signature_counter,
+    std::unique_ptr<crypto::ECPrivateKey> private_key) {
   auto application_parameter = fido_parsing_utils::CreateSHA256Hash(rp.id);
 
   // Cannot create a duplicate credential for the same (RP ID, user ID) pair.
@@ -95,12 +97,9 @@ bool VirtualFidoDevice::State::InjectResidentKey(
     }
   }
 
-  auto private_key = crypto::ECPrivateKey::Create();
-  DCHECK(private_key);
-
   RegistrationData registration(std::move(private_key),
                                 std::move(application_parameter),
-                                0 /* signature counter */);
+                                signature_counter);
   registration.is_resident = true;
   registration.rp = std::move(rp);
   registration.user = std::move(user);
@@ -113,14 +112,26 @@ bool VirtualFidoDevice::State::InjectResidentKey(
 
 bool VirtualFidoDevice::State::InjectResidentKey(
     base::span<const uint8_t> credential_id,
+    device::PublicKeyCredentialRpEntity rp,
+    device::PublicKeyCredentialUserEntity user) {
+  auto private_key = crypto::ECPrivateKey::Create();
+  DCHECK(private_key);
+  return InjectResidentKey(std::move(credential_id), std::move(rp),
+                           std::move(user), /*signature_counter=*/0,
+                           std::move(private_key));
+}
+
+bool VirtualFidoDevice::State::InjectResidentKey(
+    base::span<const uint8_t> credential_id,
     const std::string& relying_party_id,
     base::span<const uint8_t> user_id,
-    const std::string& user_name,
-    const std::string& user_display_name) {
+    base::Optional<std::string> user_name,
+    base::Optional<std::string> user_display_name) {
   return InjectResidentKey(
       credential_id, PublicKeyCredentialRpEntity(std::move(relying_party_id)),
       PublicKeyCredentialUserEntity(fido_parsing_utils::Materialize(user_id),
-                                    user_name, user_display_name,
+                                    std::move(user_name),
+                                    std::move(user_display_name),
                                     /*icon_url=*/base::nullopt));
 }
 
@@ -224,6 +235,10 @@ VirtualFidoDevice::RegistrationData* VirtualFidoDevice::FindRegistrationData(
   }
 
   return &it->second;
+}
+
+void VirtualFidoDevice::TryWink(base::OnceClosure cb) {
+  std::move(cb).Run();
 }
 
 std::string VirtualFidoDevice::GetId() const {

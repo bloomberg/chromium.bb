@@ -27,7 +27,7 @@ namespace base {
 class ListValue;
 class Location;
 class Value;
-}
+}  // namespace base
 
 namespace chromeos {
 
@@ -80,6 +80,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
     TECHNOLOGY_UNINITIALIZED,
     TECHNOLOGY_ENABLING,
     TECHNOLOGY_ENABLED,
+    TECHNOLOGY_DISABLING,
     TECHNOLOGY_PROHIBITED
   };
 
@@ -383,6 +384,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkStateHandler
   // Sets the |error_| property of the matching NetworkState for tests.
   void SetErrorForTest(const std::string& service_path,
                        const std::string& error);
+
+  void SetDeviceStateUpdatedForTest(const std::string& device_path);
 
   // Sets |allow_only_policy_networks_to_connect_|,
   // |allow_only_policy_networks_to_connect_if_available_| and

@@ -25,6 +25,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_store_factory.h"
 #include "content/public/common/url_constants.h"
+#include "net/base/network_change_notifier.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/ct_policy_status.h"
@@ -34,12 +35,10 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_network_layer.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/http_stream_factory.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/ssl/ssl_config_service_defaults.h"
-#include "net/url_request/data_protocol_handler.h"
-#include "net/url_request/file_protocol_handler.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "net/url_request/url_request_context_getter.h"
@@ -86,8 +85,7 @@ class URLRequestContextFactory::URLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   }
 
  private:
@@ -127,8 +125,7 @@ class URLRequestContextFactory::MainURLRequestContextGetter
 
   scoped_refptr<base::SingleThreadTaskRunner>
       GetNetworkTaskRunner() const override {
-    return base::CreateSingleThreadTaskRunnerWithTraits(
-        {content::BrowserThread::IO});
+    return base::CreateSingleThreadTaskRunner({content::BrowserThread::IO});
   }
 
  private:
@@ -166,8 +163,7 @@ void URLRequestContextFactory::InitializeOnUIThread(net::NetLog* net_log) {
   pref_proxy_config_tracker_impl_ =
       std::make_unique<PrefProxyConfigTrackerImpl>(
           CastBrowserProcess::GetInstance()->pref_service(),
-          base::CreateSingleThreadTaskRunnerWithTraits(
-              {content::BrowserThread::IO}));
+          base::CreateSingleThreadTaskRunner({content::BrowserThread::IO}));
 
   proxy_config_service_ =
       pref_proxy_config_tracker_impl_->CreateTrackingProxyConfigService(
@@ -212,7 +208,9 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
     return;
 
   host_resolver_manager_ = std::make_unique<net::HostResolverManager>(
-      net::HostResolver::ManagerOptions(), nullptr);
+      net::HostResolver::ManagerOptions(),
+      net::NetworkChangeNotifier::GetSystemDnsConfigNotifier(),
+      /*net_log=*/nullptr);
   cert_verifier_ =
       net::CertVerifier::CreateDefault(/*cert_net_fetcher=*/nullptr);
   ssl_config_service_.reset(new net::SSLConfigServiceDefaults);
@@ -224,7 +222,7 @@ void URLRequestContextFactory::InitializeSystemContextDependencies() {
 
   // Use in-memory HttpServerProperties. Disk-based can improve performance
   // but benefit seems small (only helps 1st request to a server).
-  http_server_properties_.reset(new net::HttpServerPropertiesImpl);
+  http_server_properties_ = std::make_unique<net::HttpServerProperties>();
 
   DCHECK(proxy_config_service_);
   proxy_resolution_service_ =
@@ -247,26 +245,11 @@ void URLRequestContextFactory::InitializeMainContextDependencies(
       new net::URLRequestJobFactoryImpl());
   // Keep ProtocolHandlers added in sync with
   // CastContentBrowserClient::IsHandledURL().
-  bool set_protocol = false;
   for (content::ProtocolHandlerMap::iterator it = protocol_handlers->begin();
        it != protocol_handlers->end();
        ++it) {
-    set_protocol =
+    bool set_protocol =
         job_factory->SetProtocolHandler(it->first, std::move(it->second));
-    DCHECK(set_protocol);
-  }
-  set_protocol = job_factory->SetProtocolHandler(
-      url::kDataScheme, std::make_unique<net::DataProtocolHandler>());
-  DCHECK(set_protocol);
-
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLocalFileAccesses)) {
-    set_protocol = job_factory->SetProtocolHandler(
-        url::kFileScheme,
-        std::make_unique<net::FileProtocolHandler>(
-            base::CreateTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
-                 base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})));
     DCHECK(set_protocol);
   }
 

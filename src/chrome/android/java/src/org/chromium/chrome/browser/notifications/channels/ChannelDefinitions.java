@@ -55,7 +55,8 @@ public class ChannelDefinitions {
      */
     @StringDef({ChannelId.BROWSER, ChannelId.DOWNLOADS, ChannelId.INCOGNITO, ChannelId.MEDIA,
             ChannelId.SCREEN_CAPTURE, ChannelId.CONTENT_SUGGESTIONS, ChannelId.WEBAPP_ACTIONS,
-            ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES})
+            ChannelId.SITES, ChannelId.SHARING, ChannelId.UPDATES, ChannelId.COMPLETED_DOWNLOADS,
+            ChannelId.PERMISSION_REQUESTS, ChannelId.PERMISSION_REQUESTS_HIGH})
     @Retention(RetentionPolicy.SOURCE)
     public @interface ChannelId {
         String BROWSER = "browser";
@@ -70,6 +71,9 @@ public class ChannelDefinitions {
         String VR = "vr";
         String SHARING = "sharing";
         String UPDATES = "updates";
+        String COMPLETED_DOWNLOADS = "completed_downloads";
+        String PERMISSION_REQUESTS = "permission_requests";
+        String PERMISSION_REQUESTS_HIGH = "permission_requests_high";
     }
 
     @StringDef({
@@ -168,6 +172,22 @@ public class ChannelDefinitions {
                     new PredefinedChannel(ChannelId.UPDATES, R.string.notification_category_updates,
                             NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
 
+            map.put(ChannelId.COMPLETED_DOWNLOADS,
+                    new PredefinedChannel(ChannelId.COMPLETED_DOWNLOADS,
+                            R.string.notification_category_completed_downloads,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL,
+                            true /* showNotificationBadges */));
+
+            map.put(ChannelId.PERMISSION_REQUESTS,
+                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS,
+                            R.string.notification_category_permission_requests,
+                            NotificationManager.IMPORTANCE_LOW, ChannelGroupId.GENERAL));
+
+            map.put(ChannelId.PERMISSION_REQUESTS_HIGH,
+                    new PredefinedChannel(ChannelId.PERMISSION_REQUESTS_HIGH,
+                            R.string.notification_category_permission_requests,
+                            NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.GENERAL));
+
             MAP = Collections.unmodifiableMap(map);
             STARTUP = Collections.unmodifiableSet(startup);
         }
@@ -262,19 +282,27 @@ public class ChannelDefinitions {
         private final int mImportance;
         @ChannelGroupId
         private final String mGroupId;
+        private final boolean mShowNotificationBadges;
 
         PredefinedChannel(@ChannelId String id, int nameResId, int importance,
                 @ChannelGroupId String groupId) {
+            this(id, nameResId, importance, groupId, false /* showNotificationBadges */);
+        }
+
+        PredefinedChannel(@ChannelId String id, int nameResId, int importance,
+                @ChannelGroupId String groupId, boolean showNotificationBadges) {
             this.mId = id;
             this.mNameResId = nameResId;
             this.mImportance = importance;
             this.mGroupId = groupId;
+            this.mShowNotificationBadges = showNotificationBadges;
         }
 
         NotificationChannel toNotificationChannel(Resources resources) {
             String name = resources.getString(mNameResId);
             NotificationChannel channel = new NotificationChannel(mId, name, mImportance);
             channel.setGroup(mGroupId);
+            channel.setShowBadge(mShowNotificationBadges);
             return channel;
         }
     }

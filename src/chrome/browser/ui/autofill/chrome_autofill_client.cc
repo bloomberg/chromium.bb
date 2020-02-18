@@ -13,6 +13,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/autofill/address_normalizer_factory.h"
 #include "chrome/browser/autofill/autocomplete_history_manager_factory.h"
+#include "chrome/browser/autofill/autofill_gstatic_reader.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/autofill/risk_util.h"
 #include "chrome/browser/autofill/strike_database_factory.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/autofill/autofill_popup_controller_impl.h"
 #include "chrome/browser/ui/autofill/payments/create_card_unmask_prompt_view.h"
 #include "chrome/browser/ui/autofill/payments/credit_card_scanner_controller.h"
+#include "chrome/browser/ui/autofill/payments/webauthn_offer_dialog.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -265,6 +267,13 @@ void ChromeAutofillClient::ShowLocalCardMigrationResults(
 #endif
 }
 
+void ChromeAutofillClient::ShowWebauthnOfferDialog(
+    WebauthnOfferDialogCallback callback) {
+#if !defined(OS_ANDROID)
+  ShowWebauthnOfferDialogView(web_contents(), callback);
+#endif
+}
+
 void ChromeAutofillClient::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
@@ -482,8 +491,7 @@ bool ChromeAutofillClient::IsContextSecure() {
   // AwAutofillClient::IsContextSecure. See crbug.com/505388
   return navigation_entry->GetURL().SchemeIsCryptographic() &&
          ssl_status.certificate &&
-         (!net::IsCertStatusError(ssl_status.cert_status) ||
-          net::IsCertStatusMinorError(ssl_status.cert_status)) &&
+         !net::IsCertStatusError(ssl_status.cert_status) &&
          !(ssl_status.content_status &
            content::SSLStatus::RAN_INSECURE_CONTENT);
 }
@@ -566,6 +574,8 @@ ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext()),
           Profile::FromBrowserContext(web_contents->GetBrowserContext())
               ->IsOffTheRecord()) {
+  if (::autofill::prefs::IsAutofillEnabled(GetPrefs()))
+    AutofillGstaticReader::GetInstance()->SetUp();
   // TODO(crbug.com/928595): Replace the closure with a callback to the renderer
   // that indicates if log messages should be sent from the renderer.
   log_manager_ =
@@ -602,7 +612,7 @@ base::string16 ChromeAutofillClient::GetAccountHolderName() {
   if (!identity_manager)
     return base::string16();
   base::Optional<AccountInfo> primary_account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           identity_manager->GetPrimaryAccountInfo());
   return primary_account_info
              ? base::UTF8ToUTF16(primary_account_info->full_name)

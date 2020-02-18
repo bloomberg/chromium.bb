@@ -11,7 +11,7 @@
 #include "base/bind.h"
 #include "base/guid.h"
 #include "base/memory/weak_ptr.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chrome/services/cups_proxy/fake_cups_proxy_service_delegate.h"
 #include "chrome/services/cups_proxy/printer_installer.h"
 #include "printing/backend/cups_ipp_util.h"
@@ -27,8 +27,7 @@ const char kGenericGUID[] = "fd4c5f2e-7549-43d5-b931-9bf4e4f1bf51";
 
 // Faked delegate gives control over PrinterInstaller's printing stack
 // dependencies.
-class FakeServiceDelegate
-    : public chromeos::printing::FakeCupsProxyServiceDelegate {
+class FakeServiceDelegate : public FakeCupsProxyServiceDelegate {
  public:
   FakeServiceDelegate() = default;
   ~FakeServiceDelegate() override = default;
@@ -56,9 +55,8 @@ class FakeServiceDelegate
     return Printer(id);
   }
 
-  void SetupPrinter(
-      const Printer& printer,
-      chromeos::printing::PrinterSetupCallback callback) override {
+  void SetupPrinter(const Printer& printer,
+                    SetupPrinterCallback callback) override {
     if (fail_printer_setup_) {
       return std::move(callback).Run(false);
     }
@@ -105,7 +103,7 @@ class PrinterInstallerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void OnRunInstallPrinter(base::OnceClosure finish_cb,
                            InstallPrinterResult* ret,

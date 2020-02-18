@@ -38,12 +38,11 @@ NetworkChangeNotifierWin::NetworkChangeNotifierWin()
     : NetworkChangeNotifier(NetworkChangeCalculatorParamsWin()),
       is_watching_(false),
       sequential_failures_(0),
-      blocking_task_runner_(
-          base::CreateSequencedTaskRunnerWithTraits({base::MayBlock()})),
+      blocking_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock()})),
       last_computed_connection_type_(RecomputeCurrentConnectionType()),
       last_announced_offline_(last_computed_connection_type_ ==
-                              CONNECTION_NONE),
-      weak_factory_(this) {
+                              CONNECTION_NONE) {
   memset(&addr_overlapped_, 0, sizeof addr_overlapped_);
   addr_overlapped_.hEvent = WSACreateEvent();
 }
@@ -120,8 +119,9 @@ NetworkChangeNotifierWin::NetworkChangeCalculatorParamsWin() {
 // experiments I ran... However none of them correctly returned "offline" when
 // executing 'ipconfig /release'.
 //
+// static
 NetworkChangeNotifier::ConnectionType
-NetworkChangeNotifierWin::RecomputeCurrentConnectionType() const {
+NetworkChangeNotifierWin::RecomputeCurrentConnectionType() {
   EnsureWinsockInit();
 
   // The following code was adapted from:
@@ -195,8 +195,7 @@ void NetworkChangeNotifierWin::RecomputeCurrentConnectionTypeOnBlockingSequence(
   // thread is stopped in this object's destructor.
   base::PostTaskAndReplyWithResult(
       blocking_task_runner_.get(), FROM_HERE,
-      base::BindOnce(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType,
-                     base::Unretained(this)),
+      base::BindOnce(&NetworkChangeNotifierWin::RecomputeCurrentConnectionType),
       std::move(reply_callback));
 }
 

@@ -378,10 +378,6 @@ void ModelTypeWorker::ApplyUpdates(StatusController* status) {
 
 void ModelTypeWorker::PassiveApplyUpdates(StatusController* status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // This should only be called at the end of the very first download cycle.
-  DCHECK(!model_type_state_.initial_sync_done())
-      << "PassiveApplyUpdates() called after initial sync has been done for "
-      << ModelTypeToString(type_);
   // Indicate to the processor that the initial download is done. The initial
   // sync technically isn't done yet but by the time this value is persisted to
   // disk on the model thread it will be.
@@ -589,7 +585,10 @@ void ModelTypeWorker::DecryptStoredEntities() {
       }
       if (!DecryptPasswordSpecifics(*cryptographer_, data.specifics,
                                     &specifics)) {
-        ++it;
+        // Decryption error should be permanent (e.g. corrupt data), since
+        // CanDecrypt() above claims decryption keys are up-to-date. Let's
+        // ignore this update to avoid blocking other updates.
+        it = entries_pending_decryption_.erase(it);
         continue;
       }
     } else {

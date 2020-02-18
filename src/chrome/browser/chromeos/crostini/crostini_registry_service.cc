@@ -487,8 +487,7 @@ CrostiniRegistryService::CrostiniRegistryService(Profile* profile)
     : profile_(profile),
       prefs_(profile->GetPrefs()),
       base_icon_path_(profile->GetPath().AppendASCII(kCrostiniIconFolder)),
-      clock_(base::DefaultClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      clock_(base::DefaultClock::GetInstance()) {
   RecordStartupMetrics();
 }
 
@@ -598,14 +597,18 @@ bool CrostiniRegistryService::IsCrostiniShelfAppId(
              ->FindKey(shelf_app_id) != nullptr;
 }
 
-std::vector<std::string> CrostiniRegistryService::GetRegisteredAppIds() const {
+std::map<std::string, CrostiniRegistryService::Registration>
+CrostiniRegistryService::GetRegisteredApps() const {
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(prefs::kCrostiniRegistry);
-  std::vector<std::string> result;
-  for (const auto& item : apps->DictItems())
-    result.push_back(item.first);
-  if (!apps->FindKey(kCrostiniTerminalId))
-    result.push_back(kCrostiniTerminalId);
+  std::map<std::string, CrostiniRegistryService::Registration> result;
+  for (const auto& item : apps->DictItems()) {
+    result.emplace(item.first, Registration(&item.second,
+                                            item.first == kCrostiniTerminalId));
+  }
+  if (!apps->FindKey(kCrostiniTerminalId)) {
+    result.emplace(kCrostiniTerminalId, Registration(nullptr, true));
+  }
   return result;
 }
 
@@ -847,8 +850,9 @@ void CrostiniRegistryService::RemoveAppData(const std::string& app_id) {
   retry_icon_requests_.erase(app_id);
 
   // Remove local data on filesystem for the icons.
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&DeleteIconFolderFromFileThread, GetAppPath(app_id)));
 }
 
@@ -957,8 +961,9 @@ void CrostiniRegistryService::OnContainerAppIcon(
     return;
   // Now install the icon that we received.
   const base::FilePath icon_path = GetIconPath(app_id, scale_factor);
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&InstallIconFromFileThread, icon_path, icons[0].content),
       base::BindOnce(&CrostiniRegistryService::OnIconInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));

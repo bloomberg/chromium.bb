@@ -50,6 +50,7 @@ struct AXEventNotificationDetails;
 struct AXLocationChangeNotificationDetails;
 struct EntryChangedDetails;
 struct FaviconURL;
+struct FocusedNodeDetails;
 struct LoadCommittedDetails;
 struct MediaPlayerId;
 struct PrunedDetails;
@@ -176,7 +177,6 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // initialize renderer-side state just before the RenderFrame commits the
   // navigation.
   //
-  // PlzNavigate
   // This is the first point in time where a RenderFrameHost is associated with
   // the navigation.
   virtual void ReadyToCommitNavigation(NavigationHandle* navigation_handle) {}
@@ -209,10 +209,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // be called multiple times for a given navigation, such as a typed URL
   // followed by a cross-process client or server redirect.
   //
-  // SOON TO BE DEPRECATED. Use DidStartNavigation instead in PlzNavigate. In
-  // default mode, it is still necessary to override this function to be
-  // notified about a navigation earlier than DidStartProvisionalLoad. This
-  // function will be removed when PlzNavigate is enabled.
+  // SOON TO BE DEPRECATED. Use DidStartNavigation instead.
+  // TODO(clamy): Remove this function.
   virtual void DidStartNavigationToPendingEntry(const GURL& url,
                                                 ReloadType reload_type) {}
 
@@ -545,6 +543,14 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // Notification that the |render_widget_host| for this WebContents has lost
   // focus.
   virtual void OnWebContentsLostFocus(RenderWidgetHost* render_widget_host) {}
+
+  // Notification that a RenderFrameHost inside this WebContents has updated
+  // its focused element. |details| contains information on the element
+  // that has received focus. This allows for observing focus changes
+  // within WebContents, as opposed to OnWebContentsFocused/LostFocus
+  // which allows observation that the RenderWidgetHost for the
+  // WebContents has gained/lost focus.
+  virtual void OnFocusChangedInPage(FocusedNodeDetails* details) {}
 
   // Notifies that the manifest URL for the main frame changed to
   // |manifest_url|. This will be invoked when a document with a manifest loads

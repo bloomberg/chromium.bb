@@ -25,13 +25,8 @@ namespace extensions {
 
 class Extension;
 class ExtensionAPI;
-class InfoMap;
-class IOThreadExtensionMessageFilter;
 class ProcessMap;
 class WindowController;
-
-// A factory function for creating new ExtensionFunction instances.
-typedef ExtensionFunction* (*ExtensionFunctionFactory)();
 
 // ExtensionFunctionDispatcher receives requests to execute functions from
 // Chrome extensions running in a RenderFrameHost and dispatches them to the
@@ -69,25 +64,6 @@ class ExtensionFunctionDispatcher
    protected:
     virtual ~Delegate() {}
   };
-
-  // Dispatches an IO-thread extension function. Only used for specific
-  // functions that must be handled on the IO-thread.
-  static void DispatchOnIOThread(
-      InfoMap* extension_info_map,
-      void* profile_id,
-      int render_process_id,
-      base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-      int routing_id,
-      const ExtensionHostMsg_Request_Params& params);
-
-  // Dispatches an IO-thread extension function for a Service Worker. Only
-  // used for specific functions that must be handled on the IO-thread.
-  static void DispatchOnIOThreadForServiceWorker(
-      InfoMap* extension_info_map,
-      void* profile_id,
-      int render_process_id,
-      base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-      const ExtensionHostMsg_Request_Params& params);
 
   // Public constructor. Callers must ensure that:
   // - This object outlives any RenderFrameHost's passed to created
@@ -137,14 +113,6 @@ class ExtensionFunctionDispatcher
   // |ui_thread_response_callback_wrappers_for_worker_|.
   struct WorkerResponseCallbackMapKey;
 
-  static void DoDispatchOnIOThread(
-      InfoMap* extension_info_map,
-      void* profile_id,
-      int render_process_id,
-      base::WeakPtr<IOThreadExtensionMessageFilter> ipc_sender,
-      const ExtensionHostMsg_Request_Params& params,
-      const ExtensionFunction::ResponseCallback& callback);
-
   // Helper to check whether an ExtensionFunction has the required permissions.
   // This should be called after the function is fully initialized.
   // If the check fails, |callback| is run with an access-denied error and false
@@ -157,7 +125,7 @@ class ExtensionFunctionDispatcher
   // Helper to create an ExtensionFunction to handle the function given by
   // |params|. Can be called on any thread.
   // Does not set subclass properties, or include_incognito.
-  static ExtensionFunction* CreateExtensionFunction(
+  static scoped_refptr<ExtensionFunction> CreateExtensionFunction(
       const ExtensionHostMsg_Request_Params& params,
       const Extension* extension,
       int requesting_process_id,

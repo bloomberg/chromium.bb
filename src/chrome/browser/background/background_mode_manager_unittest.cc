@@ -33,7 +33,7 @@
 #include "components/keep_alive_registry/keep_alive_registry.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension_builder.h"
@@ -181,7 +181,7 @@ class BackgroundModeManagerTest : public testing::Test {
   }
 
  protected:
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<base::CommandLine> command_line_;
 
   std::unique_ptr<TestingProfileManager> profile_manager_;
@@ -270,7 +270,7 @@ class BackgroundModeManagerWithExtensionsTest : public testing::Test {
 
  private:
   // Required for extension service.
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
 
   // BackgroundModeManager actually affects Chrome start/stop state,
   // tearing down our thread bundle before we've had chance to clean

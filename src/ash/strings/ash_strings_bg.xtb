@@ -35,8 +35,10 @@
 <translation id="1351937230027495976">Свиване на менюто</translation>
 <translation id="1383876407941801731">Търсене</translation>
 <translation id="1419738280318246476">Отключете устройството, за да се изпълни действието от известието</translation>
+<translation id="1420408895951708260">Превключване на функцията за нощно осветление. <ph name="STATE_TEXT" /></translation>
 <translation id="1426410128494586442">Да</translation>
 <translation id="1455242230282523554">Показване на езиковите настройки</translation>
+<translation id="1460620680449458626">Звукът е спрян.</translation>
 <translation id="1467432559032391204">Наляво</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Показване на настройките за известия. Известията са изключени за едно приложение}other{Показване на настройките за известия. Известията са изключени за # приложения}}</translation>
@@ -61,6 +63,7 @@
 <translation id="1820355135508821526">Функцията „<ph name="FEATURE_NAME" />“ е деактивирана от правило, приложено на това устройство. Моля, обърнете се към администратора си, за да заявите промени.</translation>
 <translation id="1823873187264960516">Ethernet: <ph name="ADDRESS" /></translation>
 <translation id="1836215606488044471">Асистент (зарежда се...)</translation>
+<translation id="1838895407229022812">Функцията за нощно осветление е изключена.</translation>
 <translation id="1850504506766569011">Wi-Fi е изключен.</translation>
 <translation id="1864454756846565995">USB-C устройство (задният порт)</translation>
 <translation id="1882897271359938046">Дублира се на „<ph name="DISPLAY_NAME" />“</translation>
@@ -84,6 +87,7 @@
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
 <translation id="2135456203358955318">Лупа в прикрепен режим</translation>
 <translation id="2144487987174258011">Рестартирайте, за да актуализирате Adobe Flash Player</translation>
+<translation id="2148902151539191989">НАЗАД</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>
 <translation id="225680501294068881">Сканира се за устройства...</translation>
@@ -110,11 +114,11 @@
 <translation id="2501920221385095727">Оставащи клавиши</translation>
 <translation id="2509468283778169019">„CAPS LOCK“ е включен</translation>
 <translation id="2532589005999780174">Режим на висок контраст</translation>
+<translation id="2542089167727451762">Докоснете изображението на потребителския си профил</translation>
 <translation id="255671100581129685">Google Асистент не е налице по време на публична сесия.</translation>
 <translation id="2575685495496069081">Централизираният вход е деактивиран</translation>
 <translation id="2582112259361606227">Рестартирайте, за да актуализирате</translation>
 <translation id="2617342710774726426">SIM картата е заключена</translation>
-<translation id="2651765386227849097">Функцията Google Асистент е деактивирана на това устройство.</translation>
 <translation id="2653659639078652383">Изпращане</translation>
 <translation id="2658778018866295321">Кликване и преместване с плъзгане</translation>
 <translation id="2700493154570097719">Задайте клавиатура</translation>
@@ -159,6 +163,7 @@
 <translation id="3236488194889173876">Няма мобилни мрежи</translation>
 <translation id="3249513730522716925">Прозорецът <ph name="WINDOW_TITLE" /> бе преместен от работен кът <ph name="ACTIVE_DESK" /> в работен кът <ph name="TARGET_DESK" /></translation>
 <translation id="3255483164551725916">„What can you do?“ („Какво можеш да правиш?“)</translation>
+<translation id="3277674767125718685">Звукът е включен.</translation>
 <translation id="3294437725009624529">Гост</translation>
 <translation id="3308453408813785101"><ph name="USER_EMAIL_ADDRESS" /> пак може да влезе в профила си по-късно.</translation>
 <translation id="3321628682574733415">Неправилен код на родител</translation>
@@ -219,6 +224,7 @@
 <translation id="4181841719683918333">Езици</translation>
 <translation id="4195877955194704651">Бутон за менюто за автоматични кликвания</translation>
 <translation id="4217571870635786043">Диктуване</translation>
+<translation id="421885205185866088">ПИН за смарткарта за <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4261870227682513959">Показване на настройките за известия. Известията са изключени</translation>
 <translation id="4269883910223712419">Администраторът на това устройство може:</translation>
@@ -230,16 +236,15 @@
 <translation id="4331809312908958774">Chrome OS</translation>
 <translation id="4338109981321384717">Лупа</translation>
 <translation id="4351433414020964307">Асистент се зарежда...</translation>
-<translation id="435527878592612277">Изберете своя снимка</translation>
 <translation id="4378551569595875038">Установява се връзка...</translation>
 <translation id="4379531060876907730">Това са инструментите ви за писане</translation>
 <translation id="4389184120735010762">Използвахте клавишната комбинация за лупата в прикрепен режим. Искате ли да включите функцията?</translation>
 <translation id="4421231901400348175">Споделяте с/ъс <ph name="HELPER_NAME" /> контрола върху екрана си чрез отдалечено съдействие.</translation>
-<translation id="4430019312045809116">Звук</translation>
 <translation id="4450893287417543264">Да не се показва отново</translation>
 <translation id="4477350412780666475">Следващ запис</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4481530544597605423">Несдвоени устройства</translation>
+<translation id="4505050298327493054">Активен работен кът.</translation>
 <translation id="4513946894732546136">Отзиви</translation>
 <translation id="4527045527269911712">Устройството с Bluetooth „<ph name="DEVICE_NAME" />“ иска разрешение за сдвояване.</translation>
 <translation id="453661520163887813"><ph name="TIME" /> до пълно зареждане</translation>
@@ -309,8 +314,8 @@
 <translation id="574392208103952083">Среден</translation>
 <translation id="5744083938413354016">Преместване чрез докосване</translation>
 <translation id="5750765938512549687">Функцията за Bluetooth е изключена</translation>
+<translation id="576453121877257266">Функцията за нощно осветление е включена.</translation>
 <translation id="5777841717266010279">Да се спре ли споделянето на екрана?</translation>
-<translation id="57838592816432529">Заглушаване</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5837036133683224804">Спиране на предаването на <ph name="ROUTE_TITLE" /> към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="5860033963881614850">Изключено</translation>
@@ -333,6 +338,7 @@
 <translation id="6043212731627905357">Този монитор не се поддържа от вашия <ph name="DEVICE_TYPE" />.</translation>
 <translation id="6043994281159824495">Изход сега</translation>
 <translation id="6047696787498798094">Споделянето на екрана ще спре, когато превключите към друг потребител. Искате ли да продължите?</translation>
+<translation id="6054305421211936131">Влизане със смарткарта</translation>
 <translation id="6062360702481658777">Ще излезете автоматично след <ph name="LOGOUT_TIME_LEFT" />.</translation>
 <translation id="6064337552080329342">За съжаление, паролата ви не можа да бъде потвърдена. Моля, опитайте отново.</translation>
 <translation id="607652042414456612">Компютърът ви е откриваем за устройства с Bluetooth наблизо и ще се показва като „<ph name="NAME" />“ с адрес <ph name="ADDRESS" /></translation>
@@ -348,7 +354,6 @@
 <translation id="6284232397434400372">Разделителната способност е променена</translation>
 <translation id="6297287540776456956">Използвайте писалката, за да изберете област</translation>
 <translation id="6310121235600822547">Завъртяхте „<ph name="DISPLAY_NAME" />“ на <ph name="ROTATION" /></translation>
-<translation id="6344698853700675736">Превключване на функцията за нощно осветление</translation>
 <translation id="6376931439017688372">Функцията за Bluetooth е включена</translation>
 <translation id="639644700271529076">„CAPS LOCK“ е изключен</translation>
 <translation id="6406704438230478924">altgr</translation>
@@ -360,6 +365,7 @@
 <translation id="6459472438155181876">Екранът се разширява на „<ph name="DISPLAY_NAME" />“</translation>
 <translation id="6482559668224714696">Лупа за увеличаване на целия екран</translation>
 <translation id="6490471652906364588">USB-C устройство (десният порт)</translation>
+<translation id="649452524636452238">ПИН за смарткартата</translation>
 <translation id="6501401484702599040">Екранът се предава към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="6521655319214113338">Ръкописно въвеждане</translation>
 <translation id="6528179044667508675">Не безпокойте</translation>
@@ -389,6 +395,7 @@
 <translation id="6857811139397017780">Активиране на <ph name="NETWORKSERVICE" /></translation>
 <translation id="6910714959251846841">Тази актуализация изисква Powerwash на устройството ви. Научете повече за най-новата актуализация на <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Присъединяване другаде...</translation>
+<translation id="6919251195245069855">Смарткартата ви не бе разпозната. Опитайте отново.</translation>
 <translation id="6972754398087986839">Първи стъпки</translation>
 <translation id="6981982820502123353">Достъпност</translation>
 <translation id="698231206551913481">След като този потребител бъде премахнат, всички свързани с него файлове и локални данни ще се изтрият за постоянно.</translation>
@@ -472,6 +479,7 @@
 <translation id="813913629614996137">Подготвя се за работа...</translation>
 <translation id="8142441511840089262">Двукратно кликване</translation>
 <translation id="8142699993796781067">Частна мрежа</translation>
+<translation id="8152092012181020186">Натиснете Ctrl + W за затваряне.</translation>
 <translation id="8167567890448493835">Използвате <ph name="LOCALE_NAME" /></translation>
 <translation id="8190698733819146287">Персонализиране на езиците и въвеждането...</translation>
 <translation id="8192202700944119416">Известията са скрити.</translation>
@@ -508,6 +516,7 @@
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">Свързано е зарядно устройство с малка мощност</translation>
 <translation id="8683506306463609433">Проследяването на ефективността е активно</translation>
+<translation id="8721053961083920564">Превключване на звука. <ph name="STATE_TEXT" /></translation>
 <translation id="8734991477317290293">Тя може да се опитва да записва кои клавиши натискате</translation>
 <translation id="8735953464173050365">Показване на настройките на клавиатурата. Избран метод на въвеждане: <ph name="KEYBOARD_NAME" /></translation>
 <translation id="875593634123171288">Показване на настройките за VPN</translation>
@@ -552,4 +561,5 @@
 <translation id="938963181863597773">„What's on my calendar?“ („Какво има в календара ми?“)</translation>
 <translation id="945522503751344254">Изпращане на отзиви</translation>
 <translation id="98515147261107953">Хоризонтално</translation>
+<translation id="990277280839877440">Прозорецът <ph name="WINDOW_TITILE" /> бе затворен.</translation>
 </translationbundle>

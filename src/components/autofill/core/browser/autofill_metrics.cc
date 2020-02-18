@@ -82,17 +82,15 @@ std::string PreviousSaveCreditCardPromptUserDecisionToString(
   return previous_response;
 }
 
-// Reduce FormSignature space (in UKM) to a small range for privacy reasons.
+}  // namespace
+
 int64_t HashFormSignature(autofill::FormSignature form_signature) {
   return static_cast<uint64_t>(form_signature) % 1021;
 }
 
-// Reduce FieldSignature space (in UKM) to a small range for privacy reasons.
 int64_t HashFieldSignature(autofill::FieldSignature field_signature) {
   return static_cast<uint64_t>(field_signature) % 1021;
 }
-
-}  // namespace
 
 // First, translates |field_type| to the corresponding logical |group| from
 // |FieldTypeGroupForMetrics|.  Then, interpolates this with the given |metric|,
@@ -609,22 +607,6 @@ void AutofillMetrics::LogLocalCardMigrationNotOfferedDueToMaxStrikesMetric(
 }
 
 // static
-void AutofillMetrics::LogUploadDisallowedForNetworkMetric(
-    const std::string& network) {
-  UploadDisallowedForNetworkMetric metric;
-  if (network == kEloCard) {
-    metric = DISALLOWED_ELO;
-  } else if (network == kJCBCard) {
-    metric = DISALLOWED_JCB;
-  } else {
-    NOTREACHED();
-    return;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Autofill.CreditCardUploadDisallowedForNetwork",
-                            metric);
-}
-
-// static
 void AutofillMetrics::LogUploadOfferedCardOriginMetric(
     UploadOfferedCardOriginMetric metric) {
   DCHECK_LT(metric, NUM_UPLOAD_OFFERED_CARD_ORIGIN_METRICS);
@@ -648,14 +630,6 @@ void AutofillMetrics::LogSaveCardCardholderNamePrefilled(bool prefilled) {
 // static
 void AutofillMetrics::LogSaveCardCardholderNameWasEdited(bool edited) {
   UMA_HISTOGRAM_BOOLEAN("Autofill.SaveCardCardholderNameWasEdited", edited);
-}
-
-// static
-void AutofillMetrics::LogPaymentsCustomerDataBillingIdStatus(
-    BillingIdStatus status) {
-  DCHECK_LE(status, BillingIdStatus::kMaxValue);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.PaymentsCustomerDataBillingIdStatus",
-                            status);
 }
 
 // static

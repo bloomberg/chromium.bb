@@ -2579,9 +2579,9 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
   mvp_full.row >>= 3;
 
 #if CONFIG_NON_GREEDY_MV
-  bestsme = vp9_full_pixel_diamond_new(cpi, x, &mvp_full, step_param, lambda, 1,
-                                       &cpi->fn_ptr[bsize], nb_full_mvs,
-                                       nb_full_mv_num, &tmp_mv->as_mv);
+  bestsme = vp9_full_pixel_diamond_new(cpi, x, bsize, &mvp_full, step_param,
+                                       lambda, 1, nb_full_mvs, nb_full_mv_num,
+                                       &tmp_mv->as_mv);
 #else   // CONFIG_NON_GREEDY_MV
   bestsme = vp9_full_pixel_search(
       cpi, x, bsize, &mvp_full, step_param, cpi->sf.mv.search_method, sadpb,
@@ -2617,9 +2617,9 @@ static void single_motion_search(VP9_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       mvp_full.row >>= 3;
 #if CONFIG_NON_GREEDY_MV
       this_me = vp9_full_pixel_diamond_new(
-          cpi, x, &mvp_full, VPXMAX(step_param, MAX_MVSEARCH_STEPS - step),
-          lambda, 1, &cpi->fn_ptr[bsize], nb_full_mvs, nb_full_mv_num,
-          &this_mv);
+          cpi, x, bsize, &mvp_full,
+          VPXMAX(step_param, MAX_MVSEARCH_STEPS - step), lambda, 1, nb_full_mvs,
+          nb_full_mv_num, &this_mv);
 #else   // CONFIG_NON_GREEDY_MV
       this_me = vp9_full_pixel_search(
           cpi, x, bsize, &mvp_full,
@@ -3450,7 +3450,7 @@ void vp9_rd_pick_inter_mode_sb(VP9_COMP *cpi, TileDataEnc *tile_data,
   if (cpi->rc.is_src_frame_alt_ref) {
     if (sf->alt_ref_search_fp) {
       mode_skip_mask[ALTREF_FRAME] = 0;
-      ref_frame_skip_mask[0] = ~(1 << ALTREF_FRAME);
+      ref_frame_skip_mask[0] = ~(1 << ALTREF_FRAME) & 0xff;
       ref_frame_skip_mask[1] = SECOND_REF_FRAME_MASK;
     }
   }

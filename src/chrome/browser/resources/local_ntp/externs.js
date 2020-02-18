@@ -29,7 +29,6 @@ let MostVisitedData;
  * @typedef {{chromeColors: boolean,
  *            enableShortcutsGrid: boolean,
  *            googleBaseUrl: string,
- *            hideShortcuts: boolean,
  *            isAccessibleBrowser: boolean,
  *            isGooglePage: boolean,
  *            richerPicker: boolean,
@@ -290,9 +289,9 @@ window.chrome.embeddedSearch.newTabPage.searchSuggestionSelected;
 window.chrome.embeddedSearch.newTabPage.selectLocalBackgroundImage;
 
 /**
- * @param {string} background_url
+ * No params.
  */
-window.chrome.embeddedSearch.newTabPage.setBackgroundURL;
+window.chrome.embeddedSearch.newTabPage.resetBackgroundInfo;
 
 /**
  * @param {string} background_url
@@ -304,8 +303,38 @@ window.chrome.embeddedSearch.newTabPage.setBackgroundURL;
 window.chrome.embeddedSearch.newTabPage.setBackgroundInfo;
 
 /**
- * @return {Object} theme_background_info
+ * @typedef {{
+ *   alternateLogo: boolean,
+ *   attribution1: (string|undefined),
+ *   attribution2: (string|undefined),
+ *   attributionActionUrl: (string|undefined),
+ *   attributionUrl: (string|undefined),
+ *   backgroundColorRgba: !Array<number>,
+ *   collectionId: (string|undefined),
+ *   colorDark: (!Array<number>|undefined),
+ *   colorId: (number|undefined),
+ *   colorLight: (!Array<number>|undefined),
+ *   colorPicked: (!Array<number>|undefined),
+ *   customBackgroundConfigured: boolean,
+ *   iconBackgroundColor: !Array<number>,
+ *   imageHorizontalAlignment: (string|undefined),
+ *   imageTiling: (string|undefined),
+ *   imageUrl: (string|undefined),
+ *   imageVerticalAlignment: (string|undefined),
+ *   isNtpBackgroundDark: boolean,
+ *   logoColor: (!Array<number>|undefined),
+ *   textColorLightRgba: !Array<number>,
+ *   textColorRgba: !Array<number>,
+ *   themeId: (string|undefined),
+ *   themeName: (string|undefined),
+ *   useTitleContainer: boolean,
+ *   useWhiteAddIcon: boolean,
+ *   usingDefaultTheme: boolean,
+ * }}
  */
+let ThemeBackgroundInfo;
+
+/** @type {?ThemeBackgroundInfo} */
 window.chrome.embeddedSearch.newTabPage.themeBackgroundInfo;
 
 /**
@@ -352,6 +381,7 @@ window.chrome.embeddedSearch.newTabPage.updateCustomLink;
 window.chrome.embeddedSearch.searchBox;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
 window.chrome.embeddedSearch.searchBox.paste;
+window.chrome.embeddedSearch.searchBox.rtl;
 window.chrome.embeddedSearch.searchBox.startCapturingKeyStrokes;
 window.chrome.embeddedSearch.searchBox.stopCapturingKeyStrokes;
 
@@ -371,7 +401,6 @@ configData.translatedStrings.audioError;
 configData.translatedStrings.backLabel;
 configData.translatedStrings.backgroundsUnavailable;
 configData.translatedStrings.clickToViewDoodle;
-configData.translatedStrings.colorLabelPrefix;
 configData.translatedStrings.connectionError;
 configData.translatedStrings.connectionErrorNoPeriod;
 configData.translatedStrings.copyLink;

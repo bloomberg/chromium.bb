@@ -41,8 +41,11 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.ChromeWebApkHost;
 import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerExternalUma;
+import org.chromium.components.background_task_scheduler.BackgroundTaskSchedulerPrefs;
 import org.chromium.components.crash.browser.ChildProcessCrashObserver;
 import org.chromium.components.minidump_uploader.CrashFileManager;
+import org.chromium.components.module_installer.ModuleInstaller;
+import org.chromium.components.module_installer.observers.ModuleActivityObserver;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.content_public.browser.SpeechRecognition;
@@ -212,10 +215,12 @@ public class ChromeBrowserInitializer {
             PostTask.postTask(TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> {
                 ActivityAssigner.warmUpSharedPrefs();
                 DownloadManagerService.warmUpSharedPrefs();
+                BackgroundTaskSchedulerPrefs.warmUpSharedPrefs();
             });
         } else {
             ActivityAssigner.warmUpSharedPrefs();
             DownloadManagerService.warmUpSharedPrefs();
+            BackgroundTaskSchedulerPrefs.warmUpSharedPrefs();
         }
     }
 
@@ -235,8 +240,8 @@ public class ChromeBrowserInitializer {
         warmUpSharedPrefs();
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
-        ApplicationStatus.registerStateListenerForAllActivities(
-                createActivityStateListener());
+        ApplicationStatus.registerStateListenerForAllActivities(createActivityStateListener());
+        ApplicationStatus.registerStateListenerForAllActivities(new ModuleActivityObserver());
 
         mPreInflationStartupComplete = true;
     }
@@ -441,8 +446,7 @@ public class ChromeBrowserInitializer {
         // Needed for field trial metrics to be properly collected in ServiceManager only mode.
         FeatureUtilities.cacheNativeFlagsForServiceManagerOnlyMode();
 
-        PostTask.postTask(
-                TaskTraits.BEST_EFFORT_MAY_BLOCK, LibraryPrefetcher::maybePinOrderedCodeInMemory);
+        ModuleInstaller.getInstance().recordStartupTime();
     }
 
     private ActivityStateListener createActivityStateListener() {

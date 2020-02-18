@@ -8,14 +8,17 @@
 <translation id="1169783199079129864">{MINUTES,plural, =1{1 min}other{# min}}</translation>
 <translation id="1181037720776840403">Quitar</translation>
 <translation id="1243314992276662751">Cargar</translation>
+<translation id="1266864766717917324">No se pudo compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1269641567813814718">Win</translation>
 <translation id="1290982764014248209">Mueve <ph name="DRAGGED_APP" /> a la carpeta <ph name="FOLDER_NAME" />.</translation>
+<translation id="1291104554099683393">Intenta compartir el texto en fragmentos más pequeños.</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="1306549533752902673">APPS RECOMENDADAS</translation>
 <translation id="1368832886055348810">De izquierda a derecha</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1398853756734560583">Maximizar</translation>
 <translation id="1409544243779336081">Recomendación para la app</translation>
+<translation id="1450753235335490080">No se puede compartir <ph name="CONTENT_TYPE" /></translation>
 <translation id="1498028757988366001">Ya realizaste esta búsqueda. Si borras la consulta "<ph name="QUERY" />" del Historial, se quitará permanentemente de tu cuenta en todos los dispositivos.</translation>
 <translation id="1591184457164800433">{MINUTES,plural, =1{1 minuto y }other{# minutos y }}</translation>
 <translation id="1643823602425662293">Notificación</translation>
@@ -35,9 +38,11 @@
 <translation id="1884435127456172652"><ph name="NUMBER" />%</translation>
 <translation id="1901303067676059328">Seleccionar &amp;todo</translation>
 <translation id="1938451708255335766">Para ajustar la densidad de la visualización de la ventana, reinicia la app.</translation>
+<translation id="2006524834898217237">Comprueba que este dispositivo tenga conexión a Internet.</translation>
 <translation id="208586643495776849">Vuelve a intentarlo</translation>
 <translation id="2141853158323869627">{DAYS,plural, =1{1 d}other{# d}}</translation>
 <translation id="2148716181193084225">Hoy</translation>
+<translation id="2161656808144014275">Texto</translation>
 <translation id="2168039046890040389">Retroceder página</translation>
 <translation id="2190355936436201913">(vacío)</translation>
 <translation id="2192232475740621500">Usar la densidad baja</translation>
@@ -49,7 +54,6 @@
 <translation id="2388990488038464401">¿Quieres llamar a este número desde tu teléfono?</translation>
 <translation id="24452542372838207">Expandir notificación</translation>
 <translation id="2445449901874883781">Usar la densidad alta</translation>
-<translation id="2451871130406122810">Se envió al dispositivo</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2497284189126895209">Todos los archivos</translation>
 <translation id="2515586267016047495">Alt</translation>
@@ -76,6 +80,7 @@
 <translation id="3291688615589870984">{DAYS,plural, =1{1 día}other{# días}}</translation>
 <translation id="3295886253693811851">Realizar una llamada desde</translation>
 <translation id="335581015389089642">Voz</translation>
+<translation id="3389286852084373014">El texto es demasiado largo</translation>
 <translation id="3443810440409579745">Se recibió una pestaña.</translation>
 <translation id="3479552764303398839">Ahora no</translation>
 <translation id="348799646910989694">Se ocultará la biblioteca automáticamente</translation>
@@ -85,6 +90,7 @@
 <translation id="3618849550573277856">Buscar "<ph name="LOOKUP_STRING" />"</translation>
 <translation id="364720409959344976">Seleccionar carpeta para cargar</translation>
 <translation id="3660179305079774227">Flecha arriba</translation>
+<translation id="3670030362669914947">Número</translation>
 <translation id="3740362395218339114"><ph name="QUANTITY" /> GB/s</translation>
 <translation id="3757388668994797779"><ph name="QUANTITY" /> GB</translation>
 <translation id="3842239759367498783">Sigue leyendo desde tu dispositivo móvil (<ph name="TITLE" />)</translation>
@@ -100,7 +106,6 @@
 <translation id="4266252015790371705">{MONTHS,plural, =1{Hace 1 mes}other{Hace # meses}}</translation>
 <translation id="4289300219472526559">Empezar a hablar</translation>
 <translation id="4316910396681052118">TODAS LAS APPS</translation>
-<translation id="4467014365953759647">No se puede enviar el número</translation>
 <translation id="4588090240171750605">Desplazar a la derecha</translation>
 <translation id="4690510401873698237">Biblioteca en la parte inferior</translation>
 <translation id="4724120544754982507">Centro de notificaciones, notificaciones sin leer: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
@@ -108,6 +113,7 @@
 <translation id="4788285488841504513">{MONTHS,plural, =1{Queda 1 mes}other{Quedan # meses}}</translation>
 <translation id="4841881773802181781">Contenido agregado</translation>
 <translation id="4881695831933465202">Abrir</translation>
+<translation id="4888938634149558681">Realizar llamada</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
 <translation id="4971687151119236543">Pista multimedia anterior</translation>
 <translation id="5046499563572181734">Presiona aquí</translation>
@@ -127,6 +133,7 @@
 <translation id="5583640892426849032">Tecla de retroceso</translation>
 <translation id="5613020302032141669">Flecha izquierda</translation>
 <translation id="5754277640426581776">{MINUTES,plural, =1{1 min}other{# min}}</translation>
+<translation id="5763338081255973061">{DAYS,plural, =0{Activo hoy}=1{Activo hace 1 día}other{Activo hace # días}}</translation>
 <translation id="5768079895599174203">{DAYS,plural, =1{1 día y }other{# días y }}</translation>
 <translation id="5866104238061687188">{YEARS,plural, =1{en 1 año}other{en # años}}</translation>
 <translation id="5895138241574237353">Reiniciar</translation>
@@ -150,11 +157,13 @@
 <translation id="6404817160109697034">{SECONDS,plural, =1{Hace 1 s.}other{Hace # s.}}</translation>
 <translation id="6430678249303439055">No permitir las notificaciones de esta app</translation>
 <translation id="6483402905448010557">{SECONDS,plural, =1{Hace 1 segundo}other{Hace # segundos}}</translation>
+<translation id="6539092367496845964">Se produjo un error; vuelve a intentarlo más tarde.</translation>
 <translation id="654149438358937226">Bloquear todas las notificaciones</translation>
 <translation id="6567071839949112727">hacer clic en principal</translation>
 <translation id="6578407462441924264">Sin nombre</translation>
 <translation id="6612467943526193239">Para salir de las opciones de calibración, presiona Esc.</translation>
 <translation id="6620110761915583480">Guardar archivo</translation>
+<translation id="6656912866303152668">Asegúrate de que el dispositivo <ph name="TARGET_DEVICE_NAME" /> tenga activada la sincronización en Chrome y, luego, vuelve a intentar el envío.</translation>
 <translation id="6699343763173986273">Pista multimedia siguiente</translation>
 <translation id="673773751041746814">Contenido borrado</translation>
 <translation id="6779314412797872738">Para enviar un número desde aquí a tu teléfono Android, <ph name="TROUBLESHOOT_LINK" /> en la configuración de ambos dispositivos.</translation>
@@ -176,7 +185,6 @@
 <translation id="7319740667687257810">Launcher, vista parcial</translation>
 <translation id="7365057348334984696">{MINUTES,plural, =1{Hace 1 min.}other{Hace # min.}}</translation>
 <translation id="7389409599945284130">- <ph name="MESSAGE" /></translation>
-<translation id="7399254631220132461">Revisa la conexión del teléfono y vuelve a intentarlo</translation>
 <translation id="7410957453383678442">{MINUTES,plural, =1{Falta 1 minuto.}other{Faltan # minutos.}}</translation>
 <translation id="7430878839542012341">¿Deseas borrar esta búsqueda de tu Historial?</translation>
 <translation id="7460907917090416791"><ph name="QUANTITY" /> TB</translation>
@@ -217,9 +225,11 @@
 <translation id="8806053966018712535">Carpeta <ph name="FOLDER_NAME" /></translation>
 <translation id="883911313571074303">Escribir en la imagen</translation>
 <translation id="8841375032071747811">Botón Atrás</translation>
+<translation id="8867568208303837180">Enviando...</translation>
 <translation id="8876215549894133151">Formato:</translation>
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KB</translation>
 <translation id="8926951137623668982">Biblioteca siempre oculta</translation>
+<translation id="8996630695507351249">Comprueba que <ph name="TARGET_DEVICE_NAME" /> tenga conexión a Internet.</translation>
 <translation id="9002566407876343676">abrir</translation>
 <translation id="9039076430527029379">Mueve la app a la página <ph name="PAGE_NUMBER" />, fila <ph name="ROW_NUMBER" />, columna <ph name="COLUMN_NUMBER" />.</translation>
 <translation id="9044832324875206639">{SECONDS,plural, =1{1 s}other{# s}}</translation>

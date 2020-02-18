@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.rlz.RevenueStats;
 import org.chromium.chrome.browser.searchwidget.SearchWidgetProvider;
 import org.chromium.chrome.browser.services.GoogleServicesManager;
 import org.chromium.chrome.browser.share.ShareHelper;
+import org.chromium.chrome.browser.sharing.shared_clipboard.SharedClipboardShareActivity;
 import org.chromium.chrome.browser.sync.SyncController;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
@@ -83,6 +84,8 @@ import org.chromium.components.download.DownloadCollectionBridge;
 import org.chromium.components.minidump_uploader.CrashFileManager;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.viz.common.VizSwitches;
+import org.chromium.components.viz.common.display.DeJellyUtils;
 import org.chromium.content_public.browser.BrowserTaskExecutor;
 import org.chromium.content_public.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -188,6 +191,12 @@ public class ProcessInitializationHandler {
         // after native is loaded.
         DownloadCollectionBridge.setDownloadCollectionBridge(
                 AppHooks.get().getDownloadCollectionBridge());
+
+        // De-jelly can also be controlled by a system property. As sandboxed processes can't
+        // read this property directly, convert it to the equivalent command line flag.
+        if (DeJellyUtils.externallyEnableDeJelly()) {
+            CommandLine.getInstance().appendSwitch(VizSwitches.ENABLE_DE_JELLY);
+        }
     }
 
     /**
@@ -444,6 +453,9 @@ public class ProcessInitializationHandler {
 
         deferredStartupHandler.addDeferredTask(
                 () -> IncognitoTabLauncher.updateComponentEnabledState());
+
+        deferredStartupHandler.addDeferredTask(
+                () -> SharedClipboardShareActivity.updateComponentEnabledState());
     }
 
     private void initChannelsAsync() {

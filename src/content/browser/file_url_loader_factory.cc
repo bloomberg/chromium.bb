@@ -48,7 +48,9 @@
 #include "services/network/public/cpp/cors/cors_error_status.h"
 #include "services/network/public/cpp/cors/origin_access_list.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/request_mode.h"
 #include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/cors.mojom-shared.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -102,20 +104,6 @@ GURL AppendUrlSeparator(const GURL& url) {
   GURL::Replacements replacements;
   replacements.SetPathStr(new_path);
   return url.ReplaceComponents(replacements);
-}
-
-// This function checks the CORS origin access lists on the IO thread only when
-// NetworkService is disabled. If NetworkService is enabled, callers can access
-// the lists directly on the main thread.
-bool AskIfSharedCorsOriginAccessListNotAllowOnIO(
-    scoped_refptr<SharedCorsOriginAccessList> shared_cors_origin_access_list,
-    const url::Origin origin,
-    const GURL url) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  return shared_cors_origin_access_list->GetOriginAccessList().CheckAccessState(
-             origin, url) !=
-         network::cors::OriginAccessList::AccessState::kAllowed;
 }
 
 net::Error ConvertMojoResultToNetError(MojoResult result) {
@@ -178,7 +166,6 @@ class FileURLDirectoryLoader
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override {}
-  void ProceedWithResponse() override { NOTREACHED(); }
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -241,7 +228,10 @@ class FileURLDirectoryLoader
   }
 
   void OnConnectionError() {
+    lister_.reset();
+    data_producer_.reset();
     binding_.Close();
+    client_.reset();
     MaybeDeleteSelf();
   }
 
@@ -410,7 +400,6 @@ class FileURLLoader : public network::mojom::URLLoader {
     }
     MaybeDeleteSelf();
   }
-  void ProceedWithResponse() override {}
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override {}
   void PauseReadingBodyFromNet() override {}
@@ -560,48 +549,31 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (observer)
       observer->OnStart();
 
-    base::File file(path, base::File::FLAG_OPEN | base::File::FLAG_READ);
-    if (!file.IsValid()) {
+    auto file_data_source = std::make_unique<mojo::FileDataSource>(
+        base::File(path, base::File::FLAG_OPEN | base::File::FLAG_READ));
+    mojo::DataPipeProducer::DataSource* data_source = file_data_source.get();
+
+    std::vector<char> initial_read_buffer(net::kMaxBytesToSniff);
+    auto read_result =
+        data_source->Read(0u, base::span<char>(initial_read_buffer));
+    if (read_result.result != MOJO_RESULT_OK) {
+      // This can happen when the file is unreadable (which can happen during
+      // corruption). We need to be sure to inform the observer that we've
+      // finished reading so that it can proceed.
       if (observer) {
-        mojo::DataPipeProducer::DataSource::ReadResult result;
-        result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
-            file.error_details());
-        observer->OnRead(base::span<char>(), &result);
+        observer->OnRead(base::span<char>(), &read_result);
         observer->OnDone();
       }
-      net::Error net_error = net::FileErrorToNetError(file.error_details());
-      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
+      client_->OnComplete(network::URLLoaderCompletionStatus(
+          ConvertMojoResultToNetError(read_result.result)));
       client_.reset();
       MaybeDeleteSelf();
       return;
     }
-    char initial_read_buffer[net::kMaxBytesToSniff];
-    int initial_read_result =
-        file.ReadAtCurrentPos(initial_read_buffer, net::kMaxBytesToSniff);
-    if (initial_read_result < 0) {
-      mojo::DataPipeProducer::DataSource::ReadResult result;
-      result.result = mojo::FileDataSource::ConvertFileErrorToMojoResult(
-          base::File::GetLastFileError());
-      DCHECK_NE(MOJO_RESULT_OK, result.result);
-      if (observer) {
-        // This can happen when the file is unreadable (which can happen during
-        // corruption). We need to be sure to inform
-        // the observer that we've finished reading so that it can proceed.
-        observer->OnRead(base::span<char>(), &result);
-        observer->OnDone();
-      }
-      net::Error net_error = ConvertMojoResultToNetError(result.result);
-      client_->OnComplete(network::URLLoaderCompletionStatus(net_error));
-      client_.reset();
-      MaybeDeleteSelf();
-      return;
-    } else if (observer) {
-      base::span<char> buffer(initial_read_buffer, net::kMaxBytesToSniff);
-      mojo::DataPipeProducer::DataSource::ReadResult result;
-      result.bytes_read = initial_read_result;
-      observer->OnRead(buffer, &result);
-    }
-    size_t initial_read_size = static_cast<size_t>(initial_read_result);
+    if (observer)
+      observer->OnRead(base::span<char>(initial_read_buffer), &read_result);
+
+    uint64_t initial_read_size = read_result.bytes_read;
 
     std::string range_header;
     net::HttpByteRange byte_range;
@@ -613,8 +585,9 @@ class FileURLLoader : public network::mojom::URLLoader {
       if (net::HttpUtil::ParseRangeHeader(range_header, &ranges) &&
           ranges.size() == 1) {
         byte_range = ranges[0];
-        if (!byte_range.ComputeBounds(info.size))
+        if (!byte_range.ComputeBounds(info.size)) {
           fail = true;
+        }
       } else {
         fail = true;
       }
@@ -626,18 +599,16 @@ class FileURLLoader : public network::mojom::URLLoader {
       }
     }
 
-    size_t first_byte_to_send = 0;
-    size_t total_bytes_to_send = static_cast<size_t>(info.size);
+    uint64_t first_byte_to_send = 0;
+    uint64_t total_bytes_to_send = info.size;
 
     if (byte_range.IsValid()) {
-      first_byte_to_send =
-          static_cast<size_t>(byte_range.first_byte_position());
+      first_byte_to_send = byte_range.first_byte_position();
       total_bytes_to_send =
-          static_cast<size_t>(byte_range.last_byte_position()) -
-          first_byte_to_send + 1;
+          byte_range.last_byte_position() - first_byte_to_send + 1;
     }
 
-    total_bytes_written_ = static_cast<size_t>(total_bytes_to_send);
+    total_bytes_written_ = total_bytes_to_send;
 
     head.content_length = base::saturated_cast<int64_t>(total_bytes_to_send);
 
@@ -665,7 +636,8 @@ class FileURLLoader : public network::mojom::URLLoader {
     if (!net::GetMimeTypeFromFile(path, &head.mime_type)) {
       std::string new_type;
       net::SniffMimeType(
-          initial_read_buffer, initial_read_result, request.url, head.mime_type,
+          initial_read_buffer.data(), read_result.bytes_read, request.url,
+          head.mime_type,
           GetContentClient()->browser()->ForceSniffingFileUrlsForHtml()
               ? net::ForceSniffFileUrlsForHtml::kEnabled
               : net::ForceSniffFileUrlsForHtml::kDisabled,
@@ -690,23 +662,23 @@ class FileURLLoader : public network::mojom::URLLoader {
     // In case of a range request, seek to the appropriate position before
     // sending the remaining bytes asynchronously. Under normal conditions
     // (i.e., no range request) this Seek is effectively a no-op.
-    int64_t new_position = file.Seek(base::File::FROM_BEGIN,
-                                     static_cast<int64_t>(first_byte_to_send));
+    file_data_source->SetRange(first_byte_to_send,
+                               first_byte_to_send + total_bytes_to_send);
     if (observer)
-      observer->OnSeekComplete(new_position);
+      observer->OnSeekComplete(first_byte_to_send);
 
     data_producer_ = std::make_unique<mojo::DataPipeProducer>(
         std::move(pipe.producer_handle));
     data_producer_->Write(std::make_unique<mojo::FilteredDataSource>(
-                              std::make_unique<mojo::FileDataSource>(
-                                  std::move(file), total_bytes_to_send),
-                              std::move(observer)),
+                              std::move(file_data_source), std::move(observer)),
                           base::BindOnce(&FileURLLoader::OnFileWritten,
                                          base::Unretained(this), nullptr));
   }
 
   void OnConnectionError() {
+    data_producer_.reset();
     binding_.Close();
+    client_.reset();
     MaybeDeleteSelf();
   }
 
@@ -761,7 +733,7 @@ class FileURLLoader : public network::mojom::URLLoader {
   // a byte range was requested).
   // It is used to set some of the URLLoaderCompletionStatus data passed back
   // to the URLLoaderClients (eg SimpleURLLoader).
-  size_t total_bytes_written_ = 0;
+  uint64_t total_bytes_written_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FileURLLoader);
 };
@@ -776,7 +748,7 @@ FileURLLoaderFactory::FileURLLoaderFactory(
       shared_cors_origin_access_list_(
           std::move(shared_cors_origin_access_list)),
       task_runner_(base::CreateSequencedTaskRunner(
-          {base::MayBlock(), task_priority,
+          {base::ThreadPool(), base::MayBlock(), task_priority,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})) {}
 
 FileURLLoaderFactory::~FileURLLoaderFactory() = default;
@@ -791,7 +763,7 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-  bool cors_flag = request.mode != network::mojom::RequestMode::kNavigate &&
+  bool cors_flag = !network::IsNavigationRequestMode(request.mode) &&
                    request.mode != network::mojom::RequestMode::kNoCors;
 
   // CORS mode requires a valid |request_inisiator|. Check this condition first
@@ -819,31 +791,15 @@ void FileURLLoaderFactory::CreateLoaderAndStart(
     // NetworkService is enabled, or on the IO thread if it is disabled.
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // If NetworkService is enabled, |mode| should be kNoCors for the case of
-      // |shared_cors_origin_access_list_| being nullptr, and the previous check
-      // should not return kAskAccessList.
-      // Only internal call sites, such as ExtensionDownloader, is permitted.
-      DCHECK(shared_cors_origin_access_list_);
-      cors_flag =
-          shared_cors_origin_access_list_->GetOriginAccessList()
-              .CheckAccessState(*request.request_initiator, request.url) !=
-          network::cors::OriginAccessList::AccessState::kAllowed;
-    } else {
-      // TODO(toyoshim): Remove this thread-hop code once the NetworkService is
-      // fully enabled, and if other IO thread users do not need cors enabled
-      // requests. At this moment, ResourceDownloader is the only users on the
-      // IO thread, and it always makes "no-cors" requests.
-      base::PostTaskWithTraitsAndReplyWithResult(
-          FROM_HERE, {BrowserThread::IO},
-          base::BindOnce(&AskIfSharedCorsOriginAccessListNotAllowOnIO,
-                         base::RetainedRef(shared_cors_origin_access_list_),
-                         *request.request_initiator, request.url),
-          base::BindOnce(&FileURLLoaderFactory::CreateLoaderAndStartInternal,
-                         this->AsWeakPtr(), request, std::move(loader),
-                         std::move(client)));
-      return;
-    }
+    // |mode| should be kNoCors for the case of
+    // |shared_cors_origin_access_list_| being nullptr, and the previous check
+    // should not return kAskAccessList.
+    // Only internal call sites, such as ExtensionDownloader, is permitted.
+    DCHECK(shared_cors_origin_access_list_);
+    cors_flag =
+        shared_cors_origin_access_list_->GetOriginAccessList().CheckAccessState(
+            *request.request_initiator, request.url) !=
+        network::cors::OriginAccessList::AccessState::kAllowed;
   }
 
   CreateLoaderAndStartInternal(request, std::move(loader), std::move(client),
@@ -910,8 +866,8 @@ void CreateFileURLLoader(
   // TODO(crbug.com/924416): Re-evaluate how TaskPriority is set here and in
   // other file URL-loading-related code. Some callers require USER_VISIBLE
   // (i.e., BEST_EFFORT is not enough).
-  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
-      {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+  auto task_runner = base::CreateSequencedTaskRunner(
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,

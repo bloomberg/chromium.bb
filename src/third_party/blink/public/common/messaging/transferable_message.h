@@ -22,8 +22,8 @@ namespace blink {
 // type can be serialized as a blink::mojom::TransferableMessage struct.
 struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   TransferableMessage();
-  TransferableMessage(TransferableMessage&&);
-  TransferableMessage& operator=(TransferableMessage&&);
+  TransferableMessage(TransferableMessage&&) noexcept;
+  TransferableMessage& operator=(TransferableMessage&&) noexcept;
   ~TransferableMessage();
 
   // Any ports being transferred as part of this message.
@@ -36,10 +36,6 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   // The contents of any ImageBitmaps being transferred as part of this message.
   std::vector<SkBitmap> image_bitmap_contents_array;
 
-  // Whether the recipient should have a user gesture when it processes this
-  // message. This is a legacy bit used only without User Activation v2.
-  bool has_user_gesture = false;
-
   // The state of user activation.
   mojom::UserActivationSnapshotPtr user_activation;
 
@@ -48,6 +44,10 @@ struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   bool transfer_user_activation = false;
 
   // Whether the destination frame is allowed to autoplay.
+  //
+  // TODO(mustaq): Ideally the |transfer_user_activation| field above should be
+  // replaced by bits specific to "safe-to-delegate" capabilities, like the
+  // autoplay bit below.  See crbug.com/985914.
   bool allow_autoplay = false;
 
  private:

@@ -47,7 +47,8 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
 
         @Override
         public void init(PaymentRequestClient client, PaymentMethodData[] methodData,
-                PaymentDetails details, PaymentOptions options) {
+                PaymentDetails details, PaymentOptions options,
+                boolean unusedGooglePayBridgeEligible) {
             mClient = client;
         }
 
@@ -76,7 +77,7 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public void retry(PaymentValidationErrors errors) {}
 
         @Override
-        public void canMakePayment(boolean legacyMode) {
+        public void canMakePayment() {
             if (mClient != null) {
                 mClient.onCanMakePayment(CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
             }

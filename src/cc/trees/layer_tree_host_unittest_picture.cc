@@ -136,8 +136,6 @@ class LayerTreeHostPictureTestTwinLayer
       EndTest();
   }
 
-  void AfterTest() override {}
-
   int activates_ = 0;
 
   int picture_id1_;
@@ -194,15 +192,14 @@ class LayerTreeHostPictureTestResizeViewportWithGpuRaster
         // Change the picture layer's size along with the viewport, so it will
         // consider picking a new tile size.
         picture_->SetBounds(gfx::Size(768, 1056));
-        layer_tree_host()->SetViewportSizeAndScale(
-            gfx::Size(768, 1056), 1.f, viz::LocalSurfaceIdAllocation());
+        GenerateNewLocalSurfaceId();
+        layer_tree_host()->SetViewportRectAndScale(
+            gfx::Rect(768, 1056), 1.f, GetCurrentLocalSurfaceIdAllocation());
         break;
       case 2:
         EndTest();
     }
   }
-
-  void AfterTest() override {}
 
   gfx::Size tile_size_;
   FakeContentLayerClient client_;
@@ -311,8 +308,6 @@ class LayerTreeHostPictureTestChangeLiveTilesRectWithRecycleTree
       EndTest();
   }
 
-  void AfterTest() override {}
-
   int frame_;
   bool did_post_commit_;
   FakeContentLayerClient client_;
@@ -398,8 +393,6 @@ class LayerTreeHostPictureTestRSLLMembership : public LayerTreeHostPictureTest {
     }
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<Layer> child_;
   scoped_refptr<FakePictureLayer> picture_;
@@ -418,7 +411,6 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     pinch_ = Layer::Create();
     pinch_->SetBounds(gfx::Size(500, 500));
     pinch_->SetScrollable(root_clip->bounds());
-    pinch_->SetIsContainerForFixedPositionLayers(true);
     page_scale_layer->AddChild(pinch_);
     root_clip->AddChild(page_scale_layer);
 
@@ -564,8 +556,6 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
     }
   }
 
-  void AfterTest() override {}
-
   FakeContentLayerClient client_;
   scoped_refptr<Layer> pinch_;
   scoped_refptr<FakePictureLayer> picture_;
@@ -577,7 +567,8 @@ class LayerTreeHostPictureTestRSLLMembershipWithScale
 
 // Multi-thread only because in single thread you can't pinch zoom on the
 // compositor thread.
-MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
+// TODO(https://crbug.com/997866): Flaky on several platforms.
+// MULTI_THREAD_TEST_F(LayerTreeHostPictureTestRSLLMembershipWithScale);
 
 class LayerTreeHostPictureTestForceRecalculateScales
     : public LayerTreeHostPictureTest {
@@ -585,18 +576,21 @@ class LayerTreeHostPictureTestForceRecalculateScales
     gfx::Size size(100, 100);
     scoped_refptr<Layer> root = Layer::Create();
     root->SetBounds(size);
+    top_layer_ = Layer::Create();
+    top_layer_->SetBounds(size);
+    root->AddChild(top_layer_);
 
     will_change_layer_ = FakePictureLayer::Create(&client_);
     will_change_layer_->SetHasWillChangeTransformHint(true);
     will_change_layer_->SetBounds(size);
-    root->AddChild(will_change_layer_);
+    top_layer_->AddChild(will_change_layer_);
 
     normal_layer_ = FakePictureLayer::Create(&client_);
     normal_layer_->SetBounds(size);
-    root->AddChild(normal_layer_);
+    top_layer_->AddChild(normal_layer_);
 
     layer_tree_host()->SetRootLayer(root);
-    layer_tree_host()->SetViewportSizeAndScale(size, 1.f,
+    layer_tree_host()->SetViewportRectAndScale(gfx::Rect(size), 1.f,
                                                viz::LocalSurfaceIdAllocation());
 
     client_.set_fill_with_nonsolid_color(true);
@@ -626,7 +620,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(
-                &LayerTreeHostPictureTestForceRecalculateScales::ScaleRootUp,
+                &LayerTreeHostPictureTestForceRecalculateScales::ScaleUp,
                 base::Unretained(this)));
         break;
       case 1:
@@ -643,7 +637,7 @@ class LayerTreeHostPictureTestForceRecalculateScales
         MainThreadTaskRunner()->PostTask(
             FROM_HERE,
             base::BindOnce(&LayerTreeHostPictureTestForceRecalculateScales::
-                               ScaleRootUpAndRecalculateScales,
+                               ScaleUpAndRecalculateScales,
                            base::Unretained(this)));
         break;
       case 2:
@@ -661,21 +655,20 @@ class LayerTreeHostPictureTestForceRecalculateScales
     }
   }
 
-  void ScaleRootUp() {
+  void ScaleUp() {
     gfx::Transform transform;
     transform.Scale(2, 2);
-    layer_tree_host()->root_layer()->SetTransform(transform);
+    top_layer_->SetTransform(transform);
   }
 
-  void ScaleRootUpAndRecalculateScales() {
+  void ScaleUpAndRecalculateScales() {
     gfx::Transform transform;
     transform.Scale(4, 4);
-    layer_tree_host()->root_layer()->SetTransform(transform);
+    top_layer_->SetTransform(transform);
     layer_tree_host()->SetNeedsRecalculateRasterScales();
   }
 
-  void AfterTest() override {}
-
+  scoped_refptr<Layer> top_layer_;
   scoped_refptr<FakePictureLayer> will_change_layer_;
   scoped_refptr<FakePictureLayer> normal_layer_;
 };

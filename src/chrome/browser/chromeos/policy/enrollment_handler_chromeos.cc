@@ -188,8 +188,7 @@ EnrollmentHandlerChromeOS::EnrollmentHandlerChromeOS(
       client_id_(client_id),
       sub_organization_(sub_organization),
       completion_callback_(completion_callback),
-      enrollment_step_(STEP_PENDING),
-      weak_ptr_factory_(this) {
+      enrollment_step_(STEP_PENDING) {
   dm_auth_ = std::move(dm_auth);
   CHECK(!client_->is_registered());
   CHECK_EQ(DM_STATUS_SUCCESS, client_->status());
@@ -457,7 +456,8 @@ void EnrollmentHandlerChromeOS::StartAttestationBasedEnrollmentFlow() {
           weak_ptr_factory_.GetWeakPtr());
   attestation_flow_->GetCertificate(
       chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-      EmptyAccountId(), "" /* request_origin */, false /* force_new_key */,
+      EmptyAccountId(), std::string() /* request_origin */,
+      false /* force_new_key */, std::string(), /* key_name */
       callback);
 }
 
@@ -482,9 +482,10 @@ void EnrollmentHandlerChromeOS::StartOfflineDemoEnrollmentFlow() {
   skip_robot_auth_ = true;
   SetStep(STEP_POLICY_FETCH);
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(&ReadFileToOptionalString,
                      enrollment_config_.offline_policy_path),
       base::BindOnce(&EnrollmentHandlerChromeOS::OnOfflinePolicyBlobLoaded,

@@ -38,10 +38,6 @@ class VsyncTrack extends Track<Config, Data> {
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
 
     const data = this.data();
-    if (this.shouldRequestData(
-            data, visibleWindowTime.start, visibleWindowTime.end)) {
-      globals.requestTrackData(this.trackState.id);
-    }
     if (data === undefined) return;  // Can't possibly draw anything.
 
     const dataStartPx = timeScale.timeToPx(data.start);
@@ -50,7 +46,12 @@ class VsyncTrack extends Track<Config, Data> {
     const visibleEndPx = timeScale.timeToPx(visibleWindowTime.end);
 
     checkerboardExcept(
-        ctx, visibleStartPx, visibleEndPx, dataStartPx, dataEndPx);
+        ctx,
+        this.getHeight(),
+        visibleStartPx,
+        visibleEndPx,
+        dataStartPx,
+        dataEndPx);
 
     const bgColor = '#5E909B';
     const fgColor = '#323D48';

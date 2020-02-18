@@ -9,6 +9,7 @@
 
 #include <memory>
 
+#include "core/fxcrt/cfx_timer.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_wnd.h"
 
@@ -43,10 +44,11 @@ enum PWL_SBBUTTON_TYPE { PSBT_MIN, PSBT_MAX, PSBT_POS };
 
 class CPWL_SBButton final : public CPWL_Wnd {
  public:
-  CPWL_SBButton(const CreateParams& cp,
-                std::unique_ptr<PrivateData> pAttachedData,
-                PWL_SCROLLBAR_TYPE eScrollBarType,
-                PWL_SBBUTTON_TYPE eButtonType);
+  CPWL_SBButton(
+      const CreateParams& cp,
+      std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData,
+      PWL_SCROLLBAR_TYPE eScrollBarType,
+      PWL_SBBUTTON_TYPE eButtonType);
   ~CPWL_SBButton() override;
 
   // CPWL_Wnd
@@ -112,11 +114,12 @@ struct PWL_SCROLL_PRIVATEDATA {
   float fSmallStep;
 };
 
-class CPWL_ScrollBar final : public CPWL_Wnd {
+class CPWL_ScrollBar final : public CPWL_Wnd, public CFX_Timer::CallbackIface {
  public:
-  CPWL_ScrollBar(const CreateParams& cp,
-                 std::unique_ptr<PrivateData> pAttachedData,
-                 PWL_SCROLLBAR_TYPE sbType);
+  CPWL_ScrollBar(
+      const CreateParams& cp,
+      std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData,
+      PWL_SCROLLBAR_TYPE sbType);
   ~CPWL_ScrollBar() override;
 
   // CPWL_Wnd:
@@ -132,7 +135,9 @@ class CPWL_ScrollBar final : public CPWL_Wnd {
   void NotifyLButtonUp(CPWL_Wnd* child, const CFX_PointF& pos) override;
   void NotifyMouseMove(CPWL_Wnd* child, const CFX_PointF& pos) override;
   void CreateChildWnd(const CreateParams& cp) override;
-  void TimerProc() override;
+
+  // CFX_Timer::CallbackIface:
+  void OnTimerFired() override;
 
   float GetScrollBarWidth() const;
   PWL_SCROLLBAR_TYPE GetScrollBarType() const { return m_sbType; }
@@ -171,6 +176,7 @@ class CPWL_ScrollBar final : public CPWL_Wnd {
   UnownedPtr<CPWL_SBButton> m_pMinButton;
   UnownedPtr<CPWL_SBButton> m_pMaxButton;
   UnownedPtr<CPWL_SBButton> m_pPosButton;
+  std::unique_ptr<CFX_Timer> m_pTimer;
   PWL_SCROLL_PRIVATEDATA m_sData;
   bool m_bMouseDown = false;
   bool m_bMinOrMax = false;

@@ -21,12 +21,13 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_pump_type.h"
 #include "base/sequence_checker.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/single_thread_task_executor.h"
 #include "base/test/gtest_xml_util.h"
 #include "base/test/launcher/test_launcher.h"
 #include "base/test/test_suite.h"
@@ -68,12 +69,6 @@ namespace {
 // profile. i.e. Foo.PRE_Test runs and then Foo.Test. This allows writing tests
 // that span browser restarts.
 const char kPreTestPrefix[] = "PRE_";
-
-// Manual tests only run when --run-manual is specified. This allows writing
-// tests that don't run automatically but are still in the same test binary.
-// This is useful so that a team that wants to run a few tests doesn't have to
-// add a new binary that must be compiled on all builds.
-const char kManualTestPrefix[] = "MANUAL_";
 
 TestLauncherDelegate* g_launcher_delegate = nullptr;
 #if !defined(OS_ANDROID)
@@ -132,8 +127,7 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
 
   // base::TestLauncherDelegate:
   bool GetTests(std::vector<base::TestIdentifier>* output) override;
-  bool WillRunTest(const std::string& test_case_name,
-                   const std::string& test_name) override;
+
   base::CommandLine GetCommandLine(const std::vector<std::string>& test_names,
                                    const base::FilePath& temp_dir,
                                    base::FilePath* output_file) override;
@@ -151,19 +145,9 @@ class WrapperTestLauncherDelegate : public base::TestLauncherDelegate {
   // ProcessLifetimeObserver) to the caller's content::TestLauncherDelegate.
   void OnTestTimedOut(const base::CommandLine& command_line) override;
 
-  // Callback to receive result of a test.
-  // |output_file| is a path to xml file written by test-launcher
-  // child process. It contains information about test and failed
-  // EXPECT/ASSERT/DCHECK statements. Test launcher parses that
-  // file to get additional information about test run (status,
-  // error-messages, stack-traces and file/line for failures).
-  std::vector<base::TestResult> ProcessTestResults(
-      const std::vector<std::string>& test_names,
-      const base::FilePath& output_file,
-      const std::string& output,
-      const base::TimeDelta& elapsed_time,
-      int exit_code,
-      bool was_timeout) override;
+  // Delegate additional TestResult processing.
+  void ProcessTestResults(std::vector<base::TestResult>& test_results,
+                          base::TimeDelta elapsed_time) override;
 
   content::TestLauncherDelegate* launcher_delegate_;
 
@@ -180,17 +164,6 @@ bool WrapperTestLauncherDelegate::GetTests(
 
 bool IsPreTestName(const std::string& test_name) {
   return test_name.find(kPreTestPrefix) != std::string::npos;
-}
-
-bool WrapperTestLauncherDelegate::WillRunTest(const std::string& test_case_name,
-                                              const std::string& test_name) {
-  if (base::StartsWith(test_name, kManualTestPrefix,
-                       base::CompareCase::SENSITIVE) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(kRunManualTestsFlag)) {
-    return false;
-  }
-
-  return true;
 }
 
 size_t WrapperTestLauncherDelegate::GetBatchSize() {
@@ -258,66 +231,14 @@ void WrapperTestLauncherDelegate::OnTestTimedOut(
   launcher_delegate_->OnTestTimedOut(command_line);
 }
 
-std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
-    const std::vector<std::string>& test_names,
-    const base::FilePath& output_file,
-    const std::string& output,
-    const base::TimeDelta& elapsed_time,
-    int exit_code,
-    bool was_timeout) {
-  base::TestResult result;
-  DCHECK_EQ(1u, test_names.size());
-  std::string test_name = test_names.front();
-  result.full_name = test_name;
+void WrapperTestLauncherDelegate::ProcessTestResults(
+    std::vector<base::TestResult>& test_results,
+    base::TimeDelta elapsed_time) {
+  CHECK_EQ(1u, test_results.size());
 
-  bool crashed = false;
-  std::vector<base::TestResult> parsed_results;
-  bool have_test_results =
-      base::ProcessGTestOutput(output_file, &parsed_results, &crashed);
+  test_results.front().elapsed_time = elapsed_time;
 
-  if (!base::DeleteFile(output_file.DirName(), true)) {
-    LOG(WARNING) << "Failed to delete output file: " << output_file.value();
-  }
-
-  // Use GTest XML to determine test status. Fallback to exit code if
-  // parsing failed.
-  if (have_test_results && !parsed_results.empty()) {
-    // We expect only one test result here.
-    DCHECK_EQ(1U, parsed_results.size())
-        << "Unexpectedly ran test more than once: " << test_name;
-    DCHECK_EQ(test_name, parsed_results.front().full_name);
-
-    result = parsed_results.front();
-
-    if (was_timeout) {
-      // Fix up test status: we forcibly kill the child process
-      // after the timeout, so from XML results it looks like
-      // a crash.
-      result.status = base::TestResult::TEST_TIMEOUT;
-    } else if (result.status == base::TestResult::TEST_SUCCESS &&
-               exit_code != 0) {
-      // This is a bit surprising case: test is marked as successful,
-      // but the exit code was not zero. This can happen e.g. under
-      // memory tools that report leaks this way. Mark test as a
-      // failure on exit.
-      result.status = base::TestResult::TEST_FAILURE_ON_EXIT;
-    }
-  } else {
-    if (was_timeout)
-      result.status = base::TestResult::TEST_TIMEOUT;
-    else if (exit_code != 0)
-      result.status = base::TestResult::TEST_FAILURE;
-    else
-      result.status = base::TestResult::TEST_UNKNOWN;
-  }
-
-  result.elapsed_time = elapsed_time;
-
-  result.output_snippet = GetTestOutputSnippet(result, output);
-
-  launcher_delegate_->PostRunTest(&result);
-
-  return std::vector<base::TestResult>({result});
+  launcher_delegate_->PostRunTest(&test_results.front());
 }
 
 }  // namespace
@@ -325,9 +246,6 @@ std::vector<base::TestResult> WrapperTestLauncherDelegate::ProcessTestResults(
 const char kHelpFlag[]   = "help";
 
 const char kLaunchAsBrowser[] = "as-browser";
-
-// See kManualTestPrefix above.
-const char kRunManualTestsFlag[] = "run-manual";
 
 const char kSingleProcessTestsFlag[]   = "single_process";
 
@@ -337,7 +255,7 @@ void AppendCommandLineSwitches() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
 
   // Always disable the unsandbox GPU process for DX12 and Vulkan Info
-  // collection to avoid interference. This GPU process is launched 15
+  // collection to avoid interference. This GPU process is launched 120
   // seconds after chrome starts.
   command_line->AppendSwitch(
       switches::kDisableGpuProcessForDX12VulkanInfoCollection);
@@ -422,10 +340,9 @@ int LaunchTests(TestLauncherDelegate* launcher_delegate,
 
   base::debug::VerifyDebugger();
 
-  base::MessageLoopForIO message_loop;
+  base::SingleThreadTaskExecutor executor(base::MessagePumpType::IO);
 #if defined(OS_POSIX)
-  base::FileDescriptorWatcher file_descriptor_watcher(
-      message_loop.task_runner());
+  base::FileDescriptorWatcher file_descriptor_watcher(executor.task_runner());
 #endif
 
   launcher_delegate->PreSharding();

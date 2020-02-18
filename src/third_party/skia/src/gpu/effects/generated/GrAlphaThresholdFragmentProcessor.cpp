@@ -41,16 +41,18 @@ public:
                                                              "innerThreshold");
         outerThresholdVar = args.fUniformHandler->addUniform(kFragment_GrShaderFlag, kHalf_GrSLType,
                                                              "outerThreshold");
-        SkString sk_TransformedCoords2D_0 = fragBuilder->ensureCoords2D(args.fTransformedCoords[0]);
+        SkString sk_TransformedCoords2D_0 =
+                fragBuilder->ensureCoords2D(args.fTransformedCoords[0].fVaryingPoint);
         fragBuilder->codeAppendf(
-                "half4 color = %s;\nhalf4 mask_color = texture(%s, %s).%s;\nif (mask_color.w < "
-                "0.5) {\n    if (color.w > %s) {\n        half scale = %s / color.w;\n        "
-                "color.xyz *= scale;\n        color.w = %s;\n    }\n} else if (color.w < %s) {\n   "
-                " half scale = %s / max(0.0010000000474974513, color.w);\n    color.xyz *= "
-                "scale;\n    color.w = %s;\n}\n%s = color;\n",
+                "half4 color = %s;\nhalf4 mask_color = sample(%s, %s).%s;\nif (mask_color.w < 0.5) "
+                "{\n    if (color.w > %s) {\n        half scale = %s / color.w;\n        color.xyz "
+                "*= scale;\n        color.w = %s;\n    }\n} else if (color.w < %s) {\n    half "
+                "scale = %s / max(0.0010000000474974513, color.w);\n    color.xyz *= scale;\n    "
+                "color.w = %s;\n}\n%s = color;\n",
                 args.fInputColor,
                 fragBuilder->getProgramBuilder()->samplerVariable(args.fTexSamplers[0]),
-                sk_TransformedCoords2D_0.c_str(),
+                _outer.computeLocalCoordsInVertexShader() ? sk_TransformedCoords2D_0.c_str()
+                                                          : "_coords",
                 fragBuilder->getProgramBuilder()->samplerSwizzle(args.fTexSamplers[0]).c_str(),
                 args.fUniformHandler->getUniformCStr(outerThresholdVar),
                 args.fUniformHandler->getUniformCStr(outerThresholdVar),

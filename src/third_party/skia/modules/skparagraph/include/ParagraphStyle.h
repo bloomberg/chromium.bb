@@ -5,6 +5,7 @@
 #include "include/core/SkFontStyle.h"
 #include "modules/skparagraph/include/DartTypes.h"
 #include "modules/skparagraph/include/TextStyle.h"
+#include <string>  // std::u16string
 
 namespace skia {
 namespace textlayout {
@@ -27,11 +28,14 @@ struct StrutStyle {
     void setLeading(SkScalar Leading) { fLeading = Leading; }
     SkScalar getLeading() const { return fLeading; }
 
-    bool getStrutEnabled() const { return fStrutEnabled; }
-    void setStrutEnabled(bool v) { fStrutEnabled = v; }
+    bool getStrutEnabled() const { return fEnabled; }
+    void setStrutEnabled(bool v) { fEnabled = v; }
 
-    bool getForceStrutHeight() const { return fForceStrutHeight; }
-    void setForceStrutHeight(bool v) { fForceStrutHeight = v; }
+    bool getForceStrutHeight() const { return fForceHeight; }
+    void setForceStrutHeight(bool v) { fForceHeight = v; }
+
+    bool getHeightOverride() const { return fHeightOverride; }
+    void setHeightOverride(bool v) { fHeightOverride = v; }
 
 private:
 
@@ -40,8 +44,9 @@ private:
     SkScalar fFontSize;
     SkScalar fHeight;
     SkScalar fLeading;
-    bool fForceStrutHeight;
-    bool fStrutEnabled;
+    bool fForceHeight;
+    bool fEnabled;
+    bool fHeightOverride;
 };
 
 struct ParagraphStyle {

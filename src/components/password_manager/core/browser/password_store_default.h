@@ -68,6 +68,9 @@ class PasswordStoreDefault : public PasswordStore {
       base::Time delete_end) override;
   std::vector<std::unique_ptr<autofill::PasswordForm>> FillMatchingLogins(
       const FormDigest& form) override;
+  std::vector<std::unique_ptr<autofill::PasswordForm>>
+  FillMatchingLoginsByPassword(
+      const base::string16& plain_text_password) override;
   bool FillAutofillableLogins(
       std::vector<std::unique_ptr<autofill::PasswordForm>>* forms) override;
   bool FillBlacklistLogins(
@@ -87,10 +90,8 @@ class PasswordStoreDefault : public PasswordStore {
       PrimaryKeyToFormMap* key_to_form_map) override;
   PasswordStoreChangeList RemoveLoginByPrimaryKeySync(int primary_key) override;
   PasswordStoreSync::MetadataStore* GetMetadataStore() override;
-
-  inline bool DeleteAndRecreateDatabaseFile() {
-    return login_db_->DeleteAndRecreateDatabaseFile();
-  }
+  bool IsAccountStore() const override;
+  bool DeleteAndRecreateDatabaseFile() override;
 
  private:
   // Resets |login_db_| on the background sequence.

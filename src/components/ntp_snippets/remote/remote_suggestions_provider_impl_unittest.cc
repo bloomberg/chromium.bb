@@ -23,8 +23,8 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/default_clock.h"
 #include "base/time/tick_clock.h"
@@ -389,7 +389,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
 
   void RunUntilIdle() {
     timer_mock_task_runner_->RunUntilIdle();
-    scoped_task_environment_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   void SetCategoryRanker(std::unique_ptr<CategoryRanker> category_ranker) {
@@ -595,7 +595,7 @@ class RemoteSuggestionsProviderImplTest : public ::testing::Test {
   image_fetcher::FakeImageDecoder image_decoder_;
   std::unique_ptr<MockScheduler> scheduler_;
   RemoteSuggestionsStatusService* remote_suggestions_status_service_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   RemoteSuggestionsStatusService::StatusChangeCallback status_change_callback_;
 

@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/task/post_task.h"
+#include "base/trace_event/trace_event.h"
 #include "content/browser/loader/browser_initiated_resource_request.h"
 #include "content/browser/service_worker/service_worker_consts.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
@@ -26,13 +27,21 @@ namespace content {
 
 namespace {
 
-base::Optional<net::HttpRequestHeaders> GetDefaultHeadersOnUI(
-    base::WeakPtr<ServiceWorkerProcessManager> process_manager) {
+void SetUpOnUI(
+    base::WeakPtr<ServiceWorkerProcessManager> process_manager,
+    void* trace_id,
+    base::OnceCallback<void(
+        net::HttpRequestHeaders,
+        ServiceWorkerUpdatedScriptLoader::BrowserContextGetter)> callback) {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerUpdateChecker::anonymous::SetUpOnUI",
+      trace_id, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
+
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  if (!process_manager) {
-    // If no process manager is found, maybe it's being shut down.
-    // ServiceWorkerUpdateChecker is destroyed after posting this task.
-    return base::nullopt;
+  if (!process_manager || process_manager->IsShutdown()) {
+    // If it's being shut down, ServiceWorkerUpdateChecker is going to be
+    // destroyed after this task. We do nothing here.
+    return;
   }
 
   net::HttpRequestHeaders headers;
@@ -49,7 +58,20 @@ base::Optional<net::HttpRequestHeaders> GetDefaultHeadersOnUI(
       &headers, browser_context, /*should_update_existing_headers=*/false,
       renderer_preferences);
 
-  return headers;
+  ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+      browser_context_getter = base::BindRepeating(
+          [](base::WeakPtr<ServiceWorkerProcessManager> process_manager)
+              -> BrowserContext* {
+            DCHECK_CURRENTLY_ON(BrowserThread::UI);
+            if (process_manager)
+              return process_manager->browser_context();
+            return nullptr;
+          },
+          process_manager);
+
+  RunOrPostTaskOnThread(FROM_HERE, ServiceWorkerContext::GetCoreThreadId(),
+                        base::BindOnce(std::move(callback), std::move(headers),
+                                       browser_context_getter));
 }
 
 }  // namespace
@@ -64,9 +86,9 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
     blink::mojom::ServiceWorkerUpdateViaCache update_via_cache,
     base::TimeDelta time_since_last_check,
     ServiceWorkerContextCore* context)
-    : scripts_to_compare_(std::move(scripts_to_compare)),
-      main_script_url_(main_script_url),
+    : main_script_url_(main_script_url),
       main_script_resource_id_(main_script_resource_id),
+      scripts_to_compare_(std::move(scripts_to_compare)),
       version_to_update_(std::move(version_to_update)),
       loader_factory_(std::move(loader_factory)),
       force_bypass_cache_(force_bypass_cache),
@@ -77,28 +99,27 @@ ServiceWorkerUpdateChecker::ServiceWorkerUpdateChecker(
 ServiceWorkerUpdateChecker::~ServiceWorkerUpdateChecker() = default;
 
 void ServiceWorkerUpdateChecker::Start(UpdateStatusCallback callback) {
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker", "ServiceWorkerUpdateChecker::Start",
+                         this, TRACE_EVENT_FLAG_FLOW_OUT, "main_script_url",
+                         main_script_url_.spec());
+
   DCHECK(!scripts_to_compare_.empty());
   callback_ = std::move(callback);
 
-  // TODO(shimazu): Add UMA to capture the number of update.
-
-  base::PostTaskAndReplyWithResult(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&GetDefaultHeadersOnUI,
-                     context_->process_manager()->AsWeakPtr()),
-      base::BindOnce(&ServiceWorkerUpdateChecker::OnGetDefaultHeaders,
-                     weak_factory_.GetWeakPtr()));
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&SetUpOnUI, context_->process_manager()->AsWeakPtr(),
+                     base::Unretained(this),
+                     base::BindOnce(&ServiceWorkerUpdateChecker::DidSetUpOnUI,
+                                    weak_factory_.GetWeakPtr())));
 }
 
-void ServiceWorkerUpdateChecker::OnGetDefaultHeaders(
-    base::Optional<net::HttpRequestHeaders> header) {
-  // |header| is always valid because it could be base::nullopt when the process
-  // manager is destroyed, but it means that the ServiceWorkerContextCore is
-  // also destroyed. In that case, ServiceWorkerUpdateChecker is destroyed
-  // because it's owned by ServiceWorkerContextCore through
-  // ServiceWorkerJobCoordinator and ServiceWorkerRegisterJob.
-  DCHECK(header);
-  default_headers_ = std::move(header.value());
+void ServiceWorkerUpdateChecker::DidSetUpOnUI(
+    net::HttpRequestHeaders header,
+    ServiceWorkerUpdatedScriptLoader::BrowserContextGetter
+        browser_context_getter) {
+  default_headers_ = std::move(header);
+  browser_context_getter_ = std::move(browser_context_getter);
   CheckOneScript(main_script_url_, main_script_resource_id_);
 }
 
@@ -110,6 +131,12 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
         failure_info,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
         paused_state) {
+  TRACE_EVENT_WITH_FLOW2(
+      "ServiceWorker", "ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "script_url",
+      script_url.spec(), "result",
+      ServiceWorkerSingleScriptUpdateChecker::ResultToString(result));
+
   bool is_main_script = script_url == main_script_url_;
   // We only cares about the failures on the main script because an imported
   // script might not exist anymore and fail to be loaded because it's not
@@ -117,20 +144,32 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
   // See also https://github.com/w3c/ServiceWorker/issues/1374 for more details.
   if (is_main_script &&
       result == ServiceWorkerSingleScriptUpdateChecker::Result::kFailed) {
+    TRACE_EVENT_WITH_FLOW0(
+        "ServiceWorker",
+        "ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished_MainScriptFailed",
+        this, TRACE_EVENT_FLAG_FLOW_IN);
+
     std::move(callback_).Run(
         ServiceWorkerSingleScriptUpdateChecker::Result::kFailed,
         std::move(failure_info));
     return;
   }
 
-  script_check_results_[script_url] =
-      ComparedScriptInfo(old_resource_id, result, std::move(paused_state));
+  script_check_results_.emplace(
+      script_url,
+      ComparedScriptInfo(old_resource_id, result, std::move(paused_state),
+                         std::move(failure_info)));
   if (running_checker_->network_accessed())
     network_accessed_ = true;
 
-  running_checker_.reset();
-
   if (ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent == result) {
+    TRACE_EVENT_WITH_FLOW0(
+        "ServiceWorker",
+        "ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished_UpdateFound",
+        this, TRACE_EVENT_FLAG_FLOW_IN);
+
+    updated_script_url_ = script_url;
+
     // Found an updated script. Stop the comparison of scripts here and
     // return to ServiceWorkerRegisterJob to continue the update.
     // Note that running |callback_| will delete |this|.
@@ -141,6 +180,11 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
   }
 
   if (next_script_index_to_compare_ >= scripts_to_compare_.size()) {
+    TRACE_EVENT_WITH_FLOW0(
+        "ServiceWorker",
+        "ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished_NoUpdate", this,
+        TRACE_EVENT_FLAG_FLOW_IN);
+
     // None of scripts had any updates.
     // Running |callback_| will delete |this|.
     std::move(callback_).Run(
@@ -154,6 +198,11 @@ void ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished(
       main_script_url_) {
     next_script_index_to_compare_++;
     if (next_script_index_to_compare_ >= scripts_to_compare_.size()) {
+      TRACE_EVENT_WITH_FLOW0(
+          "ServiceWorker",
+          "ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished_NoUpdate", this,
+          TRACE_EVENT_FLAG_FLOW_IN);
+
       // None of scripts had any updates.
       // Running |callback_| will delete |this|.
       std::move(callback_).Run(
@@ -177,6 +226,10 @@ ServiceWorkerUpdateChecker::TakeComparedResults() {
 
 void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
                                                 const int64_t resource_id) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerUpdateChecker::CheckOneScript", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "url", url.spec());
+
   DCHECK_NE(ServiceWorkerConsts::kInvalidServiceWorkerResourceId, resource_id)
       << "All the target scripts should be stored in the storage.";
 
@@ -197,8 +250,8 @@ void ServiceWorkerUpdateChecker::CheckOneScript(const GURL& url,
   running_checker_ = std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
       url, is_main_script, main_script_url_, version_to_update_->scope(),
       force_bypass_cache_, update_via_cache_, time_since_last_check_,
-      default_headers_, loader_factory_, std::move(compare_reader),
-      std::move(copy_reader), std::move(writer),
+      default_headers_, browser_context_getter_, loader_factory_,
+      std::move(compare_reader), std::move(copy_reader), std::move(writer),
       base::BindOnce(&ServiceWorkerUpdateChecker::OnOneUpdateCheckFinished,
                      weak_factory_.GetWeakPtr(), resource_id));
 }
@@ -209,10 +262,13 @@ ServiceWorkerUpdateChecker::ComparedScriptInfo::ComparedScriptInfo(
     int64_t old_resource_id,
     ServiceWorkerSingleScriptUpdateChecker::Result result,
     std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::PausedState>
-        paused_state)
+        paused_state,
+    std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker::FailureInfo>
+        failure_info)
     : old_resource_id(old_resource_id),
       result(result),
-      paused_state(std::move(paused_state)) {}
+      paused_state(std::move(paused_state)),
+      failure_info(std::move(failure_info)) {}
 
 ServiceWorkerUpdateChecker::ComparedScriptInfo::~ComparedScriptInfo() = default;
 

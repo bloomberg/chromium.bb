@@ -7,7 +7,9 @@ package org.chromium.chrome.browser.keyboard_accessory.sheet_tabs;
 import android.support.annotation.CallSuper;
 
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.keyboard_accessory.AccessoryAction;
 import org.chromium.chrome.browser.keyboard_accessory.AccessoryTabType;
+import org.chromium.chrome.browser.keyboard_accessory.ManualFillingMetricsRecorder;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.AccessorySheetData;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.FooterCommand;
 import org.chromium.chrome.browser.keyboard_accessory.data.KeyboardAccessoryData.UserInfo;
@@ -29,22 +31,30 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
     private final AccessorySheetTabModel mModel;
     private final @AccessoryTabType int mTabType;
     private final @Type int mUserInfoType;
+    private final @AccessoryAction int mManageActionToRecord;
 
     @Override
     public void onItemAvailable(int typeId, AccessorySheetData accessorySheetData) {
         mModel.set(splitIntoDataPieces(accessorySheetData));
     }
 
-    AccessorySheetTabMediator(
-            AccessorySheetTabModel model, @AccessoryTabType int tabType, @Type int userInfoType) {
+    AccessorySheetTabMediator(AccessorySheetTabModel model, @AccessoryTabType int tabType,
+            @Type int userInfoType, @AccessoryAction int manageActionToRecord) {
         mModel = model;
         mTabType = tabType;
         mUserInfoType = userInfoType;
+        mManageActionToRecord = manageActionToRecord;
     }
 
     @CallSuper
     void onTabShown() {
         AccessorySheetTabMetricsRecorder.recordSheetSuggestions(mTabType, mModel);
+
+        // This is a compromise: we log an impression, even if the user didn't scroll down far
+        // enough to see it. If we moved it into the view layer (i.e. when the actual button is
+        // created and shown), we could record multiple impressions of the user scrolls up and
+        // down repeatedly.
+        ManualFillingMetricsRecorder.recordActionImpression(mManageActionToRecord);
     }
 
     private AccessorySheetDataPiece[] splitIntoDataPieces(AccessorySheetData accessorySheetData) {
@@ -53,6 +63,9 @@ class AccessorySheetTabMediator implements Provider.Observer<AccessorySheetData>
         List<AccessorySheetDataPiece> items = new ArrayList<>();
         if (shouldShowTitle(accessorySheetData.getUserInfoList())) {
             items.add(new AccessorySheetDataPiece(accessorySheetData.getTitle(), Type.TITLE));
+        }
+        if (!accessorySheetData.getWarning().isEmpty()) {
+            items.add(new AccessorySheetDataPiece(accessorySheetData.getWarning(), Type.WARNING));
         }
         for (UserInfo userInfo : accessorySheetData.getUserInfoList()) {
             items.add(new AccessorySheetDataPiece(userInfo, mUserInfoType));

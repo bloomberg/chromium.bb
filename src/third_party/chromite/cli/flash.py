@@ -5,6 +5,7 @@
 
 """Install/copy the image to the device."""
 
+from __future__ import division
 from __future__ import print_function
 
 import os
@@ -37,7 +38,7 @@ class UsbImagerOperation(operation.ProgressBarOperation):
   def __init__(self, image):
     super(UsbImagerOperation, self).__init__()
     self._size = os.path.getsize(image)
-    self._transferred = 0.
+    self._transferred = 0
     self._bytes = re.compile(r'(\d+) bytes')
 
   def _GetDDPid(self):
@@ -77,9 +78,9 @@ class UsbImagerOperation(operation.ProgressBarOperation):
 
     match = self._bytes.search(output)
     if match:
-      self._transferred = match.groups()[0]
+      self._transferred = int(match.groups()[0])
 
-    self.ProgressBar(float(self._transferred) / self._size)
+    self.ProgressBar(self._transferred / self._size)
 
 
 def _IsFilePathGPTDiskImage(file_path, require_pmbr=False):
@@ -422,9 +423,8 @@ class RemoteDeviceUpdater(object):
       # Assuming it is an xbuddy path.
       self.board = cros_build_lib.GetBoard(device_board=device.board,
                                            override_board=self.board,
-                                           force=self.yes)
-      if not self.board:
-        raise FlashError('No board identified.')
+                                           force=self.yes,
+                                           strict=True)
       if not self.force and self.board != device.board:
         # If a board was specified, it must be compatible with the device.
         raise FlashError('Device (%s) is incompatible with board %s' %

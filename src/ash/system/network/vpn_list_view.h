@@ -21,9 +21,6 @@ class View;
 }
 
 namespace ash {
-
-class TrayNetworkStateModel;
-
 namespace tray {
 
 // A list of VPN providers and networks that shows VPN providers and networks in
@@ -42,6 +39,8 @@ namespace tray {
 class VPNListView : public NetworkStateListDetailedView,
                     public VpnList::Observer {
  public:
+  using VpnProviderPtr = chromeos::network_config::mojom::VpnProviderPtr;
+
   VPNListView(DetailedViewDelegate* delegate, LoginStatus login);
   ~VPNListView() override;
 
@@ -54,9 +53,7 @@ class VPNListView : public NetworkStateListDetailedView,
   bool IsNetworkEntry(views::View* view, std::string* guid) const override;
 
   // VpnList::Observer:
-  void OnVPNProvidersChanged() override;
-
-  TrayNetworkStateModel* model() { return model_; }
+  void OnVpnProvidersChanged() override;
 
   // See Shell::RegisterProfilePrefs().
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
@@ -74,12 +71,9 @@ class VPNListView : public NetworkStateListDetailedView,
       const chromeos::network_config::mojom::NetworkStateProperties* network);
 
   // Adds the VPN provider identified by |vpn_provider| to the list, along with
-  // no networks that belong to this provider.
-  void AddProviderAndNetworks(const VPNProvider& vpn_provider);
-
-  // Adds the VPN provider identified by |vpn_provider| to the list, along with
-  // any networks that belong to this provider.
-  void AddProviderAndNetworks(const VPNProvider& vpn_provider,
+  // any networks that may belong to this provider. Takes ownership of
+  // |vpn_provider|.
+  void AddProviderAndNetworks(VpnProviderPtr vpn_provider,
                               const NetworkStateList& networks);
 
   // Finds VPN provider from |providers| that matches given |network|. Then adds
@@ -90,15 +84,13 @@ class VPNListView : public NetworkStateListDetailedView,
   bool ProcessProviderForNetwork(
       const chromeos::network_config::mojom::NetworkStateProperties* network,
       const NetworkStateList& networks,
-      std::vector<VPNProvider>* providers);
+      std::vector<VpnProviderPtr>* providers);
 
   // Adds all available VPN providers and networks to the list.
   void AddProvidersAndNetworks(const NetworkStateList& networks);
 
-  TrayNetworkStateModel* model_;
-
   // A mapping from each VPN provider's list entry to the provider.
-  std::map<const views::View* const, VPNProvider> provider_view_map_;
+  std::map<const views::View* const, VpnProviderPtr> provider_view_map_;
 
   // A mapping from each network's list entry to the network's guid.
   std::map<const views::View* const, std::string> network_view_guid_map_;

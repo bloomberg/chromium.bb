@@ -1,4 +1,3 @@
-#!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 # Copyright (c) 2012 The Chromium OS Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
@@ -14,17 +13,13 @@ from __future__ import print_function
 
 __all__ = ('RebuildRepoCheckout',)
 
-import sys
 import math
 import os
 import shutil
 import errno
 
-_path = os.path.realpath(__file__)
-_path = os.path.normpath(os.path.join(os.path.dirname(_path), '..', '..'))
-sys.path.insert(0, _path)
-del _path
 
+from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import git
 from chromite.lib import osutils
@@ -272,14 +267,21 @@ def RebuildRepoCheckout(repo_root, initial_reference,
   return reference_roots
 
 
-if __name__ == '__main__':
-  chroot_root = None
-  if len(sys.argv) not in (3, 4):
-    sys.stderr.write('Usage: %s <repository_root> <referenced_repository> '
-                     '[path_from_within_the_chroot]\n' % (sys.argv[0],))
-    sys.exit(1)
-  if len(sys.argv) == 4:
-    chroot_root = sys.argv[3]
-  ret = RebuildRepoCheckout(sys.argv[1], sys.argv[2],
-                            chroot_reference_root=chroot_root)
+def get_parser():
+  """Return a command line parser"""
+  parser = commandline.ArgumentParser(description=__doc__)
+  parser.add_argument('repository_root', type='path')
+  parser.add_argument('referenced_repository', type='path')
+  parser.add_argument('chroot_path', type='path', nargs='?')
+  return parser
+
+
+def main(argv):
+  """The main func!"""
+  parser = get_parser()
+  opts = parser.parse_args(argv)
+  opts.Freeze()
+
+  ret = RebuildRepoCheckout(opts.repository_root, opts.referenced_repository,
+                            chroot_reference_root=opts.chroot_path)
   print('\n'.join(ret))

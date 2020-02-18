@@ -3,9 +3,10 @@
 // found in the LICENSE file.
 
 #include "media/base/android/media_player_bridge.h"
+
 #include "base/bind.h"
 #include "base/macros.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -31,7 +32,14 @@ class MockMediaPlayerBridgeClient : public MediaPlayerBridge::Client {
 class MediaPlayerBridgeTest : public testing::Test {
  public:
   MediaPlayerBridgeTest()
-      : bridge_(GURL(), GURL(), "", false, &client_, false) {}
+      : bridge_(GURL(),
+                GURL(),
+                url::Origin(),
+                "",
+                false,
+                &client_,
+                false,
+                false) {}
 
  protected:
   void SimulateDurationChange(base::TimeDelta duration) {
@@ -46,7 +54,7 @@ class MediaPlayerBridgeTest : public testing::Test {
 
   void SimulatePlaybackCompleted() { bridge_.OnPlaybackComplete(); }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   StrictMock<MockMediaPlayerBridgeClient> client_;
   MediaPlayerBridge bridge_;
 

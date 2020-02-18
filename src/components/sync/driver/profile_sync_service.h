@@ -98,6 +98,7 @@ class ProfileSyncService : public SyncService,
     version_info::Channel channel = version_info::Channel::UNKNOWN;
     std::string debug_identifier;
     bool autofill_enable_account_wallet_storage = false;
+    bool enable_passwords_account_storage = false;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(InitParams);
@@ -132,7 +133,7 @@ class ProfileSyncService : public SyncService,
   void StopAndClear() override;
   void OnDataTypeRequestsSyncStartup(ModelType type) override;
   void TriggerRefresh(const ModelTypeSet& types) override;
-  void ReadyForStartChanged(ModelType type) override;
+  void DataTypePreconditionChanged(ModelType type) override;
   void SetInvalidationsForSessionsEnabled(bool enabled) override;
   UserDemographicsResult GetUserNoisedBirthYearAndGender(
       base::Time now) override;
@@ -231,7 +232,7 @@ class ProfileSyncService : public SyncService,
   // Used by MigrationWatcher.  May return null.
   BackendMigrator* GetBackendMigratorForTest();
 
-  // Used by tests to inspect interaction with OAuth2TokenService.
+  // Used by tests to inspect interaction with the access token fetcher.
   bool IsRetryingAccessTokenFetchForTest() const;
 
   // Used by tests to inspect the OAuth2 access tokens used by PSS.
@@ -332,6 +333,9 @@ class ProfileSyncService : public SyncService,
 
   void ClearUnrecoverableError();
 
+  // Initializes and starts |sync_thread_|.
+  void StartSyncThreadIfNeeded();
+
   // Kicks off asynchronous initialization of the SyncEngine.
   void StartUpSlowEngineComponents();
 
@@ -383,6 +387,7 @@ class ProfileSyncService : public SyncService,
   const std::string debug_identifier_;
 
   const bool autofill_enable_account_wallet_storage_;
+  const bool enable_passwords_account_storage_;
 
   // This specifies where to find the sync server.
   const GURL sync_service_url_;

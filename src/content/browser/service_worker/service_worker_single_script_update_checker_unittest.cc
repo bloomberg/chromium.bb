@@ -8,14 +8,18 @@
 #include "base/bind.h"
 #include "base/containers/queue.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
-#include "content/browser/service_worker/service_worker_context_core.h"
+#include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
+#include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "services/network/test/test_utils.h"
 #include "third_party/blink/public/common/features.h"
@@ -60,7 +64,11 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   };
 
   ServiceWorkerSingleScriptUpdateCheckerTest()
-      : thread_bundle_(TestBrowserThreadBundle::IO_MAINLOOP) {}
+      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
+        browser_context_(std::make_unique<TestBrowserContext>()) {
+    BrowserContext::EnsureResourceContextInitialized(browser_context_.get());
+    base::RunLoop().RunUntilIdle();
+  }
   ~ServiceWorkerSingleScriptUpdateCheckerTest() override = default;
 
   ServiceWorkerStorage* storage() { return helper_->context()->storage(); }
@@ -69,9 +77,7 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
     feature_list_.InitAndEnableFeature(
         blink::features::kServiceWorkerImportedScriptUpdateCheck);
     helper_ = std::make_unique<EmbeddedWorkerTestHelper>(base::FilePath());
-    base::RunLoop run_loop;
-    storage()->LazyInitializeForTest(run_loop.QuitClosure());
-    run_loop.Run();
+    storage()->LazyInitializeForTest();
   }
 
   size_t TotalBytes(const std::vector<std::string>& data_chunks) {
@@ -99,6 +105,8 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
         loader_factory, out_check_result);
   }
 
+  // Note that |loader_factory| should be alive as long as the single script
+  // update checker is running.
   std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker>
   CreateSingleScriptUpdateChecker(
       const char* url,
@@ -112,12 +120,14 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       std::unique_ptr<ServiceWorkerResponseWriter> writer,
       network::TestURLLoaderFactory* loader_factory,
       base::Optional<CheckResult>* out_check_result) {
-    helper_->SetNetworkFactory(loader_factory);
     return std::make_unique<ServiceWorkerSingleScriptUpdateChecker>(
         GURL(url), url == main_script_url, GURL(main_script_url), scope,
         force_bypass_cache, update_via_cache, time_since_last_check,
         net::HttpRequestHeaders(),
-        helper_->context()->GetLoaderFactoryBundleForUpdateCheck(),
+        base::BindRepeating([](BrowserContext* context) { return context; },
+                            browser_context_.get()),
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            loader_factory),
         std::move(compare_reader), std::move(copy_reader), std::move(writer),
         base::BindOnce(
             [](base::Optional<CheckResult>* out_check_result_param,
@@ -153,9 +163,10 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
   }
 
  protected:
-  TestBrowserThreadBundle thread_bundle_;
+  BrowserTaskEnvironment task_environment_;
   std::unique_ptr<EmbeddedWorkerTestHelper> helper_;
   base::test::ScopedFeatureList feature_list_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSingleScriptUpdateCheckerTest);
@@ -422,6 +433,95 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
   EXPECT_EQ(check_result.value().result,
             ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent);
   EXPECT_EQ(check_result.value().url, kScriptURL);
+
+  // The update checker realizes that the script is different before reaching
+  // the end of the script from the disk cache.
+  EXPECT_FALSE(compare_reader_rawptr->AllExpectedReadsDone());
+}
+
+// Regression test for https://crbug.com/995146.
+// It should detect the update appropriately even when OnComplete() arrives
+// after the end of the body.
+TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
+       Different_SingleRead_EndOfTheBodyFirst) {
+  // Response body from the network.
+  const std::string body_from_net = "abc";
+
+  // Stored data for |kScriptURL|.
+  const std::vector<std::string> body_from_storage{"abc", "def"};
+
+  auto compare_reader = std::make_unique<MockServiceWorkerResponseReader>();
+  auto copy_reader = std::make_unique<MockServiceWorkerResponseReader>();
+  auto writer = std::make_unique<MockServiceWorkerResponseWriter>();
+  MockServiceWorkerResponseReader* compare_reader_rawptr = compare_reader.get();
+  compare_reader->ExpectReadOk(body_from_storage, TotalBytes(body_from_storage),
+                               IsAsync());
+
+  auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
+  base::Optional<CheckResult> check_result;
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
+      CreateSingleScriptUpdateCheckerWithoutHttpCache(
+          kScriptURL, GURL(kScope), std::move(compare_reader),
+          std::move(copy_reader), std::move(writer), loader_factory.get(),
+          &check_result);
+
+  // Wait until the testing loader factory receives the network request.
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1u, loader_factory->pending_requests()->size());
+
+  // |client| simulates sending the data from the network to the update checker.
+  network::mojom::URLLoaderClientPtr client =
+      std::move(loader_factory->GetPendingRequest(0)->client);
+
+  // Simulate sending the response head.
+  network::ResourceResponseHead head;
+  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
+  head.headers->GetMimeType(&head.mime_type);
+  client->OnReceiveResponse(head);
+
+  // Simulate sending the response body. The buffer size for the data pipe
+  // should be larger than the body to send the whole body in one chunk.
+  MojoCreateDataPipeOptions options;
+  options.struct_size = sizeof(MojoCreateDataPipeOptions);
+  options.flags = MOJO_CREATE_DATA_PIPE_FLAG_NONE;
+  options.element_num_bytes = 1;
+  options.capacity_num_bytes = body_from_net.size() * 2;
+  mojo::ScopedDataPipeConsumerHandle body_consumer;
+  mojo::ScopedDataPipeProducerHandle body_producer;
+  ASSERT_EQ(MOJO_RESULT_OK,
+            mojo::CreateDataPipe(&options, &body_producer, &body_consumer));
+  client->OnStartLoadingResponseBody(std::move(body_consumer));
+  mojo::BlockingCopyFromString(body_from_net, body_producer);
+  body_producer.reset();
+
+  if (IsAsync()) {
+    // Blocked on reading the header.
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(check_result.has_value());
+
+    // Unblock the header, and then blocked on reading the body.
+    compare_reader_rawptr->CompletePendingRead();
+    base::RunLoop().RunUntilIdle();
+    EXPECT_FALSE(check_result.has_value());
+
+    // Unblock the body ("abc"). At this point, data from the network reaches
+    // the end.
+    compare_reader_rawptr->CompletePendingRead();
+  }
+
+  // Comparison should not finish until OnComplete() is called.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(check_result.has_value());
+
+  // Call OnComplete() to complete the comparison. The new script should be
+  // different.
+  client->OnComplete(network::URLLoaderCompletionStatus(net::OK));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(check_result.has_value());
+  EXPECT_EQ(ServiceWorkerSingleScriptUpdateChecker::Result::kDifferent,
+            check_result.value().result);
+  EXPECT_EQ(kScriptURL, check_result.value().url);
 
   // The update checker realizes that the script is different before reaching
   // the end of the script from the disk cache.
@@ -1048,6 +1148,52 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, NetworkError) {
             ServiceWorkerSingleScriptUpdateChecker::Result::kFailed);
   EXPECT_EQ(check_result.value().failure_info->status,
             blink::ServiceWorkerStatusCode::kErrorNetwork);
+}
+
+// The main script needs to request a SSL info so that the navigation handled
+// by the service worker can use the SSL info served for the main script.
+TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest, RequestSSLInfo) {
+  auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
+  base::Optional<CheckResult> check_result;
+
+  // Load the main script. It needs a SSL info.
+  std::unique_ptr<ServiceWorkerSingleScriptUpdateChecker> checker =
+      CreateSingleScriptUpdateChecker(
+          kScriptURL, kScriptURL, GURL(kScope), false /* force_bypass_cache */,
+          blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
+          std::make_unique<MockServiceWorkerResponseReader>(),
+          std::make_unique<MockServiceWorkerResponseReader>(),
+          std::make_unique<MockServiceWorkerResponseWriter>(),
+          loader_factory.get(), &check_result);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    ASSERT_EQ(1u, loader_factory->pending_requests()->size());
+    const network::TestURLLoaderFactory::PendingRequest* pending_request =
+        loader_factory->GetPendingRequest(0);
+    EXPECT_EQ(kScriptURL, pending_request->request.url);
+    EXPECT_EQ(network::mojom::kURLLoadOptionSendSSLInfoWithResponse,
+              pending_request->options);
+  }
+
+  // Load imported script. It doesn't need SSL info.
+  checker = CreateSingleScriptUpdateChecker(
+      kImportedScriptURL, kScriptURL, GURL(kScope),
+      false /* force_bypass_cache */,
+      blink::mojom::ServiceWorkerUpdateViaCache::kNone, base::TimeDelta(),
+      std::make_unique<MockServiceWorkerResponseReader>(),
+      std::make_unique<MockServiceWorkerResponseReader>(),
+      std::make_unique<MockServiceWorkerResponseWriter>(), loader_factory.get(),
+      &check_result);
+  base::RunLoop().RunUntilIdle();
+
+  {
+    ASSERT_EQ(2u, loader_factory->pending_requests()->size());
+    const network::TestURLLoaderFactory::PendingRequest* pending_request =
+        loader_factory->GetPendingRequest(1);
+    EXPECT_EQ(kImportedScriptURL, pending_request->request.url);
+    EXPECT_EQ(network::mojom::kURLLoadOptionNone, pending_request->options);
+  }
 }
 
 }  // namespace

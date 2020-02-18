@@ -31,10 +31,13 @@
 #include "third_party/blink/renderer/controller/blink_initializer.h"
 
 #include <memory>
+#include <utility>
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/common/experiments/memory_ablation_experiment.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/mojom/loader/previews_resource_loading_hints.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/blink.h"
@@ -45,6 +48,7 @@
 #include "third_party/blink/renderer/core/animation/animation_clock.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/display_cutout_client_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_impl.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
@@ -186,13 +190,16 @@ void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
   }
   frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
       &DevToolsFrontendImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
+  frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
+      &FrameImpl::BindToReceiver, WrapWeakPersistent(&frame)));
+
   frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
       &LocalFrame::PauseSubresourceLoading, WrapWeakPersistent(&frame)));
   if (!base::FeatureList::IsEnabled(
           blink::features::kSendPreviewsLoadingHintsBeforeCommit)) {
-    frame.GetInterfaceRegistry()->AddInterface(
-        WTF::BindRepeating(&LocalFrame::BindPreviewsResourceLoadingHintsRequest,
-                           WrapWeakPersistent(&frame)));
+    frame.GetInterfaceRegistry()->AddInterface(WTF::BindRepeating(
+        &LocalFrame::BindPreviewsResourceLoadingHintsReceiver,
+        WrapWeakPersistent(&frame)));
   }
   ModulesInitializer::InitLocalFrame(frame);
 }

@@ -10,9 +10,9 @@
 #include "chrome/browser/media/router/providers/wired_display/wired_display_presentation_receiver_factory.h"
 #include "chrome/browser/media/router/test/media_router_mojo_test.h"
 #include "chrome/browser/media/router/test/mock_mojo_media_router.h"
-#include "chrome/common/media_router/mojo/media_router.mojom.h"
+#include "chrome/common/media_router/mojom/media_router.mojom.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
@@ -182,11 +182,11 @@ class WiredDisplayMediaRouteProviderTest : public testing::Test {
   void TearDown() override {
     provider_.reset();
     display::Screen::SetScreenInstance(nullptr);
-    test_thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
-  content::TestBrowserThreadBundle test_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   // A mojo pointer to |provider_|.
   mojom::MediaRouteProviderPtr provider_pointer_;
   std::unique_ptr<TestWiredDisplayMediaRouteProvider> provider_;
@@ -383,8 +383,8 @@ TEST_F(WiredDisplayMediaRouteProviderTest, SendMediaStatusUpdate) {
       std::move(status_observer_ptr), base::BindOnce([](bool success) {}));
 
   EXPECT_CALL(status_observer, OnMediaStatusUpdated(_))
-      .WillOnce(Invoke([&page_title](const MediaStatus& status) {
-        EXPECT_EQ(status.title, page_title);
+      .WillOnce(Invoke([&page_title](mojom::MediaStatusPtr status) {
+        EXPECT_EQ(status->title, page_title);
       }));
   receiver_creator_.receiver()->RunTitleChangeCallback(page_title);
   base::RunLoop().RunUntilIdle();

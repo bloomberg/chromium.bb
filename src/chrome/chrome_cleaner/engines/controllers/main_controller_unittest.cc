@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/command_line.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/chrome_cleaner/components/component_api.h"
 #include "chrome/chrome_cleaner/components/component_manager.h"
@@ -227,8 +227,7 @@ class TestMainController : public MainController {
 class MainControllerTest : public testing::TestWithParam<ExecutionMode> {
  public:
   MainControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   TestMainController* test_main_controller() {
     return test_main_controller_.get();
@@ -289,7 +288,7 @@ class MainControllerTest : public testing::TestWithParam<ExecutionMode> {
  private:
   TestEngineFacade test_engine_facade_;
   std::unique_ptr<TestMainController> test_main_controller_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   ExecutionMode execution_mode_;
 };
 

@@ -191,7 +191,7 @@ static bool PlanCounter(LayoutObject& object,
         return true;
       }
       if (IsHTMLUListElement(*e) || IsHTMLMenuElement(*e) ||
-          IsHTMLDirectoryElement(*e)) {
+          IsA<HTMLDirectoryElement>(*e)) {
         value = 0;
         is_reset = true;
         return true;
@@ -512,7 +512,7 @@ scoped_refptr<StringImpl> LayoutCounter::OriginalText() const {
 }
 
 void LayoutCounter::UpdateCounter() {
-  SetText(OriginalText());
+  SetTextIfNeeded(OriginalText());
 }
 
 void LayoutCounter::Invalidate() {

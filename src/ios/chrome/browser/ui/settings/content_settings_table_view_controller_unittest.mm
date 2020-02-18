@@ -5,11 +5,13 @@
 #import "ios/chrome/browser/ui/settings/content_settings_table_view_controller.h"
 
 #include "base/test/scoped_feature_list.h"
+#include "components/prefs/pref_service.h"
+#include "components/translate/core/browser/translate_pref_names.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_controller_test.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
 #include "ios/chrome/grit/ios_strings.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "testing/gtest_mac.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -33,8 +35,10 @@ class ContentSettingsTableViewControllerTest
         initWithBrowserState:chrome_browser_state_.get()];
   }
 
+  PrefService* GetPrefs() { return chrome_browser_state_->GetPrefs(); }
+
  private:
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 };
 
@@ -72,6 +76,22 @@ TEST_F(ContentSettingsTableViewControllerTest,
   ASSERT_EQ(1, NumberOfSections());
   ASSERT_EQ(2, NumberOfItemsInSection(0));
   CheckDetailItemTextWithIds(IDS_IOS_BLOCK_POPUPS, IDS_IOS_SETTING_ON, 0, 0);
+}
+
+TEST_F(ContentSettingsTableViewControllerTest, TestOnPreferenceChanged) {
+  // Enable the Language Settings UI.
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({kLanguageSettings}, {});
+
+  CreateController();
+  CheckController();
+  CheckTitleWithId(IDS_IOS_CONTENT_SETTINGS_TITLE);
+
+  // TODO(crbug.com/1008433): This test can be improved by checking the state
+  // to verify that -onPreferenceChanged: is indeed called. However, this
+  // test will become irrelevant once kLanguageSettings feature flag is removed.
+  GetPrefs()->SetBoolean(prefs::kOfferTranslateEnabled, true);
+  GetPrefs()->SetBoolean(prefs::kOfferTranslateEnabled, false);
 }
 
 }  // namespace

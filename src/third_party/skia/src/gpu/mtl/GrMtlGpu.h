@@ -8,18 +8,19 @@
 #ifndef GrMtlGpu_DEFINED
 #define GrMtlGpu_DEFINED
 
-#include "include/gpu/GrRenderTarget.h"
 #include "include/gpu/GrTexture.h"
 #include "src/gpu/GrGpu.h"
+#include "src/gpu/GrRenderTarget.h"
 #include "src/gpu/GrSemaphore.h"
 
 #include "src/gpu/mtl/GrMtlCaps.h"
 #include "src/gpu/mtl/GrMtlResourceProvider.h"
 #include "src/gpu/mtl/GrMtlStencilAttachment.h"
+#include "src/gpu/mtl/GrMtlUtil.h"
 
 #import <Metal/Metal.h>
 
-class GrMtlGpuRTCommandBuffer;
+class GrMtlOpsRenderPass;
 class GrMtlTexture;
 class GrSemaphore;
 struct GrMtlBackendContext;
@@ -78,31 +79,28 @@ public:
                            const SkIPoint& dstPoint);
 
     bool onCopySurface(GrSurface* dst, GrSurface* src, const SkIRect& srcRect,
-                       const SkIPoint& dstPoint, bool canDiscardOutsideDstRect) override;
+                       const SkIPoint& dstPoint) override;
 
-    GrGpuRTCommandBuffer* getCommandBuffer(
-                                    GrRenderTarget*, GrSurfaceOrigin, const SkRect& bounds,
-                                    const GrGpuRTCommandBuffer::LoadAndStoreInfo&,
-                                    const GrGpuRTCommandBuffer::StencilLoadAndStoreInfo&) override;
-
-    GrGpuTextureCommandBuffer* getCommandBuffer(GrTexture*, GrSurfaceOrigin) override;
+    GrOpsRenderPass* getOpsRenderPass(
+            GrRenderTarget*, GrSurfaceOrigin, const SkRect& bounds,
+            const GrOpsRenderPass::LoadAndStoreInfo&,
+            const GrOpsRenderPass::StencilLoadAndStoreInfo&,
+            const SkTArray<GrTextureProxy*, true>& sampledProxies) override;
 
     SkSL::Compiler* shaderCompiler() const { return fCompiler.get(); }
 
-    void submit(GrGpuCommandBuffer* buffer) override;
+    void submit(GrOpsRenderPass* renderPass) override;
 
-    GrFence SK_WARN_UNUSED_RESULT insertFence() override { return 0; }
-    bool waitFence(GrFence, uint64_t) override { return true; }
-    void deleteFence(GrFence) const override {}
+    GrFence SK_WARN_UNUSED_RESULT insertFence() override;
+    bool waitFence(GrFence, uint64_t) override;
+    void deleteFence(GrFence) const override;
 
-    sk_sp<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned) override {
-        return nullptr;
-    }
+    sk_sp<GrSemaphore> SK_WARN_UNUSED_RESULT makeSemaphore(bool isOwned) override;
     sk_sp<GrSemaphore> wrapBackendSemaphore(const GrBackendSemaphore& semaphore,
                                             GrResourceProvider::SemaphoreWrapType wrapType,
-                                            GrWrapOwnership ownership) override { return nullptr; }
-    void insertSemaphore(sk_sp<GrSemaphore> semaphore) override {}
-    void waitSemaphore(sk_sp<GrSemaphore> semaphore) override {}
+                                            GrWrapOwnership ownership) override;
+    void insertSemaphore(sk_sp<GrSemaphore> semaphore) override;
+    void waitSemaphore(sk_sp<GrSemaphore> semaphore) override;
     // We currently call finish procs immediately in onFinishFlush().
     void checkFinishProcs() override {}
     sk_sp<GrSemaphore> prepareTextureForCrossContextUsage(GrTexture*) override { return nullptr; }
@@ -135,12 +133,17 @@ private:
 
     void xferBarrier(GrRenderTarget*, GrXferBarrierType) override {}
 
-    sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc& desc, GrRenderable,
-                                     int renderTargetSampleCnt, SkBudgeted budgeted,
-                                     GrProtected, const GrMipLevel texels[],
+    sk_sp<GrTexture> onCreateTexture(const GrSurfaceDesc& desc,
+                                     const GrBackendFormat& format,
+                                     GrRenderable,
+                                     int renderTargetSampleCnt,
+                                     SkBudgeted budgeted,
+                                     GrProtected,
+                                     const GrMipLevel texels[],
                                      int mipLevelCount) override;
-    sk_sp<GrTexture> onCreateCompressedTexture(int width, int height, SkImage::CompressionType,
-                                               SkBudgeted, const void* data) override {
+    sk_sp<GrTexture> onCreateCompressedTexture(int width, int height, const GrBackendFormat&,
+                                               SkImage::CompressionType, SkBudgeted,
+                                               const void* data) override {
         return nullptr;
     }
 
@@ -161,20 +164,23 @@ private:
     sk_sp<GrGpuBuffer> onCreateBuffer(size_t, GrGpuBufferType, GrAccessPattern,
                                       const void*) override;
 
-    bool onReadPixels(GrSurface* surface, int left, int top, int width, int height, GrColorType,
-                      void* buffer, size_t rowBytes) override;
+    bool onReadPixels(GrSurface* surface, int left, int top, int width, int height,
+                      GrColorType surfaceColorType, GrColorType bufferColorType, void* buffer,
+                      size_t rowBytes) override;
 
-    bool onWritePixels(GrSurface*, int left, int top, int width, int height, GrColorType,
-                       const GrMipLevel[], int mipLevelCount) override;
+    bool onWritePixels(GrSurface*, int left, int top, int width, int height,
+                       GrColorType surfaceColorType, GrColorType bufferColorType,
+                       const GrMipLevel[], int mipLevelCount,
+                       bool prepForTexSampling) override;
 
-    bool onTransferPixelsTo(GrTexture*,
-                            int left, int top, int width, int height,
-                            GrColorType, GrGpuBuffer*,
+    bool onTransferPixelsTo(GrTexture*, int left, int top, int width, int height,
+                            GrColorType textureColorType, GrColorType bufferColorType, GrGpuBuffer*,
                             size_t offset, size_t rowBytes) override {
         // TODO: not sure this is worth the work since nobody uses it
         return false;
     }
-    bool onTransferPixelsFrom(GrSurface*, int left, int top, int width, int height, GrColorType,
+    bool onTransferPixelsFrom(GrSurface*, int left, int top, int width, int height,
+                              GrColorType surfaceColorType, GrColorType bufferColorType,
                               GrGpuBuffer*, size_t offset) override {
         // TODO: Will need to implement this to support async read backs.
         return false;
@@ -218,11 +224,11 @@ private:
     GrStencilAttachment* createStencilAttachmentForRenderTarget(
             const GrRenderTarget*, int width, int height, int numStencilSamples) override;
 
-    bool createTestingOnlyMtlTextureInfo(GrPixelConfig, MTLPixelFormat,
+    bool createTestingOnlyMtlTextureInfo(MTLPixelFormat,
                                          int w, int h, bool texturable,
                                          bool renderable, GrMipMapped mipMapped,
-                                         const void* srcData, size_t rowBytes,
-                                         GrMtlTextureInfo* info);
+                                         const void* srcData, size_t srcRowBytes,
+                                         const SkColor4f* color, GrMtlTextureInfo* info);
 
     sk_sp<GrMtlCaps> fMtlCaps;
 
@@ -234,6 +240,13 @@ private:
     std::unique_ptr<SkSL::Compiler> fCompiler;
 
     GrMtlResourceProvider fResourceProvider;
+
+#ifdef GR_METAL_SDK_SUPPORTS_EVENTS
+    // For FenceSync
+    id<MTLSharedEvent>      fSharedEvent;
+    MTLSharedEventListener* fSharedEventListener;
+    uint64_t                fLatestEvent;
+#endif
 
     bool fDisconnected;
 

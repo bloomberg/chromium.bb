@@ -18,6 +18,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
@@ -388,8 +389,9 @@ class MachineLevelUserCloudPolicyManagerTest : public InProcessBrowserTest {
         MachineLevelUserCloudPolicyStore::Create(
             dm_token, client_id, user_data_dir,
             /*cloud_policy_overrides=*/false,
-            base::CreateSequencedTaskRunnerWithTraits(
-                {base::MayBlock(), base::TaskPriority::BEST_EFFORT}));
+            base::CreateSequencedTaskRunner({base::ThreadPool(),
+                                             base::MayBlock(),
+                                             base::TaskPriority::BEST_EFFORT}));
     policy_store->AddObserver(&observer);
 
     base::FilePath policy_dir =
@@ -448,7 +450,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
     histogram_tester_.ExpectTotalCount(kEnrollmentResultMetrics, 0);
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
     command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);
@@ -506,13 +508,7 @@ class MachineLevelUserCloudPolicyEnrollmentTest
   DISALLOW_COPY_AND_ASSIGN(MachineLevelUserCloudPolicyEnrollmentTest);
 };
 
-// Disabled on Windows dbg due to failures; see https://crbug.com/984902.
-#if defined(OS_WIN) && !defined(NDEBUG)
-#define MAYBE_Test DISABLED_Test
-#else
-#define MAYBE_Test Test
-#endif
-IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, MAYBE_Test) {
+IN_PROC_BROWSER_TEST_P(MachineLevelUserCloudPolicyEnrollmentTest, Test) {
   // Test body is run only if enrollment is succeeded or failed without error
   // message.
   EXPECT_TRUE(is_enrollment_token_valid() || !should_display_error_message());
@@ -556,7 +552,7 @@ class MachineLevelUserCloudPolicyPolicyFetchTest
                                     test_server_->GetServiceURL().spec());
   }
 
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !BUILDFLAG(GOOGLE_CHROME_BRANDING)
   void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
     command_line->AppendSwitch(::switches::kEnableMachineLevelUserCloudPolicy);

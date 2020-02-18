@@ -27,7 +27,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "media/base/output_device_info.h"
-#include "media/mojo/interfaces/audio_output_stream.mojom.h"
+#include "media/mojo/mojom/audio_output_stream.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace content {
@@ -107,7 +107,7 @@ class RenderFrameAudioOutputStreamFactory::Core final
   // mojom::RendererAudioOutputStreamFactory implementation.
   void RequestDeviceAuthorization(
       media::mojom::AudioOutputStreamProviderRequest provider_request,
-      int32_t session_id,
+      const base::Optional<base::UnguessableToken>& session_id,
       const std::string& device_id,
       RequestDeviceAuthorizationCallback callback) final;
 
@@ -165,7 +165,7 @@ RenderFrameAudioOutputStreamFactory::~RenderFrameAudioOutputStreamFactory() {
   // as it doesn't post in case it is already executed on the right thread. That
   // causes issues in unit tests where the UI thread and the IO thread are the
   // same.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce([](std::unique_ptr<Core>) {}, std::move(core_)));
 }
@@ -200,7 +200,7 @@ RenderFrameAudioOutputStreamFactory::Core::Core(
 
   // Unretained is safe since the destruction of |this| is posted to the IO
   // thread.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&Core::Init, base::Unretained(this), std::move(request)));
 }
@@ -214,14 +214,15 @@ void RenderFrameAudioOutputStreamFactory::Core::Init(
 
 void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
     media::mojom::AudioOutputStreamProviderRequest provider_request,
-    int32_t session_id,
+    const base::Optional<base::UnguessableToken>& session_id,
     const std::string& device_id,
     RequestDeviceAuthorizationCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT2(
       "audio",
       "RenderFrameAudioOutputStreamFactory::RequestDeviceAuthorization",
-      "device id", device_id, "session_id", session_id);
+      "device id", device_id, "session_id",
+      session_id.value_or(base::UnguessableToken()).ToString());
 
   const base::TimeTicks auth_start_time = base::TimeTicks::Now();
 
@@ -232,7 +233,8 @@ void RenderFrameAudioOutputStreamFactory::Core::RequestDeviceAuthorization(
           std::move(provider_request), std::move(callback));
 
   authorization_handler_.RequestDeviceAuthorization(
-      frame_id_, session_id, device_id, std::move(completed_callback));
+      frame_id_, session_id.value_or(base::UnguessableToken()), device_id,
+      std::move(completed_callback));
 }
 
 void RenderFrameAudioOutputStreamFactory::Core::AuthorizationCompleted(

@@ -5,7 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_SERVICE_WORKER_FETCH_CONTEXT_IMPL_H_
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
@@ -20,7 +20,7 @@ class ResourceDispatcher;
 class URLLoaderThrottleProvider;
 class WebSocketHandshakeThrottleProvider;
 
-class ServiceWorkerFetchContextImpl final
+class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
     : public blink::WebWorkerFetchContext,
       public blink::mojom::ServiceWorkerSubresourceLoaderUpdater,
       public blink::mojom::RendererPreferenceWatcher {
@@ -32,6 +32,9 @@ class ServiceWorkerFetchContextImpl final
   // |script_loader_factory_info| is used for importScripts() from the service
   // worker when InstalledScriptsManager doesn't have the requested script. It
   // is a ServiceWorkerScriptLoaderFactory, which loads and installs the script.
+  // |script_url_to_skip_throttling| is a URL which is already throttled in the
+  // browser process so that it doesn't need to be throttled in the renderer
+  // again.
   ServiceWorkerFetchContextImpl(
       const blink::mojom::RendererPreferences& renderer_preferences,
       const GURL& worker_script_url,
@@ -39,10 +42,12 @@ class ServiceWorkerFetchContextImpl final
           url_loader_factory_info,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           script_loader_factory_info,
+      const GURL& script_url_to_skip_throttling,
       std::unique_ptr<URLLoaderThrottleProvider> throttle_provider,
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
-      blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request,
+      mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+          preference_watcher_receiver,
       mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
           pending_subresource_loader_updater);
 
@@ -83,26 +88,33 @@ class ServiceWorkerFetchContextImpl final
   std::unique_ptr<network::SharedURLLoaderFactoryInfo>
       script_loader_factory_info_;
 
+  // A script URL that should skip throttling when loaded because it's already
+  // being loaded in the browser process and went through throttles there. It's
+  // valid only once and set to invalid GURL once the script is served.
+  GURL script_url_to_skip_throttling_;
+
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // Responsible for regular loads from the service worker (i.e., Fetch API).
   std::unique_ptr<blink::WebURLLoaderFactory> web_url_loader_factory_;
-  // Responsible for handling importScripts().
+  // Responsible for script loads from the service worker (i.e., the
+  // classic/module main script, module imported scripts, or importScripts()).
   std::unique_ptr<blink::WebURLLoaderFactory> web_script_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
 
-  mojo::Binding<blink::mojom::RendererPreferenceWatcher>
-      preference_watcher_binding_;
+  mojo::Receiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_receiver_{this};
   mojo::Receiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
       subresource_loader_updater_{this};
 
   // These mojo objects are kept while starting up the worker thread. Valid
   // until InitializeOnWorkerThread().
-  blink::mojom::RendererPreferenceWatcherRequest preference_watcher_request_;
+  mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
+      preference_watcher_pending_receiver_;
   mojo::PendingReceiver<blink::mojom::ServiceWorkerSubresourceLoaderUpdater>
       pending_subresource_loader_updater_;
 

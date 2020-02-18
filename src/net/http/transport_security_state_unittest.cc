@@ -1432,6 +1432,31 @@ TEST_F(TransportSecurityStateTest, DecodePreloadedMultipleMix) {
   EXPECT_FALSE(GetExpectCTState(&state, "simple-entry.example.com", &ct_state));
 }
 
+TEST_F(TransportSecurityStateTest, HstsHostBypassList) {
+  SetTransportSecurityStateSourceForTesting(&test_default::kHSTSSource);
+
+  TransportSecurityState::STSState sts_state;
+  TransportSecurityState::PKPState pkp_state;
+
+  std::string preloaded_tld = "example";
+  std::string subdomain = "sub.example";
+
+  {
+    TransportSecurityState state;
+    // Check that "example" is preloaded with subdomains.
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(preloaded_tld));
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(subdomain));
+  }
+
+  {
+    // Add "example" to the bypass list.
+    TransportSecurityState state({preloaded_tld});
+    EXPECT_FALSE(state.ShouldUpgradeToSSL(preloaded_tld));
+    // The preloaded entry should still apply to the subdomain.
+    EXPECT_TRUE(state.ShouldUpgradeToSSL(subdomain));
+  }
+}
+
 // Tests that TransportSecurityState always consults the RequireCTDelegate,
 // if supplied.
 TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
@@ -1580,7 +1605,7 @@ TEST_F(TransportSecurityStateTest, RequireCTConsultsDelegate) {
 
 // Tests that Certificate Transparency is required for Symantec-issued
 // certificates, unless the certificate was issued prior to 1 June 2016
-// or the issuing CA is whitelisted as independently operated.
+// or the issuing CA is permitted as independently operated.
 TEST_F(TransportSecurityStateTest, RequireCTForSymantec) {
   // Test certificates before and after the 1 June 2016 deadline.
   scoped_refptr<X509Certificate> before_cert =
@@ -1711,26 +1736,14 @@ TEST_F(TransportSecurityStateTest, RequireCTViaFieldTrial) {
   // However, simulating a Field Trial in which CT is required for certificates
   // after 2017-12-01 should cause CT to be required for this certificate, as
   // it was issued 2017-12-20.
-  const char kTrialName[] = "EnforceCTForNewCertsTrial";
-  const char kGroupName[] = "Unused";  // Value not used.
-  const char kFeatureName[] = "EnforceCTForNewCerts";
 
-  base::test::ScopedFeatureList scoped_feature_list;
-  base::FieldTrialList field_trial_list(
-      std::make_unique<base::MockEntropyProvider>());
-  scoped_refptr<base::FieldTrial> trial =
-      base::FieldTrialList::CreateFieldTrial(kTrialName, kGroupName);
-  std::map<std::string, std::string> params;
+  base::FieldTrialParams params;
   // Set the enforcement date to 2017-12-01 00:00:00;
   params["date"] = "1512086400";
-  base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-      kTrialName, kGroupName, params);
 
-  std::unique_ptr<base::FeatureList> feature_list(
-      std::make_unique<base::FeatureList>());
-  feature_list->RegisterFieldTrialOverride(
-      kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-  scoped_feature_list.InitWithFeatureList(std::move(feature_list));
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeatureWithParameters(kEnforceCTForNewCerts,
+                                                         params);
 
   // It should fail if it doesn't comply with policy.
   EXPECT_EQ(TransportSecurityState::CT_REQUIREMENTS_NOT_MET,
@@ -2645,6 +2658,10 @@ TEST_F(TransportSecurityStateStaticTest, Preloaded) {
       state.GetStaticDomainState("googlemail.com", &sts_state, &pkp_state));
   EXPECT_TRUE(
       state.GetStaticDomainState("www.googlemail.com", &sts_state, &pkp_state));
+
+  // fi.g.co should not force HTTPS because there are still HTTP-only services
+  // on it.
+  EXPECT_FALSE(StaticShouldRedirect("fi.g.co"));
 
   // Other hosts:
 

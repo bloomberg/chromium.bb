@@ -135,15 +135,19 @@ public:
     ///////////////////////////////////////////////////////////////////////////
     // Resource Cache
 
-    /**
+    /** DEPRECATED
      *  Return the current GPU resource cache limits.
      *
-     *  @param maxResources If non-null, returns maximum number of resources that
-     *                      can be held in the cache.
+     *  @param maxResources If non-null, will be set to -1.
      *  @param maxResourceBytes If non-null, returns maximum number of bytes of
      *                          video memory that can be held in the cache.
      */
     void getResourceCacheLimits(int* maxResources, size_t* maxResourceBytes) const;
+
+    /**
+     *  Return the current GPU resource cache limit in bytes.
+     */
+    size_t getResourceCacheLimit() const;
 
     /**
      *  Gets the current GPU resource cache usage.
@@ -160,16 +164,24 @@ public:
      */
     size_t getResourceCachePurgeableBytes() const;
 
-    /**
-     *  Specify the GPU resource cache limits. If the current cache exceeds either
-     *  of these, it will be purged (LRU) to keep the cache within these limits.
+    /** DEPRECATED
+     *  Specify the GPU resource cache limits. If the current cache exceeds the maxResourceBytes
+     *  limit, it will be purged (LRU) to keep the cache within the limit.
      *
-     *  @param maxResources The maximum number of resources that can be held in
-     *                      the cache.
+     *  @param maxResources Unused.
      *  @param maxResourceBytes The maximum number of bytes of video memory
      *                          that can be held in the cache.
      */
     void setResourceCacheLimits(int maxResources, size_t maxResourceBytes);
+
+    /**
+     *  Specify the GPU resource cache limit. If the cache currently exceeds this limit,
+     *  it will be purged (LRU) to keep the cache within the limit.
+     *
+     *  @param maxResourceBytes The maximum number of bytes of video memory
+     *                          that can be held in the cache.
+     */
+    void setResourceCacheLimit(size_t maxResourceBytes);
 
     /**
      * Frees GPU created by the context. Can be called to reduce GPU memory
@@ -344,6 +356,17 @@ public:
     static size_t ComputeTextureSize(SkColorType type, int width, int height, GrMipMapped,
                                      bool useNextPow2 = false);
 
+    /*
+     * Retrieve the default GrBackendFormat for a given SkColorType and renderability.
+     * It is guaranteed that this backend format will be the one used by the following
+     * SkColorType and SkSurfaceCharacterization-based createBackendTexture methods.
+     *
+     * The caller should check that the returned format is valid.
+     */
+    GrBackendFormat defaultBackendFormat(SkColorType ct, GrRenderable renderable) const {
+        return INHERITED::defaultBackendFormat(ct, renderable);
+    }
+
    /*
     * The explicitly allocated backend texture API allows clients to use Skia to create backend
     * objects outside of Skia proper (i.e., Skia's caching system will not know about them.)
@@ -423,6 +446,11 @@ public:
                                           const SkColor4f& color);
 
     void deleteBackendTexture(GrBackendTexture);
+
+#ifdef SK_ENABLE_DUMP_GPU
+    /** Returns a string with detailed information about the context & GPU, in JSON format. */
+    SkString dump() const;
+#endif
 
 protected:
     GrContext(GrBackendApi, const GrContextOptions&, int32_t contextID = SK_InvalidGenID);

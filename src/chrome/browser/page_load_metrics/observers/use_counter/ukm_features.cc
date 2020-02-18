@@ -41,6 +41,10 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kOpenerNavigationWithoutGesture,
           WebFeature::kUsbRequestDevice,
           WebFeature::kXMLHttpRequestSynchronous,
+          WebFeature::kXMLHttpRequestSynchronousInMainFrame,
+          WebFeature::kXMLHttpRequestSynchronousInCrossOriginSubframe,
+          WebFeature::kXMLHttpRequestSynchronousInSameOriginSubframe,
+          WebFeature::kXMLHttpRequestSynchronousInWorker,
           WebFeature::kPaymentHandler,
           WebFeature::kPaymentRequestShowWithoutGesture,
           WebFeature::kHTMLImports,
@@ -117,6 +121,13 @@ UseCounterPageLoadMetricsObserver::GetAllowedUkmFeatures() {
           WebFeature::kLazyLoadFrameLoadingAttributeEager,
           WebFeature::kLazyLoadImageLoadingAttributeLazy,
           WebFeature::kLazyLoadImageLoadingAttributeEager,
+          WebFeature::kRequestedFileSystemTemporary,
+          WebFeature::kRequestedFileSystemPersistent,
+          WebFeature::kSMSReceiverStart,
+          WebFeature::kRequestFileSystem,
+          WebFeature::kMediaCapabilitiesFramerateRatio,
+          WebFeature::kBaseElement,
+          WebFeature::kBaseWithCrossOriginHref,
       }));
   return *opt_in_features;
 }

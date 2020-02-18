@@ -314,20 +314,24 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   session->capabilities =
       CreateCapabilities(session, capabilities, *desired_caps);
 
-  std::string download_directory;
-  if (capabilities.prefs &&
-      capabilities.prefs->GetString("download.default_directory",
-                                    &download_directory))
-    session->headless_download_directory =
-        std::make_unique<std::string>(download_directory);
-  else
-    session->headless_download_directory = std::make_unique<std::string>(".");
-  WebView* first_view;
-  session->chrome->GetWebViewById(session->window, &first_view);
-  status = first_view->OverrideDownloadDirectoryIfNeeded(
-      *session->headless_download_directory);
-  if (status.IsError())
-    return status;
+  if (session->chrome->GetBrowserInfo()->is_headless) {
+    std::string download_directory;
+    if (capabilities.prefs &&
+        (capabilities.prefs->GetString("download.default_directory",
+                                       &download_directory) ||
+         capabilities.prefs->GetStringWithoutPathExpansion(
+             "download.default_directory", &download_directory)))
+      session->headless_download_directory =
+          std::make_unique<std::string>(download_directory);
+    else
+      session->headless_download_directory = std::make_unique<std::string>(".");
+    WebView* first_view;
+    session->chrome->GetWebViewById(session->window, &first_view);
+    status = first_view->OverrideDownloadDirectoryIfNeeded(
+        *session->headless_download_directory);
+    if (status.IsError())
+      return status;
+  }
 
   if (session->w3c_compliant) {
     std::unique_ptr<base::DictionaryValue> capabilities =
@@ -384,8 +388,14 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
       !platform_name_value->is_none()) {
     if (platform_name_value->is_string()) {
       std::string requested_platform_name = platform_name_value->GetString();
+      std::string requested_first_token =
+        requested_platform_name.substr(0, requested_platform_name.find(' '));
+
       std::string actual_platform_name =
-          base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+        base::ToLowerASCII(base::SysInfo::OperatingSystemName());
+      std::string actual_first_token =
+        actual_platform_name.substr(0, actual_platform_name.find(' '));
+
       bool is_android = capabilities->FindPath(
                             "goog:chromeOptions.androidPackage") != nullptr;
       bool is_remote = capabilities->FindPath(
@@ -398,11 +408,10 @@ bool MatchCapabilities(const base::DictionaryValue* capabilities) {
         // If any of the above cases pass, we return true.
       } else if (is_android && requested_platform_name != "android") {
         return false;
-      } else if (requested_platform_name == "mac" ||
-                 requested_platform_name == "windows" ||
-                 requested_platform_name == "linux") {
-        if (!base::StartsWith(actual_platform_name, requested_platform_name,
-                              base::CompareCase::SENSITIVE))
+      } else if (requested_first_token == "mac" ||
+                 requested_first_token == "windows" ||
+                 requested_first_token == "linux") {
+        if (actual_first_token != requested_first_token)
           return false;
       } else if (requested_platform_name != actual_platform_name) {
         return false;
@@ -724,7 +733,11 @@ Status ExecuteSwitchToWindow(Session* session,
   if (!found)
     return Status(kNoSuchWindow);
 
-  if (session->overridden_geoposition) {
+  if (session->overridden_geoposition ||
+      session->overridden_network_conditions ||
+      session->headless_download_directory ||
+      session->chrome->IsMobileEmulationEnabled()) {
+    // Connect to new window to apply session configuration
     WebView* web_view;
     Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
     if (status.IsError())
@@ -732,36 +745,25 @@ Status ExecuteSwitchToWindow(Session* session,
     status = web_view->ConnectIfNecessary();
     if (status.IsError())
       return status;
-    status = web_view->OverrideGeolocation(*session->overridden_geoposition);
-    if (status.IsError())
-      return status;
-  }
 
-  if (session->overridden_network_conditions) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideNetworkConditions(
-        *session->overridden_network_conditions);
-    if (status.IsError())
-      return status;
-  }
-  if (session->headless_download_directory) {
-    WebView* web_view;
-    Status status = session->chrome->GetWebViewById(web_view_id, &web_view);
-    if (status.IsError())
-      return status;
-    status = web_view->ConnectIfNecessary();
-    if (status.IsError())
-      return status;
-    status = web_view->OverrideDownloadDirectoryIfNeeded(
-        *session->headless_download_directory);
-    if (status.IsError())
-      return status;
+    // apply type specific configurations:
+    if (session->overridden_geoposition) {
+      status = web_view->OverrideGeolocation(*session->overridden_geoposition);
+      if (status.IsError())
+        return status;
+    }
+    if (session->overridden_network_conditions) {
+      status = web_view->OverrideNetworkConditions(
+          *session->overridden_network_conditions);
+      if (status.IsError())
+        return status;
+    }
+    if (session->headless_download_directory) {
+      status = web_view->OverrideDownloadDirectoryIfNeeded(
+          *session->headless_download_directory);
+      if (status.IsError())
+        return status;
+    }
   }
 
   status = session->chrome->ActivateWebView(web_view_id);

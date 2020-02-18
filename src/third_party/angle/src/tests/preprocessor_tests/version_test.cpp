@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -33,11 +33,12 @@ TEST_F(VersionTest, GLSpec)
     const char *expected = "\n";
 
     using testing::_;
-    EXPECT_CALL(mDirectiveHandler, handleVersion(pp::SourceLocation(0, 1), 330, SH_GL3_3_SPEC));
+    EXPECT_CALL(mDirectiveHandler,
+                handleVersion(pp::SourceLocation(0, 1), 330, SH_GL_COMPATIBILITY_SPEC));
     // No error or warning.
     EXPECT_CALL(mDiagnostics, print(_, _, _)).Times(0);
 
-    preprocess(str, expected, SH_GL3_3_SPEC);
+    preprocess(str, expected, SH_GL_COMPATIBILITY_SPEC);
 }
 
 TEST_F(VersionTest, CommentsIgnored)

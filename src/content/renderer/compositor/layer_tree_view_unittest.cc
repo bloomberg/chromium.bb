@@ -12,7 +12,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
@@ -256,7 +256,7 @@ class LayerTreeViewWithFrameSinkTrackingTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   cc::TestTaskGraphRunner test_task_graph_runner_;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler_;
   FakeLayerTreeViewDelegate layer_tree_view_delegate_;
@@ -331,7 +331,7 @@ TEST(LayerTreeViewTest, VisibilityTest) {
   // Test that LayerTreeView does not retry FrameSink request while
   // invisible.
 
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
 
   cc::TestTaskGraphRunner test_task_graph_runner;
   blink::scheduler::WebFakeThreadScheduler fake_thread_scheduler;

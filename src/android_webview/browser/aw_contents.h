@@ -98,6 +98,9 @@ class AwContents : public FindHelper::Listener,
   base::android::ScopedJavaLocalRef<jobject> GetWebContents(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jobject> GetBrowserContext(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
   void SetCompositorFrameConsumer(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -106,7 +109,7 @@ class AwContents : public FindHelper::Listener,
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
-  void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
+  void Destroy(JNIEnv* env);
   void DocumentHasImages(JNIEnv* env,
                          const base::android::JavaParamRef<jobject>& obj,
                          const base::android::JavaParamRef<jobject>& message);
@@ -228,7 +231,8 @@ class AwContents : public FindHelper::Listener,
                      const base::android::JavaRef<jstring>& message,
                      const base::android::JavaRef<jstring>& origin,
                      jboolean is_main_frame,
-                     const base::android::JavaRef<jintArray>& ports);
+                     const base::android::JavaRef<jintArray>& ports,
+                     const base::android::JavaRef<jobject>& reply_proxy);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 

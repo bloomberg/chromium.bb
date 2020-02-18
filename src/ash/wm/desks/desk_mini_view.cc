@@ -6,12 +6,16 @@
 
 #include <algorithm>
 
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/close_desk_button.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desk_preview_view.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
 
@@ -21,11 +25,10 @@ namespace {
 
 constexpr int kLabelPreviewSpacing = 8;
 
-constexpr int kCloseButtonMargin = 4;
+constexpr int kCloseButtonMargin = 8;
 
-constexpr SkColor kActiveColor = SkColorSetARGB(0xEE, 0xFF, 0xFF, 0xFF);
-
-constexpr SkColor kInactiveColor = SkColorSetARGB(0x50, 0xFF, 0xFF, 0xFF);
+constexpr SkColor kActiveColor = SK_ColorWHITE;
+constexpr SkColor kInactiveColor = SK_ColorTRANSPARENT;
 
 constexpr SkColor kDraggedOverColor = SkColorSetARGB(0xFF, 0x5B, 0xBC, 0xFF);
 
@@ -132,6 +135,8 @@ void DeskMiniView::UpdateBorderColor() {
   if (owner_bar_->dragged_item_over_bar() &&
       IsPointOnMiniView(owner_bar_->last_dragged_item_screen_location())) {
     desk_preview_->SetBorderColor(kDraggedOverColor);
+  } else if (IsViewHighlighted()) {
+    desk_preview_->SetBorderColor(gfx::kGoogleBlue300);
   } else {
     desk_preview_->SetBorderColor(desk_->is_active() ? kActiveColor
                                                      : kInactiveColor);
@@ -175,6 +180,25 @@ gfx::Size DeskMiniView::CalculatePreferredSize() const {
   return gfx::Size{
       std::max(preview_bounds.width(), label_size.width()),
       preview_bounds.height() + kLabelPreviewSpacing + label_size.height()};
+}
+
+void DeskMiniView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  views::Button::GetAccessibleNodeData(node_data);
+
+  // Note that the desk may have already been destroyed.
+  if (desk_ && desk_->is_active()) {
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kValue,
+        l10n_util::GetStringUTF8(
+            IDS_ASH_DESKS_ACTIVE_DESK_MINIVIEW_A11Y_EXTRA_TIP));
+  }
+
+  if (DesksController::Get()->CanRemoveDesks()) {
+    node_data->AddStringAttribute(
+        ax::mojom::StringAttribute::kDescription,
+        l10n_util::GetStringUTF8(
+            IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP));
+  }
 }
 
 void DeskMiniView::ButtonPressed(views::Button* sender,
@@ -227,6 +251,15 @@ void DeskMiniView::MaybeActivateHighlightedView() {
 
 void DeskMiniView::MaybeCloseHighlightedView() {
   OnCloseButtonPressed();
+}
+
+bool DeskMiniView::OnViewHighlighted() {
+  UpdateBorderColor();
+  return true;
+}
+
+void DeskMiniView::OnViewUnhighlighted() {
+  UpdateBorderColor();
 }
 
 bool DeskMiniView::IsPointOnMiniView(const gfx::Point& screen_location) const {

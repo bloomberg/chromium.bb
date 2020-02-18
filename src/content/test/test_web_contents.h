@@ -19,6 +19,7 @@
 #include "content/public/test/web_contents_tester.h"
 #include "content/test/test_render_frame_host.h"
 #include "content/test/test_render_view_host.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "ui/base/page_transition_types.h"
 
@@ -151,7 +152,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                                  int history_length) override;
 
   // Records that this was called and returns and empty vector.
-  std::vector<blink::mojom::PauseSubresourceLoadingHandlePtr>
+  std::vector<mojo::Remote<blink::mojom::PauseSubresourceLoadingHandle>>
   PauseSubresourceLoading() override;
 
   bool GetPauseSubresourceLoadingCalled() override;
@@ -161,6 +162,12 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   void SetPageImportanceSignals(PageImportanceSignals signals) override;
 
   void SetLastActiveTime(base::TimeTicks last_active_time) override;
+
+  void SetIsConnectedToBluetoothDevice(
+      bool is_connected_to_bluetooth_device) override;
+
+  // Override IsConnectedToBluetoothDevice() to allow using the mocked value.
+  bool IsConnectedToBluetoothDevice() override;
 
   base::UnguessableToken GetAudioGroupId() override;
 
@@ -213,6 +220,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
   base::Optional<base::string16> title_;
   bool pause_subresource_loading_called_;
   base::UnguessableToken audio_group_id_;
+  bool is_connected_to_bluetooth_device_;
 };
 
 }  // namespace content

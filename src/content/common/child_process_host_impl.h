@@ -34,8 +34,11 @@ class ChildProcessHostDelegate;
 // Provides common functionality for hosting a child process and processing IPC
 // messages between the host and the child process. Users are responsible
 // for the actual launching and terminating of the child processes.
-class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
-                                            public IPC::Listener {
+class CONTENT_EXPORT ChildProcessHostImpl
+    : public ChildProcessHost,
+      public IPC::Listener,
+      public mojom::ChildProcessHostBootstrap,
+      public mojom::ChildProcessHost {
  public:
   ~ChildProcessHostImpl() override;
 
@@ -72,6 +75,7 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   void AddFilter(IPC::MessageFilter* filter) override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindReceiver(mojo::GenericPendingReceiver receiver) override;
   void RunService(
       const std::string& service_name,
       mojo::PendingReceiver<service_manager::mojom::Service> receiver) override;
@@ -80,9 +84,16 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   mojom::ChildProcess* child_process() { return child_process_.get(); }
 
  private:
-  friend class ChildProcessHost;
+  friend class content::ChildProcessHost;
 
   explicit ChildProcessHostImpl(ChildProcessHostDelegate* delegate);
+
+  // mojom::ChildProcessHostBootstrap implementation:
+  void BindProcessHost(
+      mojo::PendingReceiver<mojom::ChildProcessHost> receiver) override;
+
+  // mojom::ChildProcessHost implementation:
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
 
   // IPC::Listener methods:
   bool OnMessageReceived(const IPC::Message& msg) override;
@@ -99,6 +110,8 @@ class CONTENT_EXPORT ChildProcessHostImpl : public ChildProcessHost,
   bool opening_channel_;  // True while we're waiting the channel to be opened.
   std::unique_ptr<IPC::Channel> channel_;
   mojo::Remote<mojom::ChildProcess> child_process_;
+  mojo::Receiver<mojom::ChildProcessHostBootstrap> bootstrap_receiver_{this};
+  mojo::Receiver<mojom::ChildProcessHost> receiver_{this};
 
   // Holds all the IPC message filters.  Since this object lives on the IO
   // thread, we don't have a IPC::ChannelProxy and so we manage filters

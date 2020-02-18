@@ -180,22 +180,22 @@ Polymer({
    * @private
    */
   parseValueToPts_: function(value) {
-    // Removing whitespace anywhere in the string.
-    value = value.replace(/\s*/g, '');
+    value = value.trim();
     if (value.length == 0) {
       return null;
     }
     assert(this.measurementSystem);
-    const decimal = this.measurementSystem.decimalDelimeter;
-    const thousands = this.measurementSystem.thousandsDelimeter;
-    const validationRegex = new RegExp(
-        `^(^-?)(((\\d)(\\${thousands}\\d{3})*)(\\${decimal}\\d*)?|` +
-        `((\\d)?(\\${thousands}\\d{3})*)(\\${decimal}\\d*))`);
+    const decimal = this.measurementSystem.decimalDelimiter;
+    const thousands = this.measurementSystem.thousandsDelimiter;
+    const whole = `(?:0|[1-9]\\d*|[1-9]\\d{0,2}(?:[${thousands}]\\d{3})*)`;
+    const fractional = `(?:[${decimal}]\\d*)`;
+    const validationRegex =
+        new RegExp(`^-?(?:${whole}${fractional}?|${fractional})$`);
     if (validationRegex.test(value)) {
-      // Replacing decimal point with the dot symbol in order to use
-      // parseFloat() properly.
-      value = value.replace(new RegExp(`\\${decimal}{1}`), '.');
-      value = value.replace(new RegExp(`\\${thousands}`, 'g'), '');
+      // Removing thousands delimiters and replacing the decimal delimiter with
+      // the dot symbol in order to use parseFloat() properly.
+      value = value.replace(new RegExp(`\\${thousands}`, 'g'), '')
+                  .replace(decimal, '.');
       return this.measurementSystem.convertToPoints(parseFloat(value));
     }
     return null;
@@ -211,7 +211,9 @@ Polymer({
     assert(this.measurementSystem);
     value = this.measurementSystem.convertFromPoints(value);
     value = this.measurementSystem.roundValue(value);
-    return value.toString();
+    // Convert the dot symbol to the decimal delimiter for the locale.
+    return value.toString().replace(
+        '.', this.measurementSystem.decimalDelimiter);
   },
 
   /**

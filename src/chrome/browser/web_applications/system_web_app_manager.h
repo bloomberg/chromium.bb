@@ -39,16 +39,22 @@ enum class SystemAppType {
   SETTINGS,
   DISCOVER,
   CAMERA,
+  TERMINAL,
 };
 
 // The configuration options for a System App.
 struct SystemAppInfo {
+  SystemAppInfo();
+  explicit SystemAppInfo(const GURL& install_url);
+  SystemAppInfo(const SystemAppInfo& other);
+  ~SystemAppInfo();
+
   // The URL that the System App will be installed from.
   GURL install_url;
 
-  // If specified, the app with AppId |migration_source| will have its data
+  // If specified, the apps in |uninstall_and_replace| will have their data
   // migrated to this System App.
-  AppId migration_source;
+  std::vector<AppId> uninstall_and_replace;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -92,8 +98,8 @@ class SystemWebAppManager {
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Returns the app id for the given System App |id|.
-  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType id) const;
+  // Returns the app id for the given System App |type|.
+  base::Optional<AppId> GetAppIdForSystemApp(SystemAppType type) const;
 
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
@@ -102,22 +108,18 @@ class SystemWebAppManager {
     return *on_apps_synchronized_;
   }
 
- protected:
   void SetSystemAppsForTesting(
       base::flat_map<SystemAppType, SystemAppInfo> system_apps);
+
   void SetUpdatePolicyForTesting(UpdatePolicy policy);
 
+ protected:
   virtual const base::Version& CurrentVersion() const;
 
  private:
-  void OnAppsSynchronized(std::set<SystemAppType> already_installed,
-                          std::map<GURL, InstallResultCode> install_results,
+  void OnAppsSynchronized(std::map<GURL, InstallResultCode> install_results,
                           std::map<GURL, bool> uninstall_results);
   bool NeedsUpdate() const;
-
-  // TODO(calamity): Move migration into the install task once the install task
-  // is able to distinguish between an update install and a fresh install.
-  void MigrateSystemWebApps(std::set<SystemAppType> already_installed);
 
   std::unique_ptr<base::OneShotEvent> on_apps_synchronized_;
 

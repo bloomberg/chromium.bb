@@ -13,7 +13,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_file_system_bridge.h"
-#include "components/arc/common/file_system.mojom.h"
+#include "components/arc/mojom/file_system.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "url/gurl.h"
 
@@ -127,7 +127,7 @@ class DocumentsProviderRootManager : public arc::ArcFileSystemBridge::Observer {
   base::ObserverList<Observer>::Unchecked observer_list_;
   std::vector<RootInfo> current_roots_;
 
-  base::WeakPtrFactory<DocumentsProviderRootManager> weak_ptr_factory_;
+  base::WeakPtrFactory<DocumentsProviderRootManager> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(DocumentsProviderRootManager);
 };

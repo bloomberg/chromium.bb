@@ -5,6 +5,7 @@
 
 """Runs autotest on DUT and gets result for performance evaluation."""
 
+from __future__ import division
 from __future__ import print_function
 
 import os
@@ -329,7 +330,7 @@ class AutotestEvaluator(evaluator.Evaluator):
       logging.error('Cannot get metric %s from %s', self.metric, report_file)
       return None
     if self.metric_take_average:
-      return float(sum(metric_value)) / len(metric_value)
+      return sum(metric_value) / len(metric_value)
     return metric_value
 
   def GetReportPath(self, build_label, nth_eval, repeat):

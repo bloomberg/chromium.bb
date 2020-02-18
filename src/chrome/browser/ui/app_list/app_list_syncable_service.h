@@ -94,9 +94,8 @@ class AppListSyncableService : public syncer::SyncableService,
 
   using SyncItemMap = std::map<std::string, std::unique_ptr<SyncItem>>;
 
-  // Populates the model when |extension_system| is ready.
-  AppListSyncableService(Profile* profile,
-                         extensions::ExtensionSystem* extension_system);
+  // Populates the model when |profile|'s extension system is ready.
+  explicit AppListSyncableService(Profile* profile);
 
   ~AppListSyncableService() override;
 
@@ -218,6 +217,11 @@ class AppListSyncableService : public syncer::SyncableService,
   // item and returns false.
   bool RemoveDefaultApp(const ChromeAppListItem* item, SyncItem* sync_item);
 
+  // Returns whether the delete-sync-item request was for a default app. If
+  // true, the |sync_item| is set to REMOVE_DEFAULT and bounced back to the
+  // sync server. The caller should abort deleting the |sync_item|.
+  bool InterceptDeleteDefaultApp(SyncItem* sync_item);
+
   // Deletes a sync item from |sync_items_| and sends a DELETE action.
   void DeleteSyncItem(const std::string& item_id);
 
@@ -337,7 +341,7 @@ class AppListSyncableService : public syncer::SyncableService,
   // List of observers.
   base::ObserverList<Observer>::Unchecked observer_list_;
 
-  base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_;
+  base::WeakPtrFactory<AppListSyncableService> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(AppListSyncableService);
 };

@@ -8,8 +8,8 @@
 #ifndef GrXferProcessor_DEFINED
 #define GrXferProcessor_DEFINED
 
-#include "include/gpu/GrBlend.h"
 #include "include/gpu/GrTypes.h"
+#include "src/gpu/GrBlend.h"
 #include "src/gpu/GrNonAtomicRef.h"
 #include "src/gpu/GrProcessor.h"
 #include "src/gpu/GrProcessorAnalysis.h"
@@ -87,6 +87,7 @@ public:
         void setOffset(int ox, int oy) { fOffset.set(ox, oy); }
 
         GrTextureProxy* proxy() const { return fProxy.get(); }
+        sk_sp<GrTextureProxy> refProxy() const { return fProxy; }
 
         void setProxy(sk_sp<GrTextureProxy> proxy) {
             fProxy = std::move(proxy);

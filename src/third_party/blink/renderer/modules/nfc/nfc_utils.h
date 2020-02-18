@@ -14,31 +14,7 @@
 
 namespace blink {
 
-ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidURLRecord(ScriptState* script_state,
-                                       const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidJSONRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidOpaqueRecord(ScriptState* script_state,
-                                          const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidNDEFRecord(ScriptState* script_state,
-                                        const NDEFRecordInit* record);
-
-ScriptPromise RejectIfInvalidNDEFRecordArray(
-    ScriptState* script_state,
-    const HeapVector<Member<NDEFRecordInit>>& records);
-
-ScriptPromise RejectIfInvalidNDEFMessageSource(
-    ScriptState* script_state,
-    const NDEFMessageSource& push_message);
-
-device::mojom::blink::NDEFRecordType DeduceRecordTypeFromDataType(
-    const blink::NDEFRecordInit* record);
+class DOMException;
 
 size_t GetNDEFMessageSize(const device::mojom::blink::NDEFMessagePtr& message);
 
@@ -56,6 +32,9 @@ device::mojom::blink::NDEFRecordType StringToNDEFRecordType(
 
 device::mojom::blink::NFCPushTarget StringToNFCPushTarget(
     const WTF::String& target);
+
+DOMException* NFCErrorTypeToDOMException(
+    device::mojom::blink::NFCErrorType error_type);
 
 }  // namespace blink
 

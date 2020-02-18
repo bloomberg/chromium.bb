@@ -33,6 +33,7 @@
 #include <memory>
 #include <utility>
 #include "base/logging.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/messaging/message_port_channel.h"
 #include "third_party/blink/public/mojom/loader/fetch_client_settings_object.mojom-blink.h"
@@ -71,14 +72,14 @@ SharedWorkerClientHolder::SharedWorkerClientHolder(Document& document)
       task_runner_(document.GetTaskRunner(blink::TaskType::kDOMManipulation)) {
   DCHECK(IsMainThread());
   document.GetInterfaceProvider()->GetInterface(
-      mojo::MakeRequest(&connector_, task_runner_));
+      connector_.BindNewPipeAndPassReceiver(task_runner_));
 }
 
 void SharedWorkerClientHolder::Connect(
     SharedWorker* worker,
     MessagePortChannel port,
     const KURL& url,
-    mojom::blink::BlobURLTokenPtr blob_url_token,
+    mojo::PendingRemote<mojom::blink::BlobURLToken> blob_url_token,
     const String& name) {
   DCHECK(IsMainThread());
   DCHECK(!name.IsNull());
@@ -101,10 +102,9 @@ void SharedWorkerClientHolder::Connect(
       url, name, header, header_type,
       worker->GetExecutionContext()->GetSecurityContext().AddressSpace()));
 
-  mojom::blink::SharedWorkerClientPtr client_ptr;
-  client_set_.AddBinding(std::make_unique<SharedWorkerClient>(worker),
-                         mojo::MakeRequest(&client_ptr, task_runner_),
-                         task_runner_);
+  mojo::PendingRemote<mojom::blink::SharedWorkerClient> client;
+  client_receivers_.Add(std::make_unique<SharedWorkerClient>(worker),
+                        client.InitWithNewPipeAndPassReceiver(), task_runner_);
 
   auto* outside_fetch_client_settings_object =
       MakeGarbageCollected<FetchClientSettingsObjectSnapshot>(
@@ -113,26 +113,32 @@ void SharedWorkerClientHolder::Connect(
               ->GetProperties()
               .GetFetchClientSettingsObject());
 
+  mojom::InsecureRequestsPolicy insecure_requests_policy =
+      outside_fetch_client_settings_object->GetInsecureRequestsPolicy() &
+              kUpgradeInsecureRequests
+          ? mojom::InsecureRequestsPolicy::kUpgrade
+          : mojom::InsecureRequestsPolicy::kDoNotUpgrade;
+
   connector_->Connect(
       std::move(info),
       mojom::blink::FetchClientSettingsObject::New(
           outside_fetch_client_settings_object->GetReferrerPolicy(),
-          KURL(outside_fetch_client_settings_object->GetOutgoingReferrer())),
-      std::move(client_ptr),
+          KURL(outside_fetch_client_settings_object->GetOutgoingReferrer()),
+          insecure_requests_policy),
+      std::move(client),
       worker->GetExecutionContext()->IsSecureContext()
           ? mojom::SharedWorkerCreationContextType::kSecure
           : mojom::SharedWorkerCreationContextType::kNonsecure,
       port.ReleaseHandle(),
-      mojom::blink::BlobURLTokenPtr(mojom::blink::BlobURLTokenPtrInfo(
-          blob_url_token.PassInterface().PassHandle(),
-          mojom::blink::BlobURLToken::Version_)));
+      mojo::PendingRemote<mojom::blink::BlobURLToken>(
+          blob_url_token.PassPipe(), mojom::blink::BlobURLToken::Version_));
 }
 
 void SharedWorkerClientHolder::ContextDestroyed(ExecutionContext*) {
   DCHECK(IsMainThread());
   // Close mojo connections which will signal disinterest in the associated
   // shared worker.
-  client_set_.CloseAllBindings();
+  client_receivers_.Clear();
 }
 
 void SharedWorkerClientHolder::Trace(Visitor* visitor) {

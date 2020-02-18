@@ -72,6 +72,10 @@ class IPAddress {
   void CopyToV4(uint8_t* x) const;
   void CopyToV6(uint8_t* x) const;
 
+  // In some instances, we want direct access to the underlying byte storage,
+  // in order to avoid making multiple copies.
+  const uint8_t* bytes() const { return bytes_.data(); }
+
  private:
   static ErrorOr<IPAddress> ParseV4(const std::string& s);
   static ErrorOr<IPAddress> ParseV6(const std::string& s);

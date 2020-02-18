@@ -46,6 +46,24 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
 
 template <>
 struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
+    StructTraits<network::mojom::TrustedUrlRequestParamsDataView,
+                 network::ResourceRequest::TrustedParams> {
+  static const net::NetworkIsolationKey& network_isolation_key(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.network_isolation_key;
+  }
+  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
+  update_network_isolation_key_on_redirect(
+      const network::ResourceRequest::TrustedParams& trusted_params) {
+    return trusted_params.update_network_isolation_key_on_redirect;
+  }
+
+  static bool Read(network::mojom::TrustedUrlRequestParamsDataView data,
+                   network::ResourceRequest::TrustedParams* out);
+};
+
+template <>
+struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
     StructTraits<network::mojom::URLRequestDataView, network::ResourceRequest> {
   static const std::string& method(const network::ResourceRequest& request) {
     return request.method;
@@ -59,15 +77,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static const base::Optional<url::Origin>& top_frame_origin(
       const network::ResourceRequest& request) {
     return request.top_frame_origin;
-  }
-  static network::mojom::UpdateNetworkIsolationKeyOnRedirect
-  update_network_isolation_key_on_redirect(
-      const network::ResourceRequest& request) {
-    return request.update_network_isolation_key_on_redirect;
-  }
-  static const net::NetworkIsolationKey& trusted_network_isolation_key(
-      const network::ResourceRequest& request) {
-    return request.trusted_network_isolation_key;
   }
   static bool attach_same_site_cookies(
       const network::ResourceRequest& request) {
@@ -88,9 +97,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
       const network::ResourceRequest& request) {
     return request.referrer_policy;
   }
-  static bool is_prerendering(const network::ResourceRequest& request) {
-    return request.is_prerendering;
-  }
   static const net::HttpRequestHeaders& headers(
       const network::ResourceRequest& request) {
     return request.headers;
@@ -102,22 +108,12 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static int32_t load_flags(const network::ResourceRequest& request) {
     return request.load_flags;
   }
-  static bool allow_credentials(const network::ResourceRequest& request) {
-    return request.allow_credentials;
-  }
-  static int32_t plugin_child_id(const network::ResourceRequest& request) {
-    return request.plugin_child_id;
-  }
   static int32_t resource_type(const network::ResourceRequest& request) {
     return request.resource_type;
   }
   static net::RequestPriority priority(
       const network::ResourceRequest& request) {
     return request.priority;
-  }
-  static const base::Optional<base::UnguessableToken>& appcache_host_id(
-      const network::ResourceRequest& request) {
-    return request.appcache_host_id;
   }
   static bool should_reset_appcache(const network::ResourceRequest& request) {
     return request.should_reset_appcache;
@@ -190,18 +186,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static int32_t transition_type(const network::ResourceRequest& request) {
     return request.transition_type;
   }
-  static bool allow_download(const network::ResourceRequest& request) {
-    return request.allow_download;
-  }
   static bool report_raw_headers(const network::ResourceRequest& request) {
     return request.report_raw_headers;
   }
   static int32_t previews_state(const network::ResourceRequest& request) {
     return request.previews_state;
-  }
-  static bool initiated_in_secure_context(
-      const network::ResourceRequest& request) {
-    return request.initiated_in_secure_context;
   }
   static bool upgrade_if_insecure(const network::ResourceRequest& request) {
     return request.upgrade_if_insecure;
@@ -240,6 +229,13 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE)
   static bool is_signed_exchange_prefetch_cache_enabled(
       const network::ResourceRequest& request) {
     return request.is_signed_exchange_prefetch_cache_enabled;
+  }
+  static bool obey_origin_policy(const network::ResourceRequest& request) {
+    return request.obey_origin_policy;
+  }
+  static const base::Optional<network::ResourceRequest::TrustedParams>&
+  trusted_params(const network::ResourceRequest& request) {
+    return request.trusted_params;
   }
 
   static bool Read(network::mojom::URLRequestDataView data,

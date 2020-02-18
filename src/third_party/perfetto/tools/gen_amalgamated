@@ -30,19 +30,33 @@ import tempfile
 import gn_utils
 
 # Default targets to include in the result.
+# TODO(primiano): change this script to recurse into target deps when generating
+# headers, but only for proto targets. .pbzero.h files don't include each other
+# and we need to list targets here individually, which is unmaintainable.
 default_targets = [
     '//:libperfetto_client_experimental',
     "//include/perfetto/protozero:protozero",
-    "//protos/perfetto/common:zero",
-    "//protos/perfetto/config:zero",
     "//protos/perfetto/config:zero",
     "//protos/perfetto/trace:zero",
-    "//protos/perfetto/trace/gpu:zero",
 ]
 
 # Arguments for the GN output directory (unless overridden from the command
 # line).
-gn_args = 'is_debug=false'
+gn_args = ' '.join([
+    'is_debug=false',
+    'is_perfetto_build_generator=true',
+    'is_perfetto_embedder=true',
+    'use_custom_libcxx=false',
+    'enable_perfetto_ipc=true',
+])
+
+# By default, the amalgamated .h only recurses in #includes but not in the
+# target deps. In the case of protos we want to follow deps even in lieu of
+# direct #includes. This is because, by design, protozero headers don't
+# inlcude each other but rely on forward declarations. The alternative would
+# be adding each proto sub-target individually (e.g. //proto/trace/gpu:zero),
+# but doing that is unmaintainable.
+recurse_in_header_deps = '^//protos/.*'
 
 # Compiler flags which aren't filtered out.
 cflag_whitelist = r'^-(W.*|fno-exceptions|fPIC|std.*|fvisibility.*)$'
@@ -179,18 +193,22 @@ class DependencyTree(object):
 class AmalgamatedProject(object):
     """In-memory representation of an amalgamated source/header pair."""
 
-    def __init__(self, desc, source_deps):
+    def __init__(self, desc, source_deps, compute_deps_only=False):
         """Constructor.
 
         Args:
             desc: JSON build description.
             source_deps: A map of (source file, [dependency header]) which is
                 to detect which header files are included by each source file.
+            compute_deps_only: If True, the project will only be used to compute
+                dependency information. Use |get_source_files()| to retrieve
+                the result.
         """
         self.desc = desc
         self.source_deps = source_deps
         self.header = []
         self.source = []
+        self.source_defines = []
         # Note that we don't support multi-arg flags.
         self.cflags = set(default_cflags)
         self.ldflags = set()
@@ -199,8 +217,10 @@ class AmalgamatedProject(object):
         self._dependency_tree = DependencyTree()
         self._processed_sources = set()
         self._processed_headers = set()
+        self._processed_header_deps = set()
         self._processed_source_headers = set()  # Header files included from .cc
         self._include_re = re.compile(r'#include "(.*)"')
+        self._compute_deps_only = compute_deps_only
 
     def add_target(self, target_name):
         """Include |target_name| in the amalgamated result."""
@@ -208,6 +228,15 @@ class AmalgamatedProject(object):
         self._add_target_dependencies(target_name)
         self._add_target_flags(target_name)
         self._add_target_headers(target_name)
+
+        # Recurse into target deps, but only for protos. This generates headers
+        # for all the .pbzero.h files, even if they don't #include each other.
+        for _, dep in self._iterate_dep_edges(target_name):
+            if (dep not in self._processed_header_deps and
+                re.match(recurse_in_header_deps, dep)):
+                self._processed_header_deps.add(dep)
+                self.add_target(dep)
+
 
     def _iterate_dep_edges(self, target_name):
         target = self.desc[target_name]
@@ -306,6 +335,8 @@ class AmalgamatedProject(object):
                         self._process_source_includes(
                             include_dirs, allowed_files, f))
                 return
+        if self._compute_deps_only:
+            return
         msg = 'Looked in %s' % ', '.join('"%s"' % d for d in include_dirs)
         raise Error('Header file %s not found. %s' % (header_name, msg))
 
@@ -340,6 +371,8 @@ class AmalgamatedProject(object):
                     self.header.extend(
                         self._process_header_includes(include_dirs, f))
                 return
+        if self._compute_deps_only:
+            return
         msg = 'Looked in %s' % ', '.join('"%s"' % d for d in include_dirs)
         raise Error('Header file %s not found. %s' % (header_name, msg))
 
@@ -349,7 +382,9 @@ class AmalgamatedProject(object):
         self._processed_headers.add(header_name)
         include_dirs = self._get_include_dirs(target_name)
         if not os.path.exists(header_name):
-            raise Error('Header file %s not found' % source_name)
+            if self._compute_deps_only:
+                return
+            raise Error('Header file %s not found' % header_name)
         with open(header_name) as f:
             self.header.append(
                 '// %s begin header: %s' % (tool_name, header_name))
@@ -408,7 +443,23 @@ class AmalgamatedProject(object):
 
         Call save() to persist the result.
         """
+        assert not self._compute_deps_only
+        self.source_defines.append('// %s: predefined macros' % tool_name)
+        def add_define(name):
+            # Valued macros aren't supported for now.
+            assert '=' not in name
+            self.source_defines.append('#if !defined(%s)' % name)
+            self.source_defines.append('#define %s' % name)
+            self.source_defines.append('#endif')
+        for name in self.defines:
+            add_define(name)
+        for target_name, source_name in self.get_source_files():
+            self._add_source(target_name, source_name)
 
+    def get_source_files(self):
+        """Return a list of (target, [source file]) that describes the source
+           files pulled in by each target which is a dependency of this project.
+        """
         source_files = []
         for node in self._dependency_tree.iterate_depth_first():
             target = self.desc[node.target_name]
@@ -417,8 +468,7 @@ class AmalgamatedProject(object):
             sources = [(node.target_name, gn_utils.label_to_path(s))
                         for s in target['sources'] if s.endswith('.cc')]
             source_files.extend(sources)
-        for target_name, source_name in source_files:
-            self._add_source(target_name, source_name)
+        return source_files
 
     def _get_nice_path(self, prefix, format):
         basename = os.path.basename(prefix)
@@ -436,7 +486,9 @@ class AmalgamatedProject(object):
             f.write('\n'.join([preamble] + self.header + ['\n']))
         with open(source_file, 'w') as f:
             include_stmt = '#include "%s"' % os.path.basename(header_file)
-            f.write('\n'.join([preamble, include_stmt] + self.source + ['\n']))
+            f.write('\n'.join(
+                [preamble] + self.source_defines + [include_stmt] +
+                self.source + ['\n']))
         build_cmd = self.get_build_command(output_prefix)
 
         return """Amalgamated project written to %s and %s.
@@ -445,13 +497,12 @@ Build settings:
  - cflags:    %s
  - ldflags:   %s
  - libs:      %s
- - defines:   %s
 
 Example build command:
 
 %s
 """ % (header_file, source_file, ' '.join(self.cflags), ' '.join(self.ldflags),
-       ' '.join(self.libs), ' '.join(self.defines), ' '.join(build_cmd))
+       ' '.join(self.libs), ' '.join(build_cmd))
 
     def get_build_command(self, output_prefix):
         """Returns an example command line for building the output source."""
@@ -461,19 +512,7 @@ Example build command:
             sorted(self.cflags) + sorted(self.ldflags)
         for lib in sorted(self.libs):
             build_cmd.append('-l%s' % lib)
-        for define in sorted(self.defines):
-            build_cmd.append('-D%s' % define)
         return build_cmd
-
-
-
-def create_amalgamated_project_for_targets(desc, targets, source_deps):
-    """Generate an amalgamated project for a list of GN targets."""
-    project = AmalgamatedProject(desc, source_deps)
-    for target in targets:
-        project.add_target(target)
-    project.generate()
-    return project
 
 
 def main():
@@ -499,6 +538,10 @@ def main():
     parser.add_argument('--quiet', help='Only report errors',
         action='store_true')
     parser.add_argument(
+        '--dump-deps',
+        help='List all source files that the amalgamated output depends on',
+        action='store_true')
+    parser.add_argument(
         'targets',
         nargs=argparse.REMAINDER,
         help='Targets to include in the output (e.g., "//:libperfetto")')
@@ -515,12 +558,26 @@ def main():
         out = gn_utils.prepare_out_directory(
             args.gn_args, 'tmp.gen_amalgamated')
         desc = gn_utils.load_build_description(out)
+
         # We need to build everything first so that the necessary header
-        # dependencies get generated.
-        gn_utils.build_targets(out, targets)
+        # dependencies get generated. However if we are just dumping dependency
+        # information this can be skipped, allowing cross-platform operation.
+        if not args.dump_deps:
+            gn_utils.build_targets(out, targets)
         source_deps = gn_utils.compute_source_dependencies(out)
-        project = create_amalgamated_project_for_targets(
-            desc, targets, source_deps)
+        project = AmalgamatedProject(
+            desc, source_deps, compute_deps_only=args.dump_deps)
+
+        for target in targets:
+            project.add_target(target)
+
+        if args.dump_deps:
+            source_files = [
+                source_file for _, source_file in project.get_source_files()]
+            print('\n'.join(sorted(set(source_files))))
+            return
+
+        project.generate()
         result = project.save(output)
         if not args.quiet:
             print(result)

@@ -26,7 +26,8 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -177,15 +178,15 @@ void AppBannerManager::RequestAppBanner(const GURL& validated_url) {
 
 void AppBannerManager::OnInstall(blink::WebDisplayMode display) {
   TrackInstallDisplayMode(display);
-  blink::mojom::InstallationServicePtr installation_service;
+  mojo::Remote<blink::mojom::InstallationService> installation_service;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&installation_service));
+      installation_service.BindNewPipeAndPassReceiver());
   DCHECK(installation_service);
   installation_service->OnInstall();
 
   // App has been installed (possibly by the user), page may no longer request
   // install prompt.
-  binding_.Close();
+  receiver_.reset();
 }
 
 void AppBannerManager::SendBannerAccepted() {
@@ -221,7 +222,7 @@ void AppBannerManager::MigrateObserverListForTesting(
 }
 
 bool AppBannerManager::IsPromptAvailableForTesting() const {
-  return binding_.is_bound();
+  return receiver_.is_bound();
 }
 
 AppBannerManager::AppBannerManager(content::WebContents* web_contents)
@@ -230,7 +231,6 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
       state_(State::INACTIVE),
       manager_(InstallableManager::FromWebContents(web_contents)),
-      binding_(this),
       has_sufficient_engagement_(false),
       load_finished_(false),
       status_reporter_(std::make_unique<NullStatusReporter>()),
@@ -432,7 +432,7 @@ void AppBannerManager::ReportStatus(InstallableStatusCode code) {
 }
 
 void AppBannerManager::ResetBindings() {
-  binding_.Close();
+  receiver_.reset();
   event_.reset();
 }
 
@@ -529,19 +529,16 @@ void AppBannerManager::SendBannerPromptRequest() {
   // Any existing binding is invalid when we send a new beforeinstallprompt.
   ResetBindings();
 
-  blink::mojom::AppBannerControllerPtr controller;
+  mojo::Remote<blink::mojom::AppBannerController> controller;
   web_contents()->GetMainFrame()->GetRemoteInterfaces()->GetInterface(
-      mojo::MakeRequest(&controller));
-
-  blink::mojom::AppBannerServicePtr banner_proxy;
-  binding_.Bind(mojo::MakeRequest(&banner_proxy));
+      controller.BindNewPipeAndPassReceiver());
 
   // Get a raw controller pointer before we move out of the smart pointer to
   // avoid crashing with MSVC's order of evaluation.
   blink::mojom::AppBannerController* controller_ptr = controller.get();
   controller_ptr->BannerPromptRequest(
-      std::move(banner_proxy), mojo::MakeRequest(&event_), {GetBannerType()},
-      /*require_gesture=*/true,
+      receiver_.BindNewPipeAndPassRemote(), event_.BindNewPipeAndPassReceiver(),
+      {GetBannerType()},
       base::BindOnce(&AppBannerManager::OnBannerPromptReply, GetWeakPtr(),
                      std::move(controller)));
 }
@@ -710,7 +707,7 @@ InstallableStatusCode AppBannerManager::ShouldShowBannerCode() {
 }
 
 void AppBannerManager::OnBannerPromptReply(
-    blink::mojom::AppBannerControllerPtr controller,
+    mojo::Remote<blink::mojom::AppBannerController> controller,
     blink::mojom::AppBannerPromptReply reply) {
   // The renderer might have requested the prompt to be canceled. They may
   // request that it is redisplayed later, so don't Terminate() here. However,
@@ -782,7 +779,7 @@ void AppBannerManager::ShowBanner() {
 
 void AppBannerManager::DisplayAppBanner() {
   // Prevent this from being called multiple times on the same connection.
-  binding_.Close();
+  receiver_.reset();
 
   if (state_ == State::PENDING_PROMPT) {
     ShowBanner();

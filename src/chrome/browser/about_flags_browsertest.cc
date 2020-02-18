@@ -5,9 +5,11 @@
 #include "base/command_line.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/unexpire_flags.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/interactive_test_utils.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -102,6 +104,11 @@ bool IsDropdownEnabled(content::WebContents* contents,
 // line (provided in SetUpCommandLine) and once without.
 class AboutFlagsBrowserTest : public InProcessBrowserTest,
                               public testing::WithParamInterface<bool> {
+ public:
+  AboutFlagsBrowserTest() {
+    feature_list_.InitWithFeatures({flags::kUnexpireFlagsM76}, {});
+  }
+
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(kSwitchName, GetInitialCommandLine());
   }
@@ -121,6 +128,8 @@ class AboutFlagsBrowserTest : public InProcessBrowserTest,
     return has_initial_command_line() ? kSanitizedInputAndCommandLine
                                       : kSanitizedInput;
   }
+
+  base::test::ScopedFeatureList feature_list_;
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -213,7 +222,13 @@ IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, PRE_OriginFlagEnabled) {
             GetOriginListText(contents, kSwitchName));
 }
 
-IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, OriginFlagEnabled) {
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(https://crbug.com/1000714): Re-enable this test.
+#define MAYBE_OriginFlagEnabled DISABLED_OriginFlagEnabled
+#else
+#define MAYBE_OriginFlagEnabled OriginFlagEnabled
+#endif
+IN_PROC_BROWSER_TEST_P(AboutFlagsBrowserTest, MAYBE_OriginFlagEnabled) {
 #if !defined(OS_CHROMEOS)
   // On non-ChromeOS, the command line is modified after restart.
   EXPECT_EQ(

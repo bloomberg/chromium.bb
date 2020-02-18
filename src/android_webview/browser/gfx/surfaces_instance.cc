@@ -13,20 +13,21 @@
 #include "android_webview/browser/gfx/deferred_gpu_command_service.h"
 #include "android_webview/browser/gfx/gpu_service_web_view.h"
 #include "android_webview/browser/gfx/parent_output_surface.h"
-#include "android_webview/browser/gfx/task_forwarding_sequence.h"
+#include "android_webview/browser/gfx/skia_output_surface_dependency_webview.h"
 #include "android_webview/browser/gfx/task_queue_web_view.h"
 #include "android_webview/common/aw_switches.h"
+#include "base/android/build_info.h"
 #include "base/command_line.h"
 #include "base/stl_util.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
+#include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "components/viz/service/display/display.h"
 #include "components/viz/service/display/display_scheduler.h"
-#include "components/viz/service/display_embedder/skia_output_surface_dependency.h"
 #include "components/viz/service/display_embedder/skia_output_surface_impl.h"
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -49,136 +50,6 @@ SurfacesInstance* g_surfaces_instance = nullptr;
 
 void OnContextLost() {
   NOTREACHED() << "Non owned context lost!";
-}
-
-// Implementation for access to gpu objects and task queue for WebView.
-class SkiaOutputSurfaceDependencyWebView
-    : public viz::SkiaOutputSurfaceDependency {
- public:
-  SkiaOutputSurfaceDependencyWebView(
-      TaskQueueWebView* task_queue,
-      GpuServiceWebView* gpu_service,
-      scoped_refptr<gpu::SharedContextState> shared_context_state,
-      scoped_refptr<gl::GLSurface> gl_surface);
-  ~SkiaOutputSurfaceDependencyWebView() override;
-
-  std::unique_ptr<gpu::SingleTaskSequence> CreateSequence() override;
-  bool IsUsingVulkan() override;
-  gpu::SharedImageManager* GetSharedImageManager() override;
-  gpu::SyncPointManager* GetSyncPointManager() override;
-  const gpu::GpuDriverBugWorkarounds& GetGpuDriverBugWorkarounds() override;
-  scoped_refptr<gpu::SharedContextState> GetSharedContextState() override;
-  gpu::raster::GrShaderCache* GetGrShaderCache() override;
-  viz::VulkanContextProvider* GetVulkanContextProvider() override;
-  const gpu::GpuPreferences& GetGpuPreferences() override;
-  const gpu::GpuFeatureInfo& GetGpuFeatureInfo() override;
-  gpu::MailboxManager* GetMailboxManager() override;
-  void ScheduleGrContextCleanup() override;
-  void PostTaskToClientThread(base::OnceClosure closure) override;
-  bool IsOffscreen() override;
-  gpu::SurfaceHandle GetSurfaceHandle() override;
-  scoped_refptr<gl::GLSurface> CreateGLSurface(
-      base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) override;
-
- private:
-  scoped_refptr<gl::GLSurface> gl_surface_;
-  TaskQueueWebView* task_queue_;
-  GpuServiceWebView* gpu_service_;
-  gpu::GpuDriverBugWorkarounds workarounds_;
-  scoped_refptr<gpu::SharedContextState> shared_context_state_;
-  DISALLOW_COPY_AND_ASSIGN(SkiaOutputSurfaceDependencyWebView);
-};
-
-SkiaOutputSurfaceDependencyWebView::SkiaOutputSurfaceDependencyWebView(
-    TaskQueueWebView* task_queue,
-    GpuServiceWebView* gpu_service,
-    scoped_refptr<gpu::SharedContextState> shared_context_state,
-    scoped_refptr<gl::GLSurface> gl_surface)
-    : gl_surface_(std::move(gl_surface)),
-      task_queue_(task_queue),
-      gpu_service_(gpu_service),
-      workarounds_(
-          gpu_service_->gpu_feature_info().enabled_gpu_driver_bug_workarounds),
-      shared_context_state_(std::move(shared_context_state)) {}
-
-SkiaOutputSurfaceDependencyWebView::~SkiaOutputSurfaceDependencyWebView() =
-    default;
-
-std::unique_ptr<gpu::SingleTaskSequence>
-SkiaOutputSurfaceDependencyWebView::CreateSequence() {
-  return std::make_unique<TaskForwardingSequence>(
-      this->task_queue_, this->gpu_service_->sync_point_manager());
-}
-
-bool SkiaOutputSurfaceDependencyWebView::IsUsingVulkan() {
-  return shared_context_state_ && shared_context_state_->GrContextIsVulkan();
-}
-
-gpu::SharedImageManager*
-SkiaOutputSurfaceDependencyWebView::GetSharedImageManager() {
-  return gpu_service_->shared_image_manager();
-}
-
-gpu::SyncPointManager*
-SkiaOutputSurfaceDependencyWebView::GetSyncPointManager() {
-  return gpu_service_->sync_point_manager();
-}
-
-const gpu::GpuDriverBugWorkarounds&
-SkiaOutputSurfaceDependencyWebView::GetGpuDriverBugWorkarounds() {
-  return workarounds_;
-}
-
-scoped_refptr<gpu::SharedContextState>
-SkiaOutputSurfaceDependencyWebView::GetSharedContextState() {
-  return shared_context_state_;
-}
-
-gpu::raster::GrShaderCache*
-SkiaOutputSurfaceDependencyWebView::GetGrShaderCache() {
-  return nullptr;
-}
-
-viz::VulkanContextProvider*
-SkiaOutputSurfaceDependencyWebView::GetVulkanContextProvider() {
-  return shared_context_state_->vk_context_provider();
-}
-
-const gpu::GpuPreferences&
-SkiaOutputSurfaceDependencyWebView::GetGpuPreferences() {
-  return gpu_service_->gpu_preferences();
-}
-
-const gpu::GpuFeatureInfo&
-SkiaOutputSurfaceDependencyWebView::GetGpuFeatureInfo() {
-  return gpu_service_->gpu_feature_info();
-}
-
-gpu::MailboxManager* SkiaOutputSurfaceDependencyWebView::GetMailboxManager() {
-  return gpu_service_->mailbox_manager();
-}
-
-void SkiaOutputSurfaceDependencyWebView::ScheduleGrContextCleanup() {
-  // There is no way to access the gpu thread here, so leave it no-op for now.
-}
-
-void SkiaOutputSurfaceDependencyWebView::PostTaskToClientThread(
-    base::OnceClosure closure) {
-  task_queue_->ScheduleClientTask(std::move(closure));
-}
-
-bool SkiaOutputSurfaceDependencyWebView::IsOffscreen() {
-  return false;
-}
-
-gpu::SurfaceHandle SkiaOutputSurfaceDependencyWebView::GetSurfaceHandle() {
-  return gpu::kNullSurfaceHandle;
-}
-
-scoped_refptr<gl::GLSurface>
-SkiaOutputSurfaceDependencyWebView::CreateGLSurface(
-    base::WeakPtr<gpu::ImageTransportSurfaceDelegate> stub) {
-  return gl_surface_;
 }
 
 }  // namespace
@@ -258,7 +129,7 @@ SurfacesInstance::SurfacesInstance()
     }
     auto skia_dependency = std::make_unique<SkiaOutputSurfaceDependencyWebView>(
         TaskQueueWebView::GetInstance(), GpuServiceWebView::GetInstance(),
-        shared_context_state_, gl_surface_);
+        shared_context_state_.get(), gl_surface_.get());
     output_surface = viz::SkiaOutputSurfaceImpl::Create(
         std::move(skia_dependency), settings);
     DCHECK(output_surface);
@@ -345,6 +216,7 @@ void SurfacesInstance::DrawAndSwap(const gfx::Size& viewport,
                        viz::SurfaceRange(base::nullopt, child_id),
                        SK_ColorWHITE, /*stretch_content_to_fill_bounds=*/false,
                        /*ignores_input_event=*/false);
+  surface_quad->allow_merge = !BackdropFiltersPreventMerge(child_id);
 
   viz::CompositorFrame frame;
   // We draw synchronously, so acknowledge a manual BeginFrame.
@@ -454,6 +326,42 @@ void SurfacesInstance::OnBeginFramePausedChanged(bool paused) {}
 base::TimeDelta SurfacesInstance::GetPreferredFrameIntervalForFrameSinkId(
     const viz::FrameSinkId& id) {
   return frame_sink_manager_->GetPreferredFrameIntervalForFrameSinkId(id);
+}
+
+bool SurfacesInstance::BackdropFiltersPreventMerge(
+    const viz::SurfaceId& surface_id) {
+  // TODO(ericrk): This function makes the pessemistic assumption that any
+  // backdrop filter prevents merging this surface. This is not true in a
+  // number of cases:
+  //  - SkiaRenderer may handle framebuffer readback in some cases.
+  //  - This is not needed if framebuffer format is not floating point.
+  //
+  //  In the future we should optimize this more and avoid the intermediate
+  //  in the cases listed above. crbug.com/996434
+  const viz::Surface* surface =
+      frame_sink_manager_->surface_manager()->GetSurfaceForId(surface_id);
+  const auto& frame = surface->GetActiveFrame();
+  base::flat_set<viz::RenderPassId> backdrop_filter_passes;
+  for (const auto& render_pass : frame.render_pass_list) {
+    if (!render_pass->backdrop_filters.IsEmpty())
+      backdrop_filter_passes.insert(render_pass->id);
+  }
+
+  if (backdrop_filter_passes.empty())
+    return false;
+
+  const auto* root_pass = frame.render_pass_list.back().get();
+  for (const auto* quad : root_pass->quad_list) {
+    if (quad->material != viz::DrawQuad::Material::kRenderPass)
+      continue;
+    const auto* pass_quad = viz::RenderPassDrawQuad::MaterialCast(quad);
+    if (backdrop_filter_passes.find(pass_quad->render_pass_id) !=
+        backdrop_filter_passes.end()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 }  // namespace android_webview

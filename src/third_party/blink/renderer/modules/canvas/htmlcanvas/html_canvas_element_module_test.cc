@@ -4,21 +4,22 @@
 
 #include "third_party/blink/renderer/modules/canvas/htmlcanvas/html_canvas_element_module.h"
 
-#include <memory>
-
 #include "build/build_config.h"
-#include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom-blink.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "services/viz/public/mojom/hit_test/hit_test_region_list.mojom-blink.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_context_creation_attributes_core.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context.h"
 #include "third_party/blink/renderer/core/html/canvas/html_canvas_element.h"
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
-#include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_compositor_frame_sink.h"
 #include "third_party/blink/renderer/platform/graphics/test/mock_embedded_frame_sink_provider.h"
 
@@ -45,13 +46,22 @@ class TestingPlatformSupportWithGenerateFrameSinkId
 
 }  // unnamed namespace
 
-class HTMLCanvasElementModuleTest : public PageTestBase,
+class HTMLCanvasElementModuleTest : public ::testing::Test,
                                     public ::testing::WithParamInterface<bool> {
  protected:
   void SetUp() override {
-    PageTestBase::SetUp();
-    SetHtmlInnerHTML("<body><canvas id='c'></canvas></body>");
-    canvas_element_ = ToHTMLCanvasElement(GetElementById("c"));
+    web_view_helper_.Initialize();
+    GetDocument().documentElement()->SetInnerHTMLFromString(
+        String::FromUTF8("<body><canvas id='c'></canvas></body>"));
+    canvas_element_ = To<HTMLCanvasElement>(GetDocument().getElementById("c"));
+  }
+
+  Document& GetDocument() const {
+    return *web_view_helper_.GetWebView()
+                ->MainFrameImpl()
+                ->GetFrame()
+                ->DomWindow()
+                ->document();
   }
 
   HTMLCanvasElement& canvas_element() const { return *canvas_element_; }
@@ -60,6 +70,7 @@ class HTMLCanvasElementModuleTest : public PageTestBase,
         canvas_element(), exception_state);
   }
 
+  frame_test_helpers::WebViewHelper web_view_helper_;
   Persistent<HTMLCanvasElement> canvas_element_;
   Persistent<CanvasRenderingContext> context_;
 };
@@ -88,11 +99,11 @@ TEST_P(HTMLCanvasElementModuleTest, LowLatencyCanvasCompositorFrameOpacity) {
   // by a canvas's CanvasResourceDispatcher, we have to override the Mojo
   // EmbeddedFrameSinkProvider interface impl and its CompositorFrameSinkClient.
   MockEmbeddedFrameSinkProvider mock_embedded_frame_sink_provider;
-  mojo::Binding<mojom::blink::EmbeddedFrameSinkProvider>
-      embedded_frame_sink_provider_binding(&mock_embedded_frame_sink_provider);
+  mojo::Receiver<mojom::blink::EmbeddedFrameSinkProvider>
+      embedded_frame_sink_provider_receiver(&mock_embedded_frame_sink_provider);
   auto override =
       mock_embedded_frame_sink_provider.CreateScopedOverrideMojoInterface(
-          &embedded_frame_sink_provider_binding);
+          &embedded_frame_sink_provider_receiver);
 
   const bool context_alpha = GetParam();
   CanvasContextCreationAttributesCore attrs;

@@ -8,7 +8,7 @@
 
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/notifications/scheduler/internal/impression_history_tracker.h"
 #include "chrome/browser/notifications/scheduler/test/fake_clock.h"
@@ -16,7 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
+using ::testing::_;
 using ::testing::Invoke;
 using StoreEntries = std::vector<std::unique_ptr<notifications::ClientState>>;
 
@@ -24,6 +24,8 @@ namespace notifications {
 namespace {
 
 const char kGuid1[] = "guid1";
+const char kGuid2[] = "guid2";
+const char kButtonId[] = "button_id_1";
 const char kTimeStr[] = "04/25/20 01:00:00 AM";
 
 struct TestCase {
@@ -40,7 +42,14 @@ struct TestCase {
 Impression CreateImpression(const base::Time& create_time,
                             const std::string& guid) {
   Impression impression(SchedulerClientType::kTest1, guid, create_time);
-  impression.task_start_time = SchedulerTaskTime::kMorning;
+  return impression;
+}
+
+Impression CreateImpression(const base::Time& create_time,
+                            const std::string& guid,
+                            UserFeedback feedback) {
+  Impression impression(SchedulerClientType::kTest1, guid, create_time);
+  impression.feedback = feedback;
   return impression;
 }
 
@@ -150,8 +159,6 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
     }
   }
 
-  void SetNow(const char* now_str) { clock_.SetNow(now_str); }
-
   const SchedulerConfig& config() const { return config_; }
   MockImpressionStore* store() { return store_; }
   MockDelegate* delegate() { return delegate_.get(); }
@@ -159,7 +166,7 @@ class ImpressionHistoryTrackerTest : public ::testing::Test {
   test::FakeClock* clock() { return &clock_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   test::FakeClock clock_;
   SchedulerConfig config_;
   std::unique_ptr<ImpressionHistoryTracker> impression_trakcer_;
@@ -208,20 +215,13 @@ TEST_F(ImpressionHistoryTrackerTest, DeleteExpiredImpression) {
   Impression expired = CreateImpression(expired_create_time, "guid1");
   Impression not_expired = CreateImpression(not_expired_time, "guid2");
 
-  // The impressions in the input should be sorted by creation time when gets
-  // loaded to memory.
   test_case.input.back().impressions = {expired, not_expired, expired};
-
-  // Expired impression created in |expired_create_time| should be deleted.
-  // No change expected on the next impression, which is not expired and no user
-  // feedback .
   test_case.expected.back().impressions = {not_expired};
 
   CreateTracker(test_case);
-  InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _));
-  EXPECT_CALL(*delegate(), OnImpressionUpdated());
-  tracker()->AnalyzeImpressionHistory();
+  InitTrackerWithData(test_case);
+  EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
   VerifyClientStates(test_case);
 }
 
@@ -232,17 +232,37 @@ TEST_F(ImpressionHistoryTrackerTest, AddImpression) {
   InitTrackerWithData(test_case);
 
   // No-op for unregistered client.
-  tracker()->AddImpression(SchedulerClientType::kTest2, kGuid1);
+  tracker()->AddImpression(SchedulerClientType::kTest2, kGuid2,
+                           Impression::ImpressionResultMap(),
+                           Impression::CustomData());
   VerifyClientStates(test_case);
 
-  SetNow(kTimeStr);
+  clock()->SetNow(kTimeStr);
 
+  Impression::ImpressionResultMap impression_mapping = {
+      {UserFeedback::kDismiss, ImpressionResult::kNegative}};
+  Impression::CustomData custom_data = {{"url", "https://www.example.com"}};
   EXPECT_CALL(*store(), Update(_, _, _));
   EXPECT_CALL(*delegate(), OnImpressionUpdated());
-  tracker()->AddImpression(SchedulerClientType::kTest1, kGuid1);
-  test_case.expected.back().impressions.emplace_back(
-      Impression(SchedulerClientType::kTest1, kGuid1, clock()->Now()));
+  tracker()->AddImpression(SchedulerClientType::kTest1, kGuid1,
+                           impression_mapping, custom_data);
+  Impression expected_impression(SchedulerClientType::kTest1, kGuid1,
+                                 clock()->Now());
+  expected_impression.impression_mapping = impression_mapping;
+  expected_impression.custom_data = custom_data;
+  test_case.expected.back().impressions.emplace_back(expected_impression);
   VerifyClientStates(test_case);
+  EXPECT_EQ(*tracker()->GetImpression(kGuid1), expected_impression);
+}
+
+// Verifies that impression loaded from the database can be retrieved correctly.
+TEST_F(ImpressionHistoryTrackerTest, GetImpressionLoadedFromDb) {
+  TestCase test_case = CreateDefaultTestCase();
+  Impression impression(SchedulerClientType::kTest1, kGuid1, clock()->Now());
+  test_case.input.front().impressions.emplace_back(impression);
+  CreateTracker(test_case);
+  InitTrackerWithData(test_case);
+  EXPECT_EQ(*tracker()->GetImpression(kGuid1), impression);
 }
 
 // If impression has been deleted, click should have no result.
@@ -252,7 +272,43 @@ TEST_F(ImpressionHistoryTrackerTest, ClickNoImpression) {
   InitTrackerWithData(test_case);
   EXPECT_CALL(*store(), Update(_, _, _)).Times(0);
   EXPECT_CALL(*delegate(), OnImpressionUpdated()).Times(0);
-  tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
+  UserActionData action_data(SchedulerClientType::kTest1,
+                             UserActionType::kClick, kGuid1);
+  tracker()->OnUserAction(action_data);
+  VerifyClientStates(test_case);
+}
+
+// Verifies a consecutive dismiss will generate impression result.
+TEST_F(ImpressionHistoryTrackerTest, ConsecutiveDismisses) {
+  TestCase test_case = CreateDefaultTestCase();
+  clock()->SetNow(kTimeStr);
+
+  // Construct 3 dismisses in a row, which will generate neutral impression
+  // result.
+  auto dismiss_0 =
+      CreateImpression(clock()->Now() - base::TimeDelta::FromDays(1), "guid0",
+                       UserFeedback::kDismiss);
+  auto dismiss_1 =
+      CreateImpression(clock()->Now() - base::TimeDelta::FromMinutes(30),
+                       "guid1", UserFeedback::kDismiss);
+  auto dismiss_2 =
+      CreateImpression(clock()->Now() - base::TimeDelta::FromMinutes(15),
+                       "guid2", UserFeedback::kDismiss);
+  test_case.input.front().impressions = {dismiss_0, dismiss_1, dismiss_2};
+  test_case.expected.front().impressions = test_case.input.front().impressions;
+  for (auto& impression : test_case.expected.front().impressions) {
+    impression.feedback = UserFeedback::kDismiss;
+    impression.impression = ImpressionResult::kNeutral;
+    impression.integrated = true;
+  }
+
+  CreateTracker(test_case);
+  InitTrackerWithData(test_case);
+  EXPECT_CALL(*delegate(), OnImpressionUpdated());
+  EXPECT_CALL(*store(), Update(_, _, _));
+  UserActionData action_data(SchedulerClientType::kTest1,
+                             UserActionType::kDismiss, "guid2");
+  tracker()->OnUserAction(action_data);
   VerifyClientStates(test_case);
 }
 
@@ -331,12 +387,22 @@ TEST_P(ImpressionHistoryTrackerUserActionTest, UserAction) {
 
   // Trigger user action.
   if (GetParam().user_feedback == UserFeedback::kClick) {
-    tracker()->OnClick(SchedulerClientType::kTest1, kGuid1);
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kClick, kGuid1);
+    tracker()->OnUserAction(action_data);
   } else if (GetParam().button_type.has_value()) {
-    tracker()->OnActionClick(SchedulerClientType::kTest1, kGuid1,
-                             GetParam().button_type.value());
+    ButtonClickInfo button_click_info;
+    button_click_info.button_id = kButtonId;
+    button_click_info.type = GetParam().button_type.value();
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kButtonClick, kGuid1);
+    action_data.button_click_info =
+        base::make_optional(std::move(button_click_info));
+    tracker()->OnUserAction(action_data);
   } else if (GetParam().user_feedback == UserFeedback::kDismiss) {
-    tracker()->OnDismiss(SchedulerClientType::kTest1, kGuid1);
+    UserActionData action_data(SchedulerClientType::kTest1,
+                               UserActionType::kDismiss, kGuid1);
+    tracker()->OnUserAction(action_data);
   }
 
   VerifyClientStates(test_case);

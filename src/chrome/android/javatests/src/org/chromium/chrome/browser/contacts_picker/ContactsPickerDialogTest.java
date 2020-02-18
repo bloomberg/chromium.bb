@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.contacts_picker;
 
-import static org.chromium.base.test.util.ScalableTimeout.scaleTimeout;
-
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -51,9 +49,6 @@ import java.util.concurrent.Callable;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ContactsPickerDialogTest
         implements ContactsPickerListener, SelectionObserver<ContactDetails> {
-    // The timeout (in seconds) to wait for the decoder service to be ready.
-    private static final long WAIT_TIMEOUT_SECONDS = scaleTimeout(30);
-
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
@@ -72,6 +67,16 @@ public class ContactsPickerDialogTest
 
     // The final set of contacts picked by the dialog.
     private List<ContactsPickerListener.Contact> mLastSelectedContacts;
+
+    // The percentage of contacts shared.
+    private int mLastPercentageShared;
+
+    // The properties requested (names, emails, telephone numbers) when the
+    // dialog was opened (not to be confused with the properties that will
+    // eventually be returned, after the user opts-out of some). Note: This is
+    // a bitmask, where the first bit is 1 if telephone numbers were requested,
+    // second bit is for emails and third bit is for names.
+    private int mLastPropertiesRequested;
 
     // The list of currently selected contacts (built piecemeal).
     private List<ContactDetails> mCurrentContactSelection;
@@ -104,10 +109,13 @@ public class ContactsPickerDialogTest
     // ContactsPickerDialog.ContactsPickerListener:
 
     @Override
-    public void onContactsPickerUserAction(
-            @ContactsPickerAction int action, List<ContactsPickerListener.Contact> contacts) {
+    public void onContactsPickerUserAction(@ContactsPickerAction int action,
+            List<ContactsPickerListener.Contact> contacts, int percentageShared,
+            int propertiesRequested) {
         mLastActionRecorded = action;
         mLastSelectedContacts = (contacts != null) ? new ArrayList<>(contacts) : null;
+        mLastPercentageShared = percentageShared;
+        mLastPropertiesRequested = propertiesRequested;
         onActionCallback.notifyCalled();
     }
 
@@ -259,7 +267,7 @@ public class ContactsPickerDialogTest
         TextView explanation = (TextView) topView.findViewById(R.id.explanation);
         Assert.assertNotNull(explanation);
         Assert.assertEquals(explanation.getText().toString(),
-                "The contacts you select below will be shared with the website example.com.");
+                "The contacts you select will be shared with example.com.");
 
         dismissDialog();
     }
@@ -302,6 +310,8 @@ public class ContactsPickerDialogTest
         clickCancel();
 
         Assert.assertEquals(null, mLastSelectedContacts);
+        Assert.assertEquals(0, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
         Assert.assertEquals(ContactsPickerAction.CANCEL, mLastActionRecorded);
 
         dismissDialog();
@@ -325,6 +335,8 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(1, mLastSelectedContacts.size());
         Assert.assertEquals(
                 mTestContacts.get(1).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
+        Assert.assertEquals(16, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
 
         dismissDialog();
     }
@@ -352,6 +364,8 @@ public class ContactsPickerDialogTest
                 mTestContacts.get(2).getDisplayName(), mLastSelectedContacts.get(1).names.get(0));
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(2).names.get(0));
+        Assert.assertEquals(50, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
 
         dismissDialog();
     }
@@ -375,6 +389,8 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).names);
         Assert.assertEquals(mTestContacts.get(0).getEmails().get(0),
                 mLastSelectedContacts.get(0).emails.get(0));
+        Assert.assertEquals(16, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
 
         dismissDialog();
     }
@@ -398,6 +414,8 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).emails);
+        Assert.assertEquals(16, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
 
         dismissDialog();
     }
@@ -421,7 +439,40 @@ public class ContactsPickerDialogTest
         Assert.assertEquals(
                 mTestContacts.get(0).getDisplayName(), mLastSelectedContacts.get(0).names.get(0));
         Assert.assertEquals(new ArrayList<String>(), mLastSelectedContacts.get(0).tel);
+        Assert.assertEquals(16, mLastPercentageShared);
+        Assert.assertEquals(7, mLastPropertiesRequested);
 
+        dismissDialog();
+    }
+
+    @Test
+    @LargeTest
+    public void testPropertiesRequested() throws Throwable {
+        // Create a dialog showing names only.
+        createDialog(/* multiselect = */ false, /* includeNames = */ true,
+                /* includeEmails = */ false,
+                /* includeTel = */ false);
+        Assert.assertTrue(mDialog.isShowing());
+        clickCancel();
+        Assert.assertEquals(4, mLastPropertiesRequested);
+        dismissDialog();
+
+        // Create a dialog showing emails only.
+        createDialog(/* multiselect = */ false, /* includeNames = */ false,
+                /* includeEmails = */ true,
+                /* includeTel = */ false);
+        Assert.assertTrue(mDialog.isShowing());
+        clickCancel();
+        Assert.assertEquals(2, mLastPropertiesRequested);
+        dismissDialog();
+
+        // Create a dialog showing telephone numbers only.
+        createDialog(/* multiselect = */ false, /* includeNames = */ false,
+                /* includeEmails = */ false,
+                /* includeTel = */ true);
+        Assert.assertTrue(mDialog.isShowing());
+        clickCancel();
+        Assert.assertEquals(1, mLastPropertiesRequested);
         dismissDialog();
     }
 

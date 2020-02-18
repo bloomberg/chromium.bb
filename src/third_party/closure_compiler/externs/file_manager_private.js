@@ -234,6 +234,8 @@ chrome.fileManagerPrivate.InstallLinuxPackageResponse = {
 chrome.fileManagerPrivate.CrostiniEventType = {
   ENABLE: 'enable',
   DISABLE: 'disable',
+  ROOT_ACCESS_ALLOW: 'root_access_allow',
+  ROOT_ACCESS_DISALLOW: 'root_access_disallow',
   SHARE: 'share',
   UNSHARE: 'unshare',
 };
@@ -773,12 +775,6 @@ chrome.fileManagerPrivate.getPreferences = function(callback) {};
 chrome.fileManagerPrivate.setPreferences = function(changeInfo) {};
 
 /**
- * Sets the ARC flag and returns what was the value before setting.
- * @param {function(boolean)} callback
- */
-chrome.fileManagerPrivate.setArcStorageToastShownFlag = function(callback) {};
-
-/**
  * Performs drive content search. |searchParams| |callback|
  * @param {chrome.fileManagerPrivate.SearchParams} searchParams
  * @param {function((!Array<Entry>|undefined), (string|undefined))} callback
@@ -1049,6 +1045,13 @@ chrome.fileManagerPrivate.getLinuxPackageInfo = function(entry, callback) {};
  *    Called when the installation is either started or fails to start.
  */
 chrome.fileManagerPrivate.installLinuxPackage = function(entry, callback) {};
+
+/**
+ * Imports a Crostini Image File (.tini). This overrides the existing Linux apps
+ * and files.
+ * @param {!Entry} entry
+ */
+chrome.fileManagerPrivate.importCrostiniImage = function(entry) {};
 
 /**
  * Detect character encoding.

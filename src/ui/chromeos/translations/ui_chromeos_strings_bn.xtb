@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">ইমেজের রেজোলিউশন</translation>
 <translation id="1943097386230153518">নতুন পরিষেবা ইনস্টল করুন</translation>
 <translation id="1947424002851288782">জার্মান কীবোর্ড</translation>
+<translation id="1972984168337863910">ফাইল ফিডব্যাক প্যানেল বড় করুন</translation>
 <translation id="197560921582345123">সম্পাদনা করতে পারবেন</translation>
 <translation id="1984603991036629094">আর্মেনিয় ফোনেটিক কীবোর্ড</translation>
 <translation id="2001796770603320721">ড্রাইভে পরিচালনা করুন</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">আপনার এই ফাইলটিতে অ্যাক্সেস পেতে অনলাইন হওয়া আবশ্যক৷</translation>
 <translation id="4212740939091998969">"<ph name="FOLDER_NAME" />" নামের ফোল্ডার আগে থেকেই আছে। অন্য একটি নাম লিখুন।</translation>
 <translation id="4215448920900139318"><ph name="FILE_COUNT" />টির ব্যাক আপ নেওয়া হচ্ছে</translation>
-<translation id="4242533952199664413">সেটিংস খুলুন</translation>
 <translation id="426015154560005552">আরবি কীবোর্ড</translation>
 <translation id="4261901459838235729">Google উপস্থাপনা</translation>
 <translation id="4290535918735525311">Linux ব্যবহার করে ১টি ফোল্ডার শেয়ার করা হয়েছে</translation>
-<translation id="42981349822642051">প্রসারিত করুন</translation>
 <translation id="4298972503445160211">ডেনিশ কীবোর্ড</translation>
 <translation id="4299729908419173967">ব্রাজিলীয়</translation>
 <translation id="4309915981827077375">সাধারণ তথ্য</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">স্বতঃ-ফিক্স</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4886021172213954916">তামিল কীবোর্ড (টাইপরাইটার)</translation>
-<translation id="4892969127351273348"><ph name="APP_NAME" /> দিয়ে খোলা যায়নি</translation>
 <translation id="4905417359854579806"><ph name="FILE_COUNT" />টির ব্যাকআপ নিতে প্রস্তুত</translation>
 <translation id="4924638091161556692">স্থির</translation>
 <translation id="4935975195727477204">গাজানিয়া ফুল</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">সুইস ফরাসি</translation>
 <translation id="5234764350956374838">খারিজ</translation>
 <translation id="5241298539944515331">ভিয়েতনামি কীবোর্ড (VIQR)</translation>
-<translation id="52446585071384036"><ph name="APP_NAME" />-এর সাহায্যে ফাইল খুলতে, আগে Linux ফাইলের ফোল্ডারে কপি করুন।</translation>
 <translation id="5253070652067921974">তৈরি করেছেন</translation>
 <translation id="5257456363153333584">ফড়িং</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />যে কোনো জায়গা থেকে এমনকি অফলাইনে থাকাকালীনও, ফাইলগুলি অ্যাক্সেস করুন।<ph name="MARKUP_2" />
@@ -424,7 +421,6 @@
 <translation id="5818003990515275822">কোরীয়</translation>
 <translation id="5819442873484330149">হাঙ্গুল ৩ সেট (সর্বশেষ)</translation>
 <translation id="5833610766403489739">এই ফাইলটির আসার পথ কোথাও বন্ধ করা আছে৷ অনুগ্রহ করে আপনার ডাউনলোড অবস্থানের সেটিংস পরীক্ষা করে আবার চেষ্টা করুন৷</translation>
-<translation id="5838051104334203064">Play স্টোর অ্যাপ্লিকেশন এই ডিভাইস অ্যাক্সেস করতে পারছে না</translation>
 <translation id="5838451609423551646">সব বেছে নেওয়া এন্ট্রি সরিয়ে দেওয়া হয়েছে।</translation>
 <translation id="5838825566232597749">মার্কিন ওয়ার্কম্যান আন্তর্জাতিক</translation>
 <translation id="5850516540536751549">এই ফাইল প্রকারটি সমর্থিত নয়৷ এই ধরণের ফাইল খুলতে পারে এমন অ্যাপ খুঁজতে অনুগ্রহ করে <ph name="BEGIN_LINK" />Chrome ওয়েব স্টোর<ph name="END_LINK" /> দেখুন৷
@@ -640,6 +636,7 @@
 <translation id="8223479393428528563">অফলাইনে ব্যবহারের জন্য এই ফাইলগুলি সেভ করতে অনলাইনে ফিরে আসুন, ফাইলগুলিতে ডান-ক্লিক করুন এবং <ph name="OFFLINE_CHECKBOX_NAME" /> বিকল্পটি নির্বাচন করুন৷</translation>
 <translation id="8249296373107784235">বাতিল</translation>
 <translation id="8261506727792406068">মুছুন</translation>
+<translation id="8269755669432358899">ফাইল ফিডব্যাক প্যানেল আড়াল করুন</translation>
 <translation id="8279388322240498158">সোরানি কুর্দিশ ইংরাজি-নির্ভর কীবোর্ড</translation>
 <translation id="8280151743281770066">আর্মেনিয় ফোনেটিক</translation>
 <translation id="8294431847097064396">উৎস</translation>
@@ -670,6 +667,7 @@
 <translation id="8569764466147087991">খুলতে একটি স্ক্রিপ্ট বেছে নিন</translation>
 <translation id="8579285237314169903"><ph name="NUMBER_OF_FILES" />টি আইটেম সিঙ্ক করা হচ্ছে...</translation>
 <translation id="8600173386174225982">থাম্বনেল ভিউতে ফাইলের তালিকা পরিবর্তিত হয়েছে।</translation>
+<translation id="8601932370724196034">Crostini ছবির ফাইল</translation>
 <translation id="8669949407341943408">সরানো  হচ্ছে...</translation>
 <translation id="8671210955687109937">মন্তব্য করতে পারবেন</translation>
 <translation id="8686213429977032554">এই ড্রাইভ ফাইল এখনো শেয়ার করা হয়নি</translation>

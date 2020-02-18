@@ -100,13 +100,15 @@ class BASE_EXPORT TaskTracker {
   bool WillPostTask(Task* task, TaskShutdownBehavior shutdown_behavior);
 
   // Informs this TaskTracker that |task| that is about to be pushed to a task
-  // source with |priority|.
-  void WillPostTaskNow(const Task& task, TaskPriority priority);
+  // source with |priority|. Returns true if this operation is allowed (the
+  // operation should be performed if-and-only-if it is).
+  bool WillPostTaskNow(const Task& task,
+                       TaskPriority priority) WARN_UNUSED_RESULT;
 
   // Informs this TaskTracker that |task_source| is about to be queued. Returns
   // a RegisteredTaskSource that should be queued if-and-only-if it evaluates to
   // true.
-  RegisteredTaskSource WillQueueTaskSource(
+  RegisteredTaskSource RegisterTaskSource(
       scoped_refptr<TaskSource> task_source);
 
   // Returns true if a task with |priority| can run under to the current policy.
@@ -118,8 +120,7 @@ class BASE_EXPORT TaskTracker {
   // (which indicates that it should be reenqueued). WillPostTask() must have
   // allowed the task in front of |task_source| to be posted before this is
   // called.
-  RegisteredTaskSource RunAndPopNextTask(
-      RunIntentWithRegisteredTaskSource task_source);
+  RegisteredTaskSource RunAndPopNextTask(RegisteredTaskSource task_source);
 
   // Returns true once shutdown has started (StartShutdown() was called).
   // Note: sequential consistency with the thread calling StartShutdown() isn't
@@ -166,16 +167,14 @@ class BASE_EXPORT TaskTracker {
   bool HasIncompleteTaskSourcesForTesting() const;
 
  protected:
-  // Runs and deletes |task| if |can_run_task| is true. Otherwise, just deletes
-  // |task|. |task| is always deleted in the environment where it runs or would
-  // have run. |task_source| is the task source from which |task| was extracted.
+  // Runs and deletes |task|. |task| is deleted in the environment where it
+  // runs. |task_source| is the task source from which |task| was extracted.
   // |traits| are the traits of |task_source|. An override is expected to call
   // its parent's implementation but is free to perform extra work before and
   // after doing so.
-  virtual void RunOrSkipTask(Task task,
-                             TaskSource* task_source,
-                             const TaskTraits& traits,
-                             bool can_run_task);
+  virtual void RunTask(Task task,
+                       TaskSource* task_source,
+                       const TaskTraits& traits);
 
  private:
   friend class RegisteredTaskSource;
@@ -186,16 +185,16 @@ class BASE_EXPORT TaskTracker {
   // Called before WillPostTask() informs the tracing system that a task has
   // been posted. Updates |num_items_blocking_shutdown_| if necessary and
   // returns true if the current shutdown state allows the task to be posted.
-  bool BeforeQueueTaskSource(TaskShutdownBehavior effective_shutdown_behavior);
+  bool BeforeQueueTaskSource(TaskShutdownBehavior shutdown_behavior);
 
   // Called before a task with |effective_shutdown_behavior| is run by
   // RunTask(). Updates |num_items_blocking_shutdown_| if necessary and returns
   // true if the current shutdown state allows the task to be run.
-  bool BeforeRunTask(TaskShutdownBehavior effective_shutdown_behavior);
+  bool BeforeRunTask(TaskShutdownBehavior shutdown_behavior);
 
   // Called after a task with |effective_shutdown_behavior| has been run by
   // RunTask(). Updates |num_items_blocking_shutdown_| if necessary.
-  void AfterRunTask(TaskShutdownBehavior effective_shutdown_behavior);
+  void AfterRunTask(TaskShutdownBehavior shutdown_behavior);
 
   // Informs this TaskTracker that |task_source| won't be reenqueued and returns
   // the underlying TaskSource. This is called before destroying a valid
@@ -285,9 +284,10 @@ class BASE_EXPORT TaskTracker {
   // blocking tasks. Intentionally leaked.
   // TODO(scheduler-dev): Consider using STATIC_HISTOGRAM_POINTER_GROUP for
   // these.
-  static constexpr auto kNumTaskPriorities =
+  using TaskPriorityType = std::underlying_type<TaskPriority>::type;
+  static constexpr TaskPriorityType kNumTaskPriorities =
       static_cast<TaskPriorityType>(TaskPriority::HIGHEST) + 1;
-  static constexpr TaskPriorityType kNumBlockingModes = 2;
+  static constexpr uint8_t kNumBlockingModes = 2;
   HistogramBase* const task_latency_histograms_[kNumTaskPriorities]
                                                [kNumBlockingModes];
   HistogramBase* const heartbeat_latency_histograms_[kNumTaskPriorities]

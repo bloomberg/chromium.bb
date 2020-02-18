@@ -1,23 +1,28 @@
-# liblouis: Chinese mandarin braille code (Grade 1)
+# liblouis: Chinese Common Braille.
 #
-#-display-name: Mainland Chinese braille with tone
+#-index-name: Mandarin, mainland China, with tones
+#-display-name: Chinese braille with tones
 #
 #+locale:cmn-CN
 #+type:literary
 #+system:cmn-traditional
 #
-# Version 1.2 2018-08-21
+# Version 2018-09-10
+# Optimize the display of Braille.
+# Correct the punctuation of some mistakes.
+#
+# Version 2018-08-21
 # Add some punctuations.
 # Minor error correction.
 #
-# Version 1.1 2018-08-06
+# Version 2018-08-06
 # When Chinese characters are mixed with English letters,
 # if there is no space symbol between them, a braille symbol is inserted to separate them.
 # Add some abnormally pronouncing phrases.
 # Add electronic Braille symbols.
 # Correct the punctuation of some mistakes.
 #
-# Version 1.0 2018-07-28
+# Version 2018-07-28
 # The first version of the manual proofreading
 #
 # Copyright (C) 2018 Sunian Loomee <ghito@qq.com>
@@ -41,7 +46,8 @@
 #
 # Introduction
 #
-# This is the current Chinese Braille, commonly known as the old Braille.
+# This is Chinese Common Braille Scheme.
+# It is called Mainland_Chinese_Braille in Wikipedia.
 # A Chinese character is composed of three Braille symbols, consonants, vowels and tones.
 # It contains 20902 Chinese characters, about 3000 phrases of simplified characters and about 2000 phrases of traditional characters.
 #
@@ -56,6 +62,7 @@
 # The Chinese national standard (GB/T 15720-2008)
 # Brief introduction <http://www.std.gov.cn/gb/search/gbDetailed?id=5DDA8BA054B018DEE05397BE0A0A95A7>
 # Online reading <http://c.gb688.cn/bzgk/gb/showGb?type=online&hcno=484E4150A1F62E81B0553422E6A8A292>
+# File download <http://www.moe.gov.cn/s78/A19/yxs_left/moe_810/s230/201807/W020180725666187054299.pdf>
 # Corresponding to Wikipedia
 # <https://en.wikipedia.org/wiki/Mainland_Chinese_Braille>
 #
@@ -2457,7 +2464,7 @@ sign \x9519 14-135-23
 sign \x92BC 14-135-23
 sign \x932F 14-135-23
 sign \x5491 145-35-1
-sign \x57AF 145-35
+sign \x57AF 1345-35-3
 sign \x8037 145-35-1
 sign \x54D2 145-35-1
 sign \x7563 145-35-2
@@ -2755,7 +2762,7 @@ sign \x9340 145-26-2
 sign \x7684 145-26
 sign \x63FC 12-3456-23
 sign \x6265 145-356-23
-sign \x627D 145-356
+sign \x627D 145-356-23
 sign \x706F 145-3456-1
 sign \x767B 145-3456-1
 sign \x8C4B 145-3456-1
@@ -3062,7 +3069,7 @@ sign \x758A 145-15-2
 sign \x6C0E 145-15-2
 sign \x54CB 134-24-23
 sign \x4E01 145-16-1
-sign \x4E87 134-35
+sign \x4E87 1245-26-23
 sign \x4EC3 145-16-1
 sign \x53EE 145-16-1
 sign \x5E04 145-16-1
@@ -6951,7 +6958,7 @@ sign \x9D9B 1245-15-1
 sign \x5B51 1245-15-2
 sign \x536A 1245-15-2
 sign \x5C10 1245-15-2
-sign \x516F 125-1236
+sign \x516F 1245-15-2
 sign \x8282 1245-15-2
 sign \x8BA6 1245-15-2
 sign \x5226 1245-15-2
@@ -7360,7 +7367,7 @@ sign \x9E6B 1245-1256-23
 sign \x5336 1245-1256-23
 sign \x9BE6 1245-1256-23
 sign \x9E94 1245-1256-23
-sign \x6B0D 1245-1256
+sign \x6B0D 1245-1256-23
 sign \x9F68 1245-1256-23
 sign \x9DF2 1245-1256-23
 sign \x5727 1246-1
@@ -8062,7 +8069,7 @@ sign \x80EF 13-123456-23
 sign \x8DE8 13-123456-23
 sign \x9ABB 13-123456-23
 sign \x84AF 13-13456-3
-sign \x64D3 13-13456
+sign \x64D3 13-13456-3
 sign \x5DDC 13-13456-23
 sign \x5726 13-2456-23
 sign \x51F7 13-13456-23
@@ -8337,7 +8344,7 @@ sign \x9574 123-35-23
 sign \x9BFB 123-35-23
 sign \x881F 123-35-23
 sign \x945E 123-35-23
-sign \x97A1 123-35
+sign \x97A1 123-35-1
 sign \x6765 123-246-2
 sign \x4F86 123-246-2
 sign \x4FEB 123-246-2
@@ -13138,7 +13145,7 @@ sign \x5F0E 234-1236-1
 sign \x53C1 234-1236-1
 sign \x6BF6 234-1236-1
 sign \x6BF5 234-1236-1
-sign \x5381 234-1236
+sign \x5381 234-1236-1
 sign \x7299 234-1236-1
 sign \x6BFF 234-1236-1
 sign \x9B16 234-1236-1
@@ -19252,7 +19259,7 @@ sign \x5D3D 1356-246-3
 sign \x8F09 1356-246-23
 sign \x6257 1356-246-23
 sign \x518D 1356-246-23
-sign \x5728 1356-246-23
+sign \x5728 1356-246
 sign \x6D05 1356-246-23
 sign \x50A4 1356-246-23
 sign \x9168 1356-246-23
@@ -20558,7 +20565,7 @@ sign \x68F3 34-135-1
 sign \x69D5 34-135-1
 sign \x8743 145-24-23
 sign \x7A5B 34-135-1
-sign \x942F 34-135
+sign \x942F 34-135-1
 sign \x7A71 34-135-1
 sign \x883F 34-135-2
 sign \x5734 34-135-2
@@ -20992,28 +20999,32 @@ sign \x973B 124-3456-1
 sign \x9D91 16-1
 #
 # Chinese phrases of abnormal pronunciations.
- always \x80BA\x4FDE 124-2346-23-156-136-1
- always \x53A5\x9634\x4FDE 126-1-156-136-1
- always \x5FC3\x4FDE 125-126-1-156-136-1
- always \x7763\x4FDE 145-136-1-156-136-1
- always \x8188\x4FDE 1245-26-2-156-136-1
- always \x809D\x4FDE 1245-1236-1-156-136-1
- always \x80C6\x4FDE 145-1236-3-156-136-1
- always \x813E\x4FDE 1234-24-3-156-136-1
- always \x80C3\x4FDE 2456-23-156-136-1
- always \x7126\x4FDE 1245-345-1-156-136-1
- always \x80BE\x4FDE 156-356-23-156-136-1
- always \x80A0\x4FDE 12345-236-2-156-136-1
- always \x6D77\x4FDE 125-246-3-156-136-1
- always \x5143\x4FDE 12346-2-156-136-1
- always \x73AF\x4FDE 125-12456-2-156-136-1
- always \x80F1\x4FDE 1245-2356-1-156-136-1
- always \x8182\x4FDE 123-346-3-156-136-1
- always \x4FDE\x7A74 156-136-1-125-23456-2
- always \x8170\x4FDE 345-1-156-136-1
- always \x4E0B\x4FDE 125-1246-23-156-136-1
- always \x4FDE\x52DF 156-136-1-134-136-23
- always \x6781\x4FDE 1245-24-2-156-136-1
+always \x68B5\x5504 124-1236-23-12-246-23
+always \x5504\x5531 12-246-23-12345-236-23
+always \x68B5\x5457 124-1236-23-12-246-23
+always \x5457\x5531 12-246-23-12345-236-23
+always \x80BA\x4FDE 124-2346-23-156-136-1
+always \x53A5\x9634\x4FDE 126-1-156-136-1
+always \x5FC3\x4FDE 125-126-1-156-136-1
+always \x7763\x4FDE 145-136-1-156-136-1
+always \x8188\x4FDE 1245-26-2-156-136-1
+always \x809D\x4FDE 1245-1236-1-156-136-1
+always \x80C6\x4FDE 145-1236-3-156-136-1
+always \x813E\x4FDE 1234-24-3-156-136-1
+always \x80C3\x4FDE 2456-23-156-136-1
+always \x7126\x4FDE 1245-345-1-156-136-1
+always \x80BE\x4FDE 156-356-23-156-136-1
+always \x80A0\x4FDE 12345-236-2-156-136-1
+always \x6D77\x4FDE 125-246-3-156-136-1
+always \x5143\x4FDE 12346-2-156-136-1
+always \x73AF\x4FDE 125-12456-2-156-136-1
+always \x80F1\x4FDE 1245-2356-1-156-136-1
+always \x8182\x4FDE 123-346-3-156-136-1
+always \x4FDE\x7A74 156-136-1-125-23456-2
+always \x8170\x4FDE 345-1-156-136-1
+always \x4E0B\x4FDE 125-1246-23-156-136-1
+always \x4FDE\x52DF 156-136-1-134-136-23
+always \x6781\x4FDE 1245-24-2-156-136-1
 always \x963F\x8C00 26-1-346-2
 always \x963F\x80F6 26-1-1245-345-1
 always \x963F\x5F25 26-1-134-24-2
@@ -22591,6 +22602,10 @@ always \x5462\x5583 1345-24-2-1345-1236-2
 always \x62D8\x6CE5 1245-346-1-1345-24-23
 always \x4FBF\x6EBA 12-146-23-1345-345-23
 always \x6492\x5C3F 234-35-1-1345-345-23
+always \x51F1\x6492 13-246-3-234-35-1
+always \x51EF\x6492 13-246-3-234-35-1
+always \x6492\x5207 234-35-1-13-15-23
+always \x6492\x54C8 234-35-1-125-35-1
 always \x5C3F\x812C 234-2456-1-1234-235-1
 always \x5C3F\x6CE1 234-2456-1-1234-235-1
 always \x5B81\x53EF 1345-16-23-13-26-3
@@ -26134,47 +26149,47 @@ digit \xFF19 24
 digit \xFF10 245
 #
 # Serial number
-sign \x2488 3456-1-0
-sign \x2489 3456-12-0
-sign \x248A 3456-14-0
-sign \x248B 3456-145-0
-sign \x248C 3456-15-0
-sign \x248D 3456-124-0
-sign \x248E 3456-1245-0
-sign \x248F 3456-125-0
-sign \x2490 3456-24-0
-sign \x2491 3456-1-245-0
-sign \x2492 3456-1-1-0
-sign \x2493 3456-1-12-0
-sign \x2494 3456-1-14-0
-sign \x2495 3456-1-145-0
-sign \x2496 3456-1-15-0
-sign \x2497 3456-1-124-0
-sign \x2498 3456-1-1245-0
-sign \x2499 3456-1-125-0
-sign \x249A 3456-1-24-0
-sign \x249B 3456-12-245-0
+sign \x2488 3456-1-3
+sign \x2489 3456-12-3
+sign \x248A 3456-14-3
+sign \x248B 3456-145-3
+sign \x248C 3456-15-3
+sign \x248D 3456-124-3
+sign \x248E 3456-1245-3
+sign \x248F 3456-125-3
+sign \x2490 3456-24-3
+sign \x2491 3456-1-245-3
+sign \x2492 3456-1-1-3
+sign \x2493 3456-1-12-3
+sign \x2494 3456-1-14-3
+sign \x2495 3456-1-145-3
+sign \x2496 3456-1-15-3
+sign \x2497 3456-1-124-3
+sign \x2498 3456-1-1245-3
+sign \x2499 3456-1-125-3
+sign \x249A 3456-1-24-3
+sign \x249B 3456-12-245-3
 #
-sign \x2474 3456-1-3
-sign \x2475 3456-12-3
-sign \x2476 3456-14-3
-sign \x2477 3456-145-3
-sign \x2478 3456-15-3
-sign \x2479 3456-124-3
-sign \x247A 3456-1245-3
-sign \x247B 3456-125-3
-sign \x247C 3456-24-3
-sign \x247D 3456-1-245-3
-sign \x247E 3456-1-1-3
-sign \x247F 3456-1-12-3
-sign \x2480 3456-1-14-3
-sign \x2481 3456-1-145-3
-sign \x2482 3456-1-15-3
-sign \x2483 3456-1-124-3
-sign \x2484 3456-1-1245-3
-sign \x2485 3456-1-125-3
-sign \x2486 3456-1-24-3
-sign \x2487 3456-12-245-3
+sign \x2474 3456-1-0
+sign \x2475 3456-12-0
+sign \x2476 3456-14-0
+sign \x2477 3456-145-0
+sign \x2478 3456-15-0
+sign \x2479 3456-124-0
+sign \x247A 3456-1245-0
+sign \x247B 3456-125-0
+sign \x247C 3456-24-0
+sign \x247D 3456-1-245-0
+sign \x247E 3456-1-1-0
+sign \x247F 3456-1-12-0
+sign \x2480 3456-1-14-0
+sign \x2481 3456-1-145-0
+sign \x2482 3456-1-15-0
+sign \x2483 3456-1-124-0
+sign \x2484 3456-1-1245-0
+sign \x2485 3456-1-125-0
+sign \x2486 3456-1-24-0
+sign \x2487 3456-12-245-0
 #
 sign \x2460 3456-2-0
 sign \x2461 3456-23-0
@@ -26187,18 +26202,29 @@ sign \x2467 3456-236-0
 sign \x2468 3456-35-0
 sign \x2469 3456-2-356-0
 #
-sign \x2160 6-24-0
-sign \x2161 6-24-24-0
-sign \x2162 6-24-24-24-0
-sign \x2163 6-24-1236-0
-sign \x2164 6-1236-0
-sign \x2165 6-1236-24-0
-sign \x2166 6-1236-24-24-0
-sign \x2167 6-1236-24-24-24-0
-sign \x2168 6-24-1346-0
-sign \x2169 6-1346-0
-sign \x216A 6-1346-24-0
-sign \x216B 6-1346-24-24-0
+sign \x2160 6-24-256
+sign \x2161 6-24-24-256
+sign \x2162 6-24-24-24-256
+sign \x2163 6-24-1236-256
+sign \x2164 6-1236-256
+sign \x2165 6-1236-24-256
+sign \x2166 6-1236-24-24-256
+sign \x2167 6-1236-24-24-24-256
+sign \x2168 6-24-1346-256
+sign \x2169 6-1346-256
+sign \x216A 6-1346-24-256
+sign \x216B 6-1346-24-24-256
+#
+sign \x2170 56-24-256
+sign \x2171 56-24-24-256
+sign \x2172 56-24-24-24-256
+sign \x2173 56-24-1236-256
+sign \x2174 56-1236-256
+sign \x2175 56-1236-24-256
+sign \x2176 56-1236-24-24-256
+sign \x2177 56-1236-24-24-24-256
+sign \x2178 56-24-1346-256
+sign \x2179 56-1346-256
 #
 # The letters of full-width characters
 lowercase \xFF41 1
@@ -26256,98 +26282,229 @@ uppercase \xFF39 13456
 uppercase \xFF3A 1356
 #
 # Punctuation and symbol
-space \x3000 0
-punctuation \xFF0C 5-0
-punctuation \x3002 5-23
-punctuation \xFF1F 5-3
-punctuation \x3001 4-0
-punctuation \xFF1A 36-0
-punctuation \x201C 45
-punctuation \x201D 45-0
-punctuation \x300A 5-36
-punctuation \x300B 36-2
-punctuation \xFF01 56-2
-punctuation \x2026 5-5-5-0
-always \x2026\x2026 5-5-5-0
-punctuation \x0022 45-0
-punctuation \x2014 6-36
-always \x2014\x2014 6-36-3
-punctuation \xFF1B 56-0
-punctuation \xFF08 56-3
-punctuation \xFF09 6-23
-punctuation \x3010 56-23
-punctuation \x3011 56-23
+punctuation \x3005 5-6-2
+punctuation \x2502 6-3
+punctuation \x2500 6-36-3
+math \x2103 45-245-56-14
+math \x2109 45-245-56-124
+math \x2125 56-135-1356
+math \x2126 46-2456
+punctuation \x2016 46-456-1256
 punctuation \x2018 45-45
 punctuation \x2019 45-45-0
-punctuation \x00B7 6-2
-punctuation \xFF06 36
-punctuation \x2502 5-2
-punctuation \xFF05 3456-245-356
-punctuation \x0025 3456-245-356
-punctuation \x300E 45
-punctuation \x300F 45-0
-punctuation \x3014 56-23
-punctuation \x3015 56-23
+punctuation \x201C 45
+punctuation \x201D 45-0
+punctuation \x2025 5-5-0
+punctuation \x2026 5-5-5-0
+math \x2030 3456-245-356-356
+math \x00B9 56-35-3456-1
+punctuation \x2035 4
+punctuation \xFE30 36-0
+punctuation \xFE31 6-36
+punctuation \xFE33 6-36-3
+punctuation \xFE34 5-6-2
+punctuation \xFE35 56-3
+punctuation \xFE36 6-23
+punctuation \xFE37 56-36
+punctuation \xFE38 36-23
+punctuation \xFE39 56-23
+punctuation \xFE3A 56-23
+punctuation \xFE3B 56-23
+punctuation \xFE3C 56-23
+punctuation \xFE3D 5-36
+punctuation \xFE3E 36-2
+math \xFE3F 5-246
+math \xFE40 5-135
+punctuation \xFE41 45-45
+punctuation \xFE42 45-45-0
+punctuation \xFE43 45
+punctuation \xFE44 45-0
+punctuation \xFE4F 5-6-2
+punctuation \x3001 4-0
+punctuation \x3002 5-23
+digit \x3007 245
+punctuation \x3008 5-3
+punctuation \x3009 6-2
+punctuation \x300A 5-36
+punctuation \x300B 36-2
 punctuation \x300C 45-45
 punctuation \x300D 45-45-0
-punctuation \xFE6A 3456-245-356
-punctuation \x0028 56-3
-punctuation \x0029 6-23
-punctuation \x005B 56-23
-punctuation \x005D 56-23
-punctuation \x007B 56-36
-punctuation \x007D 36-23
-punctuation \x002C 5-0
-punctuation \x002E 5-23
-punctuation \x003F 5-3
-punctuation \x0021 56-2
-punctuation \xFF0E 6-2
-punctuation \xFF40 4
-punctuation \xFF5E 6-2-3
-punctuation \xFF3C 5-16
-punctuation \xFF5C 56-34
-punctuation \xFF0F 5-34
-punctuation \xFF20 4-1
-punctuation \xFF5B 56-36
-punctuation \xFF5D 36-23
-math \xFF0D 36
-punctuation \xFF3F 46-36
-repeated \xFF3F\xFF3F 46-36-36
-math \xFF1D 5-2356
+punctuation \x300E 45
+punctuation \x300F 45-0
+punctuation \x3010 56-23
+punctuation \x3011 56-23
+punctuation \x3014 56-23
+punctuation \x3015 56-23
+punctuation \x3016 56-23
+punctuation \x3017 56-23
+punctuation \x301D 45
+punctuation \x301E 45-0
+punctuation \x3030 5-36-2
+math \xFF04 4-256
+math \xFF05 3456-245-356
+math \xFE6A 3456-245-356
+punctuation \xFF06 36
+punctuation \xFF07 3
+punctuation \xFF02 5
+punctuation \xFF08 56-3
+punctuation \xFF09 6-23
+math \xFF0A 35-35
 math \xFF0B 5-235
-punctuation \xFF04 4-256
-punctuation \xFFE5 4-13456
-punctuation \xFF03 26-26
-punctuation \xFF0A 35-35
+punctuation \xFF0C 5-0
+math \xFF0D 5-36
+punctuation \xFF0E 46-256
+punctuation \xFF0F 456-34
+punctuation \xFF1A 36-0
+punctuation \xFF1B 56-0
+math \xFF1C 5-246
+math \xFF1D 5-2356
+math \xFF1E 5-135
+punctuation \xFF1F 5-3
+punctuation \xFF20 4-1
+punctuation \xFF3B 56-23
+punctuation \xFF3C 456-16
+punctuation \xFF3D 56-23
 punctuation \xFF3E 4-2-3
+punctuation \xFF3F 46-36
+punctuation \xFF40 46-16
+math \xFFE5 4-13456
+math \xFFE1 4-1234
+math \xFFE0 4-146
+punctuation \xFF5B 56-36
+punctuation \xFF5C 456-1256
+punctuation \xFF5D 36-23
+punctuation \xFF5E 5-6-2
+punctuation \xFF03 26-26
+punctuation ( 56-3
+punctuation ) 6-23
+punctuation [ 56-23
+punctuation ] 56-23
+punctuation { 56-36
+punctuation } 36-23
 punctuation * 35-35
-repeated @@@ 4-1-4-1-4-1
-repeated ** 35-35-35-35-0
 punctuation # 26-26
-repeated ## 26-26-26-26-0
-always .. 6-6-0
-repeated ... 6-6-6-0
-repeated \s\s\s\s 0-0-0-0
-repeated --- 36-36-36
-prepunc " 45
-postpunc " 45-0
-midnum . 3
+punctuation % 3456-245-356
+punctuation \xFF01 56-2
+prepunc \xFF02 45
+postpunc \xFF02 45-0
+prepunc \xFF07 45-45
+postpunc \xFF07 45-45-0
 endnum \x53EA 34-1
 endnum \x884C 125-236-2
 #
 # special character sequences
 noback context $uUdDm[]$S @0
-noback context $S[]$u @56
+noback context $SdDm[]$u @56
 noback context $S[]$m @0
+noback context _1$S["\x7684"]$S @145-0
+noback context _1$S["\x662F"]$S @156-0
+noback context _1$S["\x4ED6"]$S @2345-35-0
+noback context _1$S["\x7740"]$S @34-26-0
+noback context _1$S["\x4E86"]$S @123-26-0
+noback context _1$S["\x5728"]$S @1356-246-0
+noback context _1$S["\x8457"]$S @34-26-0
+noback context _1$S["\x5011"]$S @134-356-0
+noback context _1$S["\x4EEC"]$S @134-356-0
+noback context _1!$S["\x8457"]!$S @34-136-23
 class w \xE234\xE235\xE236\xE237\xE238\xE239\xE23A\xE23B\xE23C\xE23D\xE23E\xE23F\xE240\xE241\xE242\xE243\xE244\xE245\xE246\xE247\xE248\xE249\xE24A\xE24B\xE24C\xE24D\xE24E\xE24F\xE250\xE251\xE252\xE253\xE254\xE255\xE256\xE257\xE258\xE259\xE25A\xE25B\xE25C\xE25D\xE25E\xE25F\xE260\xE261\xE262\xE263\xE264\xE265\xE266\xE267\xE268\xE269\xE26A\xE26B\xE26C\xE26D\xE26E\xE26F\xE270\xE271\xE272\xE273
 noback correct $w[$s] ?
+# Stop
 #
-include en-ueb-g1.ctb
+# Quoted the en-ueb-g1.ctb
+include en-ueb-chardefs.uti
+include en-ueb-math.ctb
+space \x3000 0
+#
+repeated \s\s\s\s 0-0-0-0
+repeated __ 46-36-36
+repeated -- 36-36
+repeated ... 6-6-6-0
+repeated ## 26-26-26-26-0
+repeated ** 35-35-35-35-0
+repeated @@ 4-1-4-1-0
+repeated \x2026 6-6-6-0
+repeated \x2014 6-36
+prepunc \x2032 45-45
+postpunc \x2032 45-45-0
+prepunc \x2033 45
+postpunc \x2033 45-0
+midnum \s 5
+midnum " 0-3456
+midnum / 34
+midnum . 3
+midnum , 2
 joinnum \x20AC 4-15
 joinnum \x0024 4-256
 joinnum \x00A3 4-1234
 joinnum \x00A5 4-13456
 joinnum \xFFE5 4-13456
 joinnum \xFF04 4-256
+joinnum \xFFE1 4-1234
+joinnum \xFFE0 4-146
+#
+endword 's 3-234
+endword s' 234-3
+endword 't 3-2345
+endword 're 3-1235-15
+endword 've 3-1236-15
+endword 'm 3-134
+endword 'd 3-145
+endword 'll 3-123-123
+#
+capsletter 6
+begcapsword 6-6
+endcapsword 6-3
+#
+emphclass italic
+emphclass underline
+emphclass bold
+emphclass script
+emphclass transnote
+emphclass trans1
+emphclass trans2
+emphclass trans3
+emphclass trans4
+emphclass trans5
+#
+emphletter italic 46-23
+begemph italic 46-2
+endemph italic 46-3
+#
+emphletter bold 45-23
+begemph bold 45-2
+endemph bold 45-3
+#
+emphletter underline 6-46
+begemph underline 46-46
+endemph underline 46-0
+#
+emphletter script 4-23
+begemph script 4-2
+endemph script 4-3
+#
+begemph transnote 6-46-2
+endemph transnote 6-46-3
+#
+emphletter trans1 4-46-23
+begemph trans1 4-46-2
+endemph trans1 4-46-3
+#
+emphletter trans2 45-46-23
+begemph trans2 45-46-2
+endemph trans2 45-46-3
+#
+emphletter trans3 456-46-23
+begemph trans3 456-46-2
+endemph trans3 456-46-3
+#
+emphletter trans4 5-46-23
+begemph trans4 5-46-2
+endemph trans4 5-46-3
+#
+emphletter trans5 46-46-23
+begemph trans5 46-46-2
+endemph trans5 46-46-3
+#
+include braille-patterns.cti
 undefined 0
-# Stop
+#

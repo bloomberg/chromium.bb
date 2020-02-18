@@ -955,7 +955,7 @@ class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
     assert self.archive_path.startswith(self._build_root)
     logs_dir = os.path.join('/tmp', 'clang-tidy-logs', self._current_board)
     timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d')
-    clang_tidy_tarball = "%s.%s.%s" % (self._current_board, timestamp,
+    clang_tidy_tarball = '%s.%s.%s' % (self._current_board, timestamp,
                                        self.CLANG_TIDY_TAR)
     in_chroot_path = path_util.ToChrootPath(self.archive_path)
     out_chroot_path = os.path.abspath(
@@ -1015,7 +1015,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     first_line = version_string.splitlines()[0].strip()
     match = sha_re.search(first_line)
     if not match:
-      raise ValueError('Can\'t recognize the version string %r' % first_line)
+      raise ValueError("Can't recognize the version string %r" % first_line)
     return match.group(1)
 
   def _CollectLLVMMetadata(self):
@@ -1029,7 +1029,7 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
         ['equery', '-C', '-N', 'uses', 'sys-devel/llvm'])
     use_vars = self._ParseUseFlagState(llvm_uses)
     if '+llvm_pgo_generate' not in use_vars:
-      raise ValueError('The pgo_generate flag isn\'t enabled; USE flags: %r' %
+      raise ValueError("The pgo_generate flag isn't enabled; USE flags: %r" %
                        sorted(use_vars))
 
     clang_version_str = check_chroot_output(['clang', '--version'])
@@ -1094,64 +1094,3 @@ class CollectPGOProfilesStage(generic_stages.BoardSpecificBuilderStage,
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._CollectPGOProfiles()
       self._CollectLLVMMetadata()
-
-
-# This stage generates and uploads the orderfile files for Chrome build.
-class GenerateOrderfileStage(generic_stages.BoardSpecificBuilderStage,
-                             generic_stages.ArchivingStageMixin):
-  """Generate and upload the orderfile for the board."""
-
-  category = constants.CI_INFRA_STAGE
-
-  GS_URL = 'gs://chromeos-prebuilt/afdo-job/orderfiles/unvetted'
-
-  def __init__(self, *args, **kwargs):
-    super(GenerateOrderfileStage, self).__init__(*args, **kwargs)
-    self._upload_queue = multiprocessing.Queue()
-
-  def _UploadOrderfile(self, tar_path, tar_names):
-    """Upload orderfile tarballs to the gs bucket and build bucket."""
-    gs_context = gs.GSContext()
-    debug = self._run.options.debug_forced
-    for tar_name in tar_names:
-      tar_file = os.path.join(tar_path, tar_name)
-      if not os.path.exists(tar_file):
-        raise Exception('%s does not exist for uploading', tar_file)
-
-      if debug:
-        logging.info('Debug run: not uploading tarball.')
-        logging.info('If this were not a debug run, would upload %s to %s.',
-                     tar_file, self.GS_URL)
-        continue
-
-      try:
-        if gs_context.Exists(self.GS_URL + '/' + tar_name):
-          logging.info('%s already exists at %s, skip uploading', tar_name,
-                       self.GS_URL)
-        else:
-          logging.info('Uploading tarball %s to %s', tar_file, self.GS_URL)
-          gs_context.CopyInto(tar_file, self.GS_URL, acl='public-read')
-      except:
-        logging.error('Error: Unable to upload tarball %s to %s', tar_file,
-                      self.GS_URL)
-        raise
-
-    # Upload to build bucket too
-    for n in tar_names:
-      self._upload_queue.put([n])
-
-  def _GenerateOrderfile(self):
-    """Generate and upload orderfile artifacts for the board."""
-    assert self.archive_path.startswith(self._build_root)
-    output_path = os.path.abspath(
-        os.path.join(self._build_root, 'chroot', self.archive_path))
-
-    tarballs = commands.GenerateChromeOrderfileArtifacts(self._build_root,
-                                                         self._current_board,
-                                                         output_path)
-    tarball_names = [os.path.basename(f) for f in tarballs]
-    self._UploadOrderfile(output_path, tarball_names)
-
-  def PerformStage(self):
-    with self.ArtifactUploader(self._upload_queue, archive=False):
-      self._GenerateOrderfile()

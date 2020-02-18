@@ -41,6 +41,8 @@
 #include <unordered_set>
 #include <vector>
 
+#undef Yield // b/127920555
+
 namespace vk
 {
 	class PipelineLayout;
@@ -576,7 +578,7 @@ namespace sw
 
 			// Walks all reachable the blocks starting from id adding them to
 			// reachable.
-			void TraverseReachableBlocks(Block::ID id, Block::Set& reachable);
+			void TraverseReachableBlocks(Block::ID id, Block::Set& reachable) const;
 
 			// AssignBlockFields() performs the following for all reachable blocks:
 			// * Assigns Block::ins with the identifiers of all blocks that contain
@@ -721,6 +723,32 @@ namespace sw
 			return modes;
 		}
 
+		struct Capabilities
+		{
+			bool Matrix : 1;
+			bool Shader : 1;
+			bool InputAttachment : 1;
+			bool Sampled1D : 1;
+			bool Image1D : 1;
+			bool SampledBuffer : 1;
+			bool ImageBuffer : 1;
+			bool ImageQuery : 1;
+			bool DerivativeControl : 1;
+			bool GroupNonUniform : 1;
+			bool MultiView : 1;
+			bool DeviceGroup : 1;
+			bool GroupNonUniformVote : 1;
+			bool GroupNonUniformBallot : 1;
+			bool GroupNonUniformShuffle : 1;
+			bool GroupNonUniformShuffleRelative : 1;
+			bool StorageImageExtendedFormats : 1;
+		};
+
+		Capabilities const &getUsedCapabilities() const
+		{
+			return capabilities;
+		}
+
 		enum AttribType : unsigned char
 		{
 			ATTRIBTYPE_FLOAT,
@@ -861,7 +889,7 @@ namespace sw
 		std::vector<InterfaceComponent> outputs;
 
 		void emitProlog(SpirvRoutine *routine) const;
-		void emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, const vk::DescriptorSet::Bindings &descriptorSets) const;
+		void emit(SpirvRoutine *routine, RValue<SIMD::Int> const &activeLaneMask, RValue<SIMD::Int> const &storesAndAtomicsMask, const vk::DescriptorSet::Bindings &descriptorSets) const;
 		void emitEpilog(SpirvRoutine *routine) const;
 
 		using BuiltInHash = std::hash<std::underlying_type<spv::BuiltIn>::type>;
@@ -871,7 +899,8 @@ namespace sw
 
 	private:
 		const uint32_t codeSerialID;
-		Modes modes;
+		Modes modes = {};
+		Capabilities capabilities = {};
 		HandleMap<Type> types;
 		HandleMap<Object> defs;
 		HandleMap<Function> functions;
@@ -938,6 +967,9 @@ namespace sw
 		//
 		static bool IsStorageInterleavedByLane(spv::StorageClass storageClass);
 		static bool IsExplicitLayout(spv::StorageClass storageClass);
+	
+		// Output storage buffers and images should not be affected by helper invocations
+		static bool StoresInHelperInvocation(spv::StorageClass storageClass);
 
 		template<typename F>
 		int VisitInterfaceInner(Type::ID id, Decorations d, F f) const;
@@ -962,12 +994,14 @@ namespace sw
 			EmitState(SpirvRoutine *routine,
 					Function::ID function,
 					RValue<SIMD::Int> activeLaneMask,
+					RValue<SIMD::Int> storesAndAtomicsMask,
 					const vk::DescriptorSet::Bindings &descriptorSets,
 					bool robustBufferAccess,
 					spv::ExecutionModel executionModel)
 				: routine(routine),
 				  function(function),
 				  activeLaneMaskValue(activeLaneMask.value),
+				  storesAndAtomicsMaskValue(storesAndAtomicsMask.value),
 				  descriptorSets(descriptorSets),
 				  robustBufferAccess(robustBufferAccess),
 				  executionModel(executionModel)
@@ -979,6 +1013,12 @@ namespace sw
 			{
 				ASSERT(activeLaneMaskValue != nullptr);
 				return RValue<SIMD::Int>(activeLaneMaskValue);
+			}
+
+			RValue<SIMD::Int> storesAndAtomicsMask() const
+			{
+				ASSERT(storesAndAtomicsMaskValue != nullptr);
+				return RValue<SIMD::Int>(storesAndAtomicsMaskValue);
 			}
 
 			void setActiveLaneMask(RValue<SIMD::Int> mask)
@@ -1001,6 +1041,7 @@ namespace sw
 			Function::ID function; // The current function being built.
 			Block::ID block; // The current block being built.
 			rr::Value *activeLaneMaskValue = nullptr; // The current active lane mask.
+			rr::Value *storesAndAtomicsMaskValue = nullptr; // The current atomics mask.
 			Block::Set visited; // Blocks already built.
 			std::unordered_map<Block::Edge, RValue<SIMD::Int>, Block::Edge::Hash> edgeActiveLaneMasks;
 			std::deque<Block::ID> *pending;
@@ -1072,17 +1113,27 @@ namespace sw
 					return intermediate->Float(i);
 				}
 				auto constantValue = reinterpret_cast<float *>(obj.constantValue.get());
-				return RValue<SIMD::Float>(constantValue[i]);
+				return SIMD::Float(constantValue[i]);
 			}
 
 			RValue<SIMD::Int> Int(uint32_t i) const
 			{
-				return As<SIMD::Int>(Float(i));
+				if (intermediate != nullptr)
+				{
+					return intermediate->Int(i);
+				}
+				auto constantValue = reinterpret_cast<int *>(obj.constantValue.get());
+				return SIMD::Int(constantValue[i]);
 			}
 
 			RValue<SIMD::UInt> UInt(uint32_t i) const
 			{
-				return As<SIMD::UInt>(Float(i));
+				if (intermediate != nullptr)
+				{
+					return intermediate->UInt(i);
+				}
+				auto constantValue = reinterpret_cast<uint32_t *>(obj.constantValue.get());
+				return SIMD::UInt(constantValue[i]);
 			}
 
 			SpirvShader::Type::ID const type;
@@ -1232,13 +1283,12 @@ namespace sw
 		std::pair<SIMD::Float, SIMD::Int> Frexp(RValue<SIMD::Float> val) const;
 
 		static ImageSampler *getImageSampler(uint32_t instruction, vk::SampledImageDescriptor const *imageDescriptor, const vk::Sampler *sampler);
-		static rr::Routine *emitSamplerRoutine(ImageInstruction instruction, const Sampler &samplerState);
+		static std::shared_ptr<rr::Routine> emitSamplerRoutine(ImageInstruction instruction, const Sampler &samplerState);
 
 		// TODO(b/129523279): Eliminate conversion and use vk::Sampler members directly.
-		static sw::TextureType convertTextureType(VkImageViewType imageViewType);
 		static sw::FilterType convertFilterMode(const vk::Sampler *sampler);
 		static sw::MipmapType convertMipmapMode(const vk::Sampler *sampler);
-		static sw::AddressingMode convertAddressingMode(int coordinateIndex, VkSamplerAddressMode addressMode, VkImageViewType imageViewType);
+		static sw::AddressingMode convertAddressingMode(int coordinateIndex, const vk::Sampler *sampler, VkImageViewType imageViewType);
 
 		// Returns 0 when invalid.
 		static VkShaderStageFlagBits executionModelToStage(spv::ExecutionModel model);
@@ -1251,10 +1301,17 @@ namespace sw
 
 		using Variable = Array<SIMD::Float>;
 
+		struct SamplerCache
+		{
+			Pointer<Byte> imageDescriptor = nullptr;
+			Pointer<Byte> sampler;
+			Pointer<Byte> function;
+		};
+
 		vk::PipelineLayout const * const pipelineLayout;
 
 		std::unordered_map<SpirvShader::Object::ID, Variable> variables;
-
+		std::unordered_map<SpirvShader::Object::ID, SamplerCache> samplerCache;
 		Variable inputs = Variable{MAX_INTERFACE_COMPONENTS};
 		Variable outputs = Variable{MAX_INTERFACE_COMPONENTS};
 
@@ -1265,6 +1322,7 @@ namespace sw
 		Pointer<Byte> constants;
 		Int killMask = Int{0};
 		SIMD::Int windowSpacePosition[2];
+		Int viewID;	// slice offset into input attachments for multiview, even if the shader doesn't use ViewIndex
 
 		void createVariable(SpirvShader::Object::ID id, uint32_t size)
 		{
@@ -1277,6 +1335,25 @@ namespace sw
 			auto it = variables.find(id);
 			ASSERT_MSG(it != variables.end(), "Unknown variables %d", id.value());
 			return it->second;
+		}
+
+		// setImmutableInputBuiltins() sets all the immutable input builtins,
+		// common for all shader types.
+		void setImmutableInputBuiltins(SpirvShader const *shader);
+
+		// setInputBuiltin() calls f() with the builtin and value if the shader
+		// uses the input builtin, otherwise the call is a no-op.
+		// F is a function with the signature:
+		// void(const SpirvShader::BuiltinMapping& builtin, Array<SIMD::Float>& value)
+		template <typename F>
+		inline void setInputBuiltin(SpirvShader const *shader, spv::BuiltIn id, F&& f)
+		{
+			auto it = shader->inputBuiltins.find(id);
+			if (it != shader->inputBuiltins.end())
+			{
+				const auto& builtin = it->second;
+				f(builtin, getVariable(builtin.Id));
+			}
 		}
 
 	private:

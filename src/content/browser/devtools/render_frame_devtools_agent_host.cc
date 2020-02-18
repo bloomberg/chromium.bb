@@ -4,6 +4,8 @@
 
 #include "content/browser/devtools/render_frame_devtools_agent_host.h"
 
+#include <set>
+#include <string>
 #include <tuple>
 #include <utility>
 
@@ -57,13 +59,13 @@
 #include "content/public/browser/render_widget_host_iterator.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
-#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/mojom/devtools/devtools_agent.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/browser/renderer_host/compositor_impl_android.h"
 #include "content/public/browser/render_widget_host_view.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #else
 #include "content/browser/devtools/protocol/webauthn_handler.h"
@@ -133,23 +135,24 @@ scoped_refptr<DevToolsAgentHost> RenderFrameDevToolsAgentHost::GetOrCreateFor(
   frame_tree_node = GetFrameTreeNodeAncestor(frame_tree_node);
   RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_tree_node);
   if (!result)
-    result = new RenderFrameDevToolsAgentHost(frame_tree_node);
+    result = new RenderFrameDevToolsAgentHost(
+        frame_tree_node, frame_tree_node->current_frame_host());
   return result;
 }
 
 // static
 scoped_refptr<DevToolsAgentHost>
-RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
-    FrameTreeNode* frame_tree_node) {
+RenderFrameDevToolsAgentHost::CreateForCrossProcessNavigation(
+    NavigationHandleImpl* handle) {
   // Note that this method does not use FrameTreeNode::current_frame_host(),
   // since it is used while the frame host may not be set as current yet,
-  // for example right before commit time.
-  // So the caller must be sure that passed frame will indeed be a correct
-  // devtools target (see ShouldCreateDevToolsForNode above).
-  RenderFrameDevToolsAgentHost* result = FindAgentHost(frame_tree_node);
-  if (!result)
-    result = new RenderFrameDevToolsAgentHost(frame_tree_node);
-  return result;
+  // for example right before commit time. Instead target frame from the
+  // navigation handle is used. When this method is invoked it's already known
+  // that the navigation will commit to the new frame host.
+  FrameTreeNode* frame_tree_node = handle->frame_tree_node();
+  DCHECK(!FindAgentHost(frame_tree_node));
+  return new RenderFrameDevToolsAgentHost(frame_tree_node,
+                                          handle->GetRenderFrameHost());
 }
 
 // static
@@ -222,17 +225,6 @@ void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
     else if (process_host == new_rph)
       new_process_origins.insert(frame_host->GetLastCommittedOrigin());
   }
-  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    if (old_rph && old_process_origins.empty()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->RevokeReadRawCookies(
-          old_rph->GetID());
-    }
-    if (new_rph && !new_process_origins.empty()) {
-      ChildProcessSecurityPolicyImpl::GetInstance()->GrantReadRawCookies(
-          new_rph->GetID());
-    }
-    return;
-  }
   if (old_rph) {
     GetNetworkService()->SetRawHeadersAccess(
         old_rph->GetID(), std::vector<url::Origin>(old_process_origins.begin(),
@@ -246,11 +238,12 @@ void RenderFrameDevToolsAgentHost::UpdateRawHeadersAccess(
 }
 
 RenderFrameDevToolsAgentHost::RenderFrameDevToolsAgentHost(
-    FrameTreeNode* frame_tree_node)
+    FrameTreeNode* frame_tree_node,
+    RenderFrameHostImpl* frame_host)
     : DevToolsAgentHostImpl(frame_tree_node->devtools_frame_token().ToString()),
       frame_tree_node_(nullptr) {
   SetFrameTreeNode(frame_tree_node);
-  frame_host_ = frame_tree_node->current_frame_host();
+  frame_host_ = frame_host;
   render_frame_alive_ = frame_host_ && frame_host_->IsRenderFrameLive();
   AddRef();  // Balanced in DestroyOnRenderFrameGone.
   NotifyCreated();
@@ -404,8 +397,9 @@ void RenderFrameDevToolsAgentHost::ReadyToCommitNavigation(
   if (handle->frame_tree_node() != frame_tree_node_) {
     if (ShouldForceCreation() && handle->GetRenderFrameHost() &&
         handle->GetRenderFrameHost()->IsCrossProcessSubframe()) {
-      RenderFrameDevToolsAgentHost::GetOrCreateForDangling(
-          handle->frame_tree_node());
+      // An agent may have been created earlier if auto attach is on.
+      if (!FindAgentHost(handle->frame_tree_node()))
+        CreateForCrossProcessNavigation(handle);
     }
     return;
   }
@@ -496,10 +490,11 @@ void RenderFrameDevToolsAgentHost::DidStartNavigation(
 void RenderFrameDevToolsAgentHost::RenderFrameHostChanged(
     RenderFrameHost* old_host,
     RenderFrameHost* new_host) {
-  if (old_host != frame_host_)
+  auto* new_host_impl = static_cast<RenderFrameHostImpl*>(new_host);
+  FrameTreeNode* frame_tree_node = new_host_impl->frame_tree_node();
+  if (frame_tree_node != frame_tree_node_)
     return;
-
-  UpdateFrameHost(nullptr);
+  UpdateFrameHost(new_host_impl);
   // UpdateFrameHost may destruct |this|.
 }
 
@@ -536,14 +531,15 @@ void RenderFrameDevToolsAgentHost::DestroyOnRenderFrameGone() {
 device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
   // Here is a lazy binding, and will not reconnect after connection error.
   if (!wake_lock_) {
-    device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+    mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+        wake_lock_.BindNewPipeAndPassReceiver();
     device::mojom::WakeLockContext* wake_lock_context =
         web_contents()->GetWakeLockContext();
     if (wake_lock_context) {
       wake_lock_context->GetWakeLock(
           device::mojom::WakeLockType::kPreventDisplaySleep,
           device::mojom::WakeLockReason::kOther, "DevTools",
-          std::move(request));
+          std::move(receiver));
     }
   }
   return wake_lock_.get();
@@ -552,7 +548,7 @@ device::mojom::WakeLock* RenderFrameDevToolsAgentHost::GetWakeLock() {
 
 void RenderFrameDevToolsAgentHost::RenderProcessGone(
     base::TerminationStatus status) {
-  switch(status) {
+  switch (status) {
     case base::TERMINATION_STATUS_ABNORMAL_TERMINATION:
     case base::TERMINATION_STATUS_PROCESS_WAS_KILLED:
 #if defined(OS_CHROMEOS)
@@ -741,7 +737,7 @@ void RenderFrameDevToolsAgentHost::SignalSynchronousSwapCompositorFrame(
       static_cast<RenderFrameHostImpl*>(frame_host)->frame_tree_node()));
   if (dtah) {
     // Unblock the compositor.
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(
             &RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame,
@@ -766,18 +762,21 @@ void RenderFrameDevToolsAgentHost::SynchronousSwapCompositorFrame(
 }
 
 void RenderFrameDevToolsAgentHost::UpdateRendererChannel(bool force) {
-  blink::mojom::DevToolsAgentAssociatedPtr agent_ptr;
-  blink::mojom::DevToolsAgentHostAssociatedRequest host_request;
+  mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgent> agent_remote;
+  mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgentHost>
+      host_receiver;
   if (frame_host_ && render_frame_alive_ && force) {
-    blink::mojom::DevToolsAgentHostAssociatedPtrInfo host_ptr_info;
-    host_request = mojo::MakeRequest(&host_ptr_info);
-    frame_host_->BindDevToolsAgent(std::move(host_ptr_info),
-                                   mojo::MakeRequest(&agent_ptr));
+    mojo::PendingAssociatedRemote<blink::mojom::DevToolsAgentHost> host_remote;
+    host_receiver = host_remote.InitWithNewEndpointAndPassReceiver();
+    frame_host_->BindDevToolsAgent(
+        std::move(host_remote),
+        agent_remote.InitWithNewEndpointAndPassReceiver());
   }
   int process_id = frame_host_ ? frame_host_->GetProcess()->GetID()
                                : ChildProcessHost::kInvalidUniqueID;
-  GetRendererChannel()->SetRendererAssociated(
-      std::move(agent_ptr), std::move(host_request), process_id, frame_host_);
+  GetRendererChannel()->SetRendererAssociated(std::move(agent_remote),
+                                              std::move(host_receiver),
+                                              process_id, frame_host_);
 }
 
 bool RenderFrameDevToolsAgentHost::IsChildFrame() {

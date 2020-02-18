@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/features.gni")
 import("//testing/test.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//third_party/webrtc/webrtc.gni")
 
 # Public common API headers, mojom and libraries that can be linked and
 # referenced both by browser-side and renderer-side components.
@@ -20,6 +22,11 @@ component("common") {
   deps = [
     "//third_party/blink/common",
   ]
+}
+
+buildflag_header("buildflags") {
+  header = "buildflags.h"
+  flags = [ "RTC_USE_H264=$rtc_use_h264" ]
 }
 
 source_set("headers") {
@@ -38,7 +45,7 @@ source_set("headers") {
     "associated_interfaces/associated_interface_registry.h",
     "blob/blob_utils.h",
     "bluetooth/web_bluetooth_device_id.h",
-    "bluetooth/web_bluetooth_device_id_struct_traits.h",
+    "bluetooth/web_bluetooth_device_id_mojom_traits.h",
     "cache_storage/cache_storage_utils.h",
     "client_hints/client_hints.h",
     "common_export.h",
@@ -52,6 +59,7 @@ source_set("headers") {
     "features.h",
     "fetch/fetch_api_request_headers_map.h",
     "fetch/fetch_api_request_headers_mojom_traits.h",
+    "forcedark/forcedark_switches.h",
     "frame/blocked_navigation_types.h",
     "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
@@ -70,6 +78,7 @@ source_set("headers") {
     "loader/request_destination.h",
     "loader/url_loader_factory_bundle.h",
     "loader/url_loader_factory_bundle_mojom_traits.h",
+    "loader/url_loader_throttle.h",
     "logging/logging_utils.h",
     "manifest/manifest.h",
     "manifest/manifest_icon_selector.h",
@@ -82,15 +91,17 @@ source_set("headers") {
     "mediastream/media_stream_mojom_traits.h",
     "mediastream/media_stream_request.h",
     "messaging/cloneable_message.h",
-    "messaging/cloneable_message_struct_traits.h",
+    "messaging/cloneable_message_mojom_traits.h",
     "messaging/message_port_channel.h",
+    "messaging/message_port_descriptor.h",
+    "messaging/message_port_descriptor_mojom_traits.h",
     "messaging/string_message_codec.h",
     "messaging/transferable_message.h",
-    "messaging/transferable_message_struct_traits.h",
+    "messaging/transferable_message_mojom_traits.h",
     "mime_util/mime_util.h",
     "notifications/notification_constants.h",
+    "notifications/notification_mojom_traits.h",
     "notifications/notification_resources.h",
-    "notifications/notification_struct_traits.h",
     "notifications/platform_notification_data.h",
     "oom_intervention/oom_intervention_types.h",
     "origin_policy/origin_policy.h",
@@ -107,6 +118,7 @@ source_set("headers") {
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.h",
     "service_worker/service_worker_utils.h",
+    "sms/sms_receiver_outcome.h",
     "user_agent/user_agent_metadata.h",
     "web_package/http_structured_header.h",
     "web_package/signed_exchange_consts.h",
@@ -121,6 +133,7 @@ source_set("headers") {
   ]
 
   deps = [
+    ":buildflags",
     "//base",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -135,7 +148,7 @@ source_set("headers") {
       "//media/capture:capture_base",
       "//media/capture:capture_lib",
     ]
-    public_deps += [ "//media/mojo/interfaces:interfaces" ]
+    public_deps += [ "//media/mojo/mojom" ]
   }
 
   if (is_android || is_win) {

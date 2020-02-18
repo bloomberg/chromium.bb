@@ -17,11 +17,11 @@
 syntax = "proto2";
 option optimize_for = LITE_RUNTIME;
 
-import "perfetto/trace/track_event/debug_annotation.proto";
-import "perfetto/trace/track_event/log_message.proto";
-import "perfetto/trace/track_event/track_event.proto";
-import "perfetto/trace/track_event/source_location.proto";
-import "perfetto/trace/profiling/profile_common.proto";
+import "protos/perfetto/trace/track_event/debug_annotation.proto";
+import "protos/perfetto/trace/track_event/log_message.proto";
+import "protos/perfetto/trace/track_event/track_event.proto";
+import "protos/perfetto/trace/track_event/source_location.proto";
+import "protos/perfetto/trace/profiling/profile_common.proto";
 
 package perfetto.protos;
 
@@ -39,7 +39,7 @@ package perfetto.protos;
 // Because of the incremental build-up, the interning index will miss data when
 // TracePackets are lost, e.g. because a chunk was overridden in the central
 // ring buffer. To avoid invalidation of the whole trace in such a case, the
-// index is periodically reset (see |incremental_state_cleared| in TracePacket).
+// index is periodically reset (see SEQ_INCREMENTAL_STATE_CLEARED).
 // When packet loss occurs, the reader will only lose interning data up to the
 // next reset.
 // -----------------------------------------------------------------------------
@@ -52,7 +52,7 @@ package perfetto.protos;
 // emitted proactively in advance of referring to them in later packets.
 //
 // Next reserved id: 8 (up to 15).
-// Next id: 21.
+// Next id: 22.
 message InternedData {
   // Each field's message type needs to specify an |iid| field, which is the ID
   // of the entry in the field's interning index. Each field constructs its own
@@ -62,7 +62,7 @@ message InternedData {
   // within the same tracing session, even after a reset of the emitted
   // interning state.
   repeated EventCategory event_categories = 1;
-  repeated LegacyEventName legacy_event_names = 2;
+  repeated EventName event_names = 2;
   repeated DebugAnnotationName debug_annotation_names = 3;
   repeated SourceLocation source_locations = 4;
   repeated LogMessageBody log_message_body = 20;
@@ -73,8 +73,12 @@ message InternedData {
   repeated InternedString build_ids = 16;
   // Paths to executable files.
   repeated InternedString mapping_paths = 17;
+  // Paths to source files.
+  repeated InternedString source_paths = 18;
   // Names of functions used in frames below.
   repeated InternedString function_names = 5;
+  // Symbols that were added to this trace after the fact.
+  repeated ProfiledFrameSymbols profiled_frame_symbols = 21;
 
   // Executable files mapped into processes.
   repeated Mapping mappings = 19;

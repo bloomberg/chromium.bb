@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# Copyright 2019 The Chromium OS Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 WD=$(pwd)
 cd "$(dirname "$(realpath "${0}")")"
 
@@ -13,7 +17,7 @@ if [ ! -e ${INTPUT} ]; then
 fi;
 
 echo "" > ${OUTPUT}
-echo "Running " ${ENDPOINT}
+echo "Running ${ENDPOINT}"
 ../../../bin/build_api "${ENDPOINT}" --input-json "${INPUT}" --output-json "${OUTPUT}"
 RESULT=$?
 

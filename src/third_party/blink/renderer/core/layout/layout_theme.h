@@ -23,6 +23,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_LAYOUT_THEME_H_
 
+#include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/scroll/scroll_types.h"
@@ -32,12 +33,10 @@
 #include "third_party/blink/renderer/platform/geometry/length_box.h"
 #include "third_party/blink/renderer/platform/geometry/length_size.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
-#include "third_party/blink/renderer/platform/graphics/color_scheme.h"
 #include "third_party/blink/renderer/platform/theme_types.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -111,7 +110,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   // Whether or not the control has been styled enough by the author to disable
   // the native appearance.
-  virtual bool IsControlStyled(const ComputedStyle&) const;
+  virtual bool IsControlStyled(ControlPart part, const ComputedStyle&) const;
 
   // Some controls may spill out of their containers (e.g., the check on an OSX
   // 10.9 checkbox). Add this "visual overflow" to the object's border box rect.
@@ -142,10 +141,10 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color InactiveSelectionBackgroundColor() const;
   Color ActiveSelectionForegroundColor() const;
   Color InactiveSelectionForegroundColor() const;
-  virtual void SetSelectionColors(unsigned active_background_color,
-                                  unsigned active_foreground_color,
-                                  unsigned inactive_background_color,
-                                  unsigned inactive_foreground_color) {}
+  virtual void SetSelectionColors(Color active_background_color,
+                                  Color active_foreground_color,
+                                  Color inactive_background_color,
+                                  Color inactive_foreground_color) {}
 
   // List box selection colors
   Color ActiveListBoxSelectionBackgroundColor() const;
@@ -159,8 +158,12 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   Color PlatformActiveSpellingMarkerHighlightColor() const;
 
   // Highlight and text colors for TextMatches.
-  Color PlatformTextSearchHighlightColor(bool active_match) const;
-  Color PlatformTextSearchColor(bool active_match) const;
+  Color PlatformTextSearchHighlightColor(bool active_match,
+                                         bool in_forced_colors_mode,
+                                         WebColorScheme color_scheme) const;
+  Color PlatformTextSearchColor(bool active_match,
+                                bool in_forced_colors_mode,
+                                WebColorScheme color_scheme) const;
 
   virtual bool IsFocusRingOutset() const;
   Color FocusRingColor() const;
@@ -170,7 +173,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
 
   // Root element text color. It can be different from the initial color in
   // other color schemes than the light theme.
-  Color RootElementColor(ColorScheme) const;
+  Color RootElementColor(WebColorScheme) const;
 
   virtual Color PlatformTapHighlightColor() const {
     return LayoutTheme::kDefaultTapHighlightColor;
@@ -190,7 +193,7 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
                           float& font_size,
                           AtomicString& font_family) const = 0;
   void SystemFont(CSSValueID system_font_id, FontDescription&);
-  virtual Color SystemColor(CSSValueID) const;
+  virtual Color SystemColor(CSSValueID, WebColorScheme color_scheme) const;
 
   // Whether the default system font should have its average character width
   // adjusted to match MS Shell Dlg.
@@ -352,6 +355,12 @@ class CORE_EXPORT LayoutTheme : public RefCounted<LayoutTheme> {
   // This function is to be implemented in your platform-specific theme
   // implementation to hand back the appropriate platform theme.
   static LayoutTheme& NativeTheme();
+
+  ControlPart AdjustAppearanceWithAuthorStyle(ControlPart part,
+                                              const ComputedStyle& style);
+
+  ControlPart AdjustAppearanceWithElementType(const ComputedStyle& style,
+                                              const Element* element);
 
   Color custom_focus_ring_color_;
   bool has_custom_focus_ring_color_;

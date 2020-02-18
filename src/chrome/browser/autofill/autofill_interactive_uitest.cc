@@ -28,12 +28,12 @@
 #include "build/build_config.h"
 #include "chrome/browser/autofill/autofill_uitest.h"
 #include "chrome/browser/autofill/autofill_uitest_util.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_service.h"
+#include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/autofill/chrome_autofill_client.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -57,9 +57,8 @@
 #include "components/translate/core/browser/translate_manager.h"
 #include "components/translate/core/common/translate_switches.h"
 #include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -1105,9 +1104,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, AutofillViaClick) {
   ASSERT_NO_FATAL_FAILURE(FocusFirstNameField());
 
   // Now click it.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
@@ -1158,9 +1157,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, Click) {
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
   // This click should activate the autofill popup.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 
   // Press the down arrow to select the suggestion and preview the autofilled
   // form.
@@ -1195,9 +1194,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, DontAutofillForOutsideClick) {
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("disabled-button"));
   ASSERT_NO_FATAL_FAILURE(MakeSurePopupDoesntAppear());
 
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown});
   ASSERT_NO_FATAL_FAILURE(ClickFirstNameField());
-  test_delegate()->Wait({ObservedUiEvents::kSuggestionShown});
+  EXPECT_TRUE(test_delegate()->Wait());
 }
 
 // Test that a field is still autofillable after the previously autofilled
@@ -1912,16 +1911,15 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
       "利";
 
   // Set up an observer to be able to wait for the bubble to be shown.
-  content::Source<content::WebContents> source(GetWebContents());
-  content::WindowedNotificationObserver language_detected_signal(
-      chrome::NOTIFICATION_TAB_LANGUAGE_DETERMINED, source);
+  translate::TranslateWaiter language_waiter(
+      GetWebContents(),
+      translate::TranslateWaiter::WaitEvent::kLanguageDetermined);
 
   SetTestUrlResponse(kForm);
   ASSERT_NO_FATAL_FAILURE(
       ui_test_utils::NavigateToURL(browser(), GetTestUrl()));
 
-  // Wait for the translate bubble to appear.
-  language_detected_signal.Wait();
+  language_waiter.Wait();
 
   // Verify current translate step.
   const TranslateBubbleModel* model =
@@ -1933,16 +1931,14 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, MAYBE_AutofillAfterTranslate) {
   translate::test_utils::PressTranslate(browser());
 
   // Wait for translation.
-  content::WindowedNotificationObserver translation_observer(
-      chrome::NOTIFICATION_PAGE_TRANSLATED,
-      content::NotificationService::AllSources());
+  translate::TranslateWaiter translate_waiter(
+      GetWebContents(), translate::TranslateWaiter::WaitEvent::kPageTranslated);
 
   // Simulate the translate script being retrieved.
   // Pass fake google.translate lib as the translate script.
   SimulateURLFetch();
 
-  // Simulate the render notifying the translation has been done.
-  translation_observer.Wait();
+  translate_waiter.Wait();
 
   TryBasicFormFill();
 }
@@ -2042,11 +2038,11 @@ IN_PROC_BROWSER_TEST_P(AutofillCompanyInteractiveTest,
   FocusFieldByName("company");
 
   // Now click it.
-  test_delegate()->Reset();
+  test_delegate()->SetExpectations({ObservedUiEvents::kSuggestionShown},
+                                   base::TimeDelta::FromSeconds(3));
   ASSERT_NO_FATAL_FAILURE(ClickElementWithId("company"));
 
-  bool found = test_delegate()->Wait({ObservedUiEvents::kSuggestionShown},
-                                     base::TimeDelta::FromSeconds(3));
+  bool found = test_delegate()->Wait();
 
   if (!company_name_enabled_) {
     EXPECT_FALSE(found);

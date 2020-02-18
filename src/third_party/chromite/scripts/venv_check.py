@@ -7,15 +7,17 @@
 
 from __future__ import print_function
 
-from chromite.lib import commandline
-
 import sys
 import pprint
+
+from chromite.lib import commandline
+
 
 def GetParser():
   """Creates the argparse parser."""
   parser = commandline.ArgumentParser(description=__doc__)
   return parser
+
 
 def main(argv):
   parser = GetParser()

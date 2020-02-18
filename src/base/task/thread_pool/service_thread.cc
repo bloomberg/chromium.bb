@@ -12,8 +12,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool/task_tracker.h"
-#include "base/task/thread_pool/thread_pool.h"
-#include "base/task/thread_pool/thread_pool_clock.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 
 namespace base {
 namespace internal {
@@ -104,8 +103,8 @@ void ServiceThread::PerformHeartbeatLatencyReport() const {
       FROM_HERE, profiled_traits,
       BindOnce(
           &TaskTracker::RecordHeartbeatLatencyAndTasksRunWhileQueuingHistograms,
-          Unretained(task_tracker_), task_priority, may_block,
-          ThreadPoolClock::Now(), task_tracker_->GetNumTasksRun()));
+          Unretained(task_tracker_), task_priority, may_block, TimeTicks::Now(),
+          task_tracker_->GetNumTasksRun()));
 }
 
 }  // namespace internal

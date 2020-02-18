@@ -19,7 +19,7 @@
 #include "base/values.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace policy {
@@ -217,7 +217,7 @@ class DeviceCommandStartCRDSessionJobTest : public testing::Test {
 
   base::TimeTicks test_start_time_;
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::RunLoop run_loop_;
 
  private:
@@ -239,7 +239,8 @@ void DeviceCommandStartCRDSessionJobTest::InitializeJob(
   EXPECT_TRUE(job->Init(
       base::TimeTicks::Now(),
       GenerateCommandProto(unique_id, base::TimeTicks::Now() - issued_time,
-                           idleness_cutoff, terminate_upon_input)));
+                           idleness_cutoff, terminate_upon_input),
+      nullptr));
 
   EXPECT_EQ(unique_id, job->unique_id());
   EXPECT_EQ(RemoteCommandJob::NOT_STARTED, job->status());
@@ -305,7 +306,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, Success) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::SUCCEEDED,
@@ -328,7 +329,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, SuccessOldSessionWasRunning) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::SUCCEEDED,
@@ -351,7 +352,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureServicesAreNotReady) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::BindOnce(
           &DeviceCommandStartCRDSessionJobTest::VerifyResults,
           base::Unretained(this), base::Unretained(job.get()),
@@ -377,7 +378,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotAKiosk) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::FAILED,
@@ -402,7 +403,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, FailureNotIdle) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success = job->Run(
-      base::TimeTicks::Now(),
+      base::Time::Now(), base::TimeTicks::Now(),
       base::BindOnce(&DeviceCommandStartCRDSessionJobTest::VerifyResults,
                      base::Unretained(this), base::Unretained(job.get()),
                      RemoteCommandJob::FAILED,
@@ -425,7 +426,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestNoOauthToken) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success =
-      job->Run(base::TimeTicks::Now(),
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
                base::BindOnce(
                    &DeviceCommandStartCRDSessionJobTest::VerifyResults,
                    base::Unretained(this), base::Unretained(job.get()),
@@ -451,7 +452,7 @@ TEST_F(DeviceCommandStartCRDSessionJobTest, TestErrorRunningCRDHost) {
                 base::TimeDelta::FromSeconds(30),
                 false /* terminate_upon_input */);
   bool success =
-      job->Run(base::TimeTicks::Now(),
+      job->Run(base::Time::Now(), base::TimeTicks::Now(),
                base::BindOnce(
                    &DeviceCommandStartCRDSessionJobTest::VerifyResults,
                    base::Unretained(this), base::Unretained(job.get()),

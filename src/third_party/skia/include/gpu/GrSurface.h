@@ -18,7 +18,7 @@ class GrRenderTarget;
 class GrSurfacePriv;
 class GrTexture;
 
-class SK_API GrSurface : public GrGpuResource {
+class GrSurface : public GrGpuResource {
 public:
     /**
      * Retrieves the width of the surface.
@@ -45,7 +45,7 @@ public:
 
     virtual GrBackendFormat backendFormat() const = 0;
 
-    void setRelease(sk_sp<GrRefCntedCallback> releaseHelper) {
+    SK_API void setRelease(sk_sp<GrRefCntedCallback> releaseHelper) {
         this->onSetRelease(releaseHelper);
         fReleaseHelper = std::move(releaseHelper);
     }
@@ -54,7 +54,7 @@ public:
     // TODO: Remove Chrome's need to call this on a GrTexture
     typedef void* ReleaseCtx;
     typedef void (*ReleaseProc)(ReleaseCtx);
-    void setRelease(ReleaseProc proc, ReleaseCtx ctx) {
+    SK_API void setRelease(ReleaseProc proc, ReleaseCtx ctx) {
         sk_sp<GrRefCntedCallback> helper(new GrRefCntedCallback(proc, ctx));
         this->setRelease(std::move(helper));
     }
@@ -91,11 +91,22 @@ public:
 
 protected:
     void setGLRTFBOIDIs0() {
+        SkASSERT(!this->requiresManualMSAAResolve());
+        SkASSERT(!this->asTexture());
         SkASSERT(this->asRenderTarget());
         fSurfaceFlags |= GrInternalSurfaceFlags::kGLRTFBOIDIs0;
     }
     bool glRTFBOIDis0() const {
         return fSurfaceFlags & GrInternalSurfaceFlags::kGLRTFBOIDIs0;
+    }
+
+    void setRequiresManualMSAAResolve() {
+        SkASSERT(!this->glRTFBOIDis0());
+        SkASSERT(this->asRenderTarget());
+        fSurfaceFlags |= GrInternalSurfaceFlags::kRequiresManualMSAAResolve;
+    }
+    bool requiresManualMSAAResolve() const {
+        return fSurfaceFlags & GrInternalSurfaceFlags::kRequiresManualMSAAResolve;
     }
 
     void setReadOnly() {
@@ -111,11 +122,11 @@ protected:
     // Provides access to methods that should be public within Skia code.
     friend class GrSurfacePriv;
 
-    GrSurface(GrGpu* gpu, const GrSurfaceDesc& desc, GrProtected isProtected)
+    GrSurface(GrGpu* gpu, const SkISize& size, GrPixelConfig config, GrProtected isProtected)
             : INHERITED(gpu)
-            , fConfig(desc.fConfig)
-            , fWidth(desc.fWidth)
-            , fHeight(desc.fHeight)
+            , fConfig(config)
+            , fWidth(size.width())
+            , fHeight(size.height())
             , fSurfaceFlags(GrInternalSurfaceFlags::kNone)
             , fIsProtected(isProtected) {}
 

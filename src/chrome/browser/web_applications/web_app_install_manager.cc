@@ -29,21 +29,6 @@ WebAppInstallManager::WebAppInstallManager(Profile* profile)
 
 WebAppInstallManager::~WebAppInstallManager() = default;
 
-void WebAppInstallManager::Shutdown() {
-  is_shutting_down_ = true;
-
-  InstallManager::Shutdown();
-  {
-    TaskQueue empty;
-    task_queue_.swap(empty);
-    is_running_queued_task_ = false;
-  }
-  tasks_.clear();
-
-  web_contents_.reset();
-  web_contents_ready_ = false;
-}
-
 bool WebAppInstallManager::CanInstallWebApp(
     content::WebContents* web_contents) {
   Profile* web_contents_profile =
@@ -86,27 +71,28 @@ void WebAppInstallManager::InstallWebAppFromManifestWithFallback(
 
 void WebAppInstallManager::InstallWebAppFromInfo(
     std::unique_ptr<WebApplicationInfo> web_application_info,
-    bool no_network_install,
+    ForInstallableSite for_installable_site,
     WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());
   task->InstallWebAppFromInfo(
-      std::move(web_application_info), no_network_install, install_source,
+      std::move(web_application_info), for_installable_site, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
   tasks_.insert(std::move(task));
 }
 
-void WebAppInstallManager::InstallWebAppWithOptions(
+void WebAppInstallManager::InstallWebAppWithParams(
     content::WebContents* web_contents,
-    const ExternalInstallOptions& install_options,
+    const InstallParams& install_params,
+    WebappInstallSource install_source,
     OnceInstallCallback callback) {
   auto task = std::make_unique<WebAppInstallTask>(
       profile(), finalizer(), data_retriever_factory_.Run());
-  task->InstallWebAppWithOptions(
-      web_contents, install_options,
+  task->InstallWebAppWithParams(
+      web_contents, install_params, install_source,
       base::BindOnce(&WebAppInstallManager::OnTaskCompleted,
                      base::Unretained(this), task.get(), std::move(callback)));
 
@@ -117,15 +103,13 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     const AppId& app_id,
     std::unique_ptr<WebApplicationInfo> web_application_info,
     OnceInstallCallback callback) {
-  if (is_shutting_down_)
-    return;
-
   if (finalizer()->CanSkipAppUpdateForSync(app_id, *web_application_info)) {
-    std::move(callback).Run(app_id, InstallResultCode::kAlreadyInstalled);
+    std::move(callback).Run(app_id,
+                            InstallResultCode::kSuccessAlreadyInstalled);
     return;
   }
 
-  bool is_locally_installed = registrar()->IsInstalled(app_id);
+  bool is_locally_installed = registrar()->IsLocallyInstalled(app_id);
 #if defined(OS_CHROMEOS)
   // On Chrome OS, sync always locally installs an app.
   is_locally_installed = true;
@@ -153,13 +137,21 @@ void WebAppInstallManager::InstallOrUpdateWebAppFromSync(
     MaybeStartQueuedTask();
 }
 
-void WebAppInstallManager::InstallWebAppForTesting(
-    std::unique_ptr<WebApplicationInfo> web_application_info,
+void WebAppInstallManager::UpdateWebAppFromManifest(
+    const AppId& app_id,
+    blink::Manifest manifest,
     OnceInstallCallback callback) {
-  InstallWebAppFromInfo(std::move(web_application_info),
-                        /*no_network_install=*/false,
-                        /*install_source=*/WebappInstallSource::DEVTOOLS,
-                        std::move(callback));
+  // TODO(crbug.com/926083): Implement this.
+  std::move(callback).Run(app_id, InstallResultCode::kFailedUnknownReason);
+}
+
+void WebAppInstallManager::Shutdown() {
+  tasks_.clear();
+  {
+    TaskQueue empty;
+    task_queue_.swap(empty);
+  }
+  web_contents_.reset();
 }
 
 void WebAppInstallManager::SetUrlLoaderForTesting(
@@ -168,9 +160,6 @@ void WebAppInstallManager::SetUrlLoaderForTesting(
 }
 
 void WebAppInstallManager::MaybeStartQueuedTask() {
-  if (is_shutting_down_)
-    return;
-
   DCHECK(web_contents_ready_);
   DCHECK(!task_queue_.empty());
 
@@ -223,7 +212,6 @@ void WebAppInstallManager::CreateWebContentsIfNecessary() {
     return;
 
   DCHECK(!web_contents_ready_);
-  DCHECK(!is_shutting_down_);
 
   web_contents_ = content::WebContents::Create(
       content::WebContents::CreateParams(profile()));

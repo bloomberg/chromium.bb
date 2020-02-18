@@ -15,7 +15,7 @@ DownloadLocationDialogBridgeImpl::DownloadLocationDialogBridgeImpl()
     : is_dialog_showing_(false) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(env, Java_DownloadLocationDialogBridge_create(
-                           env, reinterpret_cast<long>(this))
+                           env, reinterpret_cast<intptr_t>(this))
                            .obj());
   DCHECK(!java_obj_.is_null());
 }
@@ -79,8 +79,6 @@ void DownloadLocationDialogBridgeImpl::OnCanceled(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   if (location_callback_) {
-    DownloadController::RecordDownloadCancelReason(
-        DownloadController::CANCEL_REASON_USER_CANCELED);
     CompleteLocationSelection(DownloadLocationDialogResult::USER_CANCELED,
                               base::FilePath());
   }

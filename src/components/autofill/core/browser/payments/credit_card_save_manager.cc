@@ -276,19 +276,6 @@ bool CreditCardSaveManager::IsCreditCardUploadEnabled() {
       personal_data_manager_->GetSyncSigninState(), client_->GetLogManager());
 }
 
-bool CreditCardSaveManager::IsUploadEnabledForNetwork(
-    const std::string& network) {
-  if (network == kEloCard &&
-      base::FeatureList::IsEnabled(features::kAutofillUpstreamDisallowElo)) {
-    return false;
-  } else if (network == kJCBCard &&
-             base::FeatureList::IsEnabled(
-                 features::kAutofillUpstreamDisallowJcb)) {
-    return false;
-  }
-  return true;
-}
-
 void CreditCardSaveManager::OnDidUploadCard(
     AutofillClient::PaymentsRpcResult result,
     const std::string& server_id) {
@@ -367,9 +354,7 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
   if (result == AutofillClient::SUCCESS) {
     // Do *not* call payments_client_->Prepare() here. We shouldn't send
     // credentials until the user has explicitly accepted a prompt to upload.
-    if (base::FeatureList::IsEnabled(
-            features::kAutofillDoNotUploadSaveUnsupportedCards) &&
-        !supported_card_bin_ranges.empty() &&
+    if (!supported_card_bin_ranges.empty() &&
         !payments::IsCreditCardNumberSupported(upload_request_.card.number(),
                                                supported_card_bin_ranges)) {
       // Attempt local card save if card not already saved.
@@ -434,8 +419,10 @@ void CreditCardSaveManager::OfferCardLocalSave() {
       observer_for_testing_->OnOfferLocalSave();
     client_->ConfirmSaveCreditCardLocally(
         local_card_save_candidate_,
-        AutofillClient::SaveCreditCardOptions().with_show_prompt(
-            show_save_prompt_.value_or(true)),
+        AutofillClient::SaveCreditCardOptions()
+            .with_show_prompt(show_save_prompt_.value_or(true))
+            .with_from_dynamic_change_form(from_dynamic_change_form_)
+            .with_has_non_focusable_field(has_non_focusable_field_),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
 

@@ -29,10 +29,7 @@ class ImageSkia;
 
 namespace ui {
 
-class KeyEvent;
-class MouseEvent;
-class TouchEvent;
-class ScrollEvent;
+class Event;
 class XScopedEventSelector;
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -86,9 +83,10 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
     std::string wm_class_name;
     std::string wm_class_class;
     std::string wm_role_name;
+    base::Optional<int> visual_id;
   };
 
-  explicit XWindow(Delegate* delegate);
+  XWindow();
   virtual ~XWindow();
 
   void Init(const Configuration& config);
@@ -107,6 +105,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   void ReleasePointerGrab();
   void StackAtTop();
   bool IsTargetedBy(const XEvent& xev) const;
+  void WmMoveResize(int hittest, const gfx::Point& location) const;
   void ProcessEvent(XEvent* xev);
 
   void SetSize(const gfx::Size& size_in_pixels);
@@ -147,7 +146,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   bool use_custom_shape() const { return custom_window_shape_; }
   bool was_minimized() const { return was_minimized_; }
   bool has_alpha() const { return visual_has_alpha_; }
-  void set_visual_id(VisualID visual_id) { visual_id_ = visual_id; }
   base::Optional<int> workspace() const { return workspace_; }
 
   XDisplay* display() const { return xdisplay_; }
@@ -187,7 +185,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   // Handle the state change since BeforeActivationStateChanged().
   void AfterActivationStateChanged();
 
-  void DelayedResize(const gfx::Size& size_in_pixels);
+  void DelayedResize(const gfx::Rect& bounds_in_pixels);
 
   // Updates |xwindow_|'s _NET_WM_USER_TIME if |xwindow_| is active.
   void UpdateWMUserTime(XEvent* event);
@@ -208,7 +206,27 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void UnconfineCursor();
 
-  Delegate* delegate_;
+  void SetVisualId(base::Optional<int> visual_id);
+
+  // Interface that must be used by a class that inherits the XWindow to receive
+  // different messages from X Server.
+  virtual void OnXWindowCreated() = 0;
+  virtual void OnXWindowStateChanged() = 0;
+  virtual void OnXWindowDamageEvent(const gfx::Rect& damage_rect) = 0;
+  virtual void OnXWindowBoundsChanged(const gfx::Rect& size) = 0;
+  virtual void OnXWindowCloseRequested() = 0;
+  virtual void OnXWindowIsActiveChanged(bool active) = 0;
+  virtual void OnXWindowMapped() = 0;
+  virtual void OnXWindowUnmapped() = 0;
+  virtual void OnXWindowWorkspaceChanged() = 0;
+  virtual void OnXWindowLostPointerGrab() = 0;
+  virtual void OnXWindowLostCapture() = 0;
+  virtual void OnXWindowEvent(ui::Event* event) = 0;
+  virtual void OnXWindowSelectionEvent(XEvent* xev) = 0;
+  virtual void OnXWindowDragDropEvent(XEvent* xev) = 0;
+  virtual void OnXWindowRawKeyEvent(XEvent* xev) = 0;
+  virtual base::Optional<gfx::Size> GetMinimumSizeForXWindow() = 0;
+  virtual base::Optional<gfx::Size> GetMaximumSizeForXWindow() = 0;
 
   // The display and the native X window hosting the root window.
   XDisplay* xdisplay_ = nullptr;
@@ -344,44 +362,6 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
   base::WeakPtrFactory<XWindow> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(XWindow);
-};
-
-// Delegate interface used to communicate the XWindow API client about events
-// of interest and request information which depends on external components.
-class COMPONENT_EXPORT(UI_BASE_X) XWindow::Delegate {
- public:
-  virtual void OnXWindowCreated() = 0;
-  virtual void OnXWindowStateChanged() = 0;
-  virtual void OnXWindowDamageEvent(const gfx::Rect& damage_rect) = 0;
-  virtual void OnXWindowSizeChanged(const gfx::Size& size) = 0;
-  virtual void OnXWindowCloseRequested() = 0;
-  virtual void OnXWindowIsActiveChanged(bool active) = 0;
-
-  // Optional Hooks
-  virtual void OnXWindowMapped();
-  virtual void OnXWindowUnmapped();
-  virtual void OnXWindowMoved(const gfx::Point& window_origin);
-  virtual void OnXWindowWorkspaceChanged();
-  virtual void OnXWindowLostPointerGrab();
-  virtual void OnXWindowLostCapture();
-
-  // TODO(crbug.com/981606): Consider unifying event handling functions
-  virtual void OnXWindowKeyEvent(ui::KeyEvent* key_event);
-  virtual void OnXWindowMouseEvent(ui::MouseEvent* event);
-  virtual void OnXWindowTouchEvent(ui::TouchEvent* event);
-  virtual void OnXWindowScrollEvent(ui::ScrollEvent* event);
-
-  virtual void OnXWindowSelectionEvent(XEvent* xev);
-  virtual void OnXWindowDragDropEvent(XEvent* xev);
-  virtual void OnXWindowChildCrossingEvent(XEvent* xev);
-
-  // TODO(crbug.com/981606): DesktopWindowTreeHostX11 forward raw |XEvent|s to
-  // ATK components that currently live in views layer.  Remove once ATK code
-  // is reworked to be reusable.
-  virtual void OnXWindowRawKeyEvent(XEvent* xev);
-
-  virtual gfx::Size GetMinimumSizeForXWindow();
-  virtual gfx::Size GetMaximumSizeForXWindow();
 };
 
 }  // namespace ui

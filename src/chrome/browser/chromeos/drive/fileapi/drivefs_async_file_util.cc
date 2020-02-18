@@ -205,9 +205,7 @@ class DeleteOperation {
 }  // namespace
 
 DriveFsAsyncFileUtil::DriveFsAsyncFileUtil(Profile* profile)
-    : AsyncFileUtilAdapter(new DriveFsFileUtil),
-      profile_(profile),
-      weak_factory_(this) {}
+    : AsyncFileUtilAdapter(new DriveFsFileUtil), profile_(profile) {}
 
 DriveFsAsyncFileUtil::~DriveFsAsyncFileUtil() = default;
 
@@ -218,7 +216,7 @@ void DriveFsAsyncFileUtil::CopyFileLocal(
     CopyOrMoveOption option,
     CopyFileProgressCallback progress_callback,
     StatusCallback callback) {
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
       base::BindOnce(
           &CopyOperation::Start,
@@ -233,13 +231,12 @@ void DriveFsAsyncFileUtil::DeleteRecursively(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     StatusCallback callback) {
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(&DeleteOperation::Start,
-                     base::Unretained(new DeleteOperation(
-                         profile_, url.path(), std::move(callback),
-                         base::SequencedTaskRunnerHandle::Get(),
-                         context->task_runner()))));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&DeleteOperation::Start,
+                                base::Unretained(new DeleteOperation(
+                                    profile_, url.path(), std::move(callback),
+                                    base::SequencedTaskRunnerHandle::Get(),
+                                    context->task_runner()))));
 }
 
 }  // namespace internal

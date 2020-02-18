@@ -27,10 +27,9 @@ DevtoolsClient::DevtoolsClient(
       runtime_domain_(this),
       network_domain_(this),
       renderer_crashed_(false),
-      next_message_id_(0),
-      weak_ptr_factory_(this) {
-  browser_main_thread_ = base::CreateSingleThreadTaskRunnerWithTraits(
-      {content::BrowserThread::UI});
+      next_message_id_(0) {
+  browser_main_thread_ =
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI});
   agent_host_->AttachClient(this);
 }
 
@@ -57,7 +56,7 @@ network::Domain* DevtoolsClient::GetNetwork() {
 void DevtoolsClient::SendMessage(
     const char* method,
     std::unique_ptr<base::Value> params,
-    base::OnceCallback<void(const base::Value&)> callback) {
+    base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback) {
   SendMessageWithParams(method, std::move(params), std::move(callback));
 }
 
@@ -133,6 +132,7 @@ bool DevtoolsClient::DispatchMessageReply(
   pending_messages_.erase(it);
   if (!callback.callback_with_result.is_null()) {
     const base::DictionaryValue* result_dict;
+    ReplyStatus status;
     if (message_dict.GetDictionary("result", &result_dict)) {
       if (browser_main_thread_) {
         browser_main_thread_->PostTask(
@@ -140,22 +140,24 @@ bool DevtoolsClient::DispatchMessageReply(
             base::BindOnce(
                 &DevtoolsClient::DispatchMessageReplyWithResultTask,
                 weak_ptr_factory_.GetWeakPtr(), std::move(owning_message),
-                std::move(callback.callback_with_result), result_dict));
+                std::move(callback.callback_with_result), status, result_dict));
       } else {
-        std::move(callback.callback_with_result).Run(*result_dict);
+        std::move(callback.callback_with_result).Run(status, *result_dict);
       }
     } else if (message_dict.GetDictionary("error", &result_dict)) {
       auto null_value = std::make_unique<base::Value>();
       DLOG(ERROR) << "Error in method call result: " << *result_dict;
+      FillReplyStatusFromErrorDict(&status, *result_dict);
       if (browser_main_thread_) {
         browser_main_thread_->PostTask(
             FROM_HERE,
-            base::BindOnce(
-                &DevtoolsClient::DispatchMessageReplyWithResultTask,
-                weak_ptr_factory_.GetWeakPtr(), std::move(null_value),
-                std::move(callback.callback_with_result), null_value.get()));
+            base::BindOnce(&DevtoolsClient::DispatchMessageReplyWithResultTask,
+                           weak_ptr_factory_.GetWeakPtr(),
+                           std::move(null_value),
+                           std::move(callback.callback_with_result), status,
+                           null_value.get()));
       } else {
-        std::move(callback.callback_with_result).Run(*null_value);
+        std::move(callback.callback_with_result).Run(status, *null_value);
       }
     } else {
       NOTREACHED() << "Reply has neither result nor error";
@@ -181,9 +183,10 @@ bool DevtoolsClient::DispatchMessageReply(
 
 void DevtoolsClient::DispatchMessageReplyWithResultTask(
     std::unique_ptr<base::Value> owning_message,
-    base::OnceCallback<void(const base::Value&)> callback,
+    base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback,
+    const ReplyStatus& reply_status,
     const base::Value* result_dict) {
-  std::move(callback).Run(*result_dict);
+  std::move(callback).Run(reply_status, *result_dict);
 }
 
 bool DevtoolsClient::DispatchEvent(std::unique_ptr<base::Value> owning_message,
@@ -228,6 +231,24 @@ void DevtoolsClient::DispatchEventTask(
   event_handler->Run(*result_dict);
 }
 
+void DevtoolsClient::FillReplyStatusFromErrorDict(
+    ReplyStatus* status,
+    const base::DictionaryValue& error_dict) {
+  const base::Value* code;
+  if (error_dict.Get("code", &code) && code->is_int()) {
+    status->error_code = code->GetInt();
+  } else {
+    status->error_code = -1;  // unknown error code
+  }
+
+  const base::Value* message;
+  if (error_dict.Get("message", &message) && message->is_string()) {
+    status->error_message = message->GetString();
+  } else {
+    status->error_message = "unknown";
+  }
+}
+
 void DevtoolsClient::AgentHostClosed(content::DevToolsAgentHost* agent_host) {
   // Agent host is not expected to be closed when this object is alive.
   renderer_crashed_ = true;
@@ -241,7 +262,7 @@ DevtoolsClient::Callback::Callback(base::OnceClosure callback)
     : callback(std::move(callback)) {}
 
 DevtoolsClient::Callback::Callback(
-    base::OnceCallback<void(const base::Value&)> callback)
+    base::OnceCallback<void(const ReplyStatus&, const base::Value&)> callback)
     : callback_with_result(std::move(callback)) {}
 
 DevtoolsClient::Callback::~Callback() = default;

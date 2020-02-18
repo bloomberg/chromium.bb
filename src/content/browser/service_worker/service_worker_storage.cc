@@ -5,12 +5,14 @@
 #include "content/browser/service_worker/service_worker_storage.h"
 
 #include <stddef.h>
+
 #include <memory>
 #include <utility>
 
 #include "base/bind_helpers.h"
 #include "base/files/file_util.h"
 #include "base/memory/ptr_util.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
@@ -65,9 +67,6 @@ const base::FilePath::CharType kDatabaseName[] =
     FILE_PATH_LITERAL("Database");
 const base::FilePath::CharType kDiskCacheName[] =
     FILE_PATH_LITERAL("ScriptCache");
-
-// Taken from AppCache's in-memory cache size.
-const int kMaxServiceWorkerStorageMemDiskCacheSize = 10 * 1024 * 1024;
 
 blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
@@ -501,21 +500,30 @@ void ServiceWorkerStorage::UpdateToActiveState(
 }
 
 void ServiceWorkerStorage::UpdateLastUpdateCheckTime(
-    ServiceWorkerRegistration* registration) {
+    ServiceWorkerRegistration* registration,
+    StatusCallback callback) {
   DCHECK(registration);
   DCHECK(state_ == STORAGE_STATE_INITIALIZED ||
          state_ == STORAGE_STATE_DISABLED)
       << state_;
-  if (IsDisabled())
+  if (IsDisabled()) {
+    RunSoon(FROM_HERE,
+            base::BindOnce(std::move(callback),
+                           blink::ServiceWorkerStatusCode::kErrorAbort));
     return;
+  }
 
-  database_task_runner_->PostTask(
-      FROM_HERE,
+  base::PostTaskAndReplyWithResult(
+      database_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ServiceWorkerDatabase::UpdateLastCheckTime,
+                     base::Unretained(database_.get()), registration->id(),
+                     registration->scope().GetOrigin(),
+                     registration->last_update_check()),
       base::BindOnce(
-          base::IgnoreResult(&ServiceWorkerDatabase::UpdateLastCheckTime),
-          base::Unretained(database_.get()), registration->id(),
-          registration->scope().GetOrigin(),
-          registration->last_update_check()));
+          [](StatusCallback callback, ServiceWorkerDatabase::Status status) {
+            std::move(callback).Run(DatabaseStatusToStatusCode(status));
+          },
+          std::move(callback)));
 }
 
 void ServiceWorkerStorage::UpdateNavigationPreloadEnabled(
@@ -1176,13 +1184,19 @@ base::FilePath ServiceWorkerStorage::GetDiskCachePath() {
       .Append(kDiskCacheName);
 }
 
-void ServiceWorkerStorage::LazyInitializeForTest(base::OnceClosure callback) {
-  if (state_ == STORAGE_STATE_UNINITIALIZED ||
-      state_ == STORAGE_STATE_INITIALIZING) {
-    LazyInitialize(std::move(callback));
+void ServiceWorkerStorage::LazyInitializeForTest() {
+  DCHECK_NE(state_, STORAGE_STATE_DISABLED);
+
+  if (state_ == STORAGE_STATE_INITIALIZED)
     return;
-  }
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(callback));
+  base::RunLoop loop;
+  LazyInitialize(loop.QuitClosure());
+  loop.Run();
+}
+
+void ServiceWorkerStorage::SetPurgingCompleteCallbackForTest(
+    base::OnceClosure callback) {
+  purging_complete_callback_for_test_ = std::move(callback);
 }
 
 void ServiceWorkerStorage::LazyInitialize(base::OnceClosure callback) {
@@ -1710,9 +1724,7 @@ ServiceWorkerDiskCache* ServiceWorkerStorage::disk_cache() {
 
   base::FilePath path = GetDiskCachePath();
   if (path.empty()) {
-    int rv = disk_cache_->InitWithMemBackend(
-        kMaxServiceWorkerStorageMemDiskCacheSize,
-        net::CompletionOnceCallback());
+    int rv = disk_cache_->InitWithMemBackend(0, net::CompletionOnceCallback());
     DCHECK_EQ(net::OK, rv);
     return disk_cache_.get();
   }
@@ -1768,8 +1780,13 @@ void ServiceWorkerStorage::StartPurgingResources(
 }
 
 void ServiceWorkerStorage::ContinuePurgingResources() {
-  if (purgeable_resource_ids_.empty() || is_purge_pending_)
+  if (is_purge_pending_)
     return;
+  if (purgeable_resource_ids_.empty()) {
+    if (purging_complete_callback_for_test_)
+      std::move(purging_complete_callback_for_test_).Run();
+    return;
+  }
 
   // Do one at a time until we're done, use RunSoon to avoid recursion when
   // DoomEntry returns immediately.
@@ -2206,8 +2223,10 @@ void ServiceWorkerStorage::DidDeleteDatabase(
   // TODO(nhiroki): What if there is a bunch of files in the cache directory?
   // Deleting the directory could take a long time and restart could be delayed.
   // We should probably rename the directory and delete it later.
-  PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
+  PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(),
+       base::TaskShutdownBehavior::BLOCK_SHUTDOWN},
       base::BindOnce(&base::DeleteFile, GetDiskCachePath(), true),
       base::BindOnce(&ServiceWorkerStorage::DidDeleteDiskCache,
                      weak_factory_.GetWeakPtr(), std::move(callback)));

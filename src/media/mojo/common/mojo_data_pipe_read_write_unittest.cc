@@ -11,7 +11,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "media/base/decoder_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -67,7 +67,7 @@ class MojoDataPipeReadWrite {
 }  // namespace
 
 TEST(MojoDataPipeReadWriteTest, Normal) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::string kData = "hello, world";
   MojoDataPipeReadWrite pipe_read_write_;
   pipe_read_write_.WriteAndRead(reinterpret_cast<const uint8_t*>(kData.data()),
@@ -75,7 +75,7 @@ TEST(MojoDataPipeReadWriteTest, Normal) {
 }
 
 TEST(MojoDataPipeReadWriteTest, SequentialReading) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::string kData1 = "hello, world";
   std::string kData2 = "Bye!";
   MojoDataPipeReadWrite pipe_read_write_;
@@ -86,7 +86,7 @@ TEST(MojoDataPipeReadWriteTest, SequentialReading) {
 }
 
 TEST(MojoDataPipeReadWriteTest, LongerThanCapacity) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::string kData = "hello, world, hello, world, hello, world";
   MojoDataPipeReadWrite pipe_read_write_(10);
   pipe_read_write_.WriteAndRead(reinterpret_cast<const uint8_t*>(kData.data()),
@@ -94,7 +94,7 @@ TEST(MojoDataPipeReadWriteTest, LongerThanCapacity) {
 }
 
 TEST(MojoDataPipeReadWriteTest, DiscardDataInPipe) {
-  base::test::ScopedTaskEnvironment scoped_task_environment;
+  base::test::TaskEnvironment task_environment;
   std::string kData1 = "to be discarded";
   std::string kData2 = "hello, world, hello, world, hello, world";
   MojoDataPipeReadWrite pipe_read_write_(10);

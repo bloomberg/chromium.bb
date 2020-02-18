@@ -76,7 +76,6 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // the existing bubble will auto-close due to focus loss.
   static void ShowBubble(
       profiles::BubbleViewMode view_mode,
-      const signin::ManageAccountsParams& manage_accounts_params,
       signin_metrics::AccessPoint access_point,
       views::Button* anchor_button,
       Browser* browser,
@@ -87,12 +86,17 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   static ProfileMenuViewBase* GetBubbleForTesting();
 
- protected:
   ProfileMenuViewBase(views::Button* anchor_button,
                       Browser* browser);
   ~ProfileMenuViewBase() override;
 
-  void Reset();
+  // This method is called once to add all menu items.
+  virtual void BuildMenu() = 0;
+
+  // API to build the profile menu.
+  void SetIdentityInfo(const gfx::Image& image,
+                       const base::string16& title,
+                       const base::string16& subtitle);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.
@@ -103,25 +107,30 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // return a raw pointer to the object. The ownership is transferred to the
   // menu when view is repopulated from menu items.
   // Please use |AddViewItem| only if none of the previous ones match.
+  views::Button* CreateAndAddButton(const gfx::ImageSkia& icon,
+                                    const base::string16& title,
+                                    base::RepeatingClosure action);
+  views::Button* CreateAndAddBlueButton(const base::string16& text,
+                                        bool md_style,
+                                        base::RepeatingClosure action);
+  // If |action| is null the card will be disabled.
   views::Button* CreateAndAddTitleCard(std::unique_ptr<views::View> icon_view,
                                        const base::string16& title,
                                        const base::string16& subtitle,
-                                       bool enabled = true);
-  views::Button* CreateAndAddButton(const gfx::ImageSkia& icon,
-                                    const base::string16& title);
-  views::Button* CreateAndAddBlueButton(const base::string16& text,
-                                        bool md_style);
+                                       base::RepeatingClosure action);
 #if !defined(OS_CHROMEOS)
   DiceSigninButtonView* CreateAndAddDiceSigninButton(
-      AccountInfo* account_info = nullptr,
-      gfx::Image* account_icon = nullptr);
+      AccountInfo* account_info,
+      gfx::Image* account_icon,
+      base::RepeatingClosure action);
 #endif
   views::Label* CreateAndAddLabel(
       const base::string16& text,
       int text_context = views::style::CONTEXT_LABEL);
+  views::StyledLabel* CreateAndAddLabelWithLink(const base::string16& text,
+                                                gfx::Range link_range,
+                                                base::RepeatingClosure action);
   void AddViewItem(std::unique_ptr<views::View> view);
-
-  void RepopulateViewFromMenuItems();
 
   Browser* browser() const { return browser_; }
 
@@ -131,19 +140,21 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   views::Button* anchor_button() const { return anchor_button_; }
 
-  bool ShouldProvideInitiallyFocusedView() const;
-
   gfx::ImageSkia CreateVectorIcon(const gfx::VectorIcon& icon);
 
   int GetDefaultIconSize();
 
  private:
-  friend class ProfileChooserViewExtensionsTest;
+  friend class ProfileMenuViewExtensionsTest;
+
+  void Reset();
+  void RepopulateViewFromMenuItems();
 
   // Requests focus for a button when opened by keyboard.
   virtual void FocusButtonOnKeyboardOpen() {}
 
   // views::BubbleDialogDelegateView:
+  void Init() final;
   void WindowClosing() override;
   void OnThemeChanged() override;
   int GetDialogButtons() const override;
@@ -153,10 +164,19 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   bool HandleContextMenu(content::RenderFrameHost* render_frame_host,
                          const content::ContextMenuParams& params) override;
 
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* button, const ui::Event& event) final;
+
   // views::StyledLabelListener:
-  void StyledLabelLinkClicked(views::StyledLabel* label,
+  void StyledLabelLinkClicked(views::StyledLabel* link,
                               const gfx::Range& range,
-                              int event_flags) override;
+                              int event_flags) final;
+
+  // Handles all click events.
+  void OnClick(views::View* clickable_view);
+
+  void RegisterClickAction(views::View* clickable_view,
+                           base::RepeatingClosure action);
 
   // Returns the size of different margin types.
   int GetMarginSize(GroupMarginSize margin_size) const;
@@ -166,13 +186,16 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
 
   Browser* const browser_;
 
-  int menu_width_;
-
   // ProfileMenuViewBase takes ownership of all menu_items and passes it to the
   // underlying view when it is created.
   std::vector<MenuItems> menu_item_groups_;
 
   views::Button* const anchor_button_;
+
+  std::map<views::View*, base::RepeatingClosure> click_actions_;
+
+  // Component containers.
+  views::View* identity_info_container_ = nullptr;
 
   CloseBubbleOnTabActivationHelper close_bubble_helper_;
 

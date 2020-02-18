@@ -95,7 +95,7 @@ class APP_LIST_EXPORT ExpandArrowView : public views::Button,
 
   base::OneShotTimer hinting_animation_timer_;
 
-  base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_;
+  base::WeakPtrFactory<ExpandArrowView> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ExpandArrowView);
 };

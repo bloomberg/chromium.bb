@@ -24,6 +24,25 @@ KeyParams::KeyParams(const KeyParams& other) = default;
 KeyParams::KeyParams(KeyParams&& other) = default;
 KeyParams::~KeyParams() = default;
 
+CryptographerDataWithPendingKeys::CryptographerDataWithPendingKeys() = default;
+CryptographerDataWithPendingKeys::CryptographerDataWithPendingKeys(
+    CryptographerDataWithPendingKeys&& other) = default;
+CryptographerDataWithPendingKeys::~CryptographerDataWithPendingKeys() = default;
+
+// static
+Cryptographer Cryptographer::CreateFromCryptographerDataWithPendingKeys(
+    const CryptographerDataWithPendingKeys& serialized_state) {
+  std::unique_ptr<sync_pb::EncryptedData> pending_keys;
+  if (serialized_state.pending_keys.has_value()) {
+    pending_keys = std::make_unique<sync_pb::EncryptedData>(
+        *serialized_state.pending_keys);
+  }
+  return Cryptographer(NigoriKeyBag::CreateFromProto(
+                           serialized_state.cryptographer_data.key_bag()),
+                       serialized_state.cryptographer_data.default_key_name(),
+                       std::move(pending_keys));
+}
+
 Cryptographer::Cryptographer() : key_bag_(NigoriKeyBag::CreateEmpty()) {}
 
 Cryptographer::Cryptographer(const Cryptographer& other)
@@ -36,6 +55,26 @@ Cryptographer::Cryptographer(const Cryptographer& other)
 }
 
 Cryptographer::~Cryptographer() {}
+
+void Cryptographer::CopyFrom(const Cryptographer& other) {
+  key_bag_.CopyFrom(other.key_bag_);
+  default_nigori_name_ = other.default_nigori_name_;
+  if (other.pending_keys_) {
+    pending_keys_ =
+        std::make_unique<sync_pb::EncryptedData>(*other.pending_keys_);
+  }
+}
+
+CryptographerDataWithPendingKeys
+Cryptographer::ToCryptographerDataWithPendingKeys() const {
+  CryptographerDataWithPendingKeys output;
+  *output.cryptographer_data.mutable_key_bag() = key_bag_.ToProto();
+  output.cryptographer_data.set_default_key_name(default_nigori_name_);
+  if (pending_keys_) {
+    output.pending_keys = *pending_keys_;
+  }
+  return output;
+}
 
 void Cryptographer::Bootstrap(const Encryptor& encryptor,
                               const std::string& restored_bootstrap_token) {
@@ -316,5 +355,13 @@ bool Cryptographer::ImportNigoriKey(const std::string& serialized_nigori_key) {
     return false;
   return true;
 }
+
+Cryptographer::Cryptographer(
+    NigoriKeyBag key_bag,
+    const std::string& default_nigori_name,
+    std::unique_ptr<sync_pb::EncryptedData> pending_keys)
+    : key_bag_(std::move(key_bag)),
+      default_nigori_name_(std::move(default_nigori_name)),
+      pending_keys_(std::move(pending_keys)) {}
 
 }  // namespace syncer

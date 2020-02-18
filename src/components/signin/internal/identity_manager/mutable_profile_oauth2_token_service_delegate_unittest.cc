@@ -10,11 +10,10 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -81,13 +80,13 @@ AccountInfo CreateTestAccountInfo(const std::string& name,
 class MutableProfileOAuth2TokenServiceDelegateTest
     : public testing::Test,
       public OAuth2AccessTokenConsumer,
-      public OAuth2TokenServiceObserver,
+      public ProfileOAuth2TokenServiceObserver,
       public WebDataServiceConsumer {
  public:
   MutableProfileOAuth2TokenServiceDelegateTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::ASYNC),
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::UI,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::ASYNC),
         access_token_success_count_(0),
         access_token_failure_count_(0),
         access_token_failure_(GoogleServiceAuthError::NONE),
@@ -122,8 +121,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
   void LoadTokenDatabase() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    base::FilePath path = temp_dir_.GetPath().AppendASCII("TestWebDB");
+    base::FilePath path(WebDatabase::kInMemoryPath);
     scoped_refptr<WebDatabaseService> web_database =
         new WebDatabaseService(path, base::ThreadTaskRunnerHandle::Get(),
                                base::ThreadTaskRunnerHandle::Get());
@@ -186,7 +184,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
     access_token_failure_ = error;
   }
 
-  // OAuth2TokenServiceObserver implementation.
+  // ProfileOAuth2TokenServiceObserver implementation.
   void OnRefreshTokenAvailable(const CoreAccountId& account_id) override {
     ++token_available_count_;
   }
@@ -250,8 +248,7 @@ class MutableProfileOAuth2TokenServiceDelegateTest
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
-  base::ScopedTempDir temp_dir_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<TestSigninClient> client_;
   std::unique_ptr<MutableProfileOAuth2TokenServiceDelegate>
       oauth2_service_delegate_;
@@ -533,42 +530,53 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 // Tests that Dice migration does not happen if an account is invalid. In
 // particular, no hosted domain tokens are revoked.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
-       DiceNoMigrationOnInvalidAccount) {
+       DiceMigrationWithMissingHostedDomain) {
   ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
   InitializeOAuth2ServiceDelegate(
       signin::AccountConsistencyMethod::kDiceMigration);
   oauth2_service_delegate_->RevokeAllCredentials();
 
-  // Add account info to the account tracker.
-  AccountInfo primary_account = CreateTestAccountInfo(
-      "primary_account", true /* is_hosted_domain*/, true /* is_valid*/);
-  AccountInfo secondary_account = CreateTestAccountInfo(
-      "secondary_account", false /* is_hosted_domain*/, false /* is_valid*/);
-  account_tracker_service_.SeedAccountInfo(primary_account);
-  account_tracker_service_.SeedAccountInfo(secondary_account);
+  // Add incomplete accounts info to the account tracker.
+  AccountInfo account_info_consummer;
+  account_info_consummer.account_id = "consummer";
+  account_info_consummer.gaia = "consummer";
+  // gmail.com is known as a non-enterprise domain.
+  account_info_consummer.email = "consummer@gmail.com";
+  account_tracker_service_.SeedAccountInfo(account_info_consummer);
+
+  AccountInfo account_info_enterprise;
+  account_info_enterprise.account_id = "enterprise";
+  account_info_enterprise.gaia = "enterprise";
+  account_info_enterprise.email = "enterprise@email.com";
+  account_tracker_service_.SeedAccountInfo(account_info_enterprise);
 
   ResetObserverCounts();
-  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
+  AddAuthTokenManually("AccountId-" + account_info_consummer.account_id.id,
                        "refresh_token");
-  AddAuthTokenManually("AccountId-" + secondary_account.account_id.id,
+  AddAuthTokenManually("AccountId-" + account_info_enterprise.account_id.id,
                        "refresh_token");
-  oauth2_service_delegate_->LoadCredentials(primary_account.account_id);
+  oauth2_service_delegate_->LoadCredentials(account_info_consummer.account_id);
   base::RunLoop().RunUntilIdle();
 
+  // Only the enterprise token is revoked.
   EXPECT_EQ(1, tokens_loaded_count_);
-  EXPECT_EQ(2, token_available_count_);
-  EXPECT_EQ(0, token_revoked_count_);
+  EXPECT_EQ(1, token_available_count_);
+  EXPECT_EQ(1, token_revoked_count_);
   EXPECT_EQ(1, end_batch_changes_);
-  EXPECT_EQ(2, auth_error_changed_count_);
+  EXPECT_EQ(1, auth_error_changed_count_);
+  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(
+      account_info_enterprise.account_id));
   EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
-      primary_account.account_id));
-  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
-      secondary_account.account_id));
+      account_info_consummer.account_id));
+  EXPECT_EQ("refresh_token",
+            oauth2_service_delegate_
+                ->refresh_tokens_[account_info_consummer.account_id]
+                .refresh_token);
   EXPECT_EQ(
       signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
       oauth2_service_delegate_->load_credentials_state());
 
-  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
 
 // Tests that the migration happened after loading consummer accounts.
@@ -700,6 +708,51 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
 }
 
+// Checks that tokens are loaded and prefs::kTokenServiceDiceCompatible is set
+// to true if the tokens are loaded after the Dice migration.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadAfterDiceMigration) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+
+  // Add account info to the account tracker.
+  AccountInfo primary_account = CreateTestAccountInfo(
+      "primary_account", false /* is_hosted_domain*/, true /* is_valid*/);
+  account_tracker_service_.SeedAccountInfo(primary_account);
+  AddAuthTokenManually("AccountId-" + primary_account.account_id.id,
+                       "refresh_token");
+
+  oauth2_service_delegate_->LoadCredentials(std::string());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
+      primary_account.account_id));
+  EXPECT_EQ(
+      signin::LoadCredentialsState::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
+      oauth2_service_delegate_->load_credentials_state());
+
+  ASSERT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+}
+
+// Checks that prefs::kTokenServiceDiceCompatible is set to true if the tokens
+// are loaded after the Dice migration, even if there was a database read error.
+TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
+       LoadAfterDiceMigrationWithError) {
+  InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
+  ASSERT_FALSE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+
+  // Shutdown the database to trigger a database read error.
+  token_web_data_->ShutdownDatabase();
+
+  oauth2_service_delegate_->LoadCredentials(std::string());
+  base::RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(0u, oauth2_service_delegate_->GetAccounts().size());
+  EXPECT_EQ(signin::LoadCredentialsState::
+                LOAD_CREDENTIALS_FINISHED_WITH_DB_CANNOT_BE_OPENED,
+            oauth2_service_delegate_->load_credentials_state());
+
+  ASSERT_TRUE(pref_service_.GetBoolean(prefs::kTokenServiceDiceCompatible));
+}
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #if !defined(OS_CHROMEOS)
@@ -875,7 +928,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        InvalidateTokensForMultilogin) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     MOCK_METHOD2(OnAuthErrorChanged,
                  void(const CoreAccountId&, const GoogleServiceAuthError&));
@@ -916,6 +969,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
+  pref_service_.SetBoolean(prefs::kTokenServiceDiceCompatible, true);
   InitializeOAuth2ServiceDelegate(signin::AccountConsistencyMethod::kDice);
   std::map<std::string, std::string> tokens;
   const CoreAccountId account_id("account_id");
@@ -1337,7 +1391,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
 // Checks that OnAuthErrorChanged() is called during UpdateCredentials(), and
 // that RefreshTokenIsAvailable() can be used at this time.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, OnAuthErrorChanged) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     explicit TokenServiceErrorObserver(
         MutableProfileOAuth2TokenServiceDelegate* delegate)
@@ -1407,7 +1461,7 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, GetAuthError) {
 // Regression test for https://crbug.com/824791.
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
        InvalidTokenObserverCallsOrdering) {
-  class TokenServiceErrorObserver : public OAuth2TokenServiceObserver {
+  class TokenServiceErrorObserver : public ProfileOAuth2TokenServiceObserver {
    public:
     explicit TokenServiceErrorObserver(
         MutableProfileOAuth2TokenServiceDelegate* delegate)

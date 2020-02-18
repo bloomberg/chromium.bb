@@ -38,6 +38,128 @@ enum AndroidLogPriority {
 
 // End of protos/perfetto/common/android_log_constants.proto
 
+// Begin of protos/perfetto/common/data_source_descriptor.proto
+
+// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos
+// to reflect changes in the corresponding C++ headers.
+
+// This message is sent from Producer(s) to the tracing Service when registering
+// to advertise their capabilities. It describes the structure of tracing
+// protos that will be produced by the data source and the supported filters.
+message DataSourceDescriptor {
+  optional string name = 1;  // e.g., "linux.ftrace", "chromium.tracing"
+
+  // When true the data source is expected to ack the stop request through the
+  // NotifyDataSourceStopped() IPC. This field has been introduced after
+  // Android P in Jul 2018 and is not supported on older versions.
+  optional bool will_notify_on_stop = 2;
+
+  // When true the data source is expected to ack the start request through the
+  // NotifyDataSourceStarted() IPC. This field has been introduced after
+  // Android P in March 2019 and is not supported on older versions.
+  optional bool will_notify_on_start = 3;
+
+  // If true, opt into receiving the ClearIncrementalState() IPC. This should be
+  // set if the data source writes packets that refer to previous trace
+  // contents, and knows how to stop referring to the already-emitted data.
+  optional bool handles_incremental_state_clear = 4;
+
+  // Optional specification about available GPU counters.
+  optional GpuCounterDescriptor gpu_counter_descriptor = 5 [lazy = true];
+
+  optional TrackEventDescriptor track_event_descriptor = 6 [lazy = true];
+}
+
+// End of protos/perfetto/common/data_source_descriptor.proto
+
+// Begin of protos/perfetto/common/gpu_counter_descriptor.proto
+
+// Description of GPU counters.
+// This message is sent by a GPU counter producer to specify the counters available in the hardware.
+message GpuCounterDescriptor {
+  message GpuCounterSpec {
+    optional uint32 counter_id = 1;
+    optional string name = 2;
+    optional string description = 3;
+    reserved 4;
+    oneof peak_value {
+      int64 int_peak_value = 5;
+      double double_peak_value = 6;
+    };
+    repeated MeasureUnit numerator_units = 7;
+    repeated MeasureUnit denominator_units = 8;
+  }
+  repeated GpuCounterSpec specs = 1;
+
+  // Allow producer to group counters into block to represent counter islands.  A capacity may be
+  // specified to indicate the number of counters that can be enable simultaneously in that block.
+  message GpuCounterBlock {
+    // required. Unique ID for the counter group.
+    optional uint32 block_id = 1;
+    // optional. Number of counters supported by the block. No limit if unset.
+    optional uint32 block_capacity = 2;
+    // optional. Name of block.
+    optional string name = 3;
+    // optional. Description for the block.
+    optional string description = 4;
+    // list of counters that are part of the block.
+    repeated uint32 counter_ids = 5;
+  }
+  repeated GpuCounterBlock blocks = 2;
+
+  enum MeasureUnit {
+    NONE = 0;
+
+    BIT = 1;
+    KILOBIT = 2;
+    MEGABIT = 3;
+    GIGABIT = 4;
+    TERABIT = 5;
+    PETABIT = 6;
+
+    BYTE = 7;
+    KILOBYTE = 8;
+    MEGABYTE = 9;
+    GIGABYTE = 10;
+    TERABYTE = 11;
+    PETABYTE = 12;
+
+    HERTZ = 13;
+    KILOHERTZ = 14;
+    MEGAHERTZ = 15;
+    GIGAHERTZ = 16;
+    TERAHERTZ = 17;
+    PETAHERTZ = 18;
+
+    NANOSECOND = 19;
+    MICROSECOND = 20;
+    MILLISECOND = 21;
+    SECOND = 22;
+    MINUTE = 23;
+    HOUR = 24;
+
+    VERTEX = 25;
+    PIXEL = 26;
+    TRIANGLE = 27;
+
+    MILLIWATT = 28;
+    WATT = 29;
+    KILOWATT = 30;
+
+    JOULE = 31;
+    VOLT = 32;
+    AMPERE = 33;
+
+    CELSIUS = 34;
+    FAHRENHEIT = 35;
+    KELVIN = 36;
+
+    PERCENT = 37;
+  };
+}
+
+// End of protos/perfetto/common/gpu_counter_descriptor.proto
+
 // Begin of protos/perfetto/common/sys_stats_counters.proto
 
 // When editing entries here remember also to update "sys_stats_counters.h" with
@@ -190,7 +312,7 @@ enum VmstatCounters {
 message TraceStats {
   // From TraceBuffer::Stats.
   //
-  // Next id: 19.
+  // Next id: 20.
   message BufferStats {
     // Size of the circular buffer in bytes.
     optional uint64 buffer_size = 12;
@@ -275,6 +397,15 @@ message TraceStats {
     // the buffer. This is an indication of either a bug in the producer(s) or
     // malicious producer(s).
     optional uint64 abi_violations = 9;
+
+    // The fields below have been introduced in Android R.
+
+    // Num. of times the service detected packet loss on a trace writer
+    // sequence. This is usually caused by exhaustion of available chunks in the
+    // writer process's SMB. Note that this relies on the client's TraceWriter
+    // indicating this loss to the service -- packets lost for other reasons are
+    // not reflected in this stat.
+    optional uint64 trace_writer_packet_loss = 19;
   }
 
   // Stats for the TraceBuffer(s) of the current trace session.
@@ -311,9 +442,62 @@ message TraceStats {
   // Num. patches that were discarded by the service before attempting to apply
   // them to a buffer, e.g. because the producer specified an invalid buffer ID.
   optional uint64 patches_discarded = 9;
+
+  // Packets that failed validation of the TrustedPacket. If this is > 0, there
+  // is a bug in the producer.
+  optional uint64 invalid_packets = 10;
 }
 
 // End of protos/perfetto/common/trace_stats.proto
+
+// Begin of protos/perfetto/common/tracing_service_state.proto
+
+// When editing this file run ./tools/gen_tracing_cpp_headers_from_protos.py
+// to reflect changes in the corresponding C++ headers.
+
+// Reports the state of the tracing service. Used to gather details about the
+// data sources connected.
+// See ConsumerPort::QueryServiceState().
+message TracingServiceState {
+  // Describes a producer process.
+  message Producer {
+    optional int32 id = 1;     // Unique ID of the producer (monotonic counter).
+    optional string name = 2;  // Typically matches the process name.
+    optional int32 uid = 3;    // Unix uid of the remote process.
+  }
+
+  // Describes a data source registered by a producer. Data sources are listed
+  // regardless of the fact that they are being used or not.
+  message DataSource {
+    // Descriptor passed by the data source when calling RegisterDataSource().
+    optional DataSourceDescriptor ds_descriptor = 1;
+
+    // ID of the producer, as per Producer.id.
+    optional int32 producer_id = 2;
+  }
+
+  // Lists all the producers connected.
+  repeated Producer producers = 1;
+
+  // Lists the data sources available.
+  repeated DataSource data_sources = 2;
+
+  // Total number of tracing sessions.
+  optional int32 num_sessions = 3;
+
+  // Number of tracing sessions in the started state. Always <= num_sessions.
+  optional int32 num_sessions_started = 4;
+}
+
+// End of protos/perfetto/common/tracing_service_state.proto
+
+// Begin of protos/perfetto/common/track_event_descriptor.proto
+
+message TrackEventDescriptor {
+  repeated string available_categories = 1;
+}
+
+// End of protos/perfetto/common/track_event_descriptor.proto
 
 // Begin of protos/perfetto/trace/android/android_log.proto
 
@@ -375,6 +559,39 @@ message AndroidLogPacket {
 }
 
 // End of protos/perfetto/trace/android/android_log.proto
+
+// Begin of protos/perfetto/trace/android/graphics_frame_event.proto
+
+// Generated by Android's SurfaceFlinger.
+message GraphicsFrameEvent {
+  enum BufferEventType {
+    UNSPECIFIED = 0;
+    DEQUEUE = 1;
+    QUEUE = 2;
+    POST = 3;
+    ACQUIRE_FENCE = 4;
+    LATCH = 5;
+    HWC_COMPOSITION_QUEUED = 6;  // HWC will compose this buffer
+    FALLBACK_COMPOSITION = 7;    // renderEngine composition
+    PRESENT_FENCE = 8;
+    RELEASE_FENCE = 9;
+    MODIFY = 10;
+  }
+
+  message BufferEvent {
+    optional uint32 frame_number = 1;
+    optional BufferEventType type = 2;
+    optional string layer_name = 3;
+    // If no duration is set, the event is an instant event.
+    optional uint64 duration_ns = 4;
+    // Unique buffer identifier.
+    optional uint32 buffer_id = 5;
+  }
+
+  optional BufferEvent buffer_event = 1;
+}
+
+// End of protos/perfetto/trace/android/graphics_frame_event.proto
 
 // Begin of protos/perfetto/trace/android/packages_list.proto
 
@@ -439,6 +656,10 @@ message ChromeBenchmarkMetadata {
 // Metadata for chrome traces.
 message ChromeMetadataPacket {
   optional BackgroundTracingMetadata background_tracing_metadata = 1;
+
+  // Version code of Chrome used by Android's Play Store. This field is only set
+  // on Android.
+  optional int32 chrome_version_code = 2;
 }
 
 // Metadata related to background tracing scenarios, states and triggers.
@@ -497,7 +718,7 @@ message BackgroundTracingMetadata {
 // A snapshot of clock readings to allow for trace alignment.
 message ClockSnapshot {
   message Clock {
-    enum Type {
+    enum BuiltinClocks {
       UNKNOWN = 0;
       REALTIME = 1;
       REALTIME_COARSE = 2;
@@ -507,9 +728,35 @@ message ClockSnapshot {
       BOOTTIME = 6;
       PROCESS_CPUTIME = 7;
       THREAD_CPUTIME = 8;
+      BUILTIN_CLOCK_MAX_ID = 63;
     }
-    optional Type type = 1;
+
+    // Clock IDs have the following semantic:
+    // [1, 63]:    Builtin types, see BuiltinClocks above.
+    // [64, 127]:  User-defined clocks. These clocks are sequence-scoped. They
+    //             are only valid within the same |trusted_packet_sequence_id|
+    //             (i.e. only for TracePacket(s) emitted by the same TraceWriter
+    //             that emitted the clock snapshot).
+    // [128, MAX]: Reserved for future use. The idea is to allow global clock
+    //             IDs and setting this ID to hash(full_clock_name) & ~127.
+    optional uint32 clock_id = 1;
+
+    // Unit is ns unless specified otherwise by the resolution_* fields below.
     optional uint64 timestamp = 2;
+
+    // TODO(eseckler): the fields below and sequence-scoped clock IDs are not
+    // supported yet by the trace processor.
+
+    // When true the timestamp should be interpreted as a delta from the last
+    // TracePacket's timestamp emitted by the same packet_sequence_id.
+    // The first packet timestamp after a ClockSnapshot is relative to the last
+    // ClockSnapshot seen on the packet sequence.
+    // optional bool is_incremental = 3;
+
+    // Allows to specify a custom unit different than the default (ns)
+    // for this clock domain. A multiplier of 1000 means that a timestamp = 3
+    // should be interpreted as 3000 ns = 3 us.
+    // optional uint64 unit_multiplier_ns = 4;
   }
   repeated Clock clocks = 1;
 }
@@ -2030,6 +2277,9 @@ message FtraceEvent {
     SysExitFtraceEvent sys_exit = 330;
     ZeroFtraceEvent zero = 331;
     GpuFrequencyFtraceEvent gpu_frequency = 332;
+    GpuSchedEnqueueFtraceEvent gpu_sched_enqueue = 333;
+    GpuSchedSubmitFtraceEvent gpu_sched_submit = 334;
+    GpuSchedCompleteFtraceEvent gpu_sched_complete = 335;
   }
 }
 
@@ -2037,14 +2287,12 @@ message FtraceEvent {
 
 // Begin of protos/perfetto/trace/ftrace/ftrace_event_bundle.proto
 
+// One parsed page from per-cpu ftrace buffer.
 message FtraceEventBundle {
   optional uint32 cpu = 1;
   repeated FtraceEvent event = 2;
-  // Total of all overwrite fields from the headers of all kernel
-  // ftrace pages we parsed into this FtraceEventBundle. Zero if
-  // no overwriting occurred, a number larger than zero if some overwriting
-  // occurred.
-  optional uint32 overwrite_count = 3;
+  // True if this cpu's ftrace kernel buffer lost events since the last read.
+  optional bool lost_events = 3;
 }
 
 // End of protos/perfetto/trace/ftrace/ftrace_event_bundle.proto
@@ -2125,6 +2373,31 @@ message GenericFtraceEvent {
 }
 
 // End of protos/perfetto/trace/ftrace/generic.proto
+
+// Begin of protos/perfetto/trace/ftrace/gpu.proto
+
+message GpuSchedEnqueueFtraceEvent {
+  optional uint32 ctx_id = 1;
+  optional uint32 job_id = 2;
+  optional uint32 priority = 3;
+  optional uint32 submission_id = 4;
+}
+message GpuSchedSubmitFtraceEvent {
+  optional uint32 ctx_id = 1;
+  optional uint32 hwqueue_id = 2;
+  optional uint32 job_id = 3;
+  optional uint32 priority = 4;
+  optional uint32 submission_id = 5;
+}
+message GpuSchedCompleteFtraceEvent {
+  optional uint32 ctx_id = 1;
+  optional uint32 job_id = 2;
+  optional string msg = 3;
+  optional uint32 priority = 4;
+  optional uint32 submission_id = 5;
+}
+
+// End of protos/perfetto/trace/ftrace/gpu.proto
 
 // Begin of protos/perfetto/trace/ftrace/kmem.proto
 
@@ -2590,7 +2863,7 @@ message MmVmscanKswapdSleepFtraceEvent {
 // Because of the incremental build-up, the interning index will miss data when
 // TracePackets are lost, e.g. because a chunk was overridden in the central
 // ring buffer. To avoid invalidation of the whole trace in such a case, the
-// index is periodically reset (see |incremental_state_cleared| in TracePacket).
+// index is periodically reset (see SEQ_INCREMENTAL_STATE_CLEARED).
 // When packet loss occurs, the reader will only lose interning data up to the
 // next reset.
 // -----------------------------------------------------------------------------
@@ -2603,7 +2876,7 @@ message MmVmscanKswapdSleepFtraceEvent {
 // emitted proactively in advance of referring to them in later packets.
 //
 // Next reserved id: 8 (up to 15).
-// Next id: 21.
+// Next id: 22.
 message InternedData {
   // Each field's message type needs to specify an |iid| field, which is the ID
   // of the entry in the field's interning index. Each field constructs its own
@@ -2613,7 +2886,7 @@ message InternedData {
   // within the same tracing session, even after a reset of the emitted
   // interning state.
   repeated EventCategory event_categories = 1;
-  repeated LegacyEventName legacy_event_names = 2;
+  repeated EventName event_names = 2;
   repeated DebugAnnotationName debug_annotation_names = 3;
   repeated SourceLocation source_locations = 4;
   repeated LogMessageBody log_message_body = 20;
@@ -2624,8 +2897,12 @@ message InternedData {
   repeated InternedString build_ids = 16;
   // Paths to executable files.
   repeated InternedString mapping_paths = 17;
+  // Paths to source files.
+  repeated InternedString source_paths = 18;
   // Names of functions used in frames below.
   repeated InternedString function_names = 5;
+  // Symbols that were added to this trace after the fact.
+  repeated ProfiledFrameSymbols profiled_frame_symbols = 21;
 
   // Executable files mapped into processes.
   repeated Mapping mappings = 19;
@@ -2715,6 +2992,43 @@ message PowerRails {
 
 // End of protos/perfetto/trace/power/power_rails.proto
 
+// Begin of protos/perfetto/trace/profiling/heap_graph.proto
+
+message HeapGraphObject {
+  optional uint64 id = 1;
+
+  // Index for InternedData.type_names for the name of the type of this object.
+  optional uint64 type_id = 2;
+
+  // Bytes occupied by this objects.
+  optional uint64 self_size = 3;
+
+  // Indices for InternedData.field_names for the name of the field referring
+  // to the object.
+  repeated uint64 reference_field_id = 4;
+
+  // Ids of the Object that is referred to.
+  repeated uint64 reference_object_id = 5;
+}
+
+message HeapGraph {
+  optional int32 pid = 1;
+
+  // Live objects at the time this dump was taken.
+  repeated HeapGraphObject objects = 2;
+
+  // Type names used in managed heap graph.
+  repeated InternedString type_names = 3;
+
+  // Field names for references in managed heap graph.
+  repeated InternedString field_names = 4;
+
+  optional bool continued = 5;
+  optional uint64 index = 6;
+}
+
+// End of protos/perfetto/trace/profiling/heap_graph.proto
+
 // Begin of protos/perfetto/trace/profiling/profile_common.proto
 
 // The interning fields in this file can refer to 2 different intern tables,
@@ -2734,11 +3048,16 @@ message InternedString {
 // that the actual trace need not be rewritten to symbolize the profiles.
 message ProfiledFrameSymbols {
   // Use the frame id as the interning key for the symbols.
-  optional int64 frame_iid = 1;
+  optional uint64 frame_iid = 1;
 
-  optional int64 function_name_id = 2;  // key to InternedString
-  optional int64 file_name_id = 3;      // key to InternedString
-  optional int32 line_number = 4;
+  // These are repeated because when inlining happens, multiple functions'
+  // frames can be at a single address. Imagine function Foo calling the
+  // std::vector<int> constructor, which gets inlined at 0xf00. We then get
+  // both Foo and the std::vector<int> constructor when we symbolize the
+  // address.
+  repeated uint64 function_name_id = 2;  // key to InternedString
+  repeated uint64 file_name_id = 3;      // key to InternedString
+  repeated uint32 line_number = 4;
 }
 
 message Mapping {
@@ -2871,12 +3190,21 @@ message ProfilePacket {
     //               to have a type enum that we can reuse here.
     optional uint64 timestamp = 9;
 
+    // Metadata about heapprofd.
     optional ProcessStats stats = 5;
 
     repeated HeapSample samples = 2;
   }
 
+  // If this is true, the next ProfilePacket in this package_sequence_id is a
+  // continuation of this one.
+  // To get all samples for a process, accummulate its
+  // ProcessHeapSamples.samples until you see continued=false.
   optional bool continued = 6;
+
+  // Index of this ProfilePacket on its package_sequence_id. Can be used
+  // to detect dropped data.
+  // Verify these are consecutive.
   optional uint64 index = 7;
 }
 
@@ -3075,11 +3403,22 @@ message Trace {
 // TracePacket(s).
 //
 // Next reserved id: 13 (up to 15).
-// Next id: 56.
+// Next id: 61.
 message TracePacket {
-  // TODO(primiano): in future we should add a timestamp_clock_domain field to
-  // allow mixing timestamps from different clock domains.
-  optional uint64 timestamp = 8;  // Timestamp [ns].
+  // The timestamp of the TracePacket.
+  // By default this timestamps refers to the trace clock (CLOCK_BOOTTIME on
+  // Android). It can be overridden using a different timestamp_clock_id.
+  // The clock domain definition in ClockSnapshot can also override:
+  // - The unit (default: 1ns).
+  // - The absolute vs delta encoding (default: absolute timestamp).
+  optional uint64 timestamp = 8;
+
+  // Specifies the ID of the clock used for the TracePacket |timestamp|. Can be
+  // one of the built-in types from ClockSnapshot::BuiltinClocks, or a
+  // producer-defined clock id.
+  // If unspecified and if no default per-sequence value has been provided via
+  // TracePacketDefaults, it defaults to BuiltinClocks::BOOTTIME.
+  optional uint32 timestamp_clock_id = 58;
 
   oneof data {
     FtraceEventBundle ftrace_events = 1;
@@ -3110,12 +3449,19 @@ message TracePacket {
     GpuCounterEvent gpu_counter_event = 52;
     GpuRenderStageEvent gpu_render_stage_event = 53;
     StreamingProfilePacket streaming_profile_packet = 54;
+    HeapGraph heap_graph = 56;
+    GraphicsFrameEvent graphics_frame_event = 57;
 
     // Only used in profile packets.
     ProfiledFrameSymbols profiled_frame_symbols = 55;
 
     // Only used by TrackEvent.
+    TrackDescriptor track_descriptor = 60;
+
+    // Deprecated, use TrackDescriptor instead.
     ProcessDescriptor process_descriptor = 43;
+
+    // Deprecated, use TrackDescriptor instead.
     ThreadDescriptor thread_descriptor = 44;
 
     // This field is emitted at periodic intervals (~10s) and
@@ -3160,21 +3506,46 @@ message TracePacket {
   // proactively in advance of referring to them in later packets.
   optional InternedData interned_data = 12;
 
-  // Set to true by the writer to indicate that it will re-emit any incremental
-  // data for the packet's sequence before referring to it again. This includes
-  // interned data as well as periodically emitted data like
-  // Process/ThreadDescriptors. This flag only affects the current packet
-  // sequence (see |trusted_packet_sequence_id|).
-  //
-  // When set to true, this TracePacket and subsequent TracePackets on the same
-  // sequence will not refer to any incremental data emitted before this
-  // TracePacket. For example, previously emitted interned data will be
-  // re-emitted if it is referred to again.
-  //
-  // When the reader detects packet loss (|previous_packet_dropped|), it needs
-  // to skip packets in the sequence until the next one with this flag set, to
-  // ensure intact incremental data.
+  enum SequenceFlags {
+    SEQ_UNSPECIFIED = 0;
+
+    // Set by the writer to indicate that it will re-emit any incremental data
+    // for the packet's sequence before referring to it again. This includes
+    // interned data as well as periodically emitted data like
+    // Process/ThreadDescriptors. This flag only affects the current packet
+    // sequence (see |trusted_packet_sequence_id|).
+    //
+    // When set, this TracePacket and subsequent TracePackets on the same
+    // sequence will not refer to any incremental data emitted before this
+    // TracePacket. For example, previously emitted interned data will be
+    // re-emitted if it is referred to again.
+    //
+    // When the reader detects packet loss (|previous_packet_dropped|), it needs
+    // to skip packets in the sequence until the next one with this flag set, to
+    // ensure intact incremental data.
+    SEQ_INCREMENTAL_STATE_CLEARED = 1;
+
+    // This packet requires incremental state, such as TracePacketDefaults or
+    // InternedData, to be parsed correctly. The trace reader should skip this
+    // packet if incremental state is not valid on this sequence, i.e. if no
+    // packet with the SEQ_INCREMENTAL_STATE_CLEARED flag has been seen on the
+    // current |trusted_packet_sequence_id|.
+    SEQ_NEEDS_INCREMENTAL_STATE = 2;
+  };
+  optional uint32 sequence_flags = 13;
+
+  // DEPRECATED. Moved to SequenceFlags::SEQ_INCREMENTAL_STATE_CLEARED.
   optional bool incremental_state_cleared = 41;
+
+  // Default values for fields of later TracePackets emitted on this packet's
+  // sequence (TracePackets with the same |trusted_packet_sequence_id|).
+  // It must be reemitted when incremental state is cleared (see
+  // |incremental_state_cleared|).
+  // Requires that any future packet emitted on the same sequence specifies
+  // the SEQ_NEEDS_INCREMENTAL_STATE flag.
+  // TracePacketDefaults always override the global defaults for any future
+  // packet on this sequence (regardless of SEQ_NEEDS_INCREMENTAL_STATE).
+  optional TracePacketDefaults trace_packet_defaults = 59;
 
   // Flag set by the service if, for the current packet sequence (see
   // |trusted_packet_sequence_id|), either:
@@ -3186,17 +3557,36 @@ message TracePacket {
   //
   // When packet loss occurs, incrementally emitted data (including interned
   // data) on the sequence should be considered invalid up until the next packet
-  // with |incremental_state_cleared| set.
+  // with SEQ_INCREMENTAL_STATE_CLEARED set.
   optional bool previous_packet_dropped = 42;
 }
 
 // End of protos/perfetto/trace/trace_packet.proto
+
+// Begin of protos/perfetto/trace/trace_packet_defaults.proto
+
+// Default values for TracePacket fields that hold for a particular TraceWriter
+// packet sequence. This message contains a subset of the TracePacket fields
+// with matching IDs. When provided, these fields define the default values
+// that should be applied, at import time, to all TracePacket(s) with the same
+// |trusted_packet_sequence_id|, unless otherwise specified in each packet.
+//
+// Should be reemitted whenever incremental state is cleared on the sequence.
+message TracePacketDefaults {
+  optional uint32 timestamp_clock_id = 58;
+
+  // Default values for TrackEvents (e.g. default track).
+  optional TrackEventDefaults track_event_defaults = 11;
+}
+// End of protos/perfetto/trace/trace_packet_defaults.proto
 
 // Begin of protos/perfetto/trace/track_event/debug_annotation.proto
 
 // Key/value annotations provided in untyped TRACE_EVENT macros. These
 // annotations are intended for debug use and are not considered a stable API
 // surface. As such, they should not be relied upon to implement (new) metrics.
+//
+// Next ID: 10.
 message DebugAnnotation {
   message NestedValue {
     enum NestedType {
@@ -3215,7 +3605,10 @@ message DebugAnnotation {
     optional string string_value = 8;
   }
 
-  optional uint64 name_iid = 1;  // interned DebugAnnotationName.
+  oneof name_field {
+    uint64 name_iid = 1;  // interned DebugAnnotationName.
+    string name = 10;     // non-interned variant.
+  }
 
   oneof value {
     bool bool_value = 2;
@@ -3373,11 +3766,49 @@ message ThreadDescriptor {
 
 // End of protos/perfetto/trace/track_event/thread_descriptor.proto
 
+// Begin of protos/perfetto/trace/track_event/track_descriptor.proto
+
+// Defines a track for TrackEvents. Slices and instant events on the same track
+// will be nested based on their timestamps, see TrackEvent::Type.
+//
+// A packet sequence needs to emit a TrackDescriptor for every track on which it
+// emits TrackEvents. TrackDescriptors should be reemitted whenever incremental
+// state is cleared.
+//
+// As a fallback, TrackEvents emitted without an explicit track association will
+// be associated with an implicit trace-global track (uuid = 0), see also
+// |TrackEvent::track_uuid|. It is possible but not necessary to emit a
+// TrackDescriptor for this implicit track.
+//
+// Next id: 1.
+message TrackDescriptor {
+  // Unique ID that identifies this track. This ID is global to the whole trace.
+  // Producers should ensure that it is unlikely to clash with IDs emitted by
+  // other producers. A value of 0 denotes the implicit trace-global track.
+  //
+  // For example, legacy TRACE_EVENT macros may use a hash involving the async
+  // event id + id_scope, pid, and/or tid to compute this ID.
+  optional uint64 uuid = 1;
+
+  // TODO(eseckler): Support track hierarchies.
+  // uint64 parent_uuid = X;
+
+  // Name of the track.
+  optional string name = 2;
+
+  // Optional arguments for specific types of tracks.
+  optional ProcessDescriptor process = 3;
+  optional ThreadDescriptor thread = 4;
+}
+
+// End of protos/perfetto/trace/track_event/track_descriptor.proto
+
 // Begin of protos/perfetto/trace/track_event/track_event.proto
 
 // Trace events emitted by client instrumentation library (TRACE_EVENT macros),
-// which describe activity on a track, such as a thread, task sequence, or
-// asynchronous track.
+// which describe activity on a track, such as a thread or asynchronous event
+// track. The track is specified using separate TrackDescriptor messages and
+// referred to via the track's UUID.
 //
 // This message is optimized for writing and makes heavy use of data interning
 // and delta encoding (e.g. of timestamps) to reduce data repetition and encoded
@@ -3387,13 +3818,12 @@ message ThreadDescriptor {
 // emitted by the same producer + writer) and refers to data in preceding
 // TracePackets emitted on the same sequence, both directly and indirectly. For
 // example, interned data entries are emitted as part of a TracePacket and
-// directly referred to from TrackEvents by their interning IDs. Attributes
-// shared by all events on the same sequence (e.g. their thread and process
-// association) are emitted as part of ProcessDescriptor and ThreadDescriptor
-// messages in separate TracePackets instead.
+// directly referred to from TrackEvents by their interning IDs. Default values
+// for attributes of events on the same sequence (e.g. their default track
+// association) can be emitted as part of a TrackEventDefaults message.
 //
-// Next reserved id: 8 (up to 15).
-// Next id: 22.
+// Next reserved id: 12 (up to 15).
+// Next id: 24.
 message TrackEvent {
   // Timestamp in microseconds (usually CLOCK_MONOTONIC).
   oneof timestamp {
@@ -3431,10 +3861,65 @@ message TrackEvent {
     int64 thread_instruction_count_absolute = 20;
   }
 
+  // TODO(eseckler): Add a way to specify Tracks.
+
+  // Names of categories of the event. In the client library, categories are a
+  // way to turn groups of individual events on or off.
+  //
   // We intend to add a binary symbol version of this in the future.
   repeated uint64 category_iids = 3;  // interned EventCategoryName.
+  repeated string categories = 22;    // non-interned variant.
 
-  // TODO(eseckler): May also want a debug_name for untyped debug-only events.
+  // Optional name of the event for its display in trace viewer. May be left
+  // unspecified for events with typed arguments.
+  //
+  // Note that metrics should not rely on event names, as they are prone to
+  // changing. Instead, they should use typed arguments to identify the events
+  // they are interested in.
+  //
+  // We intend to add a binary symbol version of this in the future.
+  oneof name_field {
+    uint64 name_iid = 10;  // interned EventName.
+    string name = 23;      // non-interned variant.
+  }
+
+  // Type of the TrackEvent (required if |phase| in LegacyEvent is not set).
+  enum Type {
+    TYPE_UNSPECIFIED = 0;
+
+    // Slice events are events that have a begin and end timestamp, i.e. a
+    // duration. They can be nested similar to a callstack: If, on the same
+    // track, event B begins after event A, but before A ends, B is a child
+    // event of A and will be drawn as a nested event underneath A in the UI.
+    // Note that child events should always end before their parents (e.g. B
+    // before A).
+    //
+    // Each slice event is formed by a pair of BEGIN + END events. The END event
+    // does not need to repeat any TrackEvent fields it has in common with its
+    // corresponding BEGIN event. Arguments and debug annotations of the BEGIN +
+    // END pair will be merged during trace import.
+    //
+    // Note that we deliberately chose not to support COMPLETE events (which
+    // would specify a duration directly) since clients would need to delay
+    // writing them until the slice is completed, which can result in reordered
+    // events in the trace and loss of unfinished events at the end of a trace.
+    TYPE_SLICE_BEGIN = 1;
+    TYPE_SLICE_END = 2;
+
+    // Instant events are nestable events without duration. They can be children
+    // of slice events on the same track.
+    TYPE_INSTANT = 3;
+
+    // TODO(eseckler): Add support for counters.
+  }
+  optional Type type = 9;
+
+  // Identifies the track of the event. The default value may be overridden
+  // using TrackEventDefaults, e.g., to specify the track of the TraceWriter's
+  // sequence (in most cases sequence = one thread). If no value is specified
+  // here or in TrackEventDefaults, the TrackEvent will be associated with an
+  // implicit trace-global track (uuid 0). See TrackDescriptor::uuid.
+  optional uint64 track_uuid = 11;
 
   // Unstable key/value annotations shown in the trace viewer but not intended
   // for metrics use.
@@ -3455,7 +3940,8 @@ message TrackEvent {
   // Next reserved id: 16 (up to 16).
   // Next id: 20.
   message LegacyEvent {
-    optional uint64 name_iid = 1;  // interned LegacyEventName.
+    // Deprecated, use TrackEvent::name(_iid) instead.
+    optional uint64 name_iid = 1;  // interned EventName.
     optional int32 phase = 2;
     optional int64 duration_us = 3;
     optional int64 thread_duration_us = 4;
@@ -3509,6 +3995,16 @@ message TrackEvent {
   optional LegacyEvent legacy_event = 6;
 }
 
+// Default values for fields of all TrackEvents on the same packet sequence.
+// Should be emitted as part of TracePacketDefaults whenever incremental state
+// is cleared. It's defined here because field IDs should match those of the
+// corresponding fields in TrackEvent.
+message TrackEventDefaults {
+  optional uint64 track_uuid = 10;
+
+  // TODO(eseckler): Support default values for more TrackEvent fields.
+}
+
 // --------------------
 // Interned data types:
 // --------------------
@@ -3518,7 +4014,7 @@ message EventCategory {
   optional string name = 2;
 }
 
-message LegacyEventName {
+message EventName {
   optional uint64 iid = 1;
   optional string name = 2;
 }
@@ -3564,6 +4060,7 @@ message GpuCounterEvent {
 
 // Begin of protos/perfetto/trace/gpu/gpu_render_stage_event.proto
 
+// next id: 12
 message GpuRenderStageEvent {
   // required. Unique ID for the event.
   optional uint64 event_id = 1;
@@ -3580,6 +4077,15 @@ message GpuRenderStageEvent {
 
   // required. GL context/VK device.
   optional uint64 context = 5;
+
+  // optional. The surface or render target for this event.
+  optional uint64 surface_id = 8;
+
+  // optional. Render pass handle.
+  optional uint64 render_pass_handle = 9;
+
+  // optional. Submission ID generated by the UMD.
+  optional uint32 submission_id = 10;
 
   // optional.  Additional data for the user. This may include attribs for
   // the event like resource ids, shaders etc
@@ -3611,171 +4117,18 @@ message GpuRenderStageEvent {
   }
   optional Specifications specifications = 7;
 
+  // optional.  If True, duration must not be set and a GpuRenderStageEndEvent is expected.
+  optional bool begin_event = 11;
+
   // Extension for vendor's custom proto.
   extensions 100;
 }
 
-// End of protos/perfetto/trace/gpu/gpu_render_stage_event.proto
-
-// Begin of protos/perfetto/common/gpu_counter_descriptor.proto
-
-// Description of GPU counters.
-// This message is sent by a GPU counter producer to specify the counters available in the hardware.
-message GpuCounterDescriptor {
-  message GpuCounterSpec {
-    optional uint32 counter_id = 1;
-    optional string name = 2;
-    optional string description = 3;
-    optional MeasureUnit unit = 4;
-    oneof peak_value {
-      int64 int_peak_value = 5;
-      double double_peak_value = 6;
-    };
-
-  }
-  repeated GpuCounterSpec specs = 1;
-
-  // Taken from https://developer.android.com/reference/android/icu/util/MeasureUnit
-  enum MeasureUnit {
-    ACRE = 0;
-    ACRE_FOOT = 1;
-    AMPERE = 2;
-    ARC_MINUTE = 3;
-    ARC_SECOND = 4;
-    ASTRONOMICAL_UNIT = 5;
-    BIT = 6;
-    BUSHEL = 7;
-    BYTE = 8;
-    CALORIE = 9;
-    CARAT = 10;
-    CELSIUS = 11;
-    CENTILITER = 12;
-    CENTIMETER = 13;
-    CENTURY = 14;
-    CUBIC_CENTIMETER = 15;
-    CUBIC_FOOT = 16;
-    CUBIC_INCH = 17;
-    CUBIC_KILOMETER = 18;
-    CUBIC_METER = 19;
-    CUBIC_MILE = 20;
-    CUBIC_YARD = 21;
-    CUP = 22;
-    CUP_METRIC = 23;
-    DAY = 24;
-    DECILITER = 25;
-    DECIMETER = 26;
-    DEGREE = 27;
-    FAHRENHEIT = 28;
-    FATHOM = 29;
-    FLUID_OUNCE = 30;
-    FOODCALORIE = 31;
-    FOOT = 32;
-    FURLONG = 33;
-    GALLON = 34;
-    GALLON_IMPERIAL = 35;
-    GENERIC_TEMPERATURE = 36;
-    GIGABIT = 37;
-    GIGABYTE = 38;
-    GIGAHERTZ = 39;
-    GIGAWATT = 40;
-    GRAM = 41;
-    G_FORCE = 42;
-    HECTARE = 43;
-    HECTOLITER = 44;
-    HECTOPASCAL = 45;
-    HERTZ = 46;
-    HORSEPOWER = 47;
-    HOUR = 48;
-    INCH = 49;
-    INCH_HG = 50;
-    JOULE = 51;
-    KARAT = 52;
-    KELVIN = 53;
-    KILOBIT = 54;
-    KILOBYTE = 55;
-    KILOCALORIE = 56;
-    KILOGRAM = 57;
-    KILOHERTZ = 58;
-    KILOJOULE = 59;
-    KILOMETER = 60;
-    KILOMETER_PER_HOUR = 61;
-    KILOWATT = 62;
-    KILOWATT_HOUR = 63;
-    KNOT = 64;
-    LIGHT_YEAR = 65;
-    LITER = 66;
-    LITER_PER_100KILOMETERS = 67;
-    LITER_PER_KILOMETER = 68;
-    LUX = 69;
-    MEGABIT = 70;
-    MEGABYTE = 71;
-    MEGAHERTZ = 72;
-    MEGALITER = 73;
-    MEGAWATT = 74;
-    METER = 75;
-    METER_PER_SECOND = 76;
-    METER_PER_SECOND_SQUARED = 77;
-    METRIC_TON = 78;
-    MICROGRAM = 79;
-    MICROMETER = 80;
-    MICROSECOND = 81;
-    MILE = 82;
-    MILE_PER_GALLON = 83;
-    MILE_PER_GALLON_IMPERIAL = 84;
-    MILE_PER_HOUR = 85;
-    MILE_SCANDINAVIAN = 86;
-    MILLIAMPERE = 87;
-    MILLIBAR = 88;
-    MILLIGRAM = 89;
-    MILLIGRAM_PER_DECILITER = 90;
-    MILLILITER = 91;
-    MILLIMETER = 92;
-    MILLIMETER_OF_MERCURY = 93;
-    MILLIMOLE_PER_LITER = 94;
-    MILLISECOND = 95;
-    MILLIWATT = 96;
-    MINUTE = 97;
-    MONTH = 98;
-    NANOMETER = 99;
-    NANOSECOND = 100;
-    NAUTICAL_MILE = 101;
-    OHM = 102;
-    OUNCE = 103;
-    OUNCE_TROY = 104;
-    PARSEC = 105;
-    PART_PER_MILLION = 106;
-    PICOMETER = 107;
-    PINT = 108;
-    PINT_METRIC = 109;
-    POINT = 110;
-    POUND = 111;
-    POUND_PER_SQUARE_INCH = 112;
-    QUART = 113;
-    RADIAN = 114;
-    REVOLUTION_ANGLE = 115;
-    SECOND = 116;
-    SQUARE_CENTIMETER = 117;
-    SQUARE_FOOT = 118;
-    SQUARE_INCH = 119;
-    SQUARE_KILOMETER = 120;
-    SQUARE_METER = 121;
-    SQUARE_MILE = 122;
-    SQUARE_YARD = 123;
-    STONE = 124;
-    TABLESPOON = 125;
-    TEASPOON = 126;
-    TERABIT = 127;
-    TERABYTE = 128;
-    TON = 129;
-    VOLT = 130;
-    WATT = 131;
-    WEEK = 132;
-    YARD = 133;
-    YEAR = 134;
-  };
+// Message to signal the end of the last render stage event that had set begin_event.
+message GpuRenderStageEndEvent {
 }
 
-// End of protos/perfetto/common/gpu_counter_descriptor.proto
+// End of protos/perfetto/trace/gpu/gpu_render_stage_event.proto
 
 // Begin of protos/perfetto/config/android/android_log_config.proto
 
@@ -3832,6 +4185,10 @@ message DataSourceConfig {
   // Set by the service to indicate the duration of the trace.
   // DO NOT SET in consumer as this will be overridden by the service.
   optional uint32 trace_duration_ms = 3;
+
+  // Set by the service to indicate how long it waits after StopDataSource.
+  // DO NOT SET in consumer as this will be overridden by the service.
+  optional uint32 stop_timeout_ms = 7;
 
   // Set by the service to indicate whether this tracing session has extra
   // guardrails.
@@ -4109,7 +4466,7 @@ message TestConfig {
 // It contains the general config for the logging buffer(s) and the configs for
 // all the data source being enabled.
 //
-// Next id: 26.
+// Next id: 27.
 message TraceConfig {
   message BufferConfig {
     optional uint32 size_kb = 1;
@@ -4384,6 +4741,9 @@ message TraceConfig {
     optional bool skip_dropbox = 4;
   }
   optional IncidentReportConfig incident_report_config = 25;
+
+  // An identifier clients can use to tie this trace to other logging.
+  optional bytes trace_uuid = 26;
 }
 
 // End of protos/perfetto/config/trace_config.proto

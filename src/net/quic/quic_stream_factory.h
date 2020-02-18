@@ -178,6 +178,9 @@ struct NET_EXPORT QuicParams {
   // If true, an idle session will be migrated within the idle migration
   // period.
   bool migrate_idle_sessions = false;
+  // If true, sessions with open streams will attempt to migrate to a different
+  // port when the current path is poor.
+  bool allow_port_migration = false;
   // A session can be migrated if its idle time is within this period.
   base::TimeDelta idle_session_migration_period =
       kDefaultIdleSessionMigrationPeriod;
@@ -466,7 +469,8 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // It returns the amount of time waiting job should be delayed.
   base::TimeDelta GetTimeDelayForWaitingJob(
-      const quic::QuicServerId& server_id);
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
   QuicChromiumConnectionHelper* helper() { return helper_.get(); }
 
@@ -527,20 +531,24 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
                        QuicChromiumClientSession* session);
   void MarkAllActiveSessionsGoingAway();
 
-  void ConfigureInitialRttEstimate(const quic::QuicServerId& server_id,
-                                   quic::QuicConfig* config);
+  void ConfigureInitialRttEstimate(
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key,
+      quic::QuicConfig* config);
 
   // Returns |srtt| in micro seconds from ServerNetworkStats. Returns 0 if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
   int64_t GetServerNetworkStatsSmoothedRttInMicroseconds(
-      const quic::QuicServerId& server_id) const;
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key) const;
 
   // Returns |srtt| from ServerNetworkStats. Returns null if there
   // is no |http_server_properties_| or if |http_server_properties_| doesn't
   // have ServerNetworkStats for the given |server_id|.
   const base::TimeDelta* GetServerNetworkStatsSmoothedRtt(
-      const quic::QuicServerId& server_id) const;
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key) const;
 
   // Helper methods.
   bool WasQuicRecentlyBroken(const quic::QuicServerId& server_id) const;
@@ -553,6 +561,15 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   quic::QuicAsyncStatus StartCertVerifyJob(const quic::QuicServerId& server_id,
                                            int cert_verify_flags,
                                            const NetLogWithSource& net_log);
+
+  // Helper method to initialize the following migration options and check
+  // pre-requisites:
+  // - |params_.migrate_sessions_on_network_change_v2|
+  // - |params_.migrate_sessions_early_v2|
+  // - |params_.migrate_idle_sessions|
+  // - |params_.retry_on_alternate_network_before_handshake|
+  // If pre-requisites are not met, turn off the corresponding options.
+  void InitializeMigrationOptions();
 
   // Initializes the cached state associated with |server_id| in
   // |crypto_config_| with the information in |server_info|. Populates
@@ -628,26 +645,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   int yield_after_packets_;
   quic::QuicTime::Delta yield_after_duration_;
 
-  // Set if migration should be attempted after probing.
-  const bool migrate_sessions_on_network_change_v2_;
-
-  // Set if early migration should be attempted after probing when the
-  // connection experiences poor connectivity.
-  const bool migrate_sessions_early_v2_;
-
-  // Set if a new connection may be kicked off on an alternate network when a
-  // connection fails on the default network before handshake is confirmed.
-  const bool retry_on_alternate_network_before_handshake_;
-
   // If |migrate_sessions_early_v2_| is true, tracks the current default
   // network, and is updated OnNetworkMadeDefault.
   // Otherwise, always set to NetworkChangeNotifier::kInvalidNetwork.
   NetworkChangeNotifier::NetworkHandle default_network_;
-
-  // Set if idle sessions can be migrated within
-  // |params_.idle_session_migration_period| when connection migration is
-  // triggered.
-  const bool migrate_idle_sessions_;
 
   // Local address of socket that was created in CreateSession.
   IPEndPoint local_address_;

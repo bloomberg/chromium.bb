@@ -23,11 +23,6 @@
 #include "third_party/base/ptr_util.h"
 #include "third_party/base/stl_util.h"
 
-#ifdef PDF_ENABLE_XFA
-#include "fpdfsdk/fpdfxfa/cpdfxfa_context.h"
-#include "fpdfsdk/fpdfxfa/cpdfxfa_page.h"
-#endif  // PDF_ENABLE_XFA
-
 #if defined(OS_WIN)
 #include <tchar.h>
 #endif
@@ -108,17 +103,40 @@ FPDFText_GetFontInfo(FPDF_TEXTPAGE text_page,
   if (!charinfo.m_pTextObj)
     return 0;
 
-  CPDF_Font* font = charinfo.m_pTextObj->GetFont();
+  RetainPtr<CPDF_Font> font = charinfo.m_pTextObj->GetFont();
   if (!font)
     return 0;
 
   if (flags)
     *flags = font->GetFontFlags();
-  ByteString basefont = font->GetBaseFont();
+
+  ByteString basefont = font->GetBaseFontName();
   unsigned long length = basefont.GetLength() + 1;
   if (buffer && buflen >= length)
     memcpy(buffer, basefont.c_str(), length);
+
   return length;
+}
+
+FPDF_EXPORT double FPDF_CALLCONV FPDFText_GetCharAngle(FPDF_TEXTPAGE text_page,
+                                                       int index) {
+  CPDF_TextPage* textpage = GetTextPageForValidIndex(text_page, index);
+  if (!textpage)
+    return -1;
+
+  FPDF_CHAR_INFO charinfo;
+  textpage->GetCharInfo(index, &charinfo);
+  // On the left is our current Matrix and on the right a generic rotation
+  // matrix for our coordinate space.
+  // | a  b  0 |    | cos(t)  -sin(t)  0 |
+  // | c  d  0 |    | sin(t)   cos(t)  0 |
+  // | e  f  1 |    |   0        0     1 |
+  // Calculate the angle of the vector
+  double angle = atan2(charinfo.m_Matrix.c, charinfo.m_Matrix.a);
+  if (angle < 0)
+    angle = 2 * FX_PI + angle;
+
+  return angle;
 }
 
 FPDF_EXPORT FPDF_BOOL FPDF_CALLCONV FPDFText_GetCharBox(FPDF_TEXTPAGE text_page,

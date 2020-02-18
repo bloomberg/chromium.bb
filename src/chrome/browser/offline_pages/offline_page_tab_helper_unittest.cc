@@ -83,7 +83,7 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
 
   void SetUp() override;
   void TearDown() override;
-  content::BrowserContext* CreateBrowserContext() override;
+  std::unique_ptr<content::BrowserContext> CreateBrowserContext() override;
 
   void CreateNavigationSimulator(const GURL& url);
 
@@ -106,12 +106,11 @@ class OfflinePageTabHelperTest : public content::RenderViewHostTestHarness {
   PrefetchService* prefetch_service_;  // Keyed Service.
   std::unique_ptr<content::NavigationSimulator> navigation_simulator_;
 
-  base::WeakPtrFactory<OfflinePageTabHelperTest> weak_ptr_factory_;
+  base::WeakPtrFactory<OfflinePageTabHelperTest> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(OfflinePageTabHelperTest);
 };
 
-OfflinePageTabHelperTest::OfflinePageTabHelperTest()
-    : tab_helper_(nullptr), weak_ptr_factory_(this) {}
+OfflinePageTabHelperTest::OfflinePageTabHelperTest() : tab_helper_(nullptr) {}
 
 void OfflinePageTabHelperTest::SetUp() {
   content::RenderViewHostTestHarness::SetUp();
@@ -131,9 +130,9 @@ void OfflinePageTabHelperTest::TearDown() {
   content::RenderViewHostTestHarness::TearDown();
 }
 
-content::BrowserContext* OfflinePageTabHelperTest::CreateBrowserContext() {
-  TestingProfile::Builder builder;
-  return builder.Build().release();
+std::unique_ptr<content::BrowserContext>
+OfflinePageTabHelperTest::CreateBrowserContext() {
+  return TestingProfile::Builder().Build();
 }
 
 void OfflinePageTabHelperTest::CreateNavigationSimulator(const GURL& url) {

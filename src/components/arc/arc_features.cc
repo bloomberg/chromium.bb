@@ -6,10 +6,6 @@
 
 namespace arc {
 
-// Controls whether ARC is available for CHILD accounts.
-const base::Feature kAvailableForChildAccountFeature{
-    "ArcAvailableForChildAccount", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether ARC++ app runtime performance statistics collection is
 // enabled.
 const base::Feature kAppRuntimePerormanceStatistics{
@@ -52,14 +48,17 @@ const base::Feature kEnableUnifiedAudioFocusFeature{
 const base::Feature kFilePickerExperimentFeature{
     "ArcFilePickerExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls experimental ARC graphic buffers visualization tools.
-const base::Feature kGraphicBuffersVisualizationTool{
-    "ArcGraphicBuffersVisualizationTool", base::FEATURE_DISABLED_BY_DEFAULT};
+// Toggles between native bridge implementations for ARC.
+// Note, that we keep the original feature name to preserve
+// corresponding metrics.
+const base::Feature kNativeBridgeToggleFeature{
+    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Controls experimental native bridge feature for ARC.
-const base::Feature kNativeBridgeExperimentFeature {
-    "ArcNativeBridgeExperiment", base::FEATURE_ENABLED_BY_DEFAULT
-};
+// Controls ARC picture-in-picture feature. If this is enabled, then Android
+// will control which apps can enter PIP. If this is disabled, then ARC PIP
+// will be disabled.
+const base::Feature kPictureInPictureFeature{"ArcPictureInPicture",
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls experimental print spooler feature for ARC.
 const base::Feature kPrintSpoolerExperimentFeature{
@@ -80,7 +79,7 @@ const base::Feature kUsbHostFeature{"ArcUsbHost",
 // When enabled, chrome://settings and Files.app will ask if the user wants
 // to expose USB storage devices to ARC.
 const base::Feature kUsbStorageUIFeature{"ArcUsbStorageUI",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls ARC VPN integration.
 // When enabled, Chrome traffic will be routed through VPNs connected in

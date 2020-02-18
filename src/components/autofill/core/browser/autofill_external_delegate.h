@@ -103,6 +103,8 @@ class AutofillExternalDelegate : public AutofillPopupDelegate {
   // values or settings.
   void Reset();
 
+  const FormData& query_form() const { return query_form_; }
+
  protected:
   base::WeakPtr<AutofillExternalDelegate> GetWeakPtr();
 

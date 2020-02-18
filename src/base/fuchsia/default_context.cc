@@ -13,10 +13,10 @@
 namespace base {
 namespace fuchsia {
 
-// Returns default sys::ComponentContext for the current process.
 sys::ComponentContext* ComponentContextForCurrentProcess() {
   static base::NoDestructor<std::unique_ptr<sys::ComponentContext>> value(
-      sys::ComponentContext::Create());
+      std::make_unique<sys::ComponentContext>(
+          sys::ServiceDirectory::CreateFromNamespace()));
   return value.get()->get();
 }
 

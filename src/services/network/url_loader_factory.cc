@@ -71,6 +71,10 @@ void URLLoaderFactory::CreateLoaderAndStart(
     const ResourceRequest& url_request,
     mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation) {
+  // Requests with |trusted_params| when params_->is_trusted is not set should
+  // have been rejected at the CorsURLLoader layer.
+  DCHECK(!url_request.trusted_params || params_->is_trusted);
+
   std::string origin_string;
   bool has_origin = url_request.headers.GetHeader("Origin", &origin_string) &&
                     origin_string != "null";
@@ -132,21 +136,6 @@ void URLLoaderFactory::CreateLoaderAndStart(
     return;
   }
 
-  // For navigation and worker script resources, the network isolation key may
-  // be set in the resource request and for sub-resources, it is set in params_.
-  // Fail if it is set in both as that could imply a compromised less trusted
-  // process filling up the resource request's trusted_network_isolation_key (It
-  // should only be filled up by a trusted process).
-  if (params_->network_isolation_key &&
-      !url_request.trusted_network_isolation_key.IsEmpty()) {
-    URLLoaderCompletionStatus status;
-    status.error_code = net::ERR_INVALID_ARGUMENT;
-    status.exists_in_cache = false;
-    status.completion_time = base::TimeTicks::Now();
-    client->OnComplete(status);
-    return;
-  }
-
   auto loader = std::make_unique<URLLoader>(
       context_->url_request_context(), network_service_client,
       context_->client(),
@@ -156,7 +145,9 @@ void URLLoaderFactory::CreateLoaderAndStart(
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       params_.get(), request_id, resource_scheduler_client_,
       std::move(keepalive_statistics_recorder),
-      std::move(network_usage_accumulator), header_client_.get());
+      std::move(network_usage_accumulator),
+      header_client_.is_bound() ? header_client_.get() : nullptr,
+      context_->origin_policy_manager());
   cors_url_loader_factory_->OnLoaderCreated(std::move(loader));
 }
 

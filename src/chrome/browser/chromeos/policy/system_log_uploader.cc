@@ -13,6 +13,7 @@
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
 #include "base/files/scoped_temp_dir.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
@@ -173,16 +174,20 @@ std::string SystemLogDelegate::GetPolicyAsJSON() {
           user_manager::UserManager::Get()->GetPrimaryUser()->IsAffiliated();
     }
   }
-  return policy::GetAllPolicyValuesAsJSON(
-      ProfileManager::GetActiveUserProfile(), include_user_policies,
-      true /* with_device_data */, true /* is_pretty_print */);
+  return policy::DictionaryPolicyConversions()
+      .WithBrowserContext(ProfileManager::GetActiveUserProfile())
+      .EnableUserPolicies(include_user_policies)
+      .EnableDeviceLocalAccountPolicies(true)
+      .EnableDeviceInfo(true)
+      .ToJSON();
 }
 
 void SystemLogDelegate::LoadSystemLogs(LogUploadCallback upload_callback) {
   // Run ReadFiles() in the thread that interacts with the file system and
   // return system logs to |upload_callback| on the current thread.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ReadFiles), std::move(upload_callback));
 }
 
@@ -228,8 +233,9 @@ std::unique_ptr<UploadJob> SystemLogDelegate::CreateUploadJob(
 void SystemLogDelegate::ZipSystemLogs(
     std::unique_ptr<SystemLogUploader::SystemLogs> system_logs,
     ZippedLogUploadCallback upload_callback) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&ZipFiles, std::move(system_logs)),
       std::move(upload_callback));
 }
@@ -292,6 +298,9 @@ const char* const SystemLogUploader::kZippedLogsFileName = "logs.zip";
 const char* const SystemLogUploader::kContentTypeOctetStream =
     "application/octet-stream";
 
+const char* const SystemLogUploader::kSystemLogUploadResultHistogram =
+    "Enterprise.SystemLogUploadResult";
+
 SystemLogUploader::SystemLogUploader(
     std::unique_ptr<Delegate> syslog_delegate,
     const scoped_refptr<base::SequencedTaskRunner>& task_runner)
@@ -299,8 +308,7 @@ SystemLogUploader::SystemLogUploader(
       upload_frequency_(GetUploadFrequency()),
       task_runner_(task_runner),
       syslog_delegate_(std::move(syslog_delegate)),
-      upload_enabled_(false),
-      weak_factory_(this) {
+      upload_enabled_(false) {
   if (!syslog_delegate_)
     syslog_delegate_ = std::make_unique<SystemLogDelegate>(task_runner);
   DCHECK(syslog_delegate_);
@@ -330,6 +338,12 @@ void SystemLogUploader::OnSuccess() {
   log_upload_in_progress_ = false;
   retry_count_ = 0;
 
+  UMA_HISTOGRAM_ENUMERATION(
+      kSystemLogUploadResultHistogram,
+      base::FeatureList::IsEnabled(features::kUploadZippedSystemLogs)
+          ? ZIPPED_LOGS_UPLOAD_SUCCESS
+          : NON_ZIPPED_LOGS_UPLOAD_SUCCESS);
+
   // On successful log upload schedule the next log upload after
   // upload_frequency_ time from now.
   ScheduleNextSystemLogUpload(upload_frequency_);
@@ -340,6 +354,11 @@ void SystemLogUploader::OnFailure(UploadJob::ErrorCode error_code) {
   last_upload_attempt_ = base::Time::NowFromSystemTime();
   log_upload_in_progress_ = false;
 
+  UMA_HISTOGRAM_ENUMERATION(
+      kSystemLogUploadResultHistogram,
+      base::FeatureList::IsEnabled(features::kUploadZippedSystemLogs)
+          ? ZIPPED_LOGS_UPLOAD_FAILURE
+          : NON_ZIPPED_LOGS_UPLOAD_FAILURE);
   //  If we have hit the maximum number of retries, terminate this upload
   //  attempt and schedule the next one using the normal delay. Otherwise, retry
   //  uploading after kErrorUploadDelayMs milliseconds.

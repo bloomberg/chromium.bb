@@ -591,7 +591,7 @@ class Branch(object):
       source_version = 'branch' if which_version == 'patch' else 'build'
       self.checkout.BumpVersion(
           source_version,
-          'master',
+          git.StripRefs(self.checkout.manifest.Default().revision),
           'Bump %s number for source branch after creating branch %s' %
           (source_version, self.name),
           dry_run=not push)

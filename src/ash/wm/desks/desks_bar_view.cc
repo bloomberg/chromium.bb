@@ -11,6 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/style/ash_color_provider.h"
 #include "ash/wm/desks/desk_mini_view.h"
 #include "ash/wm/desks/desk_mini_view_animations.h"
 #include "ash/wm/desks/new_desk_button.h"
@@ -22,6 +23,7 @@
 #include "ui/aura/window.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/events/event_observer.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/event_monitor.h"
 #include "ui/views/widget/widget.h"
@@ -123,7 +125,10 @@ DesksBarView::DesksBarView()
 
   background_view_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
   background_view_->layer()->SetFillsBoundsOpaquely(false);
-  background_view_->layer()->SetColor(SkColorSetARGB(60, 0, 0, 0));
+  background_view_->layer()->SetColor(
+      AshColorProvider::Get()->GetBaseLayerColor(
+          AshColorProvider::BaseLayerType::kTransparentWithBlur,
+          AshColorProvider::AshColorMode::kDark));
 
   AddChildView(background_view_);
   AddChildView(new_desk_button_);
@@ -159,7 +164,7 @@ std::unique_ptr<views::Widget> DesksBarView::CreateDesksWidget(
   params.parent = root->GetChildById(kShellWindowId_WallpaperContainer);
   params.bounds = bounds;
   params.name = "VirtualDesksWidget";
-  widget->Init(params);
+  widget->Init(std::move(params));
   ::wm::SetWindowVisibilityAnimationTransition(widget->GetNativeWindow(),
                                                ::wm::ANIMATE_NONE);
 
@@ -220,7 +225,7 @@ void DesksBarView::Layout() {
   if (mini_views_.empty())
     return;
 
-  constexpr int kMiniViewsSpacing = 8;
+  constexpr int kMiniViewsSpacing = 12;
   const gfx::Size mini_view_size = mini_views_[0]->GetPreferredSize();
   const int total_width =
       mini_views_.size() * (mini_view_size.width() + kMiniViewsSpacing) -
@@ -270,8 +275,7 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   // Let the highlight controller know the view is destroying before it is
   // removed from the collection because it needs to know the index of the mini
   // view relative to other traversable views.
-  auto* highlight_controller = GetHighlightController();
-  highlight_controller->OnViewDestroyingOrDisabling(iter->get());
+  GetHighlightController()->OnViewDestroyingOrDisabling(iter->get());
 
   const int begin_x = GetFirstMiniViewXOffset();
   std::unique_ptr<DeskMiniView> removed_mini_view = std::move(*iter);
@@ -280,11 +284,6 @@ void DesksBarView::OnDeskRemoved(const Desk* desk) {
   Layout();
   UpdateMiniViewsLabels();
   new_desk_button_->UpdateButtonState();
-
-  // Once the remaining mini views have their bounds updated, notify the
-  // overview highlight controller so that it can update the focus highlight, if
-  // needed.
-  highlight_controller->OnWindowsRepositioned(removed_mini_view->root_window());
 
   std::vector<DeskMiniView*> mini_views_before;
   std::vector<DeskMiniView*> mini_views_after;
@@ -350,10 +349,6 @@ void DesksBarView::UpdateNewMiniViews(bool animate) {
   }
 
   Layout();
-
-  // Update the overview highlight if needed since adding a desk will shift the
-  // mini views from their current positions.
-  GetHighlightController()->OnWindowsRepositioned(root_window);
 
   if (!animate)
     return;

@@ -35,8 +35,8 @@ void init() {
         swapchain = dawnDeviceCreateSwapChain(device, &descriptor);
     }
     swapChainFormat = static_cast<DawnTextureFormat>(GetPreferredSwapChainTextureFormat());
-    dawnSwapChainConfigure(swapchain, swapChainFormat, DAWN_TEXTURE_USAGE_BIT_OUTPUT_ATTACHMENT, 640,
-                          480);
+    dawnSwapChainConfigure(swapchain, swapChainFormat, DAWN_TEXTURE_USAGE_OUTPUT_ATTACHMENT, 640,
+                           480);
 
     const char* vs =
         "#version 450\n"
@@ -45,7 +45,8 @@ void init() {
         "   gl_Position = vec4(pos[gl_VertexIndex], 0.0, 1.0);\n"
         "}\n";
     DawnShaderModule vsModule =
-        utils::CreateShaderModule(dawn::Device(device), utils::ShaderStage::Vertex, vs).Release();
+        utils::CreateShaderModule(dawn::Device(device), utils::SingleShaderStage::Vertex, vs)
+            .Release();
 
     const char* fs =
         "#version 450\n"
@@ -54,17 +55,15 @@ void init() {
         "   fragColor = vec4(1.0, 0.0, 0.0, 1.0);\n"
         "}\n";
     DawnShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs).Release();
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs).Release();
 
     {
         DawnRenderPipelineDescriptor descriptor;
         descriptor.nextInChain = nullptr;
 
-        DawnPipelineStageDescriptor vertexStage;
-        vertexStage.nextInChain = nullptr;
-        vertexStage.module = vsModule;
-        vertexStage.entryPoint = "main";
-        descriptor.vertexStage = &vertexStage;
+        descriptor.vertexStage.nextInChain = nullptr;
+        descriptor.vertexStage.module = vsModule;
+        descriptor.vertexStage.entryPoint = "main";
 
         DawnPipelineStageDescriptor fragmentStage;
         fragmentStage.nextInChain = nullptr;
@@ -126,10 +125,7 @@ void init() {
 
 void frame() {
     DawnTexture backbuffer = dawnSwapChainGetNextTexture(swapchain);
-    DawnTextureView backbufferView;
-    {
-        backbufferView = dawnTextureCreateDefaultView(backbuffer);
-    }
+    DawnTextureView backbufferView = dawnTextureCreateView(backbuffer, nullptr);
     DawnRenderPassDescriptor renderpassInfo;
     DawnRenderPassColorAttachmentDescriptor colorAttachment;
     DawnRenderPassColorAttachmentDescriptor* colorAttachments = {&colorAttachment};

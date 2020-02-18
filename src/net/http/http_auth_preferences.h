@@ -24,6 +24,13 @@ class URLSecurityManager;
 // them accessible from the IO thread.
 class NET_EXPORT HttpAuthPreferences {
  public:
+  // |DefaultCredentials| influences the behavior of codepaths that use
+  // IdentitySource::IDENT_SRC_DEFAULT_CREDENTIALS in |HttpAuthController|
+  enum DefaultCredentials {
+    DISALLOW_DEFAULT_CREDENTIALS = 0,
+    ALLOW_DEFAULT_CREDENTIALS = 1,
+  };
+
   HttpAuthPreferences();
   virtual ~HttpAuthPreferences();
 
@@ -68,9 +75,9 @@ class NET_EXPORT HttpAuthPreferences {
   }
 #endif
 
-  void SetServerWhitelist(const std::string& server_whitelist);
+  void SetServerAllowlist(const std::string& server_allowlist);
 
-  void SetDelegateWhitelist(const std::string& delegate_whitelist);
+  void SetDelegateAllowlist(const std::string& delegate_allowlist);
 
 #if defined(OS_ANDROID)
   void set_auth_android_negotiate_account_type(

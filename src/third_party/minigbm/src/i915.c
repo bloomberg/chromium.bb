@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <sys/mman.h>
+#include <unistd.h>
 #include <xf86drm.h>
 
 #include "drv_priv.h"
@@ -22,17 +23,17 @@
 #define I915_CACHELINE_SIZE 64
 #define I915_CACHELINE_MASK (I915_CACHELINE_SIZE - 1)
 
-static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888,    DRM_FORMAT_ARGB1555,
-						  DRM_FORMAT_ARGB8888,    DRM_FORMAT_RGB565,
+static const uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888,	  DRM_FORMAT_ARGB1555,
+						  DRM_FORMAT_ARGB8888,	  DRM_FORMAT_RGB565,
 						  DRM_FORMAT_XBGR2101010, DRM_FORMAT_XBGR8888,
-						  DRM_FORMAT_XRGB1555,    DRM_FORMAT_XRGB2101010,
-						  DRM_FORMAT_XRGB8888 };
+						  DRM_FORMAT_XRGB1555,	  DRM_FORMAT_XRGB2101010,
+						  DRM_FORMAT_XRGB8888,	  DRM_FORMAT_ARGB2101010 };
 
 static const uint32_t tileable_texture_source_formats[] = { DRM_FORMAT_GR88, DRM_FORMAT_R8,
 							    DRM_FORMAT_UYVY, DRM_FORMAT_YUYV };
 
 static const uint32_t texture_source_formats[] = { DRM_FORMAT_YVU420, DRM_FORMAT_YVU420_ANDROID,
-						   DRM_FORMAT_NV12 };
+						   DRM_FORMAT_NV12, DRM_FORMAT_P010 };
 
 struct i915_device {
 	uint32_t gen;
@@ -137,6 +138,13 @@ static int i915_add_combinations(struct driver *drv)
 			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
 			     texture_use_flags);
 
+	/*
+	 * Chrome uses DMA-buf mmap to write to YV12 buffers, which are then accessed by the
+	 * Video Encoder Accelerator (VEA). It could also support NV12 potentially in the future.
+	 */
+	drv_modify_combination(drv, DRM_FORMAT_YVU420, &metadata, BO_USE_HW_VIDEO_ENCODER);
+	drv_modify_combination(drv, DRM_FORMAT_NV12, &metadata, BO_USE_HW_VIDEO_ENCODER);
+
 	/* Android CTS tests require this. */
 	drv_add_combination(drv, DRM_FORMAT_BGR888, &metadata, BO_USE_SW_MASK);
 
@@ -187,8 +195,10 @@ static int i915_add_combinations(struct driver *drv)
 			     ARRAY_SIZE(tileable_texture_source_formats), &metadata,
 			     texture_use_flags);
 
-	/* Support y-tiled NV12 for libva */
+	/* Support y-tiled NV12 and P010 for libva */
 	drv_add_combination(drv, DRM_FORMAT_NV12, &metadata,
+			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
+	drv_add_combination(drv, DRM_FORMAT_P010, &metadata,
 			    BO_USE_TEXTURE | BO_USE_HW_VIDEO_DECODER);
 
 	kms_items = drv_query_kms(drv);
@@ -314,15 +324,16 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 {
 	uint32_t offset;
 	size_t plane;
-	int ret;
+	int ret, pagesize;
 
 	offset = 0;
+	pagesize = getpagesize();
 	for (plane = 0; plane < drv_num_planes_from_format(format); plane++) {
 		uint32_t stride = drv_stride_from_format(format, width, plane);
 		uint32_t plane_height = drv_height_from_format(format, height, plane);
 
 		if (bo->tiling != I915_TILING_NONE)
-			assert(IS_ALIGNED(offset, 4096));
+			assert(IS_ALIGNED(offset, pagesize));
 
 		ret = i915_align_dimensions(bo, bo->tiling, &stride, &plane_height);
 		if (ret)
@@ -334,7 +345,7 @@ static int i915_bo_from_format(struct bo *bo, uint32_t width, uint32_t height, u
 		offset += bo->sizes[plane];
 	}
 
-	bo->total_size = offset;
+	bo->total_size = ALIGN(offset, pagesize);
 
 	return 0;
 }
@@ -382,7 +393,7 @@ static int i915_bo_create_for_modifier(struct bo *bo, uint32_t width, uint32_t h
 	ret = drmIoctl(bo->drv->fd, DRM_IOCTL_I915_GEM_CREATE, &gem_create);
 	if (ret) {
 		drv_log("DRM_IOCTL_I915_GEM_CREATE failed (size=%llu)\n", gem_create.size);
-		return ret;
+		return -errno;
 	}
 
 	for (plane = 0; plane < bo->num_planes; plane++)
@@ -557,7 +568,7 @@ static int i915_bo_flush(struct bo *bo, struct mapping *mapping)
 	return 0;
 }
 
-static uint32_t i915_resolve_format(uint32_t format, uint64_t use_flags)
+static uint32_t i915_resolve_format(struct driver *drv, uint32_t format, uint64_t use_flags)
 {
 	switch (format) {
 	case DRM_FORMAT_FLEX_IMPLEMENTATION_DEFINED:

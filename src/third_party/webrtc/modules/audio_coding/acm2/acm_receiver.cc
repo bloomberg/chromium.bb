@@ -228,7 +228,7 @@ absl::optional<std::pair<int, SdpAudioFormat>> AcmReceiver::LastDecoder()
   return last_decoder_;
 }
 
-void AcmReceiver::GetNetworkStatistics(NetworkStatistics* acm_stat) {
+void AcmReceiver::GetNetworkStatistics(NetworkStatistics* acm_stat) const {
   NetEqNetworkStatistics neteq_stat;
   // NetEq function always returns zero, so we don't check the return value.
   neteq_->NetworkStatistics(&neteq_stat);
@@ -243,7 +243,6 @@ void AcmReceiver::GetNetworkStatistics(NetworkStatistics* acm_stat) {
   acm_stat->currentAccelerateRate = neteq_stat.accelerate_rate;
   acm_stat->currentSecondaryDecodedRate = neteq_stat.secondary_decoded_rate;
   acm_stat->currentSecondaryDiscardedRate = neteq_stat.secondary_discarded_rate;
-  acm_stat->clockDriftPPM = neteq_stat.clockdrift_ppm;
   acm_stat->addedSamples = neteq_stat.added_zero_samples;
   acm_stat->meanWaitingTimeMs = neteq_stat.mean_waiting_time_ms;
   acm_stat->medianWaitingTimeMs = neteq_stat.median_waiting_time_ms;

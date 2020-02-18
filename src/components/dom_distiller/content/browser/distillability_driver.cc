@@ -5,6 +5,7 @@
 #include "components/dom_distiller/content/browser/distillability_driver.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "content/public/browser/navigation_handle.h"
@@ -31,8 +32,13 @@ class DistillabilityServiceImpl : public mojom::DistillabilityService {
                            bool is_mobile_friendly) override {
     if (!distillability_driver_)
       return;
-    distillability_driver_->OnDistillability(is_distillable, is_last_update,
-                                             is_mobile_friendly);
+    DistillabilityResult result;
+    result.is_distillable = is_distillable;
+    result.is_last = is_last_update;
+    result.is_mobile_friendly = is_mobile_friendly;
+    DVLOG(1) << "Notifying observers of distillability service result: "
+             << result;
+    distillability_driver_->OnDistillability(result);
   }
 
  private:
@@ -59,18 +65,16 @@ void DistillabilityDriver::CreateDistillabilityService(
       std::move(request));
 }
 
-void DistillabilityDriver::SetDelegate(
-    const base::RepeatingCallback<void(bool, bool, bool)>& delegate) {
-  m_delegate_ = delegate;
+void DistillabilityDriver::AddObserver(DistillabilityObserver* observer) {
+  if (!observers_.HasObserver(observer)) {
+    observers_.AddObserver(observer);
+  }
 }
 
-void DistillabilityDriver::OnDistillability(bool distillable,
-                                            bool is_last,
-                                            bool is_mobile_friendly) {
-  if (m_delegate_.is_null())
-    return;
-
-  m_delegate_.Run(distillable, is_last, is_mobile_friendly);
+void DistillabilityDriver::OnDistillability(
+    const DistillabilityResult& result) {
+  for (auto& observer : observers_)
+    observer.OnResult(result);
 }
 
 void DistillabilityDriver::OnInterfaceRequestFromFrame(

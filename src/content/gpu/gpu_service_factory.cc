@@ -9,12 +9,10 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "services/shape_detection/public/mojom/constants.mojom.h"
-#include "services/shape_detection/shape_detection_service.h"
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
 #include "base/bind.h"
-#include "media/mojo/interfaces/constants.mojom.h"      // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"      // nogncheck
 #include "media/mojo/services/media_service_factory.h"  // nogncheck
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "content/public/gpu/content_gpu_client.h"
@@ -63,8 +61,8 @@ void GpuServiceFactory::RunService(
     task_runner = task_runner_;
 #else
     // TODO(crbug.com/786169): Check whether this needs to be single threaded.
-    task_runner = base::CreateSingleThreadTaskRunnerWithTraits(
-        {base::TaskPriority::USER_BLOCKING});
+    task_runner = base::CreateSingleThreadTaskRunner(
+        {base::ThreadPool(), base::TaskPriority::USER_BLOCKING});
 #endif  // defined(OS_WIN)
 
     using FactoryCallback =
@@ -84,13 +82,6 @@ void GpuServiceFactory::RunService(
     return;
   }
 #endif  // BUILDFLAG(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
-
-  if (service_name == shape_detection::mojom::kServiceName) {
-    service_manager::Service::RunAsyncUntilTermination(
-        std::make_unique<shape_detection::ShapeDetectionService>(
-            std::move(request)));
-    return;
-  }
 }
 
 }  // namespace content

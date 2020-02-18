@@ -24,7 +24,7 @@
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/sync_preferences/pref_service_syncable.h"
 #include "components/sync_preferences/pref_service_syncable_factory.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/quota_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -128,7 +128,7 @@ class StateStoreTest : public PlatformStateStoreTestBase {
 
   static const char kProfileName_[];
   static const TestData kTestData_[];
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile* profile_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 

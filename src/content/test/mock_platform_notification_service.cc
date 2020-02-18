@@ -17,6 +17,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_event_dispatcher.h"
+#include "content/public/browser/platform_notification_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/common/persistent_notification_status.h"
 #include "third_party/blink/public/common/notifications/platform_notification_data.h"
 
@@ -89,13 +91,21 @@ void MockPlatformNotificationService::GetDisplayedNotifications(
   for (const auto& notification_id : non_persistent_notifications_)
     displayed_notifications.insert(notification_id);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::USER_VISIBLE},
       base::BindOnce(std::move(callback), std::move(displayed_notifications),
                      true /* supports_synchronization */));
 }
 
-void MockPlatformNotificationService::ScheduleTrigger(base::Time timestamp) {}
+void MockPlatformNotificationService::ScheduleTrigger(base::Time timestamp) {
+  if (timestamp > base::Time::Now())
+    return;
+
+  BrowserContext::ForEachStoragePartition(
+      context_, base::BindRepeating([](content::StoragePartition* partition) {
+        partition->GetPlatformNotificationContext()->TriggerNotifications();
+      }));
+}
 
 base::Time MockPlatformNotificationService::ReadNextTriggerTimestamp() {
   return base::Time::Max();

@@ -16,8 +16,6 @@
 #include "base/task/post_task.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/frame_host/navigation_entry_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
@@ -121,12 +119,8 @@ void HandleSSLErrorOnUI(
   if (!web_contents) {
     // Requests can fail to dispatch because they don't have a WebContents. See
     // https://crbug.com/86537. In this case we have to make a decision in this
-    // function, so we ignore revocation check failures.
-    if (net::IsCertStatusMinorError(ssl_info.cert_status)) {
-      handler->ContinueRequest();
-    } else {
-      handler->CancelRequest();
-    }
+    // function.
+    handler->CancelRequest();
     return;
   }
 
@@ -171,7 +165,7 @@ void SSLManager::OnSSLCertificateError(
 
   // TODO(jam): remove the logic to call this from IO thread once the
   // network service code path is the only one.
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&HandleSSLErrorOnUI, web_contents_getter, delegate,
                      BrowserThread::IO, is_main_frame_request, url, net_error,
@@ -344,14 +338,13 @@ void SSLManager::DidRunContentWithCertErrors(const GURL& security_origin) {
 }
 
 void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
-  bool expired_previous_decision = false;
   // First we check if we know the policy for this error.
   DCHECK(handler->ssl_info().is_valid());
   SSLHostStateDelegate::CertJudgment judgment =
       ssl_host_state_delegate_
           ? ssl_host_state_delegate_->QueryPolicy(
                 handler->request_url().host(), *handler->ssl_info().cert.get(),
-                handler->cert_error(), &expired_previous_decision)
+                handler->cert_error())
           : SSLHostStateDelegate::DENIED;
 
   if (judgment == SSLHostStateDelegate::ALLOWED) {
@@ -360,12 +353,7 @@ void SSLManager::OnCertError(std::unique_ptr<SSLErrorHandler> handler) {
   }
 
   DCHECK(net::IsCertificateError(handler->cert_error()));
-  if (handler->cert_error() == net::ERR_CERT_NO_REVOCATION_MECHANISM ||
-      handler->cert_error() == net::ERR_CERT_UNABLE_TO_CHECK_REVOCATION) {
-    handler->ContinueRequest();
-    return;
-  }
-  OnCertErrorInternal(std::move(handler), expired_previous_decision);
+  OnCertErrorInternal(std::move(handler));
 }
 
 void SSLManager::DidStartResourceResponse(const GURL& url,
@@ -387,8 +375,7 @@ void SSLManager::DidStartResourceResponse(const GURL& url,
   ssl_host_state_delegate_->RevokeUserAllowExceptions(url.host());
 }
 
-void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
-                                     bool expired_previous_decision) {
+void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler) {
   WebContents* web_contents = handler->web_contents();
   int cert_error = handler->cert_error();
   const net::SSLInfo& ssl_info = handler->ssl_info();
@@ -409,7 +396,7 @@ void SSLManager::OnCertErrorInternal(std::unique_ptr<SSLErrorHandler> handler,
 
   GetContentClient()->browser()->AllowCertificateError(
       web_contents, cert_error, ssl_info, request_url, is_main_frame_request,
-      fatal, expired_previous_decision,
+      fatal,
       base::Bind(&OnAllowCertificateWithRecordDecision, true,
                  std::move(callback)));
 }

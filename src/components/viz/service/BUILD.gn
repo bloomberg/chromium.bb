@@ -21,6 +21,8 @@ viz_component("service") {
     "display/ca_layer_overlay.h",
     "display/color_lut_cache.cc",
     "display/color_lut_cache.h",
+    "display/damage_frame_annotator.cc",
+    "display/damage_frame_annotator.h",
     "display/dc_layer_overlay.cc",
     "display/dc_layer_overlay.h",
     "display/direct_renderer.cc",
@@ -36,6 +38,7 @@ viz_component("service") {
     "display/draw_polygon.h",
     "display/dynamic_geometry_binding.cc",
     "display/dynamic_geometry_binding.h",
+    "display/external_use_client.cc",
     "display/external_use_client.h",
     "display/frame_rate_decider.cc",
     "display/frame_rate_decider.h",
@@ -73,8 +76,6 @@ viz_component("service") {
     "display/renderer_utils.cc",
     "display/renderer_utils.h",
     "display/resource_fence.h",
-    "display/resource_metadata.cc",
-    "display/resource_metadata.h",
     "display/scoped_gpu_memory_buffer_texture.cc",
     "display/scoped_gpu_memory_buffer_texture.h",
     "display/scoped_render_pass_texture.cc",
@@ -203,7 +204,7 @@ viz_component("service") {
     "//media",
     "//media/capture:capture_lib",
     "//media/mojo/services",
-    "//services/viz/privileged/interfaces",
+    "//services/viz/privileged/mojom",
     "//ui/display/types",
   ]
 
@@ -213,8 +214,8 @@ viz_component("service") {
     "//cc",
     "//cc/debug",
     "//gpu/command_buffer/client:gles2_interface",
-    "//services/viz/privileged/interfaces/compositing",
-    "//services/viz/public/interfaces",
+    "//services/viz/privileged/mojom/compositing",
+    "//services/viz/public/mojom",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/latency",
@@ -273,6 +274,10 @@ viz_component("service") {
     public_deps += [ "//ui/ozone" ]
   }
 
+  if (is_chromecast) {
+    defines += [ "ALWAYS_ENABLE_BLENDING_FOR_PRIMARY" ]
+  }
+
   if (is_win) {
     sources += [
       "display_embedder/output_device_backing.cc",
@@ -306,8 +311,8 @@ viz_component("service") {
 # then this build target will no longer be needed.
 viz_source_set("gpu_service_dependencies") {
   sources = [
-    "display_embedder/image_context.cc",
-    "display_embedder/image_context.h",
+    "display_embedder/image_context_impl.cc",
+    "display_embedder/image_context_impl.h",
     "display_embedder/skia_output_device.cc",
     "display_embedder/skia_output_device.h",
     "display_embedder/skia_output_device_buffer_queue.cc",
@@ -334,7 +339,7 @@ viz_source_set("gpu_service_dependencies") {
     "//gpu/vulkan:buildflags",
     "//media/gpu/ipc/service",
     "//media/mojo/services",
-    "//services/viz/privileged/interfaces/gl",
+    "//services/viz/privileged/mojom/gl",
     "//skia",
     "//ui/latency:latency",
   ]
@@ -448,7 +453,7 @@ viz_source_set("unit_tests") {
     "//gpu/ipc/service",
     "//media",
     "//media/capture:capture_lib",
-    "//services/viz/public/interfaces",
+    "//services/viz/public/mojom",
     "//skia",
     "//testing/gmock",
     "//testing/gtest",

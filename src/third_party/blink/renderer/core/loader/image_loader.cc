@@ -44,13 +44,14 @@
 #include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/cross_origin_attribute.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
-#include "third_party/blink/renderer/core/html/lazy_load_image_observer.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
 #include "third_party/blink/renderer/core/layout/layout_video.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_image.h"
 #include "third_party/blink/renderer/core/loader/importance_attribute.h"
+#include "third_party/blink/renderer/core/loader/lazy_image_helper.h"
+#include "third_party/blink/renderer/core/probe/async_task_id.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/svg/graphics/svg_image.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
@@ -70,92 +71,6 @@
 namespace blink {
 
 namespace {
-
-enum class LazyLoadImageEligibility {
-  kDisabled,
-  kEnabledExplicit,
-  kEnabledAutomatic
-};
-
-enum class LoadingAttrValue { kAuto, kLazy, kEager };
-
-LoadingAttrValue GetLoadingAttrValue(const HTMLImageElement& html_image) {
-  const auto& attribute_value =
-      html_image.FastGetAttribute(html_names::kLoadingAttr);
-  return EqualIgnoringASCIICase(attribute_value, "eager")
-             ? LoadingAttrValue::kEager
-             : EqualIgnoringASCIICase(attribute_value, "lazy")
-                   ? LoadingAttrValue::kLazy
-                   : LoadingAttrValue::kAuto;
-}
-
-LazyLoadImageEligibility DetermineLazyLoadImageEligibility(
-    const LocalFrame& frame,
-    const HTMLImageElement& html_image,
-    const KURL& url) {
-  if (!url.ProtocolIsInHTTPFamily())
-    return LazyLoadImageEligibility::kDisabled;
-
-  LoadingAttrValue loading_attr = GetLoadingAttrValue(html_image);
-  if (loading_attr == LoadingAttrValue::kLazy) {
-    UseCounter::Count(frame.GetDocument(),
-                      WebFeature::kLazyLoadImageLoadingAttributeLazy);
-    return LazyLoadImageEligibility::kEnabledExplicit;
-  }
-  if (loading_attr == LoadingAttrValue::kEager &&
-      !frame.GetDocument()->IsLazyLoadPolicyEnforced()) {
-    UseCounter::Count(frame.GetDocument(),
-                      WebFeature::kLazyLoadImageLoadingAttributeEager);
-    return LazyLoadImageEligibility::kDisabled;
-  }
-
-  // Do not lazyload image elements created from javascript.
-  if (!html_image.ElementCreatedByParser())
-    return LazyLoadImageEligibility::kDisabled;
-
-  if (frame.Owner() && !frame.Owner()->ShouldLazyLoadChildren())
-    return LazyLoadImageEligibility::kDisabled;
-
-  // Avoid automatically lazyloading if width and height attributes are small.
-  // This heuristic helps avoid double fetching tracking pixels.
-  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
-          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
-          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall &&
-      HTMLImageElement::GetAttributeLazyLoadDimensionType(
-          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
-          HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
-    return LazyLoadImageEligibility::kDisabled;
-  }
-  // Avoid automatically lazyloading if width or height is specified in inline
-  // style and is small enough. This heuristic helps avoid double fetching
-  // tracking pixels.
-  if (HTMLImageElement::GetInlineStyleDimensionsType(
-          html_image.InlineStyle()) ==
-      HTMLImageElement::LazyLoadDimensionType::kAbsoluteSmall) {
-    return LazyLoadImageEligibility::kDisabled;
-  }
-
-  return LazyLoadImageEligibility::kEnabledAutomatic;
-}
-
-// Returns true if absolute dimension is specified in the width and height
-// attributes or in the inline style.
-bool IsDimensionAbsoluteLarge(const HTMLImageElement& html_image) {
-  if (HTMLImageElement::GetAttributeLazyLoadDimensionType(
-          html_image.FastGetAttribute(html_names::kWidthAttr)) ==
-          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall ||
-      HTMLImageElement::GetAttributeLazyLoadDimensionType(
-          html_image.FastGetAttribute(html_names::kHeightAttr)) ==
-          HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
-    return true;
-  }
-  if (HTMLImageElement::GetInlineStyleDimensionsType(
-          html_image.InlineStyle()) ==
-      HTMLImageElement::LazyLoadDimensionType::kAbsoluteNotSmall) {
-    return true;
-  }
-  return false;
-}
 
 bool CheckForUnoptimizedImagePolicy(const Document& document,
                                     ImageResourceContent* new_image) {
@@ -198,7 +113,7 @@ class ImageLoader::Task {
         referrer_policy_(referrer_policy),
         request_url_(request_url) {
     ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTaskScheduled(&context, "Image", this);
+    probe::AsyncTaskScheduled(&context, "Image", &async_task_id_);
     v8::Isolate* isolate = V8PerIsolateData::MainThreadIsolate();
     v8::HandleScope scope(isolate);
     // If we're invoked from C++ without a V8 context on the stack, we should
@@ -216,7 +131,7 @@ class ImageLoader::Task {
     if (!loader_)
       return;
     ExecutionContext& context = loader_->GetElement()->GetDocument();
-    probe::AsyncTask async_task(&context, this);
+    probe::AsyncTask async_task(&context, &async_task_id_);
     if (script_state_ && script_state_->ContextIsValid()) {
       ScriptState::Scope scope(script_state_);
       loader_->DoUpdateFromElement(should_bypass_main_world_csp_,
@@ -244,6 +159,7 @@ class ImageLoader::Task {
   WeakPersistent<ScriptState> script_state_;
   network::mojom::ReferrerPolicy referrer_policy_;
   KURL request_url_;
+  probe::AsyncTaskId async_task_id_;
   base::WeakPtrFactory<Task> weak_factory_{this};
 };
 
@@ -520,26 +436,13 @@ void ImageLoader::UpdateImageState(ImageResourceContent* new_image_content) {
     image_resource_for_image_document_ = nullptr;
     image_complete_ = true;
     if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
-      LazyLoadImageObserver::StopMonitoring(GetElement());
+      LazyImageHelper::StopMonitoring(GetElement());
       lazy_image_load_state_ = LazyImageLoadState::kFullImage;
     }
   } else {
     image_complete_ = false;
-    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred) {
-      if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        using DeferralMessage = LazyLoadImageObserver::DeferralMessage;
-        LoadingAttrValue loading_attr = GetLoadingAttrValue(*html_image);
-        DCHECK_NE(loading_attr, LoadingAttrValue::kEager);
-        auto deferral_message = DeferralMessage::kNone;
-        if (loading_attr == LoadingAttrValue::kAuto) {
-          deferral_message = DeferralMessage::kLoadEventsDeferred;
-        } else if (!IsDimensionAbsoluteLarge(*html_image)) {
-          DCHECK_EQ(loading_attr, LoadingAttrValue::kLazy);
-          deferral_message = DeferralMessage::kMissingDimensionForLazy;
-        }
-        LazyLoadImageObserver::StartMonitoring(html_image, deferral_message);
-      }
-    }
+    if (lazy_image_load_state_ == LazyImageLoadState::kDeferred)
+      LazyImageHelper::StartMonitoring(GetElement());
   }
   delay_until_image_notify_finished_ = nullptr;
 }
@@ -580,9 +483,7 @@ void ImageLoader::DoUpdateFromElement(
       resource_request.SetPreviewsState(WebURLRequest::kPreviewsNoTransform);
     }
 
-    resource_request.SetReferrerPolicy(
-        referrer_policy,
-        ResourceRequest::SetReferrerPolicyLocation::kImageLoader);
+    resource_request.SetReferrerPolicy(referrer_policy);
 
     // Correct the RequestContext if necessary.
     if (IsHTMLPictureElement(GetElement()->parentNode()) ||
@@ -623,40 +524,25 @@ void ImageLoader::DoUpdateFromElement(
       if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
         params.SetClientLoFiPlaceholder();
       } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
-        const LazyLoadImageEligibility lazy_load_image_eligibility =
-            DetermineLazyLoadImageEligibility(*frame, *html_image,
-                                              params.Url());
-        const auto lazy_load_image_setting = frame->GetLazyLoadImageSetting();
-
-        if ((lazy_load_image_eligibility ==
-                 LazyLoadImageEligibility::kEnabledExplicit &&
-             lazy_load_image_setting !=
-                 LocalFrame::LazyLoadImageSetting::kDisabled) ||
-            (lazy_load_image_eligibility ==
-                 LazyLoadImageEligibility::kEnabledAutomatic &&
-             lazy_load_image_setting ==
-                 LocalFrame::LazyLoadImageSetting::kEnabledAutomatic)) {
-          if ((was_fully_deferred_ =
-                   !RuntimeEnabledFeatures::
-                       LazyImageLoadingMetadataFetchEnabled() ||
-                   IsDimensionAbsoluteLarge(*html_image))) {
+        const LazyImageHelper::Eligibility lazy_image_eligibility =
+            LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
+                *frame, html_image, params.Url());
+        switch (lazy_image_eligibility) {
+          case LazyImageHelper::Eligibility::kEnabledFullyDeferred:
+            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
+            was_fully_deferred_ = true;
             params.SetLazyImageDeferred();
             if (frame->Client()) {
               frame->Client()->DidObserveLazyLoadBehavior(
                   WebLocalFrameClient::LazyLoadBehavior::kDeferredImage);
             }
-          } else {
+            break;
+          case LazyImageHelper::Eligibility::kEnabledFetchPlaceholder:
+            lazy_image_load_state_ = LazyImageLoadState::kDeferred;
             params.SetLazyImagePlaceholder();
-          }
-          lazy_image_load_state_ = LazyImageLoadState::kDeferred;
-        }
-
-        if (RuntimeEnabledFeatures::LazyImageVisibleLoadTimeMetricsEnabled() &&
-            (lazy_load_image_eligibility ==
-                 LazyLoadImageEligibility::kEnabledExplicit ||
-             lazy_load_image_eligibility ==
-                 LazyLoadImageEligibility::kEnabledAutomatic)) {
-          LazyLoadImageObserver::StartTrackingVisibilityMetrics(html_image);
+            break;
+          case LazyImageHelper::Eligibility::kDisabled:
+            break;
         }
       }
     }
@@ -807,7 +693,7 @@ void ImageLoader::UpdateFromElement(
     image_resource_for_image_document_ = nullptr;
     delay_until_image_notify_finished_ = nullptr;
     if (lazy_image_load_state_ != LazyImageLoadState::kNone) {
-      LazyLoadImageObserver::StopMonitoring(GetElement());
+      LazyImageHelper::StopMonitoring(GetElement());
       lazy_image_load_state_ = LazyImageLoadState::kNone;
     }
   }
@@ -899,7 +785,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
     // A placeholder was requested, but the result was an error or a full image.
     // In these cases, consider this as the final image and suppress further
     // reloading and proceed to the image load completion process below.
-    LazyLoadImageObserver::StopMonitoring(GetElement());
+    LazyImageHelper::StopMonitoring(GetElement());
     lazy_image_load_state_ = LazyImageLoadState::kFullImage;
   }
 
@@ -937,7 +823,7 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   DispatchDecodeRequestsIfComplete();
 
   if (auto* html_image = ToHTMLImageElementOrNull(GetElement()))
-    LazyLoadImageObserver::RecordMetricsOnLoadFinished(html_image);
+    LazyImageHelper::RecordMetricsOnLoadFinished(html_image);
 
   if (loading_image_document_) {
     CHECK(!pending_load_event_.IsActive());

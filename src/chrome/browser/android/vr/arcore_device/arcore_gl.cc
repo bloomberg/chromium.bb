@@ -106,8 +106,7 @@ ArCoreGl::ArCoreGl(std::unique_ptr<ArImageTransport> ar_image_transport)
       frame_data_binding_(this),
       session_controller_binding_(this),
       environment_binding_(this),
-      presentation_binding_(this),
-      weak_ptr_factory_(this) {
+      presentation_binding_(this) {
   DVLOG(1) << __func__;
   webxr_transform_ = WebXRImageTransformMatrix();
 }
@@ -401,6 +400,8 @@ void ArCoreGl::GetFrameData(
   if (options && options->include_plane_data) {
     frame_data->detected_planes_data = arcore_->GetDetectedPlanesData();
   }
+
+  frame_data->anchors_data = arcore_->GetAnchorsData();
 
   fps_meter_.AddFrame(base::TimeTicks::Now());
   TRACE_COUNTER1("gpu", "WebXR FPS", fps_meter_.GetFPS());

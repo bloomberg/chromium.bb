@@ -30,9 +30,11 @@
 
 #include "third_party/blink/renderer/core/css/css_default_style_sheets.h"
 
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 #include "third_party/blink/renderer/core/css/rule_set.h"
 #include "third_party/blink/renderer/core/css/style_sheet_contents.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
 #include "third_party/blink/renderer/core/html/html_html_element.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -41,6 +43,7 @@
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
 
@@ -85,13 +88,20 @@ static StyleSheetContents* ParseUASheet(const String& str) {
 CSSDefaultStyleSheets::CSSDefaultStyleSheets()
     : media_controls_style_sheet_loader_(nullptr) {
   // Strict-mode rules.
-  String default_rules = GetDataResourceAsASCIIString("html.css") +
-                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
+  String forced_colors_style_sheet =
+      RuntimeEnabledFeatures::ForcedColorsEnabled()
+          ? UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_FORCED_COLORS_CSS)
+          : String();
+  String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
+                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet() +
+                         forced_colors_style_sheet;
+
   default_style_sheet_ = ParseUASheet(default_rules);
 
   // Quirks-mode rules.
-  String quirks_rules = GetDataResourceAsASCIIString("quirks.css") +
-                        LayoutTheme::GetTheme().ExtraQuirksStyleSheet();
+  String quirks_rules =
+      UncompressResourceAsASCIIString(IDR_UASTYLE_QUIRKS_CSS) +
+      LayoutTheme::GetTheme().ExtraQuirksStyleSheet();
   quirks_style_sheet_ = ParseUASheet(quirks_rules);
 
   InitializeDefaultStyles();
@@ -116,7 +126,13 @@ void CSSDefaultStyleSheets::PrepareForLeakDetection() {
   svg_style_sheet_.Clear();
   mathml_style_sheet_.Clear();
   media_controls_style_sheet_.Clear();
+  text_track_style_sheet_.Clear();
   fullscreen_style_sheet_.Clear();
+  // Recreate the default style sheet to clean up possible SVG resources.
+  String default_rules = UncompressResourceAsASCIIString(IDR_UASTYLE_HTML_CSS) +
+                         LayoutTheme::GetTheme().ExtraDefaultStyleSheet();
+  default_style_sheet_ = ParseUASheet(default_rules);
+
   // Initialize the styles that have the lazily loaded style sheets.
   InitializeDefaultStyles();
   default_view_source_style_.Clear();
@@ -140,8 +156,8 @@ RuleSet* CSSDefaultStyleSheets::DefaultViewSourceStyle() {
   if (!default_view_source_style_) {
     default_view_source_style_ = MakeGarbageCollected<RuleSet>();
     // Loaded stylesheet is leaked on purpose.
-    StyleSheetContents* stylesheet =
-        ParseUASheet(GetDataResourceAsASCIIString("view-source.css"));
+    StyleSheetContents* stylesheet = ParseUASheet(
+        UncompressResourceAsASCIIString(IDR_UASTYLE_VIEW_SOURCE_CSS));
     default_view_source_style_->AddRulesFromSheet(stylesheet, ScreenEval());
   }
   return default_view_source_style_;
@@ -151,15 +167,15 @@ StyleSheetContents*
 CSSDefaultStyleSheets::EnsureXHTMLMobileProfileStyleSheet() {
   if (!xhtml_mobile_profile_style_sheet_) {
     xhtml_mobile_profile_style_sheet_ =
-        ParseUASheet(GetDataResourceAsASCIIString("xhtmlmp.css"));
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_XHTMLMP_CSS));
   }
   return xhtml_mobile_profile_style_sheet_;
 }
 
 StyleSheetContents* CSSDefaultStyleSheets::EnsureMobileViewportStyleSheet() {
   if (!mobile_viewport_style_sheet_) {
-    mobile_viewport_style_sheet_ =
-        ParseUASheet(GetDataResourceAsASCIIString("viewportAndroid.css"));
+    mobile_viewport_style_sheet_ = ParseUASheet(
+        UncompressResourceAsASCIIString(IDR_UASTYLE_VIEWPORT_ANDROID_CSS));
   }
   return mobile_viewport_style_sheet_;
 }
@@ -167,10 +183,19 @@ StyleSheetContents* CSSDefaultStyleSheets::EnsureMobileViewportStyleSheet() {
 StyleSheetContents*
 CSSDefaultStyleSheets::EnsureTelevisionViewportStyleSheet() {
   if (!television_viewport_style_sheet_) {
-    television_viewport_style_sheet_ =
-        ParseUASheet(GetDataResourceAsASCIIString("viewportTelevision.css"));
+    television_viewport_style_sheet_ = ParseUASheet(
+        UncompressResourceAsASCIIString(IDR_UASTYLE_VIEWPORT_TELEVISION_CSS));
   }
   return television_viewport_style_sheet_;
+}
+
+static void AddTextTrackCSSProperties(StringBuilder* builder,
+                                      CSSPropertyID propertyId,
+                                      String value) {
+  builder->Append(CSSProperty::Get(propertyId).GetPropertyNameString());
+  builder->Append(": ");
+  builder->Append(value);
+  builder->Append("; ");
 }
 
 bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
@@ -178,9 +203,12 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   bool changed_default_style = false;
   // FIXME: We should assert that the sheet only styles SVG elements.
   if (element.IsSVGElement() && !svg_style_sheet_) {
-    svg_style_sheet_ = ParseUASheet(GetDataResourceAsASCIIString("svg.css"));
+    svg_style_sheet_ =
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_SVG_CSS));
     default_style_->AddRulesFromSheet(SvgStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(SvgStyleSheet(), PrintEval());
+    default_forced_color_style_->AddRulesFromSheet(SvgStyleSheet(),
+                                                   ForcedColorsEval());
     changed_default_style = true;
   }
 
@@ -188,14 +216,14 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
   if (element.namespaceURI() == mathml_names::kNamespaceURI &&
       !mathml_style_sheet_) {
     mathml_style_sheet_ =
-        ParseUASheet(GetDataResourceAsASCIIString("mathml.css"));
+        ParseUASheet(UncompressResourceAsASCIIString(IDR_UASTYLE_MATHML_CSS));
     default_style_->AddRulesFromSheet(MathmlStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(MathmlStyleSheet(), PrintEval());
     changed_default_style = true;
   }
 
   if (!media_controls_style_sheet_ && HasMediaControlsStyleSheetLoader() &&
-      (IsHTMLVideoElement(element) || IsHTMLAudioElement(element))) {
+      (IsHTMLVideoElement(element) || IsA<HTMLAudioElement>(element))) {
     // FIXME: We should assert that this sheet only contains rules for <video>
     // and <audio>.
     media_controls_style_sheet_ =
@@ -203,7 +231,44 @@ bool CSSDefaultStyleSheets::EnsureDefaultStyleSheetsForElement(
     default_style_->AddRulesFromSheet(MediaControlsStyleSheet(), ScreenEval());
     default_print_style_->AddRulesFromSheet(MediaControlsStyleSheet(),
                                             PrintEval());
+    default_forced_color_style_->AddRulesFromSheet(MediaControlsStyleSheet(),
+                                                   ForcedColorsEval());
     changed_default_style = true;
+  }
+
+  if (!text_track_style_sheet_ && IsHTMLVideoElement(element)) {
+    Settings* settings = element.GetDocument().GetSettings();
+    if (settings) {
+      StringBuilder builder;
+      builder.Append("video::-webkit-media-text-track-display { ");
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBackgroundColor,
+                                settings->GetTextTrackWindowColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kPadding,
+                                settings->GetTextTrackWindowPadding());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBorderRadius,
+                                settings->GetTextTrackWindowRadius());
+      builder.Append(" } video::cue { ");
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kBackgroundColor,
+                                settings->GetTextTrackBackgroundColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontFamily,
+                                settings->GetTextTrackFontFamily());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontStyle,
+                                settings->GetTextTrackFontStyle());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontVariant,
+                                settings->GetTextTrackFontVariant());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kColor,
+                                settings->GetTextTrackTextColor());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kTextShadow,
+                                settings->GetTextTrackTextShadow());
+      AddTextTrackCSSProperties(&builder, CSSPropertyID::kFontSize,
+                                settings->GetTextTrackTextSize());
+      builder.Append(" } ");
+      text_track_style_sheet_ = ParseUASheet(builder.ToString());
+      default_style_->AddRulesFromSheet(text_track_style_sheet_, ScreenEval());
+      default_print_style_->AddRulesFromSheet(text_track_style_sheet_,
+                                              PrintEval());
+      changed_default_style = true;
+    }
   }
 
   DCHECK(!default_style_->Features().HasIdsInSelectors());
@@ -219,8 +284,9 @@ void CSSDefaultStyleSheets::EnsureDefaultStyleSheetForFullscreen() {
   if (fullscreen_style_sheet_)
     return;
 
-  String fullscreen_rules = GetDataResourceAsASCIIString("fullscreen.css") +
-                            LayoutTheme::GetTheme().ExtraFullscreenStyleSheet();
+  String fullscreen_rules =
+      UncompressResourceAsASCIIString(IDR_UASTYLE_FULLSCREEN_CSS) +
+      LayoutTheme::GetTheme().ExtraFullscreenStyleSheet();
   fullscreen_style_sheet_ = ParseUASheet(fullscreen_rules);
   default_style_->AddRulesFromSheet(FullscreenStyleSheet(), ScreenEval());
   default_quirks_style_->AddRulesFromSheet(FullscreenStyleSheet(),
@@ -241,6 +307,7 @@ void CSSDefaultStyleSheets::Trace(blink::Visitor* visitor) {
   visitor->Trace(svg_style_sheet_);
   visitor->Trace(mathml_style_sheet_);
   visitor->Trace(media_controls_style_sheet_);
+  visitor->Trace(text_track_style_sheet_);
   visitor->Trace(fullscreen_style_sheet_);
 }
 

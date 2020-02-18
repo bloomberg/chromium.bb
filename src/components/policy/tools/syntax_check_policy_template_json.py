@@ -308,8 +308,8 @@ class PolicyTemplateChecker(object):
 
   # If 'device only' field is true, the policy must be mapped to its proto
   # field in device_policy_proto_map.json.
-  def _CheckDevicePolicyProtoMapping(self, policy, device_policy_proto_map,
-                                     legacy_device_policy_proto_map):
+  def _CheckDevicePolicyProtoMappingDeviceOnly(
+      self, policy, device_policy_proto_map, legacy_device_policy_proto_map):
     if not policy.get('device_only', False):
       return
 
@@ -322,6 +322,23 @@ class PolicyTemplateChecker(object):
           "the corresponding field in chrome_device_policy.proto." % name)
       return
 
+  # Performs a quick check whether all fields in |device_policy_proto_map| are
+  # actually present in the device policy proto at |device_policy_proto_path|.
+  # Note that this presubmit check can't compile the proto to pb2.py easily (or
+  # can it?).
+  def _CheckDevicePolicyProtoMappingExistence(self, device_policy_proto_map,
+                                              device_policy_proto_path):
+    with open(device_policy_proto_path, 'r') as file:
+      device_policy_proto = file.read()
+
+    for policy, proto_path in device_policy_proto_map.items():
+      fields = proto_path.split(".")
+      for field in fields:
+        if field not in device_policy_proto:
+          self._Error("Bad device_policy_proto_map for policy '%s': "
+                      "Field '%s' not present in device policy proto." %
+                      (policy, field))
+
   def _CheckPolicy(self, policy, is_in_group, policy_ids, deleted_policy_ids):
     if not isinstance(policy, dict):
       self._Error('Each policy must be a dictionary.', 'policy', None, policy)
@@ -329,7 +346,7 @@ class PolicyTemplateChecker(object):
 
     # There should not be any unknown keys in |policy|.
     for key in policy:
-      if key not in ('name', 'type', 'caption', 'desc', 'device_only',
+      if key not in ('name', 'owners', 'type', 'caption', 'desc', 'device_only',
                      'supported_on', 'label', 'policies', 'items',
                      'example_value', 'features', 'deprecated', 'future', 'id',
                      'schema', 'validation_schema', 'description_schema',
@@ -406,6 +423,11 @@ class PolicyTemplateChecker(object):
       # Each policy must have a protobuf ID.
       id = self._CheckContains(policy, 'id', int)
       self._AddPolicyID(id, policy_ids, policy, deleted_policy_ids)
+
+      # Each policy must have an owner.
+      # TODO(pastarmovj): Verify that each owner is either an OWNERS file or an
+      # email of a committer.
+      self._CheckContains(policy, 'owners', list)
 
       # Each policy must have a tag list.
       self._CheckContains(policy, 'tags', list)
@@ -818,13 +840,15 @@ class PolicyTemplateChecker(object):
                                      highest_atomic_group_id)
     self._CheckDevicePolicyProtoMappingUniqueness(
         device_policy_proto_map, legacy_device_policy_proto_map)
+    self._CheckDevicePolicyProtoMappingExistence(
+        device_policy_proto_map, options.device_policy_proto_path)
 
     if policy_definitions is not None:
       policy_ids = set()
       for policy in policy_definitions:
         self._CheckPolicy(policy, False, policy_ids, deleted_policy_ids)
-        self._CheckDevicePolicyProtoMapping(policy, device_policy_proto_map,
-                                            legacy_device_policy_proto_map)
+        self._CheckDevicePolicyProtoMappingDeviceOnly(
+            policy, device_policy_proto_map, legacy_device_policy_proto_map)
       self._CheckPolicyIDs(policy_ids, deleted_policy_ids)
       if highest_id is not None:
         self._CheckHighestId(policy_ids, highest_id)
@@ -888,6 +912,10 @@ class PolicyTemplateChecker(object):
         usage='usage: %prog [options] filename',
         description='Syntax check a policy_templates.json file.')
     parser.add_option(
+        '--device_policy_proto_path',
+        help='[REQUIRED] File path of the device policy proto file.',
+        type='string')
+    parser.add_option(
         '--fix', action='store_true', help='Automatically fix formatting.')
     parser.add_option(
         '--backup',
@@ -899,8 +927,11 @@ class PolicyTemplateChecker(object):
     if filename is None:
       if len(args) != 2:
         parser.print_help()
-        sys.exit(1)
+        return 1
       filename = args[1]
+    if options.device_policy_proto_path is None:
+      print('Error: Missing --device_policy_proto_path argument.')
+      return 1
     return self.Main(filename, options)
 
 

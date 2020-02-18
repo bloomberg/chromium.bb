@@ -10,10 +10,8 @@
 #include "base/feature_list.h"
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
-#include "components/autofill/core/browser/payments/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/payments/autofill_wallet_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
-#include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_model_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_sync_bridge.h"
@@ -30,6 +28,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_model_type_controller.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/sync/base/report_unrecoverable_error.h"
+#include "components/sync/base/sync_base_switches.h"
 #include "components/sync/driver/data_type_manager_impl.h"
 #include "components/sync/driver/glue/sync_engine_impl.h"
 #include "components/sync/driver/model_type_controller.h"
@@ -112,7 +111,10 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
         web_data_service_on_disk,
     const scoped_refptr<autofill::AutofillWebDataService>&
         web_data_service_in_memory,
-    const scoped_refptr<password_manager::PasswordStore>& password_store,
+    const scoped_refptr<password_manager::PasswordStore>&
+        profile_password_store,
+    const scoped_refptr<password_manager::PasswordStore>&
+        account_password_store,
     sync_bookmarks::BookmarkSyncService* bookmark_sync_service)
     : sync_client_(sync_client),
       channel_(channel),
@@ -121,7 +123,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       db_thread_(db_thread),
       web_data_service_on_disk_(web_data_service_on_disk),
       web_data_service_in_memory_(web_data_service_in_memory),
-      password_store_(password_store),
+      profile_password_store_(profile_password_store),
+      account_password_store_(account_password_store),
       bookmark_sync_service_(bookmark_sync_service) {
   DCHECK(sync_client_);
 }
@@ -189,21 +192,10 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
     // Wallet data nor Wallet metadata sync is explicitly disabled.
     if (!disabled_types.Has(syncer::AUTOFILL_WALLET_DATA) &&
         !disabled_types.Has(syncer::AUTOFILL_WALLET_METADATA)) {
-      if (base::FeatureList::IsEnabled(
-              switches::kSyncUSSAutofillWalletMetadata)) {
-        controllers.push_back(CreateWalletModelTypeController(
-            syncer::AUTOFILL_WALLET_METADATA,
-            base::BindRepeating(&AutofillWalletMetadataDelegateFromDataService),
-            sync_service));
-      } else {
-        controllers.push_back(
-            std::make_unique<AutofillWalletDataTypeController>(
-                syncer::AUTOFILL_WALLET_METADATA, db_thread_, dump_stack,
-                sync_service, sync_client_,
-                base::BindRepeating(&BrowserSyncClient::GetPersonalDataManager,
-                                    base::Unretained(sync_client_)),
-                web_data_service_on_disk_));
-      }
+      controllers.push_back(CreateWalletModelTypeController(
+          syncer::AUTOFILL_WALLET_METADATA,
+          base::BindRepeating(&AutofillWalletMetadataDelegateFromDataService),
+          sync_service));
     }
   }
 
@@ -266,8 +258,11 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
               history_disabled_pref_));
     }
 
-    // Favicon sync is enabled by default. Register unless explicitly disabled.
-    if (!disabled_types.Has(syncer::FAVICON_IMAGES) &&
+    // If |kDoNotSyncFaviconDataTypes| feature is enabled, never register
+    // controllers for favicon sync. Otherwise, it is enabled by default and we
+    // should register unless explicitly disabled.
+    if (!base::FeatureList::IsEnabled(switches::kDoNotSyncFaviconDataTypes) &&
+        !disabled_types.Has(syncer::FAVICON_IMAGES) &&
         !disabled_types.Has(syncer::FAVICON_TRACKING)) {
       controllers.push_back(
           std::make_unique<SyncableServiceBasedModelTypeController>(
@@ -288,17 +283,21 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   // disabled.
   if (!disabled_types.Has(syncer::PASSWORDS)) {
     if (base::FeatureList::IsEnabled(switches::kSyncUSSPasswords)) {
-      if (password_store_) {
-        // |password_store_| can be null in tests.
+      if (profile_password_store_) {
+        // |profile_password_store_| can be null in tests.
         controllers.push_back(
             std::make_unique<password_manager::PasswordModelTypeController>(
-                password_store_->CreateSyncControllerDelegate(), sync_service,
-                sync_client_->GetPasswordStateChangedCallback()));
+                profile_password_store_->CreateSyncControllerDelegate(),
+                account_password_store_
+                    ? account_password_store_->CreateSyncControllerDelegate()
+                    : nullptr,
+                sync_service, sync_client_->GetPasswordStateChangedCallback()));
       }
     } else {
       controllers.push_back(std::make_unique<PasswordDataTypeController>(
           dump_stack, sync_service, sync_client_,
-          sync_client_->GetPasswordStateChangedCallback(), password_store_));
+          sync_client_->GetPasswordStateChangedCallback(),
+          profile_password_store_));
     }
   }
 
@@ -335,6 +334,15 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
                                     GetControllerDelegateForModelType,
                                 base::Unretained(sync_client_),
                                 syncer::PRINTERS))));
+  }
+  if (!disabled_types.Has(syncer::WIFI_CONFIGURATIONS) &&
+      base::FeatureList::IsEnabled(switches::kSyncWifiConfigurations)) {
+    controllers.push_back(std::make_unique<ModelTypeController>(
+        syncer::WIFI_CONFIGURATIONS,
+        std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+            sync_client_
+                ->GetControllerDelegateForModelType(syncer::WIFI_CONFIGURATIONS)
+                .get())));
   }
 #endif
 

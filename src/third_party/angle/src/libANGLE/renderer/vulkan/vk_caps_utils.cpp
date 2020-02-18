@@ -60,6 +60,12 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.translatedShaderSource = true;
     mNativeExtensions.discardFramebuffer     = true;
 
+    // Enable EXT_texture_type_2_10_10_10_REV
+    mNativeExtensions.textureFormat2101010REV = true;
+
+    // Enable ANGLE_base_vertex_base_instance
+    mNativeExtensions.baseVertexBaseInstance = true;
+
     // Enable EXT_blend_minmax
     mNativeExtensions.blendMinMax = true;
 
@@ -74,9 +80,12 @@ void RendererVk::ensureCapsInitialized() const
     mNativeExtensions.semaphore   = true;
     mNativeExtensions.semaphoreFd = getFeatures().supportsExternalSemaphoreFd.enabled;
 
+    mNativeExtensions.vertexHalfFloat = true;
+
     // TODO: Enable this always and emulate instanced draws if any divisor exceeds the maximum
     // supported.  http://anglebug.com/2672
     mNativeExtensions.instancedArraysANGLE = mMaxVertexAttribDivisor > 1;
+    mNativeExtensions.instancedArraysEXT   = mMaxVertexAttribDivisor > 1;
 
     // Only expose robust buffer access if the physical device supports it.
     mNativeExtensions.robustBufferAccessBehavior = mPhysicalDeviceFeatures.robustBufferAccess;
@@ -140,10 +149,15 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxDepthTextureSamples = limitsVk.sampledImageDepthSampleCounts;
     mNativeCaps.maxIntegerSamples      = limitsVk.sampledImageIntegerSampleCounts;
 
-    mNativeCaps.maxVertexAttributes           = limitsVk.maxVertexInputAttributes;
-    mNativeCaps.maxVertexAttribBindings       = limitsVk.maxVertexInputBindings;
-    mNativeCaps.maxVertexAttribRelativeOffset = limitsVk.maxVertexInputAttributeOffset;
-    mNativeCaps.maxVertexAttribStride         = limitsVk.maxVertexInputBindingStride;
+    mNativeCaps.maxVertexAttributes     = limitsVk.maxVertexInputAttributes;
+    mNativeCaps.maxVertexAttribBindings = limitsVk.maxVertexInputBindings;
+    // Offset and stride are stored as uint16_t in PackedAttribDesc.
+    mNativeCaps.maxVertexAttribRelativeOffset =
+        std::min(static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()),
+                 limitsVk.maxVertexInputAttributeOffset);
+    mNativeCaps.maxVertexAttribStride =
+        std::min(static_cast<uint32_t>(std::numeric_limits<uint16_t>::max()),
+                 limitsVk.maxVertexInputBindingStride);
 
     mNativeCaps.maxElementsIndices  = std::numeric_limits<GLint>::max();
     mNativeCaps.maxElementsVertices = std::numeric_limits<GLint>::max();
@@ -195,9 +209,11 @@ void RendererVk::ensureCapsInitialized() const
     mNativeCaps.maxVertexUniformVectors                              = maxUniformVectors;
     mNativeCaps.maxFragmentUniformVectors                            = maxUniformVectors;
     mNativeCaps.maxFragmentInputComponents                           = maxUniformComponents;
-    mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Vertex]   = maxUniformComponents;
-    mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Fragment] = maxUniformComponents;
-    mNativeCaps.maxShaderUniformComponents[gl::ShaderType::Compute]  = maxUniformComponents;
+    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    {
+        mNativeCaps.maxShaderUniformComponents[shaderType] = maxUniformComponents;
+    }
+    mNativeCaps.maxUniformLocations                                  = maxUniformVectors;
 
     // Every stage has 1 reserved uniform buffer for the default uniforms, and 1 for the driver
     // uniforms.
@@ -210,9 +226,10 @@ void RendererVk::ensureCapsInitialized() const
         limitsVk.maxPerStageDescriptorUniformBuffers - kTotalReservedPerStageUniformBuffers;
     const uint32_t maxCombinedUniformBuffers =
         limitsVk.maxDescriptorSetUniformBuffers - kTotalReservedUniformBuffers;
-    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Vertex]   = maxPerStageUniformBuffers;
-    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Fragment] = maxPerStageUniformBuffers;
-    mNativeCaps.maxShaderUniformBlocks[gl::ShaderType::Compute]  = maxPerStageUniformBuffers;
+    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    {
+        mNativeCaps.maxShaderUniformBlocks[shaderType] = maxPerStageUniformBuffers;
+    }
     mNativeCaps.maxCombinedUniformBlocks                         = maxCombinedUniformBuffers;
 
     mNativeCaps.maxUniformBufferBindings = maxCombinedUniformBuffers;
@@ -226,9 +243,10 @@ void RendererVk::ensureCapsInitialized() const
                                                   limitsVk.maxPerStageDescriptorSampledImages);
     const uint32_t maxCombinedTextures =
         std::min(limitsVk.maxDescriptorSetSamplers, limitsVk.maxDescriptorSetSampledImages);
-    mNativeCaps.maxShaderTextureImageUnits[gl::ShaderType::Vertex]   = maxPerStageTextures;
-    mNativeCaps.maxShaderTextureImageUnits[gl::ShaderType::Fragment] = maxPerStageTextures;
-    mNativeCaps.maxShaderTextureImageUnits[gl::ShaderType::Compute]  = maxPerStageTextures;
+    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    {
+        mNativeCaps.maxShaderTextureImageUnits[shaderType] = maxPerStageTextures;
+    }
     mNativeCaps.maxCombinedTextureImageUnits                         = maxCombinedTextures;
 
     uint32_t maxPerStageStorageBuffers    = limitsVk.maxPerStageDescriptorStorageBuffers;
@@ -256,30 +274,38 @@ void RendererVk::ensureCapsInitialized() const
         maxPerStageStorageBuffers = std::min(maxPerStageStorageBuffers, maxCombinedStorageBuffers);
     }
 
-    // Reserve one storage buffer in the fragment and compute stages for atomic counters.  This is
-    // only possible if the number of per-stage storage buffers is greater than 4, which is the
-    // required GLES minimum for compute.  We use the same value for fragment, to avoid giving one
-    // of the precious few storage buffers available to an atomic counter buffer.  The spec allows
-    // there to be zero of either of these resources in the fragment stage.
+    // Reserve up to IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS storage buffers in the fragment and
+    // compute stages for atomic counters.  This is only possible if the number of per-stage storage
+    // buffers is greater than 4, which is the required GLES minimum for compute.
+    //
+    // For each stage, we'll either not support atomic counter buffers, or support exactly
+    // IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS.  This is due to restrictions in the shader
+    // translator where we can't know how many atomic counter buffers we would really need after
+    // linking so we can't create a packed buffer array.
+    //
+    // For the vertex stage, we could support atomic counters without storage buffers, but that's
+    // likely not very useful, so we use the same limit (4 + MAX_ATOMIC_COUNTER_BUFFERS) for the
+    // vertex stage to determine if we would want to add support for atomic counter buffers.
+    constexpr uint32_t kMinimumStorageBuffersForAtomicCounterBufferSupport =
+        gl::limits::kMinimumComputeStorageBuffers + gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
     uint32_t maxVertexStageAtomicCounterBuffers = 0;
     uint32_t maxPerStageAtomicCounterBuffers    = 0;
     uint32_t maxCombinedAtomicCounterBuffers    = 0;
 
-    if (maxPerStageStorageBuffers > gl::limits::kMinimumComputeStorageBuffers)
+    if (maxPerStageStorageBuffers >= kMinimumStorageBuffersForAtomicCounterBufferSupport)
     {
-        --maxPerStageStorageBuffers;
-        --maxCombinedStorageBuffers;
-        maxPerStageAtomicCounterBuffers = 1;
-        maxCombinedAtomicCounterBuffers = 1;
+        maxPerStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
+        maxCombinedAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
     }
 
-    // For the vertex stage, similarly reserve one storage buffer for atomic counters, if there are
-    // excess storage buffers.
-    if (maxVertexStageStorageBuffers > gl::limits::kMinimumComputeStorageBuffers)
+    if (maxVertexStageStorageBuffers >= kMinimumStorageBuffersForAtomicCounterBufferSupport)
     {
-        --maxVertexStageStorageBuffers;
-        maxVertexStageAtomicCounterBuffers = 1;
+        maxVertexStageAtomicCounterBuffers = gl::IMPLEMENTATION_MAX_ATOMIC_COUNTER_BUFFERS;
     }
+
+    maxVertexStageStorageBuffers -= maxVertexStageAtomicCounterBuffers;
+    maxPerStageStorageBuffers -= maxPerStageAtomicCounterBuffers;
+    maxCombinedStorageBuffers -= maxCombinedAtomicCounterBuffers;
 
     mNativeCaps.maxShaderStorageBlocks[gl::ShaderType::Vertex] =
         mPhysicalDeviceFeatures.vertexPipelineStoresAndAtomics ? maxVertexStageStorageBuffers : 0;
@@ -311,12 +337,22 @@ void RendererVk::ensureCapsInitialized() const
     // There is no particular limit to how many atomic counters there can be, other than the size of
     // a storage buffer.  We nevertheless limit this to something sane (4096 arbitrarily).
     const uint32_t maxAtomicCounters =
-        std::min<size_t>(4096, limitsVk.maxStorageBufferRange / sizeof(uint32_t));
+        std::min<uint32_t>(4096, limitsVk.maxStorageBufferRange / sizeof(uint32_t));
     for (gl::ShaderType shaderType : gl::AllShaderTypes())
     {
         mNativeCaps.maxShaderAtomicCounters[shaderType] = maxAtomicCounters;
     }
     mNativeCaps.maxCombinedAtomicCounters = maxAtomicCounters;
+
+    // GL Images correspond to Vulkan Storage Images.
+    const uint32_t maxPerStageImages = limitsVk.maxPerStageDescriptorStorageImages;
+    const uint32_t maxCombinedImages = limitsVk.maxDescriptorSetStorageImages;
+    for (gl::ShaderType shaderType : gl::AllShaderTypes())
+    {
+        mNativeCaps.maxShaderImageUniforms[shaderType] = maxPerStageImages;
+    }
+    mNativeCaps.maxCombinedImageUniforms = maxCombinedImages;
+    mNativeCaps.maxImageUnits            = maxCombinedImages;
 
     mNativeCaps.minProgramTexelOffset = mPhysicalDeviceProperties.limits.minTexelOffset;
     mNativeCaps.maxProgramTexelOffset = mPhysicalDeviceProperties.limits.maxTexelOffset;
@@ -378,13 +414,17 @@ void RendererVk::ensureCapsInitialized() const
                                   limitsVk.framebufferDepthSampleCounts &
                                   limitsVk.framebufferStencilSampleCounts;
 
-    mNativeCaps.maxSamples = vk_gl::GetMaxSampleCount(sampleCounts);
+    mNativeCaps.maxSamples            = vk_gl::GetMaxSampleCount(sampleCounts);
+    mNativeCaps.maxFramebufferSamples = mNativeCaps.maxSamples;
 
     mNativeCaps.subPixelBits = limitsVk.subPixelPrecisionBits;
 
     // Enable Program Binary extension.
     mNativeExtensions.getProgramBinary = true;
     mNativeCaps.programBinaryFormats.push_back(GL_PROGRAM_BINARY_ANGLE);
+
+    // Enable GL_NV_pixel_buffer_object extension.
+    mNativeExtensions.pixelBufferObject = true;
 }
 
 namespace egl_vk

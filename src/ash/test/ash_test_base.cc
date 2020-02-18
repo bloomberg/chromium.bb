@@ -35,7 +35,7 @@
 #include "ash/wm/work_area_insets.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "components/account_id/account_id.h"
@@ -116,7 +116,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
 /////////////////////////////////////////////////////////////////////////////
 
 AshTestBase::AshTestBase(AshTestBase::SubclassManagesTaskEnvironment /* tag */)
-    : scoped_task_environment_(base::nullopt) {}
+    : task_environment_(base::nullopt) {}
 
 AshTestBase::~AshTestBase() {
   CHECK(setup_called_)
@@ -127,7 +127,7 @@ AshTestBase::~AshTestBase() {
 
 void AshTestBase::SetUp() {
   // At this point, the task APIs should already be provided either by
-  // |scoped_task_environment_| or by the subclass in the
+  // |task_environment_| or by the subclass in the
   // SubclassManagesTaskEnvironment mode.
   CHECK(base::ThreadTaskRunnerHandle::IsSet());
   CHECK(base::ThreadPoolInstance::Get());
@@ -242,10 +242,33 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
   params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.bounds = bounds;
   params.parent = Shell::GetPrimaryRootWindow()->GetChildById(container_id);
-  widget->Init(params);
+  widget->Init(std::move(params));
   if (show)
     widget->Show();
   return widget;
+}
+
+std::unique_ptr<aura::Window> AshTestBase::CreateAppWindow(
+    const gfx::Rect& bounds_in_screen,
+    AppType app_type,
+    int shell_window_id) {
+  // |widget| is configured to be owned by the underlying window.
+  views::Widget* widget = new views::Widget;
+  views::Widget::InitParams params;
+  // TestWidgetDelegate is owned by |widget|.
+  params.delegate = new TestWidgetDelegate();
+  params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+  params.bounds =
+      bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300) : bounds_in_screen;
+  params.context = Shell::GetPrimaryRootWindow();
+  if (app_type != AppType::NON_APP) {
+    params.init_properties_container.SetProperty(aura::client::kAppType,
+                                                 static_cast<int>(app_type));
+  }
+  widget->Init(std::move(params));
+  widget->GetNativeWindow()->set_id(shell_window_id);
+  widget->Show();
+  return base::WrapUnique(widget->GetNativeWindow());
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
@@ -257,19 +280,7 @@ std::unique_ptr<aura::Window> AshTestBase::CreateTestWindow(
         nullptr, type, shell_window_id, bounds_in_screen));
   }
 
-  // |widget| is configured to be owned by the underlying window.
-  views::Widget* widget = new views::Widget;
-  views::Widget::InitParams params;
-  // TestWidgetDelegate is owned by |widget|.
-  params.delegate = new TestWidgetDelegate();
-  params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
-  params.bounds =
-      bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300) : bounds_in_screen;
-  params.context = Shell::GetPrimaryRootWindow();
-  widget->Init(params);
-  widget->GetNativeWindow()->set_id(shell_window_id);
-  widget->Show();
-  return base::WrapUnique(widget->GetNativeWindow());
+  return CreateAppWindow(bounds_in_screen, AppType::NON_APP, shell_window_id);
 }
 
 std::unique_ptr<aura::Window> AshTestBase::CreateToplevelTestWindow(
@@ -509,12 +520,12 @@ void AshTestBase::SwapPrimaryDisplay() {
       display_manager()->GetSecondaryDisplay().id());
 }
 
-display::Display AshTestBase::GetPrimaryDisplay() {
+display::Display AshTestBase::GetPrimaryDisplay() const {
   return display::Screen::GetScreen()->GetDisplayNearestWindow(
       Shell::GetPrimaryRootWindow());
 }
 
-display::Display AshTestBase::GetSecondaryDisplay() {
+display::Display AshTestBase::GetSecondaryDisplay() const {
   return ash_test_helper_.GetSecondaryDisplay();
 }
 

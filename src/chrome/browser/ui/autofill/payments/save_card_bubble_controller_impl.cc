@@ -50,7 +50,6 @@ namespace autofill {
 SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
-      web_contents_(web_contents),
       pref_service_(
           user_prefs::UserPrefs::Get(web_contents->GetBrowserContext())) {
   security_level_ =
@@ -64,6 +63,25 @@ SaveCardBubbleControllerImpl::SaveCardBubbleControllerImpl(
 SaveCardBubbleControllerImpl::~SaveCardBubbleControllerImpl() {
   if (save_card_bubble_view_)
     save_card_bubble_view_->Hide();
+}
+
+// static
+SaveCardBubbleController* SaveCardBubbleController::GetOrCreate(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
+  SaveCardBubbleControllerImpl::CreateForWebContents(web_contents);
+  return SaveCardBubbleControllerImpl::FromWebContents(web_contents);
+}
+
+// static
+SaveCardBubbleController* SaveCardBubbleController::Get(
+    content::WebContents* web_contents) {
+  if (!web_contents)
+    return nullptr;
+
+  return SaveCardBubbleControllerImpl::FromWebContents(web_contents);
 }
 
 void SaveCardBubbleControllerImpl::OfferLocalSave(
@@ -206,16 +224,6 @@ void SaveCardBubbleControllerImpl::ReshowBubble() {
   ShowBubble();
 }
 
-bool SaveCardBubbleControllerImpl::IsIconVisible() const {
-  // If there is no bubble to show, then there should be no icon.
-  return current_bubble_type_ != BubbleType::INACTIVE;
-}
-
-SaveCardBubbleView* SaveCardBubbleControllerImpl::save_card_bubble_view()
-    const {
-  return save_card_bubble_view_;
-}
-
 base::string16 SaveCardBubbleControllerImpl::GetWindowTitle() const {
   switch (current_bubble_type_) {
     case BubbleType::LOCAL_SAVE:
@@ -287,7 +295,7 @@ base::string16 SaveCardBubbleControllerImpl::GetExplanatoryMessage() const {
 
   bool offer_to_save_on_device_message =
       OfferStoreUnmaskedCards(
-          web_contents_->GetBrowserContext()->IsOffTheRecord()) &&
+          web_contents()->GetBrowserContext()->IsOffTheRecord()) &&
       !IsAutofillNoLocalSaveOnUploadSuccessExperimentEnabled();
   // TODO(crbug.com/961082): Might need to revisit strings for name fix flow.
   if (options_.should_request_name_from_user) {
@@ -433,6 +441,11 @@ Profile* SaveCardBubbleControllerImpl::GetProfile() const {
 
 const CreditCard& SaveCardBubbleControllerImpl::GetCard() const {
   return card_;
+}
+
+SaveCardBubbleView* SaveCardBubbleControllerImpl::GetSaveCardBubbleView()
+    const {
+  return save_card_bubble_view_;
 }
 
 bool SaveCardBubbleControllerImpl::ShouldRequestNameFromUser() const {
@@ -615,6 +628,11 @@ const LegalMessageLines& SaveCardBubbleControllerImpl::GetLegalMessageLines()
   return legal_message_lines_;
 }
 
+bool SaveCardBubbleControllerImpl::IsIconVisible() const {
+  // If there is no bubble to show, then there should be no icon.
+  return current_bubble_type_ != BubbleType::INACTIVE;
+}
+
 bool SaveCardBubbleControllerImpl::IsUploadSave() const {
   return is_upload_save_;
 }
@@ -703,7 +721,7 @@ void SaveCardBubbleControllerImpl::FetchAccountInfo() {
   if (!personal_data_manager)
     return;
   base::Optional<AccountInfo> account_info =
-      identity_manager->FindExtendedAccountInfoForAccount(
+      identity_manager->FindExtendedAccountInfoForAccountWithRefreshToken(
           personal_data_manager->GetAccountInfoForPaymentsServer());
   account_info_ = account_info.value_or(AccountInfo{});
 }

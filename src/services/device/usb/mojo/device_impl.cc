@@ -88,11 +88,11 @@ void OnIsochronousTransferOut(
 
 // static
 void DeviceImpl::Create(scoped_refptr<device::UsbDevice> device,
-                        mojom::UsbDeviceRequest request,
-                        mojom::UsbDeviceClientPtr client) {
+                        mojo::PendingReceiver<mojom::UsbDevice> receiver,
+                        mojo::PendingRemote<mojom::UsbDeviceClient> client) {
   auto* device_impl = new DeviceImpl(std::move(device), std::move(client));
-  device_impl->binding_ = mojo::MakeStrongBinding(base::WrapUnique(device_impl),
-                                                  std::move(request));
+  device_impl->receiver_ = mojo::MakeSelfOwnedReceiver(
+      base::WrapUnique(device_impl), std::move(receiver));
 }
 
 DeviceImpl::~DeviceImpl() {
@@ -100,13 +100,13 @@ DeviceImpl::~DeviceImpl() {
 }
 
 DeviceImpl::DeviceImpl(scoped_refptr<device::UsbDevice> device,
-                       mojom::UsbDeviceClientPtr client)
+                       mojo::PendingRemote<mojom::UsbDeviceClient> client)
     : device_(std::move(device)), observer_(this), client_(std::move(client)) {
   DCHECK(device_);
   observer_.Add(device_.get());
 
   if (client_) {
-    client_.set_connection_error_handler(base::BindOnce(
+    client_.set_disconnect_handler(base::BindOnce(
         &DeviceImpl::OnClientConnectionError, weak_factory_.GetWeakPtr()));
   }
 }
@@ -130,7 +130,7 @@ bool DeviceImpl::HasControlTransferPermission(
     return true;
   }
 
-  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->GetActiveConfiguration();
   if (!config)
     return false;
 
@@ -218,7 +218,7 @@ void DeviceImpl::ClaimInterface(uint8_t interface_number,
     return;
   }
 
-  const mojom::UsbConfigurationInfo* config = device_->active_configuration();
+  const mojom::UsbConfigurationInfo* config = device_->GetActiveConfiguration();
   if (!config) {
     std::move(callback).Run(false);
     return;
@@ -389,13 +389,13 @@ void DeviceImpl::IsochronousTransferOut(
 
 void DeviceImpl::OnDeviceRemoved(scoped_refptr<device::UsbDevice> device) {
   DCHECK_EQ(device_, device);
-  binding_->Close();
+  receiver_->Close();
 }
 
 void DeviceImpl::OnClientConnectionError() {
   // Close the connection with Blink when WebUsbServiceImpl notifies the
   // permission revocation from settings UI.
-  binding_->Close();
+  receiver_->Close();
 }
 
 }  // namespace usb

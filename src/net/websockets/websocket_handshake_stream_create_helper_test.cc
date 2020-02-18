@@ -38,7 +38,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/websockets/websocket_basic_handshake_stream.h"
 #include "net/websockets/websocket_stream.h"
@@ -148,7 +148,7 @@ class MockWebSocketStreamRequestAPI : public WebSocketStreamRequestAPI {
 
 class WebSocketHandshakeStreamCreateHelperTest
     : public TestWithParam<HandshakeStreamType>,
-      public WithScopedTaskEnvironment {
+      public WithTaskEnvironment {
  protected:
   std::unique_ptr<WebSocketStream> CreateAndInitializeStream(
       const std::vector<std::string>& sub_protocols,

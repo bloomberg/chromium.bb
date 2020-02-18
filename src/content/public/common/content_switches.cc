@@ -13,6 +13,10 @@ namespace switches {
 // have an effect. 0 disables MSAA.
 const char kAcceleratedCanvas2dMSAASampleCount[] = "canvas-msaa-sample-count";
 
+// Allows processing of input before a frame has been committed.
+// TODO(schenney): Remove when crbug.com/987626 is fixed.
+const char kAllowPreCommitInput[] = "allow-pre-commit-input";
+
 // By default, file:// URIs cannot read other file:// URIs. This is an
 // override for developers who need the old behavior for testing.
 const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
@@ -28,6 +32,10 @@ const char kAllowLoopbackInPeerConnection[] =
 // Allow a page to show popups during its unloading.
 // TODO(https://crbug.com/937569): Remove this in Chrome 82.
 const char kAllowPopupsDuringPageUnload[] = "allow-popups-during-page-unload";
+
+// Allow a page to send synchronus XHR during its unloading.
+// TODO(https://crbug.com/1003101): Remove this in Chrome 82.
+const char kAllowSyncXHRInPageDismissal[] = "allow-sync-xhr-in-page-dimissal";
 
 // Uses the android SkFontManager on linux. The specified directory should
 // include the configuration xml file with the name "fonts.xml".
@@ -216,9 +224,6 @@ const char kDisableNotifications[]          = "disable-notifications";
 // the use of persistent gpu memory buffers.
 const char kDisablePartialRaster[] = "disable-partial-raster";
 
-// Enable partial raster in the renderer.
-const char kEnablePartialRaster[] = "enable-partial-raster";
-
 // Disable Pepper3D.
 const char kDisablePepper3d[]               = "disable-pepper-3d";
 
@@ -301,9 +306,6 @@ const char kDisableWebGLImageChromium[]     = "disable-webgl-image-chromium";
 // Don't enforce the same-origin policy. (Used by people testing their sites.)
 const char kDisableWebSecurity[]            = "disable-web-security";
 
-// Disables Blink's XSSAuditor. The XSSAuditor mitigates reflective XSS.
-const char kDisableXSSAuditor[]             = "disable-xss-auditor";
-
 // Disable rasterizer that writes directly to GPU memory associated with tiles.
 const char kDisableZeroCopy[]                = "disable-zero-copy";
 
@@ -340,10 +342,17 @@ const char kEnablePreferCompositingToLCDText[] =
 // features.
 const char kEnableBlinkFeatures[]           = "enable-blink-features";
 
+// Enables Canvas 2D overlays for Windows.
+const char kEnableCanvas2dSwapChain[] = "enable-canvas2d-swap-chain";
+
 // Enable native caret browsing, in which a moveable cursor is placed on a web
 // page, allowing a user to select and navigate through non-editable text using
 // just a keyboard. See https://crbug.com/977390 for links to i2i.
 const char kEnableCaretBrowsing[] = "enable-caret-browsing";
+
+// Enables experimental WebAssembly features.
+const char kEnableExperimentalWebAssemblyFeatures[] =
+    "enable-experimental-webassembly-features";
 
 // Enables Web Platform features that are in development.
 const char kEnableExperimentalWebPlatformFeatures[] =
@@ -493,6 +502,9 @@ const char kEnableOopRasterization[] = "enable-oop-rasterization";
 
 // Turns on skia deferred display list for out of process raster.
 const char kEnableOopRasterizationDDL[] = "enable-oop-rasterization-ddl";
+
+// Enables WebGL overlays for Windows.
+const char kEnableWebGLSwapChain[] = "enable-webgl-swap-chain";
 
 // The number of multisample antialiasing samples for GPU rasterization.
 // Requires MSAA support on GPU to have an effect. 0 disables MSAA.
@@ -722,6 +734,12 @@ const char kRendererProcessLimit[]          = "renderer-process-limit";
 // also adds service_manager::kNoSandbox on Windows non-official builds, since
 // that's needed to show a dialog.
 const char kRendererStartupDialog[]         = "renderer-startup-dialog";
+
+// Manual tests only run when --run-manual is specified. This allows writing
+// tests that don't run automatically but are still in the same test binary.
+// This is useful so that a team that wants to run a few tests doesn't have to
+// add a new binary that must be compiled on all builds.
+const char kRunManualTestsFlag[] = "run-manual";
 
 // Causes the process to run as a sandbox IPC subprocess.
 const char kSandboxIPCProcess[]             = "sandbox-ipc";

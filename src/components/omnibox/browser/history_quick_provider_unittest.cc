@@ -17,7 +17,7 @@
 #include "base/run_loop.h"
 #include "base/stl_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
@@ -180,7 +180,7 @@ class HistoryQuickProviderTest : public testing::Test {
   HistoryQuickProvider& provider() { return *provider_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
 
   ACMatches ac_matches_;  // The resulting matches after running RunTest.
@@ -213,7 +213,7 @@ void HistoryQuickProviderTest::SetUp() {
 void HistoryQuickProviderTest::TearDown() {
   provider_ = nullptr;
   client_.reset();
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 std::vector<HistoryQuickProviderTest::TestURLInfo>

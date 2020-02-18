@@ -94,6 +94,7 @@ class ArcNotificationContentView::EventForwarder : public ui::EventHandler {
       if (located_event->type() == ui::ET_MOUSE_ENTERED ||
           located_event->type() == ui::ET_MOUSE_EXITED) {
         owner_->UpdateControlButtonsVisibility();
+        widget->OnMouseEvent(located_event->AsMouseEvent());
         return;
       }
 
@@ -376,7 +377,7 @@ void ArcNotificationContentView::MaybeCreateFloatingControlButtons() {
   params.parent = surface_->GetWindow();
 
   floating_control_buttons_widget_.reset(new views::Widget);
-  floating_control_buttons_widget_->Init(params);
+  floating_control_buttons_widget_->Init(std::move(params));
   floating_control_buttons_widget_->SetContentsView(&control_buttons_view_);
   floating_control_buttons_widget_->GetNativeWindow()->AddPreTargetHandler(
       mouse_enter_exit_handler_.get());

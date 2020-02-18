@@ -15,9 +15,6 @@ import java.util.Set;
 /**
  * Used to assert that clean-up logic has been run before an object is GC'ed.
  *
- * Class is a no-op withen DCHECK_IS_ON=false, and is entirely removed by
- * proguard (enforced via -checkdiscard).
- *
  * Usage:
  * class MyClassWithCleanup {
  *     private final mLifetimeAssert = LifetimeAssert.create(this);

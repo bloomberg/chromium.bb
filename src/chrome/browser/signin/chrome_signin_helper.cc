@@ -38,8 +38,6 @@
 #include "components/signin/public/base/signin_buildflags.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/resource_request_info.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/resource_type.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "net/http/http_response_headers.h"
@@ -56,9 +54,11 @@
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
+#include "chrome/browser/supervised_user/supervised_user_service.h"
+#include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/webui/signin/inline_login_handler_dialog_chromeos.h"
-#include "chromeos/constants/chromeos_switches.h"
+#include "chromeos/constants/chromeos_features.h"
 #endif
 
 namespace signin {
@@ -91,8 +91,7 @@ class AccountReconcilorLockWrapper
 
   // Creates the account reconcilor lock on the UI thread. The lock will be
   // deleted on the UI thread when this wrapper is deleted.
-  void CreateLockOnUI(const content::ResourceRequestInfo::WebContentsGetter&
-                          web_contents_getter) {
+  void CreateLockOnUI(const content::WebContents::Getter& web_contents_getter) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     content::WebContents* web_contents = web_contents_getter.Run();
     if (!web_contents)
@@ -106,7 +105,7 @@ class AccountReconcilorLockWrapper
   }
 
   void DestroyOnUIAfterDelay() {
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(base::DoNothing::Once<
                            scoped_refptr<AccountReconcilorLockWrapper>>(),
@@ -172,8 +171,7 @@ class ManageAccountsHeaderReceivedUserData
 // opens an incognito window/tab.
 void ProcessMirrorHeaderUIThread(
     ManageAccountsParams manage_accounts_params,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
+    const content::WebContents::Getter& web_contents_getter) {
 #if defined(OS_CHROMEOS) || defined(OS_ANDROID)
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -201,7 +199,7 @@ void ProcessMirrorHeaderUIThread(
   signin_metrics::LogAccountReconcilorStateOnGaiaResponse(
       account_reconcilor->GetState());
 
-  if (chromeos::switches::IsAccountManagerEnabled()) {
+  if (chromeos::features::IsAccountManagerEnabled()) {
     // Chrome OS Account Manager is available. The only allowed operations
     // are:
     //
@@ -223,6 +221,15 @@ void ProcessMirrorHeaderUIThread(
       chrome::SettingsWindowManager::GetInstance()->ShowOSSettings(
           profile, chrome::kAccountManagerSubPage);
     } else {
+      // Do not display the re-authentication dialog if this event was triggered
+      // by supervision being enabled for an account.  In this situation, a
+      // complete signout is required.
+      SupervisedUserService* service =
+          SupervisedUserServiceFactory::GetForProfile(profile);
+      if (service && service->signout_required_after_supervision_enabled()) {
+        return;
+      }
+
       // Display a re-authentication dialog.
       chromeos::InlineLoginHandlerDialogChromeOS::Show(
           manage_accounts_params.email);
@@ -292,8 +299,7 @@ void ShowDiceSigninError(Profile* profile,
 
 void ProcessDiceHeaderUIThread(
     const DiceResponseParams& dice_params,
-    const content::ResourceRequestInfo::WebContentsGetter&
-        web_contents_getter) {
+    const content::WebContents::Getter& web_contents_getter) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents = web_contents_getter.Run();
@@ -391,9 +397,9 @@ void ProcessMirrorResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(ProcessMirrorHeaderUIThread, params,
-                                          response->GetWebContentsGetter()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(ProcessMirrorHeaderUIThread, params,
+                                response->GetWebContentsGetter()));
 }
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
@@ -428,82 +434,21 @@ void ProcessDiceResponseHeaderIfExists(ResponseAdapter* response,
 
   // Post a task even if we are already on the UI thread to avoid making any
   // requests while processing a throttle event.
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::UI},
-      base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
-                     response->GetWebContentsGetter()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(ProcessDiceHeaderUIThread, std::move(params),
+                                response->GetWebContentsGetter()));
 }
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 }  // namespace
 
-ChromeRequestAdapter::ChromeRequestAdapter(net::URLRequest* request)
-    : RequestAdapter(request) {}
+ChromeRequestAdapter::ChromeRequestAdapter() : RequestAdapter(nullptr) {}
 
 ChromeRequestAdapter::~ChromeRequestAdapter() = default;
 
-content::ResourceRequestInfo::WebContentsGetter
-ChromeRequestAdapter::GetWebContentsGetter() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetWebContentsGetterForRequest();
-}
-
-content::ResourceType ChromeRequestAdapter::GetResourceType() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetResourceType();
-}
-
-GURL ChromeRequestAdapter::GetReferrerOrigin() const {
-  return GURL(request_->referrer()).GetOrigin();
-}
-
-void ChromeRequestAdapter::SetDestructionCallback(base::OnceClosure closure) {
-  if (request_->GetUserData(kRequestDestructionObserverUserDataKey))
-    return;
-
-  request_->SetUserData(
-      kRequestDestructionObserverUserDataKey,
-      std::make_unique<RequestDestructionObserverUserData>(std::move(closure)));
-}
-
-ResponseAdapter::ResponseAdapter(net::URLRequest* request)
-    : request_(request) {}
+ResponseAdapter::ResponseAdapter() = default;
 
 ResponseAdapter::~ResponseAdapter() = default;
-
-content::ResourceRequestInfo::WebContentsGetter
-ResponseAdapter::GetWebContentsGetter() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info->GetWebContentsGetterForRequest();
-}
-
-bool ResponseAdapter::IsMainFrame() const {
-  auto* info = content::ResourceRequestInfo::ForRequest(request_);
-  return info && (info->GetResourceType() == content::ResourceType::kMainFrame);
-}
-
-GURL ResponseAdapter::GetOrigin() const {
-  return request_->url().GetOrigin();
-}
-
-const net::HttpResponseHeaders* ResponseAdapter::GetHeaders() const {
-  return request_->response_headers();
-}
-
-void ResponseAdapter::RemoveHeader(const std::string& name) {
-  request_->response_headers()->RemoveHeader(name);
-}
-
-base::SupportsUserData::Data* ResponseAdapter::GetUserData(
-    const void* key) const {
-  return request_->GetUserData(key);
-}
-
-void ResponseAdapter::SetUserData(
-    const void* key,
-    std::unique_ptr<base::SupportsUserData::Data> data) {
-  request_->SetUserData(key, std::move(data));
-}
 
 void SetDiceAccountReconcilorBlockDelayForTesting(int delay_ms) {
   g_dice_account_reconcilor_blocked_delay_ms = delay_ms;
@@ -558,7 +503,7 @@ void FixAccountConsistencyRequestHeader(
     if (content::BrowserThread::CurrentlyOn(content::BrowserThread::UI)) {
       lock_wrapper->CreateLockOnUI(request->GetWebContentsGetter());
     } else {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {content::BrowserThread::UI},
           base::BindOnce(&AccountReconcilorLockWrapper::CreateLockOnUI,
                          lock_wrapper, request->GetWebContentsGetter()));

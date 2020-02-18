@@ -20,20 +20,28 @@
 #include "ui/gfx/gpu_memory_buffer.h"
 #include "ui/gl/gl_bindings.h"
 
+namespace viz {
+class VulkanContextProvider;
+}  // namespace viz
+
 namespace gpu {
-class SharedContextState;
 class GpuDriverBugWorkarounds;
 class ImageFactory;
 class MailboxManager;
+class MemoryTracker;
+class SharedContextState;
 class SharedImageBackingFactory;
 class SharedImageBackingFactoryGLTexture;
 struct GpuFeatureInfo;
 struct GpuPreferences;
-class MemoryTracker;
 
 #if defined(OS_WIN)
-class SwapChainFactoryDXGI;
+class SharedImageBackingFactoryD3D;
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+class SysmemBufferCollection;
+#endif  // OS_FUCHSIA
 
 namespace raster {
 class WrappedSkImageFactory;
@@ -90,6 +98,12 @@ class GPU_GLES2_EXPORT SharedImageFactory {
   bool PresentSwapChain(const Mailbox& mailbox);
 #endif  // OS_WIN
 
+#if defined(OS_FUCHSIA)
+  bool RegisterSysmemBufferCollection(gfx::SysmemBufferCollectionId id,
+                                      zx::channel token);
+  bool ReleaseSysmemBufferCollection(gfx::SysmemBufferCollectionId id);
+#endif  // defined(OS_FUCHSIA)
+
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd,
                     int client_id,
@@ -129,8 +143,15 @@ class GPU_GLES2_EXPORT SharedImageFactory {
 
 #if defined(OS_WIN)
   // Used for creating DXGI Swap Chain.
-  std::unique_ptr<SwapChainFactoryDXGI> swap_chain_factory_;
+  std::unique_ptr<SharedImageBackingFactoryD3D> d3d_backing_factory_;
 #endif  // OS_WIN
+
+#if defined(OS_FUCHSIA)
+  viz::VulkanContextProvider* vulkan_context_provider_;
+  base::flat_map<gfx::SysmemBufferCollectionId,
+                 std::unique_ptr<gpu::SysmemBufferCollection>>
+      buffer_collections_;
+#endif  // OS_FUCHSIA
 
   SharedImageBackingFactory* backing_factory_for_testing_ = nullptr;
 };
@@ -155,6 +176,8 @@ class GPU_GLES2_EXPORT SharedImageRepresentationFactory {
   std::unique_ptr<SharedImageRepresentationDawn> ProduceDawn(
       const Mailbox& mailbox,
       DawnDevice device);
+  std::unique_ptr<SharedImageRepresentationOverlay> ProduceOverlay(
+      const Mailbox& mailbox);
 
  private:
   SharedImageManager* const manager_;

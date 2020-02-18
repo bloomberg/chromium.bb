@@ -32,7 +32,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/mozilla_security_manager/nsNSSCertificateDB.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -60,7 +60,7 @@ std::string GetSubjectCN(CERTCertificate* cert) {
 
 }  // namespace
 
-class CertDatabaseNSSTest : public TestWithScopedTaskEnvironment {
+class CertDatabaseNSSTest : public TestWithTaskEnvironment {
  public:
   void SetUp() override {
     ASSERT_TRUE(test_nssdb_.is_open());

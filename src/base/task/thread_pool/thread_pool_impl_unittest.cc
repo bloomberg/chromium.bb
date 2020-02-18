@@ -1030,27 +1030,29 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
 
 #if defined(OS_WIN)
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT}, SingleThreadTaskRunnerThreadMode::SHARED));
-  task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT, MayBlock()},
+      {ThreadPool(), TaskPriority::BEST_EFFORT},
       SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING}, SingleThreadTaskRunnerThreadMode::SHARED));
+      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
+      SingleThreadTaskRunnerThreadMode::SHARED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING, MayBlock()},
+      {ThreadPool(), TaskPriority::USER_BLOCKING},
+      SingleThreadTaskRunnerThreadMode::SHARED));
+  task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
+      {ThreadPool(), TaskPriority::USER_BLOCKING, MayBlock()},
       SingleThreadTaskRunnerThreadMode::SHARED));
 
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT},
+      {ThreadPool(), TaskPriority::BEST_EFFORT},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::BEST_EFFORT, MayBlock()},
+      {ThreadPool(), TaskPriority::BEST_EFFORT, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING},
+      {ThreadPool(), TaskPriority::USER_BLOCKING},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
   task_runners.push_back(thread_pool_->CreateCOMSTATaskRunner(
-      {TaskPriority::USER_BLOCKING, MayBlock()},
+      {ThreadPool(), TaskPriority::USER_BLOCKING, MayBlock()},
       SingleThreadTaskRunnerThreadMode::DEDICATED));
 #endif
 
@@ -1071,6 +1073,59 @@ TEST_P(ThreadPoolImplTest, WorkerThreadObserver) {
                                 kExpectedNumCOMSharedSingleThreadedWorkers);
   TearDown();
   observer.WaitCallsOnMainExit();
+}
+
+// Verify a basic EnqueueJobTaskSource() runs the worker task.
+TEST_P(ThreadPoolImplTest, ScheduleJobTaskSource) {
+  StartThreadPool();
+
+  WaitableEvent threads_running;
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running](experimental::JobDelegate*) {
+        threads_running.Signal();
+      }),
+      /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source =
+      job_task->GetJobTaskSource(FROM_HERE, ThreadPool(), thread_pool_.get());
+
+  thread_pool_->EnqueueJobTaskSource(task_source);
+  threads_running.Wait();
+}
+
+// Verify that calling ShouldYield() returns true for a job task source that
+// needs to change thread group because of a priority update.
+TEST_P(ThreadPoolImplTest, ThreadGroupChangeShouldYield) {
+  StartThreadPool();
+
+  WaitableEvent threads_running;
+  WaitableEvent threads_continue;
+
+  auto job_task = base::MakeRefCounted<test::MockJobTask>(
+      BindLambdaForTesting([&threads_running, &threads_continue](
+                               experimental::JobDelegate* delegate) {
+        EXPECT_FALSE(delegate->ShouldYield());
+
+        threads_running.Signal();
+        test::WaitWithoutBlockingObserver(&threads_continue);
+
+        // The task source needs to yield if background thread groups exist.
+        EXPECT_EQ(delegate->ShouldYield(),
+                  CanUseBackgroundPriorityForWorkerThread());
+      }),
+      /* num_tasks_to_run */ 1);
+  scoped_refptr<JobTaskSource> task_source = job_task->GetJobTaskSource(
+      FROM_HERE, {ThreadPool(), TaskPriority::USER_VISIBLE},
+      thread_pool_.get());
+
+  thread_pool_->EnqueueJobTaskSource(task_source);
+  threads_running.Wait();
+  thread_pool_->UpdatePriority(task_source, TaskPriority::BEST_EFFORT);
+  threads_continue.Signal();
+
+  // Flush the task tracker to be sure that no local variables are accessed by
+  // tasks after the end of the scope.
+  thread_pool_->FlushForTesting();
 }
 
 namespace {
@@ -1164,7 +1219,7 @@ std::vector<std::unique_ptr<TaskRunnerAndEvents>> CreateTaskRunnersAndEvents(
   // Its task is expected to run after the USER_BLOCKING task runner's task.
   task_runners_and_events.push_back(std::make_unique<TaskRunnerAndEvents>(
       thread_pool->CreateUpdateableSequencedTaskRunner(
-          TaskTraits({ThreadPool(), TaskPriority::BEST_EFFORT, thread_policy})),
+          {ThreadPool(), TaskPriority::BEST_EFFORT, thread_policy}),
       TaskPriority::USER_VISIBLE, &task_runners_and_events.back()->task_ran));
 
   // -----

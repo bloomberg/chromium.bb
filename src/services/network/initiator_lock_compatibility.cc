@@ -6,9 +6,12 @@
 
 #include <string>
 
+#include "base/containers/flat_set.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "services/network/cross_origin_read_blocking.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -18,6 +21,16 @@
 
 namespace network {
 
+namespace {
+
+base::flat_set<std::string>&
+GetSchemesExcludedFromRequestInitiatorSiteLockChecks() {
+  static base::NoDestructor<base::flat_set<std::string>> s_scheme;
+  return *s_scheme;
+}
+
+}  // namespace
+
 InitiatorLockCompatibility VerifyRequestInitiatorLock(
     const base::Optional<url::Origin>& request_initiator_site_lock,
     const base::Optional<url::Origin>& request_initiator) {
@@ -25,24 +38,8 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
     return InitiatorLockCompatibility::kNoLock;
   const url::Origin& lock = request_initiator_site_lock.value();
 
-  if (!request_initiator.has_value()) {
-    if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-      // SECURITY CHECK: Renderer processes should always provide a
-      // |request_initiator|.  Similarly, browser-side features acting on
-      // behalf of a renderer process (like AppCache), should always provide a
-      // |request_initiator|.
-      //
-      // Callers associated with features (e.g. Sec-Fetch-Site) that may handle
-      // browser-initiated requests (e.g. navigations and/or SafeBrowsing
-      // traffic) need to take extra care to avoid calling
-      // VerifyRequestInitiatorLock (and/or GetTrustworthyInitiator) with no
-      // |request_initiator|.  Such features should return early when handling
-      // request with no |request_initiator| but only when the request comes
-      // through a URLLoaderFactory associated with kBrowserProcessId.
-      CHECK(false);
-    }
+  if (!request_initiator.has_value())
     return InitiatorLockCompatibility::kNoInitiator;
-  }
   const url::Origin& initiator = request_initiator.value();
 
   // TODO(lukasza, nasko): Also consider equality of precursor origins (e.g. if
@@ -67,7 +64,32 @@ InitiatorLockCompatibility VerifyRequestInitiatorLock(
       return InitiatorLockCompatibility::kCompatibleLock;
   }
 
+  // TODO(lukasza): https://crbug.com/940068: Stop excluding specific schemes
+  // after request_initiator=website also for requests from isolated worlds.
+  if (base::Contains(GetSchemesExcludedFromRequestInitiatorSiteLockChecks(),
+                     initiator.scheme())) {
+    return InitiatorLockCompatibility::kExcludedScheme;
+  }
+
   return InitiatorLockCompatibility::kIncorrectLock;
+}
+
+InitiatorLockCompatibility VerifyRequestInitiatorLock(
+    uint32_t process_id,
+    const base::Optional<url::Origin>& request_initiator_site_lock,
+    const base::Optional<url::Origin>& request_initiator) {
+  if (process_id == mojom::kBrowserProcessId)
+    return InitiatorLockCompatibility::kBrowserProcess;
+
+  InitiatorLockCompatibility result = VerifyRequestInitiatorLock(
+      request_initiator_site_lock, request_initiator);
+
+  if (result == InitiatorLockCompatibility::kIncorrectLock &&
+      CrossOriginReadBlocking::ShouldAllowForPlugin(process_id)) {
+    result = InitiatorLockCompatibility::kExcludedUniversalAccessPlugin;
+  }
+
+  return result;
 }
 
 url::Origin GetTrustworthyInitiator(
@@ -80,10 +102,8 @@ url::Origin GetTrustworthyInitiator(
   if (!request_initiator.has_value())
     return unique_origin_fallback;
 
-  if (!base::FeatureList::IsEnabled(features::kNetworkService) ||
-      !base::FeatureList::IsEnabled(features::kRequestInitiatorSiteLock)) {
+  if (!base::FeatureList::IsEnabled(features::kRequestInitiatorSiteLock))
     return request_initiator.value();
-  }
 
   InitiatorLockCompatibility initiator_compatibility =
       VerifyRequestInitiatorLock(request_initiator_site_lock,
@@ -93,6 +113,13 @@ url::Origin GetTrustworthyInitiator(
 
   // If all the checks above passed, then |request_initiator| is trustworthy.
   return request_initiator.value();
+}
+
+void ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+    const std::string& scheme) {
+  base::flat_set<std::string>& excluded_schemes =
+      GetSchemesExcludedFromRequestInitiatorSiteLockChecks();
+  excluded_schemes.insert(scheme);
 }
 
 }  // namespace network

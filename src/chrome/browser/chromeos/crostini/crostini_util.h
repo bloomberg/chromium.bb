@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
+#include "storage/browser/fileapi/file_system_url.h"
 #include "ui/base/resource/scale_factor.h"
 
 namespace base {
@@ -32,8 +33,14 @@ struct LinuxPackageInfo;
 // A unique identifier for our containers. This is <vm_name, container_name>.
 using ContainerId = std::pair<std::string, std::string>;
 
+using LaunchCrostiniAppCallback =
+    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
+
 // Return" (<vm_name>, <container_name>)".
 std::string ContainerIdToString(const ContainerId& container_id);
+
+// Checks if user profile is able to a crostini app with a given app_id.
+bool IsUninstallable(Profile* profile, const std::string& app_id);
 
 // Returns true if crostini is allowed to run for |profile|.
 // Otherwise, returns false, e.g. if crostini is not available on the device,
@@ -61,6 +68,10 @@ bool IsCrostiniRunning(Profile* profile);
 // Crostini container is enabled.
 bool IsCrostiniAnsibleInfrastructureEnabled();
 
+// Returns whether user is allowed root access to Crostini. Always returns true
+// when advanced access controls feature flag is disabled.
+bool IsCrostiniRootAccessAllowed(Profile* profile);
+
 // Launches the Crostini app with ID of |app_id| on the display with ID of
 // |display_id|. |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile,
@@ -73,7 +84,8 @@ void LaunchCrostiniApp(Profile* profile,
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id,
-                       const std::vector<std::string>& files);
+                       const std::vector<storage::FileSystemURL>& files,
+                       LaunchCrostiniAppCallback callback);
 
 // Convenience wrapper around CrostiniAppIconLoader. As requesting icons from
 // the container can be slow, we just use the default (penguin) icons after the

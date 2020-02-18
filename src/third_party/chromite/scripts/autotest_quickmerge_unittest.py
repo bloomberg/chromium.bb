@@ -7,8 +7,9 @@
 
 from __future__ import print_function
 
-import mock
 import types
+
+import mock
 
 from chromite.lib import cros_test_lib
 from chromite.scripts import autotest_quickmerge

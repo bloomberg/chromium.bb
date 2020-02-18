@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">Razlučivost slike</translation>
 <translation id="1943097386230153518">Instaliraj novu uslugu</translation>
 <translation id="1947424002851288782">Njemačka tipkovnica</translation>
+<translation id="1972984168337863910">Proširi ploče povratnih informacija o datotekama</translation>
 <translation id="197560921582345123">Može uređivati</translation>
 <translation id="1984603991036629094">Armenska fonetska tipkovnica</translation>
 <translation id="2001796770603320721">Upravljaj na Disku</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">Morate biti na mreži da biste pristupili toj datoteci.</translation>
 <translation id="4212740939091998969">Mapa s nazivom "<ph name="FOLDER_NAME" />" već postoji. Odaberite drugi naziv.</translation>
 <translation id="4215448920900139318">Sigurnosno kopiranje datoteka (ukupno <ph name="FILE_COUNT" />)</translation>
-<translation id="4242533952199664413">Otvori postavke</translation>
 <translation id="426015154560005552">arapska tipkovnica</translation>
 <translation id="4261901459838235729">Googleova prezentacija</translation>
 <translation id="4290535918735525311">Jedna mapa podijeljena s Linuxom</translation>
-<translation id="42981349822642051">Proširi</translation>
 <translation id="4298972503445160211">Danska tipkovnica</translation>
 <translation id="4299729908419173967">brazilski</translation>
 <translation id="4309915981827077375">Opće informacije</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">Automatska obrada</translation>
 <translation id="4881695831933465202">Otvori</translation>
 <translation id="4886021172213954916">tamilska tipkovnica (pisaći stroj)</translation>
-<translation id="4892969127351273348">Otvaranje pomoću aplikacije <ph name="APP_NAME" /> nije moguće</translation>
 <translation id="4905417359854579806">Sigurnosno kopiranje datoteka (ukupno <ph name="FILE_COUNT" />) je spremno</translation>
 <translation id="4924638091161556692">Obrađeno</translation>
 <translation id="4935975195727477204">Cvijet gazanije</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">švicarska (francuska)</translation>
 <translation id="5234764350956374838">Odbaci</translation>
 <translation id="5241298539944515331">vijetnamska tipkovnica (VIQR)</translation>
-<translation id="52446585071384036">Da biste otvarali datoteke pomoću aplikacije <ph name="APP_NAME" />, najprije ih kopirajte u mapu Linux datoteka.</translation>
 <translation id="5253070652067921974">Autor</translation>
 <translation id="5257456363153333584">Vilin konjic</translation>
 <translation id="5262311848634918433"><ph name="MARKUP_1" />Pristupite datotekama svugdje, čak i kada niste povezani s internetom.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">Korejski</translation>
 <translation id="5819442873484330149">hangul 3 set (završni)</translation>
 <translation id="5833610766403489739">Datoteka nije pronađena. Provjerite postavku lokacije preuzimanja i pokušajte ponovo.</translation>
-<translation id="5838051104334203064">Aplikacije iz Trgovine Play ne mogu pristupiti ovom uređaju</translation>
 <translation id="5838451609423551646">Uklonjeni su svi unosi iz odabira.</translation>
 <translation id="5838825566232597749">Američka međunarodna Workman</translation>
 <translation id="5850516540536751549">Ta vrsta datoteke nije podržana. Posjetite <ph name="BEGIN_LINK" />Chrome web-trgovinu<ph name="END_LINK" /> da biste pronašli aplikaciju koja može otvoriti tu vrstu datoteke.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">Da biste spremili te datoteke za izvanmrežnu upotrebu, ponovo se povežite s internetom, kliknite datoteke desnom tipkom i odaberite opciju <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">Prekini</translation>
 <translation id="8261506727792406068">Izbriši</translation>
+<translation id="8269755669432358899">Sažmi ploče povratnih informacija o datotekama</translation>
 <translation id="8279388322240498158">soransko-kurdska tipkovnica temeljena na engleskom</translation>
 <translation id="8280151743281770066">armenska (fonetska)</translation>
 <translation id="8294431847097064396">Izvor</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">Odaberite datoteku za otvaranje</translation>
 <translation id="8579285237314169903">Sinkronizacija ovoliko stavki: <ph name="NUMBER_OF_FILES" />...</translation>
 <translation id="8600173386174225982">Popis datoteka promijenio se na prikaz minijatura.</translation>
+<translation id="8601932370724196034">Slikovna datoteka Crostinija</translation>
 <translation id="8669949407341943408">Premještanje...</translation>
 <translation id="8671210955687109937">Može komentirati</translation>
 <translation id="8686213429977032554">Ova datoteka na Disku još se ne dijeli</translation>

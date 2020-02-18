@@ -26,6 +26,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/public/resources/grit/blink_resources.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/layout/layout_theme_font_provider.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
@@ -47,43 +48,42 @@ static bool UseMockTheme() {
   return WebTestSupport::IsMockThemeEnabledForTest();
 }
 
-unsigned LayoutThemeDefault::active_selection_background_color_ = 0xff1e90ff;
-unsigned LayoutThemeDefault::active_selection_foreground_color_ = Color::kBlack;
-unsigned LayoutThemeDefault::inactive_selection_background_color_ = 0xffc8c8c8;
-unsigned LayoutThemeDefault::inactive_selection_foreground_color_ = 0xff323232;
-
-base::TimeDelta LayoutThemeDefault::caret_blink_interval_;
-
-LayoutThemeDefault::LayoutThemeDefault() : LayoutTheme(), painter_(*this) {
-  caret_blink_interval_ = LayoutTheme::CaretBlinkInterval();
-}
+LayoutThemeDefault::LayoutThemeDefault()
+    : LayoutTheme(),
+      caret_blink_interval_(LayoutTheme::CaretBlinkInterval()),
+      painter_(*this) {}
 
 LayoutThemeDefault::~LayoutThemeDefault() = default;
 
 bool LayoutThemeDefault::ThemeDrawsFocusRing(const ComputedStyle& style) const {
   if (UseMockTheme()) {
     // Don't use focus rings for buttons when mocking controls.
-    return style.Appearance() == kButtonPart ||
-           style.Appearance() == kPushButtonPart ||
-           style.Appearance() == kSquareButtonPart;
+    return style.EffectiveAppearance() == kButtonPart ||
+           style.EffectiveAppearance() == kPushButtonPart ||
+           style.EffectiveAppearance() == kSquareButtonPart;
   }
 
   // This causes Blink to draw the focus rings for us.
   return false;
 }
 
-Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id) const {
+Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
+                                      WebColorScheme color_scheme) const {
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
 
   if (css_value_id == CSSValueID::kButtonface) {
-    if (UseMockTheme())
-      return Color(0xc0, 0xc0, 0xc0);
+    if (UseMockTheme()) {
+      if (color_scheme == WebColorScheme::kLight)
+        return Color(0xc0, 0xc0, 0xc0);
+      else
+        return Color(0x80, 0x80, 0x80);
+    }
     return kDefaultButtonGrayColor;
   }
   if (css_value_id == CSSValueID::kMenu)
     return kDefaultMenuColor;
-  return LayoutTheme::SystemColor(css_value_id);
+  return LayoutTheme::SystemColor(css_value_id, color_scheme);
 }
 
 // Use the Windows style sheets to match their metrics.
@@ -91,32 +91,29 @@ String LayoutThemeDefault::ExtraDefaultStyleSheet() {
   String extra_style_sheet = LayoutTheme::ExtraDefaultStyleSheet();
   String multiple_fields_style_sheet =
       RuntimeEnabledFeatures::InputMultipleFieldsUIEnabled()
-          ? GetDataResourceAsASCIIString("input_multiple_fields.css")
+          ? UncompressResourceAsASCIIString(
+                IDR_UASTYLE_THEME_INPUT_MULTIPLE_FIELDS_CSS)
           : String();
-  String windows_style_sheet = GetDataResourceAsASCIIString("win.css");
+  String windows_style_sheet =
+      UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_CSS);
   String controls_refresh_style_sheet =
       RuntimeEnabledFeatures::FormControlsRefreshEnabled()
-          ? GetDataResourceAsASCIIString("controls_refresh.css")
-          : String();
-  String forced_colors_style_sheet =
-      RuntimeEnabledFeatures::ForcedColorsEnabled()
-          ? GetDataResourceAsASCIIString("forced_colors.css")
+          ? UncompressResourceAsASCIIString(
+                IDR_UASTYLE_THEME_CONTROLS_REFRESH_CSS)
           : String();
   StringBuilder builder;
   builder.ReserveCapacity(
       extra_style_sheet.length() + multiple_fields_style_sheet.length() +
-      windows_style_sheet.length() + controls_refresh_style_sheet.length() +
-      forced_colors_style_sheet.length());
+      windows_style_sheet.length() + controls_refresh_style_sheet.length());
   builder.Append(extra_style_sheet);
   builder.Append(multiple_fields_style_sheet);
   builder.Append(windows_style_sheet);
   builder.Append(controls_refresh_style_sheet);
-  builder.Append(forced_colors_style_sheet);
   return builder.ToString();
 }
 
 String LayoutThemeDefault::ExtraQuirksStyleSheet() {
-  return GetDataResourceAsASCIIString("win_quirks.css");
+  return UncompressResourceAsASCIIString(IDR_UASTYLE_THEME_WIN_QUIRKS_CSS);
 }
 
 Color LayoutThemeDefault::ActiveListBoxSelectionBackgroundColor() const {
@@ -180,20 +177,19 @@ void LayoutThemeDefault::AdjustSliderThumbSize(ComputedStyle& style) const {
 
   // FIXME: Mock theme doesn't handle zoomed sliders.
   float zoom_level = UseMockTheme() ? 1 : style.EffectiveZoom();
-  if (style.Appearance() == kSliderThumbHorizontalPart) {
+  if (style.EffectiveAppearance() == kSliderThumbHorizontalPart) {
     style.SetWidth(Length::Fixed(size.Width() * zoom_level));
     style.SetHeight(Length::Fixed(size.Height() * zoom_level));
-  } else if (style.Appearance() == kSliderThumbVerticalPart) {
+  } else if (style.EffectiveAppearance() == kSliderThumbVerticalPart) {
     style.SetWidth(Length::Fixed(size.Height() * zoom_level));
     style.SetHeight(Length::Fixed(size.Width() * zoom_level));
   }
 }
 
-void LayoutThemeDefault::SetSelectionColors(
-    unsigned active_background_color,
-    unsigned active_foreground_color,
-    unsigned inactive_background_color,
-    unsigned inactive_foreground_color) {
+void LayoutThemeDefault::SetSelectionColors(Color active_background_color,
+                                            Color active_foreground_color,
+                                            Color inactive_background_color,
+                                            Color inactive_foreground_color) {
   active_selection_background_color_ = active_background_color;
   active_selection_foreground_color_ = active_foreground_color;
   inactive_selection_background_color_ = inactive_background_color;
@@ -248,7 +244,7 @@ bool LayoutThemeDefault::ShouldUseFallbackTheme(
   if (UseMockTheme()) {
     // The mock theme can't handle zoomed controls, so we fall back to the
     // "fallback" theme.
-    ControlPart part = style.Appearance();
+    ControlPart part = style.EffectiveAppearance();
     if (part == kCheckboxPart || part == kRadioPart)
       return style.EffectiveZoom() != 1;
   }
@@ -289,7 +285,7 @@ IntRect Center(const IntRect& original, int width, int height) {
 }
 
 void LayoutThemeDefault::AdjustButtonStyle(ComputedStyle& style) const {
-  if (style.Appearance() == kPushButtonPart) {
+  if (style.EffectiveAppearance() == kPushButtonPart) {
     // Ignore line-height.
     style.SetLineHeight(ComputedStyleInitialValues::InitialLineHeight());
   }
@@ -333,7 +329,7 @@ int LayoutThemeDefault::PopupInternalPaddingStart(
 int LayoutThemeDefault::PopupInternalPaddingEnd(
     const ChromeClient* client,
     const ComputedStyle& style) const {
-  if (style.Appearance() == kNoControlPart)
+  if (!style.HasEffectiveAppearance())
     return 0;
   return 1 * style.EffectiveZoom() +
          ClampedMenuListArrowPaddingSize(client, style);
@@ -389,7 +385,7 @@ void LayoutThemeDefault::DidChangeThemeEngine() {
 
 int LayoutThemeDefault::MenuListInternalPadding(const ComputedStyle& style,
                                                 int padding) const {
-  if (style.Appearance() == kNoControlPart)
+  if (!style.HasEffectiveAppearance())
     return 0;
   return padding * style.EffectiveZoom();
 }

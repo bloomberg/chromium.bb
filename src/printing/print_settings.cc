@@ -153,8 +153,6 @@ PrintSettings::PrintSettings() {
   Clear();
 }
 
-PrintSettings::PrintSettings(const PrintSettings& other) = default;
-
 PrintSettings::~PrintSettings() = default;
 
 void PrintSettings::Clear() {
@@ -186,7 +184,6 @@ void PrintSettings::Clear() {
 #if defined(OS_CHROMEOS)
   send_user_info_ = false;
   username_.clear();
-  job_title_.clear();
   pin_value_.clear();
 #endif  // defined(OS_CHROMEOS)
 }

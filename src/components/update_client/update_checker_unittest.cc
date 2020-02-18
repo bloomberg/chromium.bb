@@ -22,9 +22,10 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/test/bind_test_util.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
+#include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/update_client/activity_data_service.h"
@@ -151,7 +152,7 @@ class UpdateCheckerTest : public testing::TestWithParam<bool> {
  private:
   scoped_refptr<UpdateContext> MakeMockUpdateContext() const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::OnceClosure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(UpdateCheckerTest);
@@ -161,8 +162,7 @@ class UpdateCheckerTest : public testing::TestWithParam<bool> {
 INSTANTIATE_TEST_SUITE_P(Parameterized, UpdateCheckerTest, testing::Bool());
 
 UpdateCheckerTest::UpdateCheckerTest()
-    : scoped_task_environment_(
-          base::test::ScopedTaskEnvironment::MainThreadType::IO) {}
+    : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
 UpdateCheckerTest::~UpdateCheckerTest() {
 }
@@ -199,7 +199,7 @@ void UpdateCheckerTest::TearDown() {
 
   // The PostInterceptor requires the message loop to run to destruct correctly.
   // TODO(sorin): This is fragile and should be fixed.
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 }
 
 void UpdateCheckerTest::RunThreads() {
@@ -325,14 +325,14 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 
 #if defined(OS_WIN)
   EXPECT_TRUE(request->FindKey("domainjoined"));
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   const auto* updater = request->FindKey("updater");
   EXPECT_TRUE(updater);
   EXPECT_EQ("Omaha", updater->FindKey("name")->GetString());
   EXPECT_TRUE(updater->FindKey("autoupdatecheckenabled")->is_bool());
   EXPECT_TRUE(updater->FindKey("ismachine")->is_bool());
   EXPECT_TRUE(updater->FindKey("updatepolicy")->is_int());
-#endif  // GOOGLE_CHROME_BUILD
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 #endif  // OS_WIN
 
   // Sanity check the arguments of the callback after parsing.

@@ -69,7 +69,7 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   }
   void StartDataRequest(
       const std::string& path,
-      const ResourceRequestInfo::WebContentsGetter& wc_getter,
+      const WebContents::Getter& wc_getter,
       const URLDataSource::GotDataCallback& callback) override {
     return parent_->StartDataRequest(path, wc_getter, callback);
   }
@@ -93,12 +93,17 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
       return parent_->frame_src_;
     return URLDataSource::GetContentSecurityPolicyChildSrc();
   }
+  std::string GetContentSecurityPolicyWorkerSrc() override {
+    if (parent_->worker_src_set_)
+      return parent_->worker_src_;
+    return URLDataSource::GetContentSecurityPolicyWorkerSrc();
+  }
   bool ShouldDenyXFrameOptions() override {
     return parent_->deny_xframe_options_;
   }
   bool ShouldServeMimeTypeAsContentTypeHeader() override { return true; }
-  bool IsGzipped(const std::string& path) override {
-    return parent_->IsGzipped(path);
+  bool ShouldReplaceI18nInJS() override {
+    return parent_->ShouldReplaceI18nInJS();
   }
 
  private:
@@ -109,14 +114,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
     : URLDataSourceImpl(source_name,
                         std::make_unique<InternalDataSource>(this)),
       source_name_(source_name),
-      default_resource_(-1),
-      add_csp_(true),
-      script_src_set_(false),
-      object_src_set_(false),
-      frame_src_set_(false),
-      deny_xframe_options_(true),
-      add_load_time_data_defaults_(true),
-      replace_existing_source_(true) {}
+      default_resource_(-1) {}
 
 WebUIDataSourceImpl::~WebUIDataSourceImpl() {
 }
@@ -161,11 +159,8 @@ void WebUIDataSourceImpl::AddInteger(base::StringPiece name, int32_t value) {
   localized_strings_.SetInteger(name, value);
 }
 
-void WebUIDataSourceImpl::SetJsonPath(base::StringPiece path) {
-  DCHECK(json_path_.empty());
-  DCHECK(!path.empty());
-
-  json_path_ = path.as_string();
+void WebUIDataSourceImpl::UseStringsJs() {
+  use_strings_js_ = true;
 }
 
 void WebUIDataSourceImpl::AddResourcePath(base::StringPiece path,
@@ -214,8 +209,18 @@ void WebUIDataSourceImpl::OverrideContentSecurityPolicyChildSrc(
   frame_src_ = data;
 }
 
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyWorkerSrc(
+    const std::string& data) {
+  worker_src_set_ = true;
+  worker_src_ = data;
+}
+
 void WebUIDataSourceImpl::DisableDenyXFrameOptions() {
   deny_xframe_options_ = false;
+}
+
+void WebUIDataSourceImpl::EnableReplaceI18nInJS() {
+  should_replace_i18n_in_js_ = true;
 }
 
 const ui::TemplateReplacements* WebUIDataSourceImpl::GetReplacements() const {
@@ -267,7 +272,7 @@ std::string WebUIDataSourceImpl::GetMimeType(const std::string& path) const {
 
 void WebUIDataSourceImpl::StartDataRequest(
     const std::string& path,
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     const URLDataSource::GotDataCallback& callback) {
   if (!should_handle_request_callback_.is_null() &&
       should_handle_request_callback_.Run(path)) {
@@ -277,9 +282,12 @@ void WebUIDataSourceImpl::StartDataRequest(
 
   EnsureLoadTimeDataDefaultsAdded();
 
-  if (!json_path_.empty() && path == json_path_) {
-    SendLocalizedStringsAsJSON(callback);
-    return;
+  if (use_strings_js_) {
+    bool from_js_module = path == "strings.m.js";
+    if (from_js_module || path == "strings.js") {
+      SendLocalizedStringsAsJSON(callback, from_js_module);
+      return;
+    }
   }
 
   int resource_id = PathToIdrOrDefault(CleanUpPath(path));
@@ -290,9 +298,10 @@ void WebUIDataSourceImpl::StartDataRequest(
 }
 
 void WebUIDataSourceImpl::SendLocalizedStringsAsJSON(
-    const URLDataSource::GotDataCallback& callback) {
+    const URLDataSource::GotDataCallback& callback,
+    bool from_js_module) {
   std::string template_data;
-  webui::AppendJsonJS(&localized_strings_, &template_data);
+  webui::AppendJsonJS(&localized_strings_, &template_data, from_js_module);
   callback.Run(base::RefCountedString::TakeString(&template_data));
 }
 
@@ -300,26 +309,8 @@ const base::DictionaryValue* WebUIDataSourceImpl::GetLocalizedStrings() const {
   return &localized_strings_;
 }
 
-bool WebUIDataSourceImpl::IsGzipped(const std::string& path) const {
-  // Note: In the hypothetical case of requests handled by |filter_callback_|
-  // that involve gzipped data, the callback itself is responsible for
-  // ungzipping, and IsGzipped will return false for such cases.
-  if (!should_handle_request_callback_.is_null() &&
-      should_handle_request_callback_.Run(path)) {
-    return false;
-  }
-
-  if (!json_path_.empty() && path == json_path_) {
-    return false;
-  }
-
-  std::string file_path = CleanUpPath(path);
-  int idr = PathToIdrOrDefault(file_path);
-  if (idr == -1) {
-    return false;
-  }
-
-  return GetContentClient()->IsDataResourceGzipped(idr);
+bool WebUIDataSourceImpl::ShouldReplaceI18nInJS() const {
+  return should_replace_i18n_in_js_;
 }
 
 int WebUIDataSourceImpl::PathToIdrOrDefault(const std::string& path) const {

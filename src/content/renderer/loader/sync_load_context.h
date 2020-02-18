@@ -13,6 +13,7 @@
 #include "content/common/content_export.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -25,6 +26,10 @@ class WaitableEvent;
 
 namespace network {
 struct ResourceRequest;
+}
+
+namespace blink {
+class URLLoaderThrottle;
 }
 
 namespace content {
@@ -55,12 +60,13 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo>
           url_loader_factory_info,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      std::vector<std::unique_ptr<blink::URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
-      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry);
+      mojo::PendingRemote<blink::mojom::BlobRegistry>
+          download_to_blob_registry);
 
   ~SyncLoadContext() override;
 
@@ -77,7 +83,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
       base::WaitableEvent* completed_event,
       base::WaitableEvent* abort_event,
       base::TimeDelta timeout,
-      blink::mojom::BlobRegistryPtrInfo download_to_blob_registry,
+      mojo::PendingRemote<blink::mojom::BlobRegistry> download_to_blob_registry,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
@@ -118,7 +124,7 @@ class CONTENT_EXPORT SyncLoadContext : public RequestPeer {
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
 
   // State for downloading to a blob.
-  blink::mojom::BlobRegistryPtr download_to_blob_registry_;
+  mojo::Remote<blink::mojom::BlobRegistry> download_to_blob_registry_;
   bool blob_response_started_ = false;
   bool blob_finished_ = false;
   bool request_completed_ = false;

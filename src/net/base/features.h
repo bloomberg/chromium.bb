@@ -45,6 +45,11 @@ NET_EXPORT extern const base::Feature kSplitCacheByNetworkIsolationKey;
 NET_EXPORT extern const base::Feature
     kPartitionConnectionsByNetworkIsolationKey;
 
+// Partitions HttpServerProperties based on the NetworkIsolationKey associated
+// with a request.
+NET_EXPORT extern const base::Feature
+    kPartitionHttpServerPropertiesByNetworkIsolationKey;
+
 // Partitions TLS sessions and QUIC server configs based on the
 // NetworkIsolationKey associated with a request.
 //
@@ -84,6 +89,9 @@ NET_EXPORT extern const base::Feature kCertVerifierBuiltinFeature;
 #endif
 
 NET_EXPORT extern const base::Feature kAppendFrameOriginToNetworkIsolationKey;
+
+// Turns off streaming media caching to disk.
+NET_EXPORT extern const base::Feature kTurnOffStreamingMediaCaching;
 
 }  // namespace features
 }  // namespace net

@@ -14,16 +14,26 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
 #include "chrome/common/mac/app_shim.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/system/isolated_connection.h"
 
 class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
  public:
-  // Creates a new server-side mojo channel at |endpoint|, which should contain
-  // a file descriptor of a channel created by an UnixDomainSocketAcceptor, and
-  // begins listening for messages on it.
-  static void CreateForChannel(mojo::PlatformChannelEndpoint endpoint);
+  // The interface through which the AppShimHostBootstrap registers itself
+  // with the ExtensionAppShimHandler.
+  class Client {
+   public:
+    // Invoked by the AppShimHostBootstrap when a shim process has connected to
+    // the browser process. This will connect to (creating, if needed) an
+    // AppShimHost. |bootstrap| must have OnConnectedToHost or
+    // OnFailedToConnectToHost called on it to inform the shim of the result.
+    virtual void OnShimProcessConnected(
+        std::unique_ptr<AppShimHostBootstrap> bootstrap) = 0;
+  };
+
+  // Set the client interface that all objects of this class will use.
+  static void SetClient(Client* client);
 
   // Creates a new server-side mojo channel at |endpoint|, which contains a
   // a Mach port for a channel created by an MachBootstrapAcceptor, and
@@ -55,7 +65,6 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
   explicit AppShimHostBootstrap(base::ProcessId peer_pid);
   void ServeChannel(mojo::PlatformChannelEndpoint endpoint);
   void ChannelError(uint32_t custom_reason, const std::string& description);
-  virtual apps::AppShimHandler* GetHandler();
 
   // chrome::mojom::AppShimHostBootstrap.
   void LaunchApp(chrome::mojom::AppShimHostRequest app_shim_host_request,
@@ -66,7 +75,8 @@ class AppShimHostBootstrap : public chrome::mojom::AppShimHostBootstrap {
                  LaunchAppCallback callback) override;
 
   mojo::IsolatedConnection bootstrap_mojo_connection_;
-  mojo::Binding<chrome::mojom::AppShimHostBootstrap> host_bootstrap_binding_;
+  mojo::Receiver<chrome::mojom::AppShimHostBootstrap> host_bootstrap_receiver_{
+      this};
 
   // The arguments from the LaunchApp call, and whether or not it has happened
   // yet.

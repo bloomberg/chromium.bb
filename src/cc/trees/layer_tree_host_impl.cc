@@ -51,6 +51,9 @@
 #include "cc/layers/scrollbar_layer_impl_base.h"
 #include "cc/layers/surface_layer_impl.h"
 #include "cc/layers/viewport.h"
+#include "cc/metrics/compositor_frame_reporting_controller.h"
+#include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_worklet_job.h"
 #include "cc/paint/paint_worklet_layer_painter.h"
 #include "cc/raster/bitmap_raster_buffer_provider.h"
 #include "cc/raster/gpu_raster_buffer_provider.h"
@@ -61,7 +64,6 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/resources/ui_resource_bitmap.h"
-#include "cc/scheduler/compositor_frame_reporting_controller.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
 #include "cc/tiles/frame_viewer_instrumentation.h"
 #include "cc/tiles/gpu_image_decode_cache.h"
@@ -174,49 +176,6 @@ viz::ResourceFormat TileRasterBufferFormat(
     return viz::PlatformColor::BestSupportedRenderBufferFormat(caps);
   return viz::PlatformColor::BestSupportedTextureFormat(caps);
 }
-
-// Small helper class that saves the current viewport location as the user sees
-// it and resets to the same location.
-class ViewportAnchor {
- public:
-  ViewportAnchor(ScrollNode* inner_scroll,
-                 LayerImpl* outer_scroll,
-                 LayerTreeImpl* tree_impl)
-      : inner_(inner_scroll), outer_(outer_scroll), tree_impl_(tree_impl) {
-    viewport_in_content_coordinates_ =
-        scroll_tree().current_scroll_offset(inner_->element_id);
-
-    if (outer_)
-      viewport_in_content_coordinates_ += outer_->CurrentScrollOffset();
-  }
-
-  void ResetViewportToAnchoredPosition() {
-    DCHECK(outer_);
-
-    scroll_tree().ClampScrollToMaxScrollOffset(inner_, tree_impl_);
-    outer_->ClampScrollToMaxScrollOffset();
-
-    gfx::ScrollOffset viewport_location =
-        scroll_tree().current_scroll_offset(inner_->element_id) +
-        outer_->CurrentScrollOffset();
-
-    gfx::Vector2dF delta =
-        viewport_in_content_coordinates_.DeltaFrom(viewport_location);
-
-    delta = scroll_tree().ScrollBy(inner_, delta, tree_impl_);
-    outer_->ScrollBy(delta);
-  }
-
- private:
-  ScrollTree& scroll_tree() {
-    return tree_impl_->property_trees()->scroll_tree;
-  }
-
-  ScrollNode* inner_;
-  LayerImpl* outer_;
-  LayerTreeImpl* tree_impl_;
-  gfx::ScrollOffset viewport_in_content_coordinates_;
-};
 
 void DidVisibilityChange(LayerTreeHostImpl* id, bool visible) {
   if (visible) {
@@ -360,6 +319,7 @@ LayerTreeHostImpl::LayerTreeHostImpl(
       is_animating_for_snap_(false),
       paint_image_generator_client_id_(PaintImage::GetNextGeneratorClientId()),
       scrollbar_controller_(std::make_unique<ScrollbarController>(this)),
+      frame_trackers_(compositor_frame_reporting_controller_.get()),
       scroll_gesture_did_end_(false) {
   DCHECK(mutator_host_);
   mutator_host_->SetMutatorHostClient(this);
@@ -485,6 +445,15 @@ void LayerTreeHostImpl::CommitComplete() {
     ActivateAnimations();
   }
 
+  // We clear the entries that were never mutated by CC animations from the last
+  // commit until now. Moreover, we reset the values of input properties and
+  // relies on the fact that CC animation will mutate those values when pending
+  // tree is animated below.
+  // With that, when CC finishes animating an input property, the value of that
+  // property stays at finish state until a commit kicks in, which is consistent
+  // with current composited animations.
+  paint_worklet_tracker_.ClearUnusedInputProperties();
+
   // Start animations before UpdateDrawProperties and PrepareTiles, as they can
   // change the results. When doing commit to the active tree, this must happen
   // after ActivateAnimations() in order for this ticking to be propogated
@@ -497,15 +466,11 @@ void LayerTreeHostImpl::CommitComplete() {
   UpdateSyncTreeAfterCommitOrImplSideInvalidation();
   micro_benchmark_controller_.DidCompleteCommit();
 
-  if (mutator_host_->CurrentFrameHadRAF() &&
-      !request_animation_frame_tracker_) {
-    request_animation_frame_tracker_ =
-        frame_trackers_.CreateTracker(FrameSequenceTrackerType::kRAF);
-  }
+  if (mutator_host_->CurrentFrameHadRAF())
+    frame_trackers_.StartSequence(FrameSequenceTrackerType::kRAF);
 
-  if (mutator_host_->MainThreadAnimationsCount() > 0 &&
-      !main_thread_animation_frame_tracker_) {
-    main_thread_animation_frame_tracker_ = frame_trackers_.CreateTracker(
+  if (mutator_host_->MainThreadAnimationsCount() > 0) {
+    frame_trackers_.StartSequence(
         FrameSequenceTrackerType::kMainThreadAnimation);
   }
 }
@@ -544,6 +509,27 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
   const auto& animated_images =
       image_animation_controller_.AnimateForSyncTree(CurrentBeginFrameArgs());
   images_to_invalidate.insert(animated_images.begin(), animated_images.end());
+
+  // Invalidate cached PaintRecords for worklets whose input properties were
+  // mutated since the last pending tree. We keep requesting invalidations until
+  // the animation is ticking on impl thread. Note that this works since the
+  // animation starts ticking on the pending tree
+  // (AnimatePendingTreeAfterCommit) which committed this animation timeline.
+  // After this the animation may only tick on the active tree for impl-side
+  // invalidations (since AnimatePendingTreeAfterCommit is not done for pending
+  // trees created by impl-side invalidations). But we ensure here that we
+  // request another invalidation if an input property was mutated on the active
+  // tree.
+  if (paint_worklet_tracker_.InvalidatePaintWorkletsOnPendingTree()) {
+    client_->NeedsImplSideInvalidation(
+        true /* needs_first_draw_on_activation */);
+  }
+  PaintImageIdFlatSet dirty_paint_worklet_ids;
+  PaintWorkletJobMap dirty_paint_worklets =
+      GatherDirtyPaintWorklets(&dirty_paint_worklet_ids);
+  images_to_invalidate.insert(dirty_paint_worklet_ids.begin(),
+                              dirty_paint_worklet_ids.end());
+
   sync_tree()->InvalidateRegionForImages(images_to_invalidate);
 
   // Note that it is important to push the state for checkerboarded and animated
@@ -563,7 +549,6 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
     return;
   }
 
-  PaintWorkletJobMap dirty_paint_worklets = GatherDirtyPaintWorklets();
   if (!dirty_paint_worklets.size()) {
     pending_tree_fully_painted_ = true;
     NotifyPendingTreeFullyPainted();
@@ -578,33 +563,60 @@ void LayerTreeHostImpl::UpdateSyncTreeAfterCommitOrImplSideInvalidation() {
                                            std::move(done_callback));
 }
 
-PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets() const {
+PaintWorkletJobMap LayerTreeHostImpl::GatherDirtyPaintWorklets(
+    PaintImageIdFlatSet* dirty_paint_worklet_ids) const {
   PaintWorkletJobMap dirty_paint_worklets;
   for (PictureLayerImpl* layer :
        sync_tree()->picture_layers_with_paint_worklets()) {
     for (const auto& entry : layer->GetPaintWorkletRecordMap()) {
+      const scoped_refptr<const PaintWorkletInput>& input = entry.first;
+      const PaintImage::Id& paint_image_id = entry.second.first;
+      const sk_sp<PaintRecord>& record = entry.second.second;
       // If we already have a record we can reuse it and so the
       // PaintWorkletInput isn't dirty.
-      if (entry.second)
+      if (record)
         continue;
 
-      int id = entry.first->WorkletId();
-      auto result = dirty_paint_worklets.insert(
-          std::make_pair(id, scoped_refptr<PaintWorkletJobVector>{}));
-      scoped_refptr<PaintWorkletJobVector>& job_vector = result.first->second;
+      // Mark this PaintWorklet as needing invalidation.
+      dirty_paint_worklet_ids->insert(paint_image_id);
+
+      // Create an entry in the appropriate PaintWorkletJobVector for this dirty
+      // PaintWorklet.
+      int worklet_id = input->WorkletId();
+      auto& job_vector = dirty_paint_worklets[worklet_id];
       if (!job_vector)
-        job_vector = base::WrapRefCounted(new PaintWorkletJobVector);
-      job_vector->data.emplace_back(layer->id(), entry.first);
+        job_vector = base::MakeRefCounted<PaintWorkletJobVector>();
+
+      PaintWorkletJob::AnimatedPropertyValues animated_property_values;
+      for (const auto& element : input->GetPropertyKeys()) {
+        // We should not have multiple property ids with the same name.
+        DCHECK(!animated_property_values.contains(element.first));
+        const PaintWorkletInput::PropertyValue& animated_property_value =
+            paint_worklet_tracker_.GetPropertyAnimationValue(element);
+        // No value indicates that the input property was not mutated by CC
+        // animation.
+        if (animated_property_value.has_value()) {
+          animated_property_values.emplace(element.first,
+                                           animated_property_value);
+        }
+      }
+
+      job_vector->data.emplace_back(layer->id(), input,
+                                    std::move(animated_property_values));
     }
   }
   return dirty_paint_worklets;
 }
 
 void LayerTreeHostImpl::OnPaintWorkletResultsReady(PaintWorkletJobMap results) {
+#if DCHECK_IS_ON()
   // Nothing else should have painted the PaintWorklets while we were waiting,
   // and the results should have painted every PaintWorklet, so these should be
   // the same.
-  DCHECK_EQ(results.size(), GatherDirtyPaintWorklets().size());
+  PaintImageIdFlatSet dirty_paint_worklet_ids;
+  DCHECK_EQ(results.size(),
+            GatherDirtyPaintWorklets(&dirty_paint_worklet_ids).size());
+#endif
 
   for (const auto& entry : results) {
     for (const PaintWorkletJob& job : entry.second->data) {
@@ -1043,7 +1055,6 @@ DrawMode LayerTreeHostImpl::GetDrawMode() const {
 }
 
 static void AppendQuadsToFillScreen(
-    const gfx::Rect& root_scroll_layer_rect,
     viz::RenderPass* target_render_pass,
     const RenderSurfaceImpl* root_render_surface,
     SkColor screen_background_color,
@@ -1225,6 +1236,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       active_tree()->property_trees()->effect_tree.HasCopyRequests();
   bool have_missing_animated_tiles = false;
 
+  // Advance our de-jelly state. This is a no-op if de-jelly is not active.
+  de_jelly_state_.AdvanceFrame(active_tree_.get());
+
   for (EffectTreeLayerListIterator it(active_tree());
        it.state() != EffectTreeLayerListIterator::State::END; ++it) {
     auto target_render_pass_id = it.target_render_surface()->id();
@@ -1248,6 +1262,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
       if (render_surface->contributes_to_drawn_surface()) {
         render_surface->AppendQuads(draw_mode, target_render_pass,
                                     &append_quads_data);
+        if (settings_.allow_de_jelly_effect) {
+          de_jelly_state_.UpdateSharedQuadState(
+              active_tree_.get(), render_surface->TransformTreeIndex(),
+              target_render_pass);
+        }
       }
     } else if (it.state() == EffectTreeLayerListIterator::State::LAYER) {
       LayerImpl* layer = it.current_layer();
@@ -1259,6 +1278,11 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
           frame->may_contain_video = true;
 
         layer->AppendQuads(target_render_pass, &append_quads_data);
+        if (settings_.allow_de_jelly_effect) {
+          de_jelly_state_.UpdateSharedQuadState(active_tree_.get(),
+                                                layer->transform_tree_index(),
+                                                target_render_pass);
+        }
       }
 
       rendering_stats_instrumentation_->AddVisibleContentArea(
@@ -1298,7 +1322,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     }
     frame->use_default_lower_bound_deadline |=
         append_quads_data.use_default_lower_bound_deadline;
-    frame->mirror_rect.Union(append_quads_data.mirror_rect);
   }
 
   // If CommitToActiveTree() is true, then we wait to draw until
@@ -1329,16 +1352,25 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     for (auto* quad : render_pass->quad_list)
       DCHECK(quad->shared_quad_state);
   }
-  DCHECK(frame->render_passes.back()->output_rect.origin().IsOrigin());
+  DCHECK_EQ(frame->render_passes.back()->output_rect.origin(),
+            active_tree_->GetDeviceViewport().origin());
 #endif
   bool has_transparent_background =
       SkColorGetA(active_tree_->background_color()) != SK_AlphaOPAQUE;
-  if (!has_transparent_background) {
+  auto* root_render_surface = active_tree_->RootRenderSurface();
+  if (root_render_surface && !has_transparent_background) {
     frame->render_passes.back()->has_transparent_background = false;
-    AppendQuadsToFillScreen(
-        active_tree_->RootScrollLayerDeviceViewportBounds(),
-        frame->render_passes.back().get(), active_tree_->RootRenderSurface(),
-        active_tree_->background_color(), unoccluded_screen_space_region);
+
+    // If any tiles are missing, then fill behind the entire root render
+    // surface.  This is a workaround for this edge case, instead of tracking
+    // individual tiles that are missing.
+    Region fill_region = unoccluded_screen_space_region;
+    if (num_missing_tiles > 0)
+      fill_region = root_render_surface->content_rect();
+
+    AppendQuadsToFillScreen(frame->render_passes.back().get(),
+                            root_render_surface,
+                            active_tree_->background_color(), fill_region);
   }
 
   RemoveRenderPasses(frame);
@@ -1353,6 +1385,9 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
     // Draw properties depend on copy requests.
     active_tree()->set_needs_update_draw_properties();
   }
+
+  frame->has_missing_content =
+      num_missing_tiles > 0 || num_incomplete_tiles > 0;
 
   if (ukm_manager_) {
     ukm_manager_->AddCheckerboardStatsForFrame(
@@ -2017,6 +2052,10 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
                                bool resourceless_software_draw,
                                bool skip_draw) {
   DCHECK(!resourceless_software_draw_);
+  // This function is only ever called by Android WebView, in which case we
+  // expect the device viewport to be at the origin. We never expect an
+  // external viewport to be set otherwise.
+  DCHECK(active_tree_->internal_device_viewport().origin().IsOrigin());
 
   if (skip_draw) {
     client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_, true);
@@ -2104,35 +2143,11 @@ viz::CompositorFrameMetadata LayerTreeHostImpl::MakeCompositorFrameMetadata() {
       child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation()
           .allocation_time();
 
-#if defined(OS_ANDROID)
-  metadata.max_page_scale_factor = active_tree_->max_page_scale_factor();
-  metadata.root_layer_size = active_tree_->ScrollableSize();
-
-  if (const auto* outer_viewport_scroll_node = OuterViewportScrollNode()) {
-    metadata.root_overflow_y_hidden =
-        !outer_viewport_scroll_node->user_scrollable_vertical;
+  if (InnerViewportScrollNode()) {
+    // TODO(miletus) : Change the metadata to hold ScrollOffset.
+    metadata.root_scroll_offset =
+        gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   }
-
-  metadata.bottom_controls_height =
-      browser_controls_offset_manager_->BottomControlsHeight();
-  metadata.bottom_controls_shown_ratio =
-      browser_controls_offset_manager_->BottomControlsShownRatio();
-
-  active_tree_->GetViewportSelection(&metadata.selection);
-#endif
-
-  const auto* inner_viewport_scroll_node = InnerViewportScrollNode();
-  if (!inner_viewport_scroll_node)
-    return metadata;
-
-#if defined(OS_ANDROID)
-  metadata.root_overflow_y_hidden |=
-      !inner_viewport_scroll_node->user_scrollable_vertical;
-#endif
-
-  // TODO(miletus) : Change the metadata to hold ScrollOffset.
-  metadata.root_scroll_offset =
-      gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
 
   return metadata;
 }
@@ -2238,19 +2253,15 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
       std::move(compositor_frame),
       /*hit_test_data_changed=*/false, debug_state_.show_hit_test_borders);
 
-  frame_trackers_.NotifySubmitFrame(compositor_frame.metadata.frame_token,
-                                    frame->begin_frame_ack,
-                                    frame->origin_begin_main_frame_args);
-  if (request_animation_frame_tracker_ &&
-      !mutator_host_->NextFrameHasPendingRAF()) {
-    frame_trackers_.ScheduleRemoval(
-        std::move(request_animation_frame_tracker_));
-  }
+  frame_trackers_.NotifySubmitFrame(
+      compositor_frame.metadata.frame_token, frame->has_missing_content,
+      frame->begin_frame_ack, frame->origin_begin_main_frame_args);
+  if (!mutator_host_->NextFrameHasPendingRAF())
+    frame_trackers_.StopSequence(FrameSequenceTrackerType::kRAF);
 
-  if (main_thread_animation_frame_tracker_ &&
-      mutator_host_->MainThreadAnimationsCount() == 0) {
-    frame_trackers_.ScheduleRemoval(
-        std::move(main_thread_animation_frame_tracker_));
+  if (mutator_host_->MainThreadAnimationsCount() == 0) {
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kMainThreadAnimation);
   }
 
   // Clears the list of swap promises after calling DidSwap on each of them to
@@ -2381,8 +2392,6 @@ viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame->begin_frame_ack.sequence_number);
   metadata.begin_frame_ack = frame->begin_frame_ack;
-
-  metadata.mirror_rect = frame->mirror_rect;
 
   viz::CompositorFrame compositor_frame;
   compositor_frame.metadata = std::move(metadata);
@@ -2675,107 +2684,6 @@ void LayerTreeHostImpl::DidFinishImplFrame() {
 void LayerTreeHostImpl::DidNotProduceFrame(const viz::BeginFrameAck& ack) {
   if (layer_tree_frame_sink_)
     layer_tree_frame_sink_->DidNotProduceFrame(ack);
-}
-
-void LayerTreeHostImpl::UpdateViewportContainerSizes() {
-  if (!InnerViewportScrollNode())
-    return;
-
-  ViewportAnchor anchor(InnerViewportScrollNode(), OuterViewportScrollLayer(),
-                        active_tree_.get());
-
-  float top_controls_layout_height =
-      active_tree_->browser_controls_shrink_blink_size()
-          ? active_tree_->top_controls_height()
-          : 0.f;
-  float delta_from_top_controls =
-      top_controls_layout_height -
-      browser_controls_offset_manager_->ContentTopOffset();
-  float bottom_controls_layout_height =
-      active_tree_->browser_controls_shrink_blink_size()
-          ? active_tree_->bottom_controls_height()
-          : 0.f;
-  delta_from_top_controls +=
-      bottom_controls_layout_height -
-      browser_controls_offset_manager_->ContentBottomOffset();
-
-  // Adjust the viewport layers by shrinking/expanding the container to account
-  // for changes in the size (e.g. browser controls) since the last resize from
-  // Blink.
-  auto* property_trees = active_tree_->property_trees();
-  gfx::Vector2dF bounds_delta(0.f, delta_from_top_controls);
-  if (property_trees->inner_viewport_container_bounds_delta() == bounds_delta)
-    return;
-
-  property_trees->SetInnerViewportContainerBoundsDelta(bounds_delta);
-
-  ClipNode* inner_clip_node = property_trees->clip_tree.Node(
-      InnerViewportScrollLayer()->clip_tree_index());
-  inner_clip_node->clip.set_height(
-      InnerViewportScrollNode()->container_bounds.height() + bounds_delta.y());
-
-  // Adjust the outer viewport container as well, since adjusting only the
-  // inner may cause its bounds to exceed those of the outer, causing scroll
-  // clamping.
-  if (OuterViewportScrollNode()) {
-    gfx::Vector2dF scaled_bounds_delta = gfx::ScaleVector2d(
-        bounds_delta, 1.f / active_tree_->min_page_scale_factor());
-
-    property_trees->SetOuterViewportContainerBoundsDelta(scaled_bounds_delta);
-    property_trees->SetInnerViewportScrollBoundsDelta(scaled_bounds_delta);
-
-    ClipNode* outer_clip_node = property_trees->clip_tree.Node(
-        OuterViewportScrollLayer()->clip_tree_index());
-
-    float adjusted_container_height =
-        OuterViewportScrollNode()->container_bounds.height() +
-        scaled_bounds_delta.y();
-
-    // TODO(bokan): The clip node bounds for the outer viewport are incorrectly
-    // computed pre-Blink-Gen-Property-Trees: they assume the outer viewport is
-    // the same size as the inner viewport. In reality, the outer viewport is
-    // sized such that it equals the inner viewport when at minimum page scale.
-    // This happens on mobile when a page doesn't have a |width=device-width|
-    // viewport meta tag (e.g. legacy desktop page). Thus, we must scale
-    // the container height and its adjustment to match the incorrect space of
-    // the clip node.  https://crbug.com/901083, https://crbug.com/961649.
-    // Note: we don't fix this in the property tree builder since that code
-    // path is going away and it's not clear whether it depends on ClipNode
-    // being in this coordinate space pre-BGPT.
-    if (!settings().use_layer_lists)
-      adjusted_container_height *= active_tree_->min_page_scale_factor();
-
-    outer_clip_node->clip.set_height(adjusted_container_height);
-
-    // Expand all clips between the outer viewport and the inner viewport.
-    auto* outer_ancestor = property_trees->clip_tree.parent(outer_clip_node);
-    while (outer_ancestor && outer_ancestor != inner_clip_node) {
-      outer_ancestor->clip.Union(outer_clip_node->clip);
-      outer_ancestor = property_trees->clip_tree.parent(outer_ancestor);
-    }
-
-    anchor.ResetViewportToAnchoredPosition();
-  }
-
-  property_trees->clip_tree.set_needs_update(true);
-  property_trees->full_tree_damaged = true;
-  active_tree_->set_needs_update_draw_properties();
-
-  // Viewport scrollbar positions are determined using the viewport bounds
-  // delta.
-  active_tree_->SetScrollbarGeometriesNeedUpdate();
-  active_tree_->set_needs_update_draw_properties();
-
-  // For pre-BlinkGenPropertyTrees mode, we need to ensure the layers are
-  // appropriately updated.
-  if (!settings().use_layer_lists) {
-    if (OuterViewportContainerLayer())
-      OuterViewportContainerLayer()->NoteLayerPropertyChanged();
-    if (InnerViewportScrollLayer())
-      InnerViewportScrollLayer()->NoteLayerPropertyChanged();
-    if (OuterViewportScrollLayer())
-      OuterViewportScrollLayer()->NoteLayerPropertyChanged();
-  }
 }
 
 void LayerTreeHostImpl::SynchronouslyInitializeAllTiles() {
@@ -3113,7 +3021,7 @@ void LayerTreeHostImpl::ActivateSyncTree() {
     active_tree_->ProcessUIResourceRequestQueue();
   }
 
-  UpdateViewportContainerSizes();
+  active_tree_->UpdateViewportContainerSizes();
 
   if (InnerViewportScrollNode()) {
     active_tree_->property_trees()->scroll_tree.ClampScrollToMaxScrollOffset(
@@ -3228,12 +3136,6 @@ void LayerTreeHostImpl::SetVisible(bool visible) {
       SetFullViewportDamage();
       SetNeedsRedraw();
     }
-    // If surface synchronization is off, force allocating a new LocalSurfaceId
-    // because the previous LocalSurfaceId might have been evicted while we were
-    // invisible. When surface synchronization is on, the embedder will pass us
-    // a new LocalSurfaceID.
-    if (layer_tree_frame_sink_ && !settings_.enable_surface_synchronization)
-      layer_tree_frame_sink_->ForceAllocateNewId();
   } else {
     EvictAllUIResources();
     // Call PrepareTiles to evict tiles when we become invisible.
@@ -3518,11 +3420,6 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   bool all_resources_are_lost = layer_tree_frame_sink_->context_provider();
 
   // Destroy the submit-frame trackers before destroying the frame sink.
-  pinch_frame_tracker_ = nullptr;
-  scroll_frame_tracker_ = nullptr;
-  compositor_animation_frame_tracker_ = nullptr;
-  request_animation_frame_tracker_ = nullptr;
-  main_thread_animation_frame_tracker_ = nullptr;
   frame_trackers_.ClearAll();
 
   // Detach from the old LayerTreeFrameSink and reset |layer_tree_frame_sink_|
@@ -3634,14 +3531,10 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   // Always allocate a new viz::LocalSurfaceId when we get a new
   // LayerTreeFrameSink to ensure that we do not reuse the same surface after
   // it might have been garbage collected.
-  if (settings_.enable_surface_synchronization) {
-    const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
-        child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
-    if (local_surface_id_allocation.IsValid())
-      AllocateLocalSurfaceId();
-  } else {
-    layer_tree_frame_sink_->ForceAllocateNewId();
-  }
+  const viz::LocalSurfaceIdAllocation& local_surface_id_allocation =
+      child_local_surface_id_allocator_.GetCurrentLocalSurfaceIdAllocation();
+  if (local_surface_id_allocation.IsValid())
+    AllocateLocalSurfaceId();
 
   return true;
 }
@@ -3655,10 +3548,11 @@ const gfx::Transform& LayerTreeHostImpl::DrawTransform() const {
 }
 
 void LayerTreeHostImpl::DidChangeBrowserControlsPosition() {
-  UpdateViewportContainerSizes();
+  active_tree_->UpdateViewportContainerSizes();
+  if (pending_tree_)
+    pending_tree_->UpdateViewportContainerSizes();
   SetNeedsRedraw();
   SetNeedsOneBeginImplFrame();
-  active_tree_->set_needs_update_draw_properties();
   SetFullViewportDamage();
 }
 
@@ -3737,9 +3631,13 @@ InputHandler::ScrollStatus LayerTreeHostImpl::TryScroll(
     return scroll_status;
   }
 
+  // The outer viewport should be scrolled even if it has no scroll extent
+  // since it'll scroll using the Viewport class which will generate browser
+  // controls movement and overscroll delta.
   gfx::ScrollOffset max_scroll_offset =
       scroll_tree.MaxScrollOffset(scroll_node->id);
-  if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0) {
+  if (max_scroll_offset.x() <= 0 && max_scroll_offset.y() <= 0 &&
+      !scroll_node->scrolls_outer_viewport) {
     TRACE_EVENT0("cc",
                  "LayerImpl::tryScroll: Ignored. Technically scrollable,"
                  " but has no affordance in either direction.");
@@ -3837,28 +3735,53 @@ ScrollNode* LayerTreeHostImpl::FindScrollNodeForDeviceViewportPoint(
     }
   }
 
-  // Falling back to the viewport layer ensures generation of root overscroll
-  // notifications. We use the viewport's main scroll layer to represent the
-  // viewport in scrolling code.
-  bool scrolls_inner_viewport =
-      impl_scroll_node && impl_scroll_node->scrolls_inner_viewport;
-  bool scrolls_outer_viewport =
-      impl_scroll_node && impl_scroll_node->scrolls_outer_viewport;
-  if (!impl_scroll_node || scrolls_inner_viewport || scrolls_outer_viewport)
+  // TODO(bokan): We shouldn't need this - ordinarily all scrolls should pass
+  // through the outer viewport. If we aren't able to find a scroller we should
+  // return nullptr here and ignore the scroll. However, it looks like on some
+  // pages (reddit.com) we start scrolling from the inner node.
+  if (!impl_scroll_node)
+    impl_scroll_node = InnerViewportScrollNode();
+
+  if (!impl_scroll_node)
+    return nullptr;
+
+  // Blink has a notion of a "root scroller", which is the scroller in a page
+  // that is considered to host the main content. Typically this will be the
+  // document/LayoutView contents; however, in some situations Blink may choose
+  // a sub-scroller (div, iframe) that should scroll with "viewport" behavior.
+  // The "root scroller" is the node designated as the outer viewport in CC.
+  // See third_party/blink/renderer/core/page/scrolling/README.md for details.
+  //
+  // "Viewport" scrolling ensures generation of overscroll events, top controls
+  // movement, as well as correct multi-viewport panning in pinch-zoom and
+  // other scenarios.  We use the viewport's outer scroll node to represent the
+  // viewport in the scroll chain and apply scroll delta using CC's Viewport
+  // class.
+  //
+  // Scrolling from position: fixed layers will chain directly up to the inner
+  // viewport. Whether that should use the outer viewport (and thus the
+  // Viewport class) to scroll or not depends on the root scroller scenario
+  // because we don't want setting a root scroller to change the scroll chain
+  // order. The |prevent_viewport_scrolling_from_inner| bit is used to
+  // communicate that context.
+  DCHECK(!impl_scroll_node->prevent_viewport_scrolling_from_inner ||
+         impl_scroll_node->scrolls_inner_viewport);
+  bool should_use_viewport =
+      OuterViewportScrollNode() && impl_scroll_node->scrolls_inner_viewport &&
+      !impl_scroll_node->prevent_viewport_scrolling_from_inner;
+  if (should_use_viewport)
     impl_scroll_node = OuterViewportScrollNode();
 
-  if (impl_scroll_node) {
-    // Ensure that final layer scrolls on impl thread (crbug.com/625100)
-    ScrollStatus status =
-        TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
-    if (IsMainThreadScrolling(status, impl_scroll_node)) {
-      *scroll_on_main_thread = true;
-      *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
-    } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
-      *scroll_on_main_thread = true;
-      *main_thread_scrolling_reasons =
-          MainThreadScrollingReason::kNonFastScrollableRegion;
-    }
+  // Ensure that final scroll node scrolls on impl thread (crbug.com/625100)
+  ScrollStatus status =
+      TryScroll(device_viewport_point, scroll_tree, impl_scroll_node);
+  if (IsMainThreadScrolling(status, impl_scroll_node)) {
+    *scroll_on_main_thread = true;
+    *main_thread_scrolling_reasons = status.main_thread_scrolling_reasons;
+  } else if (non_fast_scrollable_nodes.contains(impl_scroll_node->id)) {
+    *scroll_on_main_thread = true;
+    *main_thread_scrolling_reasons =
+        MainThreadScrollingReason::kNonFastScrollableRegion;
   }
 
   return impl_scroll_node;
@@ -3902,6 +3825,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
   // in input_handler_proxy instead.
   touch_scrolling_ = type == InputHandler::TOUCHSCREEN;
   wheel_scrolling_ = type == InputHandler::WHEEL;
+  middle_click_autoscrolling_ = type == InputHandler::AUTOSCROLL;
   scroll_state->set_is_direct_manipulation(touch_scrolling_);
   // Invoke |DistributeScrollDelta| even with zero delta and velocity to ensure
   // scroll customization callbacks are invoked.
@@ -3926,9 +3850,9 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBeginImpl(
     scroll_status.bubble = true;
   }
 
-  scroll_frame_tracker_ = frame_trackers_.CreateTracker(
-      wheel_scrolling_ ? FrameSequenceTrackerType::kWheelScroll
-                       : FrameSequenceTrackerType::kTouchScroll);
+  frame_trackers_.StartSequence(wheel_scrolling_
+                                    ? FrameSequenceTrackerType::kWheelScroll
+                                    : FrameSequenceTrackerType::kTouchScroll);
   client_->RenewTreePriority();
   RecordCompositorSlowScrollMetric(type, CC_THREAD);
 
@@ -4014,9 +3938,18 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
       }
     }
 
-    scrolling_node = FindScrollNodeForDeviceViewportPoint(
-        device_viewport_point, layer_impl, &scroll_on_main_thread,
-        &scroll_status.main_thread_scrolling_reasons);
+    ElementId current_native_scrolling_element =
+        scroll_state->data()->current_native_scrolling_element();
+    if (current_native_scrolling_element.GetInternalValue() != 0) {
+      auto& scroll_tree = active_tree_->property_trees()->scroll_tree;
+      scrolling_node =
+          scroll_tree.FindNodeFromElementId(current_native_scrolling_element);
+      did_lock_scrolling_layer_ = true;
+    } else {
+      scrolling_node = FindScrollNodeForDeviceViewportPoint(
+          device_viewport_point, layer_impl, &scroll_on_main_thread,
+          &scroll_status.main_thread_scrolling_reasons);
+    }
   }
 
   if (scroll_on_main_thread) {
@@ -4333,11 +4266,10 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         break;
       }
 
-      gfx::Vector2dF scroll_delta =
-          ComputeScrollDelta(*scroll_node, pending_delta);
-      if (ScrollAnimationCreate(scroll_node, scroll_delta, delayed_by)) {
-        did_scroll_x_for_scroll_gesture_ |= scroll_delta.x() != 0;
-        did_scroll_y_for_scroll_gesture_ |= scroll_delta.y() != 0;
+      gfx::Vector2dF delta = ComputeScrollDelta(*scroll_node, pending_delta);
+      if (ScrollAnimationCreate(scroll_node, delta, delayed_by)) {
+        did_scroll_x_for_scroll_gesture_ |= delta.x() != 0;
+        did_scroll_y_for_scroll_gesture_ |= delta.y() != 0;
         scroll_animating_latched_element_id_ = scroll_node->element_id;
         TRACE_EVENT_INSTANT0("cc", "created scroll animation",
                              TRACE_EVENT_SCOPE_THREAD);
@@ -4353,7 +4285,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollAnimated(
         return scroll_status;
       }
 
-      pending_delta -= scroll_delta;
+      pending_delta -= delta;
 
       if (!CanPropagate(scroll_node, pending_delta.x(), pending_delta.y())) {
         scroll_state.set_is_scroll_chain_cut(true);
@@ -4617,7 +4549,12 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
   ScrollTree& scroll_tree = active_tree_->property_trees()->scroll_tree;
   ScrollNode* scroll_node = scroll_tree.CurrentlyScrollingNode();
   ScrollNode* viewport_scroll_node = ViewportMainScrollNode();
-  if (scroll_node) {
+  if (did_lock_scrolling_layer_) {
+    DCHECK(scroll_node);
+
+    // Needed for non-animated scrolls.
+    current_scroll_chain.push_front(scroll_node);
+  } else if (scroll_node) {
     // TODO(bokan): The loop checks for a null parent but don't we still want to
     // distribute to the root scroll node?
     for (; scroll_tree.parent(scroll_node);
@@ -4633,6 +4570,11 @@ void LayerTreeHostImpl::DistributeScrollDelta(ScrollState* scroll_state) {
 
       if (!scroll_node->scrollable)
         continue;
+
+      if (middle_click_autoscrolling_) {
+        current_scroll_chain.push_front(scroll_node);
+        break;
+      }
 
       if (CanConsumeDelta(*scroll_node, *scroll_state))
         current_scroll_chain.push_front(scroll_node);
@@ -5004,7 +4946,9 @@ void LayerTreeHostImpl::ScrollEndImpl(ScrollState* scroll_state) {
   DistributeScrollDelta(scroll_state);
   browser_controls_offset_manager_->ScrollEnd();
   ClearCurrentlyScrollingNode();
-  frame_trackers_.ScheduleRemoval(std::move(scroll_frame_tracker_));
+  frame_trackers_.StopSequence(wheel_scrolling_
+                                   ? FrameSequenceTrackerType::kWheelScroll
+                                   : FrameSequenceTrackerType::kTouchScroll);
 }
 
 void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
@@ -5033,7 +4977,7 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
 
   InputHandlerPointerResult result;
   if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseDown(viewport_point);
+    result = scrollbar_controller_->HandlePointerDown(viewport_point);
 
   return result;
 }
@@ -5053,7 +4997,7 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
 
   InputHandlerPointerResult result;
   if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandleMouseUp(viewport_point);
+    result = scrollbar_controller_->HandlePointerUp(viewport_point);
 
   return result;
 }
@@ -5138,8 +5082,7 @@ void LayerTreeHostImpl::PinchGestureBegin() {
                        OuterViewportScrollNode() ? false : true);
   active_tree_->SetCurrentlyScrollingNode(OuterViewportScrollNode());
   browser_controls_offset_manager_->PinchBegin();
-  pinch_frame_tracker_ =
-      frame_trackers_.CreateTracker(FrameSequenceTrackerType::kPinchZoom);
+  frame_trackers_.StartSequence(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::PinchGestureUpdate(float magnify_delta,
@@ -5172,7 +5115,7 @@ void LayerTreeHostImpl::PinchGestureEnd(const gfx::Point& anchor,
   // scales that we want when we're not inside a pinch.
   active_tree_->set_needs_update_draw_properties();
   SetNeedsRedraw();
-  frame_trackers_.ScheduleRemoval(std::move(pinch_frame_tracker_));
+  frame_trackers_.StopSequence(FrameSequenceTrackerType::kPinchZoom);
 }
 
 void LayerTreeHostImpl::CollectScrollDeltas(
@@ -5273,7 +5216,14 @@ std::unique_ptr<ScrollAndScaleSet> LayerTreeHostImpl::ProcessScrollDeltas() {
 }
 
 void LayerTreeHostImpl::SetFullViewportDamage() {
-  SetViewportDamage(gfx::Rect(active_tree_->GetDeviceViewport().size()));
+  // In non-Android-WebView cases, we expect GetDeviceViewport() to be the same
+  // as internal_device_viewport(), so the full-viewport damage rect is just
+  // the internal viewport rect. In the case of Android WebView,
+  // GetDeviceViewport returns the external viewport, but we still want to use
+  // the internal viewport's origin for setting the damage.
+  // See https://chromium-review.googlesource.com/c/chromium/src/+/1257555.
+  SetViewportDamage(gfx::Rect(active_tree_->internal_device_viewport().origin(),
+                              active_tree_->GetDeviceViewport().size()));
 }
 
 bool LayerTreeHostImpl::AnimatePageScale(base::TimeTicks monotonic_time) {
@@ -5353,13 +5303,11 @@ bool LayerTreeHostImpl::AnimateLayers(base::TimeTicks monotonic_time,
   // still request an extra SetNeedsAnimate here.
   if (animated) {
     SetNeedsOneBeginImplFrame();
-    if (!compositor_animation_frame_tracker_) {
-      compositor_animation_frame_tracker_ = frame_trackers_.CreateTracker(
-          FrameSequenceTrackerType::kCompositorAnimation);
-    }
+    frame_trackers_.StartSequence(
+        FrameSequenceTrackerType::kCompositorAnimation);
   } else {
-    frame_trackers_.ScheduleRemoval(
-        std::move(compositor_animation_frame_tracker_));
+    frame_trackers_.StopSequence(
+        FrameSequenceTrackerType::kCompositorAnimation);
   }
 
   // TODO(crbug.com/551138): We could return true only if the animaitons are on
@@ -6010,6 +5958,14 @@ void LayerTreeHostImpl::SetElementFilterMutated(
     if (recycle_tree())
       recycle_tree()->SetFilterMutated(element_id, filters);
   }
+}
+
+void LayerTreeHostImpl::OnCustomPropertyMutated(
+    ElementId element_id,
+    const std::string& custom_property_name,
+    PaintWorkletInput::PropertyValue custom_property_value) {
+  paint_worklet_tracker_.OnCustomPropertyMutated(
+      element_id, custom_property_name, std::move(custom_property_value));
 }
 
 void LayerTreeHostImpl::SetElementBackdropFilterMutated(

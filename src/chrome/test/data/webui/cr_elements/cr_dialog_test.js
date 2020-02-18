@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+// clang-format off
+// #import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
+//
+// #import {eventToPromise, flushTasks} from 'chrome://test/test_util.m.js';
+// #import {keyDownOn, keyEventOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {Polymer} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+// clang-format on
+
 suite('cr-dialog', function() {
   function pressEnter(element) {
     MockInteractions.keyEventOn(element, 'keypress', 13, undefined, 'Enter');
@@ -36,6 +44,11 @@ suite('cr-dialog', function() {
 
   setup(function() {
     PolymerTest.clearBody();
+    // Ensure svg, which is referred to by a relative URL, is loaded from
+    // chrome://resources and not chrome://test
+    const base = document.createElement('base');
+    base.href = 'chrome://resources/cr_elements/';
+    document.head.appendChild(base);
   });
 
   test('cr-dialog-open event fires when opened', function() {
@@ -348,7 +361,7 @@ suite('cr-dialog', function() {
     const bottomShadow = dialog.$$('#cr-container-shadow-bottom');
     assertTrue(!!bottomShadow);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       assertFalse(topShadow.classList.contains('has-shadow'));
       assertFalse(bottomShadow.classList.contains('has-shadow'));
     });
@@ -423,7 +436,7 @@ suite('cr-dialog', function() {
     assertTrue(dialog.open);
     assertTrue(dialog.hasAttribute('open'));
 
-    e = new CustomEvent('cancel', {cancelable: true});
+    const e = new CustomEvent('cancel', {cancelable: true});
     dialog.getNative().dispatchEvent(e);
 
     assertFalse(dialog.open);
@@ -499,7 +512,7 @@ suite('cr-dialog', function() {
     }
     document.addEventListener('keydown', assertKeydownNotReached);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
       MockInteractions.keyDownOn(document.body, 65, undefined, 'a');
       document.removeEventListener('keydown', assertKeydownNotReached);
@@ -523,7 +536,7 @@ suite('cr-dialog', function() {
     }
     document.addEventListener('keydown', assertKeydownCount);
 
-    return PolymerTest.flushTasks().then(() => {
+    return test_util.flushTasks().then(() => {
       MockInteractions.keyDownOn(dialog, 65, undefined, 'a');
       assertEquals(1, keydownCounter);
       document.removeEventListener('keydown', assertKeydownCount);

@@ -80,13 +80,13 @@ std::string GetSizePasses() {
 }
 
 std::string GetVulkanToWebGPUPasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_WEBGPU_0);
+  spvtools::Optimizer optimizer(SPV_ENV_VULKAN_1_1);
   optimizer.RegisterVulkanToWebGPUPasses();
   return GetListOfPassesAsString(optimizer);
 }
 
 std::string GetWebGPUToVulkanPasses() {
-  spvtools::Optimizer optimizer(SPV_ENV_VULKAN_1_1);
+  spvtools::Optimizer optimizer(SPV_ENV_WEBGPU_0);
   optimizer.RegisterWebGPUToVulkanPasses();
   return GetListOfPassesAsString(optimizer);
 }
@@ -108,6 +108,11 @@ NOTE: The optimizer is a work in progress.
 
 Options (in lexicographical order):)",
       program, program);
+  printf(R"(
+  --amd-ext-to-khr
+               Replaces the extensions VK_AMD_shader_ballot, VK_AMD_gcn_shader,
+               and VK_AMD_shader_trinary_minmax with equivalant code using core
+               instructions and capabilities.)");
   printf(R"(
   --ccp
                Apply the conditional constant propagation transform.  This will
@@ -136,6 +141,16 @@ Options (in lexicographical order):)",
                and constant index access chains in entry point call tree
                functions.)");
   printf(R"(
+  --convert-relaxed-to-half
+               Convert all RelaxedPrecision arithmetic operations to half
+               precision, inserting conversion operations where needed.
+               Run after function scope variable load and store elimination
+               for better results. Simplify-instructions, redundancy-elimination
+               and DCE should be run after this pass to eliminate excess
+               conversions. This conversion is useful when the target platform
+               does not support RelaxedPrecision or ignores it. This pass also
+               removes all RelaxedPrecision decorations.)");
+  printf(R"(
   --copy-propagate-arrays
                Does propagation of memory references when an array is a copy of
                another.  It will only propagate an array if the source is never
@@ -146,6 +161,15 @@ Options (in lexicographical order):)",
                followed by a store of the initial value. This is done to work
                around known issues with some Vulkan drivers for initialize
                variables.)");
+  printf(R"(
+  --descriptor-scalar-replacement
+               Replaces every array variable |desc| that has a DescriptorSet
+               and Binding decorations with a new variable for each element of
+               the array.  Suppose |desc| was bound at binding |b|.  Then the
+               variable corresponding to |desc[i]| will have binding |b+i|.
+               The descriptor set will be the same.  All accesses to |desc|
+               must be in OpAccessChain instructions with a literal index for
+               the first index.)");
   printf(R"(
   --eliminate-dead-branches
                Convert conditional branches with constant condition to the
@@ -205,6 +229,11 @@ Options (in lexicographical order):)",
   --freeze-spec-const
                Freeze the values of specialization constants to their default
                values.)");
+  printf(R"(
+  --graphics-robust-access
+               Clamp indices used to access buffers and internal composite
+               values, providing guarantees that satisfy Vulkan's
+               robustBufferAccess rules.)");
   printf(R"(
   --generate-webgpu-initializers
                Adds initial values to OpVariable instructions that are missing
@@ -373,6 +402,10 @@ Options (in lexicographical order):)",
   --redundancy-elimination
                Looks for instructions in the same function that compute the
                same value, and deletes the redundant ones.)");
+  printf(R"(
+  --relax-float-ops
+               Decorate all float operations with RelaxedPrecision if not already
+               so decorated. This does not decorate types or variables.)");
   printf(R"(
   --relax-struct-store
                Allow store from one struct type to a different type with
@@ -759,7 +792,7 @@ OptStatus ParseFlags(int argc, const char** argv,
           return {OPT_STOP, 1};
         }
 
-        optimizer->SetTargetEnv(SPV_ENV_WEBGPU_0);
+        optimizer->SetTargetEnv(SPV_ENV_VULKAN_1_1);
         optimizer->RegisterVulkanToWebGPUPasses();
       } else if (0 == strcmp(cur_arg, "--webgpu-to-vulkan")) {
         webgpu_to_vulkan_set = true;
@@ -777,7 +810,7 @@ OptStatus ParseFlags(int argc, const char** argv,
           return {OPT_STOP, 1};
         }
 
-        optimizer->SetTargetEnv(SPV_ENV_VULKAN_1_1);
+        optimizer->SetTargetEnv(SPV_ENV_WEBGPU_0);
         optimizer->RegisterWebGPUToVulkanPasses();
       } else if (0 == strcmp(cur_arg, "--validate-after-all")) {
         optimizer->SetValidateAfterAll(true);

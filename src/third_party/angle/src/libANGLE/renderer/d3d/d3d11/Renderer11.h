@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -415,7 +415,9 @@ class Renderer11 : public RendererD3D
                                GLsizei indexCount,
                                gl::DrawElementsType indexType,
                                const void *indices,
-                               GLsizei instanceCount);
+                               GLsizei instanceCount,
+                               GLint baseVertex,
+                               GLuint baseInstance);
     angle::Result drawArraysIndirect(const gl::Context *context, const void *indirect);
     angle::Result drawElementsIndirect(const gl::Context *context, const void *indirect);
 

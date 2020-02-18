@@ -13,7 +13,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/profiles/profile_io_data.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
@@ -49,46 +48,28 @@ bool ShouldCreateLoader(const network::ResourceRequest& resource_request) {
 
 net::HttpRequestHeaders GetChromeProxyHeaders(
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
     uint64_t page_id) {
   net::HttpRequestHeaders headers;
   // Return empty headers for unittests.
-  if (!resource_context && !browser_context)
+  if (!browser_context)
     return headers;
 
-  DCHECK(!(resource_context && browser_context));
-  if (resource_context) {
-    auto* io_data = ProfileIOData::FromResourceContext(resource_context);
-    if (io_data && io_data->data_reduction_proxy_io_data()) {
-      DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
-      data_reduction_proxy::DataReductionProxyRequestOptions* request_options =
-          io_data->data_reduction_proxy_io_data()->request_options();
-      request_options->AddRequestHeader(&headers, page_id != 0U ? page_id : 1);
-
-      headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
-                        net::GetNameForEffectiveConnectionType(
-                            io_data->data_reduction_proxy_io_data()
-                                ->GetEffectiveConnectionType()));
+  auto* settings =
+      DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
+          browser_context);
+  if (settings) {
+    DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
+    std::string header;
+    if (settings->GetProxyRequestHeaders().GetHeader(
+            data_reduction_proxy::chrome_proxy_header(), &header)) {
+      data_reduction_proxy::DataReductionProxyRequestOptions::AddRequestHeader(
+          &headers, page_id != 0U ? page_id : 1, header);
     }
-  } else {
-    DCHECK(browser_context);
-    auto* settings =
-        DataReductionProxyChromeSettingsFactory::GetForBrowserContext(
-            browser_context);
-    if (settings) {
-      DCHECK(data_reduction_proxy::params::IsEnabledWithNetworkService());
-      std::string header;
-      if (settings->GetProxyRequestHeaders().GetHeader(
-              data_reduction_proxy::chrome_proxy_header(), &header)) {
-        data_reduction_proxy::DataReductionProxyRequestOptions::
-            AddRequestHeader(&headers, page_id != 0U ? page_id : 1, header);
-      }
 
-      headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
-                        net::GetNameForEffectiveConnectionType(
-                            settings->data_reduction_proxy_service()
-                                ->GetEffectiveConnectionType()));
-    }
+    headers.SetHeader(data_reduction_proxy::chrome_proxy_ect_header(),
+                      net::GetNameForEffectiveConnectionType(
+                          settings->data_reduction_proxy_service()
+                              ->GetEffectiveConnectionType()));
   }
 
   return headers;
@@ -110,7 +91,6 @@ PreviewsLitePageURLLoaderInterceptor::~PreviewsLitePageURLLoaderInterceptor() {}
 void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -144,7 +124,7 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
 
   if (ShouldCreateLoader(tentative_resource_request)) {
     CreateRedirectLoader(tentative_resource_request, browser_context,
-                         resource_context, std::move(callback));
+                         std::move(callback));
     return;
   }
   RecordInterceptAttempt(false);
@@ -154,22 +134,21 @@ void PreviewsLitePageURLLoaderInterceptor::MaybeCreateLoader(
 void PreviewsLitePageURLLoaderInterceptor::CreateRedirectLoader(
     const network::ResourceRequest& tentative_resource_request,
     content::BrowserContext* browser_context,
-    content::ResourceContext* resource_context,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   RecordInterceptAttempt(true);
 
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
-      tentative_resource_request,
+      browser_context, tentative_resource_request,
       base::BindOnce(
           &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));
 
   // |redirect_url_loader_| can be null after this call.
   redirect_url_loader_->StartRedirectToPreview(
-      GetChromeProxyHeaders(browser_context, resource_context, page_id_),
-      network_loader_factory_, frame_tree_node_id_);
+      GetChromeProxyHeaders(browser_context, page_id_), network_loader_factory_,
+      frame_tree_node_id_);
 }
 
 void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(
@@ -177,7 +156,7 @@ void PreviewsLitePageURLLoaderInterceptor::CreateOriginalURLLoader(
     const GURL& original_url,
     content::URLLoaderRequestInterceptor::LoaderCallback callback) {
   redirect_url_loader_ = std::make_unique<PreviewsLitePageRedirectURLLoader>(
-      tentative_resource_request,
+      nullptr, tentative_resource_request,
       base::BindOnce(
           &PreviewsLitePageURLLoaderInterceptor::HandleRedirectLoader,
           base::Unretained(this), std::move(callback)));

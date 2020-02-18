@@ -8,7 +8,7 @@
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "fuchsia/http/http_service_impl.h"
 #include "fuchsia/http/url_loader_impl.h"
 #include "net/base/net_errors.h"
@@ -31,8 +31,7 @@ using ResponseHeaders = std::multimap<std::string, std::string>;
 class HttpServiceTest : public ::testing::Test {
  public:
   HttpServiceTest()
-      : task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         binding_(&http_service_server_) {
     // Initialize the test server.
     test_server_.AddDefaultHandlers(
@@ -41,7 +40,7 @@ class HttpServiceTest : public ::testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   void SetUp() override {
     ASSERT_TRUE(test_server_.Start());
@@ -203,7 +202,8 @@ void CheckResponseBuffer(const oldhttp::URLResponse& response,
 
 void CheckResponseHeaders(const oldhttp::URLResponse& response,
                           ResponseHeaders* expected_headers) {
-  for (auto& header : response.headers.get()) {
+  ASSERT_TRUE(response.headers.has_value());
+  for (auto& header : response.headers.value()) {
     const std::string header_name = header.name.data();
     const std::string header_value = header.value.data();
     auto iter = std::find_if(expected_headers->begin(), expected_headers->end(),

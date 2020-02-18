@@ -58,7 +58,7 @@ void FtraceMetadata::AddCommonPid(int32_t pid) {
 }
 
 void FtraceMetadata::AddPid(int32_t pid) {
-  // Speculative optimization aginst repated pid's while keeping
+  // Speculative optimization against repated pid's while keeping
   // faster insertion than a set.
   if (!pids.empty() && pids.back() == pid)
     return;
@@ -81,7 +81,7 @@ void FtraceMetadata::Clear() {
   inode_and_device.clear();
   pids.clear();
   rename_pids.clear();
-  overwrite_count = 0;
+  lost_events = false;
   FinishEvent();
 }
 

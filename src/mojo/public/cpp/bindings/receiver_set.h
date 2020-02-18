@@ -231,10 +231,35 @@ class ReceiverSetBase {
   }
 
   void FlushForTesting() {
-    for (const auto& it : receivers_) {
-      if (it.second)
-        it.second->FlushForTesting();
+    // We avoid flushing while iterating over |receivers_| because this set
+    // may be mutated during individual flush operations.  Instead, snapshot
+    // the ReceiverIds first, then iterate over them. This is less efficient,
+    // but it's only a testing API. This also allows for correct behavior in
+    // reentrant calls to FlushForTesting().
+    std::vector<ReceiverId> ids;
+    for (const auto& receiver : receivers_)
+      ids.push_back(receiver.first);
+
+    auto weak_self = weak_ptr_factory_.GetWeakPtr();
+    for (const auto& id : ids) {
+      if (!weak_self)
+        return;
+      auto it = receivers_.find(id);
+      if (it != receivers_.end())
+        it->second->FlushForTesting();
     }
+  }
+
+  // Swaps the interface implementation with a different one, to allow tests
+  // to modify behavior.
+  //
+  // Returns the existing interface implementation to the caller.
+  ImplPointerType SwapImplForTesting(ReceiverId id, ImplPointerType new_impl) {
+    auto it = receivers_.find(id);
+    if (it == receivers_.end())
+      return nullptr;
+
+    return it->second->SwapImplForTesting(new_impl);
   }
 
  private:
@@ -257,6 +282,10 @@ class ReceiverSetBase {
       receiver_.AddFilter(std::make_unique<DispatchFilter>(this));
       receiver_.set_disconnect_with_reason_handler(
           base::BindOnce(&Entry::OnDisconnect, base::Unretained(this)));
+    }
+
+    ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
+      return receiver_.SwapImplForTesting(new_impl);
     }
 
     void FlushForTesting() { receiver_.FlushForTesting(); }

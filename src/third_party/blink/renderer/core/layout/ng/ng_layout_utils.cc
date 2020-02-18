@@ -82,11 +82,11 @@ bool SizeMayChange(const NGBlockNode& node,
   if (node.IsQuirkyAndFillsViewport())
     return true;
 
-  DCHECK_EQ(new_space.IsFixedSizeInline(), old_space.IsFixedSizeInline());
-  DCHECK_EQ(new_space.IsFixedSizeBlock(), old_space.IsFixedSizeBlock());
+  DCHECK_EQ(new_space.IsFixedInlineSize(), old_space.IsFixedInlineSize());
+  DCHECK_EQ(new_space.IsFixedBlockSize(), old_space.IsFixedBlockSize());
   DCHECK_EQ(new_space.IsShrinkToFit(), old_space.IsShrinkToFit());
-  DCHECK_EQ(new_space.TableCellChildLayoutPhase(),
-            old_space.TableCellChildLayoutPhase());
+  DCHECK_EQ(new_space.TableCellChildLayoutMode(),
+            old_space.TableCellChildLayoutMode());
 
   const ComputedStyle& style = node.Style();
 
@@ -100,7 +100,7 @@ bool SizeMayChange(const NGBlockNode& node,
   // a dimension, we can skip checking properties in that dimension and just
   // look for available size changes, since that's how a "fixed" constraint
   // space works.
-  if (new_space.IsFixedSizeInline()) {
+  if (new_space.IsFixedInlineSize()) {
     if (new_space.AvailableSize().inline_size !=
         old_space.AvailableSize().inline_size)
       return true;
@@ -117,7 +117,7 @@ bool SizeMayChange(const NGBlockNode& node,
       return true;
   }
 
-  if (new_space.IsFixedSizeBlock()) {
+  if (new_space.IsFixedBlockSize()) {
     if (new_space.AvailableSize().block_size !=
         old_space.AvailableSize().block_size)
       return true;
@@ -186,7 +186,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     //
     // Due to this we can't use cached |NGLayoutResult::IntrinsicBlockSize|
     // value, as the following |block_size| calculation would be incorrect.
-    if (node.IsFlexibleBox() && style.IsColumnFlexDirection() &&
+    if (node.IsFlexibleBox() && style.ResolvedIsColumnFlexDirection() &&
         layout_result.PhysicalFragment().DependsOnPercentageBlockSize()) {
       if (new_space.PercentageResolutionBlockSize() !=
           old_space.PercentageResolutionBlockSize())
@@ -194,7 +194,7 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     }
 
     block_size = ComputeBlockSizeForFragment(
-        new_space, node, fragment_geometry.border + fragment_geometry.padding,
+        new_space, style, fragment_geometry.border + fragment_geometry.padding,
         layout_result.IntrinsicBlockSize());
   }
 
@@ -220,12 +220,12 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // We miss the cache if the %-resolution block-size changes from indefinite
     // to definite (or visa-versa).
     bool is_new_initial_block_size_indefinite =
-        new_space.IsFixedSizeBlock() ? !new_space.FixedSizeBlockIsDefinite()
+        new_space.IsFixedBlockSize() ? new_space.IsFixedBlockSizeIndefinite()
                                      : is_initial_block_size_indefinite;
 
     bool is_old_initial_block_size_indefinite =
-        old_space.IsFixedSizeBlock()
-            ? !old_space.FixedSizeBlockIsDefinite()
+        old_space.IsFixedBlockSize()
+            ? old_space.IsFixedBlockSizeIndefinite()
             : layout_result.IsInitialBlockSizeIndefinite();
 
     if (is_old_initial_block_size_indefinite !=
@@ -235,8 +235,8 @@ NGLayoutCacheStatus CalculateSizeBasedLayoutCacheStatusWithGeometry(
     // %-block-size children of table-cells have different behaviour if they
     // are in the "measure" or "layout" phase.
     // Instead of trying to capture that logic here, we always miss the cache.
-    if (node.IsTableCell() &&
-        new_space.IsFixedSizeBlock() != old_space.IsFixedSizeBlock())
+    if (new_space.IsTableCell() &&
+        new_space.IsFixedBlockSize() != old_space.IsFixedBlockSize())
       return NGLayoutCacheStatus::kNeedsLayout;
 
     // If our initial block-size is definite, we know that if we change our
@@ -368,13 +368,20 @@ bool MaySkipLegacyLayout(const NGBlockNode& node,
 bool MaySkipLayoutWithinBlockFormattingContext(
     const NGLayoutResult& cached_layout_result,
     const NGConstraintSpace& new_space,
-    base::Optional<LayoutUnit>* bfc_block_offset) {
+    base::Optional<LayoutUnit>* bfc_block_offset,
+    LayoutUnit* block_offset_delta,
+    NGMarginStrut* end_margin_strut) {
   DCHECK_EQ(cached_layout_result.Status(), NGLayoutResult::kSuccess);
   DCHECK(cached_layout_result.HasValidConstraintSpaceForCaching());
   DCHECK(bfc_block_offset);
+  DCHECK(block_offset_delta);
+  DCHECK(end_margin_strut);
 
   const NGConstraintSpace& old_space =
       cached_layout_result.GetConstraintSpaceForCaching();
+
+  bool is_margin_strut_equal =
+      old_space.MarginStrut() == new_space.MarginStrut();
 
   LayoutUnit old_clearance_offset = old_space.ClearanceOffset();
   LayoutUnit new_clearance_offset = new_space.ClearanceOffset();
@@ -383,6 +390,10 @@ bool MaySkipLayoutWithinBlockFormattingContext(
   bool is_pushed_by_floats = cached_layout_result.IsPushedByFloats();
   if (is_pushed_by_floats) {
     DCHECK(old_space.HasFloats());
+
+    // We don't attempt to reuse the cached result if our margins have changed.
+    if (!is_margin_strut_equal)
+      return false;
 
     // We don't attempt to reuse the cached result if the clearance offset
     // differs from the final BFC-block-offset.
@@ -408,36 +419,127 @@ bool MaySkipLayoutWithinBlockFormattingContext(
     }
   }
 
+  // We can't reuse the layout result if the subtree modified its incoming
+  // margin-strut, and the incoming margin-strut has changed. E.g.
+  // <div style="margin-top: 5px;"> <!-- changes to 15px -->
+  //   <div style="margin-top: 10px;"></div>
+  //   text
+  // </div>
+  if (cached_layout_result.SubtreeModifiedMarginStrut() &&
+      !is_margin_strut_equal)
+    return false;
+
+  const auto& physical_fragment = cached_layout_result.PhysicalFragment();
+
   // Check we have a descendant that *may* be positioned above the block-start
   // edge. We abort if either the old or new space has floats, as we don't keep
   // track of how far above the child could be. This case is relatively rare,
   // and only occurs with negative margins.
-  if (cached_layout_result.PhysicalFragment()
-          .MayHaveDescendantAboveBlockStart() &&
+  if (physical_fragment.MayHaveDescendantAboveBlockStart() &&
       (old_space.HasFloats() || new_space.HasFloats()))
     return false;
 
-  // We can now try to adjust the BFC block-offset.
-  if (*bfc_block_offset) {
-    // Check if the previous position may intersect with any floats.
-    if (**bfc_block_offset <
-        old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
-      return false;
+  // Self collapsing blocks have different "shifting" rules applied to them.
+  if (cached_layout_result.IsSelfCollapsing()) {
+    DCHECK(!is_pushed_by_floats);
 
-    if (is_pushed_by_floats) {
-      DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
-      *bfc_block_offset = new_clearance_offset;
-    } else {
-      *bfc_block_offset = **bfc_block_offset -
-                          old_space.BfcOffset().block_offset +
-                          new_space.BfcOffset().block_offset;
+    // The "expected" BFC block-offset is where adjoining objects will be
+    // placed (which may be wrong due to adjoining margins).
+    LayoutUnit old_expected = old_space.ExpectedBfcBlockOffset();
+    LayoutUnit new_expected = new_space.ExpectedBfcBlockOffset();
+
+    // If we have any adjoining object descendants (floats), we need to ensure
+    // that their position wouldn't be impacted by any preceding floats.
+    if (physical_fragment.HasAdjoiningObjectDescendants()) {
+      // Check if the previous position intersects with any floats.
+      if (old_expected <
+          old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return false;
+
+      // Check if the new position intersects with any floats.
+      if (new_expected <
+          new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+        return false;
     }
 
-    // Check if the new position may intersect with any floats.
-    if (**bfc_block_offset <
-        new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+    *block_offset_delta = new_expected - old_expected;
+
+    // Self-collapsing blocks with a "forced" BFC block-offset input receive a
+    // "resolved" BFC block-offset on their layout result.
+    *bfc_block_offset = new_space.ForcedBfcBlockOffset();
+
+    // If this sub-tree didn't append any margins to the incoming margin-strut,
+    // the new "start" margin-strut becomes the new "end" margin-strut (as we
+    // are self-collapsing).
+    if (!cached_layout_result.SubtreeModifiedMarginStrut()) {
+      *end_margin_strut = new_space.MarginStrut();
+    } else {
+      DCHECK(is_margin_strut_equal);
+    }
+
+    return true;
+  }
+
+  // We can now try to adjust the BFC block-offset for regular blocks.
+  DCHECK(*bfc_block_offset);
+  DCHECK_EQ(old_space.AncestorHasClearancePastAdjoiningFloats(),
+            new_space.AncestorHasClearancePastAdjoiningFloats());
+
+  bool ancestor_has_clearance_past_adjoining_floats =
+      new_space.AncestorHasClearancePastAdjoiningFloats();
+
+  if (ancestor_has_clearance_past_adjoining_floats) {
+    // The subsequent code will break if these invariants don't hold true.
+    DCHECK(old_space.ForcedBfcBlockOffset());
+    DCHECK(new_space.ForcedBfcBlockOffset());
+    DCHECK_EQ(*old_space.ForcedBfcBlockOffset(), old_clearance_offset);
+    DCHECK_EQ(*new_space.ForcedBfcBlockOffset(), new_clearance_offset);
+  } else {
+    // New formatting-contexts have (potentially) complex positioning logic. In
+    // some cases they will resolve a BFC block-offset twice (with their margins
+    // adjoining, and not adjoining), resulting in two different "forced" BFC
+    // block-offsets. We don't allow caching as we can't determine which pass a
+    // layout result belongs to for this case.
+    if (old_space.ForcedBfcBlockOffset() != new_space.ForcedBfcBlockOffset())
       return false;
   }
+
+  // Check if the previous position intersects with any floats.
+  if (**bfc_block_offset <
+      old_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+    return false;
+
+  if (is_pushed_by_floats || ancestor_has_clearance_past_adjoining_floats) {
+    // If we've been pushed by floats, we assume the new clearance offset.
+    DCHECK_EQ(**bfc_block_offset, old_clearance_offset);
+    *block_offset_delta = new_clearance_offset - old_clearance_offset;
+    *bfc_block_offset = new_clearance_offset;
+  } else if (is_margin_strut_equal) {
+    // If our incoming margin-strut is equal, we are just shifted by the BFC
+    // block-offset amount.
+    *block_offset_delta =
+        new_space.BfcOffset().block_offset - old_space.BfcOffset().block_offset;
+    *bfc_block_offset = **bfc_block_offset + *block_offset_delta;
+  } else {
+    // If our incoming margin-strut isn't equal, we need to account for the
+    // difference in the incoming margin-struts.
+#if DCHECK_IS_ON()
+    DCHECK(!cached_layout_result.SubtreeModifiedMarginStrut());
+    LayoutUnit old_bfc_block_offset =
+        old_space.BfcOffset().block_offset + old_space.MarginStrut().Sum();
+    DCHECK_EQ(old_bfc_block_offset, **bfc_block_offset);
+#endif
+
+    LayoutUnit new_bfc_block_offset =
+        new_space.BfcOffset().block_offset + new_space.MarginStrut().Sum();
+    *block_offset_delta = new_bfc_block_offset - **bfc_block_offset;
+    *bfc_block_offset = **bfc_block_offset + *block_offset_delta;
+  }
+
+  // Check if the new position intersects with any floats.
+  if (**bfc_block_offset <
+      new_space.ExclusionSpace().ClearanceOffset(EClear::kBoth))
+    return false;
 
   return true;
 }

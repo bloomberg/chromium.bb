@@ -231,7 +231,7 @@ private:
     static const GrColor kColors[kMaxIDs];
 
     int            fID;
-    // The Atlased ops have an internal singly-linked list of ops that land in the same opList
+    // The Atlased ops have an internal singly-linked list of ops that land in the same opsTask
     AtlasedRectOp* fNext;
 
     typedef NonAARectOp INHERITED;
@@ -274,17 +274,17 @@ public:
         fDone = true;
     }
 
-    // Insert the new op in an internal singly-linked list for 'opListID'
-    void addOp(uint32_t opListID, AtlasedRectOp* op) {
+    // Insert the new op in an internal singly-linked list for 'opsTaskID'
+    void addOp(uint32_t opsTaskID, AtlasedRectOp* op) {
         LinkedListHeader* header = nullptr;
         for (int i = 0; i < fOps.count(); ++i) {
-            if (opListID == fOps[i].fID) {
+            if (opsTaskID == fOps[i].fID) {
                 header = &(fOps[i]);
             }
         }
 
         if (!header) {
-            fOps.push_back({opListID, nullptr});
+            fOps.push_back({opsTaskID, nullptr});
             header = &(fOps[fOps.count()-1]);
         }
 
@@ -301,11 +301,12 @@ public:
             return fAtlasProxy;
         }
 
-        const GrBackendFormat format = caps->getBackendFormatFromColorType(GrColorType::kRGBA_8888);
+        const GrBackendFormat format = caps->getDefaultBackendFormat(GrColorType::kRGBA_8888,
+                                                                     GrRenderable::kYes);
 
         fAtlasProxy = GrProxyProvider::MakeFullyLazyProxy(
-                [](GrResourceProvider* resourceProvider)
-                        -> GrSurfaceProxy::LazyInstantiationResult {
+                [format](GrResourceProvider* resourceProvider)
+                        -> GrSurfaceProxy::LazyCallbackResult {
                     GrSurfaceDesc desc;
                     // TODO: until partial flushes in MDB lands we're stuck having
                     // all 9 atlas draws occur
@@ -313,10 +314,9 @@ public:
                     desc.fHeight = kAtlasTileSize;
                     desc.fConfig = kRGBA_8888_GrPixelConfig;
 
-                    auto texture = resourceProvider->createTexture(
-                            desc, GrRenderable::kYes, 1, SkBudgeted::kYes, GrProtected::kNo,
+                    return resourceProvider->createTexture(
+                            desc, format, GrRenderable::kYes, 1, SkBudgeted::kYes, GrProtected::kNo,
                             GrResourceProvider::Flags::kNoPendingIO);
-                    return std::move(texture);
                 },
                 format,
                 GrRenderable::kYes,
@@ -324,9 +324,9 @@ public:
                 GrProtected::kNo,
                 kBottomLeft_GrSurfaceOrigin,
                 kRGBA_8888_GrPixelConfig,
-                *proxyProvider->caps());
+                *proxyProvider->caps(),
+                GrSurfaceProxy::UseAllocator::kNo);
 
-        fAtlasProxy->priv().setIgnoredByResourceAllocator();
         return fAtlasProxy;
     }
 
@@ -334,14 +334,12 @@ public:
      * This callback creates the atlas and updates the AtlasedRectOps to read from it
      */
     void preFlush(GrOnFlushResourceProvider* resourceProvider,
-                  const uint32_t* opListIDs, int numOpListIDs,
-                  SkTArray<sk_sp<GrRenderTargetContext>>* results) override {
-        SkASSERT(!results->count());
-
-        // Until MDB is landed we will most-likely only have one opList.
+                  const uint32_t* opsTaskIDs,
+                  int numOpsTaskIDs) override {
+        // Until MDB is landed we will most-likely only have one opsTask.
         SkTDArray<LinkedListHeader*> lists;
-        for (int i = 0; i < numOpListIDs; ++i) {
-            if (LinkedListHeader* list = this->getList(opListIDs[i])) {
+        for (int i = 0; i < numOpsTaskIDs; ++i) {
+            if (LinkedListHeader* list = this->getList(opsTaskIDs[i])) {
                 lists.push_back(list);
             }
         }
@@ -357,11 +355,11 @@ public:
         // At this point 'fAtlasProxy' should be instantiated and have:
         //    1 ref from the 'fAtlasProxy' sk_sp
         //    9 refs from the 9 AtlasedRectOps
-        SkASSERT(10 == fAtlasProxy->priv().getProxyRefCnt());
+        SkASSERT(10 == fAtlasProxy->refCnt());
         // The backing GrSurface should have only 1 though bc there is only one proxy
         SkASSERT(1 == fAtlasProxy->testingOnly_getBackingRefCnt());
-        sk_sp<GrRenderTargetContext> rtc = resourceProvider->makeRenderTargetContext(
-                fAtlasProxy, GrColorType::kRGBA_8888, nullptr, nullptr);
+        auto rtc = resourceProvider->makeRenderTargetContext(fAtlasProxy, GrColorType::kRGBA_8888,
+                                                             nullptr, nullptr);
 
         // clear the atlas
         rtc->clear(nullptr, SK_PMColor4fTRANSPARENT,
@@ -396,8 +394,6 @@ public:
             // We've updated all these ops and we certainly don't want to process them again
             this->clearOpsFor(lists[i]);
         }
-
-        results->push_back(std::move(rtc));
     }
 
 private:
@@ -406,9 +402,9 @@ private:
         AtlasedRectOp* fHead;
     } LinkedListHeader;
 
-    LinkedListHeader* getList(uint32_t opListID) {
+    LinkedListHeader* getList(uint32_t opsTaskID) {
         for (int i = 0; i < fOps.count(); ++i) {
-            if (opListID == fOps[i].fID) {
+            if (opsTaskID == fOps[i].fID) {
                 return &(fOps[i]);
             }
         }
@@ -419,10 +415,10 @@ private:
         // The AtlasedRectOps have yet to execute (and this class doesn't own them) so just
         // forget about them in the laziest way possible.
         header->fHead = nullptr;
-        header->fID = 0;            // invalid opList ID
+        header->fID = 0;            // invalid opsTask ID
     }
 
-    // Each opList containing AtlasedRectOps gets its own internal singly-linked list
+    // Each opsTask containing AtlasedRectOps gets its own internal singly-linked list
     SkTDArray<LinkedListHeader>  fOps;
 
     // The fully lazy proxy for the atlas
@@ -435,12 +431,11 @@ private:
 // This creates an off-screen rendertarget whose ops which eventually pull from the atlas.
 static sk_sp<GrTextureProxy> make_upstream_image(GrContext* context, AtlasObject* object, int start,
                                                  sk_sp<GrTextureProxy> atlasProxy) {
-    sk_sp<GrRenderTargetContext> rtc(
-            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
-                                                            3*kDrawnTileSize,
-                                                            kDrawnTileSize,
-                                                            GrColorType::kRGBA_8888,
-                                                            nullptr));
+    auto rtc = context->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
+                                                               3* kDrawnTileSize,
+                                                               kDrawnTileSize,
+                                                               GrColorType::kRGBA_8888,
+                                                               nullptr);
 
     rtc->clear(nullptr, { 1, 0, 0, 1 }, GrRenderTargetContext::CanClearFullscreen::kYes);
 
@@ -456,12 +451,12 @@ static sk_sp<GrTextureProxy> make_upstream_image(GrContext* context, AtlasObject
 
         AtlasedRectOp* sparePtr = op.get();
 
-        uint32_t opListID;
+        uint32_t opsTaskID;
         rtc->priv().testingOnly_addDrawOp(GrNoClip(), std::move(op),
-                                          [&opListID](GrOp* op, uint32_t id) { opListID = id; });
-        SkASSERT(SK_InvalidUniqueID != opListID);
+                                          [&opsTaskID](GrOp* op, uint32_t id) { opsTaskID = id; });
+        SkASSERT(SK_InvalidUniqueID != opsTaskID);
 
-        object->addOp(opListID, sparePtr);
+        object->addOp(opsTaskID, sparePtr);
     }
 
     return rtc->asTextureProxyRef();
@@ -553,12 +548,8 @@ DEF_GPUTEST_FOR_GL_RENDERING_CONTEXTS(OnFlushCallbackTest, reporter, ctxInfo) {
     static const int kFinalWidth = 6*kDrawnTileSize;
     static const int kFinalHeight = kDrawnTileSize;
 
-    sk_sp<GrRenderTargetContext> rtc(
-            context->priv().makeDeferredRenderTargetContext(SkBackingFit::kApprox,
-                                                            kFinalWidth,
-                                                            kFinalHeight,
-                                                            GrColorType::kRGBA_8888,
-                                                            nullptr));
+    auto rtc = context->priv().makeDeferredRenderTargetContext(
+            SkBackingFit::kApprox, kFinalWidth, kFinalHeight, GrColorType::kRGBA_8888, nullptr);
 
     rtc->clear(nullptr, SK_PMColor4fWHITE, GrRenderTargetContext::CanClearFullscreen::kYes);
 

@@ -57,6 +57,9 @@
         "collationUCAData": {
             "type": "string",
             "enum": ["unihan", "implicithan"]
+	},
+        "usePoolBundle": {
+            "type": "boolean"
         }
     },
     "additionalProperties": false,

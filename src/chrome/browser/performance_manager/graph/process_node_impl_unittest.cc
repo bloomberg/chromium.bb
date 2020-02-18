@@ -29,6 +29,13 @@ TEST_F(ProcessNodeImplTest, SafeDowncast) {
   EXPECT_EQ(static_cast<Node*>(node), base->ToNode());
 }
 
+using ProcessNodeImplDeathTest = ProcessNodeImplTest;
+
+TEST_F(ProcessNodeImplDeathTest, SafeDowncast) {
+  auto process = CreateNode<ProcessNodeImpl>();
+  ASSERT_DEATH_IF_SUPPORTED(FrameNodeImpl::FromNodeBase(process.get()), "");
+}
+
 TEST_F(ProcessNodeImplTest, MeasureCPUUsage) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   process_node->SetCPUUsage(1.0);
@@ -60,10 +67,12 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
   EXPECT_FALSE(process_node->exit_status());
 
   EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(0U, process_node->resident_set_kb());
   EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 
   constexpr base::TimeDelta kCpuUsage = base::TimeDelta::FromMicroseconds(1);
   process_node->set_private_footprint_kb(10u);
+  process_node->set_resident_set_kb(20u);
   process_node->set_cumulative_cpu_usage(kCpuUsage);
 
   // Kill it again.
@@ -74,6 +83,7 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
 
   EXPECT_EQ(launch_time, process_node->launch_time());
   EXPECT_EQ(10u, process_node->private_footprint_kb());
+  EXPECT_EQ(20u, process_node->resident_set_kb());
   EXPECT_EQ(kCpuUsage, process_node->cumulative_cpu_usage());
 
   // Resurrect again and verify the launch time and measurements
@@ -83,6 +93,7 @@ TEST_F(ProcessNodeImplTest, ProcessLifeCycle) {
 
   EXPECT_EQ(launch2_time, process_node->launch_time());
   EXPECT_EQ(0U, process_node->private_footprint_kb());
+  EXPECT_EQ(0U, process_node->resident_set_kb());
   EXPECT_EQ(base::TimeDelta(), process_node->cumulative_cpu_usage());
 }
 
@@ -118,6 +129,7 @@ class LenientMockObserver : public ProcessNodeImpl::Observer {
   ~LenientMockObserver() override {}
 
   MOCK_METHOD1(OnProcessNodeAdded, void(const ProcessNode*));
+  MOCK_METHOD1(OnProcessLifetimeChange, void(const ProcessNode*));
   MOCK_METHOD1(OnBeforeProcessNodeRemoved, void(const ProcessNode*));
   MOCK_METHOD1(OnExpectedTaskQueueingDurationSample, void(const ProcessNode*));
   MOCK_METHOD1(OnMainThreadTaskLoadIsLow, void(const ProcessNode*));
@@ -154,6 +166,12 @@ TEST_F(ProcessNodeImplTest, ObserverWorks) {
   auto process_node = CreateNode<ProcessNodeImpl>();
   const ProcessNode* raw_process_node = process_node.get();
   EXPECT_EQ(raw_process_node, obs.TakeNotifiedProcessNode());
+
+  // Test process creation and exit events.
+  EXPECT_CALL(obs, OnProcessLifetimeChange(_));
+  process_node->SetProcess(base::Process::Current(), base::Time::Now());
+  EXPECT_CALL(obs, OnProcessLifetimeChange(_));
+  process_node->SetProcessExitStatus(10);
 
   EXPECT_CALL(obs, OnExpectedTaskQueueingDurationSample(_))
       .WillOnce(Invoke(&obs, &MockObserver::SetNotifiedProcessNode));
@@ -240,6 +258,10 @@ TEST_F(ProcessNodeImplTest, PublicInterface) {
   process_node->set_private_footprint_kb(628);
   EXPECT_EQ(process_node->private_footprint_kb(),
             public_process_node->GetPrivateFootprintKb());
+
+  process_node->set_resident_set_kb(398);
+  EXPECT_EQ(process_node->resident_set_kb(),
+            public_process_node->GetResidentSetKb());
 }
 
 }  // namespace performance_manager

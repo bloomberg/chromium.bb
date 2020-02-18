@@ -153,14 +153,22 @@ static_library("simd") {
     sources = [
       "simd/arm/arm/jsimd.c",
       "simd/arm/arm/jsimd_neon.S",
+      "simd/arm/common/jdcolor-neon.c",
+      "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
     ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_speed" ]
   } else if (current_cpu == "arm64") {
     sources = [
       "simd/arm/arm64/jsimd.c",
       "simd/arm/arm64/jsimd_neon.S",
+      "simd/arm/common/jdcolor-neon.c",
+      "simd/arm/common/jdmerge-neon.c",
       "simd/arm/common/jdsample-neon.c",
     ]
+    configs -= [ "//build/config/compiler:default_optimization" ]
+    configs += [ "//build/config/compiler:optimize_speed" ]
   } else {
     sources = [
       "jsimd_none.c",

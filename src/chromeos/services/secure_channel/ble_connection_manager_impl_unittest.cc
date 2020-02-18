@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/services/secure_channel/authenticated_channel_impl.h"
 #include "chromeos/services/secure_channel/ble_advertiser_impl.h"
@@ -325,9 +325,9 @@ class FakeAuthenticatedChannelFactory
 class SecureChannelBleConnectionManagerImplTest : public testing::Test {
  protected:
   SecureChannelBleConnectionManagerImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::DEFAULT,
-            base::test::ScopedTaskEnvironment::ThreadPoolExecutionMode::QUEUED),
+      : task_environment_(
+            base::test::TaskEnvironment::MainThreadType::DEFAULT,
+            base::test::TaskEnvironment::ThreadPoolExecutionMode::QUEUED),
         test_devices_(
             multidevice::CreateRemoteDeviceRefListForTest(kNumTestDevices)) {}
   ~SecureChannelBleConnectionManagerImplTest() override = default;
@@ -701,7 +701,7 @@ class SecureChannelBleConnectionManagerImplTest : public testing::Test {
         fake_secure_channel);
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   const multidevice::RemoteDeviceRefList& test_devices() {
     return test_devices_;
   }

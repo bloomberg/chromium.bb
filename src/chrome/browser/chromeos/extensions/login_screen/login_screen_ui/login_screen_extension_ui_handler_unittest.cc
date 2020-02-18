@@ -7,14 +7,17 @@
 #include <memory>
 
 #include "base/test/gtest_util.h"
+#include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_create_options.h"
 #include "chrome/browser/chromeos/login/ui/login_screen_extension_ui/login_screen_extension_ui_window.h"
+#include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/ui/ash/test_login_screen.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/tpm/stub_install_attributes.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/version_info/version_info.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_service_manager_context.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
@@ -25,7 +28,7 @@
 namespace {
 
 const char kErrorWindowAlreadyExists[] =
-    "Can't create more than one window per extension.";
+    "Login screen extension UI already in use.";
 const char kErrorNoExistingWindow[] = "No open window to close.";
 const char kErrorNotOnLoginOrLockScreen[] =
     "Windows can only be created on the login and lock screen.";
@@ -50,7 +53,7 @@ class FakeLoginScreenExtensionUiWindowFactory
   ~FakeLoginScreenExtensionUiWindowFactory() override = default;
 
   std::unique_ptr<LoginScreenExtensionUiWindow> Create(
-      LoginScreenExtensionUiWindow::CreateOptions* create_options) override {
+      LoginScreenExtensionUiCreateOptions* create_options) override {
     create_was_called_ = true;
     last_extension_name_ = create_options->extension_name;
     last_content_url_ = create_options->content_url;
@@ -101,6 +104,12 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
         profile_manager_.CreateTestingProfile(chrome::kInitialProfile);
     ASSERT_TRUE(test_profile);
 
+    // Mark the device as being enterprise managed by policy.
+    stub_install_attributes_ =
+        test_profile->ScopedCrosSettingsTestHelper()->InstallAttributes();
+    ASSERT_TRUE(stub_install_attributes_);
+    stub_install_attributes_->SetCloudManaged("domain.com", "device_id");
+
     extension_registry_ = extensions::ExtensionRegistry::Get(test_profile);
     ASSERT_TRUE(extension_registry_);
 
@@ -115,7 +124,8 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
     session_manager_.SetSessionState(
         session_manager::SessionState::LOGIN_PRIMARY);
 
-    extension_ = extensions::ExtensionBuilder("test" /*extension_name*/)
+    extension_ = extensions::ExtensionBuilder(
+                     /*extension_name=*/"LoginScreenUi test extension")
                      .SetID(kWhitelistedExtensionID1)
                      .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
                      .AddPermission(kPermissionName)
@@ -175,16 +185,17 @@ class LoginScreenExtensionUiHandlerUnittest : public testing::Test {
   void CheckCannotUseAPI(const extensions::Extension* extension) {
     ::testing::FLAGS_gtest_death_test_style = "fast";
     std::string error;
-    EXPECT_DCHECK_DEATH(
+    EXPECT_CHECK_DEATH(
         ui_handler_->Show(extension, kUrl, kCanBeClosedByUser, &error));
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   content::TestServiceManagerContext context_;
   const extensions::ScopedCurrentChannel scoped_current_channel_;
 
   session_manager::SessionManager session_manager_;
   TestingProfileManager profile_manager_;
+  StubInstallAttributes* stub_install_attributes_ = nullptr;
   extensions::ExtensionRegistry* extension_registry_ = nullptr;
   scoped_refptr<const extensions::Extension> extension_;
 
@@ -274,9 +285,9 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, WindowClosedOnUnlock) {
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
 }
 
-TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
+TEST_F(LoginScreenExtensionUiHandlerUnittest, OnlyOneWindow) {
   scoped_refptr<const extensions::Extension> other_extension =
-      extensions::ExtensionBuilder("other extension" /*extension_name*/)
+      extensions::ExtensionBuilder(/*extension_name=*/"Imprivata")
           .SetID(kWhitelistedExtensionID2)
           .SetLocation(extensions::Manifest::EXTERNAL_POLICY)
           .AddPermission(kPermissionName)
@@ -289,30 +300,24 @@ TEST_F(LoginScreenExtensionUiHandlerUnittest, TwoExtensionsInParallel) {
   EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
   EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 
-  // Open window with extension 2.
-  CheckCanOpenWindow(other_extension.get());
+  // Try to open another window with extension 1.
+  CheckCannotOpenWindow(extension_.get(), kErrorWindowAlreadyExists);
   EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
+
+  // Open window with extension 2.
+  CheckCannotOpenWindow(other_extension.get(), kErrorWindowAlreadyExists);
+  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 
   // Close window with extension 1.
   CheckCanCloseWindow(extension_.get());
   EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
-
-  // Close window with extension 1 again.
-  CheckCannotCloseWindow(extension_.get(), kErrorNoExistingWindow);
-  EXPECT_FALSE(ui_handler_->HasOpenWindow(extension_->id()));
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(other_extension->id()));
+  EXPECT_FALSE(ui_handler_->HasOpenWindow(other_extension->id()));
 }
 
-TEST_F(LoginScreenExtensionUiHandlerUnittest, OnlyOneWindowPerExtension) {
-  // Open window with extension 1.
-  CheckCanOpenWindow(extension_.get());
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
-
-  // Open window with extension 1 again.
-  CheckCannotOpenWindow(extension_.get(), kErrorWindowAlreadyExists);
-  EXPECT_TRUE(ui_handler_->HasOpenWindow(extension_->id()));
+TEST_F(LoginScreenExtensionUiHandlerUnittest, CannotCloseNoWindow) {
+  CheckCannotCloseWindow(extension_.get(), kErrorNoExistingWindow);
 }
 
 TEST_F(LoginScreenExtensionUiHandlerUnittest, ManualClose) {
@@ -357,7 +362,6 @@ TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
           .Build();
 
   CheckCannotUseAPI(other_profile_extension.get());
-  CheckCannotUseAPI(other_profile_extension.get());
 
   // |no_permission_extension| is enabled in the sign-in profile's extensions
   // registry, but doesn't have the needed "loginScreenUi" permission.
@@ -370,7 +374,10 @@ TEST_F(LoginScreenExtensionUiHandlerDeathUnittest, NotAllowed) {
   extension_registry_->AddEnabled(no_permission_extension);
 
   CheckCannotUseAPI(no_permission_extension.get());
-  CheckCannotUseAPI(no_permission_extension.get());
+
+  // Mark the device as unmanaged.
+  stub_install_attributes_->SetConsumerOwned();
+  CheckCannotUseAPI(extension_.get());
 }
 
 }  // namespace chromeos

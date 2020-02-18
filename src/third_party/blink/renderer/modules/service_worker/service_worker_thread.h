@@ -31,6 +31,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_THREAD_H_
 
 #include <memory>
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/core/workers/worker_thread.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -47,9 +48,12 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
  public:
   // ServiceWorkerThread owns a given ServiceWorkerGlobalScopeProxy via
   // Persistent.
-  ServiceWorkerThread(ServiceWorkerGlobalScopeProxy*,
-                      std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
-                      mojom::blink::CacheStoragePtrInfo cache_storage_info);
+  ServiceWorkerThread(
+      std::unique_ptr<ServiceWorkerGlobalScopeProxy>,
+      std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
+      mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
+      scoped_refptr<base::SingleThreadTaskRunner>
+          parent_thread_default_task_runner);
   ~ServiceWorkerThread() override;
 
   WorkerBackingThread& GetWorkerBackingThread() override {
@@ -63,7 +67,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
                                  const v8_inspector::V8StackTraceId& stack_id);
   void RunInstalledModuleScript(
       const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
+      std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
+          outside_settings_object_data,
       network::mojom::CredentialsMode);
 
  private:
@@ -83,11 +88,11 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
           outside_settings_object,
       network::mojom::CredentialsMode);
 
-  Persistent<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
+  std::unique_ptr<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
-  mojom::blink::CacheStoragePtrInfo cache_storage_info_;
+  mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;
 };
 
 }  // namespace blink

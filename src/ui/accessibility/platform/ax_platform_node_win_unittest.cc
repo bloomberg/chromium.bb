@@ -421,6 +421,10 @@ TestFragmentRootDelegate::GetParentOfAXFragmentRoot() {
   return parent_;
 }
 
+bool TestFragmentRootDelegate::IsAXFragmentRootAControlElement() {
+  return is_control_element_;
+}
+
 TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   AXNodeData root;
   root.id = 1;
@@ -432,7 +436,7 @@ TEST_F(AXPlatformNodeWinTest, TestIAccessibleDetachedObject) {
   EXPECT_EQ(S_OK, root_obj->get_accName(SELF, name.Receive()));
   EXPECT_STREQ(L"Name", name);
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
   ScopedBstr name2;
   EXPECT_EQ(E_FAIL, root_obj->get_accName(SELF, name2.Receive()));
 }
@@ -3491,8 +3495,6 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
   root.AddStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts, "Alt+F4");
   root.AddStringAttribute(ax::mojom::StringAttribute::kDescription,
                           "fake description");
-  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
-                          "role description");
   root.AddIntAttribute(ax::mojom::IntAttribute::kSetSize, 2);
   root.AddIntAttribute(ax::mojom::IntAttribute::kInvalidState, 1);
   root.id = 1;
@@ -3518,8 +3520,6 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertySimple) {
                      uia_id.ptr()->bstrVal);
   EXPECT_UIA_BSTR_EQ(root_node, UIA_FullDescriptionPropertyId,
                      L"fake description");
-  EXPECT_UIA_BSTR_EQ(root_node, UIA_LocalizedControlTypePropertyId,
-                     L"role description");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaRolePropertyId, L"list");
   EXPECT_UIA_BSTR_EQ(root_node, UIA_AriaPropertiesPropertyId,
                      L"readonly=true;expanded=false;multiline=false;"
@@ -3587,6 +3587,30 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetPropertyValue_Histogram) {
     histogram_tester.ExpectUniqueSample(
         "Accessibility.WinAPIs.GetPropertyValue", 0, 1);
   }
+}
+
+TEST_F(AXPlatformNodeWinTest, UIAGetPropertyValueIsDialog) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kRootWebArea;
+  root.child_ids = {2, 3};
+
+  AXNodeData alert_dialog;
+  alert_dialog.id = 2;
+  alert_dialog.role = ax::mojom::Role::kAlertDialog;
+
+  AXNodeData dialog;
+  dialog.id = 3;
+  dialog.role = ax::mojom::Role::kDialog;
+
+  Init(root, alert_dialog, dialog);
+
+  EXPECT_UIA_BOOL_EQ(GetRootIRawElementProviderSimple(), UIA_IsDialogPropertyId,
+                     false);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(0),
+                     UIA_IsDialogPropertyId, true);
+  EXPECT_UIA_BOOL_EQ(GetIRawElementProviderSimpleFromChildIndex(1),
+                     UIA_IsDialogPropertyId, true);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetControllerForPropertyId) {
@@ -3981,6 +4005,40 @@ TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_HelpText) {
                       UIA_HelpTextPropertyId, ScopedVariant::kEmptyVariant);
 }
 
+TEST_F(AXPlatformNodeWinTest, TestGetPropertyValue_LocalizedControlType) {
+  AXNodeData root;
+  root.role = ax::mojom::Role::kUnknown;
+  root.id = 1;
+  root.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                          "root role description");
+
+  AXNodeData child1;
+  child1.id = 2;
+  child1.role = ax::mojom::Role::kSearchBox;
+  child1.AddStringAttribute(ax::mojom::StringAttribute::kRoleDescription,
+                            "child1 role description");
+  root.child_ids.push_back(2);
+
+  AXNodeData child2;
+  child2.id = 3;
+  child2.role = ax::mojom::Role::kSearchBox;
+  root.child_ids.push_back(3);
+
+  Init(root, child1, child2);
+
+  ComPtr<IRawElementProviderSimple> root_node =
+      GetRootIRawElementProviderSimple();
+  EXPECT_UIA_BSTR_EQ(root_node, UIA_LocalizedControlTypePropertyId,
+                     L"root role description");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         GetRootNode()->children()[0]),
+                     UIA_LocalizedControlTypePropertyId,
+                     L"child1 role description");
+  EXPECT_UIA_BSTR_EQ(QueryInterfaceFromNode<IRawElementProviderSimple>(
+                         GetRootNode()->children()[1]),
+                     UIA_LocalizedControlTypePropertyId, L"search box");
+}
+
 TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
   AXNodeData root_data;
   Init(root_data);
@@ -3990,9 +4048,10 @@ TEST_F(AXPlatformNodeWinTest, TestUIAGetProviderOptions) {
 
   ProviderOptions provider_options = static_cast<ProviderOptions>(0);
   EXPECT_HRESULT_SUCCEEDED(root_node->get_ProviderOptions(&provider_options));
-  EXPECT_EQ(
-      ProviderOptions_ServerSideProvider | ProviderOptions_UseComThreading,
-      provider_options);
+  EXPECT_EQ(ProviderOptions_ServerSideProvider |
+                ProviderOptions_UseComThreading |
+                ProviderOptions_RefuseNonClientSupport,
+            provider_options);
 }
 
 TEST_F(AXPlatformNodeWinTest, TestUIAGetHostRawElementProvider) {
@@ -4646,7 +4705,7 @@ TEST_F(AXPlatformNodeWinTest, TestUIAErrorHandling) {
   ComPtr<IWindowProvider> window_provider =
       QueryInterfaceFromNode<IWindowProvider>(GetRootNode());
 
-  tree_.reset(new AXTree());
+  tree_ = std::make_unique<AXTree>();
 
   // IGridItemProvider
   int int_result = 0;
@@ -5705,6 +5764,76 @@ TEST_F(AXPlatformNodeWinTest, TestIValueProvider_IsReadOnly) {
       QueryInterfaceFromNode<IValueProvider>(GetRootNode()->children()[2])
           ->get_IsReadOnly(&is_readonly));
   EXPECT_TRUE(is_readonly);
+}
+
+TEST_F(AXPlatformNodeWinTest, IScrollProviderSetScrollPercent) {
+  AXNodeData root;
+  root.id = 1;
+  root.role = ax::mojom::Role::kGenericContainer;
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollX, 0);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMin, 0);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollXMax, 100);
+
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollY, 60);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMin, 10);
+  root.AddIntAttribute(ax::mojom::IntAttribute::kScrollYMax, 60);
+
+  Init(root);
+
+  ComPtr<IScrollProvider> scroll_provider =
+      QueryInterfaceFromNode<IScrollProvider>(GetRootNode());
+  double x_scroll_percent;
+  double y_scroll_percent;
+
+  // Set x scroll percent: 0%, y scroll percent: 0%.
+  // Expected x scroll percent: 0%, y scroll percent: 0%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(0, 0));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 0);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 0);
+
+  // Set x scroll percent: 100%, y scroll percent: 100%.
+  // Expected x scroll percent: 100%, y scroll percent: 100%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(100, 100));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 100);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 100);
+
+  // Set x scroll percent: 500%, y scroll percent: 600%.
+  // Expected x scroll percent: 100%, y scroll percent: 100%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(500, 600));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 100);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 100);
+
+  // Set x scroll percent: -100%, y scroll percent: -200%.
+  // Expected x scroll percent: 0%, y scroll percent: 0%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(-100, -200));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 0);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 0);
+
+  // Set x scroll percent: 12%, y scroll percent: 34%.
+  // Expected x scroll percent: 12%, y scroll percent: 34%.
+  EXPECT_HRESULT_SUCCEEDED(scroll_provider->SetScrollPercent(12, 34));
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_HorizontalScrollPercent(&x_scroll_percent));
+  EXPECT_EQ(x_scroll_percent, 12);
+  EXPECT_HRESULT_SUCCEEDED(
+      scroll_provider->get_VerticalScrollPercent(&y_scroll_percent));
+  EXPECT_EQ(y_scroll_percent, 34);
 }
 
 }  // namespace ui

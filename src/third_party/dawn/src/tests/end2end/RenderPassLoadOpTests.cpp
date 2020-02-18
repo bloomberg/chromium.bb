@@ -26,8 +26,10 @@ class DrawQuad {
         DrawQuad() {}
         DrawQuad(dawn::Device device, const char* vsSource, const char* fsSource)
             : device(device) {
-            vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vsSource);
-            fsModule = utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fsSource);
+            vsModule =
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vsSource);
+            fsModule =
+                utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fsSource);
 
             pipelineLayout = utils::MakeBasicPipelineLayout(device, nullptr);
             }
@@ -36,7 +38,7 @@ class DrawQuad {
 
             utils::ComboRenderPipelineDescriptor descriptor(device);
             descriptor.layout = pipelineLayout;
-            descriptor.cVertexStage.module = vsModule;
+            descriptor.vertexStage.module = vsModule;
             descriptor.cFragmentStage.module = fsModule;
 
             auto renderPipeline = device.CreateRenderPipeline(&descriptor);
@@ -66,11 +68,10 @@ class RenderPassLoadOpTests : public DawnTest {
             descriptor.sampleCount = 1;
             descriptor.format = dawn::TextureFormat::RGBA8Unorm;
             descriptor.mipLevelCount = 1;
-            descriptor.usage =
-                dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+            descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
             renderTarget = device.CreateTexture(&descriptor);
 
-            renderTargetView = renderTarget.CreateDefaultView();
+            renderTargetView = renderTarget.CreateView();
 
             RGBA8 zero(0, 0, 0, 0);
             std::fill(expectZero.begin(), expectZero.end(), zero);

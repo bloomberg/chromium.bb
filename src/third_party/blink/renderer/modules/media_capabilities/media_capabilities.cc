@@ -11,7 +11,7 @@
 #include "media/base/mime_util.h"
 #include "media/base/supported_types.h"
 #include "media/filters/stream_parser_factory.h"
-#include "media/mojo/interfaces/media_types.mojom-blink.h"
+#include "media/mojo/mojom/media_types.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/media_capabilities/web_media_capabilities_info.h"
@@ -422,7 +422,8 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
     if (!audio_config.codec.Ascii().empty())
       codec_vector.push_back(audio_config.codec.Ascii());
 
-    if (!media::StreamParserFactory::IsTypeSupported(
+    if (media::IsSupported !=
+        media::StreamParserFactory::IsTypeSupported(
             audio_config.mime_type.Ascii(), codec_vector)) {
       DVLOG(2) << __func__ << " MSE does not support audio config: "
                << audio_config.mime_type.Ascii() << " "
@@ -439,7 +440,8 @@ bool CheckMseSupport(const WebMediaConfiguration& configuration) {
     if (!video_config.codec.Ascii().empty())
       codec_vector.push_back(video_config.codec.Ascii());
 
-    if (!media::StreamParserFactory::IsTypeSupported(
+    if (media::IsSupported !=
+        media::StreamParserFactory::IsTypeSupported(
             video_config.mime_type.Ascii(), codec_vector)) {
       DVLOG(2) << __func__ << " MSE does not support video config: "
                << video_config.mime_type.Ascii() << " "
@@ -576,6 +578,18 @@ ScriptPromise MediaCapabilities::decodingInfo(
     UseCounter::Count(
         ExecutionContext::From(script_state),
         WebFeature::kMediaCapabilitiesDecodingInfoWithKeySystemConfig);
+  }
+  if (configuration->hasVideo()) {
+    DCHECK(configuration->video()->hasFramerate());
+    if (!std::isnan(ComputeFrameRate(configuration->video()->framerate()))) {
+      if (configuration->video()->framerate().find('/') != kNotFound) {
+        UseCounter::Count(ExecutionContext::From(script_state),
+                          WebFeature::kMediaCapabilitiesFramerateRatio);
+      } else {
+        UseCounter::Count(ExecutionContext::From(script_state),
+                          WebFeature::kMediaCapabilitiesFramerateNumber);
+      }
+    }
   }
 
   String message;

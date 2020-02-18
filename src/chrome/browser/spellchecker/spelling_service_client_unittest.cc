@@ -23,7 +23,7 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/spellcheck/common/spellcheck_features.h"
 #include "components/spellcheck/common/spellcheck_result.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -127,7 +127,7 @@ class SpellingServiceClientTest
     return false;
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingSpellingServiceClient client_;
   TestingProfile profile_;
   base::test::ScopedFeatureList scoped_feature_list_;
@@ -156,6 +156,9 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
 
   if (is_rest) {
     scoped_feature_list_.InitAndEnableFeature(
+        spellcheck::kSpellingServiceRestApi);
+  } else {
+    scoped_feature_list_.InitAndDisableFeature(
         spellcheck::kSpellingServiceRestApi);
   }
 
@@ -204,7 +207,7 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
       base::WideToUTF16(test_case.request_text),
       base::BindOnce(&SpellingServiceClientTest::OnTextCheckComplete,
                      base::Unretained(this), 0));
-  thread_bundle_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   // Verify that the expected endpoint was hit (REST vs RPC).
   ASSERT_EQ(requested_url.path(), expected_request_url.path());

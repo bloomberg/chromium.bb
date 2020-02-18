@@ -32,8 +32,11 @@ namespace dawn_native {
     class PipelineBase;
     class PipelineLayoutBase;
     class QueueBase;
+    class RenderBundleBase;
+    class RenderBundleEncoderBase;
     class RenderPassEncoderBase;
     class RenderPipelineBase;
+    class ResourceHeapBase;
     class SamplerBase;
     class ShaderModuleBase;
     class StagingBufferBase;

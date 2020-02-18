@@ -90,8 +90,9 @@ ModelConfigLoaderImpl::ModelConfigLoaderImpl()
     : ModelConfigLoaderImpl(
           base::FilePath(
               "/usr/share/chromeos-assets/autobrightness/model_params.json"),
-          base::CreateSequencedTaskRunnerWithTraits(
-              {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
+          base::CreateSequencedTaskRunner(
+              {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
+               base::MayBlock(),
                base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
           false /* is_testing */) {}
 
@@ -130,8 +131,7 @@ ModelConfigLoaderImpl::ModelConfigLoaderImpl(
     bool is_testing)
     : model_params_path_(model_params_path),
       blocking_task_runner_(blocking_task_runner),
-      is_testing_(is_testing),
-      weak_ptr_factory_(this) {
+      is_testing_(is_testing) {
   Init();
 }
 

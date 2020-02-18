@@ -5,7 +5,7 @@
 #ifndef ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 #define ASH_ASSISTANT_UI_MAIN_STAGE_ASSISTANT_OPT_IN_VIEW_H_
 
-#include "ash/assistant/assistant_prefs_controller.h"
+#include "ash/public/cpp/assistant/assistant_state.h"
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
@@ -23,7 +23,7 @@ class AssistantViewDelegate;
 class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView
     : public views::View,
       public views::ButtonListener,
-      public AssistantPrefsObserver {
+      public AssistantStateObserver {
  public:
   explicit AssistantOptInView(AssistantViewDelegate* delegate_);
   ~AssistantOptInView() override;
@@ -36,8 +36,8 @@ class COMPONENT_EXPORT(ASSISTANT_UI) AssistantOptInView
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // AssistantPrefsObserver:
-  void OnAssistantConsentStatusUpdated(int consent_status) override;
+  // AssistantStateObserver:
+  void OnAssistantConsentStatusChanged(int consent_status) override;
 
  private:
   void InitLayout();

@@ -16,14 +16,14 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/dns/public/dns_protocol.h"
 #include "net/dns/test_dns_config_service.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 
 namespace {
 
-class DnsConfigServiceTest : public TestWithScopedTaskEnvironment {
+class DnsConfigServiceTest : public TestWithTaskEnvironment {
  public:
   void OnConfigChanged(const DnsConfig& config) {
     last_config_ = config;

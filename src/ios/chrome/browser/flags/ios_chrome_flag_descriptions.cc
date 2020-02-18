@@ -116,10 +116,6 @@ const char kBrowserContainerKeepsContentViewDescription[] =
     "When enable, the browser container keeps the content view in the view "
     "hierarchy, to avoid WKWebView from being unloaded from the process.";
 
-const char kBrowserTaskScheduler[] = "Task Scheduler";
-const char kBrowserTaskSchedulerDescription[] =
-    "Enables redirection of some task posting APIs to the task scheduler.";
-
 // TODO(crbug.com/893314) : Remove this flag.
 const char kClosingLastIncognitoTabName[] = "Closing Last Incognito Tab";
 const char kClosingLastIncognitoTabDescription[] =
@@ -132,15 +128,16 @@ const char kCollectionsCardPresentationStyleDescription[] =
     "When enabled collections are presented using the new iOS13 card "
     "style.";
 
-const char kContextualSearch[] = "Contextual Search";
-const char kContextualSearchDescription[] =
-    "Whether or not Contextual Search is enabled.";
-
 const char kCopiedContentBehaviorName[] =
     "Enable differentiating between copied urls, text, and images";
 const char kCopiedContentBehaviorDescription[] =
     "When enabled, places that handled copied urls (omnibox long-press, toolbar"
     "menus) will differentiate between copied urls, text, and images.";
+
+const char kCreditCardScannerName[] = "Enable the 'Use Camera' button";
+const char kCreditCardScannerDescription[] =
+    "Allow a user to scan a credit card using the credit card camera scanner."
+    "The 'Use Camera' button is located in the 'Add Payment Method' view";
 
 #if defined(DCHECK_IS_CONFIGURABLE)
 const char kDcheckIsFatalName[] = "DCHECKs are fatal";
@@ -157,49 +154,31 @@ const char kDetectMainThreadFreezeDescription[] =
 const char kDragAndDropName[] = "Drag and Drop";
 const char kDragAndDropDescription[] = "Enable support for drag and drop.";
 
-const char kEnableAutocompleteDataRetentionPolicyName[] =
-    "Enable automatic cleanup of expired Autocomplete entries.";
-const char kEnableAutocompleteDataRetentionPolicyDescription[] =
-    "If enabled, will clean-up Autocomplete entries whose last use date is "
-    "older than the current retention policy. These entries will be "
-    "permanently deleted from the client on startup, and will be unlinked "
-    "from sync.";
+const char kEnableAutofillCreditCardUploadEditableCardholderNameName[] =
+    "Make cardholder name editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableCardholderNameDescription[] =
+    "If enabled, in certain situations when offering credit card upload to "
+    "Google Payments, the cardholder name can be edited within the "
+    "offer-to-save dialog, which is prefilled with the name from the signed-in "
+    "Google Account.";
 
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationName[] =
-    "Enable updated prompt explanation when offering credit card upload";
-const char kEnableAutofillCreditCardUploadUpdatePromptExplanationDescription[] =
-    "If enabled, changes the server save card prompt's explanation to mention "
-    "the saving of the billing address.";
-
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsName[] =
-    "Prevents upload save on cards from unsupported networks";
-const char kEnableAutofillDoNotUploadSaveUnsupportedCardsDescription[] =
-    "If enabled, cards from unsupported networks will not be offered upload "
-    "save, and will instead be offered local save.";
+const char kEnableAutofillCreditCardUploadEditableExpirationDateName[] =
+    "Make expiration date editable in dialog during credit card upload";
+const char kEnableAutofillCreditCardUploadEditableExpirationDateDescription[] =
+    "If enabled, if a credit card's expiration date was not detected when "
+    "offering card upload to Google Payments, the offer-to-save dialog "
+    "displays an expiration date selector.";
 
 const char kEnableAutofillSaveCardShowNoThanksName[] =
     "Show explicit decline option in credit card save prompts";
 const char kEnableAutofillSaveCardShowNoThanksDescription[] =
     "If enabled, adds a [No thanks] button to credit card save prompts.";
 
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemName[] =
-    "Enable limit on offering to save the same credit card repeatedly";
-const char kEnableAutofillSaveCreditCardUsesStrikeSystemDescription[] =
-    "If enabled, prevents popping up the credit card offer-to-save prompt if "
-    "it has repeatedly been ignored, declined, or failed.";
-
 const char kEnableAutofillImportDynamicFormsName[] =
     "Allow credit card import from dynamic forms after entry";
 const char kEnableAutofillImportDynamicFormsDescription[] =
     "If enabled, offers credit card save for dynamic forms from the page after "
     "information has been entered into them.";
-
-const char kEnableAutofillImportNonFocusableCreditCardFormsName[] =
-    "Allow credit card import from forms that disappear after entry";
-const char kEnableAutofillImportNonFocusableCreditCardFormsDescription[] =
-    "If enabled, offers credit card save for forms that are hidden from the "
-    "page after information has been entered into them, including "
-    "accordion-style checkout flows.";
 
 const char kEnableClipboardProviderImageSuggestionsName[] =
     "Enable copied image provider";
@@ -223,11 +202,6 @@ const char kEnableSyncUSSNigoriName[] = "Enable USS for sync encryption keys";
 const char kEnableSyncUSSNigoriDescription[] =
     "Enables the new, experimental implementation of sync encryption keys";
 
-const char kFCMInvalidationsName[] =
-    "Enable invalidations delivery via new FCM based protocol";
-const char kFCMInvalidationsDescription[] =
-    "Use the new FCM-based protocol for deliveling invalidations";
-
 const char kFillOnAccountSelectHttpName[] =
     "Fill passwords on account selection on HTTP origins";
 const char kFillOnAccountSelectHttpDescription[] =
@@ -243,11 +217,6 @@ const char kFullscreenViewportAdjustmentExperimentName[] =
 const char kFullscreenViewportAdjustmentExperimentDescription[] =
     "The different ways in which the web view's viewport is updated for scroll "
     "events.  The default option updates the web view's frame.";
-
-const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
-const char kHistoryBatchUpdatesFilterDescription[] =
-    "When enabled History inserts and deletes history items in the same "
-    "BatchUpdates block.";
 
 const char kIdentityDiscName[] = "Identity Disc";
 const char kIdentityDiscDescription[] =
@@ -307,17 +276,6 @@ const char kOmniboxPopupShortcutIconsInZeroStateDescription[] =
     "Instead of ZeroSuggest, show most visited sites and collection shortcuts "
     "in the omnibox popup.";
 
-const char kOmniboxTabSwitchSuggestionsName[] =
-    "Enable 'switch to this tab' option";
-const char kOmniboxTabSwitchSuggestionsDescription[] =
-    "Enable the 'switch to this tab' options in the omnibox suggestions.";
-
-const char kOmniboxUIElideSuggestionUrlAfterHostName[] =
-    "Hide the path, query, and ref of omnibox suggestions";
-const char kOmniboxUIElideSuggestionUrlAfterHostDescription[] =
-    "Elides the path, query, and ref of suggested URLs in the omnibox "
-    "dropdown.";
-
 const char kOmniboxUIMaxAutocompleteMatchesName[] =
     "Omnibox UI Max Autocomplete Matches";
 const char kOmniboxUIMaxAutocompleteMatchesDescription[] =
@@ -340,10 +298,6 @@ const char kOptionalArticleThumbnailName[] =
 const char kOptionalArticleThumbnailDescription[] =
     "Make thumbnails of NTP articles optional due to European copyright "
     "directive(EUCD). Also change the layout of article cells";
-
-const char kPasswordGenerationName[] = "Password generation suggestion";
-const char kPasswordGenerationDescription[] =
-    "Add 'Suggest Password' in suggestion list for form completion.";
 
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
@@ -400,13 +354,6 @@ const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";
 
-const char kSyncSupportSecondaryAccountName[] =
-    "Support secondary accounts for Sync standalone transport";
-const char kSyncSupportSecondaryAccountDescription[] =
-    "If enabled, allows Chrome Sync to start in standalone transport mode for "
-    "a signed-in account that has not been chosen as Chrome's primary account. "
-    "This only has an effect if sync-standalone-transport is also enabled.";
-
 const char kToolbarContainerName[] = "Use Toolbar Containers";
 const char kToolbarContainerDescription[] =
     "When enabled, the toolbars and their fullscreen animations will be "
@@ -416,10 +363,6 @@ const char kToolbarNewTabButtonName[] =
     "Enable New Tab button in the bottom toolbar";
 const char kToolbarNewTabButtonDescription[] =
     "When enabled, the bottom toolbar middle button opens a new tab";
-
-const char kTranslateManualTriggerName[] = "Enable manual translate trigger";
-const char kTranslateManualTriggerDescription[] =
-    "Show a menu item in the popup menu that triggers page translation.";
 
 const char kUnifiedConsentName[] = "Unified Consent";
 const char kUnifiedConsentDescription[] =
@@ -434,11 +377,6 @@ const char kUseDdljsonApiDescription[] =
 const char kUseMultiloginEndpointName[] = "Use Multilogin endpoint.";
 const char kUseMultiloginEndpointDescription[] =
     "Use Gaia OAuth multilogin for identity consistency.";
-
-const char kUseNSURLSessionForGaiaSigninRequestsName[] =
-    "Use NSURLSession for sign-in requests";
-const char kUseNSURLSessionForGaiaSigninRequestsDescription[] =
-    "Use NSURLSession to make sign-in requests to Gaia";
 
 const char kWalletServiceUseSandboxName[] = "Use Google Payments sandbox";
 const char kWalletServiceUseSandboxDescription[] =

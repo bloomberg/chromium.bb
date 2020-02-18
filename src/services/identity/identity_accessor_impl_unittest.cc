@@ -2,19 +2,19 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <string>
+
 #include "base/bind.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "build/build_config.h"
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_environment.h"
+#include "google_apis/gaia/core_account_id.h"
 #include "services/identity/identity_service.h"
 #include "services/identity/public/cpp/account_state.h"
 #include "services/identity/public/cpp/scope_set.h"
-#include "services/identity/public/mojom/constants.mojom.h"
 #include "services/identity/public/mojom/identity_accessor.mojom.h"
-#include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace identity {
@@ -27,9 +27,8 @@ class IdentityAccessorImplTest : public testing::Test {
  public:
   IdentityAccessorImplTest()
       : identity_test_environment_(),
-        service_(
-            identity_test_environment_.identity_manager(),
-            test_connector_factory_.RegisterInstance(mojom::kServiceName)) {}
+        service_(identity_test_environment_.identity_manager(),
+                 remote_service_.BindNewPipeAndPassReceiver()) {}
 
   void TearDown() override {
     // Explicitly destruct IdentityAccessorImpl so that it doesn't outlive its
@@ -87,8 +86,8 @@ class IdentityAccessorImplTest : public testing::Test {
  protected:
   mojom::IdentityAccessor* GetIdentityAccessorImpl() {
     if (!identity_accessor_) {
-      test_connector_factory_.GetDefaultConnector()->BindInterface(
-          mojom::kServiceName, &identity_accessor_);
+      remote_service_->BindIdentityAccessor(
+          mojo::MakeRequest(&identity_accessor_));
     }
     return identity_accessor_.get();
   }
@@ -106,7 +105,7 @@ class IdentityAccessorImplTest : public testing::Test {
     identity_accessor_.set_connection_error_handler(handler);
   }
 
-  base::test::ScopedTaskEnvironment task_environemnt_;
+  base::test::TaskEnvironment task_environemnt_;
 
   mojom::IdentityAccessorPtr identity_accessor_;
   base::Optional<CoreAccountInfo> primary_account_info_;
@@ -122,7 +121,7 @@ class IdentityAccessorImplTest : public testing::Test {
 
  private:
   signin::IdentityTestEnvironment identity_test_environment_;
-  service_manager::TestConnectorFactory test_connector_factory_;
+  mojo::Remote<mojom::IdentityService> remote_service_;
   IdentityService service_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityAccessorImplTest);

@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/events/hash_change_event.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
-#include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/events/pop_state_event.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/frame/bar_prop.h"
@@ -246,8 +245,10 @@ Document* LocalDOMWindow::CreateDocument(const String& mime_type,
         mime_type, init,
         init.GetFrame() ? init.GetFrame()->InViewSourceMode() : false);
     if (document->IsPluginDocument() &&
-        document->IsSandboxed(WebSandboxFlags::kPlugins))
+        document->IsSandboxed(WebSandboxFlags::kPlugins)) {
+      // document->Shutdown();
       document = MakeGarbageCollected<SinkDocument>(init);
+    }
   }
 
   return document;
@@ -273,6 +274,10 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 
   GetFrame()->GetScriptController().UpdateDocument();
   document_->GetViewportData().UpdateViewportDescription();
+  if (FrameScheduler* frame_scheduler = GetFrame()->GetFrameScheduler()) {
+    frame_scheduler->TraceUrlChange(document_->Url().GetString());
+    frame_scheduler->SetCrossOrigin(GetFrame()->IsCrossOriginSubframe());
+  }
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
@@ -308,12 +313,13 @@ void LocalDOMWindow::DispatchWindowLoadEvent() {
 
 void LocalDOMWindow::DocumentWasClosed() {
   DispatchWindowLoadEvent();
-  EnqueuePageshowEvent(kPageshowEventNotPersisted);
+  EnqueuePageshowEvent(kPageTransitionEventNotPersisted);
   if (pending_state_object_)
     EnqueuePopstateEvent(std::move(pending_state_object_));
 }
 
-void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
+void LocalDOMWindow::EnqueuePageshowEvent(
+    PageTransitionEventPersistence persisted) {
   // FIXME: https://bugs.webkit.org/show_bug.cgi?id=36334 Pageshow event needs
   // to fire asynchronously.  As per spec pageshow must be triggered
   // asynchronously.  However to be compatible with other browsers blink fires
@@ -555,14 +561,14 @@ void LocalDOMWindow::SchedulePostMessage(
                  WTF::Bind(&LocalDOMWindow::DispatchPostMessage,
                            WrapPersistent(this), WrapPersistent(event),
                            std::move(target), std::move(location)));
-  probe::AsyncTaskScheduled(document(), "postMessage", event);
+  probe::AsyncTaskScheduled(document(), "postMessage", event->async_task_id());
 }
 
 void LocalDOMWindow::DispatchPostMessage(
     MessageEvent* event,
     scoped_refptr<const SecurityOrigin> intended_target_origin,
     std::unique_ptr<SourceLocation> location) {
-  probe::AsyncTask async_task(document(), event);
+  probe::AsyncTask async_task(document(), event->async_task_id());
   if (!IsCurrentlyDisplayedInFrame())
     return;
 
@@ -1412,9 +1418,13 @@ void LocalDOMWindow::RemoveAllEventListeners() {
   UntrackAllBeforeUnloadEventListeners(this);
 }
 
-void LocalDOMWindow::FinishedLoading() {
-  if (should_print_when_finished_loading_) {
-    should_print_when_finished_loading_ = false;
+void LocalDOMWindow::FinishedLoading(FrameLoader::NavigationFinishState state) {
+  bool was_should_print_when_finished_loading =
+      should_print_when_finished_loading_;
+  should_print_when_finished_loading_ = false;
+
+  if (was_should_print_when_finished_loading &&
+      state == FrameLoader::NavigationFinishState::kSuccess) {
     print(nullptr);
   }
 }
@@ -1501,8 +1511,7 @@ DOMWindow* LocalDOMWindow::open(v8::Isolate* isolate,
       SecurityPolicy::GenerateReferrer(
           active_document->GetReferrerPolicy(), completed_url,
           window_features.noreferrer ? Referrer::NoReferrer()
-                                     : active_document->OutgoingReferrer()),
-      ResourceRequest::SetHttpReferrerLocation::kLocalDomWindow);
+                                     : active_document->OutgoingReferrer()));
 
   frame_request.GetResourceRequest().SetHasUserGesture(
       LocalFrame::HasTransientUserActivation(GetFrame()));

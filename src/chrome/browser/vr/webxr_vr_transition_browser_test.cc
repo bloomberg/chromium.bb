@@ -8,6 +8,7 @@
 #include "chrome/browser/vr/test/multi_class_browser_test.h"
 #include "chrome/browser/vr/test/webxr_vr_browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "device/vr/buildflags/buildflags.h"
 
 // Browser test equivalent of
 // chrome/android/javatests/src/.../browser/vr/WebXrVrTransitionTest.java.
@@ -15,6 +16,22 @@
 // sessions.
 
 namespace vr {
+
+class TransitionXRMock : public MockXRDeviceHookBase {
+ public:
+  void WaitGetSessionStateStopping(
+      device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
+          callback) final;
+
+  bool session_state_stopping_ = false;
+};
+
+void TransitionXRMock::WaitGetSessionStateStopping(
+    device_test::mojom::XRTestHook::WaitGetSessionStateStoppingCallback
+        callback) {
+  std::move(callback).Run(session_state_stopping_);
+  session_state_stopping_ = false;
+}
 
 // Tests that WebVR/WebXR is not exposed if the flag is not on and the page does
 // not have an origin trial token.
@@ -53,10 +70,19 @@ IN_PROC_BROWSER_TEST_F(WebVrOpenVrBrowserTestWebVrDisabled,
   TestApiDisabledWithoutFlagSetImpl(this,
                                     "test_webvr_disabled_without_flag_set");
 }
+
+#if BUILDFLAG(ENABLE_OPENXR)
+IN_PROC_MULTI_CLASS_BROWSER_TEST_F3(WebXrVrOpenVrBrowserTestWebXrDisabled,
+                                    WebXrVrWmrBrowserTestWebXrDisabled,
+                                    WebXrVrOpenXrBrowserTestWebXrDisabled,
+                                    WebXrVrBrowserTestBase,
+                                    TestWebXrDisabledWithoutFlagSet) {
+#else
 IN_PROC_MULTI_CLASS_BROWSER_TEST_F2(WebXrVrOpenVrBrowserTestWebXrDisabled,
                                     WebXrVrWmrBrowserTestWebXrDisabled,
                                     WebXrVrBrowserTestBase,
                                     TestWebXrDisabledWithoutFlagSet) {
+#endif  // BUILDFLAG(ENABLE_OPENXR)
   TestApiDisabledWithoutFlagSetImpl(t, "test_webxr_disabled_without_flag_set");
 }
 
@@ -122,6 +148,28 @@ WEBXR_VR_ALL_RUNTIMES_BROWSER_TEST_F(TestNonImmersiveStopsDuringImmersive) {
   t->ExecuteStepAndWait("stepAfterImmersive()");
   t->EndTest();
 }
+
+#if BUILDFLAG(ENABLE_OPENXR)
+IN_PROC_BROWSER_TEST_F(WebXrVrOpenXrBrowserTest, TestSessionEnded) {
+  TransitionXRMock transition_mock;
+
+  // Load the test page, and enter presentation.
+  this->LoadUrlAndAwaitInitialization(
+      this->GetFileUrlForHtmlTestFile("test_webxr_presentation_ended"));
+  this->EnterSessionWithUserGestureOrFail();
+
+  // Wait for JavaScript to submit at least one frame.
+  ASSERT_TRUE(this->PollJavaScriptBoolean("hasPresentedFrame",
+                                          this->kPollTimeoutMedium))
+      << "No frame submitted";
+  // Trigger the OpenXr Runtime to send the stop event and wait until we see the
+  // session get terminated.
+  transition_mock.session_state_stopping_ = true;
+  // Tell JavaScript that it is done with the test.
+  this->WaitOnJavaScriptStep();
+  this->EndTest();
+}
+#endif  // BUILDFLAG(ENABLE_OPENXR)
 
 #endif  // OS_WIN
 

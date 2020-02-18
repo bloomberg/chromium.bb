@@ -7,7 +7,8 @@
 #include <memory>
 #include <utility>
 
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
@@ -20,7 +21,6 @@
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 using blink::mojom::blink::MediaDeviceInfoPtr;
-using blink::mojom::blink::MediaDeviceType;
 
 namespace blink {
 
@@ -35,7 +35,7 @@ const char kFakeAudioOutputDeviceId1[] = "fake_audio_output 1";
 class MockMediaDevicesDispatcherHost
     : public mojom::blink::MediaDevicesDispatcherHost {
  public:
-  MockMediaDevicesDispatcherHost() : binding_(this) {}
+  MockMediaDevicesDispatcherHost() {}
 
   void EnumerateDevices(bool request_audio_input,
                         bool request_video_input,
@@ -43,8 +43,8 @@ class MockMediaDevicesDispatcherHost
                         bool request_video_input_capabilities,
                         bool request_audio_input_capabilities,
                         EnumerateDevicesCallback callback) override {
-    Vector<Vector<MediaDeviceInfoPtr>> enumeration(
-        static_cast<size_t>(MediaDeviceType::NUM_MEDIA_DEVICE_TYPES));
+    Vector<Vector<MediaDeviceInfoPtr>> enumeration(static_cast<size_t>(
+        blink::mojom::blink::MediaDeviceType::NUM_MEDIA_DEVICE_TYPES));
     Vector<mojom::blink::VideoInputDeviceCapabilitiesPtr>
         video_input_capabilities;
     Vector<mojom::blink::AudioInputDeviceCapabilitiesPtr>
@@ -55,14 +55,16 @@ class MockMediaDevicesDispatcherHost
       device_info->device_id = kFakeAudioInputDeviceId1;
       device_info->label = "Fake Audio Input 1";
       device_info->group_id = kFakeCommonGroupId1;
-      enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
+      enumeration[static_cast<size_t>(
+                      blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
           .push_back(std::move(device_info));
 
       device_info = mojom::blink::MediaDeviceInfo::New();
       device_info->device_id = kFakeAudioInputDeviceId2;
       device_info->label = "Fake Audio Input 2";
       device_info->group_id = "fake_group 2";
-      enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_INPUT)]
+      enumeration[static_cast<size_t>(
+                      blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT)]
           .push_back(std::move(device_info));
 
       // TODO(crbug.com/935960): add missing mocked capabilities and related
@@ -73,14 +75,16 @@ class MockMediaDevicesDispatcherHost
       device_info->device_id = kFakeVideoInputDeviceId1;
       device_info->label = "Fake Video Input 1";
       device_info->group_id = kFakeCommonGroupId1;
-      enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
+      enumeration[static_cast<size_t>(
+                      blink::mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
           .push_back(std::move(device_info));
 
       device_info = mojom::blink::MediaDeviceInfo::New();
       device_info->device_id = kFakeVideoInputDeviceId2;
       device_info->label = "Fake Video Input 2";
       device_info->group_id = kFakeVideoInputGroupId2;
-      enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_VIDEO_INPUT)]
+      enumeration[static_cast<size_t>(
+                      blink::mojom::blink::MediaDeviceType::MEDIA_VIDEO_INPUT)]
           .push_back(std::move(device_info));
 
       if (request_video_input_capabilities) {
@@ -103,7 +107,8 @@ class MockMediaDevicesDispatcherHost
       device_info->device_id = kFakeAudioOutputDeviceId1;
       device_info->label = "Fake Audio Input 1";
       device_info->group_id = kFakeCommonGroupId1;
-      enumeration[static_cast<size_t>(MediaDeviceType::MEDIA_AUDIO_OUTPUT)]
+      enumeration[static_cast<size_t>(
+                      blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_OUTPUT)]
           .push_back(std::move(device_info));
     }
     std::move(callback).Run(std::move(enumeration),
@@ -135,23 +140,27 @@ class MockMediaDevicesDispatcherHost
       bool subscribe_audio_input,
       bool subscribe_video_input,
       bool subscribe_audio_output,
-      mojom::blink::MediaDevicesListenerPtr listener) override {
-    listener_ = std::move(listener);
+      mojo::PendingRemote<mojom::blink::MediaDevicesListener> listener)
+      override {
+    listener_.Bind(std::move(listener));
   }
 
-  mojom::blink::MediaDevicesDispatcherHostPtr CreateInterfacePtrAndBind() {
-    mojom::blink::MediaDevicesDispatcherHostPtr ptr;
-    binding_.Bind(mojo::MakeRequest(&ptr));
-    return ptr;
+  mojo::PendingRemote<mojom::blink::MediaDevicesDispatcherHost>
+  CreatePendingRemoteAndBind() {
+    mojo::PendingRemote<mojom::blink::MediaDevicesDispatcherHost> remote;
+    receiver_.Bind(remote.InitWithNewPipeAndPassReceiver());
+    return remote;
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseBinding() { receiver_.reset(); }
 
-  mojom::blink::MediaDevicesListenerPtr& listener() { return listener_; }
+  mojo::Remote<mojom::blink::MediaDevicesListener>& listener() {
+    return listener_;
+  }
 
  private:
-  mojom::blink::MediaDevicesListenerPtr listener_;
-  mojo::Binding<mojom::blink::MediaDevicesDispatcherHost> binding_;
+  mojo::Remote<mojom::blink::MediaDevicesListener> listener_;
+  mojo::Receiver<mojom::blink::MediaDevicesDispatcherHost> receiver_{this};
 };
 
 class PromiseObserver {
@@ -216,7 +225,7 @@ class MediaDevicesTest : public testing::Test {
     if (!media_devices_) {
       media_devices_ = MakeGarbageCollected<MediaDevices>(context);
       media_devices_->SetDispatcherHostForTesting(
-          dispatcher_host_->CreateInterfacePtrAndBind());
+          dispatcher_host_->CreatePendingRemoteAndBind());
     }
     return media_devices_;
   }
@@ -225,8 +234,9 @@ class MediaDevicesTest : public testing::Test {
 
   void SimulateDeviceChange() {
     DCHECK(listener());
-    listener()->OnDevicesChanged(MediaDeviceType::MEDIA_AUDIO_INPUT,
-                                 Vector<MediaDeviceInfoPtr>());
+    listener()->OnDevicesChanged(
+        blink::mojom::blink::MediaDeviceType::MEDIA_AUDIO_INPUT,
+        Vector<MediaDeviceInfoPtr>());
   }
 
   void DevicesEnumerated(const MediaDeviceInfoVector& device_infos) {
@@ -249,7 +259,7 @@ class MediaDevicesTest : public testing::Test {
     device_changed_ = false;
   }
 
-  mojom::blink::MediaDevicesListenerPtr& listener() {
+  mojo::Remote<mojom::blink::MediaDevicesListener>& listener() {
     return dispatcher_host_->listener();
   }
 
@@ -415,7 +425,7 @@ TEST_F(MediaDevicesTest, ObserveDeviceChangeEvent) {
   media_devices->StartObserving();
   platform()->RunUntilIdle();
   EXPECT_TRUE(listener());
-  listener().set_connection_error_handler(WTF::Bind(
+  listener().set_disconnect_handler(WTF::Bind(
       &MediaDevicesTest::OnListenerConnectionError, WTF::Unretained(this)));
 
   // Simulate a device change.

@@ -14,7 +14,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/content_browser_client.h"
-#include "content/public/browser/resource_request_info.h"
 #include "net/ssl/client_cert_store.h"
 #include "net/ssl/ssl_private_key.h"
 #include "net/url_request/url_request.h"
@@ -31,7 +30,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
 
   ~ClientCertificateDelegateImpl() override {
     if (!continue_called_) {
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&SSLClientAuthHandler::CancelCertificateSelection,
                          handler_));
@@ -43,7 +42,7 @@ class ClientCertificateDelegateImpl : public ClientCertificateDelegate {
                                scoped_refptr<net::SSLPrivateKey> key) override {
     DCHECK(!continue_called_);
     continue_called_ = true;
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SSLClientAuthHandler::ContinueWithCertificate, handler_,
                        std::move(cert), std::move(key)));
@@ -67,13 +66,12 @@ void TrySetCancellationCallback(
   if (handler) {
     handler->SetCancellationCallback(std::move(callback));
   } else if (callback) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(callback));
+    base::PostTask(FROM_HERE, {BrowserThread::UI}, std::move(callback));
   }
 }
 
 void SelectCertificateOnUIThread(
-    const ResourceRequestInfo::WebContentsGetter& wc_getter,
+    const WebContents::Getter& wc_getter,
     net::SSLCertRequestInfo* cert_request_info,
     net::ClientCertIdentityList client_certs,
     const base::WeakPtr<SSLClientAuthHandler>& handler) {
@@ -96,9 +94,9 @@ void SelectCertificateOnUIThread(
   // contrast, simply posting SetCancellationCallback to the IO thread would
   // result in |cancellation_callback| never being called if |handler| had
   // already been destroyed when the task ran.
-  base::PostTaskWithTraits(FROM_HERE, {BrowserThread::IO},
-                           base::BindOnce(&TrySetCancellationCallback, handler,
-                                          std::move(cancellation_callback)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&TrySetCancellationCallback, handler,
+                                std::move(cancellation_callback)));
 }
 
 }  // namespace
@@ -148,7 +146,7 @@ class SSLClientAuthHandler::Core : public base::RefCountedThreadSafe<Core> {
 
 SSLClientAuthHandler::SSLClientAuthHandler(
     std::unique_ptr<net::ClientCertStore> client_cert_store,
-    ResourceRequestInfo::WebContentsGetter web_contents_getter,
+    WebContents::Getter web_contents_getter,
     net::SSLCertRequestInfo* cert_request_info,
     Delegate* delegate)
     : web_contents_getter_(web_contents_getter),
@@ -162,8 +160,8 @@ SSLClientAuthHandler::SSLClientAuthHandler(
 
 SSLClientAuthHandler::~SSLClientAuthHandler() {
   if (cancellation_callback_) {
-    base::PostTaskWithTraits(FROM_HERE, {BrowserThread::UI},
-                             std::move(cancellation_callback_));
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   std::move(cancellation_callback_));
   }
 }
 
@@ -211,14 +209,14 @@ void SSLClientAuthHandler::DidGetClientCerts(
     // before checking ClientCertStore; ClientCertStore itself should probably
     // be handled by the embedder (https://crbug.com/394131), especially since
     // this doesn't work on Android (https://crbug.com/345641).
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
         base::BindOnce(&SSLClientAuthHandler::ContinueWithCertificate,
                        weak_factory_.GetWeakPtr(), nullptr, nullptr));
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&SelectCertificateOnUIThread, web_contents_getter_,
                      base::RetainedRef(cert_request_info_),

@@ -40,7 +40,7 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/system_connector.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/wake_lock_provider.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -258,8 +258,7 @@ constexpr StaticOobeScreenId EncryptionMigrationScreenView::kScreenId;
 EncryptionMigrationScreenHandler::EncryptionMigrationScreenHandler(
     JSCallsContainer* js_calls_container)
     : BaseScreenHandler(kScreenId, js_calls_container),
-      tick_clock_(base::DefaultTickClock::GetInstance()),
-      weak_ptr_factory_(this) {
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
   free_disk_space_fetcher_ = base::Bind(&base::SysInfo::AmountOfFreeDiskSpace,
                                         base::FilePath(kCheckStoragePath));
 }
@@ -482,7 +481,8 @@ void EncryptionMigrationScreenHandler::HandleOpenFeedbackDialog() {
       "Auto generated feedback for http://crbug.com/719266.\n"
       "(uniquifier:%s)",
       base::NumberToString(base::Time::Now().ToInternalValue()).c_str());
-  login_feedback_.reset(new LoginFeedback(Profile::FromWebUI(web_ui())));
+  login_feedback_ =
+      std::make_unique<LoginFeedback>(Profile::FromWebUI(web_ui()));
   login_feedback_->Request(description, base::Closure());
 }
 
@@ -520,8 +520,9 @@ void EncryptionMigrationScreenHandler::UpdateUIState(UIState state) {
 }
 
 void EncryptionMigrationScreenHandler::CheckAvailableStorage() {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE},
       free_disk_space_fetcher_,
       base::Bind(&EncryptionMigrationScreenHandler::OnGetAvailableStorage,
                  weak_ptr_factory_.GetWeakPtr()));
@@ -620,7 +621,8 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
   if (wake_lock_)
     return wake_lock_.get();
 
-  device::mojom::WakeLockRequest request = mojo::MakeRequest(&wake_lock_);
+  mojo::PendingReceiver<device::mojom::WakeLock> receiver =
+      wake_lock_.BindNewPipeAndPassReceiver();
 
   // Service manager connection might be not initialized in some testing
   // contexts.
@@ -629,13 +631,14 @@ device::mojom::WakeLock* EncryptionMigrationScreenHandler::GetWakeLock() {
 
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  device::mojom::WakeLockProviderPtr wake_lock_provider;
-  content::GetSystemConnector()->BindInterface(
-      device::mojom::kServiceName, mojo::MakeRequest(&wake_lock_provider));
+  mojo::Remote<device::mojom::WakeLockProvider> wake_lock_provider;
+  content::GetSystemConnector()->Connect(
+      device::mojom::kServiceName,
+      wake_lock_provider.BindNewPipeAndPassReceiver());
   wake_lock_provider->GetWakeLockWithoutContext(
       device::mojom::WakeLockType::kPreventAppSuspension,
       device::mojom::WakeLockReason::kOther,
-      "Encryption migration is in progress...", std::move(request));
+      "Encryption migration is in progress...", std::move(receiver));
   return wake_lock_.get();
 }
 

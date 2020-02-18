@@ -478,6 +478,10 @@ class Database(object):
               line.startswith('per-file')):
         continue
 
+      # If the line ends with a comment, strip the comment.
+      line, _delim, _comment = line.partition('#')
+      line = line.strip()
+
       if self.email_regexp.match(line) or line == EVERYONE:
         owners.add(line)
         continue
@@ -606,3 +610,12 @@ class Database(object):
         lambda owner: total_costs_by_owner[owner] == lowest_cost,
         total_costs_by_owner)
     return random.Random().choice(lowest_cost_owners)
+
+  def owners_rooted_at_file(self, filename):
+    """Returns a set of all owners transitively listed in filename.
+
+    This function returns a set of all the owners either listed in filename, or
+    in a file transitively included by filename. Lines that are not plain owners
+    (i.e. per-file owners) are ignored.
+    """
+    return self._read_just_the_owners(filename)

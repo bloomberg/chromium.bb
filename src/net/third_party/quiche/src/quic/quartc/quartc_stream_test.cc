@@ -55,7 +55,8 @@ class MockQuicSession : public QuicSession {
       : QuicSession(connection,
                     nullptr /*visitor*/,
                     config,
-                    CurrentSupportedVersions()),
+                    CurrentSupportedVersions(),
+                    /*num_expected_unidirectional_static_streams = */ 0),
         write_buffer_(write_buffer) {}
 
   ~MockQuicSession() override {}
@@ -93,7 +94,7 @@ class MockQuicSession : public QuicSession {
   const QuicCryptoStream* GetCryptoStream() const override { return nullptr; }
   QuicCryptoStream* GetMutableCryptoStream() override { return nullptr; }
   bool ShouldKeepConnectionAlive() const override {
-    return GetNumOpenDynamicStreams() > 0;
+    return GetNumActiveStreams() > 0;
   }
 
   // Called by QuicStream when they want to close stream.
@@ -107,9 +108,9 @@ class MockQuicSession : public QuicSession {
   // Tracks whether the stream is write blocked and its priority.
   void RegisterReliableStream(QuicStreamId stream_id,
                               spdy::SpdyPriority priority) {
-    write_blocked_streams()->RegisterStream(stream_id,
-                                            /*is_static_stream=*/false,
-                                            priority);
+    write_blocked_streams()->RegisterStream(
+        stream_id,
+        /*is_static_stream=*/false, spdy::SpdyStreamPrecedence(priority));
   }
 
   // The session take ownership of the stream.

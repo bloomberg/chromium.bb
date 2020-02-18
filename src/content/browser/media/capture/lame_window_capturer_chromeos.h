@@ -17,7 +17,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/media/capture/lame_capture_overlay_chromeos.h"
 #include "media/base/video_frame.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
 #include "ui/gfx/geometry/size.h"
@@ -133,7 +133,7 @@ class LameWindowCapturerChromeOS : public viz::mojom::FrameSinkVideoCapturer,
 
   // Used for cancelling any outstanding activities' results, once Stop() is
   // called and there is no longer a consumer to receive another frame.
-  base::WeakPtrFactory<LameWindowCapturerChromeOS> weak_factory_;
+  base::WeakPtrFactory<LameWindowCapturerChromeOS> weak_factory_{this};
 
   // Enforce a very low maximum frame rate (5 FPS), due to the lack of
   // design optimizations. See top-level class comments.

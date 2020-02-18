@@ -7,7 +7,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/internal/identity_manager/fake_profile_oauth2_token_service.h"
 #include "components/signin/public/base/test_signin_client.h"
@@ -139,7 +139,7 @@ void RunSetCookieCallbackWithSuccess(
     const std::string&,
     const net::CookieOptions&,
     network::mojom::CookieManager::SetCanonicalCookieCallback callback) {
-  std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus::INCLUDE);
+  std::move(callback).Run(net::CanonicalCookie::CookieInclusionStatus());
 }
 
 class MockCookieManager
@@ -217,7 +217,7 @@ class OAuthMultiloginHelperTest : public testing::Test {
     result_ = result;
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   bool callback_called_ = false;
   SetAccountsInCookieResult result_;

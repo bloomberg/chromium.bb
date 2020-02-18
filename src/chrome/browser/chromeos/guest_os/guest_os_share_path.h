@@ -21,9 +21,13 @@
 #include "chromeos/dbus/seneschal/seneschal_service.pb.h"
 #include "components/keyed_service/core/keyed_service.h"
 
+class PrefService;
 class Profile;
 
 namespace guest_os {
+
+using SuccessCallback =
+    base::OnceCallback<void(bool success, const std::string& failure_reason)>;
 
 struct SharedPathInfo {
   explicit SharedPathInfo(const std::string& vm_name);
@@ -41,13 +45,13 @@ class GuestOsSharePath : public KeyedService,
                          public drivefs::DriveFsHostObserver {
  public:
   using SharePathCallback =
-      base::OnceCallback<void(const base::FilePath&, bool, std::string)>;
-  using MountEventSeneschalCallback =
+      base::OnceCallback<void(const base::FilePath&, bool, const std::string&)>;
+  using SeneschalCallback =
       base::RepeatingCallback<void(const std::string& operation,
                                    const base::FilePath& cros_path,
                                    const base::FilePath& container_path,
                                    bool result,
-                                   std::string failure_reason)>;
+                                   const std::string& failure_reason)>;
   class Observer {
    public:
     virtual void OnUnshare(const std::string& vm_name,
@@ -86,7 +90,7 @@ class GuestOsSharePath : public KeyedService,
   void SharePaths(const std::string& vm_name,
                   std::vector<base::FilePath> paths,
                   bool persist,
-                  base::OnceCallback<void(bool, std::string)> callback);
+                  SuccessCallback callback);
 
   // Unshare specified |path| with |vm_name|.  If |unpersist| is set, the path
   // is removed from prefs, and will not be shared at container startup.
@@ -94,7 +98,7 @@ class GuestOsSharePath : public KeyedService,
   void UnsharePath(const std::string& vm_name,
                    const base::FilePath& path,
                    bool unpersist,
-                   base::OnceCallback<void(bool, std::string)> callback);
+                   SuccessCallback callback);
 
   // Returns true the first time it is called on this service.
   bool GetAndSetFirstForSession();
@@ -105,9 +109,8 @@ class GuestOsSharePath : public KeyedService,
 
   // Share all paths configured in prefs for the specified VM.
   // Called at container startup.  Callback is invoked once complete.
-  void SharePersistedPaths(
-      const std::string& vm_name,
-      base::OnceCallback<void(bool, std::string)> callback);
+  void SharePersistedPaths(const std::string& vm_name,
+                           SuccessCallback callback);
 
   // Save |path| into prefs for |vm_name|.
   void RegisterPersistedPath(const std::string& vm_name,
@@ -134,14 +137,9 @@ class GuestOsSharePath : public KeyedService,
   // Visible for testing.
   void PathDeleted(const base::FilePath& path);
 
-  // Don't run file watchers for tests.
-  void set_no_file_watchers_for_testing() {
-    no_file_watchers_for_testing_ = true;
-  }
-  // Allow seneschal callback for mount events to be overridden for testing.
-  void set_mount_event_seneschal_callback_for_testing(
-      MountEventSeneschalCallback callback) {
-    mount_event_seneschal_callback_ = std::move(callback);
+  // Allow seneschal callback to be overridden for testing.
+  void set_seneschal_callback_for_testing(SeneschalCallback callback) {
+    seneschal_callback_ = std::move(callback);
   }
 
  private:
@@ -150,18 +148,21 @@ class GuestOsSharePath : public KeyedService,
                               bool persist,
                               SharePathCallback callback);
 
-  void CallSeneschalUnsharePath(
-      const std::string& vm_name,
-      const base::FilePath& path,
-      base::OnceCallback<void(bool, std::string)> callback);
+  void CallSeneschalUnsharePath(const std::string& vm_name,
+                                const base::FilePath& path,
+                                SuccessCallback callback);
 
   void StartFileWatcher(const base::FilePath& path);
 
   // Callback for FilePathWatcher.
   void OnFileChanged(const base::FilePath& path, bool error);
 
-  // Blocking function to check if a path is deleted.
-  void CheckIfPathDeleted(const base::FilePath& path);
+  // Gets the Volume mount that this path belongs to on UI thread.
+  base::FilePath GetVolumeMountOnUIThread(const base::FilePath& path);
+
+  // Blocking function to check if the mount_path of a path is removed.
+  void CheckIfVolumeMountRemoved(const base::FilePath& path,
+                                 const base::FilePath& mount_path);
 
   // Returns info for specified path or nullptr if not found.
   SharedPathInfo* FindSharedPathInfo(const base::FilePath& path);
@@ -170,11 +171,10 @@ class GuestOsSharePath : public KeyedService,
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
   bool first_for_session_ = true;
 
-  // Allow callback for mount event to be overidden for testing.
-  MountEventSeneschalCallback mount_event_seneschal_callback_;
+  // Allow seneschal callback to be overridden for testing.
+  SeneschalCallback seneschal_callback_;
   base::ObserverList<Observer>::Unchecked observers_;
   std::map<base::FilePath, SharedPathInfo> shared_paths_;
-  bool no_file_watchers_for_testing_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(GuestOsSharePath);
 };  // class

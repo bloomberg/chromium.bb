@@ -29,7 +29,7 @@ import {
 
 // 0.5 Makes the horizontal lines sharp.
 const MARGIN_TOP = 4.5;
-const RECT_HEIGHT = 30;
+const RECT_HEIGHT = 30.5;
 
 class CpuFreqTrack extends Track<Config, Data> {
   static readonly kind = CPU_FREQ_TRACK_KIND;
@@ -47,15 +47,15 @@ class CpuFreqTrack extends Track<Config, Data> {
     super(trackState);
   }
 
+  getHeight() {
+    return MARGIN_TOP + RECT_HEIGHT - 1;
+  }
+
   renderCanvas(ctx: CanvasRenderingContext2D): void {
     // TODO: fonts and colors should come from the CSS and not hardcoded here.
     const {timeScale, visibleWindowTime} = globals.frontendLocalState;
     const data = this.data();
 
-    if (this.shouldRequestData(
-            data, visibleWindowTime.start, visibleWindowTime.end)) {
-      globals.requestTrackData(this.trackState.id);
-    }
     if (data === undefined) return;  // Can't possibly draw anything.
 
     assertTrue(data.tsStarts.length === data.freqKHz.length);
@@ -183,6 +183,7 @@ class CpuFreqTrack extends Track<Config, Data> {
     // show a gray rectangle with a "Loading..." label.
     checkerboardExcept(
         ctx,
+        this.getHeight(),
         timeScale.timeToPx(visibleWindowTime.start),
         timeScale.timeToPx(visibleWindowTime.end),
         timeScale.timeToPx(data.start),

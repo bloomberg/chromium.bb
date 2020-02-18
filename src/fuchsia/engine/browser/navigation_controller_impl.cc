@@ -9,7 +9,9 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/was_activated_option.h"
+#include "content/public/common/was_activated_option.mojom.h"
+#include "fuchsia/base/string_util.h"
+#include "net/http/http_util.h"
 #include "ui/base/page_transition_types.h"
 
 namespace {
@@ -62,12 +64,26 @@ void NavigationControllerImpl::SetEventListener(
   previous_navigation_state_ = {};
   pending_navigation_event_ = {};
 
-  if (listener) {
-    navigation_listener_.Bind(std::move(listener));
-    navigation_listener_.set_error_handler(
-        [this](zx_status_t status) { SetEventListener(nullptr); });
-  } else {
+  // Simply unbind if no new listener was set.
+  if (!listener) {
     navigation_listener_.Unbind();
+    return;
+  }
+
+  navigation_listener_.Bind(std::move(listener));
+  navigation_listener_.set_error_handler(
+      [this](zx_status_t status) { SetEventListener(nullptr); });
+
+  // Immediately send the current navigation state, even if it is empty.
+  if (web_contents_->GetController().GetVisibleEntry() == nullptr) {
+    waiting_for_navigation_event_ack_ = true;
+    navigation_listener_->OnNavigationStateChanged(
+        fuchsia::web::NavigationState(), [this]() {
+          waiting_for_navigation_event_ack_ = false;
+          MaybeSendNavigationEvent();
+        });
+  } else {
+    OnNavigationEntryChanged();
   }
 }
 
@@ -126,13 +142,15 @@ void NavigationControllerImpl::LoadUrl(std::string url,
     std::vector<std::string> extra_headers;
     extra_headers.reserve(params.headers().size());
     for (const auto& header : params.headers()) {
-      // TODO(crbug.com/964732): Check there is no colon in |header_name|.
-      base::StringPiece header_name(
-          reinterpret_cast<const char*>(header.name.data()),
-          header.name.size());
-      base::StringPiece header_value(
-          reinterpret_cast<const char*>(header.value.data()),
-          header.value.size());
+      base::StringPiece header_name = cr_fuchsia::BytesAsString(header.name);
+      base::StringPiece header_value = cr_fuchsia::BytesAsString(header.value);
+      if (!net::HttpUtil::IsValidHeaderName(header_name) ||
+          !net::HttpUtil::IsValidHeaderValue(header_value)) {
+        result.set_err(fuchsia::web::NavigationControllerError::INVALID_HEADER);
+        callback(std::move(result));
+        return;
+      }
+
       extra_headers.emplace_back(
           base::StrCat({header_name, ": ", header_value}));
     }
@@ -145,9 +163,9 @@ void NavigationControllerImpl::LoadUrl(std::string url,
   params_converted.transition_type = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
   if (params.has_was_user_activated() && params.was_user_activated()) {
-    params_converted.was_activated = content::WasActivatedOption::kYes;
+    params_converted.was_activated = content::mojom::WasActivatedOption::kYes;
   } else {
-    params_converted.was_activated = content::WasActivatedOption::kNo;
+    params_converted.was_activated = content::mojom::WasActivatedOption::kNo;
   }
 
   web_contents_->GetController().LoadURLWithParams(params_converted);

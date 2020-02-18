@@ -16,7 +16,7 @@
 
 #include "src/trace_processor/args_table.h"
 
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -60,7 +60,7 @@ ArgsTable::ArgsTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void ArgsTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<ArgsTable>(db, storage, "args");
+  SqliteTable::Register<ArgsTable>(db, storage, "args");
 }
 
 StorageSchema ArgsTable::CreateStorageSchema() {

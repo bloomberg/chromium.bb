@@ -7,8 +7,8 @@
 
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "chrome/browser/chromeos/arc/arc_migration_constants.h"
 #include "chrome/browser/chromeos/login/screens/encryption_migration_mode.h"
 #include "chrome/browser/chromeos/login/users/mock_user_manager.h"
@@ -26,6 +26,7 @@
 #include "components/user_manager/scoped_user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "content/public/test/test_web_ui.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -47,7 +48,8 @@ class FakeWakeLock : public device::mojom::WakeLock {
   // Implement device::mojom::WakeLock:
   void RequestWakeLock() override { has_wakelock_ = true; }
   void CancelWakeLock() override { has_wakelock_ = false; }
-  void AddClient(device::mojom::WakeLockRequest request) override {}
+  void AddClient(
+      mojo::PendingReceiver<device::mojom::WakeLock> receiver) override {}
   void ChangeType(device::mojom::WakeLockType type,
                   ChangeTypeCallback callback) override {
     NOTIMPLEMENTED();
@@ -167,7 +169,7 @@ class EncryptionMigrationScreenHandlerTest : public testing::Test {
 
  protected:
   // Must be the first member.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_enabler_;
   FakeCryptohomeClient* fake_cryptohome_client_ = nullptr;  // unowned
@@ -218,7 +220,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigration) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   EXPECT_TRUE(
       encryption_migration_screen_handler_->fake_wake_lock()->HasWakeLock());
@@ -247,7 +249,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, ResumeMinimalMigration) {
       EncryptionMigrationMode::RESUME_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   fake_cryptohome_client_->NotifyDircryptoMigrationProgress(
       cryptohome::DircryptoMigrationStatus::DIRCRYPTO_MIGRATION_SUCCESS,
@@ -272,7 +274,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationSlow) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));
@@ -297,7 +299,7 @@ TEST_F(EncryptionMigrationScreenHandlerTest, MinimalMigrationFails) {
       EncryptionMigrationMode::START_MINIMAL_MIGRATION);
   encryption_migration_screen_handler_->SetupInitialView();
 
-  scoped_task_environment_.RunUntilIdle();
+  task_environment_.RunUntilIdle();
 
   encryption_migration_screen_handler_->testing_tick_clock()->Advance(
       base::TimeDelta::FromMinutes(1));

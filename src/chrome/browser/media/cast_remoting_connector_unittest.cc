@@ -18,9 +18,9 @@
 #include "chrome/common/media_router/media_source.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread_bundle.h"
-#include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
-#include "media/mojo/interfaces/remoting.mojom.h"
+#include "content/public/test/browser_task_environment.h"
+#include "media/mojo/mojom/mirror_service_remoting.mojom.h"
+#include "media/mojo/mojom/remoting.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -277,7 +277,7 @@ class CastRemotingConnectorTest : public ::testing::Test {
   }
 
  private:
-  content::TestBrowserThreadBundle browser_thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   FakeMediaRouter media_router_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
   std::unique_ptr<CastRemotingConnector> connector_;

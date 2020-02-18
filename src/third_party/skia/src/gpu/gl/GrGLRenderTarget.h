@@ -11,8 +11,7 @@
 
 #include "include/core/SkScalar.h"
 #include "include/gpu/GrBackendSurface.h"
-#include "include/gpu/GrRenderTarget.h"
-#include "src/gpu/gl/GrGLIRect.h"
+#include "src/gpu/GrRenderTarget.h"
 
 class GrGLCaps;
 class GrGLGpu;
@@ -26,7 +25,7 @@ public:
     // Gr doesn't know how to resolve it.
     enum { kUnresolvableFBOID = 0 };
 
-    struct IDDesc {
+    struct IDs {
         GrGLuint                   fRTFBOID;
         GrBackendObjectOwnership   fRTFBOOwnership;
         GrGLuint                   fTexFBOID;
@@ -34,10 +33,11 @@ public:
     };
 
     static sk_sp<GrGLRenderTarget> MakeWrapped(GrGLGpu*,
-                                               const GrSurfaceDesc&,
+                                               const SkISize&,
+                                               GrGLFormat,
+                                               GrPixelConfig,
                                                int sampleCount,
-                                               GrGLenum format,
-                                               const IDDesc&,
+                                               const IDs&,
                                                int stencilBits);
 
     // The following two functions return the same ID when a texture/render target is not
@@ -50,10 +50,13 @@ public:
     // override of GrRenderTarget
     ResolveType getResolveType() const override {
         if (this->numSamples() <= 1 || fRTFBOID == fTexFBOID) {  // Also catches FBO 0.
+            SkASSERT(!this->requiresManualMSAAResolve());
             return kAutoResolves_ResolveType;
         } else if (kUnresolvableFBOID == fTexFBOID) {
+            SkASSERT(!this->requiresManualMSAAResolve());
             return kCantResolve_ResolveType;
         } else {
+            SkASSERT(this->requiresManualMSAAResolve());
             return kCanResolve_ResolveType;
         }
     }
@@ -68,12 +71,18 @@ public:
     // components seperately.
     void dumpMemoryStatistics(SkTraceMemoryDump* traceMemoryDump) const override;
 
+    GrGLFormat format() const { return fRTFormat; }
+
 protected:
     // Constructor for subclasses.
-    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, int sampleCount, GrGLenum format,
-                     const IDDesc&);
+    GrGLRenderTarget(GrGLGpu*,
+                     const SkISize&,
+                     GrGLFormat,
+                     GrPixelConfig,
+                     int sampleCount,
+                     const IDs&);
 
-    void init(const GrSurfaceDesc&, GrGLenum format, const IDDesc&);
+    void init(GrGLFormat, const IDs&);
 
     void onAbandon() override;
     void onRelease() override;
@@ -82,10 +91,15 @@ protected:
 
 private:
     // Constructor for instances wrapping backend objects.
-    GrGLRenderTarget(GrGLGpu*, const GrSurfaceDesc&, int sampleCount, GrGLenum format,
-                     const IDDesc&, GrGLStencilAttachment*);
+    GrGLRenderTarget(GrGLGpu*,
+                     const SkISize&,
+                     GrGLFormat,
+                     GrPixelConfig,
+                     int sampleCount,
+                     const IDs&,
+                     GrGLStencilAttachment*);
 
-    void setFlags(const GrGLCaps&, const IDDesc&);
+    void setFlags(const GrGLCaps&, const IDs&);
 
     GrGLGpu* getGLGpu() const;
     bool completeStencilAttachment() override;
@@ -99,7 +113,7 @@ private:
     GrGLuint    fRTFBOID;
     GrGLuint    fTexFBOID;
     GrGLuint    fMSColorRenderbufferID;
-    GrGLenum    fRTFormat;
+    GrGLFormat  fRTFormat;
 
     GrBackendObjectOwnership fRTFBOOwnership;
 

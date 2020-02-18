@@ -110,8 +110,14 @@ namespace audio {
 class OutputDevice;
 }
 namespace blink {
+class RTCVideoDecoderAdapter;
+class RTCVideoEncoder;
 class SourceStream;
 class VideoFrameResourceProvider;
+class WorkerThread;
+namespace scheduler {
+class WorkerThread;
+}
 }
 namespace cc {
 class CompletionEvent;
@@ -142,8 +148,6 @@ class InProcessUtilityThread;
 class NestedMessagePumpAndroid;
 class RenderWidgetHostViewMac;
 class RTCVideoDecoder;
-class RTCVideoDecoderAdapter;
-class RTCVideoEncoder;
 class SandboxHostLinux;
 class ScopedAllowWaitForDebugURL;
 class ServiceWorkerContextClient;
@@ -275,6 +279,7 @@ class JavaHandlerThread;
 }
 
 namespace internal {
+class JobTaskSource;
 class TaskTracker;
 }
 
@@ -392,6 +397,8 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class SimpleThread;
   friend class base::GetAppOutputScopedAllowBaseSyncPrimitives;
   friend class blink::SourceStream;
+  friend class blink::WorkerThread;
+  friend class blink::scheduler::WorkerThread;
   friend class chrome_cleaner::SystemReportComponent;
   friend class content::BrowserMainLoop;
   friend class content::BrowserProcessSubThread;
@@ -450,16 +457,17 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitivesOutsideBlockingScope {
   friend class audio::OutputDevice;
   friend class base::sequence_manager::internal::TaskQueueImpl;
   friend class base::FileDescriptorWatcher;
+  friend class base::internal::JobTaskSource;
   friend class base::MessageLoopImpl;
   friend class base::ScopedAllowThreadRecallForStackSamplingProfiler;
   friend class base::StackSamplingProfiler;
+  friend class blink::RTCVideoDecoderAdapter;
+  friend class blink::RTCVideoEncoder;
   friend class cc::TileTaskManagerImpl;
   friend class content::CategorizedWorkerPool;
   friend class content::DesktopCaptureDevice;
   friend class content::InProcessUtilityThread;
   friend class content::RTCVideoDecoder;
-  friend class content::RTCVideoDecoderAdapter;
-  friend class content::RTCVideoEncoder;
   friend class content::SandboxHostLinux;
   friend class content::ScopedAllowWaitForDebugURL;
   friend class content::SynchronousCompositor;

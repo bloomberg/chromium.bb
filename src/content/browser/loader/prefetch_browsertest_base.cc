@@ -8,7 +8,6 @@
 #include "base/callback.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/post_task.h"
-#include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_package/signed_exchange_handler.h"
@@ -28,8 +27,12 @@ PrefetchBrowserTestBase::ResponseEntry::ResponseEntry() = default;
 PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(
     const std::string& content,
     const std::string& content_type,
-    const std::vector<std::pair<std::string, std::string>>& headers)
-    : content(content), content_type(content_type), headers(headers) {}
+    const std::vector<std::pair<std::string, std::string>>& headers,
+    net::HttpStatusCode code)
+    : content(content),
+      content_type(content_type),
+      headers(headers),
+      code(code) {}
 
 PrefetchBrowserTestBase::ResponseEntry::ResponseEntry(ResponseEntry&& other) =
     default;
@@ -57,21 +60,10 @@ void PrefetchBrowserTestBase::SetUpOnMainThread() {
   StoragePartitionImpl* partition = static_cast<StoragePartitionImpl*>(
       BrowserContext::GetDefaultStoragePartition(
           shell()->web_contents()->GetBrowserContext()));
-  if (NavigationURLLoaderImpl::IsNavigationLoaderOnUIEnabled()) {
-    partition->GetPrefetchURLLoaderService()
-        ->RegisterPrefetchLoaderCallbackForTest(base::BindRepeating(
-            &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
-            base::Unretained(this)));
-  } else {
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(
-            &PrefetchURLLoaderService::RegisterPrefetchLoaderCallbackForTest,
-            base::RetainedRef(partition->GetPrefetchURLLoaderService()),
-            base::BindRepeating(
-                &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
-                base::Unretained(this))));
-  }
+  partition->GetPrefetchURLLoaderService()
+      ->RegisterPrefetchLoaderCallbackForTest(base::BindRepeating(
+          &PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled,
+          base::Unretained(this)));
 }
 
 void PrefetchBrowserTestBase::RegisterResponse(const std::string& url,
@@ -85,7 +77,7 @@ PrefetchBrowserTestBase::ServeResponses(
   auto found = response_map_.find(request.relative_url);
   if (found != response_map_.end()) {
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
-    response->set_code(net::HTTP_OK);
+    response->set_code(found->second.code);
     response->set_content(found->second.content);
     response->set_content_type(found->second.content_type);
     for (const auto& header : found->second.headers) {
@@ -97,8 +89,7 @@ PrefetchBrowserTestBase::ServeResponses(
 }
 
 void PrefetchBrowserTestBase::OnPrefetchURLLoaderCalled() {
-  DCHECK_CURRENTLY_ON(
-      NavigationURLLoaderImpl::GetLoaderRequestControllerThreadID());
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::AutoLock lock(lock_);
   prefetch_url_loader_called_++;
 }

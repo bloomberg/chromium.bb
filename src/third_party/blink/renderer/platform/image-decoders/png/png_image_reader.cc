@@ -630,19 +630,20 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
     } else if (IsChunk(chunk, "fdAT")) {
       ignore_animation_ = true;
     } else {
-      bool ihdr = IsChunk(chunk, "IHDR");
-      auto is_necessary = [](const png_byte* chunk) {
-        for (const char* tag :
-             {"PLTE", "IEND", "tRNS", "cHRM", "iCCP", "sRGB", "gAMA"}) {
+      auto is_necessary_ancillary = [](const png_byte* chunk) {
+        for (const char* tag : {"tRNS", "cHRM", "iCCP", "sRGB", "gAMA"}) {
           if (IsChunk(chunk, tag))
             return true;
         }
         return false;
       };
-      if (ihdr || is_necessary(chunk)) {
+      // Determine if the chunk type of |chunk| is "critical".
+      // (Ancillary bit == 0; the chunk is required for display).
+      bool is_critical_chunk = (chunk[4] & 1u << 5) == 0;
+      if (is_critical_chunk || is_necessary_ancillary(chunk)) {
         png_process_data(png_, info_, const_cast<png_byte*>(chunk), 8);
         ProcessData(reader, read_offset_ + 8, length + 4);
-        if (ihdr) {
+        if (IsChunk(chunk, "IHDR")) {
           parsed_ihdr_ = true;
           ihdr_offset_ = read_offset_;
           width_ = png_get_image_width(png_, info_);
@@ -688,8 +689,18 @@ bool PNGImageReader::ParseFrameInfo(const png_byte* data) {
     return false;
   if (!frame_width || !frame_height)
     return false;
-  if (x_offset + frame_width > width_ || y_offset + frame_height > height_)
-    return false;
+  {
+    png_uint_32 frame_right;
+    if (!base::CheckAdd(x_offset, frame_width).AssignIfValid(&frame_right) ||
+        frame_right > width_)
+      return false;
+  }
+  {
+    png_uint_32 frame_bottom;
+    if (!base::CheckAdd(y_offset, frame_height).AssignIfValid(&frame_bottom) ||
+        frame_bottom > height_)
+      return false;
+  }
 
   new_frame_.frame_rect =
       IntRect(x_offset, y_offset, frame_width, frame_height);

@@ -9,7 +9,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/permission_broker/fake_permission_broker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,8 +27,8 @@ void CopyFirewallHole(base::RunLoop* run_loop,
 class FirewallHoleTest : public testing::Test {
  public:
   FirewallHoleTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(
+            base::test::SingleThreadTaskEnvironment::MainThreadType::UI) {}
   ~FirewallHoleTest() override = default;
 
   void SetUp() override { PermissionBrokerClient::InitializeFake(); }
@@ -36,7 +36,7 @@ class FirewallHoleTest : public testing::Test {
   void TearDown() override { PermissionBrokerClient::Shutdown(); }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::SingleThreadTaskEnvironment task_environment_;
 };
 
 TEST_F(FirewallHoleTest, GrantTcpPortAccess) {

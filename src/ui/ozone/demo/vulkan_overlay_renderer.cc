@@ -48,8 +48,7 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
       window_surface_(std::move(window_surface)),
       surface_factory_ozone_(surface_factory_ozone),
       vulkan_implementation_(vulkan_implementation),
-      overlay_surface_(std::move(overlay_surface)),
-      weak_ptr_factory_(this) {}
+      overlay_surface_(std::move(overlay_surface)) {}
 
 VulkanOverlayRenderer::~VulkanOverlayRenderer() {
   DestroyBuffers();
@@ -115,7 +114,7 @@ bool VulkanOverlayRenderer::Initialize() {
            VK_SUCCESS);
 
   command_pool_ = std::make_unique<gpu::VulkanCommandPool>(device_queue_.get());
-  CHECK(command_pool_->Initialize());
+  CHECK(command_pool_->Initialize(false /* use_protected_memory */));
 
   RecreateBuffers();
 
@@ -388,7 +387,8 @@ VulkanOverlayRenderer::Buffer::Create(
   }
 
   auto command_buffer = std::make_unique<gpu::VulkanCommandBuffer>(
-      vulkan_device_queue, vulkan_command_pool, true /* primary */);
+      vulkan_device_queue, vulkan_command_pool, true /* primary */,
+      false /* use_protected_memory */);
   CHECK(command_buffer->Initialize());
 
   VkFence fence = vulkan_implementation->CreateVkFenceForGpuFence(vk_device);

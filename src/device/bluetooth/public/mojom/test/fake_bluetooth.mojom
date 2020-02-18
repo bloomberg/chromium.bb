@@ -143,10 +143,14 @@ interface FakeCentral {
                                  string name,
                                  array<UUID> known_service_uuids) => ();
 
-  // Simulates an advertisement packet described in |result| being received by the
-  // central. If the central is currently scanning, the detected device will be
-  // added to the list of detected devices. Otherwise, the call will DCHECK.
+  // Simulates an advertisement packet described in |result| being received by
+  // the central. If the central is currently scanning, the detected device will
+  // be added to the list of detected devices. Otherwise, the device will be
+  // ignored.
   SimulateAdvertisementReceived(ScanResult result) => ();
+
+  // Sets the state of this fake Central to |state|.
+  SetState(CentralState state) => ();
 
   // Sets the next GATT Connection request response for peripheral with
   // |address| to |code|. |code| could be an HCI Error Code from

@@ -19,10 +19,10 @@ class DummyObserver {
   DummyObserver() {}
   ~DummyObserver() {}
 
-  MOCK_METHOD1(NotifyAlways, void(DummyNode*));
-  MOCK_METHOD1(NotifyOnlyOnChanges, void(DummyNode*));
   MOCK_METHOD1(NotifyAlwaysConst, void(const DummyNode*));
   MOCK_METHOD1(NotifyOnlyOnChangesConst, void(const DummyNode*));
+  MOCK_METHOD2(NotifyOnlyOnChangesWithPreviousValueConst,
+               void(const DummyNode*, bool));
 };
 
 class DummyNode {
@@ -45,6 +45,9 @@ class DummyNode {
   bool observed_only_on_changes() const {
     return observed_only_on_changes_.value();
   }
+  bool observed_only_on_changes_with_previous_value() const {
+    return observed_only_on_changes_with_previous_value_.value();
+  }
 
   void SetObservedAlways(bool value) {
     observed_always_.SetAndNotify(this, value);
@@ -52,20 +55,24 @@ class DummyNode {
   bool SetObservedOnlyOnChanges(bool value) {
     return observed_only_on_changes_.SetAndMaybeNotify(this, value);
   }
+  bool SetObservedOnlyOnChangesWithPreviousValue(bool value) {
+    return observed_only_on_changes_with_previous_value_.SetAndMaybeNotify(
+        this, value);
+  }
 
  private:
   using ObservedProperty =
-      ObservedPropertyImpl<DummyNode, DummyObserver, DummyNode, DummyObserver>;
+      ObservedPropertyImpl<DummyNode, DummyNode, DummyObserver>;
 
-  ObservedProperty::NotifiesAlways<bool,
-                                   &DummyObserver::NotifyAlways,
-                                   &DummyObserver::NotifyAlwaysConst>
+  ObservedProperty::NotifiesAlways<bool, &DummyObserver::NotifyAlwaysConst>
       observed_always_{false};
-  ObservedProperty::NotifiesOnlyOnChanges<
+  ObservedProperty::
+      NotifiesOnlyOnChanges<bool, &DummyObserver::NotifyOnlyOnChangesConst>
+          observed_only_on_changes_{false};
+  ObservedProperty::NotifiesOnlyOnChangesWithPreviousValue<
       bool,
-      &DummyObserver::NotifyOnlyOnChanges,
-      &DummyObserver::NotifyOnlyOnChangesConst>
-      observed_only_on_changes_{false};
+      &DummyObserver::NotifyOnlyOnChangesWithPreviousValueConst>
+      observed_only_on_changes_with_previous_value_{false};
 
   base::ObserverList<DummyObserver>::Unchecked observers_;
   std::vector<DummyObserver*> new_observers_;
@@ -90,19 +97,16 @@ class GraphPropertiesTest : public ::testing::Test {
 TEST_F(GraphPropertiesTest, ObservedAlwaysProperty) {
   EXPECT_EQ(false, node_.observed_always());
 
-  EXPECT_CALL(observer_, NotifyAlways(&node_));
   EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(false);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(false, node_.observed_always());
 
-  EXPECT_CALL(observer_, NotifyAlways(&node_));
   EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(true);
   testing::Mock::VerifyAndClear(&observer_);
   EXPECT_EQ(true, node_.observed_always());
 
-  EXPECT_CALL(observer_, NotifyAlways(&node_));
   EXPECT_CALL(observer_, NotifyAlwaysConst(&node_));
   node_.SetObservedAlways(true);
   testing::Mock::VerifyAndClear(&observer_);
@@ -117,7 +121,6 @@ TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesProperty) {
   EXPECT_FALSE(node_.SetObservedOnlyOnChanges(false));
   EXPECT_EQ(false, node_.observed_only_on_changes());
 
-  EXPECT_CALL(observer_, NotifyOnlyOnChanges(&node_));
   EXPECT_CALL(observer_, NotifyOnlyOnChangesConst(&node_));
   EXPECT_TRUE(node_.SetObservedOnlyOnChanges(true));
   testing::Mock::VerifyAndClear(&observer_);
@@ -125,6 +128,24 @@ TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesProperty) {
 
   EXPECT_FALSE(node_.SetObservedOnlyOnChanges(true));
   EXPECT_EQ(true, node_.observed_only_on_changes());
+
+  testing::Mock::VerifyAndClear(&observer_);
+}
+
+TEST_F(GraphPropertiesTest, ObservedOnlyOnChangesWithPreviousValueProperty) {
+  EXPECT_FALSE(node_.observed_only_on_changes_with_previous_value());
+
+  EXPECT_FALSE(node_.SetObservedOnlyOnChanges(false));
+  EXPECT_EQ(false, node_.observed_only_on_changes_with_previous_value());
+
+  EXPECT_CALL(observer_,
+              NotifyOnlyOnChangesWithPreviousValueConst(&node_, false));
+  EXPECT_TRUE(node_.SetObservedOnlyOnChangesWithPreviousValue(true));
+  testing::Mock::VerifyAndClear(&observer_);
+  EXPECT_EQ(true, node_.observed_only_on_changes_with_previous_value());
+
+  EXPECT_FALSE(node_.SetObservedOnlyOnChangesWithPreviousValue(true));
+  EXPECT_EQ(true, node_.observed_only_on_changes_with_previous_value());
 
   testing::Mock::VerifyAndClear(&observer_);
 }

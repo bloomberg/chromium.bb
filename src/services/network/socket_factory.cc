@@ -21,7 +21,6 @@
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/url_request/url_request_context.h"
-#include "services/network/ssl_config_type_converter.h"
 #include "services/network/tls_client_socket.h"
 #include "services/network/udp_socket.h"
 
@@ -43,9 +42,9 @@ SocketFactory::SocketFactory(net::NetLog* net_log,
 SocketFactory::~SocketFactory() {}
 
 void SocketFactory::CreateUDPSocket(mojom::UDPSocketRequest request,
-                                    mojom::UDPSocketReceiverPtr receiver) {
+                                    mojom::UDPSocketListenerPtr listener) {
   udp_socket_bindings_.AddBinding(
-      std::make_unique<UDPSocket>(std::move(receiver), net_log_),
+      std::make_unique<UDPSocket>(std::move(listener), net_log_),
       std::move(request));
 }
 

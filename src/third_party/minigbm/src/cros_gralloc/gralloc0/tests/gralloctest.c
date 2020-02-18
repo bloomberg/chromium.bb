@@ -95,7 +95,7 @@ static struct combinations combos[] = {
 // clang-format on
 
 struct grallocinfo {
-	buffer_handle_t handle;     /* handle to the buffer */
+	buffer_handle_t handle;	    /* handle to the buffer */
 	int w;			    /* width  of buffer */
 	int h;			    /* height of buffer */
 	int format;		    /* format of the buffer */

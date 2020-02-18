@@ -15,7 +15,7 @@
 #include "components/drive/chromeos/resource_metadata.h"
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_system_core_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace drive {
@@ -81,7 +81,7 @@ class DriveFileUtilTest : public testing::Test {
   }
 
   base::ScopedTempDir temp_dir_;
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   std::unique_ptr<ResourceMetadataStorage, test_util::DestroyHelperForTests>
       metadata_storage_;
   std::unique_ptr<FakeFreeDiskSpaceGetter> fake_free_disk_space_getter_;

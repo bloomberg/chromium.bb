@@ -53,6 +53,9 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("CROSTINI_ENABLED",
                    crostini::IsCrostiniEnabled(
                        Profile::FromBrowserContext(browser_context())));
+  dict->SetBoolean("CROSTINI_ROOT_ACCESS_ALLOWED",
+                   crostini::IsCrostiniRootAccessAllowed(
+                       Profile::FromBrowserContext(browser_context())));
   dict->SetBoolean("DRIVE_FS_ENABLED",
                    base::FeatureList::IsEnabled(chromeos::features::kDriveFs));
   dict->SetBoolean("FEEDBACK_PANEL_ENABLED",
@@ -61,12 +64,11 @@ ExtensionFunction::ResponseAction FileManagerPrivateGetStringsFunction::Run() {
   dict->SetBoolean("FORMAT_DIALOG_ENABLED",
                    base::FeatureList::IsEnabled(
                        chromeos::features::kEnableFileManagerFormatDialog));
-  dict->SetBoolean(
-      "MY_FILES_VOLUME_ENABLED",
-      base::FeatureList::IsEnabled(chromeos::features::kMyFilesVolume));
   dict->SetBoolean("PLUGIN_VM_ENABLED",
                    plugin_vm::IsPluginVmEnabled(
                        Profile::FromBrowserContext(browser_context())));
+  dict->SetBoolean("FILES_NG_ENABLED",
+                   base::FeatureList::IsEnabled(chromeos::features::kFilesNG));
   dict->SetString("UI_LOCALE", extension_l10n_util::CurrentLocaleOrDefault());
 
   return RespondNow(OneArgument(std::move(dict)));

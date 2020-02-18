@@ -17,8 +17,8 @@
 #include "src/trace_processor/thread_table.h"
 
 #include "perfetto/base/logging.h"
-#include "src/trace_processor/query_constraints.h"
-#include "src/trace_processor/sqlite_utils.h"
+#include "src/trace_processor/sqlite/query_constraints.h"
+#include "src/trace_processor/sqlite/sqlite_utils.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -33,25 +33,26 @@ ThreadTable::ThreadTable(sqlite3*, const TraceStorage* storage)
     : storage_(storage) {}
 
 void ThreadTable::RegisterTable(sqlite3* db, const TraceStorage* storage) {
-  Table::Register<ThreadTable>(db, storage, "thread");
+  SqliteTable::Register<ThreadTable>(db, storage, "thread");
 }
 
 util::Status ThreadTable::Init(int, const char* const*, Schema* schema) {
   *schema = Schema(
       {
-          Table::Column(Column::kUtid, "utid", ColumnType::kInt),
-          Table::Column(Column::kUpid, "upid", ColumnType::kInt),
-          Table::Column(Column::kName, "name", ColumnType::kString),
-          Table::Column(Column::kTid, "tid", ColumnType::kInt),
-          Table::Column(Column::kStartTs, "start_ts", ColumnType::kLong),
-          Table::Column(Column::kEndTs, "end_ts", ColumnType::kLong),
+          SqliteTable::Column(Column::kUtid, "utid", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kUpid, "upid", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kName, "name", SqlValue::Type::kString),
+          SqliteTable::Column(Column::kTid, "tid", SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kStartTs, "start_ts",
+                              SqlValue::Type::kLong),
+          SqliteTable::Column(Column::kEndTs, "end_ts", SqlValue::Type::kLong),
       },
       {Column::kUtid});
   return util::OkStatus();
 }
 
-std::unique_ptr<Table::Cursor> ThreadTable::CreateCursor() {
-  return std::unique_ptr<Table::Cursor>(new Cursor(this));
+std::unique_ptr<SqliteTable::Cursor> ThreadTable::CreateCursor() {
+  return std::unique_ptr<SqliteTable::Cursor>(new Cursor(this));
 }
 
 int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
@@ -69,7 +70,7 @@ int ThreadTable::BestIndex(const QueryConstraints& qc, BestIndexInfo* info) {
 }
 
 ThreadTable::Cursor::Cursor(ThreadTable* table)
-    : Table::Cursor(table), storage_(table->storage_), table_(table) {}
+    : SqliteTable::Cursor(table), storage_(table->storage_), table_(table) {}
 
 int ThreadTable::Cursor::Filter(const QueryConstraints& qc,
                                 sqlite3_value** argv) {

@@ -20,8 +20,15 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/bubble/bubble_dialog_delegate_view.h"
+#include "ui/views/controls/button/button_controller.h"
 #include "ui/views/controls/focus_ring.h"
 #include "ui/views/style/platform_style.h"
+
+std::unique_ptr<views::Border>
+PageActionIconView::Delegate::GetPageActionIconBorder() const {
+  return views::CreateEmptyBorder(
+      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING));
+}
 
 bool PageActionIconView::Delegate::IsLocationBarUserInputInProgress() const {
   return false;
@@ -49,7 +56,8 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       GetOmniboxStateOpacity(OmniboxPartState::SELECTED));
   SetFocusBehavior(FocusBehavior::ACCESSIBLE_ONLY);
   // Only shows bubble after mouse is released.
-  set_notify_action(NotifyAction::NOTIFY_ON_RELEASE);
+  button_controller()->set_notify_action(
+      views::ButtonController::NotifyAction::NOTIFY_ON_RELEASE);
   UpdateBorder();
 }
 
@@ -211,6 +219,5 @@ content::WebContents* PageActionIconView::GetWebContents() const {
 }
 
 void PageActionIconView::UpdateBorder() {
-  SetBorder(views::CreateEmptyBorder(
-      GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
+  SetBorder(delegate_->GetPageActionIconBorder());
 }

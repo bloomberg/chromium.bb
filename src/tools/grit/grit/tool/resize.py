@@ -50,7 +50,7 @@ PROJECT_TEMPLATE = '''\
       Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
       UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}">
       <File
-        RelativePath=".\[[DIALOG_NAME]].rc">
+        RelativePath=".\\[[DIALOG_NAME]].rc">
       </File>
     </Filter>
   </Files>
@@ -247,6 +247,7 @@ near the top of the file, before you open it in Visual Studio.
     # If this fails then we're not on Windows (or you don't have the required
     # win32all Python libraries installed), so what are you doing mucking
     # about with RC files anyway? :)
+    # pylint: disable=import-error
     import pythoncom
 
     # Create the .vcproj file

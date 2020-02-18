@@ -30,7 +30,7 @@
 #include "components/policy/policy_constants.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_source.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/external_install_info.h"
 #include "extensions/browser/external_provider_interface.h"
@@ -164,7 +164,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   void VerifyAndResetVisitorCallExpectations();
   void SetForceInstallListPolicy();
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_dir_;
   policy::MockCloudPolicyStore store_;
@@ -186,7 +186,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
 
 DeviceLocalAccountExternalPolicyLoaderTest::
     DeviceLocalAccountExternalPolicyLoaderTest()
-    : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+    : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
       test_shared_loader_factory_(
           base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
               &test_url_loader_factory_)) {}

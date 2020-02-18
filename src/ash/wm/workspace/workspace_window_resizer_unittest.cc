@@ -624,6 +624,10 @@ TEST_F(WorkspaceWindowResizerTest, Edge) {
     std::unique_ptr<WindowResizer> resizer(
         CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
     ASSERT_TRUE(resizer.get());
+    // TODO(crbug.com/990589): Unit tests should be able to simulate mouse input
+    // without having to call |CursorManager::SetDisplay|.
+    Shell::Get()->cursor_manager()->SetDisplay(
+        display::Screen::GetScreen()->GetDisplayNearestWindow(root_windows[1]));
     resizer->Drag(CalculateDragPoint(*resizer, 499, 0), 0);
     int bottom =
         screen_util::GetDisplayWorkAreaBoundsInParent(window_.get()).bottom();
@@ -1921,6 +1925,12 @@ TEST_F(MultiDisplayWorkspaceWindowResizerTest, Magnetism) {
   // `win2`. Expect that `win1` will snap to `win2` on its left edge.
   resizer->Drag(CalculateDragPoint(*resizer, 1135, 0), /*event_flags=*/0);
   EXPECT_EQ(gfx::Rect(1150, 10, 100, 100), win1->GetBoundsInScreen());
+}
+
+// Makes sure that we are not creating any resizer in kiosk mode.
+TEST_F(WorkspaceWindowResizerTest, DoesNotWorkInAppMode) {
+  GetSessionControllerClient()->SetIsRunningInAppMode(true);
+  EXPECT_FALSE(CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
 }
 
 }  // namespace ash

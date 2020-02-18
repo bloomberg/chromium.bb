@@ -300,8 +300,8 @@ UserManagerView::UserManagerView()
     : web_view_(nullptr),
       delegate_(nullptr),
       user_manager_started_showing_(base::Time()) {
-  keep_alive_.reset(new ScopedKeepAlive(KeepAliveOrigin::USER_MANAGER_VIEW,
-                                        KeepAliveRestartOption::DISABLED));
+  keep_alive_ = std::make_unique<ScopedKeepAlive>(
+      KeepAliveOrigin::USER_MANAGER_VIEW, KeepAliveRestartOption::DISABLED);
   chrome::RecordDialogCreation(chrome::DialogIdentifier::USER_MANAGER);
 }
 
@@ -397,7 +397,7 @@ void UserManagerView::Init(Profile* system_profile, const GURL& url) {
 
   views::Widget::InitParams params =
       GetDialogWidgetInitParams(this, nullptr, nullptr, bounds);
-  (new views::Widget)->Init(params);
+  (new views::Widget)->Init(std::move(params));
 
   // Since the User Manager can be the only top level window, we don't
   // want to accidentally quit all of Chrome if the user is just trying to

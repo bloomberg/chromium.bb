@@ -10,6 +10,7 @@ import android.content.pm.PackageManager;
 
 import org.chromium.webapk.shell_apk.HostBrowserLauncher;
 import org.chromium.webapk.shell_apk.HostBrowserLauncherParams;
+import org.chromium.webapk.shell_apk.HostBrowserUtils;
 import org.chromium.webapk.shell_apk.TransparentLauncherActivity;
 
 /**
@@ -36,19 +37,19 @@ public class H2OMainActivity extends TransparentLauncherActivity {
         }
 
         Context appContext = getApplicationContext();
-        if (H2OLauncher.shouldIntentLaunchSplashActivity(params)
+        if (HostBrowserUtils.shouldIntentLaunchSplashActivity(params)
                 && !H2OLauncher.didRequestRelaunchFromHostBrowserWithinLastMs(
                         appContext, MINIMUM_INTERVAL_BETWEEN_RELAUNCHES_MS)) {
             // Request the host browser to relaunch the WebAPK. We cannot relaunch ourselves
             // because {@link H2OLauncher#changeEnabledComponentsAndKillShellApk()} kills the
             // WebAPK app. We cannot use AlarmManager or JobScheduler because their minimum
             // delay (several seconds) is too high.
-            H2OLauncher.requestRelaunchFromHostBrowser(appContext, params);
+            H2OLauncher.requestRelaunchFromHostBrowser(this, params);
             H2OLauncher.changeEnabledComponentsAndKillShellApk(appContext,
                     new ComponentName(appContext, H2OOpaqueMainActivity.class), getComponentName());
             return;
         }
 
-        HostBrowserLauncher.launch(appContext, params);
+        HostBrowserLauncher.launch(this, params);
     }
 }

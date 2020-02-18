@@ -16,7 +16,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/synchronization/waitable_event.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "content/renderer/pepper/resource_converter.h"
 #include "ppapi/c/pp_bool.h"
@@ -239,7 +239,7 @@ class V8VarConverterTest : public testing::Test {
   std::unique_ptr<V8VarConverter> converter_;
 
  private:
-  base::test::ScopedTaskEnvironment
+  base::test::SingleThreadTaskEnvironment
       task_environment_;  // Required to receive callbacks.
 
   TestGlobals globals_;

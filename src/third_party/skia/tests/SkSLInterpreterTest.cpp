@@ -38,7 +38,7 @@ void test(skiatest::Reporter* r, const char* src, float* in, int expectedCount, 
             printf("%s\n%s", src, compiler.errorText().c_str());
             return;
         }
-        SkSL::ByteCodeFunction* main = byteCode->fFunctions[0].get();
+        const SkSL::ByteCodeFunction* main = byteCode->getFunction("main");
         std::unique_ptr<float[]> out = std::unique_ptr<float[]>(new float[expectedCount]);
         SkAssertResult(byteCode->run(main, in, out.get(), 1, nullptr, 0));
         bool valid = exactCompare ? !memcmp(out.get(), expected, sizeof(float) * expectedCount)
@@ -730,17 +730,24 @@ DEF_TEST(SkSLInterpreterOutParams, r) {
 }
 
 DEF_TEST(SkSLInterpreterMathFunctions, r) {
-    float value, expected;
+    float value[4], expected[4];
 
-    value = 0.0f; expected = 0.0f;
-    test(r, "float main(float x) { return sin(x); }", &value, 1, &expected);
-    test(r, "float main(float x) { return tan(x); }", &value, 1, &expected);
+    value[0] = 0.0f; expected[0] = 0.0f;
+    test(r, "float main(float x) { return sin(x); }", value, 1, expected);
+    test(r, "float main(float x) { return tan(x); }", value, 1, expected);
 
-    value = 0.0f; expected = 1.0f;
-    test(r, "float main(float x) { return cos(x); }", &value, 1, &expected);
+    value[0] = 0.0f; expected[0] = 1.0f;
+    test(r, "float main(float x) { return cos(x); }", value, 1, expected);
 
-    value = 25.0f; expected = 5.0f;
-    test(r, "float main(float x) { return sqrt(x); }", &value, 1, &expected);
+    value[0] = 25.0f; expected[0] = 5.0f;
+    test(r, "float main(float x) { return sqrt(x); }", value, 1, expected);
+
+    value[0] = 90.0f; expected[0] = sk_float_degrees_to_radians(value[0]);
+    test(r, "float main(float x) { return radians(x); }", value, 1, expected);
+
+    value[0] = 1.0f; value[1] = -1.0f;
+    expected[0] = 1.0f / SK_FloatSqrt2; expected[1] = -1.0f / SK_FloatSqrt2;
+    test(r, "float2 main(float2 x) { return normalize(x); }", value, 2, expected);
 }
 
 DEF_TEST(SkSLInterpreterVoidFunction, r) {
@@ -936,7 +943,7 @@ DEF_TEST(SkSLInterpreterExternalValues, r) {
             printf("%s\n%s", src, compiler.errorText().c_str());
             return;
         }
-        SkSL::ByteCodeFunction* main = byteCode->fFunctions[0].get();
+        const SkSL::ByteCodeFunction* main = byteCode->getFunction("main");
         float out;
         SkAssertResult(byteCode->run(main, nullptr, &out, 1, nullptr, 0));
         REPORTER_ASSERT(r, out == 66.0);
@@ -969,7 +976,7 @@ DEF_TEST(SkSLInterpreterExternalValuesVector, r) {
             printf("%s\n%s", src, compiler.errorText().c_str());
             return;
         }
-        SkSL::ByteCodeFunction* main = byteCode->fFunctions[0].get();
+        const SkSL::ByteCodeFunction* main = byteCode->getFunction("main");
         SkAssertResult(byteCode->run(main, nullptr, nullptr, 1, nullptr, 0));
         REPORTER_ASSERT(r, value[0] == 2);
         REPORTER_ASSERT(r, value[1] == 4);
@@ -1034,7 +1041,7 @@ DEF_TEST(SkSLInterpreterExternalValuesCall, r) {
             printf("%s\n%s", src, compiler.errorText().c_str());
             return;
         }
-        SkSL::ByteCodeFunction* main = byteCode->fFunctions[0].get();
+        const SkSL::ByteCodeFunction* main = byteCode->getFunction("main");
         float out;
         SkAssertResult(byteCode->run(main, nullptr, &out, 1, nullptr, 0));
         REPORTER_ASSERT(r, out == 5.0);
@@ -1102,7 +1109,7 @@ DEF_TEST(SkSLInterpreterExternalValuesVectorCall, r) {
             printf("%s\n%s", src, compiler.errorText().c_str());
             return;
         }
-        SkSL::ByteCodeFunction* main = byteCode->fFunctions[0].get();
+        const SkSL::ByteCodeFunction* main = byteCode->getFunction("main");
         float out[4];
         SkAssertResult(byteCode->run(main, nullptr, out, 1, nullptr, 0));
         REPORTER_ASSERT(r, out[0] == 1.0);

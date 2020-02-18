@@ -4,48 +4,35 @@
 
 #include "third_party/blink/renderer/core/animation/css_custom_length_interpolation_type.h"
 
-#include "third_party/blink/renderer/core/animation/length_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_length.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 
 namespace blink {
 
-namespace {
-
-bool HasPercentage(const NonInterpolableValue* non_interpolable_value) {
-  return LengthInterpolationFunctions::HasPercentage(non_interpolable_value);
-}
-
-bool HasPercentage(const InterpolationValue& value) {
-  return HasPercentage(value.non_interpolable_value.get());
-}
-
-}  // namespace
-
 InterpolationValue CSSCustomLengthInterpolationType::MaybeConvertNeutral(
     const InterpolationValue&,
     ConversionCheckers&) const {
-  return InterpolationValue(
-      LengthInterpolationFunctions::CreateNeutralInterpolableValue());
+  return InterpolationValue(InterpolableLength::CreateNeutral());
 }
 
 InterpolationValue CSSCustomLengthInterpolationType::MaybeConvertValue(
     const CSSValue& value,
     const StyleResolverState*,
     ConversionCheckers&) const {
-  InterpolationValue interpolation_value =
-      LengthInterpolationFunctions::MaybeConvertCSSValue(value);
-  if (HasPercentage(interpolation_value))
+  std::unique_ptr<InterpolableLength> maybe_length =
+      InterpolableLength::MaybeConvertCSSValue(value);
+  if (!maybe_length || maybe_length->HasPercentage())
     return nullptr;
-  return interpolation_value;
+  return InterpolationValue(std::move(maybe_length));
 }
 
 const CSSValue* CSSCustomLengthInterpolationType::CreateCSSValue(
     const InterpolableValue& interpolable_value,
     const NonInterpolableValue* non_interpolable_value,
     const StyleResolverState&) const {
-  DCHECK(!HasPercentage(non_interpolable_value));
-  return LengthInterpolationFunctions::CreateCSSValue(
-      interpolable_value, non_interpolable_value, kValueRangeAll);
+  const auto& interpolable_length = To<InterpolableLength>(interpolable_value);
+  DCHECK(!interpolable_length.HasPercentage());
+  return interpolable_length.CreateCSSValue(kValueRangeAll);
 }
 
 }  // namespace blink

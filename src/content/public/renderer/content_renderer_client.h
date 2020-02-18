@@ -17,14 +17,14 @@
 #include "base/memory/ref_counted.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/task/thread_pool/thread_pool.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "build/build_config.h"
 #include "content/public/common/content_client.h"
 #include "content/public/renderer/url_loader_throttle_provider.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/supported_types.h"
-#include "services/service_manager/public/mojom/service.mojom.h"
+#include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
@@ -46,8 +46,6 @@ class WebLocalFrame;
 class WebPlugin;
 class WebPrescientNetworking;
 class WebServiceWorkerContextProxy;
-class WebSpeechSynthesizer;
-class WebSpeechSynthesizerClient;
 class WebMediaStreamRendererFactory;
 class WebThemeEngine;
 class WebURL;
@@ -183,11 +181,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual std::unique_ptr<WebSocketHandshakeThrottleProvider>
   CreateWebSocketHandshakeThrottleProvider();
 
-  // Allows the embedder to override the WebSpeechSynthesizer used.
-  // If it returns NULL the content layer will provide an engine.
-  virtual std::unique_ptr<blink::WebSpeechSynthesizer>
-  OverrideSpeechSynthesizer(blink::WebSpeechSynthesizerClient* client);
-
   // Called on the main-thread immediately after the io thread is
   // created.
   virtual void PostIOThreadCreated(
@@ -252,7 +245,6 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual uint64_t VisitedLinkHash(const char* canonical_url, size_t length);
   virtual bool IsLinkVisited(uint64_t link_hash);
   virtual blink::WebPrescientNetworking* GetPrescientNetworking();
-  virtual bool IsPrerenderingFrame(const RenderFrame* render_frame);
 
   // Returns true if the given Pepper plugin is external (requiring special
   // startup steps).
@@ -335,11 +327,11 @@ class CONTENT_EXPORT ContentRendererClient {
   // function is called from the worker thread.
   virtual void WillInitializeServiceWorkerContextOnWorkerThread() {}
 
-  // Notifies that a service worker context has been created. This function
-  // is called from the worker thread.
+  // Notifies that the main script of a service worker is about to evaluate.
+  // This function is called from the worker thread.
   // |context_proxy| is valid until
   // WillDestroyServiceWorkerContextOnWorkerThread() is called.
-  virtual void DidInitializeServiceWorkerContextOnWorkerThread(
+  virtual void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
@@ -399,11 +391,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // macOS. See https://crbug.com/936515.
   virtual bool SuppressLegacyTLSVersionConsoleMessage();
 
-  // Asks the embedder to bind |service_request| to its renderer-side service
-  // implementation.
-  virtual void CreateRendererService(
-      service_manager::mojom::ServiceRequest service_request) {}
-
   // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
   // for a frame or worker. For frames this is called on the main thread, and
   // for workers it's called on the worker thread.
@@ -433,6 +420,10 @@ class CONTENT_EXPORT ContentRendererClient {
   virtual base::Optional<::media::AudioRendererAlgorithmParameters>
   GetAudioRendererAlgorithmParameters(
       ::media::AudioParameters audio_parameters);
+
+  // Handles a request from the browser to bind a receiver on the renderer
+  // processes's main thread.
+  virtual void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver);
 };
 
 }  // namespace content

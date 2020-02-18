@@ -31,7 +31,6 @@
 #include "third_party/blink/renderer/core/frame/fullscreen_controller.h"
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -261,8 +260,7 @@ void FullscreenController::UpdatePageScaleConstraints(bool reset_constraints) {
     web_view_base_->GetPageScaleConstraintsSet().SetNeedsReset(true);
   } else {
     fullscreen_constraints = PageScaleConstraints(1.0, 1.0, 1.0);
-    fullscreen_constraints.layout_size =
-        FloatSize(web_view_base_->MainFrameWidget()->Size());
+    fullscreen_constraints.layout_size = FloatSize(web_view_base_->Size());
   }
   web_view_base_->GetPageScaleConstraintsSet().SetFullscreenConstraints(
       fullscreen_constraints);

@@ -16,13 +16,13 @@
 #include "base/strings/utf_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "components/autofill/core/browser/logging/log_buffer_submitter.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
-#include "components/password_manager/core/browser/new_password_form_manager.h"
+#include "components/password_manager/core/browser/password_form_manager.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
 #include "components/password_manager/core/browser/stub_password_manager_client.h"
 #include "components/password_manager/core/common/password_manager_pref_names.h"
@@ -35,7 +35,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/passwords/password_form_filler.h"
 #include "ios/chrome/browser/passwords/password_manager_features.h"
-#import "ios/chrome/browser/ui/autofill/form_input_accessory_mediator.h"
+#import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_mediator.h"
 #include "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web/chrome_web_test.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -45,7 +45,6 @@
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #import "ios/web/public/test/web_js_test.h"
-#import "ios/web/public/web_state/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -220,7 +219,7 @@ class PasswordControllerTest : public ChromeWebTest {
     // Disable wating, since most tests have nothing to do with predictions. All
     // tests that test working with prediction should explicitly turn
     // predictions on.
-    password_manager::NewPasswordFormManager::
+    password_manager::PasswordFormManager::
         set_wait_for_server_predictions_for_filling(false);
 
     passwordController_ =
@@ -1129,7 +1128,7 @@ using PasswordControllerTestSimple = PlatformTest;
 // The test case below does not need the heavy fixture from above, but it
 // needs to use MockWebState.
 TEST_F(PasswordControllerTestSimple, SaveOnNonHTMLLandingPage) {
-  base::test::ScopedTaskEnvironment task_environment;
+  base::test::TaskEnvironment task_environment;
   TestChromeBrowserState::Builder builder;
   std::unique_ptr<TestChromeBrowserState> browser_state(builder.Build());
   MockWebState web_state;
@@ -1413,10 +1412,6 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
 
 // Tests password generation suggestion is shown properly.
 TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
-  TearDown();
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
-  SetUp();
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
   EXPECT_CALL(*weak_client_, GetPasswordSyncState())
@@ -1508,12 +1503,10 @@ TEST_F(PasswordControllerTest, CheckPasswordGenerationSuggestion) {
 // that this is Incognito, it won't enable password generation.
 TEST_F(PasswordControllerTest, IncognitoPasswordGenerationDisabled) {
     TearDown();
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(features::kPasswordGeneration);
     ChromeWebTest::SetUp();
 
-    password_manager::NewPasswordFormManager::
-    set_wait_for_server_predictions_for_filling(false);
+    password_manager::PasswordFormManager::
+        set_wait_for_server_predictions_for_filling(false);
 
     auto client =
     std::make_unique<NiceMock<MockPasswordManagerClient>>(store_.get());

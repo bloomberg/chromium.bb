@@ -6,7 +6,7 @@
 
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/manifest.h"
 #include "services/service_manager/public/cpp/manifest_builder.h"
@@ -78,7 +78,7 @@ class ShutdownTest : public testing::Test {
   Connector* connector() { return test_service_binding_.GetConnector(); }
 
  private:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   TestServiceManager test_service_manager_;
   Service test_service_;
   ServiceBinding test_service_binding_;

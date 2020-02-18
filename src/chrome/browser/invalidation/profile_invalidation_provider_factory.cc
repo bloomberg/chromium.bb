@@ -18,9 +18,11 @@
 #include "components/gcm_driver/gcm_profile_service.h"
 #include "components/gcm_driver/instance_id/instance_id_profile_service.h"
 #include "components/invalidation/impl/fcm_invalidation_service.h"
+#include "components/invalidation/impl/fcm_network_handler.h"
 #include "components/invalidation/impl/invalidation_prefs.h"
 #include "components/invalidation/impl/invalidation_state_tracker.h"
 #include "components/invalidation/impl/invalidator_storage.h"
+#include "components/invalidation/impl/per_user_topic_registration_manager.h"
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/invalidation/impl/profile_invalidation_provider.h"
 #include "components/invalidation/public/invalidation_service.h"
@@ -51,16 +53,22 @@ std::unique_ptr<InvalidationService> CreateInvalidationServiceForSenderId(
     const std::string& sender_id) {
   auto service = std::make_unique<FCMInvalidationService>(
       identity_provider,
-      gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
+      base::BindRepeating(
+          &syncer::FCMNetworkHandler::Create,
+          gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
+          instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
+              ->driver()),
+      base::BindRepeating(
+          &syncer::PerUserTopicRegistrationManager::Create, identity_provider,
+          profile->GetPrefs(),
+          base::RetainedRef(
+              content::BrowserContext::GetDefaultStoragePartition(profile)
+                  ->GetURLLoaderFactoryForBrowserProcess()),
+          base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
+                              content::GetSystemConnector())),
       instance_id::InstanceIDProfileServiceFactory::GetForProfile(profile)
           ->driver(),
-      profile->GetPrefs(),
-      base::BindRepeating(&data_decoder::SafeJsonParser::Parse,
-                          content::GetSystemConnector()),
-      content::BrowserContext::GetDefaultStoragePartition(profile)
-          ->GetURLLoaderFactoryForBrowserProcess()
-          .get(),
-      sender_id);
+      profile->GetPrefs(), sender_id);
   service->Init();
   return service;
 }

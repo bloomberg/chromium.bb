@@ -57,6 +57,7 @@
 <translation id="2746543609216772311">Valoarea pentru dată/oră trebuie să fie <ph name="MINIMUM_DATE_OR_TIME" /> sau una ulterioară.</translation>
 <translation id="2759744352195237655">buton pop-up</translation>
 <translation id="2761667185364618470">Bifeză caseta dacă vrei să continui.</translation>
+<translation id="2844350028562914727">detalii</translation>
 <translation id="2896972712917208084">grup butoane radio</translation>
 <translation id="2908441821576996758">Introdu o listă de adrese de e-mail separate prin virgulă.</translation>
 <translation id="2940813599313844715">obiect</translation>
@@ -72,6 +73,7 @@
 <translation id="3450233048674729344">Valoarea trebuie să fie mai mică sau egală cu <ph name="MAXIMUM" />.</translation>
 <translation id="3486220673238053218">definiție</translation>
 <translation id="3557673793733683882">titlu <ph name="HEADING_LEVEL" /></translation>
+<translation id="3670698553867754311">selector pentru săptămână</translation>
 <translation id="3685101356851116974">Imagine neetichetată</translation>
 <translation id="3706100364254443312">comutator</translation>
 <translation id="3732799496749320381">ll</translation>
@@ -87,11 +89,11 @@
 <translation id="3960700977367013758">bară de derulare</translation>
 <translation id="4103419683916926126">Milisecunde</translation>
 <translation id="4151657705144244502">element grafic</translation>
+<translation id="4160057747563657758">telefon</translation>
 <translation id="4193965531860883258">cuvânt înainte</translation>
 <translation id="4201051445878709314">Afișează luna anterioară</translation>
 <translation id="421884353938374759">selector de culoare</translation>
 <translation id="4248100235867064564">bară de meniu</translation>
-<translation id="4254339807215791271">informații privind conținutul</translation>
 <translation id="4360991593054037559">Introduceți o valoare validă. Cele mai apropiate valori valide sunt <ph name="VALID_VALUE_LOW" /> și <ph name="VALID_VALUE_HIGHER" />.</translation>
 <translation id="4384583879834880242">Întrebări și răspunsuri</translation>
 <translation id="4413860115965805769">buton de meniu</translation>
@@ -141,6 +143,7 @@
 <translation id="5860033963881614850">Dezactivat</translation>
 <translation id="588258955323874662">Ecran complet</translation>
 <translation id="5888666972993069672">Se proiectează acum pe <ph name="DEVICE_FRIENDLY_NAME" /></translation>
+<translation id="591047860372322273">casetă de căutare</translation>
 <translation id="5939518447894949180">Resetează</translation>
 <translation id="5966707198760109579">Săptămână</translation>
 <translation id="5987525920412732405">buton incrementare/decrementare</translation>
@@ -152,6 +155,7 @@
 <translation id="6166809985690652833">postfață</translation>
 <translation id="6209276755895393898">Pare a fi: <ph name="DESCRIPTION" /></translation>
 <translation id="6213469881011901533">glosar</translation>
+<translation id="6281763101136022427">adresă URL</translation>
 <translation id="6310801910862476708">Ieși din modul Picture-in-Picture</translation>
 <translation id="6398862346408813489">Afișează panoul de selectare a lunii</translation>
 <translation id="6404546809543547843">glisor redare audio</translation>
@@ -182,6 +186,7 @@
 <translation id="709897737746224366">Respectă formatul solicitat.</translation>
 <translation id="7118469954320184356">Nu există nicio descriere disponibilă.</translation>
 <translation id="7139483182332611405">prefață</translation>
+<translation id="7214187073215825913">informații despre conținut</translation>
 <translation id="7263440858009898357">Selectează un articol din listă.</translation>
 <translation id="727747134524199931">antet coloană</translation>
 <translation id="7320576522385648310">Se încarcă în memoria temporară</translation>
@@ -214,6 +219,7 @@
 <translation id="811583516810654505">Se așteaptă descrierea…</translation>
 <translation id="8117451130807776954">Săptămâna aceasta</translation>
 <translation id="8199524924445686405">aaaa</translation>
+<translation id="8208673686607688524">selector pentru data și ora locală</translation>
 <translation id="8261464734335370856">Ortografie nevalidă</translation>
 <translation id="8284326494547611709">Subtitrări</translation>
 <translation id="835897206747267392">Valoare nevalidă.</translation>
@@ -234,6 +240,7 @@
 <translation id="860475260694818407">cuprins</translation>
 <translation id="8613126697340063924">controlează redarea la distanță</translation>
 <translation id="862370744433916922">subtitlu</translation>
+<translation id="8711688047404765493">ieșire</translation>
 <translation id="8750798805984357768">Selectează una dintre aceste opțiuni.</translation>
 <translation id="8808573423886751634">capitol</translation>
 <translation id="8845239796550121995">Acum se proiectează pe televizor</translation>
@@ -242,6 +249,7 @@
 <translation id="8901569739625249689"><ph name="QUANTITY" /> KO</translation>
 <translation id="8987927404178983737">Lună</translation>
 <translation id="901493112792887934">timp actual în secunde</translation>
+<translation id="901834265349196618">e-mail</translation>
 <translation id="9048119486235211610">navigare</translation>
 <translation id="9062295712474918030">document</translation>
 <translation id="9062307380734144336">selectează pentru a comuta între redă și întrerupe</translation>

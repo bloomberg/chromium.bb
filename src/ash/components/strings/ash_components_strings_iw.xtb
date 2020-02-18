@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="iw">
+<translation id="1036550831858290950">שמירת הכרטיסייה הנוכחית כסימנייה</translation>
 <translation id="104962181688258143">פתיחת האפליקציה 'קבצים'</translation>
-<translation id="1098295134904615027">הפעלת שולחן העבודה הווירטואלי בצד ימין</translation>
 <translation id="1122869341872663659">מוצגות <ph name="N" /> תוצאות חיפוש לגבי <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">גרירת הקישור אל שורת כתובת האתר של הכרטיסייה</translation>
 <translation id="1204450209689312104">פתיחת חלון חדש במצב גלישה בסתר</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">‏הוספת www. ו-‎ .comלקלט בשורת כתובת האתר, ולאחר מכן פתיחת הדף</translation>
+<translation id="1872219238824176091">הסרת שולחן העבודה הנוכחי</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> ואז <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> או <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">הפעלת שולחן העבודה הווירטואלי בצד שמאל</translation>
 <translation id="1996162290124031907">מעבר לכרטיסייה הבאה</translation>
 <translation id="2010818616644390445">מעבר לכרטיסייה האחרונה בחלון</translation>
 <translation id="2040706009561734834">פתיחה/סגירה של מרכז האפליקציות</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">מעבר מהיר בין חלונות</translation>
 <translation id="2454251766545114447">התרחקות מהתצוגה</translation>
 <translation id="2478303094958140141">‏הפעלה או השבתה של ChromeVox (קורא מסך קולי)</translation>
+<translation id="2488661730534396940">הפעלה של שולחן העבודה בצד ימין</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">גלילת דף האינטרנט למטה</translation>
 <translation id="2574014812750545982">איפוס רמת הזום בדף</translation>
 <translation id="2596078834055697711">צילום מסך של חלון</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ואז <ph name="TAB" /> או <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">שמירת דף האינטרנט הנוכחי כסימנייה</translation>
 <translation id="2750942583782703988">טעינה מחדש של הדף הנוכחי</translation>
 <translation id="2764005613199379871">העברת המיקוד לשורת כתובת האתר</translation>
+<translation id="2774822903829597107">יצירת שולחן עבודה חדש</translation>
 <translation id="2789868185375229787">התרחקות מהדף</translation>
 <translation id="2804480015716812239">הקשה על <ph name="ALT" /> ולחיצה על קישור</translation>
 <translation id="2830827904629746450">עגינת חלון בצד ימין</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">ביצוע של צילום מסך</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">התמקדות בשורת כתובת האתר</translation>
-<translation id="3165428420335997629">יצירה של שולחן עבודה וירטואלי חדש</translation>
 <translation id="3256109297135787951">הסרת הסימון מפריט במדף</translation>
 <translation id="3288816184963444640">סגירת החלון הנוכחי</translation>
 <translation id="3407560819924487926">פתיחת מנהל המשימות</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">יצירת צילום מסך חלקי</translation>
 <translation id="4698850295812410683">הצגת כלי הסטיילוס</translation>
 <translation id="4801989101741319327">מעבר אל סוף המילה הבאה</translation>
+<translation id="4866066940972151697">הפעלה של שולחן העבודה בצד שמאל</translation>
 <translation id="4916163929714267752">פתיחת הקישור בחלון חדש</translation>
 <translation id="5030659775136592441">הצגת ניהול הסימניות</translation>
 <translation id="5034421018520995080">מעבר אל ראש הדף</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">סיבוב המסך ב-90 מעלות</translation>
 <translation id="8241665785394195545">סוגר ימני</translation>
 <translation id="8264941229485248811">הצגה או הסתרה של בודק 'כלים למפתחים'</translation>
-<translation id="8355937569537581904">הסרה של שולחן העבודה הווירטואלי הנוכחי</translation>
 <translation id="836869401750819675">פתיחת הדף 'הורדות'</translation>
 <translation id="8388247778047144397">גרירת הקישור לאזור ריק בשורת הכרטיסיות</translation>
 <translation id="8389638407792712197">פתיחת חלון חדש</translation>

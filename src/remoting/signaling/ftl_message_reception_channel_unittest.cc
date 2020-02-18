@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "remoting/base/grpc_support/scoped_grpc_server_stream.h"
 #include "remoting/base/grpc_test_support/grpc_test_util.h"
@@ -42,8 +42,7 @@ using StatusCallback = base::OnceCallback<void(const grpc::Status&)>;
 // Fake stream implementation to allow probing if a stream is closed by client.
 class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
  public:
-  FakeScopedGrpcServerStream()
-      : ScopedGrpcServerStream(nullptr), weak_factory_(this) {}
+  FakeScopedGrpcServerStream() : ScopedGrpcServerStream(nullptr) {}
   ~FakeScopedGrpcServerStream() override = default;
 
   base::WeakPtr<FakeScopedGrpcServerStream> GetWeakPtr() {
@@ -51,7 +50,7 @@ class FakeScopedGrpcServerStream : public ScopedGrpcServerStream {
   }
 
  private:
-  base::WeakPtrFactory<FakeScopedGrpcServerStream> weak_factory_;
+  base::WeakPtrFactory<FakeScopedGrpcServerStream> weak_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(FakeScopedGrpcServerStream);
 };
 
@@ -107,8 +106,8 @@ class FtlMessageReceptionChannelTest : public testing::Test {
   base::TimeDelta GetTimeUntilRetry() const;
   int GetRetryFailureCount() const;
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
   std::unique_ptr<FtlMessageReceptionChannel> channel_;
   base::MockCallback<FtlMessageReceptionChannel::StreamOpener>
       mock_stream_opener_;
@@ -123,7 +122,7 @@ void FtlMessageReceptionChannelTest::SetUp() {
 
 void FtlMessageReceptionChannelTest::TearDown() {
   channel_.reset();
-  scoped_task_environment_.FastForwardUntilNoTasksRemain();
+  task_environment_.FastForwardUntilNoTasksRemain();
 }
 
 base::TimeDelta FtlMessageReceptionChannelTest::GetTimeUntilRetry() const {
@@ -215,7 +214,7 @@ TEST_F(FtlMessageReceptionChannelTest,
                         GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
-            scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
+            task_environment_.FastForwardBy(GetTimeUntilRetry());
           },
           &old_stream))
       .WillOnce(StartStream(
@@ -323,7 +322,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
               const ReceiveMessagesResponseCallback& on_incoming_msg,
               StatusCallback on_channel_closed) {
             std::move(on_channel_ready).Run();
-            scoped_task_environment_.FastForwardBy(
+            task_environment_.FastForwardBy(
                 FtlMessageReceptionChannel::kPongTimeout);
 
             ASSERT_EQ(1, GetRetryFailureCount());
@@ -331,7 +330,7 @@ TEST_F(FtlMessageReceptionChannelTest, NoPongWithinTimeout_ResetsStream) {
                         GetTimeUntilRetry().InSecondsF(), 0.5);
 
             // This will make the channel reopen the stream.
-            scoped_task_environment_.FastForwardBy(GetTimeUntilRetry());
+            task_environment_.FastForwardBy(GetTimeUntilRetry());
           },
           &old_stream))
       .WillOnce(StartStream(
@@ -426,7 +425,7 @@ TEST_F(FtlMessageReceptionChannelTest, TimeoutIncreasesToMaximum) {
             }
 
             // This will tail-recursively call the stream opener.
-            scoped_task_environment_.FastForwardBy(time_until_retry);
+            task_environment_.FastForwardBy(time_until_retry);
           }));
 
   channel_->StartReceivingMessages(base::DoNothing(),

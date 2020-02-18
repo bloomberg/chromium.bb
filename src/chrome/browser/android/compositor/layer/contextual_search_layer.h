@@ -76,7 +76,6 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      bool search_bar_border_visible,
                      float search_bar_border_height,
                      bool search_bar_shadow_visible,
-                     float search_bar_shadow_opacity,
                      bool quick_action_icon_visible,
                      bool thumbnail_visible,
                      float custom_image_visibility_percentage,
@@ -97,7 +96,9 @@ class ContextualSearchLayer : public OverlayPanelLayer {
                      float divider_line_x_offset,
                      bool touch_highlight_visible,
                      float touch_highlight_x_offset,
-                     float touch_highlight_width);
+                     float touch_highlight_width,
+                     int rounded_bar_top_resource_id,
+                     int separator_line_color);
 
   void SetThumbnail(const SkBitmap* thumbnail);
 
@@ -122,17 +123,17 @@ class ContextualSearchLayer : public OverlayPanelLayer {
       float visibility_percentage);
 
   // Sets up |text_layer_|, which contains |bar_text_|, |search_context_| and
-  // |search_caption_|.
-  void SetupTextLayer(float search_bar_top,
-                      float search_bar_height,
-                      float search_text_layer_min_height,
-                      int search_caption_resource_id,
-                      bool search_caption_visible,
-                      float search_caption_animation_percentage,
-                      float search_term_opacity,
-                      int search_context_resource_id,
-                      float search_context_opacity,
-                      float search_term_caption_spacing);
+  // |search_caption_|.  Returns the text layer height.
+  int SetupTextLayer(float search_bar_top,
+                     float search_bar_height,
+                     float search_text_layer_min_height,
+                     int search_caption_resource_id,
+                     bool search_caption_visible,
+                     float search_caption_animation_percentage,
+                     float search_term_opacity,
+                     int search_context_resource_id,
+                     float search_context_opacity,
+                     float search_term_caption_spacing);
 
   int bar_image_size_;
   float thumbnail_side_margin_;

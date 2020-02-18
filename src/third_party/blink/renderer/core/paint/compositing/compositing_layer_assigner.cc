@@ -135,10 +135,8 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
   const PaintLayer& squashing_layer =
       squashing_state.most_recent_mapping->OwningLayer();
 
-  // Don't squash into or out of any thing underneath a video, including the
-  // user-agent shadow DOM for controls. This is is to work around a
-  // bug involving overflow clip of videos. See crbug.com/900602.
-  if (layer->IsUnderVideo() || squashing_layer.IsUnderVideo())
+  if (layer->GetLayoutObject().IsVideo() ||
+      squashing_layer.GetLayoutObject().IsVideo())
     return SquashingDisallowedReason::kSquashingVideoIsDisallowed;
 
   // Don't squash iframes, frames or plugins.
@@ -162,12 +160,6 @@ CompositingLayerAssigner::GetReasonsPreventingSquashing(
           layer->ClippingContainer(),
           squashing_state.next_squashed_layer_index))
     return SquashingDisallowedReason::kClippingContainerMismatch;
-
-  // Composited descendants need to be clipped by a child containment graphics
-  // layer, which would not be available if the layer is squashed (and therefore
-  // has no CLM nor a child containment graphics layer).
-  if (compositor_->ClipsCompositingDescendants(layer))
-    return SquashingDisallowedReason::kSquashedLayerClipsCompositingDescendants;
 
   if (layer->ScrollsWithRespectTo(&squashing_layer))
     return SquashingDisallowedReason::kScrollsWithRespectToSquashingLayer;

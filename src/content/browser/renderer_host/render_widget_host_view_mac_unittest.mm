@@ -1233,8 +1233,8 @@ TEST_F(RenderWidgetHostViewMacTest, GuestViewDoesNotLeak) {
 
   // Let |guest_rwhv_weak| have a chance to delete itself.
   base::RunLoop run_loop;
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           run_loop.QuitClosure());
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 run_loop.QuitClosure());
   run_loop.Run();
 
   ASSERT_FALSE(guest_rwhv_weak.get());
@@ -1359,6 +1359,11 @@ TEST_F(RenderWidgetHostViewMacTest,
   ASSERT_EQ(0U, events.size());
   DCHECK(view->HasPendingWheelEndEventForTesting());
 
+  // Get the max time here before |view| is destroyed in the
+  // ShutdownAndDestroyWidget call below.
+  const base::TimeDelta max_time_between_phase_ended_and_momentum_phase_began =
+      view->max_time_between_phase_ended_and_momentum_phase_began_for_test();
+
   host->ShutdownAndDestroyWidget(true);
 
   // Wait for the mouse_wheel_end_dispatch_timer_ to expire after host is
@@ -1369,7 +1374,7 @@ TEST_F(RenderWidgetHostViewMacTest,
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(),
-      kMaximumTimeBetweenPhaseEndedAndMomentumPhaseBegan);
+      max_time_between_phase_ended_and_momentum_phase_began);
   run_loop.Run();
 }
 
@@ -2062,7 +2067,7 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsPresence) {
   if (@available(macOS 10.12.2, *)) {
     EXPECT_NSEQ(nil, candidate_list_item());
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
-    EXPECT_NSEQ(nil, candidate_list_item());
+    EXPECT_NSNE(nil, candidate_list_item());
     SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_TEXT);
     EXPECT_NSNE(nil, candidate_list_item());
   }
@@ -2125,6 +2130,27 @@ TEST_F(InputMethodMacTest, TouchBarTextSuggestionsReplacement) {
     base::RunLoop().RunUntilIdle();
     events = host_->GetAndResetDispatchedMessages();
     ASSERT_EQ("CommitText", GetMessageNames(events));
+  }
+}
+
+TEST_F(InputMethodMacTest, TouchBarTextSuggestionsNotRequestedForPasswords) {
+  base::test::ScopedFeatureList feature_list;
+  if (@available(macOS 10.12.2, *)) {
+    base::scoped_nsobject<FakeSpellChecker> spellChecker(
+        [[FakeSpellChecker alloc] init]);
+    tab_GetInProcessNSView().spellCheckerForTesting =
+        static_cast<NSSpellChecker*>(spellChecker.get());
+
+    SetTextInputType(tab_view(), ui::TEXT_INPUT_TYPE_PASSWORD);
+    EXPECT_NSNE(nil, candidate_list_item());
+    candidate_list_item().allowsCollapsing = NO;
+
+    const base::string16 kOriginalString = base::UTF8ToUTF16("abcxxxghi");
+
+    // Change the selection once; completions should *not* be requested.
+    tab_view()->SelectionChanged(kOriginalString, 3, gfx::Range(3, 3));
+
+    EXPECT_EQ(0U, [spellChecker sequenceNumber]);
   }
 }
 

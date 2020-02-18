@@ -214,6 +214,7 @@ using ShaderMap = angle::PackedEnumMap<ShaderType, T>;
 TextureType SamplerTypeToTextureType(GLenum samplerType);
 
 bool IsMultisampled(gl::TextureType type);
+bool IsArrayTextureType(gl::TextureType type);
 
 enum class PrimitiveMode : uint8_t
 {
@@ -373,6 +374,126 @@ ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, Int2101010, GL_INT_2_10_10_10_REV);
 ANGLE_VALIDATE_PACKED_ENUM(VertexAttribType, UnsignedInt2101010, GL_UNSIGNED_INT_2_10_10_10_REV);
 
 std::ostream &operator<<(std::ostream &os, VertexAttribType value);
+
+// Typesafe object handles.
+struct BufferID
+{
+    GLuint value;
+};
+
+struct FenceNVID
+{
+    GLuint value;
+};
+
+struct FramebufferID
+{
+    GLuint value;
+};
+
+struct MemoryObjectID
+{
+    GLuint value;
+};
+
+struct PathID
+{
+    GLuint value;
+};
+
+struct ProgramPipelineID
+{
+    GLuint value;
+};
+
+struct QueryID
+{
+    GLuint value;
+};
+
+struct RenderbufferID
+{
+    GLuint value;
+};
+
+struct SamplerID
+{
+    GLuint value;
+};
+
+struct SemaphoreID
+{
+    GLuint value;
+};
+
+struct ShaderProgramID
+{
+    GLuint value;
+};
+
+struct TextureID
+{
+    GLuint value;
+};
+
+struct TransformFeedbackID
+{
+    GLuint value;
+};
+
+struct VertexArrayID
+{
+    GLuint value;
+};
+
+// Util funcs for resourceIDs
+inline bool operator==(const FramebufferID &lhs, const FramebufferID &rhs)
+{
+    return lhs.value == rhs.value;
+}
+inline bool operator!=(const FramebufferID &lhs, const FramebufferID &rhs)
+{
+    return lhs.value != rhs.value;
+}
+
+// Used to unbox typed values.
+template <typename ResourceIDType>
+GLuint GetIDValue(ResourceIDType id);
+
+template <>
+inline GLuint GetIDValue(GLuint id)
+{
+    return id;
+}
+
+template <typename ResourceIDType>
+inline GLuint GetIDValue(ResourceIDType id)
+{
+    return id.value;
+}
+
+// First case: handling packed enums.
+template <typename EnumT, typename FromT>
+typename std::enable_if<std::is_enum<EnumT>::value, EnumT>::type FromGL(FromT from)
+{
+    return FromGLenum<EnumT>(from);
+}
+
+// Second case: handling non-pointer resource ids.
+template <typename EnumT, typename FromT>
+typename std::enable_if<!std::is_pointer<FromT>::value && !std::is_enum<EnumT>::value, EnumT>::type
+FromGL(FromT from)
+{
+    return {from};
+}
+
+// Third case: handling pointer resource ids.
+template <typename EnumT, typename FromT>
+typename std::enable_if<std::is_pointer<FromT>::value && !std::is_enum<EnumT>::value, EnumT>::type
+FromGL(FromT from)
+{
+    return reinterpret_cast<EnumT>(from);
+}
 }  // namespace gl
 
 namespace egl

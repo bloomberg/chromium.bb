@@ -29,7 +29,7 @@
 #include "content/public/browser/android/compositor.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "gpu/ipc/common/surface_handle.h"
-#include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/mojom/compositing/display_private.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "third_party/khronos/GLES2/gl2.h"
 #include "ui/android/resources/resource_manager_impl.h"
@@ -114,6 +114,8 @@ class CONTENT_EXPORT CompositorImpl
   void WillUpdateLayers() override {}
   void DidUpdateLayers() override;
   void BeginMainFrame(const viz::BeginFrameArgs& args) override {}
+  void OnDeferMainFrameUpdatesChanged(bool) override {}
+  void OnDeferCommitsChanged(bool) override {}
   void BeginMainFrameNotExpectedSoon() override {}
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time) override {}
   void UpdateLayerTreeHost() override;
@@ -264,7 +266,7 @@ class CONTENT_EXPORT CompositorImpl
 
   size_t num_of_consecutive_surface_failures_ = 0u;
 
-  base::WeakPtrFactory<CompositorImpl> weak_factory_;
+  base::WeakPtrFactory<CompositorImpl> weak_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);
 };

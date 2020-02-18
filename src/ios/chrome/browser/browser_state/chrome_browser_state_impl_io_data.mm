@@ -24,7 +24,7 @@
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
 #include "ios/chrome/browser/net/cookie_util.h"
-#include "ios/chrome/browser/net/http_server_properties_manager_factory.h"
+#include "ios/chrome/browser/net/http_server_properties_factory.h"
 #include "ios/chrome/browser/net/ios_chrome_network_delegate.h"
 #include "ios/chrome/browser/net/ios_chrome_url_request_context_getter.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -37,7 +37,7 @@
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
-#include "net/http/http_server_properties_manager.h"
+#include "net/http/http_server_properties.h"
 #include "net/url_request/url_request_intercepting_job_factory.h"
 #include "net/url_request/url_request_job_factory_impl.h"
 
@@ -131,7 +131,7 @@ void ChromeBrowserStateImplIOData::Handle::ClearNetworkingHistorySince(
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   LazyInitialize();
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {web::WebThread::IO},
       base::BindOnce(
           &ChromeBrowserStateImplIOData::ClearNetworkingHistorySinceOnIOThread,
@@ -186,8 +186,9 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
       profile_path_.Append(kIOSChromeNetworkPersistentStateFilename));
   network_json_store_ = new JsonPrefStore(
       network_json_store_filepath, std::unique_ptr<PrefFilter>(),
-      base::CreateSequencedTaskRunnerWithTraits(
-          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+      base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskPriority::BEST_EFFORT,
            base::TaskShutdownBehavior::BLOCK_SHUTDOWN}));
   network_json_store_->ReadPrefsAsync(nullptr);
 
@@ -198,8 +199,9 @@ void ChromeBrowserStateImplIOData::InitializeInternal(
 
   ApplyProfileParamsToContext(main_context);
 
-  set_http_server_properties(HttpServerPropertiesManagerFactory::CreateManager(
-      network_json_store_, io_thread->net_log()));
+  set_http_server_properties(
+      HttpServerPropertiesFactory::CreateHttpServerProperties(
+          network_json_store_, io_thread->net_log()));
 
   main_context->set_transport_security_state(transport_security_state());
 

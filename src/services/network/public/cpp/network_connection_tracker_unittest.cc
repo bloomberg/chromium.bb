@@ -8,7 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "net/base/mock_network_change_notifier.h"
@@ -214,7 +214,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::test::MockNetworkChangeNotifier>
       mock_network_change_notifier_;
   std::unique_ptr<NetworkService> network_service_;

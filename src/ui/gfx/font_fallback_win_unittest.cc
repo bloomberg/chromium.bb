@@ -10,14 +10,19 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/win/windows_version.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/icu/source/common/unicode/uchar.h"
 #include "third_party/icu/source/common/unicode/uscript.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/test/font_fallback_test_data.h"
+
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
 
 namespace gfx {
 
@@ -31,8 +36,8 @@ class FontFallbackWinTest : public testing::Test {
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(FontFallbackWinTest);
 };
@@ -120,8 +125,8 @@ class GetFallbackFontTest
 
  private:
   // Needed to bypass DCHECK in GetFallbackFont.
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::MainThreadType::UI};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::UI};
 
   DISALLOW_COPY_AND_ASSIGN(GetFallbackFontTest);
 };

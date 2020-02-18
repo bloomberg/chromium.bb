@@ -8,15 +8,17 @@
 from __future__ import print_function
 
 import codecs
-import htmlentitydefs
+import io
 import os
 import re
 import shutil
 import sys
 import tempfile
-import time
-import types
 from xml.sax import saxutils
+
+import six
+from six import StringIO
+from six.moves import html_entities as entities
 
 from grit import lazy_re
 
@@ -220,7 +222,22 @@ def WrapOutputStream(stream, encoding = 'utf-8'):
 
 def ChangeStdoutEncoding(encoding = 'utf-8'):
   '''Changes STDOUT to print characters using the specified encoding.'''
-  sys.stdout = WrapOutputStream(sys.stdout, encoding)
+  # If we're unittesting, don't reconfigure.
+  if isinstance(sys.stdout, StringIO):
+    return
+
+  if sys.version_info.major < 3:
+    # Python 2 has binary streams by default, so reconfigure directly.
+    sys.stdout = WrapOutputStream(sys.stdout, encoding)
+    sys.stderr = WrapOutputStream(sys.stderr, encoding)
+  elif sys.version_info < (3, 7):
+    # Python 3 has text streams by default, so we have to detach them first.
+    sys.stdout = WrapOutputStream(sys.stdout.detach(), encoding)
+    sys.stderr = WrapOutputStream(sys.stderr.detach(), encoding)
+  else:
+    # Python 3.7+ provides an API for this specifically.
+    sys.stdout.reconfigure(encoding=encoding)
+    sys.stderr.reconfigure(encoding=encoding)
 
 
 def EscapeHtml(text, escape_quotes = False):
@@ -252,16 +269,16 @@ def UnescapeHtml(text, replace_nbsp=True):
   def Replace(match):
     groups = match.groupdict()
     if groups['hex']:
-      return unichr(int(groups['hex'], 16))
+      return six.unichr(int(groups['hex'], 16))
     elif groups['decimal']:
-      return unichr(int(groups['decimal'], 10))
+      return six.unichr(int(groups['decimal'], 10))
     else:
       name = groups['named']
       if name == 'nbsp' and not replace_nbsp:
         return match.group()  # Don't replace &nbsp;
       assert name != None
-      if name in htmlentitydefs.name2codepoint.keys():
-        return unichr(htmlentitydefs.name2codepoint[name])
+      if name in entities.name2codepoint:
+        return six.unichr(entities.name2codepoint[name])
       else:
         return match.group()  # Unknown HTML character entity - don't replace
 
@@ -307,7 +324,7 @@ def FixupNamedParam(function, param_name, param_value):
 
 
 def PathFromRoot(path):
-  '''Takes a path relative to the root directory for GRIT (the one that grit.py
+  r'''Takes a path relative to the root directory for GRIT (the one that grit.py
   resides in) and returns a path that is either absolute or relative to the
   current working directory (i.e .a path you can use to open the file).
 
@@ -328,24 +345,23 @@ def ParseGrdForUnittest(body, base_dir=None, predetermined_ids_file=None,
     body: XML that goes inside the <release> element.
     base_dir: The base_dir attribute of the <grit> tag.
   '''
-  import StringIO
   from grit import grd_reader
-  if isinstance(body, unicode):
+  if isinstance(body, six.text_type):
     body = body.encode('utf-8')
   if base_dir is None:
     base_dir = PathFromRoot('.')
-  lines = ['<?xml version="1.0" encoding="UTF-8"?>']
-  lines.append(('<grit latest_public_release="2" current_release="3" '
-                'source_lang_id="en" base_dir="{}">').format(base_dir))
-  if '<outputs>' in body:
+  lines = [b'<?xml version="1.0" encoding="UTF-8"?>']
+  lines.append(b'<grit latest_public_release="2" current_release="3" '
+               b'source_lang_id="en" base_dir="%s">' % base_dir.encode('utf-8'))
+  if b'<outputs>' in body:
     lines.append(body)
   else:
-    lines.append('  <outputs></outputs>')
-    lines.append('  <release seq="3">')
+    lines.append(b'  <outputs></outputs>')
+    lines.append(b'  <release seq="3">')
     lines.append(body)
-    lines.append('  </release>')
-  lines.append('</grit>')
-  ret = grd_reader.Parse(StringIO.StringIO('\n'.join(lines)), dir=".")
+    lines.append(b'  </release>')
+  lines.append(b'</grit>')
+  ret = grd_reader.Parse(io.BytesIO(b'\n'.join(lines)), dir='.')
   ret.SetOutputLanguage('en')
   if run_gatherers:
     ret.RunGatherers()
@@ -558,8 +574,8 @@ class Substituter(object):
       A regular expression object.
     '''
     if self.dirty_:
-      components = ['\[%s\]' % (k,) for k in self.substitutions_.keys()]
-      self.exp = re.compile("(%s)" % ('|'.join(components),))
+      components = [r'\[%s\]' % (k,) for k in self.substitutions_]
+      self.exp = re.compile(r'(%s)' % ('|'.join(components),))
       self.dirty_ = False
     return self.exp
 

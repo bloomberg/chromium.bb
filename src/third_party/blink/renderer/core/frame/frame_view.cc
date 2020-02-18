@@ -25,8 +25,6 @@ Frame& FrameView::GetFrame() const {
 bool FrameView::CanThrottleRenderingForPropagation() const {
   if (CanThrottleRendering())
     return true;
-  if (!RuntimeEnabledFeatures::RenderingPipelineThrottlingEnabled())
-    return false;
   LocalFrame* parent_frame = DynamicTo<LocalFrame>(GetFrame().Tree().Parent());
   if (!parent_frame)
     return false;
@@ -41,9 +39,7 @@ bool FrameView::DisplayLockedInParentFrame() {
   // We check the inclusive ancestor to determine whether the subtree is locked,
   // since the contents of the frame are in the subtree of the frame, so they
   // would be locked if the frame owner is itself locked.
-  return owner && owner->GetNode() &&
-         DisplayLockUtilities::NearestLockedInclusiveAncestor(
-             *owner->GetNode());
+  return owner && DisplayLockUtilities::NearestLockedInclusiveAncestor(*owner);
 }
 
 void FrameView::UpdateViewportIntersection(unsigned flags,
@@ -74,7 +70,8 @@ void FrameView::UpdateViewportIntersection(unsigned flags,
     // viewport_intersection empty, and signal the frame as occluded if
     // necessary.
     occlusion_state = FrameOcclusionState::kPossiblyOccluded;
-  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean) {
+  } else if (parent_lifecycle_state >= DocumentLifecycle::kLayoutClean &&
+             !owner_document.View()->NeedsLayout()) {
     unsigned geometry_flags =
         IntersectionGeometry::kShouldUseReplacedContentRect;
     if (should_compute_occlusion)
@@ -154,12 +151,13 @@ void FrameView::UpdateFrameVisibility(bool intersects_viewport) {
 void FrameView::UpdateRenderThrottlingStatus(bool hidden_for_throttling,
                                              bool subtree_throttled,
                                              bool recurse) {
-  bool was_throttled = CanThrottleRendering();
+  bool visibility_changed = (hidden_for_throttling_ || subtree_throttled_) !=
+                            (hidden_for_throttling || subtree_throttled ||
+                             DisplayLockedInParentFrame());
   hidden_for_throttling_ = hidden_for_throttling;
   subtree_throttled_ = subtree_throttled || DisplayLockedInParentFrame();
-  bool throttling_did_change = (was_throttled != CanThrottleRendering());
-  if (throttling_did_change)
-    RenderThrottlingStatusChanged();
+  if (visibility_changed)
+    VisibilityForThrottlingChanged();
   if (recurse) {
     for (Frame* child = GetFrame().Tree().FirstChild(); child;
          child = child->Tree().NextSibling()) {

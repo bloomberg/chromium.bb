@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="no">
+<translation id="1036550831858290950">Lagre den aktive fanen som bokmerke</translation>
 <translation id="104962181688258143">Åpne Filer-appen</translation>
-<translation id="1098295134904615027">Aktivér det virtuelle skrivebordet til høyre</translation>
 <translation id="1122869341872663659">Viser <ph name="N" /> søkeresultater for <ph name="QUERY" /></translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Legg til www. og .com i det du har skrevet i adressefeltet, og åpne siden</translation>
+<translation id="1872219238824176091">Fjern det aktive skrivebordet</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> eller <ph name="LEFT" /></translation>
-<translation id="1929866390202038233">Aktivér det virtuelle skrivebordet til venstre</translation>
 <translation id="1996162290124031907">Gå til neste fane</translation>
 <translation id="2010818616644390445">Gå til den siste fanen i vinduet</translation>
 <translation id="2040706009561734834">Åpne/lukk appoversikten</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">Bytt raskt mellom vinduer</translation>
 <translation id="2454251766545114447">Zoom ut skjerm</translation>
 <translation id="2478303094958140141">Slå ChromeVox (taletilbakemelding) på eller av</translation>
+<translation id="2488661730534396940">Aktivér skrivebordet til venstre</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Rull ned på nettsiden</translation>
 <translation id="2574014812750545982">Tilbakestill zoomnivået på siden</translation>
 <translation id="2596078834055697711">Ta en skjermdump av vinduet</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> og så <ph name="TAB" /> eller <ph name="RIGHT" /></translation>
-<translation id="2699509451653686398">Lagre den aktive nettsiden som et bokmerke</translation>
 <translation id="2750942583782703988">Last inn den aktive siden på nytt</translation>
 <translation id="2764005613199379871">Plassér fokuset i søkeadressefeltet</translation>
+<translation id="2774822903829597107">Opprett et nytt skrivebord</translation>
 <translation id="2789868185375229787">Zoom ut på siden</translation>
 <translation id="2804480015716812239">Trykk på <ph name="ALT" /> og klikk på en link</translation>
 <translation id="2830827904629746450">Dokk et vindu til høyre</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Ta skjermdump</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Fokuser adressefelt</translation>
-<translation id="3165428420335997629">Opprett et nytt virtuelt skrivebord</translation>
 <translation id="3256109297135787951">Fjern fremhevingen av et element på hyllen</translation>
 <translation id="3288816184963444640">Lukk det aktive vinduet</translation>
 <translation id="3407560819924487926">Hent frem oppgavebehandlingen</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Ta en delvis skjermdump</translation>
 <translation id="4698850295812410683">Vis pekepennverktøyet</translation>
 <translation id="4801989101741319327">Flytt til slutten av neste ord</translation>
+<translation id="4866066940972151697">Aktivér skrivebordet til høyre</translation>
 <translation id="4916163929714267752">Åpne linken i et nytt vindu</translation>
 <translation id="5030659775136592441">Vis bokmerkebehandlingen</translation>
 <translation id="5034421018520995080">Gå til toppen av siden</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>
 <translation id="8241665785394195545">høyre hakeparentes</translation>
 <translation id="8264941229485248811">Vis eller skjul inspektøren for utviklerverktøy</translation>
-<translation id="8355937569537581904">Fjern det gjeldende virtuelle skrivebordet</translation>
 <translation id="836869401750819675">Åpne nedlastingssiden</translation>
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>
 <translation id="8389638407792712197">Åpne et nytt vindu</translation>

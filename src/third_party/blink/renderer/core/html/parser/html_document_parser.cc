@@ -65,8 +65,8 @@
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 
 namespace blink {
 
@@ -123,7 +123,6 @@ HTMLDocumentParser::HTMLDocumentParser(
   bool report_errors = false;
   tokenizer_->SetState(TokenizerStateForContextElement(
       context_element, report_errors, options_));
-  xss_auditor_.InitForFragment();
 }
 
 HTMLDocumentParser::HTMLDocumentParser(Document& document,
@@ -144,7 +143,6 @@ HTMLDocumentParser::HTMLDocumentParser(Document& document,
                                   this,
                                   loading_task_runner_.get())
                             : nullptr),
-      xss_auditor_delegate_(&document),
       pending_csp_meta_token_(nullptr),
       should_use_threading_(sync_policy == kAllowAsynchronousParsing),
       end_was_delayed_(false),
@@ -189,7 +187,6 @@ void HTMLDocumentParser::Dispose() {
 void HTMLDocumentParser::Trace(Visitor* visitor) {
   visitor->Trace(tree_builder_);
   visitor->Trace(parser_scheduler_);
-  visitor->Trace(xss_auditor_delegate_);
   visitor->Trace(script_runner_);
   visitor->Trace(preloader_);
   ScriptableDocumentParser::Trace(visitor);
@@ -513,52 +510,39 @@ size_t HTMLDocumentParser::ProcessTokenizedChunkFromBackgroundParser(
       FROM_HERE, WTF::Bind(&BackgroundHTMLParser::StartedChunkWithCheckpoint,
                            background_parser_, chunk->input_checkpoint));
 
-  for (const auto& xss_info : chunk->xss_infos) {
-    text_position_ = xss_info->text_position_;
-    xss_auditor_delegate_.DidBlockScript(*xss_info);
-    if (IsStopped())
-      break;
-  }
-  // XSSAuditorDelegate can detach the parser if it decides to block the entire
-  // current document.
-  if (IsDetached())
-    return element_token_count;
-
-  // TODO(kouhei): Below should rewritten as range for loop.
-  for (Vector<CompactHTMLToken>::const_iterator it = tokens.begin();
-       it != tokens.end(); ++it) {
+  for (const auto& token : tokens) {
     DCHECK(!IsWaitingForScripts());
 
-    if (!chunk->starting_script && (it->GetType() == HTMLToken::kStartTag ||
-                                    it->GetType() == HTMLToken::kEndTag))
+    if (!chunk->starting_script && (token.GetType() == HTMLToken::kStartTag ||
+                                    token.GetType() == HTMLToken::kEndTag))
       element_token_count++;
 
-    text_position_ = it->GetTextPosition();
+    text_position_ = token.GetTextPosition();
 
-    ConstructTreeFromCompactHTMLToken(*it);
+    ConstructTreeFromCompactHTMLToken(token);
 
     if (IsStopped())
       break;
 
     // Preloads were queued if there was a <meta> csp token in a tokenized
     // chunk.
-    if (pending_csp_meta_token_ && it == pending_csp_meta_token_) {
+    if (pending_csp_meta_token_ && &token == pending_csp_meta_token_) {
       pending_csp_meta_token_ = nullptr;
       FetchQueuedPreloads();
     }
 
     if (IsPaused()) {
       // The script or stylesheet should be the last token of this bunch.
-      DCHECK_EQ(it + 1, tokens.end());
+      DCHECK_EQ(&token, &tokens.back());
       if (IsWaitingForScripts())
         RunScriptsForPausedTreeBuilder();
       ValidateSpeculations(std::move(chunk));
       break;
     }
 
-    if (it->GetType() == HTMLToken::kEndOfFile) {
+    if (token.GetType() == HTMLToken::kEndOfFile) {
       // The EOF is assumed to be the last token of this bunch.
-      DCHECK_EQ(it + 1, tokens.end());
+      DCHECK_EQ(&token, &tokens.back());
       // There should never be any chunks after the EOF.
       DCHECK(speculations_.IsEmpty());
       PrepareToStopParsing();
@@ -656,13 +640,7 @@ void HTMLDocumentParser::PumpTokenizer() {
   // DidWriteHTML instead of WillWriteHTML.
   probe::ParseHTML probe(GetDocument(), this);
 
-  if (!IsParsingFragment())
-    xss_auditor_.Init(GetDocument(), &xss_auditor_delegate_);
-
   while (CanTakeNextToken()) {
-    if (xss_auditor_.IsEnabled())
-      source_tracker_.Start(input_.Current(), tokenizer_.get(), Token());
-
     {
       RUNTIME_CALL_TIMER_SCOPE(
           V8PerIsolateData::MainThreadIsolate(),
@@ -670,23 +648,6 @@ void HTMLDocumentParser::PumpTokenizer() {
       if (!tokenizer_->NextToken(input_.Current(), Token()))
         break;
     }
-
-    if (xss_auditor_.IsEnabled()) {
-      source_tracker_.end(input_.Current(), tokenizer_.get(), Token());
-
-      // We do not XSS filter innerHTML, which means we (intentionally) fail
-      // http/tests/security/xssAuditor/dom-write-innerHTML.html
-      if (std::unique_ptr<XSSInfo> xss_info =
-              xss_auditor_.FilterToken(FilterTokenRequest(
-                  Token(), source_tracker_, tokenizer_->ShouldAllowCDATA()))) {
-        xss_auditor_delegate_.DidBlockScript(*xss_info);
-        // If we're in blocking mode, we might stop the parser in
-        // 'didBlockScript()'. In that case, exit early.
-        if (!IsParsing())
-          return;
-      }
-    }
-
     ConstructTreeFromHTMLToken();
     DCHECK(IsStopped() || Token().IsUninitialized());
   }
@@ -810,12 +771,7 @@ void HTMLDocumentParser::StartBackgroundParser() {
       std::make_unique<BackgroundHTMLParser::Configuration>();
   config->options = options_;
   config->parser = weak_factory_.GetWeakPtr();
-  config->xss_auditor = std::make_unique<XSSAuditor>();
-  config->xss_auditor->Init(GetDocument(), &xss_auditor_delegate_);
-
   config->decoder = TakeDecoder();
-
-  DCHECK(config->xss_auditor->IsSafeToSendToAnotherThread());
 
   // The background parser is created on the main thread, but may otherwise
   // only be used from the parser thread.

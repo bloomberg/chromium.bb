@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2012-2014 The ANGLE Project Authors. All rights reserved.
+// Copyright 2012 The ANGLE Project Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -1403,6 +1403,12 @@ void GenerateCaps(const FunctionsGL *functions,
     extensions->floatBlend = functions->standard == STANDARD_GL_DESKTOP ||
                              functions->hasGLESExtension("GL_EXT_float_blend");
 
+    // ANGLE_base_vertex_base_instance
+    extensions->baseVertexBaseInstance =
+        functions->isAtLeastGL(gl::Version(3, 2)) || functions->isAtLeastGLES(gl::Version(3, 2)) ||
+        functions->hasGLESExtension("GL_OES_draw_elements_base_vertex") ||
+        functions->hasGLESExtension("GL_EXT_draw_elements_base_vertex");
+
     // GL_CHROMIUM_compressed_texture_etc
     // Expose this extension only when we support the formats or we're running on top of a native
     // ES driver.
@@ -1425,6 +1431,15 @@ void GenerateCaps(const FunctionsGL *functions,
     extensions->texture3DOES               = functions->isAtLeastGL(gl::Version(1, 2)) ||
                                functions->isAtLeastGLES(gl::Version(3, 0)) ||
                                functions->hasGLESExtension("GL_OES_texture_3D");
+
+    extensions->memoryObject = functions->hasGLExtension("GL_EXT_memory_object") ||
+                               functions->hasGLESExtension("GL_EXT_memory_object");
+    extensions->semaphore = functions->hasGLExtension("GL_EXT_semaphore") ||
+                            functions->hasGLESExtension("GL_EXT_semaphore");
+    extensions->memoryObjectFd = functions->hasGLExtension("GL_EXT_memory_object_fd") ||
+                                 functions->hasGLESExtension("GL_EXT_memory_object_fd");
+    extensions->semaphoreFd = functions->hasGLExtension("GL_EXT_semaphore_fd") ||
+                              functions->hasGLESExtension("GL_EXT_semaphore_fd");
 }
 
 void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *features)
@@ -1455,6 +1470,8 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
     features->doWhileGLSLCausesGPUHang.enabled                  = IsApple();
     features->useUnusedBlocksWithStandardOrSharedLayout.enabled = IsApple();
     features->rewriteFloatUnaryMinusOperator.enabled            = IsApple() && IsIntel(vendor);
+
+    features->addBaseVertexToVertexID.enabled = IsApple() && IsAMD(vendor);
 
     // Triggers a bug on Marshmallow Adreno (4xx?) driver.
     // http://anglebug.com/2046
@@ -1533,7 +1550,12 @@ void InitializeFeatures(const FunctionsGL *functions, angle::FeaturesGL *feature
         IsApple() && IsIntel(vendor) && GetMacOSVersion() < OSVersion(10, 12, 6);
 
     features->adjustSrcDstRegionBlitFramebuffer.enabled =
-        IsApple() || IsLinux() || (IsAndroid() && IsNvidia(vendor));
+        IsLinux() || (IsAndroid() && IsNvidia(vendor)) || (IsWindows() && IsNvidia(vendor));
+
+    features->clipSrcRegionBlitFramebuffer.enabled = IsApple();
+
+    features->resettingTexturesGeneratesErrors.enabled =
+        IsApple() || (IsWindows() && IsAMD(device));
 }
 
 void InitializeFrontendFeatures(const FunctionsGL *functions, angle::FrontendFeatures *features)
@@ -1670,6 +1692,52 @@ ClearMultiviewGL *GetMultiviewClearer(const gl::Context *context)
 const angle::FeaturesGL &GetFeaturesGL(const gl::Context *context)
 {
     return GetImplAs<ContextGL>(context)->getFeaturesGL();
+}
+
+void ClearErrors(const gl::Context *context,
+                 const char *file,
+                 const char *function,
+                 unsigned int line)
+{
+    const FunctionsGL *functions = GetFunctionsGL(context);
+
+    GLenum error = functions->getError();
+    while (error != GL_NO_ERROR)
+    {
+        ERR() << "Preexisting GL error " << gl::FmtHex(error) << " as of " << file << ", "
+              << function << ":" << line << ". ";
+        error = functions->getError();
+    }
+}
+
+angle::Result CheckError(const gl::Context *context,
+                         const char *call,
+                         const char *file,
+                         const char *function,
+                         unsigned int line)
+{
+    const FunctionsGL *functions = GetFunctionsGL(context);
+
+    GLenum error = functions->getError();
+    if (ANGLE_UNLIKELY(error != GL_NO_ERROR))
+    {
+        ContextGL *contextGL = GetImplAs<ContextGL>(context);
+        contextGL->handleError(error, "Unexpected driver error.", file, function, line);
+        ERR() << "GL call " << call << " generated error " << gl::FmtHex(error) << " in " << file
+              << ", " << function << ":" << line << ". ";
+
+        // Check that only one GL error was generated, ClearErrors should have been called first
+        GLenum nextError = functions->getError();
+        while (nextError != GL_NO_ERROR)
+        {
+            ERR() << "Additional GL error " << gl::FmtHex(nextError) << " generated.";
+            nextError = functions->getError();
+        }
+
+        return angle::Result::Stop;
+    }
+
+    return angle::Result::Continue;
 }
 
 bool CanMapBufferForRead(const FunctionsGL *functions)

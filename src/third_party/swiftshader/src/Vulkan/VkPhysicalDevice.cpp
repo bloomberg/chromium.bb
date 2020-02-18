@@ -34,7 +34,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		VK_TRUE,   // robustBufferAccess
 		VK_FALSE,  // fullDrawIndexUint32
 		VK_FALSE,  // imageCubeArray
-		VK_FALSE,  // independentBlend
+		VK_TRUE,   // independentBlend
 		VK_FALSE,  // geometryShader
 		VK_FALSE,  // tessellationShader
 		VK_FALSE,  // sampleRateShading
@@ -44,7 +44,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		VK_TRUE,   // drawIndirectFirstInstance
 		VK_FALSE,  // depthClamp
 		VK_FALSE,  // depthBiasClamp
-		VK_FALSE,  // fillModeNonSolid
+		VK_TRUE,   // fillModeNonSolid
 		VK_FALSE,  // depthBounds
 		VK_FALSE,  // wideLines
 		VK_FALSE,  // largePoints
@@ -57,7 +57,7 @@ const VkPhysicalDeviceFeatures& PhysicalDevice::getFeatures() const
 		VK_FALSE,  // occlusionQueryPrecise
 		VK_FALSE,  // pipelineStatisticsQuery
 		VK_FALSE,  // vertexPipelineStoresAndAtomics
-		VK_FALSE,  // fragmentStoresAndAtomics
+		VK_TRUE,   // fragmentStoresAndAtomics
 		VK_FALSE,  // shaderTessellationAndGeometryPointSize
 		VK_FALSE,  // shaderImageGatherExtended
 		VK_FALSE,  // shaderStorageImageExtendedFormats
@@ -119,7 +119,7 @@ void PhysicalDevice::getFeatures(VkPhysicalDevice8BitStorageFeaturesKHR* feature
 
 void PhysicalDevice::getFeatures(VkPhysicalDeviceMultiviewFeatures* features) const
 {
-	features->multiview = VK_FALSE;
+	features->multiview = VK_TRUE;
 	features->multiviewGeometryShader = VK_FALSE;
 	features->multiviewTessellationShader = VK_FALSE;
 }
@@ -205,7 +205,7 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		4, // mipmapPrecisionBits
 		UINT32_MAX, // maxDrawIndexedIndexValue
 		UINT32_MAX, // maxDrawIndirectCount
-		std::numeric_limits<float>::infinity(), // maxSamplerLodBias (no clamping takes place)
+		vk::MAX_SAMPLER_LOD_BIAS, // maxSamplerLodBias
 		16, // maxSamplerAnisotropy
 		16, // maxViewports
 		{ 4096, 4096 }, // maxViewportDimensions[2]
@@ -215,10 +215,10 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		vk::MIN_TEXEL_BUFFER_OFFSET_ALIGNMENT, // minTexelBufferOffsetAlignment
 		vk::MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT, // minUniformBufferOffsetAlignment
 		vk::MIN_STORAGE_BUFFER_OFFSET_ALIGNMENT, // minStorageBufferOffsetAlignment
-		-8, // minTexelOffset
-		7, // maxTexelOffset
-		-8, // minTexelGatherOffset
-		7, // maxTexelGatherOffset
+		sw::MIN_TEXEL_OFFSET, // minTexelOffset
+		sw::MAX_TEXEL_OFFSET, // maxTexelOffset
+		sw::MIN_TEXEL_OFFSET, // minTexelGatherOffset
+		sw::MAX_TEXEL_OFFSET, // maxTexelGatherOffset
 		-0.5, // minInterpolationOffset
 		0.5, // maxInterpolationOffset
 		4, // subPixelInterpolationOffsetBits
@@ -246,8 +246,8 @@ const VkPhysicalDeviceLimits& PhysicalDevice::getLimits() const
 		{ 1.0, 1.0 }, // lineWidthRange[2] (unsupported)
 		0.0, // pointSizeGranularity (unsupported)
 		0.0, // lineWidthGranularity (unsupported)
-		VK_FALSE,  // strictLines
-		VK_TRUE,   // standardSampleLocations
+		VK_TRUE,  // strictLines
+		VK_TRUE,  // standardSampleLocations
 		64, // optimalBufferCopyOffsetAlignment
 		64, // optimalBufferCopyRowPitchAlignment
 		256, // nonCoherentAtomSize
@@ -295,8 +295,8 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceMaintenance3Properties* prope
 
 void PhysicalDevice::getProperties(VkPhysicalDeviceMultiviewProperties* properties) const
 {
-	properties->maxMultiviewViewCount = 0;
-	properties->maxMultiviewInstanceIndex = 0;
+	properties->maxMultiviewViewCount = 6;
+	properties->maxMultiviewInstanceIndex = 1u<<27;
 }
 
 void PhysicalDevice::getProperties(VkPhysicalDevicePointClippingProperties* properties) const
@@ -313,7 +313,12 @@ void PhysicalDevice::getProperties(VkPhysicalDeviceSubgroupProperties* propertie
 {
 	properties->subgroupSize = sw::SIMD::Width;
 	properties->supportedStages = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
-	properties->supportedOperations = VK_SUBGROUP_FEATURE_BASIC_BIT;
+	properties->supportedOperations =
+		VK_SUBGROUP_FEATURE_BASIC_BIT |
+		VK_SUBGROUP_FEATURE_VOTE_BIT |
+		VK_SUBGROUP_FEATURE_BALLOT_BIT |
+		VK_SUBGROUP_FEATURE_SHUFFLE_BIT |
+		VK_SUBGROUP_FEATURE_SHUFFLE_RELATIVE_BIT;
 	properties->quadOperationsInAllStages = VK_FALSE;
 }
 

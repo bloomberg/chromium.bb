@@ -5,14 +5,16 @@
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 
 #include "base/files/scoped_temp_dir.h"
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "content/browser/native_file_system/fixed_native_file_system_permission_grant.h"
 #include "content/browser/native_file_system/mock_native_file_system_permission_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "storage/browser/blob/blob_storage_context.h"
+#include "storage/browser/test/async_file_test_helper.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
@@ -26,8 +28,7 @@ using storage::FileSystemURL;
 class NativeFileSystemManagerImplTest : public testing::Test {
  public:
   NativeFileSystemManagerImplTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO) {
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
     scoped_feature_list_.InitAndEnableFeature(
         blink::features::kNativeFileSystemAPI);
   }
@@ -42,9 +43,11 @@ class NativeFileSystemManagerImplTest : public testing::Test {
     chrome_blob_context_->InitializeOnIOThread(base::FilePath(), nullptr);
 
     manager_ = base::MakeRefCounted<NativeFileSystemManagerImpl>(
-        file_system_context_, chrome_blob_context_, &permission_context_);
+        file_system_context_, chrome_blob_context_, &permission_context_,
+        /*off_the_record=*/false);
 
-    manager_->BindRequest(kBindingContext, mojo::MakeRequest(&manager_ptr_));
+    manager_->BindReceiver(kBindingContext,
+                           manager_remote_.BindNewPipeAndPassReceiver());
   }
 
   template <typename HandleType>
@@ -61,15 +64,15 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   }
 
  protected:
-  const url::Origin kTestOrigin =
-      url::Origin::Create(GURL("https://example.com"));
+  const GURL kTestURL = GURL("https://example.com/test");
+  const url::Origin kTestOrigin = url::Origin::Create(kTestURL);
   const int kProcessId = 1;
   const int kFrameId = 2;
   const NativeFileSystemManagerImpl::BindingContext kBindingContext = {
-      kTestOrigin, kProcessId, kFrameId};
+      kTestOrigin, kTestURL, kProcessId, kFrameId};
 
   base::test::ScopedFeatureList scoped_feature_list_;
-  TestBrowserThreadBundle scoped_task_environment_;
+  BrowserTaskEnvironment task_environment_;
 
   base::ScopedTempDir dir_;
   scoped_refptr<storage::FileSystemContext> file_system_context_;
@@ -78,7 +81,7 @@ class NativeFileSystemManagerImplTest : public testing::Test {
   testing::StrictMock<MockNativeFileSystemPermissionContext>
       permission_context_;
   scoped_refptr<NativeFileSystemManagerImpl> manager_;
-  blink::mojom::NativeFileSystemManagerPtr manager_ptr_;
+  mojo::Remote<blink::mojom::NativeFileSystemManager> manager_remote_;
 
   scoped_refptr<FixedNativeFileSystemPermissionGrant> ask_grant_ =
       base::MakeRefCounted<FixedNativeFileSystemPermissionGrant>(
@@ -91,10 +94,10 @@ class NativeFileSystemManagerImplTest : public testing::Test {
 TEST_F(NativeFileSystemManagerImplTest, GetSandboxedFileSystem_Permissions) {
   blink::mojom::NativeFileSystemDirectoryHandlePtr root;
   base::RunLoop loop;
-  manager_ptr_->GetSandboxedFileSystem(base::BindLambdaForTesting(
+  manager_remote_->GetSandboxedFileSystem(base::BindLambdaForTesting(
       [&](blink::mojom::NativeFileSystemErrorPtr result,
           blink::mojom::NativeFileSystemDirectoryHandlePtr handle) {
-        EXPECT_EQ(base::File::FILE_OK, result->error_code);
+        EXPECT_EQ(blink::mojom::NativeFileSystemStatus::kOk, result->status);
         root = std::move(handle);
         loop.Quit();
       }));
@@ -123,7 +126,7 @@ TEST_F(NativeFileSystemManagerImplTest, CreateFileEntryFromPath_Permissions) {
 
   blink::mojom::NativeFileSystemEntryPtr entry =
       manager_->CreateFileEntryFromPath(kBindingContext, kTestPath);
-  blink::mojom::NativeFileSystemFileHandlePtr handle(
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> handle(
       std::move(entry->entry_handle->get_file()));
 
   EXPECT_EQ(PermissionStatus::GRANTED,
@@ -150,7 +153,7 @@ TEST_F(NativeFileSystemManagerImplTest,
 
   blink::mojom::NativeFileSystemEntryPtr entry =
       manager_->CreateWritableFileEntryFromPath(kBindingContext, kTestPath);
-  blink::mojom::NativeFileSystemFileHandlePtr handle(
+  mojo::Remote<blink::mojom::NativeFileSystemFileHandle> handle(
       std::move(entry->entry_handle->get_file()));
 
   EXPECT_EQ(PermissionStatus::GRANTED,
@@ -183,6 +186,79 @@ TEST_F(NativeFileSystemManagerImplTest,
             GetPermissionStatusSync(/*writable=*/false, handle.get()));
   EXPECT_EQ(PermissionStatus::ASK,
             GetPermissionStatusSync(/*writable=*/true, handle.get()));
+}
+
+TEST_F(NativeFileSystemManagerImplTest,
+       FileWriterSwapDeletedOnConnectionClose) {
+  auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test"));
+
+  auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test.crswap"));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            test_file_url));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFile(file_system_context_.get(),
+                                            test_swap_url));
+
+  mojo::Remote<blink::mojom::NativeFileSystemFileWriter> writer_remote(
+      manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 NativeFileSystemManagerImpl::SharedHandleState(
+                                     allow_grant_, allow_grant_, {})));
+
+  ASSERT_TRUE(writer_remote.is_bound());
+  ASSERT_TRUE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+
+  // Severs the mojo pipe, causing the writer to be destroyed.
+  writer_remote.reset();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+}
+
+TEST_F(NativeFileSystemManagerImplTest,
+       FileWriterCloseAllowedToCompleteOnDestruct) {
+  auto test_file_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test"));
+
+  auto test_swap_url = file_system_context_->CreateCrackedFileSystemURL(
+      kTestOrigin.GetURL(), storage::kFileSystemTypeTest,
+      base::FilePath::FromUTF8Unsafe("test.crswap"));
+
+  ASSERT_EQ(base::File::FILE_OK,
+            AsyncFileTestHelper::CreateFileWithData(file_system_context_.get(),
+                                                    test_swap_url, "foo", 3));
+
+  mojo::Remote<blink::mojom::NativeFileSystemFileWriter> writer_remote(
+      manager_->CreateFileWriter(kBindingContext, test_file_url, test_swap_url,
+                                 NativeFileSystemManagerImpl::SharedHandleState(
+                                     allow_grant_, allow_grant_, {})));
+
+  ASSERT_TRUE(writer_remote.is_bound());
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_file_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+  writer_remote->Close(base::DoNothing());
+
+  // Severs the mojo pipe, causing the writer to be destroyed.
+  writer_remote.reset();
+  base::RunLoop().RunUntilIdle();
+
+  ASSERT_FALSE(
+      AsyncFileTestHelper::FileExists(file_system_context_.get(), test_swap_url,
+                                      AsyncFileTestHelper::kDontCheckSize));
+  ASSERT_TRUE(AsyncFileTestHelper::FileExists(file_system_context_.get(),
+                                              test_file_url, 3));
 }
 
 }  // namespace content

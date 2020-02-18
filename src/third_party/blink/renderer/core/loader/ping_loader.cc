@@ -228,12 +228,8 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
   request.SetKeepalive(true);
   // TODO(domfarolino): Add WPTs ensuring that pings do not have a referrer
   // header.
-  request.SetReferrerString(
-      Referrer::NoReferrer(),
-      ResourceRequest::SetReferrerStringLocation::kPingLoader);
-  request.SetReferrerPolicy(
-      network::mojom::ReferrerPolicy::kNever,
-      ResourceRequest::SetReferrerPolicyLocation::kPingLoader);
+  request.SetReferrerString(Referrer::NoReferrer());
+  request.SetReferrerPolicy(network::mojom::ReferrerPolicy::kNever);
   request.SetRequestContext(mojom::RequestContextType::PING);
   FetchParameters params(request);
   params.MutableOptions().initiator_info.name =
@@ -245,18 +241,10 @@ void PingLoader::SendLinkAuditPing(LocalFrame* frame,
 
 void PingLoader::SendViolationReport(LocalFrame* frame,
                                      const KURL& report_url,
-                                     scoped_refptr<EncodedFormData> report,
-                                     ViolationReportType type) {
+                                     scoped_refptr<EncodedFormData> report) {
   ResourceRequest request(report_url);
   request.SetHttpMethod(http_names::kPOST);
-  switch (type) {
-    case kContentSecurityPolicyViolationReport:
-      request.SetHTTPContentType("application/csp-report");
-      break;
-    case kXSSAuditorViolationReport:
-      request.SetHTTPContentType("application/xss-auditor-report");
-      break;
-  }
+  request.SetHTTPContentType("application/csp-report");
   request.SetKeepalive(true);
   request.SetHttpBody(std::move(report));
   request.SetCredentialsMode(network::mojom::CredentialsMode::kSameOrigin);

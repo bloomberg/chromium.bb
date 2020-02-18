@@ -15,8 +15,6 @@ namespace {
 // Sensitivity in response to losses. 0 means no loss response.
 // 0.3 is also used by TCP bbr and cubic.
 const float kBeta = 0.3;
-
-const QuicTime::Delta kMinRttExpiry = QuicTime::Delta::FromSeconds(10);
 }  // namespace
 
 RoundTripCounter::RoundTripCounter() : round_trip_count_(0) {}
@@ -79,42 +77,14 @@ const SendTimeState& SendStateOfLargestPacket(
   return last_acked_sample.bandwidth_sample.state_at_send;
 }
 
-QuicByteCount Bbr2MaxAckHeightTracker::Update(
-    const QuicBandwidth& bandwidth_estimate,
-    QuicRoundTripCount round_trip_count,
-    QuicTime ack_time,
-    QuicByteCount bytes_acked) {
-  // TODO(wub): Find out whether TCP adds bytes_acked before or after the check.
-  aggregation_epoch_bytes_ += bytes_acked;
-
-  // Compute how many bytes are expected to be delivered, assuming max bandwidth
-  // is correct.
-  QuicByteCount expected_bytes_acked =
-      bandwidth_estimate * (ack_time - aggregation_epoch_start_time_);
-  // Reset the current aggregation epoch as soon as the ack arrival rate is less
-  // than or equal to the max bandwidth.
-  if (aggregation_epoch_bytes_ <= expected_bytes_acked) {
-    // Reset to start measuring a new aggregation epoch.
-    aggregation_epoch_bytes_ = bytes_acked;
-    aggregation_epoch_start_time_ = ack_time;
-    return 0;
-  }
-
-  // Compute how many extra bytes were delivered vs max bandwidth.
-  QuicByteCount extra_bytes_acked =
-      aggregation_epoch_bytes_ - expected_bytes_acked;
-  max_ack_height_filter_.Update(extra_bytes_acked, round_trip_count);
-  return extra_bytes_acked;
-}
-
 Bbr2NetworkModel::Bbr2NetworkModel(const Bbr2Params* params,
                                    QuicTime::Delta initial_rtt,
                                    QuicTime initial_rtt_timestamp,
                                    float cwnd_gain,
                                    float pacing_gain)
     : params_(params),
+      bandwidth_sampler_(nullptr, params->initial_max_ack_height_filter_window),
       min_rtt_filter_(initial_rtt, initial_rtt_timestamp),
-      max_ack_height_tracker_(params->initial_max_ack_height_filter_window),
       cwnd_gain_(cwnd_gain),
       pacing_gain_(pacing_gain) {}
 
@@ -200,8 +170,7 @@ void Bbr2NetworkModel::OnCongestionEventStart(
   congestion_event->bytes_lost = total_bytes_lost() - prior_bytes_lost;
   bytes_lost_in_round_ += congestion_event->bytes_lost;
 
-  max_ack_height_tracker_.Update(BandwidthEstimate(), RoundTripCount(),
-                                 event_time, congestion_event->bytes_acked);
+  bandwidth_sampler_.OnAckEventEnd(BandwidthEstimate(), RoundTripCount());
 
   if (!congestion_event->end_of_round_trip) {
     return;
@@ -264,7 +233,8 @@ void Bbr2NetworkModel::UpdateNetworkParameters(QuicBandwidth bandwidth,
 
 bool Bbr2NetworkModel::MaybeExpireMinRtt(
     const Bbr2CongestionEvent& congestion_event) {
-  if (congestion_event.event_time < (MinRttTimestamp() + kMinRttExpiry)) {
+  if (congestion_event.event_time <
+      (MinRttTimestamp() + Params().probe_rtt_period)) {
     return false;
   }
   if (congestion_event.sample_min_rtt.IsInfinite()) {

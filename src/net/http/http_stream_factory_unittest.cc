@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "net/base/completion_once_callback.h"
 #include "net/base/features.h"
+#include "net/base/network_isolation_key.h"
 #include "net/base/port_util.h"
 #include "net/base/privacy_mode.h"
 #include "net/base/proxy_server.h"
@@ -40,7 +41,6 @@
 #include "net/http/http_proxy_connect_job.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_server_properties.h"
-#include "net/http/http_server_properties_impl.h"
 #include "net/http/http_stream.h"
 #include "net/http/transport_security_state.h"
 #include "net/log/net_log_with_source.h"
@@ -69,21 +69,21 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "net/third_party/quiche/src/quic/core/quic_server_id.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quiche/src/quic/test_tools/mock_random.h"
 #include "net/third_party/quiche/src/quic/test_tools/quic_test_utils.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
+#include "testing/gmock/include/gmock/gmock.h"
+#include "testing/gtest/include/gtest/gtest.h"
+#include "url/origin.h"
 
 // This file can be included from net/http even though
 // it is in net/websockets because it doesn't
 // introduce any link dependency to net/websockets.
 #include "net/websockets/websocket_handshake_stream_base.h"
-
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::Contains;
 using ::testing::ElementsAre;
@@ -407,8 +407,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
                                   base::TimeDelta(),
                                   ProxyServer::Direct(),
                                   false /* is_for_websockets */,
-                                  common_connect_job_params,
-                                  nullptr /* ssl_config_service */),
+                                  common_connect_job_params),
         last_num_streams_(-1) {}
 
   int last_num_streams() const { return last_num_streams_; }
@@ -481,7 +480,7 @@ class CapturePreconnectsTransportSocketPool : public TransportClientSocketPool {
   ClientSocketPool::GroupId last_group_id_;
 };
 
-using HttpStreamFactoryTest = TestWithScopedTaskEnvironment;
+using HttpStreamFactoryTest = TestWithTaskEnvironment;
 
 // TODO(950069): Add testing for frame_origin in NetworkIsolationKey using
 // kAppendInitiatingFrameOriginToNetworkIsolationKey.
@@ -791,7 +790,7 @@ TEST_F(HttpStreamFactoryTest, QuicProxyMarkedAsBad) {
 
     HttpNetworkSession::Context session_context;
     SSLConfigServiceDefaults ssl_config_service;
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     MockClientSocketFactory socket_factory;
     session_context.client_socket_factory = &socket_factory;
     MockHostResolver host_resolver;
@@ -924,7 +923,7 @@ void SetupForQuicAlternativeProxyTest(
     MockClientSocketFactory* socket_factory,
     ProxyResolutionService* proxy_resolution_service,
     TestProxyDelegate* test_proxy_delegate,
-    HttpServerPropertiesImpl* http_server_properties,
+    HttpServerProperties* http_server_properties,
     MockCertVerifier* cert_verifier,
     CTPolicyEnforcer* ct_policy_enforcer,
     MultiLogCTVerifier* ct_verifier,
@@ -973,7 +972,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyMarkedAsBad) {
               "HTTPS badproxy:99; HTTPS badfallbackproxy:98; DIRECT",
               TRAFFIC_ANNOTATION_FOR_TESTS);
       TestProxyDelegate test_proxy_delegate;
-      HttpServerPropertiesImpl http_server_properties;
+      HttpServerProperties http_server_properties;
       MockCertVerifier cert_verifier;
       DefaultCTPolicyEnforcer ct_policy_enforcer;
       MultiLogCTVerifier ct_verifier;
@@ -1087,7 +1086,7 @@ TEST_F(HttpStreamFactoryTest, WithQUICAlternativeProxyNotMarkedAsBad) {
         ProxyResolutionService::CreateFixedFromPacResult(
             "HTTPS badproxy:99; DIRECT", TRAFFIC_ANNOTATION_FOR_TESTS);
     TestProxyDelegate test_proxy_delegate;
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     MockCertVerifier cert_verifier;
     DefaultCTPolicyEnforcer ct_policy_enforcer;
     MultiLogCTVerifier ct_verifier;
@@ -1182,7 +1181,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     session_params.enable_quic = true;
 
     // Set up QUIC as alternative_service.
-    HttpServerPropertiesImpl http_server_properties;
+    HttpServerProperties http_server_properties;
     const AlternativeService alternative_service(kProtoQUIC, url.host().c_str(),
                                                  url.IntPort());
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
@@ -1190,7 +1189,7 @@ TEST_F(HttpStreamFactoryTest, UsePreConnectIfNoZeroRTT) {
     url::SchemeHostPort server("https", host_port_pair.host(),
                                host_port_pair.port());
     http_server_properties.SetQuicAlternativeService(
-        server, alternative_service, expiration,
+        server, NetworkIsolationKey(), alternative_service, expiration,
         session_params.quic_params.supported_versions);
 
     HttpNetworkSession::Context session_context =
@@ -1228,10 +1227,11 @@ TEST_F(HttpStreamFactoryTest, OnlyOnePreconnectToProxyServer) {
               "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
       // Set up the proxy server as a server that supports request priorities.
-      HttpServerPropertiesImpl http_server_properties;
+      HttpServerProperties http_server_properties;
       if (set_http_server_properties) {
         url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-        http_server_properties.SetSupportsSpdy(spdy_server, true);
+        http_server_properties.SetSupportsSpdy(spdy_server,
+                                               NetworkIsolationKey(), true);
       }
 
       SpdySessionDependencies session_deps;
@@ -1312,10 +1312,11 @@ TEST_F(HttpStreamFactoryTest, ProxyServerPreconnectDifferentPrivacyModes) {
           "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
 
   // Set up the proxy server as a server that supports request priorities.
-  HttpServerPropertiesImpl http_server_properties;
+  HttpServerProperties http_server_properties;
 
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-  http_server_properties.SetSupportsSpdy(spdy_server, true);
+  http_server_properties.SetSupportsSpdy(spdy_server, NetworkIsolationKey(),
+                                         true);
 
   SpdySessionDependencies session_deps;
   HttpNetworkSession::Params session_params =
@@ -1382,11 +1383,11 @@ namespace {
 // Return count of distinct groups in given socket pool.
 int GetSocketPoolGroupCount(ClientSocketPool* pool) {
   int count = 0;
-  std::unique_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", ""));
-  EXPECT_TRUE(dict != nullptr);
-  base::DictionaryValue* groups = nullptr;
-  if (dict->GetDictionary("groups", &groups) && (groups != nullptr)) {
-    count = static_cast<int>(groups->size());
+  base::Value dict = pool->GetInfoAsValue("", "");
+  EXPECT_TRUE(dict.is_dict());
+  const base::Value* groups = dict.FindDictKey("groups");
+  if (groups) {
+    count = groups->DictSize();
   }
   return count;
 }
@@ -1403,12 +1404,9 @@ int GetSpdySessionCount(HttpNetworkSession* session) {
 
 // Return count of sockets handed out by a given socket pool.
 int GetHandedOutSocketCount(ClientSocketPool* pool) {
-  int count = 0;
-  std::unique_ptr<base::DictionaryValue> dict(pool->GetInfoAsValue("", ""));
-  EXPECT_TRUE(dict != nullptr);
-  if (!dict->GetInteger("handed_out_socket_count", &count))
-    return -1;
-  return count;
+  base::Value dict = pool->GetInfoAsValue("", "");
+  EXPECT_TRUE(dict.is_dict());
+  return dict.FindIntKey("handed_out_socket_count").value_or(-1);
 }
 
 #if defined(OS_ANDROID)
@@ -1710,9 +1708,10 @@ TEST_F(HttpStreamFactoryTest, RequestHttpStreamOverProxyWithPreconnects) {
       "https://myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
 
   // Set up the proxy server as a server that supports request priorities.
-  auto http_server_properties = std::make_unique<HttpServerPropertiesImpl>();
+  auto http_server_properties = std::make_unique<HttpServerProperties>();
   url::SchemeHostPort spdy_server("https", "myproxy.org", 443);
-  http_server_properties->SetSupportsSpdy(spdy_server, true);
+  http_server_properties->SetSupportsSpdy(spdy_server, NetworkIsolationKey(),
+                                          true);
   session_deps.http_server_properties = std::move(http_server_properties);
 
   StaticSocketDataProvider socket_data;
@@ -1991,7 +1990,8 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
 
   HttpServerProperties* http_server_properties =
       session->spdy_session_pool()->http_server_properties();
-  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       NetworkIsolationKey()));
 
   // Now request a stream.
   HttpRequestInfo request_info;
@@ -2018,7 +2018,84 @@ TEST_F(HttpStreamFactoryTest, RequestSpdyHttpStreamHttpURL) {
       0, GetSocketPoolGroupCount(session->GetSocketPool(
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
   EXPECT_FALSE(waiter.used_proxy_info().is_direct());
-  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port));
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                      NetworkIsolationKey()));
+}
+
+// Same as above, but checks HttpServerProperties is updated using the correct
+// NetworkIsolationKey. When/if NetworkIsolationKey is enabled by default, this
+// should probably be merged into the above test.
+TEST_F(HttpStreamFactoryTest,
+       RequestSpdyHttpStreamHttpURLWithNetworkIsolationKey) {
+  const url::Origin kOrigin1 = url::Origin::Create(GURL("https://foo.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey1(kOrigin1, kOrigin1);
+  const url::Origin kOrigin2 = url::Origin::Create(GURL("https://bar.test/"));
+  const NetworkIsolationKey kNetworkIsolationKey2(kOrigin2, kOrigin2);
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(
+      features::kPartitionHttpServerPropertiesByNetworkIsolationKey);
+
+  url::SchemeHostPort scheme_host_port("http", "myproxy.org", 443);
+  auto session_deps = std::make_unique<SpdySessionDependencies>(
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS));
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
+      ProxyResolutionService::CreateFixedFromPacResult(
+          "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  MockRead mock_read(SYNCHRONOUS, ERR_IO_PENDING);
+  SequencedSocketData socket_data(base::make_span(&mock_read, 1),
+                                  base::span<MockWrite>());
+  socket_data.set_connect_data(MockConnect(ASYNC, OK));
+  session_deps->socket_factory->AddSocketDataProvider(&socket_data);
+
+  SSLSocketDataProvider ssl_socket_data(ASYNC, OK);
+  ssl_socket_data.next_proto = kProtoHTTP2;
+  session_deps->socket_factory->AddSSLSocketDataProvider(&ssl_socket_data);
+  session_deps->proxy_resolution_service = std::move(proxy_resolution_service);
+
+  std::unique_ptr<HttpNetworkSession> session(
+      SpdySessionDependencies::SpdyCreateSession(session_deps.get()));
+
+  HttpServerProperties* http_server_properties =
+      session->spdy_session_pool()->http_server_properties();
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       kNetworkIsolationKey1));
+
+  // Now request a stream.
+  HttpRequestInfo request_info;
+  request_info.method = "GET";
+  request_info.url = GURL("http://www.google.com");
+  request_info.load_flags = 0;
+  request_info.network_isolation_key = kNetworkIsolationKey1;
+  request_info.traffic_annotation =
+      MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+
+  SSLConfig ssl_config;
+  StreamRequestWaiter waiter;
+  std::unique_ptr<HttpStreamRequest> request(
+      session->http_stream_factory()->RequestStream(
+          request_info, DEFAULT_PRIORITY, ssl_config, ssl_config, &waiter,
+          /* enable_ip_based_pooling = */ true,
+          /* enable_alternative_services = */ true, NetLogWithSource()));
+  waiter.WaitForStream();
+  EXPECT_TRUE(waiter.stream_done());
+  EXPECT_TRUE(nullptr == waiter.websocket_stream());
+  ASSERT_TRUE(nullptr != waiter.stream());
+
+  EXPECT_EQ(1, GetSpdySessionCount(session.get()));
+  EXPECT_EQ(
+      0, GetSocketPoolGroupCount(session->GetSocketPool(
+             HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
+  EXPECT_FALSE(waiter.used_proxy_info().is_direct());
+  EXPECT_TRUE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                      kNetworkIsolationKey1));
+  // Other NetworkIsolationKeys should not be recorded as supporting SPDY.
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       NetworkIsolationKey()));
+  EXPECT_FALSE(http_server_properties->GetSupportsSpdy(scheme_host_port,
+                                                       kNetworkIsolationKey2));
 }
 
 // Tests that when a new SpdySession is established, duplicated idle H2 sockets
@@ -2222,7 +2299,7 @@ TEST_F(HttpStreamFactoryTest, RequestBidirectionalStreamImpl) {
 }
 
 class HttpStreamFactoryBidirectionalQuicTest
-    : public TestWithScopedTaskEnvironment,
+    : public TestWithTaskEnvironment,
       public ::testing::WithParamInterface<
           std::tuple<quic::ParsedQuicVersion, bool>> {
  protected:
@@ -2301,7 +2378,8 @@ class HttpStreamFactoryBidirectionalQuicTest
                                                  443);
     base::Time expiration = base::Time::Now() + base::TimeDelta::FromDays(1);
     http_server_properties_.SetQuicAlternativeService(
-        url::SchemeHostPort(default_url_), alternative_service, expiration,
+        url::SchemeHostPort(default_url_), NetworkIsolationKey(),
+        alternative_service, expiration,
         session_->params().quic_params.supported_versions);
   }
 
@@ -2338,7 +2416,7 @@ class HttpStreamFactoryBidirectionalQuicTest
   MockCertVerifier cert_verifier_;
   ProofVerifyDetailsChromium verify_details_;
   MockCryptoClientStreamFactory crypto_client_stream_factory_;
-  HttpServerPropertiesImpl http_server_properties_;
+  HttpServerProperties http_server_properties_;
   TransportSecurityState transport_security_state_;
   MultiLogCTVerifier ct_verifier_;
   DefaultCTPolicyEnforcer ct_policy_enforcer_;
@@ -2360,9 +2438,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2485,9 +2567,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest,
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2736,9 +2822,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   spdy::SpdyPriority priority =
       ConvertRequestPriorityToQuicPriority(DEFAULT_PRIORITY);
   size_t spdy_headers_frame_length;
-  mock_quic_data.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  int packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -2755,9 +2845,13 @@ TEST_P(HttpStreamFactoryBidirectionalQuicTest, Tag) {
   // Prepare mock QUIC data for a second session establishment.
   client_packet_maker().Reset();
   MockQuicData mock_quic_data2(version());
-  mock_quic_data2.AddWrite(client_packet_maker().MakeInitialSettingsPacket(1));
+  packet_num = 1;
+  if (VersionUsesQpack(version().transport_version)) {
+    mock_quic_data2.AddWrite(
+        client_packet_maker().MakeInitialSettingsPacket(packet_num++));
+  }
   mock_quic_data2.AddWrite(client_packet_maker().MakeRequestHeadersPacket(
-      2, GetNthClientInitiatedBidirectionalStreamId(0),
+      packet_num++, GetNthClientInitiatedBidirectionalStreamId(0),
       /*should_include_version=*/true,
       /*fin=*/true, priority,
       client_packet_maker().GetRequestHeaders("GET", "https", "/"),
@@ -3352,6 +3446,188 @@ TEST_F(HttpStreamFactoryTest, MultiIPAliases) {
   EXPECT_EQ(
       2, GetHandedOutSocketCount(session->GetSocketPool(
              HttpNetworkSession::NORMAL_SOCKET_POOL, ProxyServer::Direct())));
+}
+
+class ProcessAlternativeServicesTest : public TestWithTaskEnvironment {
+ public:
+  ProcessAlternativeServicesTest() {
+    session_params_.enable_quic = true;
+
+    session_context_.proxy_resolution_service = proxy_resolution_service_.get();
+    session_context_.host_resolver = &host_resolver_;
+    session_context_.cert_verifier = &cert_verifier_;
+    session_context_.transport_security_state = &transport_security_state_;
+    session_context_.cert_transparency_verifier = &ct_verifier_;
+    session_context_.client_socket_factory = &socket_factory_;
+    session_context_.ct_policy_enforcer = &ct_policy_enforcer_;
+    session_context_.ssl_config_service = &ssl_config_service_;
+    session_context_.http_server_properties = &http_server_properties_;
+  }
+
+ protected:
+  HttpNetworkSession::Params session_params_;
+  HttpNetworkSession::Context session_context_;
+  std::unique_ptr<HttpNetworkSession> session_;
+  HttpServerProperties http_server_properties_;
+
+ private:
+  std::unique_ptr<ProxyResolutionService> proxy_resolution_service_ =
+      ProxyResolutionService::CreateDirect();
+  SSLConfigServiceDefaults ssl_config_service_;
+  MockClientSocketFactory socket_factory_;
+  MockHostResolver host_resolver_;
+  MockCertVerifier cert_verifier_;
+  TransportSecurityState transport_security_state_;
+  MultiLogCTVerifier ct_verifier_;
+  DefaultCTPolicyEnforcer ct_policy_enforcer_;
+};
+
+TEST_F(ProcessAlternativeServicesTest, ProcessEmptyAltSvc) {
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin;
+  NetworkIsolationKey network_isolation_key;
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  EXPECT_TRUE(alternatives.empty());
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcClear) {
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+  ;
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  http_server_properties_.SetAlternativeServices(
+      origin, network_isolation_key,
+      {AlternativeServiceInfo::CreateQuicAlternativeServiceInfo(
+          {kProtoQUIC, "", 443},
+          base::Time::Now() + base::TimeDelta::FromSeconds(30),
+          quic::AllSupportedVersions())});
+
+  EXPECT_FALSE(http_server_properties_
+                   .GetAlternativeServiceInfos(origin, network_isolation_key)
+                   .empty());
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: clear");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  EXPECT_TRUE(alternatives.empty());
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuic) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: quic=\":443\"; v=\"99,48,47,46,43,39\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(1u, alternatives.size());
+  EXPECT_EQ(kProtoQUIC, alternatives[0].protocol());
+  EXPECT_EQ(HostPortPair("example.com", 443), alternatives[0].host_port_pair());
+  EXPECT_EQ(quic::AllSupportedVersions().size(),
+            alternatives[0].advertised_versions().size());
+  for (quic::ParsedQuicVersion version : quic::AllSupportedVersions()) {
+    EXPECT_TRUE(base::Contains(alternatives[0].advertised_versions(), version))
+        << version;
+  }
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcQuicIetf) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader(
+      "alt-svc: "
+      "h3-Q099=\":443\",h3-Q048=\":443\",h3-Q047=\":443\",h3-Q043=\":443\",h3-"
+      "Q039=\":443\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  quic::ParsedQuicVersionVector versions = {
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_99},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_48},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_47},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_43},
+      {quic::PROTOCOL_QUIC_CRYPTO, quic::QUIC_VERSION_39},
+  };
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(versions.size(), alternatives.size());
+  for (size_t i = 0; i < alternatives.size(); ++i) {
+    EXPECT_EQ(kProtoQUIC, alternatives[i].protocol());
+    EXPECT_EQ(HostPortPair("example.com", 443),
+              alternatives[i].host_port_pair());
+    EXPECT_EQ(1u, alternatives[i].advertised_versions().size());
+    EXPECT_EQ(versions[i], alternatives[i].advertised_versions()[0]);
+  }
+}
+
+TEST_F(ProcessAlternativeServicesTest, ProcessAltSvcHttp2) {
+  session_params_.quic_params.supported_versions = quic::AllSupportedVersions();
+  session_ =
+      std::make_unique<HttpNetworkSession>(session_params_, session_context_);
+  url::SchemeHostPort origin(url::kHttpsScheme, "example.com", 443);
+
+  NetworkIsolationKey network_isolation_key(
+      url::Origin::Create(GURL("https://example.com")),
+      url::Origin::Create(GURL("https://example.com")));
+
+  scoped_refptr<HttpResponseHeaders> headers(
+      base::MakeRefCounted<HttpResponseHeaders>(""));
+  headers->AddHeader("alt-svc: h2=\"other.example.com:443\"");
+
+  session_->http_stream_factory()->ProcessAlternativeServices(
+      session_.get(), network_isolation_key, headers.get(), origin);
+
+  AlternativeServiceInfoVector alternatives =
+      http_server_properties_.GetAlternativeServiceInfos(origin,
+                                                         network_isolation_key);
+  ASSERT_EQ(1u, alternatives.size());
+  EXPECT_EQ(kProtoHTTP2, alternatives[0].protocol());
+  EXPECT_EQ(HostPortPair("other.example.com", 443),
+            alternatives[0].host_port_pair());
+  EXPECT_EQ(0u, alternatives[0].advertised_versions().size());
 }
 
 }  // namespace

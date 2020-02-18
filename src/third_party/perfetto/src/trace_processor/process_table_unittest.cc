@@ -17,11 +17,10 @@
 #include "src/trace_processor/process_table.h"
 #include "src/trace_processor/event_tracker.h"
 #include "src/trace_processor/process_tracker.h"
-#include "src/trace_processor/scoped_db.h"
+#include "src/trace_processor/sqlite/scoped_db.h"
 #include "src/trace_processor/trace_processor_context.h"
 
-#include <gmock/gmock.h>
-#include <gtest/gtest.h>
+#include "test/gtest_and_gmock.h"
 
 namespace perfetto {
 namespace trace_processor {
@@ -31,6 +30,7 @@ class ProcessTableUnittest : public ::testing::Test {
  public:
   ProcessTableUnittest() {
     sqlite3* db = nullptr;
+    PERFETTO_CHECK(sqlite3_initialize() == SQLITE_OK);
     PERFETTO_CHECK(sqlite3_open(":memory:", &db) == SQLITE_OK);
     db_.reset(db);
 
@@ -51,8 +51,6 @@ class ProcessTableUnittest : public ::testing::Test {
   const char* GetColumnAsText(int colId) {
     return reinterpret_cast<const char*>(sqlite3_column_text(*stmt_, colId));
   }
-
-  ~ProcessTableUnittest() override { context_.storage->ResetStorage(); }
 
  protected:
   TraceProcessorContext context_;

@@ -21,6 +21,7 @@
 #include "cc/trees/property_tree_builder.h"
 #include "cc/trees/scroll_node.h"
 #include "cc/trees/transform_node.h"
+#include "components/viz/common/display/de_jelly.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace cc {
@@ -610,11 +611,7 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   bool non_root_copy_request_or_cache_render_surface =
       lower_effect_closest_ancestor > EffectTree::kContentsRootNodeId;
   gfx::Rect layer_content_rect = gfx::Rect(layer->bounds());
-  if (layer->layer_tree_impl()->IsRootLayer(layer) &&
-      !layer->layer_tree_impl()->viewport_visible_rect().IsEmpty()) {
-    layer_content_rect.Intersect(
-        layer->layer_tree_impl()->viewport_visible_rect());
-  }
+
   gfx::RectF accumulated_clip_in_root_space;
   if (non_root_copy_request_or_cache_render_surface) {
     bool include_expanding_clips = true;
@@ -647,6 +644,13 @@ static gfx::Rect LayerVisibleRect(PropertyTrees* property_trees,
   clip_in_layer_space.Offset(-layer->offset_to_transform_parent());
 
   gfx::Rect visible_rect = ToEnclosingClipRect(clip_in_layer_space);
+  if (layer->layer_tree_impl()->settings().allow_de_jelly_effect) {
+    float padding_amount = viz::MaxDeJellyHeight();
+    if (layer->IsAffectedByPageScale()) {
+      padding_amount /= layer->layer_tree_impl()->current_page_scale_factor();
+    }
+    visible_rect.Inset(0.0f, -padding_amount);
+  }
   visible_rect.Intersect(layer_content_rect);
   return visible_rect;
 }
@@ -1040,9 +1044,7 @@ void ComputeSurfaceDrawProperties(PropertyTrees* property_trees,
 
 void UpdatePageScaleFactor(PropertyTrees* property_trees,
                            TransformNode* page_scale_node,
-                           float page_scale_factor,
-                           float device_scale_factor,
-                           const gfx::Transform device_transform) {
+                           float page_scale_factor) {
   // TODO(wjmaclean): Once Issue #845097 is resolved, we can change the nullptr
   // check below to a DCHECK.
   if (property_trees->transform_tree.page_scale_factor() == page_scale_factor ||
@@ -1052,11 +1054,8 @@ void UpdatePageScaleFactor(PropertyTrees* property_trees,
 
   property_trees->transform_tree.set_page_scale_factor(page_scale_factor);
 
-  float post_local_scale_factor = page_scale_factor * device_scale_factor;
-  page_scale_node->post_local_scale_factor = post_local_scale_factor;
-  page_scale_node->post_local = device_transform;
-  page_scale_node->post_local.Scale(post_local_scale_factor,
-                                    post_local_scale_factor);
+  page_scale_node->local.MakeIdentity();
+  page_scale_node->local.Scale(page_scale_factor, page_scale_factor);
 
   page_scale_node->needs_local_transform_update = true;
   property_trees->transform_tree.set_needs_update(true);

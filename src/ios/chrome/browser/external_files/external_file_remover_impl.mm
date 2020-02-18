@@ -22,7 +22,7 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "ios/web/public/web_state/web_state.h"
+#import "ios/web/public/web_state.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -220,8 +220,9 @@ void ExternalFileRemoverImpl::RemoveFiles(
   const NSInteger kMinimumAgeInDays = 30;
   NSInteger age_in_days = all_files ? 0 : kMinimumAgeInDays;
 
-  base::PostTaskWithTraitsAndReply(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+  base::PostTaskAndReply(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&RemoveFilesWithOptions, referenced_files, age_in_days),
       base::Bind(&RunCallback, base::Passed(&closure_runner)));
 }

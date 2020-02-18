@@ -4,17 +4,18 @@
 
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 
+#include "testing/libfuzzer/libfuzzer_exports.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
-#include "third_party/blink/renderer/platform/shared_buffer.h"
 #include "third_party/blink/renderer/platform/testing/blink_fuzzer_test_support.h"
+#include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
 // Intentionally leaked during fuzzing.
-// See testing/libfuzzer/efficient_fuzzer.md.
+// See testing/libfuzzer/efficient_fuzzing.md.
 DummyPageHolder* g_page_holder = nullptr;
 
 int LLVMFuzzerInitialize(int* argc, char*** argv) {

@@ -11,7 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/customization/customization_document.h"
 #include "chrome/browser/chromeos/input_method/input_method_configuration.h"
@@ -58,7 +58,7 @@ class L10nUtilTest : public testing::Test {
   void SetInputMethods2();
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   system::ScopedFakeStatisticsProvider scoped_fake_statistics_provider_;
   MockInputMethodManagerWithInputMethods* input_manager_;
 
@@ -107,10 +107,10 @@ TEST_F(L10nUtilTest, FindMostRelevantLocale) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue);
   dict->SetString("value", "de");
   available_locales.Append(std::move(dict));
-  dict.reset(new base::DictionaryValue);
+  dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("value", "fr");
   available_locales.Append(std::move(dict));
-  dict.reset(new base::DictionaryValue);
+  dict = std::make_unique<base::DictionaryValue>();
   dict->SetString("value", "en-GB");
   available_locales.Append(std::move(dict));
 

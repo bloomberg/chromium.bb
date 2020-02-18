@@ -155,7 +155,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       viz::CompositorFrame frame,
       base::Optional<viz::HitTestRegionList> hit_test_region_list) override;
   void OnDidNotProduceFrame(const viz::BeginFrameAck& ack) override;
-  void ClearCompositorFrame() override;
   void ResetFallbackToFirstNavigationSurface() override;
   bool RequestRepaintForTesting() override;
   BrowserAccessibilityManager* CreateBrowserAccessibilityManager(
@@ -172,7 +171,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       const cc::RenderFrameMetadata& metadata) override;
   void DidNavigate() override;
 
-  bool LockMouse() override;
+  bool LockMouse(bool) override;
   void UnlockMouse() override;
   bool LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
   void UnlockKeyboard() override;
@@ -294,6 +293,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Used to set the mouse_wheel_phase_handler_ timer timeout for testing.
   void set_mouse_wheel_wheel_phase_handler_timeout(base::TimeDelta timeout) {
     mouse_wheel_phase_handler_.set_mouse_wheel_end_dispatch_timeout(timeout);
+  }
+
+  // Used to get the max amount of time to wait after a phase end event for a
+  // momentum phase began event.
+  const base::TimeDelta
+  max_time_between_phase_ended_and_momentum_phase_began_for_test() {
+    return mouse_wheel_phase_handler_
+        .max_time_between_phase_ended_and_momentum_phase_began();
   }
 
   // Update the size, scale factor, color profile, vsync parameters, and any

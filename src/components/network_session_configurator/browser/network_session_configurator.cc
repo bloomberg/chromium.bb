@@ -25,7 +25,9 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_mapping_rules.h"
 #include "net/http/http_stream_factory.h"
+#include "net/quic/platform/impl/quic_flags_impl.h"
 #include "net/quic/quic_utils_chromium.h"
+#include "net/spdy/spdy_session.h"
 #include "net/spdy/spdy_session_pool.h"
 #include "net/third_party/quiche/src/quic/core/quic_packets.h"
 #include "net/third_party/quiche/src/spdy/core/spdy_protocol.h"
@@ -107,6 +109,19 @@ bool ConfigureWebsocketOverHttp2(
   return websocket_value == "true";
 }
 
+int ConfigureSpdySessionMaxQueuedCappedFrames(
+    const base::CommandLine& /*command_line*/,
+    const VariationParameters& http2_trial_params) {
+  int value;
+  if (base::StringToInt(
+          GetVariationParam(http2_trial_params,
+                            "spdy_session_max_queued_capped_frames"),
+          &value)) {
+    return value;
+  }
+  return net::kSpdySessionMaxQueuedCappedFrames;
+}
+
 void ConfigureHttp2Params(const base::CommandLine& command_line,
                           base::StringPiece http2_trial_group,
                           const VariationParameters& http2_trial_params,
@@ -147,6 +162,10 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
 
   params->enable_websocket_over_http2 =
       ConfigureWebsocketOverHttp2(command_line, http2_trial_params);
+
+  params->spdy_session_max_queued_capped_frames =
+      ConfigureSpdySessionMaxQueuedCappedFrames(command_line,
+                                                http2_trial_params);
 }
 
 bool ShouldEnableQuic(base::StringPiece quic_trial_group,
@@ -411,13 +430,26 @@ int GetQuicInitialRttForHandshakeMilliseconds(
   return 0;
 }
 
-base::flat_set<std::string> GetQuicHostWhitelist(
+base::flat_set<std::string> GetQuicHostAllowlist(
     const VariationParameters& quic_trial_params) {
-  std::string host_whitelist =
+  std::string host_allowlist =
       GetVariationParam(quic_trial_params, "host_whitelist");
   std::vector<std::string> host_vector = base::SplitString(
-      host_whitelist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+      host_allowlist, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   return base::flat_set<std::string>(std::move(host_vector));
+}
+
+void SetQuicFlags(const VariationParameters& quic_trial_params) {
+  std::string flags_list =
+      GetVariationParam(quic_trial_params, "set_quic_flags");
+  for (const auto& flag : base::SplitString(
+           flags_list, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
+    std::vector<std::string> tokens = base::SplitString(
+        flag, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+    if (tokens.size() != 2)
+      continue;
+    SetQuicFlagByName(tokens[0], tokens[1]);
+  }
 }
 
 size_t GetQuicMaxPacketLength(const VariationParameters& quic_trial_params) {
@@ -560,7 +592,9 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
     }
     params->quic_params.allow_server_migration =
         ShouldQuicAllowServerMigration(quic_trial_params);
-    params->quic_host_whitelist = GetQuicHostWhitelist(quic_trial_params);
+    params->quic_host_allowlist = GetQuicHostAllowlist(quic_trial_params);
+
+    SetQuicFlags(quic_trial_params);
   }
 
   size_t max_packet_length = GetQuicMaxPacketLength(quic_trial_params);
@@ -599,6 +633,12 @@ quic::ParsedQuicVersionVector ParseQuicVersions(
         break;
       }
       it++;
+    }
+    for (const auto& supported_version : quic::AllSupportedVersions()) {
+      if (quic::AlpnForVersion(supported_version) == version) {
+        supported_versions.push_back(supported_version);
+        break;
+      }
     }
   }
   return supported_versions;

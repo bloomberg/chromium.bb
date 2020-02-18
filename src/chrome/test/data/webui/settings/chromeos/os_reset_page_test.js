@@ -23,8 +23,8 @@ cr.define('settings_reset_page', function() {
         lifetimeBrowserProxy = new settings.TestLifetimeBrowserProxy();
         settings.LifetimeBrowserProxyImpl.instance_ = lifetimeBrowserProxy;
 
-        resetPageBrowserProxy = new reset_page.TestResetBrowserProxy();
-        settings.ResetOsProxyImpl.instance_ = resetPageBrowserProxy;
+        resetPageBrowserProxy = new reset_page.TestOsResetBrowserProxy();
+        settings.OsResetBrowserProxyImpl.instance_ = resetPageBrowserProxy;
 
         PolymerTest.clearBody();
         resetPage = document.createElement('os-settings-reset-page');
@@ -75,17 +75,16 @@ cr.define('settings_reset_page', function() {
 
       // Tests that when powerwash is requested chrome.send calls are
       // propagated as expected.
-      test(TestNames.PowerwashDialogAction, function() {
+      test(TestNames.PowerwashDialogAction, async () => {
         // Open powerwash dialog.
         resetPage.$.powerwash.click();
         Polymer.dom.flush();
         const dialog = resetPage.$$('os-settings-powerwash-dialog');
         assertTrue(!!dialog);
         dialog.$.powerwash.click();
-        return lifetimeBrowserProxy.whenCalled('factoryReset')
-            .then((requestTpmFirmwareUpdate) => {
-              assertFalse(requestTpmFirmwareUpdate);
-            });
+        const requestTpmFirmwareUpdate =
+            await lifetimeBrowserProxy.whenCalled('factoryReset');
+        assertFalse(requestTpmFirmwareUpdate);
       });
     });
   }

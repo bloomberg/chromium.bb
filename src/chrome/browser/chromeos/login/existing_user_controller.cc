@@ -101,7 +101,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/user_manager/known_user.h"
-#include "components/user_manager/user_manager.h"
 #include "components/user_manager/user_names.h"
 #include "components/user_manager/user_type.h"
 #include "components/vector_icons/vector_icons.h"
@@ -171,8 +170,8 @@ void OnTranferredHttpAuthCaches() {
   VLOG(1) << "Main request context populated with authentication data.";
   // Last but not least tell the policy subsystem to refresh now as it might
   // have been stuck until now too.
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           base::BindOnce(&RefreshPoliciesOnUIThread));
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                 base::BindOnce(&RefreshPoliciesOnUIThread));
 }
 
 void TransferHttpAuthCacheToSystemNetworkContext(
@@ -370,13 +369,8 @@ ExistingUserController* ExistingUserController::current_controller() {
 
 ExistingUserController::ExistingUserController()
     : cros_settings_(CrosSettings::Get()),
-      network_state_helper_(new login::NetworkStateHelper),
-      weak_factory_(this) {
-  registrar_.Add(this, chrome::NOTIFICATION_USER_LIST_CHANGED,
-                 content::NotificationService::AllSources());
+      network_state_helper_(new login::NetworkStateHelper) {
   registrar_.Add(this, chrome::NOTIFICATION_AUTH_SUPPLIED,
-                 content::NotificationService::AllSources());
-  registrar_.Add(this, chrome::NOTIFICATION_SESSION_STARTED,
                  content::NotificationService::AllSources());
   show_user_names_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefShowUserNamesOnSignIn,
@@ -411,6 +405,8 @@ ExistingUserController::ExistingUserController()
   minimum_version_policy_handler_ =
       std::make_unique<policy::MinimumVersionPolicyHandler>(cros_settings_);
   minimum_version_policy_handler_->AddObserver(this);
+
+  observed_user_manager_.Add(user_manager::UserManager::Get());
 }
 
 void ExistingUserController::Init(const user_manager::UserList& users) {
@@ -482,34 +478,27 @@ void ExistingUserController::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  if (type == chrome::NOTIFICATION_SESSION_STARTED) {
-    // Stop listening to any notification once session has started.
-    // Sign in screen objects are marked for deletion with DeleteSoon so
-    // make sure no object would be used after session has started.
-    // http://crbug.com/125276
-    registrar_.RemoveAll();
+  DCHECK_EQ(type, chrome::NOTIFICATION_AUTH_SUPPLIED);
+
+  // Don't transfer http auth cache on NOTIFICATION_AUTH_SUPPLIED after user
+  // session starts.
+  if (session_manager::SessionManager::Get()->IsSessionStarted())
     return;
-  }
-  if (type == chrome::NOTIFICATION_USER_LIST_CHANGED) {
-    DeviceSettingsChanged();
-    return;
-  }
-  if (type == chrome::NOTIFICATION_AUTH_SUPPLIED) {
-    // Possibly the user has authenticated against a proxy server and we might
-    // need the credentials for enrollment and other system requests from the
-    // main |g_browser_process| request context (see bug
-    // http://crosbug.com/24861). So we transfer any credentials to the global
-    // request context here.
-    // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
-    // just after the UI is closed but before the new credentials were stored
-    // in the profile. Therefore we have to give it some time to make sure it
-    // has been updated before we copy it.
-    // TODO(pmarko): Find a better way to do this, see https://crbug.com/796512.
-    VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
-    base::PostDelayedTask(
-        FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
-        base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
-  }
+
+  // Possibly the user has authenticated against a proxy server and we might
+  // need the credentials for enrollment and other system requests from the
+  // main |g_browser_process| request context (see bug
+  // http://crosbug.com/24861). So we transfer any credentials to the global
+  // request context here.
+  // The issue we have here is that the NOTIFICATION_AUTH_SUPPLIED is sent
+  // just after the UI is closed but before the new credentials were stored
+  // in the profile. Therefore we have to give it some time to make sure it
+  // has been updated before we copy it.
+  // TODO(pmarko): Find a better way to do this, see https://crbug.com/796512.
+  VLOG(1) << "Authentication was entered manually, possibly for proxyauth.";
+  base::PostDelayedTask(
+      FROM_HERE, base::BindOnce(&TransferHttpAuthCaches),
+      base::TimeDelta::FromMilliseconds(kAuthCacheTransferDelayMs));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -771,6 +760,11 @@ bool ExistingUserController::IsUserWhitelisted(const AccountId& account_id) {
                                            &wildcard_match);
 }
 
+void ExistingUserController::LocalStateChanged(
+    user_manager::UserManager* user_manager) {
+  DeviceSettingsChanged();
+}
+
 void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
     KioskAppManager::ConsumerKioskAutoLaunchStatus status) {
   if (status == KioskAppManager::CONSUMER_KIOSK_AUTO_LAUNCH_CONFIGURABLE)
@@ -883,7 +877,7 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
     // Using Untretained here is safe because SessionTerminationManager is
     // destroyed after the task runner, in
     // ChromeBrowserMainParts::PostDestroyThreads().
-    base::PostDelayedTaskWithTraits(
+    base::PostDelayedTask(
         FROM_HERE, {content::BrowserThread::UI},
         base::BindOnce(&SessionTerminationManager::StopSession,
                        base::Unretained(SessionTerminationManager::Get())),
@@ -997,9 +991,7 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   }
   ClearRecordedNames();
 
-  if (base::FeatureList::IsEnabled(
-          features::kManagedGuestSessionNotification) &&
-      public_session_auto_login_account_id_.is_valid() &&
+  if (public_session_auto_login_account_id_.is_valid() &&
       public_session_auto_login_account_id_ == user_context.GetAccountId() &&
       last_login_attempt_was_auto_login_) {
     const std::string& user_id = user_context.GetAccountId().GetUserEmail();

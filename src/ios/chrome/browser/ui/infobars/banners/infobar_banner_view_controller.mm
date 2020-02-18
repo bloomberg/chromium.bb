@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_constants.h"
 #import "ios/chrome/browser/ui/infobars/banners/infobar_banner_delegate.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
+#import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -36,16 +37,10 @@ const CGFloat kBottomGripCornerRadius = 0.2;
 const CGFloat kBottomGripWidth = 44.0;
 const CGFloat kBottomGripHeight = 3.0;
 const CGFloat kBottomGripBottomPadding = 4.0;
-const int kBottomGripBackgroundColor = 0xD8D8D8;
-
-// Labels constants.
-const int kTitleLabelColor = 0x202124;
-const int kSubTitleLabelColor = 0x7F868C;
 
 // Button constants.
 const CGFloat kButtonWidth = 100.0;
 const CGFloat kButtonSeparatorWidth = 1.0;
-const int kButtonSeparatorColor = 0xF1F3F4;
 const CGFloat kButtonMaxFontSize = 45;
 
 // Container Stack constants.
@@ -111,12 +106,21 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [super viewDidLoad];
 
   // BannerView setup.
-  self.view.backgroundColor = [UIColor whiteColor];
+  self.view.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   self.view.layer.cornerRadius = kBannerViewCornerRadius;
-  [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
   [self.view.layer setShadowOffset:CGSizeMake(0.0, kBannerViewYShadowOffset)];
   [self.view.layer setShadowRadius:kBannerViewShadowRadius];
   [self.view.layer setShadowOpacity:kBannerViewShadowOpacity];
+  // If dark mode is set when the banner is presented, the semantic color will
+  // need to be set here.
+  if (@available(iOS 13, *)) {
+    [self.traitCollection performAsCurrentTraitCollection:^{
+      [self.view.layer
+          setShadowColor:[UIColor colorNamed:kToolbarShadowColor].CGColor];
+    }];
+  } else {
+    [self.view.layer setShadowColor:[UIColor blackColor].CGColor];
+  }
   self.view.accessibilityIdentifier = kInfobarBannerViewIdentifier;
   self.view.isAccessibilityElement = YES;
   self.view.accessibilityLabel = [self accessibilityLabel];
@@ -124,7 +128,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
   // Bottom Grip setup.
   UIView* bottomGrip = [[UIView alloc] init];
-  bottomGrip.backgroundColor = UIColorFromRGB(kBottomGripBackgroundColor);
+  bottomGrip.backgroundColor = [UIColor colorNamed:kBackgroundColor];
   bottomGrip.layer.cornerRadius = kBottomGripCornerRadius;
   bottomGrip.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:bottomGrip];
@@ -141,7 +145,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.titleLabel.text = self.titleText;
   self.titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
   self.titleLabel.adjustsFontForContentSizeCategory = YES;
-  self.titleLabel.textColor = UIColorFromRGB(kTitleLabelColor);
+  self.titleLabel.textColor = [UIColor colorNamed:kTextPrimaryColor];
   self.titleLabel.numberOfLines = 0;
   self.titleLabel.baselineAdjustment = UIBaselineAdjustmentAlignCenters;
 
@@ -150,7 +154,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.subTitleLabel.font =
       [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   self.subTitleLabel.adjustsFontForContentSizeCategory = YES;
-  self.subTitleLabel.textColor = UIColorFromRGB(kSubTitleLabelColor);
+  self.subTitleLabel.textColor = [UIColor colorNamed:kTextSecondaryColor];
   self.subTitleLabel.numberOfLines = 0;
   // If |self.subTitleText| hasn't been set or is empty, hide the label to keep
   // the title label centered in the Y axis.
@@ -175,7 +179,7 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
 
   UIView* buttonSeparator = [[UIView alloc] init];
   buttonSeparator.translatesAutoresizingMaskIntoConstraints = NO;
-  buttonSeparator.backgroundColor = UIColorFromRGB(kButtonSeparatorColor);
+  buttonSeparator.backgroundColor = [UIColor colorNamed:kSeparatorColor];
   [self.infobarButton addSubview:buttonSeparator];
 
   // Container Stack setup.
@@ -260,6 +264,20 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.metricsRecorder recordBannerEvent:MobileMessagesBannerEvent::Dismissed];
   [self.delegate infobarBannerWasDismissed];
   [super viewDidDisappear:animated];
+}
+
+// This is triggered when dark mode changes while the banner is already
+// presented.
+- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
+  [super traitCollectionDidChange:previousTraitCollection];
+  if (@available(iOS 13, *)) {
+    if ([self.traitCollection
+            hasDifferentColorAppearanceComparedToTraitCollection:
+                previousTraitCollection]) {
+      [self.view.layer
+          setShadowColor:[UIColor colorNamed:kToolbarShadowColor].CGColor];
+    }
+  }
 }
 
 #pragma mark - Public Methods

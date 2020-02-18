@@ -13,7 +13,7 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_session_runner.h"
@@ -56,8 +56,7 @@ class ArcSessionRunnerTest : public testing::Test,
                              public ArcSessionRunner::Observer {
  public:
   ArcSessionRunnerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::UI) {}
 
   void SetUp() override {
     chromeos::SessionManagerClient::InitializeFakeInMemory();
@@ -137,7 +136,7 @@ class ArcSessionRunnerTest : public testing::Test,
   bool stopped_called_;
   bool restarting_called_;
   std::unique_ptr<ArcSessionRunner> arc_session_runner_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcSessionRunnerTest);
 };

@@ -8,10 +8,10 @@
 #include <memory>
 
 #include "base/threading/thread.h"
-#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
+#include "services/viz/privileged/mojom/compositing/frame_sink_manager.mojom.h"
 
 namespace viz {
-class VizCompositorThreadRunner;
+class VizCompositorThreadRunnerImpl;
 }  // namespace viz
 
 namespace demo {
@@ -27,7 +27,7 @@ class DemoService {
   ~DemoService();
 
  private:
-  std::unique_ptr<viz::VizCompositorThreadRunner> runner_;
+  std::unique_ptr<viz::VizCompositorThreadRunnerImpl> runner_;
 
   DISALLOW_COPY_AND_ASSIGN(DemoService);
 };

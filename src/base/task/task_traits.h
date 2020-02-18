@@ -32,17 +32,18 @@ class PostTaskAndroid;
 enum class TaskPriority : uint8_t {
   // This will always be equal to the lowest priority available.
   LOWEST = 0,
-  // This task will only start running when machine resources are available.
-  // Dependending on the ThreadPolicy, it may run on a thread that is likely to
-  // be descheduled when higher priority work arrives (in this process or
-  // another).
+  // This task will only start running when machine resources are available. The
+  // application may preempt the task if it expects that resources will soon be
+  // needed by work of higher priority. Dependending on the ThreadPolicy, the
+  // task may run on a thread that is likely to be descheduled when higher
+  // priority work arrives (in this process or another).
   //
   // Examples:
   // - Reporting metrics.
   // - Persisting data to disk.
   // - Loading data that is required for a potential future user interaction
-  //   (Note: Use CreateUpdateableSequencedTaskRunner() to increase
-  //    the priority when that user interactions happens).
+  //   (Note: Use CreateUpdateableSequencedTaskRunner() to increase the priority
+  //   when that user interactions happens).
   BEST_EFFORT = LOWEST,
 
   // The result of this task is visible to the user (in the UI or as a
@@ -65,8 +66,6 @@ enum class TaskPriority : uint8_t {
   // This will always be equal to the highest priority available.
   HIGHEST = USER_BLOCKING
 };
-
-using TaskPriorityType = std::underlying_type<TaskPriority>::type;
 
 // Valid shutdown behaviors supported by the thread pool.
 enum class TaskShutdownBehavior : uint8_t {
@@ -213,13 +212,15 @@ class BASE_EXPORT TaskTraits {
   // WithBaseSyncPrimitives in any order to the constructor.
   //
   // E.g.
-  // constexpr base::TaskTraits default_traits = {};
-  // constexpr base::TaskTraits user_visible_traits =
-  //     {base::TaskPriority::USER_VISIBLE};
+  // constexpr base::TaskTraits default_traits = {base::ThreadPool()};
+  // constexpr base::TaskTraits user_visible_traits = {
+  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE};
   // constexpr base::TaskTraits user_visible_may_block_traits = {
-  //     base::TaskPriority::USER_VISIBLE, base::MayBlock()};
+  //     base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()
+  // };
   // constexpr base::TaskTraits other_user_visible_may_block_traits = {
-  //     base::MayBlock(), base::TaskPriority::USER_VISIBLE};
+  //     base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE
+  // };
   template <class... ArgTypes,
             class CheckArgumentsAreValid = std::enable_if_t<
                 trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value ||
@@ -232,14 +233,15 @@ class BASE_EXPORT TaskTraits {
             static_cast<uint8_t>(
                 trait_helpers::GetEnum<TaskPriority,
                                        TaskPriority::USER_BLOCKING>(args...)) |
-            (trait_helpers::HasTrait<TaskPriority>(args...) ? kIsExplicitFlag
-                                                            : 0)),
+            (trait_helpers::HasTrait<TaskPriority, ArgTypes...>()
+                 ? kIsExplicitFlag
+                 : 0)),
         shutdown_behavior_(
             static_cast<uint8_t>(
                 trait_helpers::GetEnum<TaskShutdownBehavior,
                                        TaskShutdownBehavior::SKIP_ON_SHUTDOWN>(
                     args...)) |
-            (trait_helpers::HasTrait<TaskShutdownBehavior>(args...)
+            (trait_helpers::HasTrait<TaskShutdownBehavior, ArgTypes...>()
                  ? kIsExplicitFlag
                  : 0)),
         thread_policy_(
@@ -247,12 +249,22 @@ class BASE_EXPORT TaskTraits {
                 trait_helpers::GetEnum<ThreadPolicy,
                                        ThreadPolicy::PREFER_BACKGROUND>(
                     args...)) |
-            (trait_helpers::HasTrait<ThreadPolicy>(args...) ? kIsExplicitFlag
-                                                            : 0)),
-        may_block_(trait_helpers::HasTrait<MayBlock>(args...)),
+            (trait_helpers::HasTrait<ThreadPolicy, ArgTypes...>()
+                 ? kIsExplicitFlag
+                 : 0)),
+        may_block_(trait_helpers::HasTrait<MayBlock, ArgTypes...>()),
         with_base_sync_primitives_(
-            trait_helpers::HasTrait<WithBaseSyncPrimitives>(args...)),
-        use_thread_pool_(trait_helpers::HasTrait<ThreadPool>(args...)) {}
+            trait_helpers::HasTrait<WithBaseSyncPrimitives, ArgTypes...>()),
+        use_thread_pool_(trait_helpers::HasTrait<ThreadPool, ArgTypes...>()) {
+    constexpr bool has_thread_pool =
+        trait_helpers::HasTrait<ThreadPool, ArgTypes...>();
+    constexpr bool has_extension =
+        !trait_helpers::AreValidTraits<ValidTrait, ArgTypes...>::value;
+    static_assert(
+        has_thread_pool ^ has_extension,
+        "Traits must explicitly specify a destination (e.g. ThreadPool or a "
+        "named thread like BrowserThread)");
+  }
 
   constexpr TaskTraits(const TaskTraits& other) = default;
   TaskTraits& operator=(const TaskTraits& other) = default;

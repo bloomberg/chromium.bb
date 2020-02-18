@@ -18,6 +18,7 @@
 #include "extensions/browser/api/usb/usb_device_manager.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/common/api/usb.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/mojom/usb_device.mojom.h"
 
 namespace extensions {
@@ -27,7 +28,7 @@ class DevicePermissionsPrompt;
 class DevicePermissionsManager;
 class UsbDeviceResource;
 
-class UsbExtensionFunction : public UIThreadExtensionFunction {
+class UsbExtensionFunction : public ExtensionFunction {
  protected:
   UsbExtensionFunction();
   ~UsbExtensionFunction() override;
@@ -103,7 +104,7 @@ class UsbFindDevicesFunction : public UsbExtensionFunction {
   void OnGetDevicesComplete(
       std::vector<device::mojom::UsbDeviceInfoPtr> devices);
   void OnDeviceOpened(const std::string& guid,
-                      device::mojom::UsbDevicePtr device_ptr,
+                      mojo::Remote<device::mojom::UsbDevice> device_ptr,
                       device::mojom::UsbOpenDeviceError error);
   void OpenComplete();
   void OnDisconnect();
@@ -171,7 +172,7 @@ class UsbGetConfigurationsFunction : public UsbPermissionCheckingFunction {
   DISALLOW_COPY_AND_ASSIGN(UsbGetConfigurationsFunction);
 };
 
-class UsbRequestAccessFunction : public UIThreadExtensionFunction {
+class UsbRequestAccessFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("usb.requestAccess", USB_REQUESTACCESS)
 
@@ -199,7 +200,7 @@ class UsbOpenDeviceFunction : public UsbPermissionCheckingFunction {
   ResponseAction Run() override;
 
   void OnDeviceOpened(std::string guid,
-                      device::mojom::UsbDevicePtr device_ptr,
+                      mojo::Remote<device::mojom::UsbDevice> device,
                       device::mojom::UsbOpenDeviceError error);
   void OnDisconnect();
 

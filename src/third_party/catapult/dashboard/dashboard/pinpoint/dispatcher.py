@@ -15,6 +15,8 @@ from dashboard.pinpoint import handlers
 _URL_MAPPING = [
     # Public API.
     webapp2.Route(r'/api/config', handlers.Config),
+    webapp2.Route(r'/api/commit', handlers.Commit),
+    webapp2.Route(r'/api/commits', handlers.Commits),
     webapp2.Route(r'/api/generate-results2/<job_id>',
                   handlers.Results2Generator),
     webapp2.Route(r'/api/isolate', handlers.Isolate),
@@ -35,6 +37,10 @@ _URL_MAPPING = [
     webapp2.Route(r'/cron/isolate-cleanup', handlers.IsolateCleanup),
     webapp2.Route(r'/cron/refresh-jobs', handlers.RefreshJobs),
     webapp2.Route(r'/cron/fifo-scheduler', handlers.FifoScheduler),
+
+    # The /_ah/push-handlers/* paths have a special meaning for PubSub
+    # notifications, and is treated especially by the AppEngine environment.
+    webapp2.Route(r'/_ah/push-handlers/task-updates', handlers.TaskUpdates),
 ]
 
 APP = webapp2.WSGIApplication(_URL_MAPPING, debug=False)

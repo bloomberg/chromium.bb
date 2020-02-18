@@ -1,8 +1,8 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="pt-PT">
+<translation id="1036550831858290950">Guarde o separador atual como um marcador</translation>
 <translation id="104962181688258143">Abrir a aplicação Ficheiros</translation>
-<translation id="1098295134904615027">Ative o espaço de trabalho virtual à direita.</translation>
 <translation id="1122869341872663659">A apresentar <ph name="N" /> resultados da pesquisa para <ph name="QUERY" />.</translation>
 <translation id="1195667586424773550">Arraste o link para a barra de endereço do separador.</translation>
 <translation id="1204450209689312104">Abrir uma nova janela em modo de navegação anónima</translation>
@@ -23,8 +23,8 @@
 <translation id="169515659049020177">Shift</translation>
 <translation id="1732295673545939435"><ph name="MODIFIER1" /><ph name="SEPARATOR1" /><ph name="MODIFIER2" /><ph name="SEPARATOR2" /><ph name="KEY" /></translation>
 <translation id="1733525068429116555">Adicionar www. e .com à informação introduzida na barra de endereço e, em seguida, abrir a página</translation>
+<translation id="1872219238824176091">Remova o espaço de trabalho atual.</translation>
 <translation id="1920446759863417809"><ph name="SHIFT1" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e, em seguida, <ph name="SHIFT2" /><ph name="SEPARATOR3" /><ph name="TAB" /> ou <ph name="LEFT" />.</translation>
-<translation id="1929866390202038233">Ative o espaço de trabalho virtual à esquerda.</translation>
 <translation id="1996162290124031907">Aceder ao separador seguinte</translation>
 <translation id="2010818616644390445">Ir para o último separador na janela</translation>
 <translation id="2040706009561734834">Abrir/fechar o iniciador</translation>
@@ -43,14 +43,15 @@
 <translation id="2441202986792279177">Alternar rapidamente entre janelas</translation>
 <translation id="2454251766545114447">Diminuir zoom do ecrã</translation>
 <translation id="2478303094958140141">Ativar ou desativar o ChromeVox (comentários de voz)</translation>
+<translation id="2488661730534396940">Ative o espaço de trabalho à esquerda.</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Deslocar-se para baixo na página Web</translation>
 <translation id="2574014812750545982">Repor o nível de zoom na página</translation>
 <translation id="2596078834055697711">Criar uma captura de ecrã da janela</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e, em seguida, <ph name="TAB" /> ou <ph name="RIGHT" />.</translation>
-<translation id="2699509451653686398">Guardar a página Web atual como um marcador</translation>
 <translation id="2750942583782703988">Atualizar a página atual</translation>
 <translation id="2764005613199379871">Focar a barra de endereço da pesquisa</translation>
+<translation id="2774822903829597107">Crie um novo espaço de trabalho.</translation>
 <translation id="2789868185375229787">Reduzir a página</translation>
 <translation id="2804480015716812239">Prima <ph name="ALT" /> e clique num link.</translation>
 <translation id="2830827904629746450">Ancorar uma janela à direita</translation>
@@ -64,7 +65,6 @@
 <translation id="3105917916468784889">Criar captura de ecrã</translation>
 <translation id="3126026824346185272">Ctrl</translation>
 <translation id="3140353188828248647">Focar barra de endereço</translation>
-<translation id="3165428420335997629">Crie um novo espaço de trabalho virtual.</translation>
 <translation id="3256109297135787951">Remover o realce de um item na prateleira</translation>
 <translation id="3288816184963444640">Fechar a janela atual</translation>
 <translation id="3407560819924487926">Abrir o Gestor de tarefas</translation>
@@ -103,6 +103,7 @@
 <translation id="4642092649622328492">Criar uma captura de ecrã parcial</translation>
 <translation id="4698850295812410683">Mostrar ferramentas da caneta stylus</translation>
 <translation id="4801989101741319327">Ir para o fim da palavra seguinte</translation>
+<translation id="4866066940972151697">Ative o espaço de trabalho à direita.</translation>
 <translation id="4916163929714267752">Abrir o link numa nova janela</translation>
 <translation id="5030659775136592441">Mostrar o gestor de marcadores</translation>
 <translation id="5034421018520995080">Ir para a parte superior da página</translation>
@@ -181,7 +182,6 @@
 <translation id="8234414138295101081">Rodar o ecrã 90 graus</translation>
 <translation id="8241665785394195545">parêntese reto direito</translation>
 <translation id="8264941229485248811">Mostrar ou ocultar o inspetor das Ferramentas do programador</translation>
-<translation id="8355937569537581904">Remova o espaço de trabalho virtual atual.</translation>
 <translation id="836869401750819675">Abrir a página Transferências</translation>
 <translation id="8388247778047144397">Arraste o link para uma área em branco na Faixa de separadores.</translation>
 <translation id="8389638407792712197">Abrir nova janela</translation>

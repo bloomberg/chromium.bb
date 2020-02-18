@@ -20,7 +20,7 @@ BackgroundSyncNetworkObserverAndroid::Observer::Create(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<BackgroundSyncNetworkObserverAndroid::Observer> observer(
       new BackgroundSyncNetworkObserverAndroid::Observer(callback));
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&BackgroundSyncNetworkObserverAndroid::Observer::Init,
                      observer));
@@ -51,7 +51,7 @@ void BackgroundSyncNetworkObserverAndroid::Observer::
                                 const JavaParamRef<jobject>& jcaller,
                                 jint new_connection_type) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(callback_, static_cast<network::mojom::ConnectionType>(
                                     new_connection_type)));
@@ -65,8 +65,7 @@ BackgroundSyncNetworkObserverAndroid::Observer::Observer(
 
 BackgroundSyncNetworkObserverAndroid::BackgroundSyncNetworkObserverAndroid(
     const base::Closure& network_changed_callback)
-    : BackgroundSyncNetworkObserver(network_changed_callback),
-      weak_ptr_factory_(this) {
+    : BackgroundSyncNetworkObserver(network_changed_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   observer_ = Observer::Create(

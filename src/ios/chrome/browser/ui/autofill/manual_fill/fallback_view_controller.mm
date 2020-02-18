@@ -9,7 +9,6 @@
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/util/ui_util.h"
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
-#import "ios/chrome/common/colors/UIColor+cr_semantic_colors.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -79,11 +78,9 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
 - (void)viewDidLoad {
   // Super's |viewDidLoad| uses |styler.tableViewBackgroundColor| so it needs to
   // be set before.
-  self.styler.tableViewBackgroundColor = UIColor.cr_systemBackgroundColor;
+  self.styler.tableViewBackgroundColor = [UIColor colorNamed:kBackgroundColor];
 
   [super viewDidLoad];
-
-  self.view.tintColor = [UIColor colorNamed:kTintColor];
 
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   self.tableView.sectionHeaderHeight = 0;
@@ -93,7 +90,7 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   self.tableView.allowsSelection = NO;
   self.definesPresentationContext = YES;
   if (!self.tableViewModel) {
-    if (IsIPadIdiom()) {
+    if (self.popoverPresentationController) {
       self.preferredContentSize = CGSizeMake(
           PopoverPreferredWidth, AlignValueToPixel(PopoverLoadingHeight));
     }
@@ -142,6 +139,15 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
   }
   self.queuedActionItems = actions;
   [self presentQueuedActionItems];
+}
+
+#pragma mark - Getters
+
+- (BOOL)contentInsetsAlwaysEqualToSafeArea {
+  if (@available(iOS 13, *)) {
+    return NO;
+  }
+  return _contentInsetsAlwaysEqualToSafeArea;
 }
 
 #pragma mark - Private
@@ -237,7 +243,7 @@ constexpr CGFloat kMinimumLoadingTime = 0.5;
     }
   }
   [self.tableView reloadData];
-  if (IsIPadIdiom()) {
+  if (self.popoverPresentationController) {
     // Update the preffered content size on iPad so the popover shows the right
     // size.
     [self.tableView layoutIfNeeded];

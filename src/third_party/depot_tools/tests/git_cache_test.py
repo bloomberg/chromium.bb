@@ -52,7 +52,7 @@ class GitCacheTest(unittest.TestCase):
     mirror = git_cache.Mirror('test://phony.example.biz')
     for fetch_specs, expected in testData:
       mirror = git_cache.Mirror('test://phony.example.biz', refs=fetch_specs)
-      self.assertItemsEqual(mirror.fetch_specs, expected)
+      self.assertEqual(mirror.fetch_specs, set(expected))
 
   def testPopulate(self):
     self.git(['init', '-q'])
@@ -115,13 +115,13 @@ class GitCacheDirTest(unittest.TestCase):
     old = git_cache.Mirror._GIT_CONFIG_LOCATION
     try:
       try:
-        os.write(fd, '[cache]\n  cachepath="hello world"\n')
+        os.write(fd, b'[cache]\n  cachepath="hello world"\n')
       finally:
         os.close(fd)
 
       git_cache.Mirror._GIT_CONFIG_LOCATION = ['-f', tmpFile]
 
-      self.assertEqual(git_cache.Mirror.GetCachePath(), 'hello world')
+      self.assertEqual(git_cache.Mirror.GetCachePath(), b'hello world')
     finally:
       git_cache.Mirror._GIT_CONFIG_LOCATION = old
       os.remove(tmpFile)

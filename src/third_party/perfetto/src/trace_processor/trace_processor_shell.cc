@@ -30,12 +30,13 @@
 
 #include "perfetto/base/build_config.h"
 #include "perfetto/base/logging.h"
+#include "perfetto/base/time.h"
 #include "perfetto/ext/base/file_utils.h"
 #include "perfetto/ext/base/scoped_file.h"
 #include "perfetto/ext/base/string_splitter.h"
-#include "perfetto/ext/base/time.h"
 #include "perfetto/trace_processor/trace_processor.h"
 #include "src/trace_processor/metrics/metrics.descriptor.h"
+#include "src/trace_processor/proto_to_json.h"
 
 #if PERFETTO_BUILDFLAG(PERFETTO_OS_LINUX) ||   \
     PERFETTO_BUILDFLAG(PERFETTO_OS_ANDROID) || \
@@ -52,10 +53,13 @@
 #define PERFETTO_HAS_AIO_H() 0
 #endif
 
-#if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_LINENOISE)
 #include <linenoise.h>
 #include <pwd.h>
 #include <sys/types.h>
+#endif
+
+#if PERFETTO_BUILDFLAG(PERFETTO_VERSION_GEN)
 #include "perfetto_version.gen.h"
 #else
 #define PERFETTO_GET_GIT_REVISION() "unknown"
@@ -82,7 +86,7 @@ namespace trace_processor {
 namespace {
 TraceProcessor* g_tp;
 
-#if PERFETTO_BUILDFLAG(PERFETTO_STANDALONE_BUILD)
+#if PERFETTO_BUILDFLAG(PERFETTO_TP_LINENOISE)
 
 bool EnsureDir(const std::string& path) {
   return mkdir(path.c_str(), 0755) != -1 || errno == EEXIST;
@@ -160,7 +164,7 @@ char* GetLine(const char* prompt) {
   return line;
 }
 
-#endif
+#endif  // PERFETTO_TP_LINENOISE
 
 bool PrintStats() {
   auto it = g_tp->ExecuteQuery(
@@ -331,8 +335,14 @@ util::Status ExtendMetricsProto(const std::string& extend_metrics_proto,
   return g_tp->ExtendMetricsProto(metric_proto.data(), metric_proto.size());
 }
 
+enum OutputFormat {
+  kBinaryProto,
+  kTextProto,
+  kJson,
+};
+
 int RunMetrics(const std::vector<std::string>& metric_names,
-               bool metrics_textproto,
+               OutputFormat format,
                const google::protobuf::DescriptorPool& pool) {
   std::vector<uint8_t> metric_result;
   util::Status status = g_tp->ComputeMetric(metric_names, &metric_result);
@@ -340,19 +350,32 @@ int RunMetrics(const std::vector<std::string>& metric_names,
     PERFETTO_ELOG("Error when computing metrics: %s", status.c_message());
     return 1;
   }
-  if (metrics_textproto) {
-    google::protobuf::DynamicMessageFactory factory(&pool);
-    auto* descriptor =
-        pool.FindMessageTypeByName("perfetto.protos.TraceMetrics");
-    std::unique_ptr<google::protobuf::Message> metrics(
-        factory.GetPrototype(descriptor)->New());
-    metrics->ParseFromArray(metric_result.data(),
-                            static_cast<int>(metric_result.size()));
-    std::string out;
-    google::protobuf::TextFormat::PrintToString(*metrics, &out);
-    fwrite(out.c_str(), sizeof(char), out.size(), stdout);
-  } else {
+  if (format == OutputFormat::kBinaryProto) {
     fwrite(metric_result.data(), sizeof(uint8_t), metric_result.size(), stdout);
+    return 0;
+  }
+
+  google::protobuf::DynamicMessageFactory factory(&pool);
+  auto* descriptor = pool.FindMessageTypeByName("perfetto.protos.TraceMetrics");
+  std::unique_ptr<google::protobuf::Message> metrics(
+      factory.GetPrototype(descriptor)->New());
+  metrics->ParseFromArray(metric_result.data(),
+                          static_cast<int>(metric_result.size()));
+
+  switch (format) {
+    case OutputFormat::kTextProto: {
+      std::string out;
+      google::protobuf::TextFormat::PrintToString(*metrics, &out);
+      fwrite(out.c_str(), sizeof(char), out.size(), stdout);
+      break;
+    }
+    case OutputFormat::kJson: {
+      auto out = proto_to_json::MessageToJson(*metrics) + "\n";
+      fwrite(out.c_str(), sizeof(char), out.size(), stdout);
+      break;
+    }
+    case OutputFormat::kBinaryProto:
+      PERFETTO_FATAL("Unsupported output format.");
   }
   return 0;
 }
@@ -1021,8 +1044,15 @@ int TraceProcessorMain(int argc, char** argv) {
       metrics[i] = basename;
     }
 
-    bool metrics_textproto = options.metric_output != "binary";
-    int ret = RunMetrics(std::move(metrics), metrics_textproto, pool);
+    OutputFormat format;
+    if (options.metric_output == "binary") {
+      format = OutputFormat::kBinaryProto;
+    } else if (options.metric_output == "json") {
+      format = OutputFormat::kJson;
+    } else {
+      format = OutputFormat::kTextProto;
+    }
+    int ret = RunMetrics(std::move(metrics), format, pool);
     if (!ret) {
       auto t_query = base::GetWallTimeNs() - t_run_start;
       ret = MaybePrintPerfFile(options.perf_file_path, t_load, t_query);

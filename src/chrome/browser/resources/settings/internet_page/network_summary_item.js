@@ -16,7 +16,10 @@ const mojom = chromeos.networkConfig.mojom;
 Polymer({
   is: 'network-summary-item',
 
-  behaviors: [CrPolicyNetworkBehavior, I18nBehavior],
+  behaviors: [
+    CrPolicyNetworkBehaviorMojo,
+    I18nBehavior,
+  ],
 
   properties: {
     /**
@@ -24,7 +27,10 @@ Polymer({
      * a device becomes unavailable.
      * @type {!OncMojo.DeviceStateProperties|undefined}
      */
-    deviceState: Object,
+    deviceState: {
+      type: Object,
+      notify: true,
+    },
 
     /**
      * If both Cellular and Tether technologies exist, we combine the
@@ -120,12 +126,11 @@ Polymer({
    * @private
    */
   getConnectionStateText_: function(networkState, deviceState) {
-    if (!networkState) {
+    if (!networkState || !networkState.guid) {
       return '';
     }
     const connectionState = networkState.connectionState;
-    const name =
-        networkState ? OncMojo.getNetworkDisplayName(networkState) : '';
+    const name = OncMojo.getNetworkStateDisplayName(networkState);
     if (OncMojo.connectionStateIsConnected(connectionState)) {
       return name;
     }
@@ -150,7 +155,7 @@ Polymer({
     return (activeNetworkState !== undefined &&
             OncMojo.connectionStateIsConnected(
                 activeNetworkState.connectionState)) ||
-        this.isPolicySourceMojo(activeNetworkState.source);
+        this.isPolicySource(activeNetworkState.source);
   },
 
   /**
@@ -181,8 +186,7 @@ Polymer({
       return true;
     }
     const simLockType = deviceState.simLockStatus.lockType;
-    return simLockType == CrOnc.LockType.PIN ||
-        simLockType == CrOnc.LockType.PUK;
+    return simLockType == 'sim-pin' || simLockType == 'sim-puk';
   },
 
   /**
@@ -211,7 +215,6 @@ Polymer({
       case mojom.NetworkType.kTether:
         return true;
       case mojom.NetworkType.kWiFi:
-      case mojom.NetworkType.kWiMAX:
         return deviceState.deviceState != mojom.DeviceStateType.kUninitialized;
       case mojom.NetworkType.kCellular:
         return deviceState.deviceState !=
@@ -248,8 +251,6 @@ Polymer({
         return this.i18n('internetToggleMobileA11yLabel');
       case mojom.NetworkType.kWiFi:
         return this.i18n('internetToggleWiFiA11yLabel');
-      case mojom.NetworkType.kWiMAX:
-        return this.i18n('internetToggleWiMAXA11yLabel');
     }
     assertNotReached();
     return '';
@@ -324,9 +325,10 @@ Polymer({
       activeNetworkState, deviceState, networkStateList) {
     if (!this.shouldShowSubpage_(deviceState, networkStateList)) {
       if (activeNetworkState.guid) {
-        return OncMojo.getNetworkDisplayName(activeNetworkState);
-      } else if (networkStateList.length > 0) {
-        return OncMojo.getNetworkDisplayName(networkStateList[0]);
+        return OncMojo.getNetworkStateDisplayName(activeNetworkState);
+      }
+      if (networkStateList.length > 0) {
+        return OncMojo.getNetworkStateDisplayName(networkStateList[0]);
       }
     }
     return this.getNetworkTypeString_(deviceState.type);

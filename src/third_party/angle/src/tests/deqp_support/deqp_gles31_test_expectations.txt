@@ -44,12 +44,7 @@
 // Failing Tests on Linux on Intel HD 630.
 2349 LINUX INTEL : dEQP-GLES31.functional.debug.negative_coverage.get_error.shader.program_binary = FAIL
 
-
-1442 : dEQP-GLES31.functional.program_interface_query.transform_feedback_varying.resource_list.vertex_fragment.default_block_struct_member = SKIP
-1442 : dEQP-GLES31.functional.program_interface_query.transform_feedback_varying.array_size.vertex_fragment.default_block_struct_member = SKIP
-1442 : dEQP-GLES31.functional.program_interface_query.transform_feedback_varying.name_length.vertex_fragment.default_block_struct_member = SKIP
-1442 : dEQP-GLES31.functional.program_interface_query.transform_feedback_varying.type.vertex_fragment.struct.* = SKIP
-1442 : dEQP-GLES31.functional.image_load_store.* = SKIP
+1442 D3D11 : dEQP-GLES31.functional.image_load_store.* = SKIP
 
 // Times out shader compilation because it uses so many resources.
 3445 : dEQP-GLES31.functional.ssbo.layout.random.all_shared_buffer.48 = SKIP
@@ -546,8 +541,8 @@
 2432 NVIDIA OPENGL : dEQP-GLES31.functional.vertex_attribute_binding.usage.mixed_usage.mixed_api_change_binding_point = SKIP
 
 // OpenGL/D3D11/Vulkan Failing Tests
-1442 : dEQP-GLES31.functional.compute.basic.copy_image_to_ssbo_large = FAIL
-1442 : dEQP-GLES31.functional.compute.basic.copy_ssbo_to_image_large = FAIL
+3865 : dEQP-GLES31.functional.compute.basic.copy_image_to_ssbo_large = FAIL
+3865 : dEQP-GLES31.functional.compute.basic.copy_ssbo_to_image_large = FAIL
 1442 : dEQP-GLES31.functional.shaders.opaque_type_indexing.* = FAIL
 1442 : dEQP-GLES31.functional.shaders.helper_invocation.* = FAIL
 1442 : dEQP-GLES31.functional.state_query.integer.program_pipeline_binding_* = FAIL
@@ -617,6 +612,15 @@
 3520 VULKAN ANDROID : dEQP-GLES31.functional.debug.negative_coverage.get_error.texture.texparameterf = FAIL
 3520 VULKAN ANDROID : dEQP-GLES31.functional.debug.negative_coverage.get_error.texture.texparameterfv = FAIL
 
+// Passing on recent drivers:
+3726 VULKAN ANDROID : dEQP-GLES31.functional.ssbo.layout.* = FAIL
+3726 VULKAN ANDROID : dEQP-GLES31.functional.atomic_counter.* = FAIL
+3726 VULKAN ANDROID : dEQP-GLES31.functional.synchronization.inter_call.without_memory_barrier.*atomic_counter* = FAIL
+3726 VULKAN ANDROID : dEQP-GLES31.functional.compute.basic.atomic_counter* = FAIL
+
+// Validation error on SPIR-V (but only on Android!)
+3882 VULKAN ANDROID : dEQP-GLES31.functional.uniform_location.nested_array.*sampler* = FAIL
+
 // General Vulkan failures
 
 // Limits:
@@ -629,7 +633,7 @@
 
 // Front-end query bugs:
 3520 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_limited_query.resource_query = FAIL
-3520 VULKAN : dEQP-GLES31.functional.program_interface_query.program_*.resource_list.compute.empty = FAIL
+3520 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.resource_list.compute.empty = FAIL
 3520 VULKAN : dEQP-GLES31.functional.program_interface_query.shader_storage_block.buffer_data_size.* = FAIL
 
 // Shader support:
@@ -642,26 +646,65 @@
 3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.precision.frexp* = FAIL
 3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_functions.precision.ldexp* = FAIL
 3569 VULKAN : dEQP-GLES31.functional.shaders.functions* = FAIL
-3569 VULKAN : dEQP-GLES31.functional.shaders.arrays* = FAIL
 3569 VULKAN : dEQP-GLES31.functional.shaders.linkage*uniform* = FAIL
-3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_constants.core.max_* = FAIL
 3569 VULKAN : dEQP-GLES31.functional.shaders.builtin_constants.core.min_program_texel_offset = FAIL
 3569 VULKAN : dEQP-GLES31.functional.shaders.uniform_block.es31.valid.* = FAIL
 
 // SSBO and Image qualifiers:
 3602 VULKAN : dEQP-GLES31.functional.synchronization.in_invocation.ssbo_alias_overwrite = FAIL
 
-// Array of array and struct default uniforms:
-3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*float_struct = FAIL
-3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*float_struct_struct = FAIL
-3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*random* = FAIL
-3604 VULKAN : dEQP-GLES31.functional.program_interface_query.*array*array* = SKIP
+// Struct referenced by:
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.compute.uniform_block.float_*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.compute.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.separable_vertex.uniform_block.float_*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.separable_vertex.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment.uniform_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment_only_vertex.uniform_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment_only_vertex.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment_only_fragment.uniform_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.vertex_fragment_only_fragment.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.compute.named_block.float_*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.compute.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.named_block.float_*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.named_block.float_array_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.named_block.float_struct_array = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.named_block.float_struct_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.named_block.float_unsized_struct_array = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_vertex.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment.named_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment_only_vertex.named_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment_only_vertex.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment_only_fragment.named_block.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.vertex_fragment_only_fragment.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.*random* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.separable_fragment.uniform_block.*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.referenced_by_shader.separable_fragment.block_array.float_struct = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.resource_list.separable_fragment.* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.array_size.separable_fragment.* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.location.separable_fragment.var* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.name_length.separable_fragment.var* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.type.separable_fragment.* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_fragment.named_block.float*struct* = FAIL
+3596 VULKAN : dEQP-GLES31.functional.program_interface_query.buffer_variable.referenced_by.separable_fragment.block_array.float_struct = FAIL
+
+// Separate shader objects:
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.referenced_by.referenced_by_separable_fragment = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_input.referenced_by.referenced_by_vertex_fragment = SKIP
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.resource_list.separable_vertex.* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.array_size.separable_vertex.var* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.location.separable_vertex.var* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.name_length.separable_vertex.var* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.referenced_by.referenced_by_separable_vertex = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.referenced_by.referenced_by_vertex_fragment = SKIP
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.type.separable_vertex.basic_type.* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.type.separable_vertex.array.* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.program_output.type.separable_vertex.struct.* = FAIL
+3570 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.random.* = FAIL
 
 // Block name matching failure:
 3459 VULKAN : dEQP-GLES31.functional.shaders.linkage.es31.shader_storage_block.mismatch_with_and_without_instance_name = FAIL
-
-// Explicit uniform locations:
-3597 VULKAN : dEQP-GLES31.functional.uniform_location.* = FAIL
 
 // Indirect draw:
 3564 VULKAN : dEQP-GLES31.functional.draw_indirect.* = SKIP
@@ -669,35 +712,17 @@
 // Tessellation geometry interaction:
 3572 VULKAN : dEQP-GLES31.functional.tessellation_geometry_interaction.* = FAIL
 
-// dEQP bug where atomic counter bindings > max result in failure instead of not-supported:
-// https://github.com/KhronosGroup/VK-GL-CTS/issues/156
-3566 VULKAN : dEQP-GLES31.functional.atomic_counter.* = FAIL
-3566 VULKAN : dEQP-GLES31.functional.synchronization.inter_call.without_memory_barrier.*atomic_counter* = FAIL
-
-// Storage image:
-3563 VULKAN : dEQP-GLES31.functional.state_query.*image* = FAIL
-3563 VULKAN : dEQP-GLES31.functional.synchronization.*.image* = FAIL
-3563 VULKAN : dEQP-GLES31.functional.compute.*image* = FAIL
-
-// Framebuffer parameters (FRAMEBUFFER_DEFAULT_SAMPLES):
-3520 VULKAN : dEQP-GLES31.functional.state_query.framebuffer_default.framebuffer_default_samples_get_framebuffer_parameteriv = FAIL
-
 // Framebuffer without attachments:
-3579 VULKAN : dEQP-GLES31.functional.fbo.no_attachments.* = SKIP
-
-// Separate shader objects:
-3570 VULKAN : dEQP-GLES31.functional.program_interface_query.*separable_* = FAIL
-3570 VULKAN : dEQP-GLES31.functional.program_interface_query.uniform.random.* = FAIL
+3579 ANDROID VULKAN : dEQP-GLES31.functional.fbo.no_attachments.* = SKIP
 
 // Debug:
 3590 VULKAN : dEQP-GLES31.functional.debug.negative_coverage.* = SKIP
 3590 VULKAN : dEQP-GLES31.functional.debug.error_groups.case_14 = SKIP
 
-// Transform feedback:
-3205 VULKAN : dEQP-GLES31.functional.debug.*transform_feedback = SKIP
-
-// Stencil textures (some missing support for 3D and 2D array textures):
-3585 VULKAN : dEQP-GLES31.functional.stencil_texturing.* = SKIP
+// Stencil textures (some missing support for base level):
+3683 VULKAN PIXEL2 : dEQP-GLES31.functional.stencil_texturing.format.* = FAIL
+3683 VULKAN PIXEL2 : dEQP-GLES31.functional.stencil_texturing.misc.compare_mode_effect = FAIL
+3148 VULKAN : dEQP-GLES31.functional.stencil_texturing.misc.base_level = SKIP
 
 // Multisampled textures:
 3565 VULKAN : dEQP-GLES31.functional.texture.multisample.* = SKIP
@@ -714,20 +739,11 @@
 3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture_2d.compressed_integer = SKIP
 3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture_2d.compressed_float = SKIP
 
-// column/row_major specified on struct member:
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.2 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.9 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.12 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.16 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.23 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.25 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.29 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_per_block_buffers.33 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.3 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.11 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.25 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.39 = FAIL
-3443 VULKAN : dEQP-GLES31.functional.ubo.random.all_shared_buffer.45 = FAIL
+// Vulkan creates the image view with the same format as the texture.
+3885 VULKAN : dEQP-GLES31.functional.image_load_store.*.format_reinterpret.* = FAIL
+
+// Cannot create 2D (array) view of 3D texture.
+3886 VULKAN : dEQP-GLES31.functional.image_load_store.3d.*layer = FAIL
 
 // Inactive SSBOs with flexible array member (about 20% of these tests are affected):
 3714 VULKAN : dEQP-GLES31.functional.ssbo.layout.random.* = FAIL
@@ -735,5 +751,3 @@
 // Validation errors:
 // Optimal tiling not supported for format:
 3520 VULKAN : dEQP-GLES31.functional.state_query.texture_level.texture* = SKIP
-// Invalid vertex attribute alignment:
-3520 VULKAN : dEQP-GLES31.functional.vertex_attribute_binding.usage.single_binding.unaligned_offset_elements_1_aligned_elements = FAIL

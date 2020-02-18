@@ -16,14 +16,14 @@ class FakeBlob : public blink::mojom::Blob {
   explicit FakeBlob(const std::string& uuid);
 
   blink::mojom::BlobPtr Clone();
-  void Clone(blink::mojom::BlobRequest request) override;
+  void Clone(mojo::PendingReceiver<blink::mojom::Blob> receiver) override;
   void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override;
   void ReadRange(uint64_t offset,
                  uint64_t size,
                  mojo::ScopedDataPipeProducerHandle,
-                 blink::mojom::BlobReaderClientPtr) override;
+                 mojo::PendingRemote<blink::mojom::BlobReaderClient>) override;
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
-               blink::mojom::BlobReaderClientPtr) override;
+               mojo::PendingRemote<blink::mojom::BlobReaderClient>) override;
   void ReadSideData(ReadSideDataCallback) override;
   void GetInternalUUID(GetInternalUUIDCallback callback) override;
 

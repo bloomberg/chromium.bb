@@ -23,7 +23,7 @@
 #include "components/autofill_assistant/browser/self_delete_full_card_requester.h"
 #include "components/autofill_assistant/browser/service.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
-#include "components/autofill_assistant/browser/web_controller.h"
+#include "components/autofill_assistant/browser/web/web_controller.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -203,25 +203,28 @@ void ScriptExecutor::ClickOrTapElement(
                                                    std::move(callback));
 }
 
-void ScriptExecutor::GetPaymentInformation(
-    std::unique_ptr<PaymentRequestOptions> options) {
-  options->confirm_callback = base::BindOnce(
-      &ScriptExecutor::OnGetPaymentInformation, weak_ptr_factory_.GetWeakPtr(),
-      std::move(options->confirm_callback));
-  options->additional_actions_callback =
-      base::BindOnce(&ScriptExecutor::OnAdditionalActionTriggered,
+void ScriptExecutor::CollectUserData(
+    std::unique_ptr<CollectUserDataOptions> collect_user_data_options,
+    std::unique_ptr<UserData> user_data) {
+  collect_user_data_options->confirm_callback = base::BindOnce(
+      &ScriptExecutor::OnGetUserData, weak_ptr_factory_.GetWeakPtr(),
+      std::move(collect_user_data_options->confirm_callback));
+  collect_user_data_options->additional_actions_callback = base::BindOnce(
+      &ScriptExecutor::OnAdditionalActionTriggered,
+      weak_ptr_factory_.GetWeakPtr(),
+      std::move(collect_user_data_options->additional_actions_callback));
+  collect_user_data_options->terms_link_callback =
+      base::BindOnce(&ScriptExecutor::OnTermsAndConditionsLinkClicked,
                      weak_ptr_factory_.GetWeakPtr(),
-                     std::move(options->additional_actions_callback));
-  options->terms_link_callback = base::BindOnce(
-      &ScriptExecutor::OnTermsAndConditionsLinkClicked,
-      weak_ptr_factory_.GetWeakPtr(), std::move(options->terms_link_callback));
-  delegate_->SetPaymentRequestOptions(std::move(options));
+                     std::move(collect_user_data_options->terms_link_callback));
+  delegate_->SetCollectUserDataOptions(std::move(collect_user_data_options),
+                                       std::move(user_data));
   delegate_->EnterState(AutofillAssistantState::PROMPT);
 }
 
-void ScriptExecutor::OnGetPaymentInformation(
-    base::OnceCallback<void(std::unique_ptr<PaymentInformation>)> callback,
-    std::unique_ptr<PaymentInformation> result) {
+void ScriptExecutor::OnGetUserData(
+    base::OnceCallback<void(std::unique_ptr<UserData>)> callback,
+    std::unique_ptr<UserData> result) {
   delegate_->EnterState(AutofillAssistantState::RUNNING);
   std::move(callback).Run(std::move(result));
 }
@@ -294,10 +297,6 @@ void ScriptExecutor::Prompt(
 }
 
 void ScriptExecutor::CancelPrompt() {
-  // Delete on_terminate_prompt_ if necessary, without running.
-  if (on_terminate_prompt_)
-    std::move(on_terminate_prompt_);
-
   delegate_->SetUserActions(nullptr);
   CleanUpAfterPrompt();
 }
@@ -492,8 +491,16 @@ autofill::PersonalDataManager* ScriptExecutor::GetPersonalDataManager() {
   return delegate_->GetPersonalDataManager();
 }
 
+WebsiteLoginFetcher* ScriptExecutor::GetWebsiteLoginFetcher() {
+  return delegate_->GetWebsiteLoginFetcher();
+}
+
 content::WebContents* ScriptExecutor::GetWebContents() {
   return delegate_->GetWebContents();
+}
+
+std::string ScriptExecutor::GetAccountEmailAddress() {
+  return delegate_->GetAccountEmailAddress();
 }
 
 void ScriptExecutor::SetDetails(std::unique_ptr<Details> details) {
@@ -753,8 +760,7 @@ ScriptExecutor::WaitForDomOperation::WaitForDomOperation(
       check_elements_(std::move(check_elements)),
       callback_(std::move(callback)),
       retry_timer_(main_script->delegate_->GetSettings()
-                       .periodic_element_check_interval),
-      weak_ptr_factory_(this) {}
+                       .periodic_element_check_interval) {}
 
 ScriptExecutor::WaitForDomOperation::~WaitForDomOperation() {
   delegate_->RemoveListener(this);

@@ -84,7 +84,7 @@
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
 #include "chromecast/media/service/cast_mojo_media_client.h"
-#include "media/mojo/interfaces/constants.mojom.h"  // nogncheck
+#include "media/mojo/mojom/constants.mojom.h"  // nogncheck
 #include "media/mojo/services/media_service.h"      // nogncheck
 #endif  // ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS
 
@@ -134,12 +134,6 @@
 #if BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
 #include "chromecast/external_mojo/broker_service/broker_service.h"
 #endif
-
-#if !defined(OS_FUCHSIA)
-#include "components/services/heap_profiling/heap_profiling_service.h"  // nogncheck
-#include "components/services/heap_profiling/public/cpp/settings.h"  // nogncheck
-#include "components/services/heap_profiling/public/mojom/constants.mojom.h"  // nogncheck
-#endif  // !defined(OS_FUCHSIA)
 
 namespace chromecast {
 namespace shell {
@@ -321,8 +315,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #else
@@ -331,8 +324,7 @@ CastContentBrowserClient::CreateAudioManager(
       base::BindRepeating(&CastContentBrowserClient::GetCmaBackendFactory,
                           base::Unretained(this)),
       base::BindRepeating(&shell::CastSessionIdMap::GetSessionId),
-      base::CreateSingleThreadTaskRunnerWithTraits(
-          {content::BrowserThread::UI}),
+      base::CreateSingleThreadTaskRunner({content::BrowserThread::UI}),
       GetMediaTaskRunner(), content::GetSystemConnector(),
       BUILDFLAG(ENABLE_CAST_AUDIO_MANAGER_MIXER));
 #endif  // defined(USE_ALSA)
@@ -399,11 +391,10 @@ CastContentBrowserClient::CreateBrowserMainParts(
 }
 
 void CastContentBrowserClient::RenderProcessWillLaunch(
-    content::RenderProcessHost* host,
-    service_manager::mojom::ServiceRequest* service_request) {
+    content::RenderProcessHost* host) {
   // Forcibly trigger I/O-thread URLRequestContext initialization before
   // getting HostResolver.
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {content::BrowserThread::IO},
       base::Bind(
           &net::URLRequestContextGetter::GetURLRequestContext,
@@ -429,8 +420,7 @@ void CastContentBrowserClient::RenderProcessWillLaunch(
       cast_browser_main_parts_->browser_context();
   host->AddFilter(new extensions::ExtensionMessageFilter(render_process_id,
                                                          browser_context));
-  host->AddFilter(new extensions::IOThreadExtensionMessageFilter(
-      render_process_id, browser_context));
+  host->AddFilter(new extensions::IOThreadExtensionMessageFilter());
   host->AddFilter(new extensions::ExtensionsGuestViewMessageFilter(
       render_process_id, browser_context));
   host->AddFilter(
@@ -496,12 +486,11 @@ void CastContentBrowserClient::SiteInstanceGotProcess(
       ->Insert(extension->id(), site_instance->GetProcess()->GetID(),
                site_instance->GetId());
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {content::BrowserThread::IO},
-      base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
-                     extension_system->info_map(), extension->id(),
-                     site_instance->GetProcess()->GetID(),
-                     site_instance->GetId()));
+  base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                 base::BindOnce(&extensions::InfoMap::RegisterExtensionProcess,
+                                extension_system->info_map(), extension->id(),
+                                site_instance->GetProcess()->GetID(),
+                                site_instance->GetId()));
 #endif
 }
 
@@ -646,7 +635,6 @@ void CastContentBrowserClient::AllowCertificateError(
     const GURL& request_url,
     bool is_main_frame_request,
     bool strict_enforcement,
-    bool expired_previous_decision,
     const base::Callback<void(content::CertificateRequestResultType)>&
         callback) {
   // Allow developers to override certificate errors.
@@ -683,7 +671,7 @@ base::OnceClosure CastContentBrowserClient::SelectClientCertificate(
   std::string session_id =
       CastNavigationUIData::GetSessionIdForWebContents(web_contents);
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(
           &CastContentBrowserClient::SelectClientCertificateOnIOThread,
@@ -809,18 +797,6 @@ void CastContentBrowserClient::RunServiceInstance(
     return;
   }
 #endif  // BUILDFLAG(ENABLE_EXTERNAL_MOJO_SERVICES)
-}
-
-void CastContentBrowserClient::RunServiceInstanceOnIOThread(
-    const service_manager::Identity& identity,
-    mojo::PendingReceiver<service_manager::mojom::Service>* receiver) {
-#if !defined(OS_FUCHSIA)
-  if (identity.name() == heap_profiling::mojom::kServiceName) {
-    heap_profiling::HeapProfilingService::GetServiceFactory().Run(
-        std::move(*receiver));
-    return;
-  }
-#endif  // !defined(OS_FUCHSIA)
 }
 
 base::Optional<service_manager::Manifest>
@@ -1029,7 +1005,7 @@ CastContentBrowserClient::CreateNetworkContext(
 }
 
 bool CastContentBrowserClient::DoesSiteRequireDedicatedProcess(
-    content::BrowserOrResourceContext browser_or_resource_context,
+    content::BrowserContext* browser_context,
     const GURL& effective_site_url) {
   // Always isolate extensions. This prevents site isolation from messing up
   // URLs.

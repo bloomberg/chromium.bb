@@ -2,52 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/web/modules/mediastream/media_stream_video_capturer_source.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_video_capturer_source.h"
 
 #include <utility>
 
-#include "base/bind.h"
 #include "media/capture/video_capturer_source.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/mediastream/media_stream.mojom-blink.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util.h"
-#include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
-#include "third_party/blink/renderer/modules/mediastream/media_stream_local_frame_wrapper.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
 
-class MediaStreamVideoCapturerSource::InternalState
-    : public MediaStreamInternalFrameWrapper {
- public:
-  InternalState(WebLocalFrame* web_frame)
-      : MediaStreamInternalFrameWrapper(web_frame) {}
-
-  const mojom::blink::MediaStreamDispatcherHostPtr&
-  GetMediaStreamDispatcherHost() {
-    DCHECK(frame());
-    if (!host_)
-      frame()->GetInterfaceProvider().GetInterface(mojo::MakeRequest(&host_));
-    return host_;
-  }
-
-  void SetMediaStreamDispatcherHostForTesting(
-      mojom::blink::MediaStreamDispatcherHostPtr host) {
-    host_ = std::move(host);
-  }
-
- private:
-  mojom::blink::MediaStreamDispatcherHostPtr host_;
-};
-
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
+    LocalFrame* frame,
     const SourceStoppedCallback& stop_callback,
     std::unique_ptr<media::VideoCapturerSource> source)
-    : internal_state_(std::make_unique<InternalState>(
-          blink::WebLocalFrame::FrameForCurrentContext())),
-      source_(std::move(source)) {
+    : frame_(frame), source_(std::move(source)) {
   media::VideoCaptureFormats preferred_formats = source_->GetPreferredFormats();
   if (!preferred_formats.empty())
     capture_params_.requested_format = preferred_formats.front();
@@ -55,23 +27,24 @@ MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
 }
 
 MediaStreamVideoCapturerSource::MediaStreamVideoCapturerSource(
-    WebLocalFrame* web_frame,
+    LocalFrame* frame,
     const SourceStoppedCallback& stop_callback,
     const MediaStreamDevice& device,
     const media::VideoCaptureParams& capture_params,
     DeviceCapturerFactoryCallback device_capturer_factory_callback)
-    : internal_state_(std::make_unique<InternalState>(web_frame)),
-      source_(device_capturer_factory_callback.Run(device.session_id)),
+    : frame_(frame),
+      source_(device_capturer_factory_callback.Run(device.session_id())),
       capture_params_(capture_params),
       device_capturer_factory_callback_(
           std::move(device_capturer_factory_callback)) {
+  DCHECK(!device.session_id().is_empty());
   SetStopCallback(stop_callback);
   SetDevice(device);
   SetDeviceRotationDetection(true /* enabled */);
 }
 
 MediaStreamVideoCapturerSource::~MediaStreamVideoCapturerSource() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
 
 void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(
@@ -80,23 +53,23 @@ void MediaStreamVideoCapturerSource::SetDeviceCapturerFactoryCallbackForTesting(
 }
 
 void MediaStreamVideoCapturerSource::RequestRefreshFrame() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->RequestRefreshFrame();
 }
 
 void MediaStreamVideoCapturerSource::OnFrameDropped(
     media::VideoCaptureFrameDropReason reason) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->OnFrameDropped(reason);
 }
 
 void MediaStreamVideoCapturerSource::OnLog(const std::string& message) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->OnLog(message);
 }
 
 void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (has_consumers)
     source_->Resume();
   else
@@ -104,17 +77,17 @@ void MediaStreamVideoCapturerSource::OnHasConsumers(bool has_consumers) {
 }
 
 void MediaStreamVideoCapturerSource::OnCapturingLinkSecured(bool is_secure) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!internal_state_->frame())
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!frame_)
     return;
-  internal_state_->GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
-      device().session_id,
+  GetMediaStreamDispatcherHost()->SetCapturingLinkSecured(
+      device().serializable_session_id(),
       static_cast<mojom::blink::MediaStreamType>(device().type), is_secure);
 }
 
 void MediaStreamVideoCapturerSource::StartSourceImpl(
     const VideoCaptureDeliverFrameCB& frame_callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   state_ = STARTING;
   frame_callback_ = frame_callback;
   source_->StartCapture(
@@ -124,12 +97,12 @@ void MediaStreamVideoCapturerSource::StartSourceImpl(
 }
 
 void MediaStreamVideoCapturerSource::StopSourceImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   source_->StopCapture();
 }
 
 void MediaStreamVideoCapturerSource::StopSourceForRestartImpl() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (state_ != STARTED) {
     OnStopForRestartDone(false);
     return;
@@ -157,19 +130,19 @@ void MediaStreamVideoCapturerSource::RestartSourceImpl(
 
 base::Optional<media::VideoCaptureFormat>
 MediaStreamVideoCapturerSource::GetCurrentFormat() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_.requested_format;
 }
 
 base::Optional<media::VideoCaptureParams>
 MediaStreamVideoCapturerSource::GetCurrentCaptureParams() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   return capture_params_;
 }
 
 void MediaStreamVideoCapturerSource::ChangeSourceImpl(
     const MediaStreamDevice& new_device) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(device_capturer_factory_callback_);
 
   if (state_ != STARTED) {
@@ -179,7 +152,7 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
   state_ = STOPPING_FOR_CHANGE_SOURCE;
   source_->StopCapture();
   SetDevice(new_device);
-  source_ = device_capturer_factory_callback_.Run(new_device.session_id);
+  source_ = device_capturer_factory_callback_.Run(new_device.session_id());
   source_->StartCapture(
       capture_params_, frame_callback_,
       WTF::BindRepeating(&MediaStreamVideoCapturerSource::OnRunStateChanged,
@@ -189,7 +162,7 @@ void MediaStreamVideoCapturerSource::ChangeSourceImpl(
 void MediaStreamVideoCapturerSource::OnRunStateChanged(
     const media::VideoCaptureParams& new_capture_params,
     bool is_running) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   switch (state_) {
     case STARTING:
       source_->OnLog("MediaStreamVideoCapturerSource sending OnStartDone");
@@ -233,11 +206,19 @@ void MediaStreamVideoCapturerSource::OnRunStateChanged(
   }
 }
 
+mojom::blink::MediaStreamDispatcherHost*
+MediaStreamVideoCapturerSource::GetMediaStreamDispatcherHost() {
+  DCHECK(frame_);
+  if (!host_) {
+    frame_->GetInterfaceProvider().GetInterface(
+        host_.BindNewPipeAndPassReceiver());
+  }
+  return host_.get();
+}
+
 void MediaStreamVideoCapturerSource::SetMediaStreamDispatcherHostForTesting(
-    void* dispatcher_host) {
-  mojom::blink::MediaStreamDispatcherHostPtr* host =
-      static_cast<mojom::blink::MediaStreamDispatcherHostPtr*>(dispatcher_host);
-  internal_state_->SetMediaStreamDispatcherHostForTesting(std::move(*host));
+    mojo::PendingRemote<mojom::blink::MediaStreamDispatcherHost> host) {
+  host_.Bind(std::move(host));
 }
 
 media::VideoCapturerSource*

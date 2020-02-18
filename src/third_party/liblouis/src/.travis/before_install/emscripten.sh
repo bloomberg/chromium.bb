@@ -26,7 +26,7 @@ echo "[liblouis-js] Assigned this build the version number ${BUILD_VERSION}" &&
 #     in sync.
 git clone https://github.com/liblouis/liblouis-js.git &&
 cd liblouis-js &&
-git checkout 73032f867192de1c4a19b03ef5030926e0ba6d85 &&
+git checkout 8a28e9380c591c58e4b411bb366c76cf686ac418 &&
 cd .. &&
 # --- obtain the latest version of liblouis/js-build
 #     we publish/deploy to this repository. Contains package

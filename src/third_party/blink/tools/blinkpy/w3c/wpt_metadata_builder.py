@@ -47,8 +47,8 @@ class WPTMetadataBuilder(object):
     def _build_metadata_and_write(self):
         """Build the metadata files and write them to disk."""
         if os.path.exists(self.metadata_output_dir):
-            _log.warning("Output dir exists, deleting: %s",
-                         self.metadata_output_dir)
+            _log.debug("Output dir exists, deleting: %s",
+                       self.metadata_output_dir)
             import shutil
             shutil.rmtree(self.metadata_output_dir)
 
@@ -62,6 +62,12 @@ class WPTMetadataBuilder(object):
                 os.makedirs(os.path.dirname(filename))
             with open(filename, "w") as metadata_file:
                 metadata_file.write(file_contents)
+
+        # Finally, output a stamp file with the same name as the output
+        # directory. The stamp file is empty, it's only used for its mtime.
+        # This makes the GN build system happy (see crbug.com/995112).
+        with open(self.metadata_output_dir + ".stamp", "w"):
+            pass
 
     def get_test_names_for_metadata(self):
         """Determines which tests in the expectation file need metadata.

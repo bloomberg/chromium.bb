@@ -62,7 +62,7 @@ def _CancelTimer():
 
 @contextlib.contextmanager
 def Timeout(max_run_time,
-            error_message="Timeout occurred- waited %(time)s seconds.",
+            error_message='Timeout occurred- waited %(time)s seconds.',
             reason_message=None):
   """ContextManager that alarms if code is ran for too long.
 
@@ -144,7 +144,7 @@ def FatalTimeout(max_run_time, display_message=None):
 
     # The cbuildbot stage that gets aborted by this timeout should be treated as
     # failed by buildbot.
-    error_message = ("Timeout occurred- waited %i seconds, failing." %
+    error_message = ('Timeout occurred- waited %i seconds, failing.' %
                      max_run_time)
     if display_message:
       error_message += ' Timeout reason: %s' % display_message

@@ -7,7 +7,9 @@
 #include <limits>
 
 #include "base/atomic_sequence_num.h"
+#include "base/clang_coverage_buildflags.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/hash/hash.h"
 #include "base/logging.h"
@@ -38,6 +40,10 @@
 #include "base/mac/foundation_util.h"
 #include "content/common/mac_helpers.h"
 #endif  // OS_LINUX
+
+#if BUILDFLAG(CLANG_COVERAGE)
+#include "content/common/coverage_utils.h"
+#endif
 
 namespace {
 
@@ -132,6 +138,10 @@ void ChildProcessHostImpl::BindInterface(
   return delegate_->BindInterface(interface_name, std::move(interface_pipe));
 }
 
+void ChildProcessHostImpl::BindReceiver(mojo::GenericPendingReceiver receiver) {
+  child_process_->BindReceiver(std::move(receiver));
+}
+
 void ChildProcessHostImpl::RunService(
     const std::string& service_name,
     mojo::PendingReceiver<service_manager::mojom::Service> receiver) {
@@ -172,11 +182,16 @@ bool ChildProcessHostImpl::InitChannel() {
   content::BindInterface(
       this,
       mojom::ChildProcessRequest(child_process_.BindNewPipeAndPassReceiver()));
+  child_process_->Initialize(bootstrap_receiver_.BindNewPipeAndPassRemote());
 
   // Make sure these messages get sent first.
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
   bool enabled = IPC::Logging::GetInstance()->Enabled();
   child_process_->SetIPCLoggingEnabled(enabled);
+#endif
+
+#if BUILDFLAG(CLANG_COVERAGE)
+  child_process_->SetCoverageFile(OpenCoverageFile());
 #endif
 
   opening_channel_ = true;
@@ -226,6 +241,16 @@ uint64_t ChildProcessHostImpl::ChildProcessUniqueIdToTracingProcessId(
   return static_cast<uint64_t>(
              base::Hash(&child_process_id, sizeof(child_process_id))) +
          1;
+}
+
+void ChildProcessHostImpl::BindProcessHost(
+    mojo::PendingReceiver<mojom::ChildProcessHost> receiver) {
+  receiver_.Bind(std::move(receiver));
+}
+
+void ChildProcessHostImpl::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  delegate_->BindHostReceiver(std::move(receiver));
 }
 
 bool ChildProcessHostImpl::OnMessageReceived(const IPC::Message& msg) {

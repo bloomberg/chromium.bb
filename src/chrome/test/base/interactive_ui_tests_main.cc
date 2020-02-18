@@ -55,7 +55,7 @@ class InteractiveUITestSuite : public ChromeTestSuite {
 #elif defined(USE_OZONE) && defined(OS_LINUX)
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
-    ui::OzonePlatform::EnsureInstance()->InitializeForUI(std::move(params));
+    ui::OzonePlatform::InitializeForUI(params);
 #elif defined(OS_LINUX)
     ui_controls::InstallUIControlsAura(
         views::test::CreateUIControlsDesktopAura());
@@ -142,9 +142,6 @@ int main(int argc, char** argv) {
       switches::kOverrideUseSoftwareGLForTests);
 #endif
 
-  // TODO(sky): this causes a crash in an autofill test on macosx, figure out
-  // why: http://crbug.com/641969.
-#if !defined(OS_MACOSX)
   // Without this it's possible for the first browser to start up in the
   // background, generally because the last test did something that causes the
   // test to run in the background. Most interactive ui tests assume they are in
@@ -153,7 +150,6 @@ int main(int argc, char** argv) {
   // foreground.
   InProcessBrowserTest::set_global_browser_set_up_function(
       &ui_test_utils::BringBrowserWindowToFront);
-#endif
 
   // Run interactive_ui_tests serially, they do not support running in parallel.
   size_t parallel_jobs = 1U;

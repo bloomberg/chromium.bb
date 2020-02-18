@@ -13,8 +13,9 @@
 #include "base/single_thread_task_runner.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "services/viz/public/cpp/gpu/client_gpu_memory_buffer_manager.h"
-#include "services/viz/public/interfaces/gpu.mojom.h"
+#include "services/viz/public/mojom/gpu.mojom.h"
 
 namespace service_manager {
 class Connector;
@@ -29,6 +30,9 @@ class Gpu : public gpu::GpuChannelEstablishFactory {
   static std::unique_ptr<Gpu> Create(
       service_manager::Connector* connector,
       const std::string& service_name,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
+  static std::unique_ptr<Gpu> Create(
+      mojo::PendingRemote<mojom::Gpu> remote,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   ~Gpu() override;

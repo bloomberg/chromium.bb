@@ -102,7 +102,8 @@ static_library("arc") {
     "//chromeos/network",
     "//components/account_id",
     "//components/exo",
-    "//components/google/core/browser",
+    "//components/google/core/common",
+    "//components/guest_os",
     "//components/onc",
     "//components/prefs",
     "//components/session_manager/core",
@@ -143,6 +144,7 @@ static_library("prefs") {
 
   deps = [
     ":arc_base_enums",
+    "//components/guest_os:prefs",
     "//components/prefs",
   ]
 }
@@ -174,6 +176,7 @@ static_library("arc_base_utils") {
     "//ash/public/cpp",
     "//base",
     "//chromeos/constants",
+    "//chromeos/dbus:dbus",
     "//chromeos/dbus/session_manager",
     "//components/exo",
     "//ui/aura",
@@ -237,7 +240,7 @@ static_library("arc_base") {
     ":arc_base_utils",
     ":connection_holder",
     ":prefs",
-    "//components/arc/common",
+    "//components/arc/mojom",
     "//dbus",
   ]
 }
@@ -267,7 +270,7 @@ static_library("notification_test_support") {
 
   public_deps = [
     ":connection_holder",
-    "//components/arc/common:notifications",
+    "//components/arc/mojom:notifications",
   ]
 }
 
@@ -335,7 +338,7 @@ source_set("unit_tests") {
   sources = [
     "arc_features_parser_unittest.cc",
     "arc_util_unittest.cc",
-    "bluetooth/bluetooth_struct_traits_unittest.cc",
+    "bluetooth/bluetooth_mojom_traits_unittest.cc",
     "bluetooth/bluetooth_type_converters_unittest.cc",
     "clipboard/arc_clipboard_bridge_unittest.cc",
     "ime/arc_ime_service_unittest.cc",
@@ -352,7 +355,6 @@ source_set("unit_tests") {
     "session/arc_data_remover_unittest.cc",
     "session/arc_session_impl_unittest.cc",
     "session/arc_session_runner_unittest.cc",
-    "session/arc_vm_client_adapter_unittest.cc",
     "timer/arc_timer_bridge_unittest.cc",
     "wake_lock/arc_wake_lock_bridge_unittest.cc",
   ]

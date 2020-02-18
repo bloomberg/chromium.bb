@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "base/supports_user_data.h"
 #include "components/autofill/core/browser/webdata/autofill_change.h"
+#include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service_observer.h"
 #include "components/sync/model/metadata_change_list.h"
 #include "components/sync/model/model_error.h"
@@ -27,7 +28,6 @@ struct EntityData;
 namespace autofill {
 
 class AutofillTable;
-class AutofillWebDataBackend;
 class AutofillWebDataService;
 
 // Sync bridge responsible for propagating local changes to the processor and
@@ -52,10 +52,6 @@ class AutofillWalletMetadataSyncBridge
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor,
       AutofillWebDataBackend* web_data_backend);
   ~AutofillWalletMetadataSyncBridge() override;
-
-  // Determines whether this bridge should be monitoring the Wallet data. This
-  // should be called whenever the data bridge sync state changes.
-  void OnWalletDataTrackingStateChanged(bool is_tracking);
 
   base::WeakPtr<AutofillWalletMetadataSyncBridge> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -128,17 +124,13 @@ class AutofillWalletMetadataSyncBridge
   // SupportsUserData, so it's guaranteed to outlive |this|.
   AutofillWebDataBackend* const web_data_backend_;
 
-  ScopedObserver<AutofillWebDataBackend, AutofillWalletMetadataSyncBridge>
-      scoped_observer_;
+  ScopedObserver<AutofillWebDataBackend,
+                 AutofillWebDataServiceObserverOnDBSequence>
+      scoped_observer_{this};
 
   // Cache of the local data that allows figuring out the diff for local
   // changes; keyed by storage keys.
   std::map<std::string, AutofillMetadata> cache_;
-
-  // Indicates whether we should rely on wallet data being actively synced. If
-  // true, the bridge will prune metadata entries without corresponding wallet
-  // data entry.
-  bool track_wallet_data_;
 
   // The bridge should be used on the same sequence where it is constructed.
   SEQUENCE_CHECKER(sequence_checker_);

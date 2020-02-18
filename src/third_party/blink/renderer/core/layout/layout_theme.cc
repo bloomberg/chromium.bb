@@ -21,11 +21,13 @@
 
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/fileapi/file_list.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -35,6 +37,7 @@
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_option_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_select_element.h"
 #include "third_party/blink/renderer/core/html/forms/spin_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/text_control_inner_elements.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
@@ -63,6 +66,80 @@
 
 namespace blink {
 
+namespace {
+
+// This function should match to the user-agent stylesheet.
+ControlPart AutoAppearanceFor(const Element& element) {
+  if (IsA<HTMLButtonElement>(element))
+    return kButtonPart;
+  if (IsA<HTMLMeterElement>(element))
+    return kMeterPart;
+  if (IsA<HTMLProgressElement>(element))
+    return kProgressBarPart;
+  if (IsA<HTMLTextAreaElement>(element))
+    return kTextAreaPart;
+  if (IsA<SpinButtonElement>(element))
+    return kInnerSpinButtonPart;
+  if (const auto* select = DynamicTo<HTMLSelectElement>(element))
+    return select->UsesMenuList() ? kMenulistPart : kListboxPart;
+
+  if (const auto* input = DynamicTo<HTMLInputElement>(element)) {
+    const AtomicString& type = input->type();
+    if (type == input_type_names::kCheckbox)
+      return kCheckboxPart;
+    if (type == input_type_names::kRadio)
+      return kRadioPart;
+    if (input->IsTextButton())
+      return kPushButtonPart;
+    if (type == input_type_names::kColor) {
+      return input->FastHasAttribute(html_names::kListAttr) ? kMenulistPart
+                                                            : kSquareButtonPart;
+    }
+    if (type == input_type_names::kRange)
+      return kSliderHorizontalPart;
+    if (type == input_type_names::kSearch)
+      return kSearchFieldPart;
+    if (type == input_type_names::kDate ||
+        type == input_type_names::kDatetimeLocal ||
+        type == input_type_names::kMonth || type == input_type_names::kTime ||
+        type == input_type_names::kWeek) {
+#if defined(OS_ANDROID)
+      return kMenulistPart;
+#else
+      return kTextFieldPart;
+#endif
+    }
+    if (type == input_type_names::kEmail || type == input_type_names::kNumber ||
+        type == input_type_names::kPassword || type == input_type_names::kTel ||
+        type == input_type_names::kText || type == input_type_names::kUrl)
+      return kTextFieldPart;
+
+    // Type=hidden/image/file.
+    return kNoControlPart;
+  }
+
+  if (element.IsInUserAgentShadowRoot()) {
+    const AtomicString& id_value =
+        element.FastGetAttribute(html_names::kIdAttr);
+    if (id_value == shadow_element_names::SliderThumb())
+      return kSliderThumbHorizontalPart;
+    if (id_value == shadow_element_names::SearchClearButton() ||
+        id_value == shadow_element_names::ClearButton())
+      return kSearchFieldCancelButtonPart;
+
+    // Slider container elements and -webkit-meter-inner-element don't have IDs.
+    const AtomicString& shadow_pseudo = element.ShadowPseudoId();
+    if (shadow_pseudo == "-webkit-media-slider-container" ||
+        shadow_pseudo == "-webkit-slider-container")
+      return kSliderHorizontalPart;
+    if (shadow_pseudo == "-webkit-meter-inner-element")
+      return kMeterPart;
+  }
+  return kNoControlPart;
+}
+
+}  // namespace
+
 // Wrapper function defined in WebKit.h
 void SetMockThemeEnabledForTest(bool value) {
   WebTestSupport::SetMockThemeEnabledForTest(value);
@@ -80,12 +157,92 @@ LayoutTheme& LayoutTheme::GetTheme() {
 
 LayoutTheme::LayoutTheme() : has_custom_focus_ring_color_(false) {}
 
+ControlPart LayoutTheme::AdjustAppearanceWithAuthorStyle(
+    ControlPart part,
+    const ComputedStyle& style) {
+  if (IsControlStyled(part, style))
+    return part == kMenulistPart ? kMenulistButtonPart : kNoControlPart;
+  return part;
+}
+
+ControlPart LayoutTheme::AdjustAppearanceWithElementType(
+    const ComputedStyle& style,
+    const Element* element) {
+  ControlPart part = style.EffectiveAppearance();
+  if (!RuntimeEnabledFeatures::RestrictedWebkitAppearanceEnabled())
+    return part;
+
+  if (!element)
+    return kNoControlPart;
+
+  ControlPart auto_appearance = AutoAppearanceFor(*element);
+  if (part == auto_appearance)
+    return part;
+
+  switch (part) {
+    // No restrictions.
+    case kNoControlPart:
+    case kMediaSliderPart:
+    case kMediaSliderThumbPart:
+    case kMediaVolumeSliderPart:
+    case kMediaVolumeSliderThumbPart:
+    case kMediaControlPart:
+      return part;
+
+    // Aliases of 'auto'.
+    // https://drafts.csswg.org/css-ui-4/#typedef-appearance-compat-auto
+    case kCheckboxPart:
+    case kRadioPart:
+    case kPushButtonPart:
+    case kSquareButtonPart:
+    case kInnerSpinButtonPart:
+    case kListboxPart:
+    case kMenulistPart:
+    case kMeterPart:
+    case kProgressBarPart:
+    case kSliderHorizontalPart:
+    case kSliderThumbHorizontalPart:
+    case kSearchFieldPart:
+    case kSearchFieldCancelButtonPart:
+    case kTextAreaPart:
+      return auto_appearance;
+
+      // The following keywords should work well for some element types
+      // even if their default appearances are different from the keywords.
+
+    case kButtonPart:
+      if (IsA<HTMLSelectElement>(*element) || IsA<HTMLAnchorElement>(*element))
+        return auto_appearance;
+      return part;
+
+    case kMenulistButtonPart:
+      return auto_appearance == kMenulistPart ? part : auto_appearance;
+
+    case kSliderVerticalPart:
+      return auto_appearance == kSliderHorizontalPart ? part : auto_appearance;
+
+    case kSliderThumbVerticalPart:
+      return auto_appearance == kSliderThumbHorizontalPart ? part
+                                                           : auto_appearance;
+
+    case kTextFieldPart:
+      if (IsA<HTMLInputElement>(*element) &&
+          To<HTMLInputElement>(*element).type() == input_type_names::kSearch)
+        return part;
+      return auto_appearance;
+  }
+
+  return part;
+}
+
 void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
-  DCHECK(style.HasAppearance());
+  ControlPart original_part = style.Appearance();
+  style.SetEffectiveAppearance(original_part);
+  if (original_part == ControlPart::kNoControlPart)
+    return;
 
   // Force inline and table display styles to be inline-block (except for table-
   // which is block)
-  ControlPart part = style.Appearance();
   if (style.Display() == EDisplay::kInline ||
       style.Display() == EDisplay::kInlineTable ||
       style.Display() == EDisplay::kTableRowGroup ||
@@ -101,15 +258,16 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
            style.Display() == EDisplay::kTable)
     style.SetDisplay(EDisplay::kBlock);
 
-  if (IsControlStyled(style)) {
-    if (part == kMenulistPart) {
-      style.SetAppearance(kMenulistButtonPart);
-      part = kMenulistButtonPart;
-    } else {
-      style.SetAppearance(kNoControlPart);
-      return;
-    }
-  }
+  // TODO(tkent): We should not update Appearance, which is a source of
+  // getComputedStyle(). https://drafts.csswg.org/css-ui-4/#propdef-appearance
+  // says "Computed value: specified keyword".
+  style.SetAppearance(AdjustAppearanceWithAuthorStyle(original_part, style));
+
+  ControlPart part = AdjustAppearanceWithAuthorStyle(
+      AdjustAppearanceWithElementType(style, e), style);
+  style.SetEffectiveAppearance(part);
+  if (part == kNoControlPart)
+    return;
 
   if (ShouldUseFallbackTheme(style)) {
     AdjustStyleUsingFallbackTheme(style);
@@ -120,7 +278,7 @@ void LayoutTheme::AdjustStyle(ComputedStyle& style, Element* e) {
 
   // Call the appropriate style adjustment method based off the appearance
   // value.
-  switch (style.Appearance()) {
+  switch (part) {
     case kMenulistPart:
       return AdjustMenuListStyle(style, e);
     case kMenulistButtonPart:
@@ -246,8 +404,9 @@ bool LayoutTheme::IsControlContainer(ControlPart appearance) const {
   return appearance != kCheckboxPart && appearance != kRadioPart;
 }
 
-bool LayoutTheme::IsControlStyled(const ComputedStyle& style) const {
-  switch (style.Appearance()) {
+bool LayoutTheme::IsControlStyled(ControlPart part,
+                                  const ComputedStyle& style) const {
+  switch (part) {
     case kPushButtonPart:
     case kSquareButtonPart:
     case kButtonPart:
@@ -272,7 +431,7 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
     return false;
   if (!node)
     return true;
-  if (!style.HasAppearance() && !node->IsLink())
+  if (!style.HasEffectiveAppearance() && !node->IsLink())
     return true;
   // We can't use LayoutTheme::isFocused because outline:auto might be
   // specified to non-:focus rulesets.
@@ -284,7 +443,7 @@ bool LayoutTheme::ShouldDrawDefaultFocusRing(const Node* node,
 bool LayoutTheme::ControlStateChanged(const Node* node,
                                       const ComputedStyle& style,
                                       ControlState state) const {
-  if (!style.HasAppearance())
+  if (!style.HasEffectiveAppearance())
     return false;
 
   // Default implementation assumes the controls don't respond to changes in
@@ -461,12 +620,12 @@ void LayoutTheme::AdjustSliderContainerStyle(ComputedStyle& style,
                                              Element* e) const {
   if (e && (e->ShadowPseudoId() == "-webkit-media-slider-container" ||
             e->ShadowPseudoId() == "-webkit-slider-container")) {
-    if (style.Appearance() == kSliderVerticalPart) {
+    if (style.EffectiveAppearance() == kSliderVerticalPart) {
       style.SetTouchAction(TouchAction::kTouchActionPanX);
-      style.SetAppearance(kNoControlPart);
+      style.SetEffectiveAppearance(kNoControlPart);
     } else {
       style.SetTouchAction(TouchAction::kTouchActionPanY);
-      style.SetAppearance(kNoControlPart);
+      style.SetEffectiveAppearance(kNoControlPart);
     }
   }
 }
@@ -553,7 +712,8 @@ void LayoutTheme::SystemFont(CSSValueID system_font_id,
   font_description.SetGenericFamily(FontDescription::kNoFamily);
 }
 
-Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
+Color LayoutTheme::SystemColor(CSSValueID css_value_id,
+                               WebColorScheme color_scheme) const {
   switch (css_value_id) {
     case CSSValueID::kActiveborder:
       return 0xFFFFFFFF;
@@ -589,6 +749,8 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
       return 0xFFFBFCC5;
     case CSSValueID::kInfotext:
       return 0xFF000000;
+    case CSSValueID::kLinktext:
+      return 0xFF0000EE;
     case CSSValueID::kMenu:
       return 0xFFC0C0C0;
     case CSSValueID::kMenutext:
@@ -607,6 +769,8 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
       return 0xFFC0C0C0;
     case CSSValueID::kThreedshadow:
       return 0xFF888888;
+    case CSSValueID::kVisitedtext:
+      return 0xFF551A8B;
     case CSSValueID::kWindow:
       return 0xFFFFFFFF;
     case CSSValueID::kWindowframe:
@@ -628,13 +792,23 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id) const {
   return Color();
 }
 
-Color LayoutTheme::PlatformTextSearchHighlightColor(bool active_match) const {
-  if (active_match)
+Color LayoutTheme::PlatformTextSearchHighlightColor(
+    bool active_match,
+    bool in_forced_colors_mode,
+    WebColorScheme color_scheme) const {
+  if (active_match) {
+    if (in_forced_colors_mode)
+      return GetTheme().SystemColor(CSSValueID::kHighlight, color_scheme);
     return Color(255, 150, 50);  // Orange.
+  }
   return Color(255, 255, 0);     // Yellow.
 }
 
-Color LayoutTheme::PlatformTextSearchColor(bool active_match) const {
+Color LayoutTheme::PlatformTextSearchColor(bool active_match,
+                                           bool in_forced_colors_mode,
+                                           WebColorScheme color_scheme) const {
+  if (in_forced_colors_mode && active_match)
+    return GetTheme().SystemColor(CSSValueID::kHighlighttext, color_scheme);
   return Color::kBlack;
 }
 
@@ -697,7 +871,7 @@ bool LayoutTheme::ShouldUseFallbackTheme(const ComputedStyle&) const {
 }
 
 void LayoutTheme::AdjustStyleUsingFallbackTheme(ComputedStyle& style) {
-  ControlPart part = style.Appearance();
+  ControlPart part = style.EffectiveAppearance();
   switch (part) {
     case kCheckboxPart:
       return AdjustCheckboxStyleUsingFallbackTheme(style);
@@ -791,8 +965,8 @@ void LayoutTheme::AdjustRadioStyleUsingFallbackTheme(
   style.ResetBorder();
 }
 
-Color LayoutTheme::RootElementColor(ColorScheme color_scheme) const {
-  if (color_scheme == ColorScheme::kDark)
+Color LayoutTheme::RootElementColor(WebColorScheme color_scheme) const {
+  if (color_scheme == WebColorScheme::kDark)
     return Color::kWhite;
   return ComputedStyleInitialValues::InitialColor();
 }
@@ -835,7 +1009,7 @@ LengthBox LayoutTheme::ControlBorder(ControlPart part,
 void LayoutTheme::AdjustControlPartStyle(ComputedStyle& style) {
   // Call the appropriate style adjustment method based off the appearance
   // value.
-  switch (style.Appearance()) {
+  switch (style.EffectiveAppearance()) {
     case kCheckboxPart:
       return AdjustCheckboxStyle(style);
     case kRadioPart:

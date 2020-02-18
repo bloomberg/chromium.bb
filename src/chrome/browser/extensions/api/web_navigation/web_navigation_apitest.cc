@@ -23,7 +23,6 @@
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/extensions/api/web_navigation/web_navigation_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_test_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -44,7 +43,7 @@
 #include "content/public/test/download_test_observer.h"
 #include "content/public/test/no_renderer_crashes_assertion.h"
 #include "content/public/test/test_utils.h"
-#include "extensions/browser/extension_system.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/common/switches.h"
 #include "extensions/test/result_catcher.h"
 #include "net/dns/mock_host_resolver.h"
@@ -77,7 +76,7 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
         delay_url_(delay_url),
         until_url_suffix_(until_url_suffix),
         script_(script) {
-    tab_strip_observer_.Add(browser->tab_strip_model());
+    browser->tab_strip_model()->AddObserver(this);
   }
 
   ~DelayLoadStartAndExecuteJavascript() override {}
@@ -92,7 +91,7 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
 
     content::WebContentsObserver::Observe(
         change.GetInsert()->contents[0].contents);
-    tab_strip_observer_.RemoveAll();
+    tab_strip_model->RemoveObserver(this);
   }
 
   // WebContentsObserver:
@@ -166,8 +165,6 @@ class DelayLoadStartAndExecuteJavascript : public TabStripModelObserver,
 
   base::WeakPtr<WillStartRequestObserverThrottle> throttle_;
 
-  ScopedObserver<TabStripModel, TabStripModelObserver> tab_strip_observer_{
-      this};
   GURL delay_url_;
   std::string until_url_suffix_;
   std::string script_;
@@ -360,10 +357,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, MAYBE_UserAction) {
 
   ResultCatcher catcher;
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
   const extensions::Extension* extension =
-      service->GetExtensionById(last_loaded_extension_id(), false);
+      extension_registry()->GetExtensionById(last_loaded_extension_id(),
+                                             ExtensionRegistry::ENABLED);
   GURL url = extension->GetResourceURL(
       "a.html?" + base::NumberToString(embedded_test_server()->port()));
 
@@ -400,10 +396,9 @@ IN_PROC_BROWSER_TEST_F(WebNavigationApiTest, RequestOpenTab) {
 
   ResultCatcher catcher;
 
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      browser()->profile())->extension_service();
   const extensions::Extension* extension =
-      service->GetExtensionById(last_loaded_extension_id(), false);
+      extension_registry()->GetExtensionById(last_loaded_extension_id(),
+                                             ExtensionRegistry::ENABLED);
   GURL url = extension->GetResourceURL("a.html");
 
   ui_test_utils::NavigateToURL(browser(), url);

@@ -98,9 +98,10 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
   // want to use CreateBookmarkModelAndBookmarkBarView(), but use this if
   // need to create the BookmarkBarView after the model has populated.
   void CreateBookmarkBarView() {
-    bookmark_bar_view_.reset(new BookmarkBarView(browser(), nullptr));
+    bookmark_bar_view_ = std::make_unique<BookmarkBarView>(browser(), nullptr);
     bookmark_bar_view_->set_owned_by_client();
-    test_helper_.reset(new BookmarkBarViewTestHelper(bookmark_bar_view_.get()));
+    test_helper_ =
+        std::make_unique<BookmarkBarViewTestHelper>(bookmark_bar_view_.get());
   }
 
   // Creates the model, blocking until it loads, then creates the
@@ -128,11 +129,10 @@ class BookmarkBarViewTest : public BrowserWithTestWindowTest {
  private:
   static std::unique_ptr<KeyedService> CreateTemplateURLService(
       content::BrowserContext* profile) {
-    return base::WrapUnique(
-        new TemplateURLService(static_cast<Profile*>(profile)->GetPrefs(),
-                               base::WrapUnique(new SearchTermsData), NULL,
-                               std::unique_ptr<TemplateURLServiceClient>(),
-                               NULL, NULL, base::Closure()));
+    return std::make_unique<TemplateURLService>(
+        static_cast<Profile*>(profile)->GetPrefs(),
+        std::make_unique<SearchTermsData>(), nullptr, nullptr, nullptr,
+        base::Closure());
   }
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkBarViewTest);
@@ -391,7 +391,7 @@ TEST_F(BookmarkBarViewTest, UpdateTooltipText) {
   params.native_widget = CreateNativeWidget(
       NativeWidgetType::DESKTOP_NATIVE_WIDGET_AURA, &params, &widget);
 #endif
-  widget.Init(params);
+  widget.Init(std::move(params));
   widget.Show();
   widget.GetRootView()->AddChildView(bookmark_bar_view_.get());
 

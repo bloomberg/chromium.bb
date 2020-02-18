@@ -5,7 +5,7 @@
 #include "remoting/host/remoting_register_support_host_request.h"
 
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "remoting/base/fake_oauth_token_getter.h"
 #include "remoting/base/rsa_key_pair.h"
@@ -83,7 +83,7 @@ class RemotingRegisterSupportHostTest : public testing::Test {
   ~RemotingRegisterSupportHostTest() override {
     register_host_request_.reset();
     signal_strategy_.reset();
-    scoped_task_environment_.FastForwardUntilNoTasksRemain();
+    task_environment_.FastForwardUntilNoTasksRemain();
   }
 
  protected:
@@ -96,8 +96,8 @@ class RemotingRegisterSupportHostTest : public testing::Test {
     MOCK_METHOD0(CancelPendingRequests, void());
   };
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_{
-      base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME_AND_NOW};
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::TimeSource::MOCK_TIME};
 
   std::unique_ptr<RemotingRegisterSupportHostRequest> register_host_request_;
   MockRegisterSupportHostClient* register_host_client_ = nullptr;

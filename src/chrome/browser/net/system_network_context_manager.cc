@@ -4,11 +4,13 @@
 
 #include "chrome/browser/net/system_network_context_manager.h"
 
+#include <algorithm>
 #include <set>
 #include <unordered_map>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
@@ -23,6 +25,7 @@
 #include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/net/chrome_mojo_proxy_resolver_factory.h"
+#include "chrome/browser/net/dns_util.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ssl/ssl_config_service_manager.h"
 #include "chrome/common/channel_info.h"
@@ -30,6 +33,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/certificate_transparency/ct_known_logs.h"
+#include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/net_log/net_export_file_writer.h"
 #include "components/network_session_configurator/common/network_features.h"
 #include "components/os_crypt/os_crypt.h"
@@ -44,14 +48,16 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cors_exempt_headers.h"
+#include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/mime_handler_view_mode.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/user_agent.h"
-#include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/dns/public/util.h"
+#include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
 #include "services/network/network_service.h"
@@ -68,6 +74,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/net/dhcp_wpad_url_client.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #endif  // defined(OS_CHROMEOS)
 
@@ -77,40 +84,64 @@
 #include "ui/base/l10n/l10n_util.h"
 #endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "extensions/common/constants.h"
+#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
+
 namespace {
+
+constexpr bool kCertificateTransparencyEnabled =
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OFFICIAL_BUILD) && \
+    !defined(OS_ANDROID)
+    // Certificate Transparency is only enabled if:
+    //   - Desktop (!OS_ANDROID); OS_IOS does not use this file
+    //   - base::GetBuildTime() is deterministic to the source (OFFICIAL_BUILD)
+    //   - The build in reliably updatable (GOOGLE_CHROME_BRANDING)
+    true;
+#else
+    false;
+#endif
+
+bool g_enable_certificate_transparency = kCertificateTransparencyEnabled;
 
 // The global instance of the SystemNetworkContextmanager.
 SystemNetworkContextManager* g_system_network_context_manager = nullptr;
 
 void GetStubResolverConfig(
     PrefService* local_state,
-    bool* stub_resolver_enabled,
+    bool* insecure_stub_resolver_enabled,
+    net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
   DCHECK(!dns_over_https_servers->has_value());
 
-  const auto& doh_server_list =
-      local_state->GetList(prefs::kDnsOverHttpsServers)->GetList();
-  const auto& doh_server_method_list =
-      local_state->GetList(prefs::kDnsOverHttpsServerMethods)->GetList();
+  *insecure_stub_resolver_enabled =
+      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 
-  // The two lists may have mismatched lengths during a pref change. Just skip
-  // the DOH server list updates then, as the configuration may be incorrect.
-  //
-  // TODO(mmenke): May need to improve safety here when / if DNS over HTTPS is
-  // exposed via settings, as it's possible for the old and new lengths to be
-  // the same, but the servers not to match. Either a PostTask or merging the
-  // prefs would work around that.
-  if (doh_server_list.size() == doh_server_method_list.size()) {
-    for (size_t i = 0; i < doh_server_list.size(); ++i) {
-      if (!doh_server_list[i].is_string() ||
-          !doh_server_method_list[i].is_string()) {
-        continue;
-      }
+  std::string doh_mode;
+  if (!local_state->FindPreference(prefs::kDnsOverHttpsMode)->IsManaged() &&
+      chrome_browser_net::ShouldDisableDohForManaged())
+    doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
+  else
+    doh_mode = local_state->GetString(prefs::kDnsOverHttpsMode);
 
-      if (!net::dns_util::IsValidDoHTemplate(
-              doh_server_list[i].GetString(),
-              doh_server_method_list[i].GetString())) {
+  if (doh_mode == chrome_browser_net::kDnsOverHttpsModeSecure)
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::SECURE;
+  else if (doh_mode == chrome_browser_net::kDnsOverHttpsModeAutomatic)
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::AUTOMATIC;
+  else
+    *secure_dns_mode = net::DnsConfig::SecureDnsMode::OFF;
+
+  std::string doh_templates =
+      local_state->GetString(prefs::kDnsOverHttpsTemplates);
+  std::string server_method;
+  if (!doh_templates.empty() &&
+      *secure_dns_mode != net::DnsConfig::SecureDnsMode::OFF) {
+    for (const std::string& server_template :
+         SplitString(doh_templates, " ", base::TRIM_WHITESPACE,
+                     base::SPLIT_WANT_NONEMPTY)) {
+      if (!chrome_browser_net::IsValidDohTemplate(server_template,
+                                                  &server_method)) {
         continue;
       }
 
@@ -121,27 +152,24 @@ void GetStubResolverConfig(
 
       network::mojom::DnsOverHttpsServerPtr dns_over_https_server =
           network::mojom::DnsOverHttpsServer::New();
-      dns_over_https_server->server_template = doh_server_list[i].GetString();
-      dns_over_https_server->use_post =
-          (doh_server_method_list[i].GetString() == "POST");
+      dns_over_https_server->server_template = server_template;
+      dns_over_https_server->use_post = (server_method == "POST");
       (*dns_over_https_servers)->emplace_back(std::move(dns_over_https_server));
     }
   }
-
-  *stub_resolver_enabled =
-      dns_over_https_servers->has_value() ||
-      local_state->GetBoolean(prefs::kBuiltInDnsClientEnabled);
 }
 
 void OnStubResolverConfigChanged(PrefService* local_state,
                                  const std::string& pref_name) {
-  bool stub_resolver_enabled;
+  bool insecure_stub_resolver_enabled;
+  net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(local_state, &stub_resolver_enabled,
-                        &dns_over_https_servers);
+  GetStubResolverConfig(local_state, &insecure_stub_resolver_enabled,
+                        &secure_dns_mode, &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
-      stub_resolver_enabled, std::move(dns_over_https_servers));
+      insecure_stub_resolver_enabled, secure_dns_mode,
+      std::move(dns_over_https_servers));
 }
 
 // Constructs HttpAuthStaticParams based on |local_state|.
@@ -169,9 +197,9 @@ network::mojom::HttpAuthDynamicParamsPtr CreateHttpAuthDynamicParams(
   network::mojom::HttpAuthDynamicParamsPtr auth_dynamic_params =
       network::mojom::HttpAuthDynamicParams::New();
 
-  auth_dynamic_params->server_whitelist =
+  auth_dynamic_params->server_allowlist =
       local_state->GetString(prefs::kAuthServerWhitelist);
-  auth_dynamic_params->delegate_whitelist =
+  auth_dynamic_params->delegate_allowlist =
       local_state->GetString(prefs::kAuthNegotiateDelegateWhitelist);
   auth_dynamic_params->negotiate_disable_cname_lookup =
       local_state->GetBoolean(prefs::kDisableAuthNegotiateCnameLookup);
@@ -376,31 +404,48 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   // features before registering change callbacks for these preferences.
   local_state_->SetDefaultPrefValue(prefs::kBuiltInDnsClientEnabled,
                                     base::Value(ShouldEnableAsyncDns()));
-  base::ListValue default_doh_servers;
-  base::ListValue default_doh_server_methods;
+  std::string default_doh_mode = chrome_browser_net::kDnsOverHttpsModeOff;
+  std::string default_doh_templates = "";
   if (base::FeatureList::IsEnabled(features::kDnsOverHttps)) {
-    std::string server(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "server"));
-    std::string method(variations::GetVariationParamValueByFeature(
-        features::kDnsOverHttps, "method"));
-    if (!server.empty()) {
-      default_doh_servers.AppendString(server);
-      default_doh_server_methods.AppendString(method);
+    if (features::kDnsOverHttpsFallbackParam.Get()) {
+      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeAutomatic;
+    } else {
+      default_doh_mode = chrome_browser_net::kDnsOverHttpsModeSecure;
     }
+    default_doh_templates = features::kDnsOverHttpsTemplatesParam.Get();
   }
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServers,
-                                    std::move(default_doh_servers));
-  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsServerMethods,
-                                    std::move(default_doh_server_methods));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsMode,
+                                    base::Value(default_doh_mode));
+  local_state_->SetDefaultPrefValue(prefs::kDnsOverHttpsTemplates,
+                                    base::Value(default_doh_templates));
+
+  // If the user has explicitly enabled or disabled the DoH experiment in
+  // chrome://flags, store that choice in the user prefs so that it can be
+  // persisted after the experiment ends. Also make sure to remove the stored
+  // prefs value if the user has changed their chrome://flags selection to the
+  // default.
+  flags_ui::PrefServiceFlagsStorage flags_storage(local_state_);
+  std::set<std::string> entries = flags_storage.GetFlags();
+  if (entries.count("dns-over-https@1")) {
+    // The user has "Enabled" selected.
+    local_state_->SetString(prefs::kDnsOverHttpsMode,
+                            chrome_browser_net::kDnsOverHttpsModeAutomatic);
+  } else if (entries.count("dns-over-https@2")) {
+    // The user has "Disabled" selected.
+    local_state_->SetString(prefs::kDnsOverHttpsMode,
+                            chrome_browser_net::kDnsOverHttpsModeOff);
+  } else {
+    // The user has "Default" selected.
+    local_state_->ClearPref(prefs::kDnsOverHttpsMode);
+  }
 
   PrefChangeRegistrar::NamedChangeCallback dns_pref_callback =
       base::BindRepeating(&OnStubResolverConfigChanged,
                           base::Unretained(local_state_));
   pref_change_registrar_.Add(prefs::kBuiltInDnsClientEnabled,
                              dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsServers, dns_pref_callback);
-  pref_change_registrar_.Add(prefs::kDnsOverHttpsServerMethods,
-                             dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsMode, dns_pref_callback);
+  pref_change_registrar_.Add(prefs::kDnsOverHttpsTemplates, dns_pref_callback);
 
   PrefChangeRegistrar::NamedChangeCallback auth_pref_callback =
       base::BindRepeating(&OnAuthPrefsChanged, base::Unretained(local_state_));
@@ -448,8 +493,8 @@ void SystemNetworkContextManager::RegisterPrefs(PrefRegistrySimple* registry) {
   // captured). Thus, the preference defaults are updated in the constructor
   // for SystemNetworkContextManager, at which point the feature list is ready.
   registry->RegisterBooleanPref(prefs::kBuiltInDnsClientEnabled, false);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServers);
-  registry->RegisterListPref(prefs::kDnsOverHttpsServerMethods);
+  registry->RegisterStringPref(prefs::kDnsOverHttpsMode, std::string());
+  registry->RegisterStringPref(prefs::kDnsOverHttpsTemplates, std::string());
 
   // Static auth params
   registry->RegisterStringPref(prefs::kAuthSchemes,
@@ -541,6 +586,11 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
          "text/csv"});
   }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  network_service->ExcludeSchemeFromRequestInitiatorSiteLockChecks(
+      extensions::kExtensionScheme, base::DoNothing::Once());
+#endif
+
   int max_connections_per_proxy =
       local_state_->GetInteger(prefs::kMaxConnectionsPerProxy);
   if (max_connections_per_proxy != -1)
@@ -552,15 +602,23 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
       MakeRequest(&network_service_network_context_),
       CreateNetworkContextParams());
 
+  mojo::PendingRemote<network::mojom::NetworkContextClient> client_remote;
+  mojo::MakeSelfOwnedReceiver(
+      std::make_unique<content::NetworkContextClientBase>(),
+      client_remote.InitWithNewPipeAndPassReceiver());
+  network_service_network_context_->SetClient(std::move(client_remote));
+
   // Configure the stub resolver. This must be done after the system
   // NetworkContext is created, but before anything has the chance to use it.
-  bool stub_resolver_enabled;
+  bool insecure_stub_resolver_enabled;
+  net::DnsConfig::SecureDnsMode secure_dns_mode;
   base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>
       dns_over_https_servers;
-  GetStubResolverConfig(local_state_, &stub_resolver_enabled,
-                        &dns_over_https_servers);
+  GetStubResolverConfig(local_state_, &insecure_stub_resolver_enabled,
+                        &secure_dns_mode, &dns_over_https_servers);
   content::GetNetworkService()->ConfigureStubHostResolver(
-      stub_resolver_enabled, std::move(dns_over_https_servers));
+      insecure_stub_resolver_enabled, secure_dns_mode,
+      std::move(dns_over_https_servers));
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   const base::CommandLine& command_line =
@@ -644,6 +702,10 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
     } else {
       network_context_params->proxy_resolver_factory =
           ChromeMojoProxyResolverFactory::CreateWithSelfOwnedReceiver();
+#if defined(OS_CHROMEOS)
+      network_context_params->dhcp_wpad_url_client =
+          chromeos::DhcpWpadUrlClient::CreateWithSelfOwnedReceiver();
+#endif  // defined(OS_CHROMEOS)
     }
   }
 
@@ -658,14 +720,35 @@ SystemNetworkContextManager::CreateDefaultNetworkContextParams() {
 
   bool http_09_on_non_default_ports_enabled = false;
 #if !defined(OS_ANDROID)
-  // CT is only enabled on Desktop platforms for now.
-  network_context_params->enforce_chrome_ct_policy = true;
-  for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
-    // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
-    network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
-    log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
-    log_info->name = ct_log.log_name;
-    network_context_params->ct_logs.push_back(std::move(log_info));
+
+  if (g_enable_certificate_transparency) {
+    network_context_params->enforce_chrome_ct_policy = true;
+    network_context_params->ct_log_update_time = base::GetBuildTime();
+
+    std::vector<std::string> operated_by_google_logs =
+        certificate_transparency::GetLogsOperatedByGoogle();
+    std::vector<std::pair<std::string, base::TimeDelta>> disqualified_logs =
+        certificate_transparency::GetDisqualifiedLogs();
+    for (const auto& ct_log : certificate_transparency::GetKnownLogs()) {
+      // TODO(rsleevi): https://crbug.com/702062 - Remove this duplication.
+      network::mojom::CTLogInfoPtr log_info = network::mojom::CTLogInfo::New();
+      log_info->public_key = std::string(ct_log.log_key, ct_log.log_key_length);
+      log_info->name = ct_log.log_name;
+
+      std::string log_id = crypto::SHA256HashString(log_info->public_key);
+      log_info->operated_by_google =
+          std::binary_search(std::begin(operated_by_google_logs),
+                             std::end(operated_by_google_logs), log_id);
+      auto it = std::lower_bound(
+          std::begin(disqualified_logs), std::end(disqualified_logs), log_id,
+          [](const auto& disqualified_log, const std::string& log_id) {
+            return disqualified_log.first < log_id;
+          });
+      if (it != std::end(disqualified_logs) && it->first == log_id) {
+        log_info->disqualified_at = it->second;
+      }
+      network_context_params->ct_logs.push_back(std::move(log_info));
+    }
   }
 
   const base::Value* value =
@@ -706,10 +789,12 @@ void SystemNetworkContextManager::FlushNetworkInterfaceForTesting() {
 }
 
 void SystemNetworkContextManager::GetStubResolverConfigForTesting(
-    bool* stub_resolver_enabled,
+    bool* insecure_stub_resolver_enabled,
+    net::DnsConfig::SecureDnsMode* secure_dns_mode,
     base::Optional<std::vector<network::mojom::DnsOverHttpsServerPtr>>*
         dns_over_https_servers) {
-  GetStubResolverConfig(g_browser_process->local_state(), stub_resolver_enabled,
+  GetStubResolverConfig(g_browser_process->local_state(),
+                        insecure_stub_resolver_enabled, secure_dns_mode,
                         dns_over_https_servers);
 }
 
@@ -721,6 +806,12 @@ SystemNetworkContextManager::GetHttpAuthStaticParamsForTesting() {
 network::mojom::HttpAuthDynamicParamsPtr
 SystemNetworkContextManager::GetHttpAuthDynamicParamsForTesting() {
   return CreateHttpAuthDynamicParams(g_browser_process->local_state());
+}
+
+void SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+    base::Optional<bool> enabled) {
+  g_enable_certificate_transparency =
+      enabled.value_or(kCertificateTransparencyEnabled);
 }
 
 network::mojom::NetworkContextParamsPtr

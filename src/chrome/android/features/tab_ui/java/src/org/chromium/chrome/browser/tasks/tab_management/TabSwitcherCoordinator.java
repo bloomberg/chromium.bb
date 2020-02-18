@@ -9,6 +9,7 @@ import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -16,7 +17,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
-import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -30,6 +30,7 @@ import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.tab_ui.R;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -43,7 +44,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                                                TabSwitcherMediator.ResetHandler {
     // TODO(crbug.com/982018): Rename 'COMPONENT_NAME' so as to add different metrics for carousel
     // tab switcher.
-    final static String COMPONENT_NAME = "GridTabSwitcher";
+    static final String COMPONENT_NAME = "GridTabSwitcher";
     private final PropertyModelChangeProcessor mContainerViewChangeProcessor;
     private final ActivityLifecycleDispatcher mLifecycleDispatcher;
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
@@ -71,29 +72,28 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     public TabSwitcherCoordinator(Context context, ActivityLifecycleDispatcher lifecycleDispatcher,
             TabModelSelector tabModelSelector, TabContentManager tabContentManager,
-            CompositorViewHolder compositorViewHolder, ChromeFullscreenManager fullscreenManager,
+            DynamicResourceLoader dynamicResourceLoader, ChromeFullscreenManager fullscreenManager,
             TabCreatorManager tabCreatorManager,
             MenuOrKeyboardActionController menuOrKeyboardActionController,
-            SnackbarManager.SnackbarManageable snackbarManageable, @Nullable ViewGroup container,
+            SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
             @TabListCoordinator.TabListMode int mode) {
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
-                context, compositorViewHolder, tabModelSelector, tabContentManager);
+                context, container, tabModelSelector, tabContentManager);
 
         mMediator = new TabSwitcherMediator(this, containerViewModel, tabModelSelector,
-                fullscreenManager, compositorViewHolder,
-                mTabSelectionEditorCoordinator.getController());
+                fullscreenManager, container, mTabSelectionEditorCoordinator.getController(), mode);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
             mTabGridDialogCoordinator = new TabGridDialogCoordinator(context, tabModelSelector,
-                    tabContentManager, tabCreatorManager, compositorViewHolder, this, mMediator,
+                    tabContentManager, tabCreatorManager, container, this, mMediator,
                     this::getTabGridDialogAnimationParams);
 
             mUndoGroupSnackbarController =
                     new UndoGroupSnackbarController(context, tabModelSelector, snackbarManageable);
 
-            mMediator.setTabGridDialogResetHandler(mTabGridDialogCoordinator.getResetHandler());
+            mMediator.setTabGridDialogController(mTabGridDialogCoordinator.getDialogController());
         } else {
             mTabGridDialogCoordinator = null;
             mUndoGroupSnackbarController = null;
@@ -111,12 +111,11 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                     R.plurals.bottom_tab_grid_title_placeholder, numRelatedTabs, numRelatedTabs);
         };
 
-        ViewGroup tabListContainerView = container != null ? container : compositorViewHolder;
         mTabListCoordinator =
                 new TabListCoordinator(mode, context, tabModelSelector, mMultiThumbnailCardProvider,
                         titleProvider, true, mMediator::getCreateGroupButtonOnClickListener,
-                        mMediator, null, null, null, tabListContainerView,
-                        compositorViewHolder.getDynamicResourceLoader(), true, COMPONENT_NAME);
+                        mMediator, null, TabProperties.UiType.CLOSABLE, null, container,
+                        dynamicResourceLoader, true, COMPONENT_NAME);
         mContainerViewChangeProcessor = PropertyModelChangeProcessor.create(containerViewModel,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
@@ -149,11 +148,6 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
     @Override
     public TabListDelegate getTabListDelegate() {
         return this;
-    }
-
-    @Override
-    public void setBottomControlsHeight(int bottomControlsHeight) {
-        mMediator.setBottomControlsHeight(bottomControlsHeight);
     }
 
     @Override
@@ -220,7 +214,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
 
     // ResetHandler implementation.
     @Override
-    public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode) {
+    public boolean resetWithTabList(@Nullable TabList tabList, boolean quickMode, boolean mruMode) {
         List<Tab> tabs = null;
         if (tabList != null) {
             tabs = new ArrayList<>();
@@ -228,13 +222,20 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 tabs.add(tabList.getTabAt(i));
             }
         }
-        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode);
+
+        return mTabListCoordinator.resetWithListOfTabs(tabs, quickMode, mruMode);
     }
 
-    private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int index) {
-        View itemView = mTabListCoordinator.getContainerView()
-                                .findViewHolderForAdapterPosition(index)
-                                .itemView;
+    private TabGridDialogParent.AnimationParams getTabGridDialogAnimationParams(int tabId) {
+        int index = mTabListCoordinator.indexOfTab(tabId);
+        // TODO(crbug.com/999372): This is band-aid fix that will show basic fade-in/fade-out
+        // animation when we cannot find the animation source view holder. This is happening due to
+        // current group id in TabGridDialog can not be indexed in TabListModel, which should never
+        // happen. Remove this when figure out the actual cause.
+        ViewHolder sourceViewHolder =
+                mTabListCoordinator.getContainerView().findViewHolderForAdapterPosition(index);
+        if (sourceViewHolder == null) return null;
+        View itemView = sourceViewHolder.itemView;
         Rect rect = mTabListCoordinator.getContainerView().getRectOfCurrentTabGridCard(index);
         return new TabGridDialogParent.AnimationParams(rect, itemView);
     }
@@ -261,6 +262,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             mTabGridIphItemCoordinator.destroy();
         }
         mMultiThumbnailCardProvider.destroy();
+        mTabSelectionEditorCoordinator.destroy();
         mMediator.destroy();
         mLifecycleDispatcher.unregister(this);
     }

@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
+<translation id="1005230401424685968">ГГГГ</translation>
 <translation id="1016495303386450659">Елементът е актуализиран</translation>
 <translation id="1047726139967079566">Запазване на отметка към тази страница...</translation>
 <translation id="1049743911850919806">„Инкогнито“</translation>
@@ -43,6 +44,7 @@
 <translation id="1449835205994625556">Скриване на паролата</translation>
 <translation id="145015347812617860"><ph name="COUNT" /> елемента</translation>
 <translation id="1491277525950327607">Докоснете двукратно за превключване на настройката</translation>
+<translation id="1509486075633541495">Вход в уебсайта</translation>
 <translation id="152234381334907219">Незапазвани никога</translation>
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
@@ -71,6 +73,7 @@
 <translation id="1820259098641718022">Добавихте към списъка за четене</translation>
 <translation id="1828824471510190776">Предложение за парола...</translation>
 <translation id="1870148520156231997">Показване на паролата</translation>
+<translation id="1872096359983322073">Фенерче</translation>
 <translation id="1876721852596493031">Send Usage Data</translation>
 <translation id="1911619930368729126">Качване в Google Диск</translation>
 <translation id="1923342640370224680">Последният час</translation>
@@ -148,7 +151,6 @@
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
 <translation id="2923448633003185837">Поставяне и старт</translation>
 <translation id="292639812446257861">Означаване като непрочетено</translation>
-<translation id="2933759065870693102">Фенерче</translation>
 <translation id="2958718410589002129">Пароли</translation>
 <translation id="2969979262385602596">Влизането не бе успешно. Моля, опитайте пак по-късно.</translation>
 <translation id="298306318844797842">Добавяне на начин на плащане…</translation>
@@ -194,6 +196,7 @@
 <translation id="3607167657931203000">Автоматично попълване на данни</translation>
 <translation id="3609785682760573515">Синхронизира се...</translation>
 <translation id="3638472932233958418">Предв. зареждане на уеб стр.</translation>
+<translation id="3670030362669914947">Номер</translation>
 <translation id="3691593122358196899">Отметката бе запазена в/ъв „<ph name="FOLDER_TITLE" />“</translation>
 <translation id="3771033907050503522">Раздели „инкогнито“</translation>
 <translation id="3775743491439407556">Синхронизирането не работи</translation>
@@ -207,7 +210,6 @@
 <translation id="3928666092801078803">Комбиниране на данните ми</translation>
 <translation id="3929457972718048006">Адреси</translation>
 <translation id="3943492037546055397">Пароли</translation>
-<translation id="3950820424414687140">Вход</translation>
 <translation id="3967822245660637423">Изтеглянето завърши</translation>
 <translation id="3989635538409502728">Изход</translation>
 <translation id="3995521777587992544">Лента за напредъка на зареждането на страницата. Заредени са <ph name="EMAIL" />.</translation>
@@ -227,7 +229,6 @@
 <translation id="4172051516777682613">Показване винаги</translation>
 <translation id="418156467088430727">Преглед на офлайн версията в нов раздел</translation>
 <translation id="4181841719683918333">Езици</translation>
-<translation id="4237682350741091554">Управлявайте синхронизирането в Chrome и персонализирането от <ph name="BEGIN_LINK" />настройките<ph name="END_LINK" /></translation>
 <translation id="424315890655130736">Въвеждане на пропуск</translation>
 <translation id="4272631900155121838">За да сканирате код за бърза реакция, активирайте камерата от настройките</translation>
 <translation id="4281844954008187215">Условия за ползване</translation>
@@ -261,9 +262,11 @@
 <translation id="4747097190499141774">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay. Само някой с пропуска ви може да прочете шифрованите ви данни – той не се изпраща до Google, нито се съхранява от нас. Ако го забравите или искате да промените тази настройка, ще се наложи да нулирате синхронизирането. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="4749030437873592350">Търсене в страницата...</translation>
 <translation id="4751645464639803239">Нов раздел в режим „инкогнито“</translation>
+<translation id="4758977202923349869">Разположете кредитната карта в тази рамка</translation>
 <translation id="4802417911091824046">Шифроването с пропуск не включва начините на плащане и адресите от Google Pay.
 
 За да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
+<translation id="4805759445554688327">Невалиден номер на картата</translation>
 <translation id="4807020197310989387">1 непрочетена статия в списъка за четене.</translation>
 <translation id="4818522717893377262">Добавяне на език...</translation>
 <translation id="481968316161811770">„Бисквитки“ и данни за сайтове</translation>
@@ -279,7 +282,6 @@
 <translation id="4979397965658815378">Влезте с профила си в Google, за да получите своите отметки, пароли, история и други настройки на всичките си устройства</translation>
 <translation id="5005498671520578047">Копиране на паролата</translation>
 <translation id="5010803260590204777">Отворете раздел в режим „инкогнито“, за да сърфирате частно в мрежата.</translation>
-<translation id="5011684439661633295">Здравейте, <ph name="FULL_ACCOUNT_NAME" /></translation>
 <translation id="5039804452771397117">Разрешаване</translation>
 <translation id="5059136629401106827">OK</translation>
 <translation id="5062321486222145940">Инсталиране на Google Диск</translation>
@@ -302,6 +304,7 @@
 <translation id="5317780077021120954">Запазване</translation>
 <translation id="5327248766486351172">Име</translation>
 <translation id="5388358297987318779">Отваряне на изображението</translation>
+<translation id="5407969256130905701">Отхвърляне на промените</translation>
 <translation id="5409365236829784218">Няма инсталирани приложения, които могат да отворят файла.</translation>
 <translation id="5416022985862681400">Последните 7 дни</translation>
 <translation id="5433691172869980887">Потребителското име е копирано</translation>
@@ -313,6 +316,7 @@
 Трябва да активирате Handoff и в секцията „General“ на Settings, както и да използвате един и същ профил в iCloud на устройствата си.</translation>
 <translation id="5551897871312988470">Предложения за превод</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
+<translation id="5592679540098330836">Включване на синхронизирането за <ph name="NAME" /></translation>
 <translation id="5614553682702429503">Да се запази ли паролата?</translation>
 <translation id="5626245204502895507">Понастоящем файлът не можа да бъде изтеглен.</translation>
 <translation id="5631164295104953411">Добавяне на начин на плащане</translation>
@@ -324,6 +328,7 @@
 <translation id="5728700505257787410">За съжаление при влизането в профила ви възникна проблем.</translation>
 <translation id="5737974891429562743">Данните за вход в профила не са актуални. Актуализирайте ги, за да започне синхронизирането.</translation>
 <translation id="5738887413654608789">Това ви позволява да откривате подходящи уеб страници въз основа на заобикалящата ви среда.</translation>
+<translation id="5803566855766646066">Наистина ли искате да отхвърлите тази нова карта?</translation>
 <translation id="5816228676161003208">Това ви позволява да търсите по-бързо посредством гласа си.</translation>
 <translation id="5846482154967366008">Търсеща машина</translation>
 <translation id="5854790677617711513">По-стари от 30 дни</translation>
@@ -352,6 +357,7 @@
 <translation id="605721222689873409">ГГ</translation>
 <translation id="6066301408025741299">Докоснете, за да анулирате.</translation>
 <translation id="6108923351542677676">Извършва се настройване…</translation>
+<translation id="6119050551270742952">Страницата е в режим „инкогнито“</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6127379762771434464">Елементът бе премахнат</translation>
 <translation id="6136914049981179737">Току-що</translation>
@@ -391,6 +397,7 @@
 <translation id="6476800141292307438">Страницата се превежда на <ph name="LANGUAGE" />. Опциите са достъпни в долната част на екрана.</translation>
 <translation id="6482629121755362506">Изтрихте <ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> елемента</translation>
 <translation id="6610002944194042868">Опции за превод</translation>
+<translation id="6628106477656132239">Невалидна дата на валидност</translation>
 <translation id="6642362222295953972">Превключване към съществуващия раздел</translation>
 <translation id="6643016212128521049">Изчистване</translation>
 <translation id="6656103420185847513">Редактиране на папката</translation>
@@ -407,6 +414,9 @@
 <translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
 <translation id="6851516051005285358">Заявка за настолния сайт</translation>
+<translation id="6858855187367714033">Сканирано</translation>
+<translation id="6859944681507688231">За да сканирате код за бърза реакция или кредитна карта, активирайте камерата от настройките.</translation>
+<translation id="6873263987691478642">Разделен изглед</translation>
 <translation id="6896758677409633944">Копиране</translation>
 <translation id="6903907808598579934">Включване на синхронизирането</translation>
 <translation id="6914583639806229067">Търсене на копираното изображение</translation>
@@ -434,7 +444,6 @@
 <translation id="7189598951263744875">Споделяне...</translation>
 <translation id="7192050974311852563">Стартиране на регистрирането</translation>
 <translation id="7203585745079012652">Изговаряне на отговорите</translation>
-<translation id="722055596168483966">Персонализиране на услугите на Google</translation>
 <translation id="7265758999917665941">Никога за този сайт</translation>
 <translation id="7272437679830969316">Паролата не бе копирана поради неуспешно удостоверяване.</translation>
 <translation id="7285236536143823449">ДА, ПРИЕМАМ</translation>
@@ -446,9 +455,9 @@
 <translation id="7383797227493018512">Списък за четене</translation>
 <translation id="7400418766976504921">URL адрес</translation>
 <translation id="7425346204213733349">Промените в отметките, историята, паролите и другите ви настройки вече няма да се синхронизират с профила ви в Google. Съществуващите ви данни обаче ще продължат да се съхраняват в него.</translation>
-<translation id="744343212394640790">Не съм <ph name="EMAIL" /></translation>
 <translation id="7454057999980797137">Щат/държава</translation>
 <translation id="7456847797759667638">Отваряне на местоположение...</translation>
+<translation id="7460314822154045102">Използване на камерата</translation>
 <translation id="7464701184726199289">Синхронизираните данни ще се изчистят от всички устройства. Запазените настройки за сайтове няма да бъдат изтрити и може да отразяват навиците ви при сърфиране. <ph name="BEGIN_LINK" />Научете повече<ph name="END_LINK" /></translation>
 <translation id="7472734401283673885">Име на фирмата</translation>
 <translation id="7481312909269577407">Препращане</translation>
@@ -504,7 +513,9 @@
 <translation id="8428045167754449968">Град/селище</translation>
 <translation id="8428213095426709021">Настройки</translation>
 <translation id="8458397775385147834">Изтрихте 1 елемент</translation>
+<translation id="8487667956631253959">Включено</translation>
 <translation id="8487700953926739672">Налице офлайн</translation>
+<translation id="8490978609246021741">Запазване на промените</translation>
 <translation id="8503813439785031346">Потребителско име</translation>
 <translation id="850600235656508448">Отваряне в режим „инкогнито“</translation>
 <translation id="8517375800490286174">Лицензи за отворен код</translation>
@@ -513,6 +524,7 @@
 <translation id="8532105204136943229">Година на валидност</translation>
 <translation id="8534481786647257214">Публикацията в Google+ е завършена.</translation>
 <translation id="8548878600947630424">Търсене в страницата...</translation>
+<translation id="8588404856427128947">Изключено</translation>
 <translation id="8605219856220328675">Затваряне на раздела.</translation>
 <translation id="8620640915598389714">Редактиране</translation>
 <translation id="8636825310635137004">Включете синхронизирането, за да получите разделите си от другите си устройства.</translation>
@@ -529,13 +541,10 @@
 <translation id="8840513115188359703">Няма да излезете от профила си в Google.</translation>
 <translation id="8870413625673593573">Наскоро затворени</translation>
 <translation id="8881801611828450202">Търсене на изобр. със: <ph name="SEARCH_ENGINE" /></translation>
-<translation id="8904976895050290827">Синхронизиране в Chrome</translation>
 <translation id="895541991026785598">Подаване на сигнал за проблем</translation>
-<translation id="8971089644512329999">Добре, разбрах</translation>
 <translation id="8976382372951310360">Помощ</translation>
 <translation id="8981454092730389528">Контроли за активността в Google</translation>
 <translation id="8985320356172329008">Влезли сте в Google като</translation>
-<translation id="902659348151742535">Възможно е да използваме историята ви на сърфиране, за да персонализираме търсенето, рекламите и други услуги на Google.</translation>
 <translation id="9034759925968272072">Няма да излезете от профила си в Google. Възможно е в него да има други видове история на сърфиране, съхранявани на адрес <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>
 <translation id="9039373489628511875">Капацитет</translation>
 <translation id="9055772144595778347">Не може да се влезе</translation>
@@ -552,7 +561,7 @@
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Сигналите за сривове са изпратени.</translation>
-<translation id="935490618240037774">Вашите отметки, история, пароли и други настройки ще се синхронизират с профила ви в Google, за да можете да ги използвате на всичките си устройства.</translation>
+<translation id="952704832371081537">Отказ</translation>
 <translation id="976982866697960176">Управление на синхронизираните данни…</translation>
 <translation id="988141524645182168">Други устройства</translation>
 <translation id="989988560359834682">Редактиране на адреса</translation>

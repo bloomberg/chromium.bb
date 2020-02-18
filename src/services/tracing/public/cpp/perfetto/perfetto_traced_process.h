@@ -43,6 +43,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
         PerfettoProducer* producer,
         const perfetto::DataSourceConfig& data_source_config) = 0;
     // StopTracing must set |producer_| to nullptr before invoking the callback.
+    // TODO(nuskos): Refactor this so that the implementation doesn't have to
+    // remember to do this.
     virtual void StopTracing(
         base::OnceClosure stop_complete_callback = base::OnceClosure()) = 0;
 
@@ -99,6 +101,8 @@ class COMPONENT_EXPORT(TRACING_CPP) PerfettoTracedProcess final {
   // sequence.
   bool CanStartTracing(PerfettoProducer* producer,
                        base::OnceCallback<void()> start_tracing);
+
+  void ActivateSystemTriggers(const std::vector<std::string>& triggers);
 
   // Be careful when using ResetTaskRunnerForTesting. There is a PostTask in the
   // constructor of PerfettoTracedProcess, so before this class is constructed

@@ -17,6 +17,9 @@
 
 #include "Common/Math.hpp"
 
+#include <cstring>
+#include <type_traits>
+
 namespace sw
 {
 	template<class Key, class Data>
@@ -27,9 +30,9 @@ namespace sw
 
 		~LRUCache();
 
-		Data *query(const Key &key) const;
-		Data *add(const Key &key, Data *data);
-	
+		Data query(const Key &key) const;
+		Data add(const Key &key, const Data &data);
+
 		int getSize() {return size;}
 		Key &getKey(int i) {return key[i];}
 
@@ -41,7 +44,47 @@ namespace sw
 
 		Key *key;
 		Key **ref;
-		Data **data;
+		Data *data;
+	};
+
+	// Helper class for clearing the memory of objects at construction.
+	// Useful as the first base class of cache keys which may contain padding bytes or bits otherwise left uninitialized.
+	template<class T>
+	struct Memset
+	{
+		Memset(T *object, int val)
+		{
+			static_assert(std::is_base_of<Memset<T>, T>::value, "Memset<T> must only clear the memory of a type of which it is a base class");
+
+			// GCC 8+ warns that
+			// "‘void* memset(void*, int, size_t)’ clearing an object of non-trivial type ‘T’;
+			//  use assignment or value-initialization instead [-Werror=class-memaccess]"
+			// This is benign iff it happens before any of the base or member constructrs are called.
+			#if defined(__GNUC__) && (__GNUC__ >= 8)
+			#pragma GCC diagnostic push
+			#pragma GCC diagnostic ignored "-Wclass-memaccess"
+			#endif
+
+			memset(object, 0, sizeof(T));
+
+			#if defined(__GNUC__) && (__GNUC__ >= 8)
+			#pragma GCC diagnostic pop
+			#endif
+		}
+	};
+
+	// Traits-like helper class for checking if objects can be compared using memcmp().
+	// Useful for statically asserting if a cache key can implement operator==() with memcmp().
+	template<typename T>
+	struct is_memcmparable
+	{
+		// std::is_trivially_copyable is not available in older GCC versions.
+		#if !defined(__GNUC__) || __GNUC__ > 5
+			static const bool value = std::is_trivially_copyable<T>::value;
+		#else
+			// At least check it doesn't have virtual methods.
+			static const bool value = !std::is_polymorphic<T>::value;
+		#endif
 	};
 }
 
@@ -57,12 +100,10 @@ namespace sw
 
 		key = new Key[size];
 		ref = new Key*[size];
-		data = new Data*[size];
+		data = new Data[size];
 
 		for(int i = 0; i < size; i++)
 		{
-			data[i] = nullptr;
-
 			ref[i] = &key[i];
 		}
 	}
@@ -76,21 +117,12 @@ namespace sw
 		delete[] ref;
 		ref = nullptr;
 
-		for(int i = 0; i < size; i++)
-		{
-			if(data[i])
-			{
-				data[i]->unbind();
-				data[i] = nullptr;
-			}
-		}
-
 		delete[] data;
 		data = nullptr;
 	}
 
 	template<class Key, class Data>
-	Data *LRUCache<Key, Data>::query(const Key &key) const
+	Data LRUCache<Key, Data>::query(const Key &key) const
 	{
 		for(int i = top; i > top - fill; i--)
 		{
@@ -98,14 +130,14 @@ namespace sw
 
 			if(key == *ref[j])
 			{
-				Data *hit = data[j];
+				Data hit = data[j];
 
 				if(i != top)
 				{
 					// Move one up
 					int k = (j + 1) & mask;
 
-					Data *swapD = data[k];
+					Data swapD = data[k];
 					data[k] = data[j];
 					data[j] = swapD;
 
@@ -122,20 +154,12 @@ namespace sw
 	}
 
 	template<class Key, class Data>
-	Data *LRUCache<Key, Data>::add(const Key &key, Data *data)
+	Data LRUCache<Key, Data>::add(const Key &key, const Data &data)
 	{
 		top = (top + 1) & mask;
 		fill = fill + 1 < size ? fill + 1 : size;
 
 		*ref[top] = key;
-
-		data->bind();
-
-		if(this->data[top])
-		{
-			this->data[top]->unbind();
-		}
-
 		this->data[top] = data;
 
 		return data;

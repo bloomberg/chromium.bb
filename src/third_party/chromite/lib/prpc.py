@@ -8,9 +8,10 @@
 from __future__ import print_function
 
 import httplib
-import httplib2
 import json
 import socket
+
+import httplib2
 
 from chromite.lib import auth
 from chromite.lib import cros_logging as logging
@@ -162,10 +163,9 @@ class PRPCClient(object):
       headers['X-Prpc-Timeout'] = '%dS' % (timeout_secs)
 
     def AllowRetry(e):
-      return (isinstance(e, httplib2.ServerNotFoundError) or
-              isinstance(e, socket.error) or
-              isinstance(e, socket.timeout) or
-              (isinstance(e, PRPCResponseException) and e.transient))
+      return (isinstance(e, (httplib2.ServerNotFoundError, socket.error,
+                             socket.timeout, PRPCResponseException))
+              and e.transient)
 
     def IsTransientHTTPStatus(status):
       return status >= 500
@@ -201,7 +201,7 @@ class PRPCClient(object):
             transient=IsTransientPRPCCode(prpc_code))
 
       # Verify XSSI prefix.
-      if content[:5] != ')]}\'\n':
+      if content[:5] != ")]}'\n":
         # Unwrap the gRPC message by removing XSSI prefix.
         raise PRPCResponseException('Got a non-matching XSSI prefix')
 

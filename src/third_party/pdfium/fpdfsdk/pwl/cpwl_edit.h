@@ -13,19 +13,24 @@
 #include "core/fpdfdoc/cpvt_wordrange.h"
 #include "core/fxcrt/unowned_ptr.h"
 #include "fpdfsdk/pwl/cpwl_edit_ctrl.h"
+#include "fpdfsdk/pwl/ipwl_systemhandler.h"
+
+class CPDF_Font;
 
 class IPWL_Filler_Notify {
  public:
   virtual ~IPWL_Filler_Notify() = default;
 
   // Must write to |bBottom| and |fPopupRet|.
-  virtual void QueryWherePopup(const CPWL_Wnd::PrivateData* pAttached,
-                               float fPopupMin,
-                               float fPopupMax,
-                               bool* bBottom,
-                               float* fPopupRet) = 0;
+  virtual void QueryWherePopup(
+      const IPWL_SystemHandler::PerWindowData* pAttached,
+      float fPopupMin,
+      float fPopupMax,
+      bool* bBottom,
+      float* fPopupRet) = 0;
+
   virtual std::pair<bool, bool> OnBeforeKeyStroke(
-      const CPWL_Wnd::PrivateData* pAttached,
+      const IPWL_SystemHandler::PerWindowData* pAttached,
       WideString& strChange,
       const WideString& strChangeEx,
       int nSelStart,
@@ -33,17 +38,19 @@ class IPWL_Filler_Notify {
       bool bKeyDown,
       uint32_t nFlag) = 0;
 
-#ifdef PDF_ENABLE_XFA
-  virtual bool OnPopupPreOpen(const CPWL_Wnd::PrivateData* pAttached,
-                              uint32_t nFlag) = 0;
-  virtual bool OnPopupPostOpen(const CPWL_Wnd::PrivateData* pAttached,
-                               uint32_t nFlag) = 0;
-#endif  // PDF_ENABLE_XFA
+  virtual bool OnPopupPreOpen(
+      const IPWL_SystemHandler::PerWindowData* pAttached,
+      uint32_t nFlag) = 0;
+
+  virtual bool OnPopupPostOpen(
+      const IPWL_SystemHandler::PerWindowData* pAttached,
+      uint32_t nFlag) = 0;
 };
 
 class CPWL_Edit final : public CPWL_EditCtrl {
  public:
-  CPWL_Edit(const CreateParams& cp, std::unique_ptr<PrivateData> pAttachedData);
+  CPWL_Edit(const CreateParams& cp,
+            std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData);
   ~CPWL_Edit() override;
 
   // CPWL_EditCtrl

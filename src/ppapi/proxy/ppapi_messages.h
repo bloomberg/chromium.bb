@@ -79,6 +79,7 @@
 #include "ppapi/shared_impl/file_ref_create_info.h"
 #include "ppapi/shared_impl/media_stream_audio_track_shared.h"
 #include "ppapi/shared_impl/media_stream_video_track_shared.h"
+#include "ppapi/shared_impl/pdf_accessibility_shared.h"
 #include "ppapi/shared_impl/ppapi_nacl_plugin_args.h"
 #include "ppapi/shared_impl/ppapi_preferences.h"
 #include "ppapi/shared_impl/ppb_device_ref_shared.h"
@@ -152,6 +153,10 @@ IPC_ENUM_TRAITS_MAX_VALUE(PP_HardwareAcceleration, PP_HARDWAREACCELERATION_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_AudioProfile, PP_AUDIOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_VideoProfile, PP_VIDEOPROFILE_MAX)
 IPC_ENUM_TRAITS_MAX_VALUE(PP_PrivateDirection, PP_PRIVATEDIRECTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityAction,
+                          PP_PDF_ACCESSIBILITYACTION_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(PP_PdfAccessibilityScrollAlignment,
+                          PP_PDF_ACCESSIBILITYSCROLLALIGNMENT_LAST)
 
 IPC_STRUCT_TRAITS_BEGIN(PP_Point)
   IPC_STRUCT_TRAITS_MEMBER(x)
@@ -227,6 +232,13 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrintSettings_Dev)
   IPC_STRUCT_TRAITS_MEMBER(format)
 IPC_STRUCT_TRAITS_END()
 
+IPC_STRUCT_TRAITS_BEGIN(PP_PdfAccessibilityActionData)
+  IPC_STRUCT_TRAITS_MEMBER(action)
+  IPC_STRUCT_TRAITS_MEMBER(target_rect)
+  IPC_STRUCT_TRAITS_MEMBER(horizontal_scroll_alignment)
+  IPC_STRUCT_TRAITS_MEMBER(vertical_scroll_alignment)
+IPC_STRUCT_TRAITS_END()
+
 IPC_STRUCT_TRAITS_BEGIN(PP_PdfPrintPresetOptions_Dev)
   IPC_STRUCT_TRAITS_MEMBER(is_scaling_disabled)
   IPC_STRUCT_TRAITS_MEMBER(copies)
@@ -273,6 +285,22 @@ IPC_STRUCT_TRAITS_BEGIN(PP_PrivateAccessibilityPageInfo)
   IPC_STRUCT_TRAITS_MEMBER(bounds)
   IPC_STRUCT_TRAITS_MEMBER(text_run_count)
   IPC_STRUCT_TRAITS_MEMBER(char_count)
+  IPC_STRUCT_TRAITS_MEMBER(link_count)
+  IPC_STRUCT_TRAITS_MEMBER(image_count)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityLinkInfo)
+  IPC_STRUCT_TRAITS_MEMBER(url)
+  IPC_STRUCT_TRAITS_MEMBER(index_in_page)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_index)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_count)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
+IPC_STRUCT_TRAITS_END()
+
+IPC_STRUCT_TRAITS_BEGIN(ppapi::PdfAccessibilityImageInfo)
+  IPC_STRUCT_TRAITS_MEMBER(alt_text)
+  IPC_STRUCT_TRAITS_MEMBER(text_run_index)
+  IPC_STRUCT_TRAITS_MEMBER(bounds)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(PP_URLComponent_Dev)
@@ -799,6 +827,9 @@ IPC_SYNC_MESSAGE_ROUTED1_1(PpapiMsg_PPPPdf_CanRedo,
                            PP_Bool /* result */)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPdf_Undo, PP_Instance /* instance */)
 IPC_MESSAGE_ROUTED1(PpapiMsg_PPPPdf_Redo, PP_Instance /* instance */)
+IPC_MESSAGE_ROUTED2(PpapiMsg_PPPPdf_HandleAccessibilityAction,
+                    PP_Instance /* instance */,
+                    PP_PdfAccessibilityActionData /* action_data */)
 IPC_SYNC_MESSAGE_ROUTED3_1(PpapiMsg_PPPPdf_PrintBegin,
                            PP_Instance /* instance */,
                            PP_PrintSettings_Dev /* print_settings */,
@@ -2363,11 +2394,13 @@ IPC_MESSAGE_CONTROL1(
     PP_PrivateAccessibilityDocInfo /* doc_info */)
 
 // Send information about one page for accessibility support.
-IPC_MESSAGE_CONTROL3(
+IPC_MESSAGE_CONTROL5(
     PpapiHostMsg_PDF_SetAccessibilityPageInfo,
     PP_PrivateAccessibilityPageInfo /* page_info */,
     std::vector<PP_PrivateAccessibilityTextRunInfo> /* text_runs */,
-    std::vector<PP_PrivateAccessibilityCharInfo> /* chars */)
+    std::vector<PP_PrivateAccessibilityCharInfo> /* chars */,
+    std::vector<ppapi::PdfAccessibilityLinkInfo> /* links */,
+    std::vector<ppapi::PdfAccessibilityImageInfo> /* images */)
 
 // Send information about the selection coordinates.
 IPC_MESSAGE_CONTROL4(PpapiHostMsg_PDF_SelectionChanged,

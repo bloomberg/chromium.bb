@@ -20,6 +20,7 @@ extern const base::Feature kOptimizationHintsExperiments;
 constexpr char kOptimizationHintsExperimentNameParam[] = "experiment_name";
 extern const base::Feature kSlowPageTriggering;
 extern const base::Feature kOptimizationHintsFetching;
+extern const base::Feature kOptimizationGuideKeyedService;
 
 // The maximum number of hosts that can be stored in the
 // |kHintsFetcherTopHostBlacklist| dictionary pref when initialized. The top
@@ -32,9 +33,23 @@ size_t MaxHintsFetcherTopHostBlacklistSize();
 // remote Optimzation Guide Service.
 size_t MaxHostsForOptimizationGuideServiceHintsFetch();
 
+// The maximum number of hosts allowed to be stored as covered by the hints
+// fetcher.
+size_t MaxHostsForRecordingSuccessfullyCovered();
+
+// The minimum score required to be considered a top host and be included in a
+// hints fetch request.
+double MinTopHostEngagementScoreThreshold();
+
 // The amount of time a fetched hint will be considered fresh enough
 // to be used and remain in the HintCacheStore.
 base::TimeDelta StoredFetchedHintsFreshnessDuration();
+
+// The duration of time after the blacklist initialization for which the low
+// engagement score threshold needs to be applied. If the blacklist was
+// initialized more than DurationApplyLowEngagementScoreThreshold() ago, then
+// the low engagement score threshold need not be applied.
+base::TimeDelta DurationApplyLowEngagementScoreThreshold();
 
 // The API key for the One Platform Optimization Guide Service.
 std::string GetOptimizationGuideServiceAPIKey();
@@ -48,6 +63,15 @@ bool IsOptimizationHintsEnabled();
 // Returns true if the feature to fetch hints from the remote Optimization Guide
 // Service is enabled.
 bool IsHintsFetchingEnabled();
+
+// Returns true if the initialization of the Optimization Guide Keyed Service is
+// enabled.
+bool IsOptimizationGuideKeyedServiceEnabled();
+
+// The maximum data byte size for a server-provided bloom filter. This is
+// a client-side safety limit for RAM use in case server sends too large of
+// a bloom filter.
+int MaxServerBloomFilterByteSize();
 
 }  // namespace features
 }  // namespace optimization_guide

@@ -52,8 +52,7 @@ CrostiniPackageNotification::CrostiniPackageNotification(
           GetNotificationSettingsForTypeAndAppName(notification_type,
                                                    app_name)),
       visible_(true),
-      container_id_(container_id),
-      weak_ptr_factory_(this) {
+      container_id_(container_id) {
   if (status == PackageOperationStatus::RUNNING) {
     running_start_time_ = base::TimeTicks::Now();
     CrostiniRegistryServiceFactory::GetForProfile(profile_)->AddObserver(this);
@@ -107,6 +106,8 @@ CrostiniPackageNotification::GetNotificationSettingsForTypeAndAppName(
       DCHECK(app_name.empty());
       result.source = l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_DISPLAY_SOURCE);
+      result.queued_title = l10n_util::GetStringUTF16(
+          IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_QUEUED_TITLE);
       result.progress_title = l10n_util::GetStringUTF16(
           IDS_CROSTINI_PACKAGE_INSTALL_NOTIFICATION_IN_PROGRESS_TITLE);
       result.progress_body.clear();
@@ -230,10 +231,6 @@ void CrostiniPackageNotification::UpdateProgress(PackageOperationStatus status,
       break;
 
     case PackageOperationStatus::QUEUED:
-      // We don't have queued strings for some NotificationTypes; we shouldn't
-      // be asked to move to QUEUED status for those,
-      DCHECK(!notification_settings_.queued_title.empty());
-      DCHECK(!notification_settings_.queued_body.empty());
       title = notification_settings_.queued_title;
       body = notification_settings_.queued_body;
       break;
@@ -257,8 +254,8 @@ void CrostiniPackageNotification::ForceAllowAutoHide() {
 }
 
 void CrostiniPackageNotification::Close(bool by_user) {
-  if (current_status_ == PackageOperationStatus::RUNNING ||
-      current_status_ == PackageOperationStatus::QUEUED) {
+  if (current_status_ != PackageOperationStatus::SUCCEEDED &&
+      current_status_ != PackageOperationStatus::FAILED) {
     // We don't want to delete ourselves yet; we want to forcibly redisplay
     // when we hit success or failure. Just note that we are hidden.
     visible_ = false;

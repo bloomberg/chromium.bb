@@ -32,7 +32,13 @@
 #if defined(OS_WIN)
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
+#include "chrome/browser/browser_switcher/browser_switcher_policy_migrator.h"
 #include "chrome/browser/browser_switcher/browser_switcher_service_win.h"
+#include "chrome/browser/extensions/extension_service.h"
+#include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
+#include "extensions/common/extension.h"
+#include "extensions/common/extension_builder.h"
 #endif
 
 namespace browser_switcher {
@@ -791,6 +797,77 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesSitelistsToCacheFile) {
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       PRE_CacheFileCorrectOnStartup) {
+  SetUseIeSitelist(true);
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(&ReturnValidXml));
+
+  // Execute everything and check "cache.dat" file contents.
+  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath cache_file_path, base::OnceClosure quit) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+            ASSERT_TRUE(base::PathExists(base::FilePath(cache_file_path)));
+            std::move(quit).Run();
+          },
+          cache_file_path(), run_loop.QuitClosure()),
+      action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, CacheFileCorrectOnStartup) {
+  SetUseIeSitelist(true);
+  // Never refresh the sitelist. We want to check the state of cache.dat after
+  // startup, not after the sitelist is downloaded.
+  BrowserSwitcherServiceWin::SetFetchDelayForTesting(
+      base::TimeDelta::FromHours(24));
+  BrowserSwitcherServiceWin::SetIeemSitelistUrlForTesting(kAValidUrl);
+
+  content::URLLoaderInterceptor interceptor(
+      base::BindRepeating(&ReturnValidXml));
+
+  // Execute everything and check "cache.dat" file contents.
+  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath cache_file_path,
+             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
+            base::ScopedAllowBlockingForTesting allow_blocking;
+            base::File file(cache_file_path,
+                            base::File::FLAG_OPEN | base::File::FLAG_READ);
+            ASSERT_TRUE(file.IsValid());
+
+            const char expected_output[] =
+                "1\n"
+                "\n"
+                "\n"
+                "\n"
+                "\n"
+                "1\n"
+                "docs.google.com\n"
+                "0\n";
+
+            std::unique_ptr<char[]> buffer(new char[file.GetLength() + 1]);
+            buffer.get()[file.GetLength()] = '\0';
+            file.Read(0, buffer.get(), file.GetLength());
+            EXPECT_EQ(std::string(expected_output), std::string(buffer.get()));
+
+            std::move(quit).Run();
+          },
+          cache_file_path(), sitelist_cache_file_path(),
+          run_loop.QuitClosure()),
+      action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
                        DeletesSitelistCacheOnStartup) {
   base::ScopedAllowBlockingForTesting allow_blocking;
 
@@ -799,7 +876,7 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
   policy_provider().UpdateChromePolicy(policies);
   base::RunLoop().RunUntilIdle();
 
-  base::CreateDirectory(cache_dir());
+  ASSERT_TRUE(base::CreateDirectory(cache_dir()));
   base::WriteFile(sitelist_cache_file_path(), "", 0);
   ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
 
@@ -835,6 +912,51 @@ IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest, WritesNothingIfDisabled) {
             EXPECT_FALSE(base::PathExists(cache_dir));
             EXPECT_FALSE(base::PathExists(cache_file_path));
             EXPECT_FALSE(base::PathExists(sitelist_cache_file_path));
+            std::move(quit).Run();
+          },
+          cache_dir(), cache_file_path(), sitelist_cache_file_path(),
+          run_loop.QuitClosure()),
+      action_timeout());
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(BrowserSwitcherServiceTest,
+                       DoesNotDeleteIfExtensionIsEnabled) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  // No policies configured.
+
+  // LBS extension is installed.
+  auto extension = extensions::ExtensionBuilder()
+                       .SetLocation(extensions::Manifest::INTERNAL)
+                       .SetID(kLBSExtensionId)
+                       .SetManifest(extensions::DictionaryBuilder()
+                                        .Set("name", "Legacy Browser Support")
+                                        .Set("manifest_version", 2)
+                                        .Set("version", "5.9")
+                                        .Build())
+                       .Build();
+  extensions::ExtensionSystem::Get(browser()->profile())
+      ->extension_service()
+      ->AddExtension(extension.get());
+
+  // Cache files already exist.
+  ASSERT_TRUE(base::CreateDirectory(cache_dir()));
+  base::WriteFile(cache_file_path(), "", 0);
+  base::WriteFile(sitelist_cache_file_path(), "", 0);
+  ASSERT_TRUE(base::PathExists(cache_file_path()));
+  ASSERT_TRUE(base::PathExists(sitelist_cache_file_path()));
+
+  BrowserSwitcherServiceFactory::GetForBrowserContext(browser()->profile());
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce(
+          [](base::FilePath cache_dir, base::FilePath cache_file_path,
+             base::FilePath sitelist_cache_file_path, base::OnceClosure quit) {
+            EXPECT_TRUE(base::PathExists(cache_dir));
+            EXPECT_TRUE(base::PathExists(cache_file_path));
+            EXPECT_TRUE(base::PathExists(sitelist_cache_file_path));
             std::move(quit).Run();
           },
           cache_dir(), cache_file_path(), sitelist_cache_file_path(),

@@ -23,6 +23,7 @@
 #include "sfdriver.c"
 #include "sfobjs.c"
 #include "sfwoff.c"
+#include "sfwoff2.c"
 #include "ttbdf.c"
 #include "ttcmap.c"
 #include "ttcolr.c"
@@ -33,6 +34,7 @@
 #include "ttmtx.c"
 #include "ttpost.c"
 #include "ttsbit.c"
+#include "woff2tags.c"
 
 
 /* END */

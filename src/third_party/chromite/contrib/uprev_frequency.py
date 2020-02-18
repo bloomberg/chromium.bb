@@ -8,6 +8,7 @@
 TODO(evanhernandez): Move this to scripts/ once it has been hardened.
 """
 
+from __future__ import division
 from __future__ import print_function
 
 import collections
@@ -112,8 +113,8 @@ def get_average_timestamp_delta_days(timestamps):
     delta = second - first
     assert delta > 0, 'Unexpected negative delta between uprevs.'
     deltas.append(delta)
-  average_delta_seconds = float(sum(deltas)) / len(deltas)
-  return average_delta_seconds / SECONDS_PER_DAY
+  average_delta_seconds = sum(deltas) / len(deltas)
+  return average_delta_seconds // SECONDS_PER_DAY
 
 
 def get_parser():

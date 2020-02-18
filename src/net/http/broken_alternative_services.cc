@@ -8,7 +8,7 @@
 #include "base/memory/singleton.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 
 namespace net {
 
@@ -32,9 +32,13 @@ base::TimeDelta ComputeBrokenAlternativeServiceExpirationDelay(
 }  // namespace
 
 BrokenAlternativeServices::BrokenAlternativeServices(
+    int max_recently_broken_alternative_service_entries,
     Delegate* delegate,
     const base::TickClock* clock)
-    : delegate_(delegate), clock_(clock) {
+    : delegate_(delegate),
+      clock_(clock),
+      recently_broken_alternative_services_(
+          max_recently_broken_alternative_service_entries) {
   DCHECK(delegate_);
   DCHECK(clock_);
 }
@@ -321,7 +325,7 @@ void BrokenAlternativeServices ::
   expiration_timer_.Stop();
   expiration_timer_.Start(
       FROM_HERE, delay,
-      base::Bind(
+      base::BindOnce(
           &BrokenAlternativeServices ::ExpireBrokenAlternateProtocolMappings,
           weak_ptr_factory_.GetWeakPtr()));
 }

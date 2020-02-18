@@ -45,8 +45,6 @@ const int kBogusRtpRateForAudioRtcp = 8000;
 // Minimum RTP header size in bytes.
 const uint8_t kRtpHeaderSize = 12;
 
-enum StorageType { kDontRetransmit, kAllowRetransmission };
-
 bool IsLegalMidName(absl::string_view name);
 bool IsLegalRsidName(absl::string_view name);
 
@@ -342,14 +340,6 @@ class RtcpRttStats {
   virtual ~RtcpRttStats() {}
 };
 
-class TransportSequenceNumberAllocator {
- public:
-  TransportSequenceNumberAllocator() {}
-  virtual ~TransportSequenceNumberAllocator() {}
-
-  virtual uint16_t AllocateSequenceNumber() = 0;
-};
-
 struct RtpPacketCounter {
   RtpPacketCounter()
       : header_bytes(0), payload_bytes(0), padding_bytes(0), packets(0) {}
@@ -442,6 +432,20 @@ class StreamDataCountersCallback {
 
   virtual void DataCountersUpdated(const StreamDataCounters& counters,
                                    uint32_t ssrc) = 0;
+};
+
+// Information exposed through the GetStats api.
+struct RtpReceiveStats {
+  // |packets_lost| and |jitter| are defined by RFC 3550, and exposed in the
+  // RTCReceivedRtpStreamStats dictionary, see
+  // https://w3c.github.io/webrtc-stats/#receivedrtpstats-dict*
+  int32_t packets_lost = 0;
+  uint32_t jitter = 0;
+
+  // Timestamp and counters exposed in RTCInboundRtpStreamStats, see
+  // https://w3c.github.io/webrtc-stats/#inboundrtpstats-dict*
+  absl::optional<int64_t> last_packet_received_timestamp_ms;
+  RtpPacketCounter packet_counter;
 };
 
 class RtcpAckObserver {

@@ -15,7 +15,7 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/ukm/test_ukm_recorder.h"
@@ -63,7 +63,9 @@ class WatchTimeRecorderTest : public testing::Test {
                             base::Unretained(this)),
         base::BindRepeating(
             []() { return learning::FeatureValue(0); }) /* origin callback */,
-        VideoDecodePerfHistory::SaveCallback(), mojo::MakeRequest(&provider_));
+        VideoDecodePerfHistory::SaveCallback(),
+        MediaMetricsProvider::GetLearningSessionCallback(),
+        mojo::MakeRequest(&provider_));
   }
 
   ~WatchTimeRecorderTest() override { base::RunLoop().RunUntilIdle(); }
@@ -160,7 +162,7 @@ class WatchTimeRecorderTest : public testing::Test {
   MOCK_METHOD0(GetCurrentMediaTime, base::TimeDelta());
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   mojom::MediaMetricsProviderPtr provider_;
   std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
@@ -1245,7 +1247,7 @@ TEST_F(WatchTimeRecorderTest, DISABLED_PrintExpectedDecoderNameHashes) {
       "FFmpegAudioDecoder", "FFmpegVideoDecoder",     "GpuVideoDecoder",
       "MojoVideoDecoder",   "MojoAudioDecoder",       "VpxVideoDecoder",
       "AomVideoDecoder",    "DecryptingAudioDecoder", "DecryptingVideoDecoder",
-      "Dav1dVideoDecoder"};
+      "Dav1dVideoDecoder",  "FuchsiaVideoDecoder"};
   printf("%18s = 0\n", "None");
   for (const auto& name : kDecoderNames)
     printf("%18s = 0x%x\n", name.c_str(), base::PersistentHash(name));

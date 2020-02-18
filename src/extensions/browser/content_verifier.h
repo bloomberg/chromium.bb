@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/scoped_observer.h"
 #include "base/version.h"
 #include "content/public/browser/browser_thread.h"
@@ -18,6 +19,7 @@
 #include "extensions/browser/content_verifier_delegate.h"
 #include "extensions/browser/content_verifier_io_data.h"
 #include "extensions/browser/content_verify_job.h"
+#include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_registry_observer.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -116,9 +118,9 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   class HashHelper;
 
   void OnFetchComplete(const scoped_refptr<const ContentHash>& content_hash);
-  ContentHash::FetchParams GetFetchParams(
-      const ExtensionId& extension_id,
-      const base::Version& extension_version);
+  ContentHash::FetchKey GetFetchKey(const ExtensionId& extension_id,
+                                    const base::FilePath& extension_root,
+                                    const base::Version& extension_version);
 
   void DidGetContentHash(const CacheKey& cache_key,
                          ContentHashCallback orig_callback,
@@ -179,7 +181,7 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   std::unique_ptr<ContentVerifierDelegate> delegate_;
 
   // For observing the ExtensionRegistry.
-  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
+  ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_{this};
 
   // Data that should only be used on the IO thread.
   ContentVerifierIOData io_data_;

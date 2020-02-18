@@ -14,6 +14,7 @@ namespace net {
 
 class CertPathErrors;
 class CertNetFetcher;
+struct OCSPVerifyResult;
 
 // Baseline Requirements 1.6.5, section 4.9.7:
 //     For the status of Subscriber Certificates: If the CA publishes a CRL,
@@ -78,14 +79,11 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
   // mechanisms.
   bool allow_missing_info : 1;
 
-  // If set to true, failure to perform online revocation checks (due to a
-  // network level failure) is considered equivalent to a successful revocation
-  // check.
-  //
-  // TODO(649017): The "soft fail" expectations of consumers are more broad than
-  // this, and may also entail parsing failures and parsed non-success OCSP
-  // responses.
-  bool allow_network_failure : 1;
+  // If set to true, other failure to perform revocation checks (e.g. due to a
+  // network level failure, OCSP response error status, failure parsing or
+  // evaluating the OCSP/CRL response, etc) is considered equivalent to a
+  // successful revocation check.
+  bool allow_unable_to_check : 1;
 };
 
 // Checks the revocation status of |certs| according to |policy|, and adds
@@ -97,12 +95,16 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
 //
 // |net_fetcher| may be null, however this may lead to failed revocation checks
 // depending on |policy|.
+//
+// |stapled_ocsp_verify_result|, if non-null, will be filled with the result of
+// checking the leaf certificate against |stapled_leaf_ocsp_response|.
 NET_EXPORT_PRIVATE void CheckValidatedChainRevocation(
     const ParsedCertificateList& certs,
     const RevocationPolicy& policy,
     base::StringPiece stapled_leaf_ocsp_response,
     CertNetFetcher* net_fetcher,
-    CertPathErrors* errors);
+    CertPathErrors* errors,
+    OCSPVerifyResult* stapled_ocsp_verify_result);
 
 // Checks the revocation status of a certificate chain using the CRLSet and adds
 // revocation errors to |errors|.

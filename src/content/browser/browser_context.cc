@@ -39,7 +39,6 @@
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/content_service_delegate_impl.h"
 #include "content/browser/download/download_manager_impl.h"
-#include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/media/browser_feature_provider.h"
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/push_messaging/push_messaging_router.h"
@@ -61,11 +60,11 @@
 #include "media/base/media_switches.h"
 #include "media/capabilities/in_memory_video_decode_stats_db_impl.h"
 #include "media/capabilities/video_decode_stats_db_impl.h"
+#include "media/learning/impl/learning_session_impl.h"
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "services/content/public/mojom/constants.mojom.h"
 #include "services/content/service.h"
 #include "services/file/file_service.h"
@@ -175,6 +174,7 @@ const char kServiceManagerConnection[] = "service-manager-connection";
 const char kServiceInstanceGroup[] = "service-instance-group";
 const char kStoragePartitionMapKeyName[] = "content_storage_partition_map";
 const char kVideoDecodePerfHistoryId[] = "video-decode-perf-history";
+const char kLearningSession[] = "learning-session";
 
 #if defined(OS_CHROMEOS)
 const char kMountPointsKey[] = "mount_points";
@@ -221,9 +221,7 @@ StoragePartition* GetStoragePartitionFromConfig(
                             can_create);
 }
 
-void SaveSessionStateOnIOThread(
-    const scoped_refptr<net::URLRequestContextGetter>& context_getter,
-    AppCacheServiceImpl* appcache_service) {
+void SaveSessionStateOnIOThread(AppCacheServiceImpl* appcache_service) {
   appcache_service->set_force_keep_session_state();
 }
 
@@ -277,8 +275,7 @@ class BrowserContextServiceManagerConnectionHolder
         main_thread_task_runner_(std::move(main_thread_task_runner)),
         service_manager_connection_(ServiceManagerConnection::Create(
             std::move(request),
-            base::CreateSingleThreadTaskRunnerWithTraits(
-                {BrowserThread::IO}))) {
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}))) {
     service_manager_connection_->SetDefaultServiceRequestHandler(
         base::BindRepeating(
             &BrowserContextServiceManagerConnectionHolder::OnServiceRequest,
@@ -482,7 +479,7 @@ void BrowserContext::CreateMemoryBackedBlob(BrowserContext* browser_context,
 
   ChromeBlobStorageContext* blob_context =
       ChromeBlobStorageContext::GetFor(browser_context);
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::IO},
       base::BindOnce(&ChromeBlobStorageContext::CreateMemoryBackedBlob,
                      base::WrapRefCounted(blob_context), data, length,
@@ -605,12 +602,9 @@ void BrowserContext::SaveSessionState(BrowserContext* browser_context) {
                      base::WrapRefCounted(database_tracker)));
 
   if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
-    scoped_refptr<net::URLRequestContextGetter> context_getter;
-    if (!base::FeatureList::IsEnabled(network::features::kNetworkService))
-      context_getter = storage_partition->GetURLRequestContext();
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&SaveSessionStateOnIOThread, context_getter,
+        base::BindOnce(&SaveSessionStateOnIOThread,
                        static_cast<AppCacheServiceImpl*>(
                            storage_partition->GetAppCacheService())));
   }
@@ -685,7 +679,7 @@ void BrowserContext::Initialize(BrowserContext* browser_context,
 
     scoped_refptr<FileServiceIOThreadState> file_service_io_thread_state =
         base::MakeRefCounted<FileServiceIOThreadState>(
-            base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
+            base::CreateSingleThreadTaskRunner({BrowserThread::IO}));
     connection->AddServiceRequestHandler(
         file::mojom::kServiceName,
         base::BindRepeating(
@@ -802,8 +796,11 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
       stats_db =
           std::make_unique<media::InMemoryVideoDecodeStatsDBImpl>(nullptr);
     } else {
+      auto* db_provider =
+          GetDefaultStoragePartition(this)->GetProtoDatabaseProvider();
+
       stats_db = media::VideoDecodeStatsDBImpl::Create(
-          GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")));
+          GetPath().Append(FILE_PATH_LITERAL("VideoDecodeStats")), db_provider);
     }
 
     auto new_decode_history = std::make_unique<media::VideoDecodePerfHistory>(
@@ -814,6 +811,24 @@ media::VideoDecodePerfHistory* BrowserContext::GetVideoDecodePerfHistory() {
   }
 
   return decode_history;
+}
+
+media::learning::LearningSession* BrowserContext::GetLearningSession() {
+  media::learning::LearningSession* learning_session =
+      static_cast<media::learning::LearningSession*>(
+          GetUserData(kLearningSession));
+
+  if (!learning_session) {
+    auto new_learning_session =
+        std::make_unique<media::learning::LearningSessionImpl>(
+            base::SequencedTaskRunnerHandle::Get());
+
+    learning_session = new_learning_session.get();
+
+    SetUserData(kLearningSession, std::move(new_learning_session));
+  }
+
+  return learning_session;
 }
 
 download::InProgressDownloadManager*

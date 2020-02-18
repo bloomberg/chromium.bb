@@ -30,8 +30,7 @@ CredentialManagementHandler::CredentialManagementHandler(
                              supported_transports),
       ready_callback_(std::move(ready_callback)),
       get_pin_callback_(std::move(get_pin_callback)),
-      finished_callback_(std::move(finished_callback)),
-      weak_factory_(this) {
+      finished_callback_(std::move(finished_callback)) {
   Start();
 }
 
@@ -64,7 +63,8 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
         authenticator->Options()->supports_credential_management_preview)) {
     state_ = State::kFinished;
     std::move(finished_callback_)
-        .Run(FidoReturnCode::kAuthenticatorMissingCredentialManagement);
+        .Run(CredentialManagementStatus::
+                 kAuthenticatorMissingCredentialManagement);
     return;
   }
 
@@ -75,8 +75,7 @@ void CredentialManagementHandler::OnTouch(FidoAuthenticator* authenticator) {
     // We should implement in-flow PIN setting, but for now just tell the user
     // to set a PIN themselves.
     state_ = State::kFinished;
-    std::move(finished_callback_)
-        .Run(FidoReturnCode::kAuthenticatorMissingUserVerification);
+    std::move(finished_callback_).Run(CredentialManagementStatus::kNoPINSet);
     return;
   }
 
@@ -94,12 +93,13 @@ void CredentialManagementHandler::OnRetriesResponse(
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     std::move(finished_callback_)
-        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+        .Run(CredentialManagementStatus::kAuthenticatorResponseInvalid);
     return;
   }
   if (response->retries == 0) {
     state_ = State::kFinished;
-    std::move(finished_callback_).Run(FidoReturnCode::kHardPINBlock);
+    std::move(finished_callback_)
+        .Run(CredentialManagementStatus::kHardPINBlock);
     return;
   }
   state_ = State::kWaitingForPIN;
@@ -134,7 +134,7 @@ void CredentialManagementHandler::OnHaveEphemeralKey(
   if (status != CtapDeviceResponseCode::kSuccess) {
     state_ = State::kFinished;
     std::move(finished_callback_)
-        .Run(FidoReturnCode::kAuthenticatorResponseInvalid);
+        .Run(CredentialManagementStatus::kAuthenticatorResponseInvalid);
     return;
   }
 
@@ -160,16 +160,16 @@ void CredentialManagementHandler::OnHavePINToken(
   }
 
   if (status != CtapDeviceResponseCode::kSuccess) {
-    FidoReturnCode error;
+    CredentialManagementStatus error;
     switch (status) {
       case CtapDeviceResponseCode::kCtap2ErrPinAuthBlocked:
-        error = FidoReturnCode::kSoftPINBlock;
+        error = CredentialManagementStatus::kSoftPINBlock;
         break;
       case CtapDeviceResponseCode::kCtap2ErrPinBlocked:
-        error = FidoReturnCode::kHardPINBlock;
+        error = CredentialManagementStatus::kHardPINBlock;
         break;
       default:
-        error = FidoReturnCode::kAuthenticatorResponseInvalid;
+        error = CredentialManagementStatus::kAuthenticatorResponseInvalid;
         break;
     }
     state_ = State::kFinished;
@@ -338,7 +338,7 @@ void CredentialManagementHandler::AuthenticatorRemoved(
 
   authenticator_ = nullptr;
   state_ = State::kFinished;
-  std::move(finished_callback_).Run(FidoReturnCode::kSuccess);
+  std::move(finished_callback_).Run(CredentialManagementStatus::kSuccess);
 }
 
 }  // namespace device

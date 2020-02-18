@@ -24,9 +24,8 @@
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
-#include "chrome/browser/apps/app_shim/app_shim_handler_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
-#include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
+#include "chrome/browser/apps/app_shim/app_shim_listener.h"
 #include "chrome/browser/apps/app_shim/extension_app_shim_handler_mac.h"
 #include "chrome/browser/apps/platform_apps/app_browsertest_util.h"
 #include "chrome/browser/browser_process.h"
@@ -73,7 +72,7 @@ class AppShimInteractiveTest : public extensions::PlatformAppBrowserTest {
 };
 
 // Watches for an app shim to connect.
-class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
+class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
  public:
   WindowedAppShimLaunchObserver(const std::string& app_id)
       : app_mode_id_(app_id),
@@ -83,7 +82,7 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
 
   void StartObserving() {
     observed_ = false;
-    apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
+    AppShimHostBootstrap::SetClient(this);
   }
 
   void Wait() {
@@ -94,42 +93,34 @@ class WindowedAppShimLaunchObserver : public apps::AppShimHandler {
     run_loop_->Run();
   }
 
-  // AppShimHandler overrides:
+  // AppShimHandler:
+  void OnShimProcessConnected(
+      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
+    ExtensionAppShimHandler::OnShimProcessConnected(std::move(bootstrap));
+    observed_ = true;
+    if (run_loop_.get())
+      run_loop_->Quit();
+  }
+
+  // AppShimHost::Client:
   void OnShimLaunchRequested(
       AppShimHost* host,
       bool recreate_shims,
       apps::ShimLaunchedCallback launch_callback,
       apps::ShimTerminatedCallback terminated_callback) override {
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimLaunchRequested(host, recreate_shims,
-                                std::move(launch_callback),
-                                std::move(terminated_callback));
-    apps::AppShimHandler::RegisterHandler(app_mode_id_, this);
+    ExtensionAppShimHandler::OnShimLaunchRequested(
+        host, recreate_shims, std::move(launch_callback),
+        std::move(terminated_callback));
   }
-  void OnShimProcessConnected(
-      std::unique_ptr<AppShimHostBootstrap> bootstrap) override {
-    // Remove self and pass through to the default handler.
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)
-        ->OnShimProcessConnected(std::move(bootstrap));
+  void OnShimProcessDisconnected(AppShimHost* host) override {
+    ExtensionAppShimHandler::OnShimProcessDisconnected(host);
     observed_ = true;
     if (run_loop_.get())
       run_loop_->Quit();
   }
-  void OnShimClose(AppShimHost* host) override {}
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
-  void OnShimSetHidden(AppShimHost* host, bool hidden) override {}
-  void OnShimQuit(AppShimHost* host) override {
-    // Remove self and pass through to the default handler.
-    apps::AppShimHandler::RemoveHandler(app_mode_id_);
-    apps::AppShimHandler::GetForAppMode(app_mode_id_)->OnShimQuit(host);
-    observed_ = true;
-    if (run_loop_.get())
-      run_loop_->Quit();
-  }
 
  private:
   std::string app_mode_id_;
@@ -240,7 +231,7 @@ NSString* GetBundleID(const base::FilePath& shim_path) {
 
 bool HasAppShimHost(Profile* profile, const std::string& app_id) {
   return g_browser_process->platform_part()
-      ->app_shim_host_manager()
+      ->app_shim_listener()
       ->extension_app_shim_handler()
       ->FindHost(profile, app_id);
 }
@@ -447,8 +438,8 @@ IN_PROC_BROWSER_TEST_F(AppShimInteractiveTest, MAYBE_Launch) {
     // final request to close the window is posted to this thread's queue.
     GetFirstAppWindow()->GetBaseWindow()->Close();
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(
-        FROM_HERE, {base::MayBlock()},
+    base::PostTaskAndReply(
+        FROM_HERE, {base::ThreadPool(), base::MayBlock()},
         base::BindOnce(
             [](base::Process* shim_process) {
               base::ScopedAllowBaseSyncPrimitivesForTesting

@@ -8,12 +8,10 @@
 #include <limits>
 #include <utility>
 
-#include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_sets.h"
-#include "third_party/blink/public/web/modules/mediastream/media_stream_constraints_util_video_device.h"
+#include "third_party/blink/renderer/modules/mediastream/media_stream_constraints_util_video_device.h"
 
 namespace blink {
 
@@ -136,13 +134,13 @@ VideoCaptureSettings::VideoCaptureSettings(
 
 VideoCaptureSettings::VideoCaptureSettings(const VideoCaptureSettings& other) =
     default;
-VideoCaptureSettings::VideoCaptureSettings(VideoCaptureSettings&& other) =
-    default;
+VideoCaptureSettings::VideoCaptureSettings(
+    VideoCaptureSettings&& other) noexcept = default;
 VideoCaptureSettings::~VideoCaptureSettings() = default;
 VideoCaptureSettings& VideoCaptureSettings::operator=(
     const VideoCaptureSettings& other) = default;
 VideoCaptureSettings& VideoCaptureSettings::operator=(
-    VideoCaptureSettings&& other) = default;
+    VideoCaptureSettings&& other) noexcept = default;
 
 AudioCaptureSettings::AudioCaptureSettings() : AudioCaptureSettings("") {}
 
@@ -168,10 +166,10 @@ AudioCaptureSettings::AudioCaptureSettings(const AudioCaptureSettings& other) =
     default;
 AudioCaptureSettings& AudioCaptureSettings::operator=(
     const AudioCaptureSettings& other) = default;
-AudioCaptureSettings::AudioCaptureSettings(AudioCaptureSettings&& other) =
-    default;
+AudioCaptureSettings::AudioCaptureSettings(
+    AudioCaptureSettings&& other) noexcept = default;
 AudioCaptureSettings& AudioCaptureSettings::operator=(
-    AudioCaptureSettings&& other) = default;
+    AudioCaptureSettings&& other) noexcept = default;
 
 bool GetConstraintValueAsBoolean(
     const WebMediaConstraints& constraints,
@@ -206,50 +204,6 @@ bool GetConstraintValueAsDouble(
     const DoubleConstraint WebMediaTrackConstraintSet::*picker,
     double* value) {
   return ScanConstraintsForExactValue(constraints, picker, value);
-}
-
-bool GetConstraintMinAsDouble(
-    const WebMediaConstraints& constraints,
-    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
-    double* value) {
-  return ScanConstraintsForMinValue(constraints, picker, value);
-}
-
-bool GetConstraintMaxAsDouble(
-    const WebMediaConstraints& constraints,
-    const DoubleConstraint WebMediaTrackConstraintSet::*picker,
-    double* value) {
-  return ScanConstraintsForMaxValue(constraints, picker, value);
-}
-
-bool GetConstraintValueAsString(
-    const WebMediaConstraints& constraints,
-    const StringConstraint WebMediaTrackConstraintSet::*picker,
-    std::string* value) {
-  WebVector<WebString> return_value;
-  if (ScanConstraintsForExactValue(constraints, picker, &return_value)) {
-    *value = return_value[0].Utf8();
-    return true;
-  }
-  return false;
-}
-
-std::string GetMediaStreamSource(const WebMediaConstraints& constraints) {
-  std::string source;
-  if (constraints.Basic().media_stream_source.HasIdeal() &&
-      constraints.Basic().media_stream_source.Ideal().size() > 0) {
-    source = constraints.Basic().media_stream_source.Ideal()[0].Utf8();
-  }
-  if (constraints.Basic().media_stream_source.HasExact() &&
-      constraints.Basic().media_stream_source.Exact().size() > 0) {
-    source = constraints.Basic().media_stream_source.Exact()[0].Utf8();
-  }
-
-  return source;
-}
-
-bool IsDeviceCapture(const WebMediaConstraints& constraints) {
-  return GetMediaStreamSource(constraints).empty();
 }
 
 VideoTrackAdapterSettings SelectVideoTrackAdapterSettings(

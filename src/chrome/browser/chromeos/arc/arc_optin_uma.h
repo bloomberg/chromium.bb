@@ -7,8 +7,8 @@
 
 #include <ostream>
 
-#include "components/arc/common/app.mojom.h"
-#include "components/arc/common/auth.mojom.h"
+#include "components/arc/mojom/app.mojom.h"
+#include "components/arc/mojom/auth.mojom.h"
 
 class Profile;
 
@@ -245,6 +245,9 @@ void UpdateSecondaryAccountSilentAuthCodeUMA(OptInSilentAuthCode state);
 void UpdateAuthTiming(const char* histogram_name, base::TimeDelta elapsed_time);
 void UpdateAuthCheckinAttempts(int32_t num_attempts);
 void UpdateAuthAccountCheckStatus(mojom::AccountCheckStatus status);
+void UpdateMainAccountResolutionStatus(
+    const Profile* profile,
+    mojom::MainAccountResolutionStatus status);
 
 // Outputs the stringified |result| to |os|. This is only for logging purposes.
 std::ostream& operator<<(std::ostream& os, const ProvisioningResult& result);

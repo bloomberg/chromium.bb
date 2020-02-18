@@ -30,7 +30,7 @@
 #include "net/log/net_log.h"
 #include "net/socket/udp_client_socket.h"
 #include "net/test/gtest_util.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -407,7 +407,7 @@ class MockTimer : public base::MockOneShotTimer {
 
 }  // namespace
 
-class MDnsTest : public TestWithScopedTaskEnvironment {
+class MDnsTest : public TestWithTaskEnvironment {
  public:
   void SetUp() override;
   void DeleteTransaction();
@@ -1225,7 +1225,7 @@ class MockMDnsConnectionDelegate : public MDnsConnection::Delegate {
   MOCK_METHOD1(OnConnectionError, void(int error));
 };
 
-class MDnsConnectionTest : public TestWithScopedTaskEnvironment {
+class MDnsConnectionTest : public TestWithTaskEnvironment {
  public:
   MDnsConnectionTest() : connection_(&delegate_) {
   }

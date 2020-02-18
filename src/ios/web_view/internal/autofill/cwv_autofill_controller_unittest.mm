@@ -24,7 +24,7 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -55,7 +55,9 @@ NSString* const kTestFieldValue = @"FieldValue";
 
 class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
+  CWVAutofillControllerTest()
+      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
+        browser_state_(/*off_the_record=*/false) {
     web::SetWebClient(&web_client_);
 
     test_web_state_.SetBrowserState(&browser_state_);
@@ -91,7 +93,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
   }
 
   web::WebClient web_client_;
-  web::TestWebThreadBundle web_thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState test_web_state_;
   web::FakeWebFramesManager* fake_web_frames_manager_;
@@ -135,8 +137,8 @@ TEST_F(CWVAutofillControllerTest, FetchSuggestions) {
   }));
 }
 
-// Tests CWVAutofillController fills suggestion.
-TEST_F(CWVAutofillControllerTest, FillSuggestion) {
+// Tests CWVAutofillController accepts suggestion.
+TEST_F(CWVAutofillControllerTest, AcceptSuggestion) {
   FormSuggestion* form_suggestion =
       [FormSuggestion suggestionWithValue:kTestFieldValue
                        displayDescription:nil
@@ -148,15 +150,15 @@ TEST_F(CWVAutofillControllerTest, FillSuggestion) {
                                             fieldIdentifier:kTestFieldIdentifier
                                                     frameID:kTestFrameId
                                        isPasswordSuggestion:NO];
-  __block BOOL fill_completion_was_called = NO;
-  [autofill_controller_ fillSuggestion:suggestion
-                     completionHandler:^{
-                       fill_completion_was_called = YES;
-                     }];
+  __block BOOL accept_completion_was_called = NO;
+  [autofill_controller_ acceptSuggestion:suggestion
+                       completionHandler:^{
+                         accept_completion_was_called = YES;
+                       }];
 
   EXPECT_TRUE(WaitUntilConditionOrTimeout(kWaitForActionTimeout, ^bool {
     base::RunLoop().RunUntilIdle();
-    return fill_completion_was_called;
+    return accept_completion_was_called;
   }));
   EXPECT_NSEQ(
       form_suggestion,

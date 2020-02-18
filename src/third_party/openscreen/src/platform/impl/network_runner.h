@@ -33,7 +33,7 @@ class NetworkRunnerImpl final : public NetworkRunner {
 
   Error ReadRepeatedly(UdpSocket* socket, UdpReadCallback* callback);
 
-  bool CancelRead(UdpSocket* socket);
+  Error CancelRead(UdpSocket* socket);
 
   void PostPackagedTask(Task task);
 
@@ -48,20 +48,11 @@ class NetworkRunnerImpl final : public NetworkRunner {
   void RequestStopSoon();
 
  protected:
-  // Creates a new NetworkRunnerImpl with the provided NetworkLoop and
-  // TaskRunner. Note that the Task Runner is expected to be running at the time
-  // it is provided.
-  NetworkRunnerImpl(std::unique_ptr<TaskRunner> task_runner,
-                    std::unique_ptr<NetworkReader> network_loop);
-
   // Objects handling actual processing of this instance's calls.
   std::unique_ptr<NetworkReader> network_loop_;
   std::unique_ptr<TaskRunner> task_runner_;
 
  private:
-  // Atomic so that we can perform atomic exchanges.
-  std::atomic_bool is_running_;
-
   OSP_DISALLOW_COPY_AND_ASSIGN(NetworkRunnerImpl);
 };
 

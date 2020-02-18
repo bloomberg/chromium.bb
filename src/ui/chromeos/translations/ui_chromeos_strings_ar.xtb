@@ -88,6 +88,7 @@
 <translation id="1942765061641586207">دقة الصورة</translation>
 <translation id="1943097386230153518">تثبيت خدمة جديدة</translation>
 <translation id="1947424002851288782">لوحة المفاتيح الألمانية</translation>
+<translation id="1972984168337863910">توسيع لوحات تعليقات الملفات</translation>
 <translation id="197560921582345123">يمكن التعديل</translation>
 <translation id="1984603991036629094">لوحة المفاتيح الأرمينية الصوتية</translation>
 <translation id="2001796770603320721">‏الإدارة في Drive</translation>
@@ -266,11 +267,9 @@
 <translation id="421017592316736757">يجب أن تكون متصلاً بالإنترنت للدخول إلى هذا الملف.</translation>
 <translation id="4212740939091998969">المجلَّد الذي يحمل الاسم "<ph name="FOLDER_NAME" />" موجود مسبقًا. يُرجى اختيار اسم آخر.</translation>
 <translation id="4215448920900139318">جارٍ الاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /></translation>
-<translation id="4242533952199664413">فتح الإعدادات</translation>
 <translation id="426015154560005552">لوحة مفاتيح اللغة العربية</translation>
 <translation id="4261901459838235729">‏عرض تقديمي من Google</translation>
 <translation id="4290535918735525311">‏تمت مشاركة مجلد واحد مع نظام التشغيل Linux</translation>
-<translation id="42981349822642051">توسيع</translation>
 <translation id="4298972503445160211">لوحة المفاتيح الدنماركية</translation>
 <translation id="4299729908419173967">البرازيلية</translation>
 <translation id="4309915981827077375">معلومات عامة</translation>
@@ -326,7 +325,6 @@
 <translation id="4880520557730313061">إصلاح تلقائي</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4886021172213954916">‏لوحة المفاتيح التاميلية (Typewriter)</translation>
-<translation id="4892969127351273348">يتعذَّر الفتح باستخدام <ph name="APP_NAME" /></translation>
 <translation id="4905417359854579806">جاهز للاحتفاظ بنسخة احتياطية من <ph name="FILE_COUNT" /></translation>
 <translation id="4924638091161556692">تم الإصلاح</translation>
 <translation id="4935975195727477204">زهرة غازانيا</translation>
@@ -366,7 +364,6 @@
 <translation id="5218183485292899140">الفرنسية السويسرية</translation>
 <translation id="5234764350956374838">رفض</translation>
 <translation id="5241298539944515331">‏لوحة المفاتيح الفيتنامية (VIQR)</translation>
-<translation id="52446585071384036">‏لفتح الملفات باستخدام <ph name="APP_NAME" />، يمكنك النَّسخ أولاً إلى مجلَّد ملفات نظام التشغيل Linux.</translation>
 <translation id="5253070652067921974">مُنشئ الملف:</translation>
 <translation id="5257456363153333584">يعسوب</translation>
 <translation id="5262311848634918433">‏<ph name="MARKUP_1" />الدخول إلى الملفات من أي مكان، حتى بلا إنترنت.<ph name="MARKUP_2" />
@@ -425,7 +422,6 @@
 <translation id="5818003990515275822">الكورية</translation>
 <translation id="5819442873484330149">المجموعة رقم 3 الهانغولية (النهائية)</translation>
 <translation id="5833610766403489739">يبدو أن هذا الملف قد اختفى في مكان. يُرجى التحقق من إعداد موقع التنزيل وإعادة المحاولة.</translation>
-<translation id="5838051104334203064">‏لا يمكن لتطبيقات "متجر Play" الوصول إلى هذا الجهاز</translation>
 <translation id="5838451609423551646">تمت إزالة جميع الإدخالات من الاختيار.</translation>
 <translation id="5838825566232597749">‏Workman الأمريكية الدولية</translation>
 <translation id="5850516540536751549">‏نوع الملف هذا غير متوافق. يُرجى الانتقال إلى <ph name="BEGIN_LINK" />سوق Chrome الإلكتروني<ph name="END_LINK" /> للعثور على تطبيق يمكنه فتح هذا النوع من الملفات.
@@ -641,6 +637,7 @@
 <translation id="8223479393428528563">لحفظ هذه الملفات بلا اتصال، عليك العودة للاتصال انقر بزر الماوس الأيمن على الملفات، وحدد خيار <ph name="OFFLINE_CHECKBOX_NAME" />.</translation>
 <translation id="8249296373107784235">إلغاء</translation>
 <translation id="8261506727792406068">حذف</translation>
+<translation id="8269755669432358899">تصغير لوحات التعليقات على الملفات</translation>
 <translation id="8279388322240498158">لوحة مفاتيح اللغة السورانية الكردية المدعمة بالإنجليزية</translation>
 <translation id="8280151743281770066">أرمينية صوتية</translation>
 <translation id="8294431847097064396">المصدر</translation>
@@ -671,6 +668,7 @@
 <translation id="8569764466147087991">تحديد ملف لفتحه</translation>
 <translation id="8579285237314169903">جارٍ مزامنة <ph name="NUMBER_OF_FILES" /> من البنود...</translation>
 <translation id="8600173386174225982">تم تغيير قائمة الملف إلى عرض الصور المصغرة.</translation>
+<translation id="8601932370724196034">‏ملف صورة Crostini</translation>
 <translation id="8669949407341943408">جارٍ النقل...</translation>
 <translation id="8671210955687109937">يمكن التعليق</translation>
 <translation id="8686213429977032554">‏لم تتم مشاركة ملف Drive هذا بعد</translation>

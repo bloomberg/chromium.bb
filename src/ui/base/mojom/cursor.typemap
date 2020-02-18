@@ -17,11 +17,11 @@ public_deps = [
 ]
 deps = [
   "//ui/gfx/geometry",
-  "//ui/gfx/geometry/mojo:struct_traits",
+  "//ui/gfx/geometry/mojom:mojom_traits",
 ]
 
 type_mappings = [
-  "ui.mojom.Cursor=ui::Cursor[copyable_pass_by_value]",
-  "ui.mojom.CursorSize=ui::CursorSize",
-  "ui.mojom.CursorType=ui::CursorType",
+  "ui.mojom.Cursor=::ui::Cursor[copyable_pass_by_value]",
+  "ui.mojom.CursorSize=::ui::CursorSize",
+  "ui.mojom.CursorType=::ui::CursorType",
 ]

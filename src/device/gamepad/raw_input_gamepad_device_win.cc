@@ -5,8 +5,11 @@
 #include "raw_input_gamepad_device_win.h"
 
 #include "base/stl_util.h"
+#include "device/gamepad/dualshock4_controller.h"
 #include "device/gamepad/gamepad_blocklist.h"
 #include "device/gamepad/gamepad_data_fetcher.h"
+#include "device/gamepad/hid_haptic_gamepad.h"
+#include "device/gamepad/hid_writer_win.h"
 
 namespace device {
 
@@ -68,11 +71,17 @@ RawInputGamepadDeviceWin::RawInputGamepadDeviceWin(
     is_valid_ = QueryDeviceInfo();
 
   if (is_valid_) {
-    if (Dualshock4ControllerWin::IsDualshock4(vendor_id_, product_id_)) {
-      dualshock4_ = std::make_unique<Dualshock4ControllerWin>(handle_);
-    } else if (HidHapticGamepadWin::IsHidHaptic(vendor_id_, product_id_)) {
-      hid_haptics_ =
-          HidHapticGamepadWin::Create(vendor_id_, product_id_, handle_);
+    if (Dualshock4Controller::IsDualshock4(vendor_id_, product_id_)) {
+      // Dualshock4 has different behavior over USB and Bluetooth, but the
+      // RawInput API does not indicate which transport is in use. Detect the
+      // transport type by inspecting the version number reported by the device.
+      GamepadBusType bus_type =
+          Dualshock4Controller::BusTypeFromVersionNumber(version_number_);
+      dualshock4_ = std::make_unique<Dualshock4Controller>(
+          bus_type, std::make_unique<HidWriterWin>(handle_));
+    } else if (HidHapticGamepad::IsHidHaptic(vendor_id_, product_id_)) {
+      hid_haptics_ = HidHapticGamepad::Create(
+          vendor_id_, product_id_, std::make_unique<HidWriterWin>(handle_));
     }
   }
 }
@@ -97,6 +106,23 @@ void RawInputGamepadDeviceWin::DoShutdown() {
 void RawInputGamepadDeviceWin::UpdateGamepad(RAWINPUT* input) {
   DCHECK(hid_functions_->IsValid());
   NTSTATUS status;
+
+  if (dualshock4_) {
+    // Handle Dualshock4 input reports that do not specify HID gamepad usages in
+    // the report descriptor.
+    uint8_t report_id = input->data.hid.bRawData[0];
+    auto report = base::make_span(input->data.hid.bRawData + 1,
+                                  input->data.hid.dwSizeHid);
+    Gamepad pad;
+    if (dualshock4_->ProcessInputReport(report_id, report, &pad)) {
+      for (size_t i = 0; i < Gamepad::kAxesLengthCap; ++i)
+        axes_[i].value = pad.axes[i];
+      for (size_t i = 0; i < Gamepad::kButtonsLengthCap; ++i)
+        buttons_[i] = pad.buttons[i].pressed;
+      last_update_timestamp_ = GamepadDataFetcher::CurrentTimeInMicroseconds();
+      return;
+    }
+  }
 
   // Query button state.
   if (buttons_length_ > 0) {
@@ -237,8 +263,15 @@ bool RawInputGamepadDeviceWin::QueryDeviceInfo() {
   if (name_ == L"\\\\?\\VIRTUAL_DIGITIZER")
     return false;
 
+  // We can now use the name to query the OS for a file handle that is used to
+  // read the product string from the device. If the OS does not return a valid
+  // handle this gamepad is invalid.
+  auto hid_handle = OpenHidHandle();
+  if (!hid_handle.IsValid())
+    return false;
+
   // Fetch the human-friendly |product_string_|, if available.
-  if (!QueryProductString())
+  if (!QueryProductString(hid_handle))
     product_string_ = L"Unknown Gamepad";
 
   // Fetch information about the buttons and axes on this device. This sets
@@ -310,17 +343,19 @@ bool RawInputGamepadDeviceWin::QueryDeviceName() {
   return true;
 }
 
-bool RawInputGamepadDeviceWin::QueryProductString() {
-  DCHECK(hid_functions_);
-  DCHECK(hid_functions_->IsValid());
-  base::win::ScopedHandle hid_handle(::CreateFile(
-      name_.c_str(), GENERIC_READ | GENERIC_WRITE,
-      FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, NULL, NULL));
-  if (!hid_handle.IsValid())
-    return false;
+bool RawInputGamepadDeviceWin::QueryProductString(
+    base::win::ScopedHandle& hid_handle) {
+  DCHECK(hid_handle.IsValid());
   product_string_.resize(Gamepad::kIdLengthCap);
   return hid_functions_->HidDGetProductString()(
       hid_handle.Get(), &product_string_.front(), Gamepad::kIdLengthCap);
+}
+
+base::win::ScopedHandle RawInputGamepadDeviceWin::OpenHidHandle() {
+  return base::win::ScopedHandle(::CreateFile(
+      name_.c_str(), GENERIC_READ | GENERIC_WRITE,
+      FILE_SHARE_READ | FILE_SHARE_WRITE, /*lpSecurityAttributes=*/nullptr,
+      OPEN_EXISTING, /*dwFlagsAndAttributes=*/0, /*hTemplateFile=*/nullptr));
 }
 
 bool RawInputGamepadDeviceWin::QueryDeviceCapabilities() {
@@ -506,6 +541,10 @@ void RawInputGamepadDeviceWin::QueryAxisCapabilities(uint16_t axis_count) {
         break;
     }
   }
+}
+
+base::WeakPtr<AbstractHapticGamepad> RawInputGamepadDeviceWin::GetWeakPtr() {
+  return weak_factory_.GetWeakPtr();
 }
 
 }  // namespace device

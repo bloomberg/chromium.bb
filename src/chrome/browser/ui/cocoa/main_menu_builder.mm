@@ -4,6 +4,7 @@
 
 #import "chrome/browser/ui/cocoa/main_menu_builder.h"
 
+#include "build/branding_buildflags.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/cocoa/accelerators_cocoa.h"
 #include "chrome/browser/ui/cocoa/history_menu_bridge.h"
@@ -325,10 +326,10 @@ base::scoped_nsobject<NSMenuItem> BuildBookmarksMenu(
           .tag(IDC_BOOKMARKS_MENU)
           .submenu({
               Item(IDS_BOOKMARK_MANAGER).command_id(IDC_SHOW_BOOKMARK_MANAGER),
-              Item().tag(IDC_BOOKMARK_PAGE).is_separator(),
-              Item(IDS_BOOKMARK_THIS_PAGE).command_id(IDC_BOOKMARK_PAGE),
-              Item(IDS_BOOKMARK_ALL_TABS_MAC).command_id(IDC_BOOKMARK_ALL_TABS),
-              Item().tag(IDC_BOOKMARK_PAGE).is_separator(),
+              Item().tag(IDC_BOOKMARK_THIS_TAB).is_separator(),
+              Item(IDS_BOOKMARK_THIS_TAB).command_id(IDC_BOOKMARK_THIS_TAB),
+              Item(IDS_BOOKMARK_ALL_TABS).command_id(IDC_BOOKMARK_ALL_TABS),
+              Item().tag(IDC_BOOKMARK_THIS_TAB).is_separator(),
           })
           .Build();
   return item;
@@ -365,23 +366,8 @@ base::scoped_nsobject<NSMenuItem> BuildWindowMenu(
                     .tag(IDC_MAXIMIZE_WINDOW)
                     .action(@selector(performZoom:)),
                 Item().is_separator(),
-                Item(IDS_NEXT_TAB_MAC)
-                    .command_id(IDC_SELECT_NEXT_TAB)
-                    .remove_if(is_pwa),
-                Item(IDS_PREV_TAB_MAC)
-                    .command_id(IDC_SELECT_PREVIOUS_TAB)
-                    .remove_if(is_pwa),
                 Item(IDS_SHOW_AS_TAB)
                     .command_id(IDC_SHOW_AS_TAB)
-                    .remove_if(is_pwa),
-                Item(IDS_DUPLICATE_TAB_MAC)
-                    .command_id(IDC_DUPLICATE_TAB)
-                    .remove_if(is_pwa),
-                Item(IDS_MUTE_SITE_MAC)
-                    .command_id(IDC_WINDOW_MUTE_SITE)
-                    .remove_if(is_pwa),
-                Item(IDS_PIN_TAB_MAC)
-                    .command_id(IDC_WINDOW_PIN_TAB)
                     .remove_if(is_pwa),
                 Item().is_separator().remove_if(is_pwa),
                 Item(IDS_SHOW_DOWNLOADS_MAC)
@@ -404,6 +390,29 @@ base::scoped_nsobject<NSMenuItem> BuildWindowMenu(
   return item;
 }
 
+base::scoped_nsobject<NSMenuItem> BuildTabMenu(
+    NSApplication* nsapp,
+    id app_delegate,
+    const base::string16& product_name,
+    bool is_pwa) {
+  if (is_pwa)
+    return base::scoped_nsobject<NSMenuItem>();
+
+  base::scoped_nsobject<NSMenuItem> item =
+      Item(IDS_TAB_MENU_MAC)
+          .tag(IDC_TAB_MENU)
+          .submenu({
+              Item(IDS_NEXT_TAB_MAC).command_id(IDC_SELECT_NEXT_TAB),
+              Item(IDS_PREV_TAB_MAC).command_id(IDC_SELECT_PREVIOUS_TAB),
+              Item(IDS_DUPLICATE_TAB_MAC).command_id(IDC_DUPLICATE_TAB),
+              Item(IDS_MUTE_SITE_MAC).command_id(IDC_WINDOW_MUTE_SITE),
+              Item(IDS_PIN_TAB_MAC).command_id(IDC_WINDOW_PIN_TAB),
+              Item().is_separator(),
+          })
+          .Build();
+  return item;
+}
+
 base::scoped_nsobject<NSMenuItem> BuildHelpMenu(
     NSApplication* nsapp,
     id app_delegate,
@@ -415,7 +424,7 @@ base::scoped_nsobject<NSMenuItem> BuildHelpMenu(
   base::scoped_nsobject<NSMenuItem> item =
       Item(IDS_HELP_MENU_MAC)
           .submenu({
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
             Item(IDS_FEEDBACK_MAC).command_id(IDC_FEEDBACK),
 #endif
                 Item(IDS_HELP_MAC)
@@ -438,9 +447,9 @@ void BuildMainMenu(NSApplication* nsapp,
   using Builder = base::scoped_nsobject<NSMenuItem> (*)(
       NSApplication*, id, const base::string16&, bool);
   static const Builder kBuilderFuncs[] = {
-      &BuildAppMenu,    &BuildFileMenu,    &BuildEditMenu,
-      &BuildViewMenu,   &BuildHistoryMenu, &BuildBookmarksMenu,
-      &BuildPeopleMenu, &BuildWindowMenu,  &BuildHelpMenu,
+      &BuildAppMenu,     &BuildFileMenu,      &BuildEditMenu,   &BuildViewMenu,
+      &BuildHistoryMenu, &BuildBookmarksMenu, &BuildPeopleMenu, &BuildTabMenu,
+      &BuildWindowMenu,  &BuildHelpMenu,
   };
   for (auto* builder : kBuilderFuncs) {
     auto item = builder(nsapp, app_delegate, product_name, is_pwa);

@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/post_task.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/timer.h"
@@ -59,13 +59,14 @@ class SequencedModelWorkerTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
-        {base::MayBlock(), base::TaskPriority::BEST_EFFORT});
-    worker_ = new SequencedModelWorker(task_runner_, GROUP_DB);
+    task_runner_ =
+        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock(),
+                                         base::TaskPriority::BEST_EFFORT});
+    worker_ = new SequencedModelWorker(task_runner_, GROUP_PASSWORD);
   }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   bool did_do_work_;
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   scoped_refptr<SequencedModelWorker> worker_;

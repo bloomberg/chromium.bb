@@ -21,7 +21,7 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
-#include "components/url_formatter/top_domains/top_domain_util.h"
+#include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/base/url_util.h"
@@ -134,28 +134,29 @@ LookalikeUrlService* LookalikeUrlService::Get(Profile* profile) {
   return LookalikeUrlServiceFactory::GetForProfile(profile);
 }
 
-bool LookalikeUrlService::UpdateEngagedSites(EngagedSitesCallback callback) {
-  const base::Time now = clock_->Now();
-
+bool LookalikeUrlService::EngagedSitesNeedUpdating() {
   if (!last_engagement_fetch_time_.is_null()) {
-    const base::TimeDelta elapsed = now - last_engagement_fetch_time_;
+    const base::TimeDelta elapsed = clock_->Now() - last_engagement_fetch_time_;
     if (elapsed <
         base::TimeDelta::FromSeconds(kEngagedSiteUpdateIntervalInSeconds)) {
       return false;
     }
   }
+  return true;
+}
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+void LookalikeUrlService::ForceUpdateEngagedSites(
+    EngagedSitesCallback callback) {
+  base::PostTaskAndReplyWithResult(
       FROM_HERE,
-      {base::TaskPriority::USER_BLOCKING,
+      {base::ThreadPool(), base::TaskPriority::USER_BLOCKING,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
       base::BindOnce(
-          &SiteEngagementService::GetAllDetailsInBackground, now,
+          &SiteEngagementService::GetAllDetailsInBackground, clock_->Now(),
           base::WrapRefCounted(
               HostContentSettingsMapFactory::GetForProfile(profile_))),
       base::BindOnce(&LookalikeUrlService::OnFetchEngagedSites,
                      weak_factory_.GetWeakPtr(), std::move(callback)));
-  return true;
 }
 
 const std::vector<DomainInfo> LookalikeUrlService::GetLatestEngagedSites()

@@ -7,7 +7,7 @@
 enum XRSessionMode {
   "inline",
   "immersive-vr",
-  /* [RuntimeEnabled=WebXRHitTest OR RuntimeEnabled=WebXRPlaneDetection] */ "immersive-ar",
+  /* [RuntimeEnabled=WebXRARModule] */ "immersive-ar",
 };
 
 enum XREnvironmentBlendMode {
@@ -16,23 +16,29 @@ enum XREnvironmentBlendMode {
   "alpha-blend",
 };
 
+enum XRVisibilityState {
+  "visible",
+  "visible-blurred",
+  "hidden",
+};
+
 [
     ActiveScriptWrappable,
     SecureContext,
     Exposed=Window,
     RuntimeEnabled=WebXR
 ] interface XRSession : EventTarget {
-  readonly attribute XREnvironmentBlendMode environmentBlendMode;
+  [RuntimeEnabled=WebXRARModule] readonly attribute XREnvironmentBlendMode environmentBlendMode;
+  readonly attribute XRVisibilityState visibilityState;
   [SameObject] readonly attribute XRRenderState renderState;
   [MeasureAs=XRSessionGetInputSources, SameObject] readonly attribute XRInputSourceArray inputSources;
 
-  attribute EventHandler onblur;
-  attribute EventHandler onfocus;
   attribute EventHandler onend;
   attribute EventHandler onselect;
   attribute EventHandler oninputsourceschange;
   attribute EventHandler onselectstart;
   attribute EventHandler onselectend;
+  attribute EventHandler onvisibilitychange;
 
   [RaisesException] void updateRenderState(optional XRRenderStateInit init);
 
@@ -41,12 +47,16 @@ enum XREnvironmentBlendMode {
   long requestAnimationFrame(XRFrameRequestCallback callback);
   void cancelAnimationFrame(long handle);
 
-
   [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<FrozenArray<XRHitResult>> requestHitTest(XRRay ray, XRSpace space);
 
   // https://github.com/immersive-web/real-world-geometry/blob/master/plane-detection-explainer.md
   [RuntimeEnabled=WebXRPlaneDetection] readonly attribute XRWorldTrackingState worldTrackingState;
   [RuntimeEnabled=WebXRPlaneDetection, RaisesException] void updateWorldTrackingState(optional XRWorldTrackingStateInit state);
 
+  [RuntimeEnabled=WebXRAnchors] readonly attribute XRAnchorSet trackedAnchors;
+  [RuntimeEnabled=WebXRAnchors, CallWith=ScriptState] Promise<XRAnchor> createAnchor(XRRigidTransform initial_pose, XRSpace space);
+
   [CallWith=ScriptState, Measure] Promise<void> end();
+
+  [RuntimeEnabled=WebXRHitTest, CallWith=ScriptState] Promise<XRHitTestSource> requestHitTestSource(XRHitTestOptionsInit options);
 };

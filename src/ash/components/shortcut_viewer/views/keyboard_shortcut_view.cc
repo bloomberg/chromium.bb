@@ -15,6 +15,7 @@
 #include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
 #include "ash/public/cpp/shelf_item.h"
@@ -175,7 +176,9 @@ views::Widget* KeyboardShortcutView::Toggle(aura::Window* context) {
     // based on CalculatePreferredSize().
     views::Widget* widget = new views::Widget;
     params.context = context;
-    widget->Init(params);
+    params.init_properties_container.SetProperty(
+        aura::client::kAppType, static_cast<int>(ash::AppType::SYSTEM_APP));
+    widget->Init(std::move(params));
 
     // Set frame view Active and Inactive colors, both are SK_ColorWHITE.
     aura::Window* window = g_ksv_view->GetWidget()->GetNativeWindow();
@@ -317,7 +320,7 @@ void KeyboardShortcutView::QueryChanged(search_box::SearchBoxViewBase* sender) {
   debounce_timer_.Start(
       FROM_HERE, kTimeOut,
       base::Bind(&KeyboardShortcutView::ShowSearchResults,
-                 base::Unretained(this), sender->search_box()->text()));
+                 base::Unretained(this), sender->search_box()->GetText()));
 }
 
 void KeyboardShortcutView::BackButtonPressed() {
@@ -337,7 +340,7 @@ void KeyboardShortcutView::ActiveChanged(
   UpdateViewsLayout(is_search_box_active);
 }
 
-KeyboardShortcutView::KeyboardShortcutView() : weak_factory_(this) {
+KeyboardShortcutView::KeyboardShortcutView() {
   DCHECK_EQ(g_ksv_view, nullptr);
   g_ksv_view = this;
 

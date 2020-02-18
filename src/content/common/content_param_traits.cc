@@ -187,45 +187,6 @@ bool ParamTraits<ui::AXMode>::Read(const base::Pickle* m,
 
 void ParamTraits<ui::AXMode>::Log(const param_type& p, std::string* l) {}
 
-void ParamTraits<scoped_refptr<storage::BlobHandle>>::Write(
-    base::Pickle* m,
-    const param_type& p) {
-  WriteParam(m, p != nullptr);
-  if (p) {
-    auto info = p->Clone().PassInterface();
-    m->WriteUInt32(info.version());
-    MojoMessageHelper::WriteMessagePipeTo(m, info.PassHandle());
-  }
-}
-
-bool ParamTraits<scoped_refptr<storage::BlobHandle>>::Read(
-    const base::Pickle* m,
-    base::PickleIterator* iter,
-    param_type* r) {
-  bool is_not_null;
-  if (!ReadParam(m, iter, &is_not_null))
-    return false;
-  if (!is_not_null)
-    return true;
-
-  uint32_t version;
-  if (!ReadParam(m, iter, &version))
-    return false;
-  mojo::ScopedMessagePipeHandle handle;
-  if (!MojoMessageHelper::ReadMessagePipeFrom(m, iter, &handle))
-    return false;
-  DCHECK(handle.is_valid());
-  blink::mojom::BlobPtr blob;
-  blob.Bind(blink::mojom::BlobPtrInfo(std::move(handle), version));
-  *r = base::MakeRefCounted<storage::BlobHandle>(std::move(blob));
-  return true;
-}
-
-void ParamTraits<scoped_refptr<storage::BlobHandle>>::Log(const param_type& p,
-                                                          std::string* l) {
-  l->append("<storage::BlobHandle>");
-}
-
 // static
 void ParamTraits<content::FrameMsg_ViewChanged_Params>::Write(
     base::Pickle* m,
@@ -291,7 +252,6 @@ void ParamTraits<scoped_refptr<base::RefCountedData<
   WriteParam(m, p->data.stack_trace_debugger_id_second);
   WriteParam(m, p->data.ports);
   WriteParam(m, p->data.stream_channels);
-  WriteParam(m, p->data.has_user_gesture);
   WriteParam(m, !!p->data.user_activation);
   WriteParam(m, p->data.transfer_user_activation);
   WriteParam(m, p->data.allow_autoplay);
@@ -324,7 +284,6 @@ bool ParamTraits<
       !ReadParam(m, iter, &(*r)->data.stack_trace_debugger_id_second) ||
       !ReadParam(m, iter, &(*r)->data.ports) ||
       !ReadParam(m, iter, &(*r)->data.stream_channels) ||
-      !ReadParam(m, iter, &(*r)->data.has_user_gesture) ||
       !ReadParam(m, iter, &has_activation) ||
       !ReadParam(m, iter, &(*r)->data.transfer_user_activation) ||
       !ReadParam(m, iter, &(*r)->data.allow_autoplay)) {

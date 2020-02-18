@@ -91,9 +91,9 @@ class FromDictTest(unittest.TestCase):
     quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
 
     extra_args = [
-        '--benchmarks', 'speedometer', '--story-filter', 'http://www.fifa.com/',
-        '--story-tag-filter', 'tag1,tag2', '--pageset-repeat', '1',
-        '--browser', 'release',
+        '--benchmarks', 'speedometer', '--story-filter',
+        '^http...www.fifa.com.$', '--story-tag-filter', 'tag1,tag2',
+        '--pageset-repeat', '1', '--browser', 'release',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(
         'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
@@ -132,6 +132,20 @@ class FromDictTest(unittest.TestCase):
     extra_args = [
         '--benchmarks', 'speedometer', '--pageset-repeat', '1',
         '--browser', 'android-webview', '--webview-embedder-apk',
+        '../../out/Release/apks/SystemWebViewShell.apk',
+    ] + _COMBINED_DEFAULT_EXTRA_ARGS
+    expected = run_telemetry_test.RunTelemetryTest(
+        'server', run_test_test.DIMENSIONS, extra_args, _BASE_SWARMING_TAGS)
+    self.assertEqual(quest, expected)
+
+  def testWebviewFlagNonExact(self):
+    arguments = dict(_BASE_ARGUMENTS)
+    arguments['browser'] = 'android-webview-google'
+    quest = run_telemetry_test.RunTelemetryTest.FromDict(arguments)
+
+    extra_args = [
+        '--benchmarks', 'speedometer', '--pageset-repeat', '1',
+        '--browser', 'android-webview-google', '--webview-embedder-apk',
         '../../out/Release/apks/SystemWebViewShell.apk',
     ] + _COMBINED_DEFAULT_EXTRA_ARGS
     expected = run_telemetry_test.RunTelemetryTest(

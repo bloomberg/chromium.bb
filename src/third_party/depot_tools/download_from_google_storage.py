@@ -78,11 +78,10 @@ class Gsutil(object):
   RETRY_DELAY_MULTIPLE = 1.3
   VPYTHON = 'vpython.bat' if GetNormalizedPlatform() == 'win32' else 'vpython'
 
-  def __init__(self, path, boto_path=None, timeout=None, version='4.28'):
+  def __init__(self, path, boto_path=None, version='4.28'):
     if not os.path.exists(path):
       raise FileNotFoundError('GSUtil not found in %s' % path)
     self.path = path
-    self.timeout = timeout
     self.boto_path = boto_path
     self.version = version
 
@@ -103,7 +102,7 @@ class Gsutil(object):
   def call(self, *args):
     cmd = [self.VPYTHON, self.path, '--force-version', self.version]
     cmd.extend(args)
-    return subprocess2.call(cmd, env=self.get_sub_env(), timeout=self.timeout)
+    return subprocess2.call(cmd, env=self.get_sub_env())
 
   def check_call(self, *args):
     cmd = [self.VPYTHON, self.path, '--force-version', self.version]
@@ -112,8 +111,7 @@ class Gsutil(object):
         cmd,
         stdout=subprocess2.PIPE,
         stderr=subprocess2.PIPE,
-        env=self.get_sub_env(),
-        timeout=self.timeout)
+        env=self.get_sub_env())
 
     # Parse output.
     status_code_match = re.search(b'status=([0-9]+)', err)

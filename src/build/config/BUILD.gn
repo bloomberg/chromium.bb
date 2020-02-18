@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//build/config/allocator.gni")
 import("//build/config/c++/c++.gni")
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
@@ -21,6 +20,10 @@ import("//build/config/pch.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//build/toolchain/goma.gni")
+if (is_android) {
+  import("//build/config/android/abi.gni")
+}
+
 declare_args() {
   # When set (the default) enables C++ iterator debugging in debug builds.
   # Iterator debugging is always off in release builds (technically, this flag
@@ -91,9 +94,6 @@ config("feature_flags") {
   if (use_x11) {
     defines += [ "USE_X11=1" ]
   }
-  if (use_allocator != "tcmalloc") {
-    defines += [ "NO_TCMALLOC" ]
-  }
   if (is_asan || is_hwasan || is_lsan || is_tsan || is_msan) {
     defines += [ "MEMORY_TOOL_REPLACES_ALLOCATOR" ]
   }
@@ -115,25 +115,13 @@ config("feature_flags") {
   if (is_ubsan || is_ubsan_null || is_ubsan_vptr || is_ubsan_security) {
     defines += [ "UNDEFINED_SANITIZER" ]
   }
-  if (safe_browsing_mode == 1) {
-    defines += [ "FULL_SAFE_BROWSING" ]
-    defines += [ "SAFE_BROWSING_CSD" ]
-    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
-  } else if (safe_browsing_mode == 2) {
-    defines += [ "SAFE_BROWSING_DB_REMOTE" ]
-  } else if (safe_browsing_mode == 3) {
-    defines += [ "SAFE_BROWSING_DB_LOCAL" ]
-  }
   if (is_official_build) {
     defines += [ "OFFICIAL_BUILD" ]
   }
 
-  # TODO(thakis): Remove these in favor of build/branding_buildflags.h.
   if (is_chrome_branded) {
+    # TODO(thakis): Remove this in favor of build/branding_buildflags.h.
     defines += [ "GOOGLE_CHROME_BUILD" ]
-  } else {
-    # TODO(thakis): All uses for this are gone, remove this in a follow-up.
-    defines += [ "CHROMIUM_BUILD" ]
   }
 
   # ==============================================

@@ -8,8 +8,10 @@
 #include <utility>
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
+#include "base/time/time.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/device/public/cpp/test/test_wake_lock_provider.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
@@ -29,8 +31,7 @@ using device::mojom::WakeLockType;
 class DarkResumeControllerTest : public testing::Test {
  public:
   DarkResumeControllerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::TimeSource::MOCK_TIME),
+      : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME),
         wake_lock_provider_(
             connector_factory_.RegisterInstance(device::mojom::kServiceName)) {}
 
@@ -41,7 +42,7 @@ class DarkResumeControllerTest : public testing::Test {
     wake_lock_provider_.GetWakeLockWithoutContext(
         WakeLockType::kPreventAppSuspension,
         device::mojom::WakeLockReason::kOther, kWakeLockDescription,
-        mojo::MakeRequest(&wake_lock_));
+        wake_lock_.BindNewPipeAndPassReceiver());
 
     PowerManagerClient::InitializeFake();
 
@@ -75,9 +76,9 @@ class DarkResumeControllerTest : public testing::Test {
     return FakePowerManagerClient::Get();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   service_manager::TestConnectorFactory connector_factory_;
-  device::mojom::WakeLockPtr wake_lock_;
+  mojo::Remote<device::mojom::WakeLock> wake_lock_;
   std::unique_ptr<DarkResumeController> dark_resume_controller_;
 
  private:
@@ -90,7 +91,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   // Trigger a dark resume event, move time forward to trigger a wake lock check
   // and check if a re-suspend happened if no wake locks were acquired.
   fake_power_manager_client()->SendDarkSuspendImminent();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
@@ -105,7 +106,7 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeNoWakeLocksHeld) {
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
   wake_lock_->CancelWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -122,17 +123,18 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeWakeLocksHeld) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateSetForTesting());
 
-  // Move time forward by < |kDarkResumeHardTimeout| and release the
+  // Move time forward by < |dark_resume_hard_timeout_| and release the
   // partial wake lock. This should instantaneously re-suspend the device.
-  scoped_task_environment_.FastForwardBy(
-      DarkResumeController::kDarkResumeHardTimeout -
-      base::TimeDelta::FromSeconds(1));
+  base::TimeDelta small_delay = base::TimeDelta::FromSeconds(1);
+  ASSERT_GT(dark_resume_controller_->GetHardTimeoutForTesting(), small_delay);
+  task_environment_.FastForwardBy(
+      dark_resume_controller_->GetHardTimeoutForTesting() - small_delay);
   wake_lock_->CancelWakeLock();
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -149,16 +151,16 @@ TEST_F(DarkResumeControllerTest, CheckSuspendAfterDarkResumeHardTimeout) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();
   EXPECT_TRUE(dark_resume_controller_->IsDarkResumeStateSetForTesting());
 
-  // Move time forward by |kDarkResumeHardTimeout|. At this point the
+  // Move time forward by |dark_resume_hard_timeout_|. At this point the
   // device should re-suspend even though the wake lock is acquired.
-  scoped_task_environment_.FastForwardBy(
-      DarkResumeController::kDarkResumeHardTimeout);
+  task_environment_.FastForwardBy(
+      dark_resume_controller_->GetHardTimeoutForTesting());
   EXPECT_EQ(1, GetActiveWakeLocks(WakeLockType::kPreventAppSuspension));
   base::RunLoop run_loop2;
   run_loop2.RunUntilIdle();
@@ -175,7 +177,7 @@ TEST_F(DarkResumeControllerTest, CheckStateResetAfterSuspendDone) {
   // observers.
   fake_power_manager_client()->SendDarkSuspendImminent();
   wake_lock_->RequestWakeLock();
-  scoped_task_environment_.FastForwardBy(
+  task_environment_.FastForwardBy(
       DarkResumeController::kDarkResumeWakeLockCheckTimeout);
   base::RunLoop run_loop;
   run_loop.RunUntilIdle();

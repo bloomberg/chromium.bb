@@ -24,7 +24,9 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/frame/settings.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_box_model.h"
 #include "third_party/blink/renderer/core/layout/geometry/transform_state.h"
@@ -34,10 +36,12 @@
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/layout/line/inline_text_box.h"
+#include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_item.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_outline_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/box_painter.h"
 #include "third_party/blink/renderer/core/paint/inline_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_box_fragment_painter.h"
@@ -976,7 +980,8 @@ PhysicalRect LayoutInline::AbsoluteBoundingBoxRectHandlingEmptyInline() const {
   Vector<PhysicalRect> rects = OutlineRects(
       PhysicalOffset(), NGOutlineType::kIncludeBlockVisualOverflow);
   PhysicalRect rect = UnionRect(rects);
-  if (rects.IsEmpty())
+  // When empty LayoutInline is not culled, |rect| is empty but |rects| is not.
+  if (rect.IsEmpty())
     rect.offset = AnchorPhysicalLocation();
   return LocalToAbsoluteRect(rect);
 }
@@ -1118,7 +1123,7 @@ PositionWithAffinity LayoutInline::PositionForPoint(
   }
 
   if (const LayoutBlockFlow* ng_block_flow = ContainingNGBlockFlow())
-    return ng_block_flow->PositionForPoint(point);
+    return ng_block_flow->PositionForPoint(*this, point);
 
   DCHECK(CanUseInlineBox(*this));
 
@@ -1343,7 +1348,11 @@ PhysicalRect LayoutInline::VisualRectInDocument(VisualRectFlags flags) const {
 }
 
 PhysicalRect LayoutInline::LocalVisualRectIgnoringVisibility() const {
-  if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
+  if (IsInLayoutNGInlineFormattingContext()) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
+    if (RuntimeEnabledFeatures::LayoutNGFragmentItemEnabled())
+      return NGFragmentItem::LocalVisualRectFor(*this);
+
     if (const auto& visual_rect = NGPaintFragment::LocalVisualRectFor(*this))
       return *visual_rect;
   }
@@ -1595,9 +1604,14 @@ PhysicalOffset LayoutInline::OffsetForInFlowPositionedInline(
   // but LayoutNG has fixed the issue. This function seems to always return
   // zero in LayoutNG. We should probably remove this function for LayoutNG.
 
-  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter());
-  if (!IsInFlowPositioned() && !StyleRef().HasFilter())
+  DCHECK(IsInFlowPositioned() || StyleRef().HasFilter() ||
+         StyleRef().HasBackdropFilter());
+  if (!IsInFlowPositioned() && !StyleRef().HasFilter() &&
+      !StyleRef().HasBackdropFilter()) {
+    DCHECK(CreatesGroup())
+        << "Inlines with filters or backdrop-filters should create a group";
     return PhysicalOffset();
+  }
 
   // When we have an enclosing relpositioned inline, we need to add in the
   // offset of the first line box from the rest of the content, but only in the
@@ -1610,6 +1624,7 @@ PhysicalOffset LayoutInline::OffsetForInFlowPositionedInline(
     inline_position = FirstLineBox()->LogicalLeft();
     block_position = FirstLineBox()->LogicalTop();
   } else {
+    DCHECK(Layer());
     inline_position = Layer()->StaticInlinePosition();
     block_position = Layer()->StaticBlockPosition();
   }
@@ -1642,8 +1657,15 @@ void LayoutInline::AddOutlineRects(
     Vector<PhysicalRect>& rects,
     const PhysicalOffset& additional_offset,
     NGOutlineType include_block_overflows) const {
-  DCHECK_GE(GetDocument().Lifecycle().GetState(),
-            DocumentLifecycle::kAfterPerformLayout);
+#if DCHECK_IS_ON()
+  // TODO(crbug.com/987836): enable this DCHECK universally.
+  Page* page = GetDocument().GetPage();
+  if (page && !page->GetSettings().GetSpatialNavigationEnabled()) {
+    DCHECK_GE(GetDocument().Lifecycle().GetState(),
+              DocumentLifecycle::kAfterPerformLayout);
+  }
+#endif  // DCHECK_IS_ON()
+
   CollectLineBoxRects([&rects, &additional_offset](const PhysicalRect& r) {
     auto rect = r;
     rect.Move(additional_offset);

@@ -5,6 +5,7 @@
 #include "fuchsia/base/fake_component_context.h"
 
 #include <fuchsia/base/agent_impl.h>
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -15,12 +16,12 @@ namespace cr_fuchsia {
 
 FakeComponentContext::FakeComponentContext(
     AgentImpl::CreateComponentStateCallback create_component_state_callback,
-    base::fuchsia::ServiceDirectory* service_directory,
+    sys::OutgoingDirectory* outgoing_directory,
     base::StringPiece component_url)
-    : binding_(service_directory, this),
-      // Publishing the Agent to |service_directory| is not necessary, but
+    : binding_(outgoing_directory, this),
+      // Publishing the Agent to |outgoing_directory| is not necessary, but
       // also shouldn't do any harm.
-      agent_impl_(service_directory,
+      agent_impl_(outgoing_directory,
                   std::move(create_component_state_callback)),
       component_url_(component_url.as_string()) {}
 
@@ -29,6 +30,15 @@ void FakeComponentContext::ConnectToAgent(
     fidl::InterfaceRequest<::fuchsia::sys::ServiceProvider> services,
     fidl::InterfaceRequest<fuchsia::modular::AgentController> controller) {
   agent_impl_.Connect(component_url_, std::move(services));
+}
+
+void FakeComponentContext::ConnectToAgentService(
+    fuchsia::modular::AgentServiceRequest request) {
+  if (!agent_services_) {
+    ConnectToAgent(component_url_, agent_services_.NewRequest(), nullptr);
+  }
+  agent_services_->ConnectToService(std::move(request.service_name()),
+                                    std::move(*request.mutable_channel()));
 }
 
 void FakeComponentContext::NotImplemented_(const std::string& name) {

@@ -53,12 +53,12 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/shell/browser/shell_download_manager_delegate.h"
-#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/compositor_switches.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/rect.h"
@@ -487,6 +487,15 @@ class CaptureScreenshotTest : public DevToolsProtocolTest {
     expected_bitmap.allocN32Pixels(scaled_box_size.width(),
                                    scaled_box_size.height());
     expected_bitmap.eraseColor(SkColorSetRGB(0x00, 0x00, 0xff));
+
+    // If the device scale factor is 0,
+    // get the original device scale factor to compare with
+    if (!device_scale_factor) {
+      device_scale_factor = display::Screen::GetScreen()
+                                ->GetPrimaryDisplay()
+                                .device_scale_factor();
+    }
+
     CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true,
                                   device_scale_factor, clip, screenshot_scale);
 
@@ -646,6 +655,9 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
   CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
 
 #if !defined(OS_ANDROID)
+  float device_scale_factor =
+      display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+
   // Check that device emulation does not affect the transparency.
   params = std::make_unique<base::DictionaryValue>();
   params->SetInteger("width", view_size.width());
@@ -654,7 +666,8 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
   params->SetBoolean("mobile", false);
   params->SetBoolean("fitWindow", false);
   SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
-  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true,
+                                device_scale_factor);
   SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
 #endif  // !defined(OS_ANDROID)
 
@@ -680,7 +693,8 @@ IN_PROC_BROWSER_TEST_F(CaptureScreenshotTest, TransparentScreenshots) {
   params->SetBoolean("mobile", false);
   params->SetBoolean("fitWindow", false);
   SendCommand("Emulation.setDeviceMetricsOverride", std::move(params));
-  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true);
+  CaptureScreenshotAndCompareTo(expected_bitmap, ENCODING_PNG, true,
+                                device_scale_factor);
   SendCommand("Emulation.clearDeviceMetricsOverride", nullptr);
 #endif  // !defined(OS_ANDROID)
 }
@@ -864,8 +878,10 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, CrossSiteCrash) {
 
 IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   set_agent_host_can_close();
-  GURL url = GURL("data:text/html,<body></body>");
-  NavigateToURLBlockUntilNavigationsComplete(shell(), url, 1);
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url_a, 1);
   Attach();
   SendCommand("Inspector.enable", nullptr);
 
@@ -876,7 +892,32 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InspectorTargetCrashedNavigate) {
   }
 
   ClearNotifications();
-  shell()->LoadURL(url);
+  shell()->LoadURL(url_a);
+  WaitForNotification("Inspector.targetReloadedAfterCrash", true);
+}
+
+// Same as in DevToolsProtocolTest.InspectorTargetCrashedNavigate, but with a
+// cross-process navigation at the end.
+// Regression test for https://crbug.com/990315
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest,
+                       InspectorTargetCrashedNavigateCrossProcess) {
+  set_agent_host_can_close();
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a = embedded_test_server()->GetURL("a.com", "/title1.html");
+  GURL url_b = embedded_test_server()->GetURL("b.com", "/title1.html");
+
+  NavigateToURLBlockUntilNavigationsComplete(shell(), url_a, 1);
+  Attach();
+  SendCommand("Inspector.enable", nullptr);
+
+  {
+    ScopedAllowRendererCrashes scoped_allow_renderer_crashes(shell());
+    shell()->LoadURL(GURL(content::kChromeUICrashURL));
+    WaitForNotification("Inspector.targetCrashed");
+  }
+
+  ClearNotifications();
+  shell()->LoadURL(url_b);
   WaitForNotification("Inspector.targetReloadedAfterCrash", true);
 }
 
@@ -2302,13 +2343,9 @@ IN_PROC_BROWSER_TEST_F(DevToolsDownloadContentTest, DefaultDownloadHeadless) {
   DownloadTestFlushObserver flush_observer(DownloadManagerForShell(shell()));
   flush_observer.WaitForFlush();
   EXPECT_TRUE(EnsureNoPendingDownloads());
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    // The download manager will intercept the download navigation and drop it
-    // since we have set the delegate to null.
-    EXPECT_EQ(nullptr, download);
-  } else {
-    EXPECT_EQ(download::DownloadItem::CANCELLED, download->GetState());
-  }
+  // The download manager will intercept the download navigation and drop it
+  // since we have set the delegate to null.
+  EXPECT_EQ(nullptr, download);
 }
 
 // Check that download logic is reset when creating a new target.

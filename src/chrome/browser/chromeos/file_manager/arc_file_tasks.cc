@@ -24,11 +24,11 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
 #include "components/arc/arc_service_manager.h"
-#include "components/arc/common/file_system.mojom.h"
-#include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/intent_helper/intent_constants.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
+#include "components/arc/mojom/file_system.mojom.h"
+#include "components/arc/mojom/intent_helper.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/entry_info.h"
@@ -263,7 +263,8 @@ void ExecuteArcTaskAfterContentUrlsResolved(
   for (size_t i = 0; i < content_urls.size(); ++i) {
     if (!content_urls[i].is_valid()) {
       std::move(done).Run(
-          extensions::api::file_manager_private::TASK_RESULT_FAILED);
+          extensions::api::file_manager_private::TASK_RESULT_FAILED,
+          "Invalid url: " + content_urls[i].possibly_invalid_spec());
       return;
     }
   }
@@ -271,14 +272,16 @@ void ExecuteArcTaskAfterContentUrlsResolved(
   // File manager in secondary profile cannot access ARC.
   if (!chromeos::ProfileHelper::IsPrimaryProfile(profile)) {
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_FAILED);
+        extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        "Not primary profile");
     return;
   }
 
   auto* arc_service_manager = arc::ArcServiceManager::Get();
   if (!arc_service_manager) {
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_FAILED);
+        extensions::api::file_manager_private::TASK_RESULT_FAILED,
+        "No ArcServiceManager");
     return;
   }
 
@@ -292,7 +295,7 @@ void ExecuteArcTaskAfterContentUrlsResolved(
     arc_file_system->OpenUrlsWithPermission(std::move(request),
                                             base::DoNothing());
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",
@@ -316,7 +319,7 @@ void ExecuteArcTaskAfterContentUrlsResolved(
         AppIdToActivityName(task.app_id),
         FileTaskActionIdToArcActionType(task.action_id));
     std::move(done).Run(
-        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT);
+        extensions::api::file_manager_private::TASK_RESULT_MESSAGE_SENT, "");
 
     UMA_HISTOGRAM_ENUMERATION(
         "Arc.UserInteraction",
@@ -325,8 +328,8 @@ void ExecuteArcTaskAfterContentUrlsResolved(
     return;
   }
 
-  std::move(done).Run(
-      extensions::api::file_manager_private::TASK_RESULT_FAILED);
+  std::move(done).Run(extensions::api::file_manager_private::TASK_RESULT_FAILED,
+                      "No android app to run task");
 }
 
 }  // namespace

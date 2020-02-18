@@ -36,8 +36,8 @@ class ClipSpaceTest : public DawnTest {
             void main() {
                 gl_Position = vec4(pos[gl_VertexIndex], 1.0);
             })";
-        pipelineDescriptor.cVertexStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Vertex, vs);
+        pipelineDescriptor.vertexStage.module =
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, vs);
 
         const char* fs =
             R"(#version 450
@@ -46,7 +46,7 @@ class ClipSpaceTest : public DawnTest {
                fragColor = vec4(1.0, 0.0, 0.0, 1.0);
             })";
         pipelineDescriptor.cFragmentStage.module =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, fs);
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, fs);
 
         pipelineDescriptor.cDepthStencilState.depthCompare = dawn::CompareFunction::LessEqual;
         pipelineDescriptor.depthStencilState = &pipelineDescriptor.cDepthStencilState;
@@ -59,7 +59,7 @@ class ClipSpaceTest : public DawnTest {
         textureDescriptor.dimension = dawn::TextureDimension::e2D;
         textureDescriptor.format = format;
         textureDescriptor.usage =
-            dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+            dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
         textureDescriptor.arrayLayerCount = 1;
         textureDescriptor.mipLevelCount = 1;
         textureDescriptor.sampleCount = 1;
@@ -76,8 +76,8 @@ TEST_P(ClipSpaceTest, ClipSpace) {
     dawn::Texture depthStencilTexture =
         Create2DTextureForTest(dawn::TextureFormat::Depth24PlusStencil8);
 
-    utils::ComboRenderPassDescriptor renderPassDescriptor(
-        {colorTexture.CreateDefaultView()}, depthStencilTexture.CreateDefaultView());
+    utils::ComboRenderPassDescriptor renderPassDescriptor({colorTexture.CreateView()},
+                                                          depthStencilTexture.CreateView());
     renderPassDescriptor.cColorAttachmentsInfoPtr[0]->clearColor = {0.0, 1.0, 0.0, 1.0};
     renderPassDescriptor.cColorAttachmentsInfoPtr[0]->loadOp = dawn::LoadOp::Clear;
 

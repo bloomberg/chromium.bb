@@ -7,8 +7,8 @@
     <!-- Common text colors -->
     <color name="default_text_color">@color/default_text_color_light</color>
     <color name="default_text_color_inverse">@color/default_text_color_dark</color>
-    <color name="default_text_color_secondary">@color/modern_grey_500</color>
-    <color name="default_text_color_tertiary">@color/white_alpha_38</color>
+    <color name="default_text_color_secondary">@color/white_alpha_70</color>
+    <color name="default_text_color_tertiary">@color/white_alpha_50</color>
     <color name="default_text_color_blue">@color/modern_blue_300</color>
     <color name="default_text_color_link">@color/modern_blue_300</color>
     <color name="disabled_text_color_link">@color/modern_grey_300_alpha_38</color>
@@ -30,6 +30,12 @@
     <color name="default_bg_color_elev_2">@color/default_bg_color_dark_elev_2</color>
     <color name="default_bg_color_elev_3">@color/default_bg_color_dark_elev_3</color>
     <color name="default_bg_color_elev_4">@color/default_bg_color_dark_elev_4</color>
+
+    <!-- Bottom sheet colors -->
+    <color name="sheet_bg_color">@color/default_bg_color_dark_elev_4</color>
+
+    <!-- Snackbar colors -->
+    <color name="snackbar_background_color">@color/default_bg_color_dark_elev_4</color>
 
     <!-- Ripple colors for clickable widgets -->
     <color name="ripple_color_blue">@color/modern_blue_300</color>

@@ -21,8 +21,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/gmock_callback_support.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_tick_clock.h"
+#include "base/test/task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/data_buffer.h"
 #include "media/base/limits.h"
@@ -304,7 +304,7 @@ class VideoRendererImplTest : public testing::Test {
   MOCK_METHOD0(OnSimulateDecodeDelay, base::TimeDelta(void));
 
  protected:
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   NullMediaLog media_log_;
 
   // Fixture members.

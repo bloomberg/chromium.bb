@@ -22,6 +22,8 @@
 #include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/timer/timer.h"
+#include "chrome/browser/apps/app_service/app_launch_params.h"
+#include "chrome/browser/apps/launch_service/launch_service.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -33,8 +35,6 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/wallpaper_controller_client.h"
-#include "chrome/browser/ui/extensions/app_launch_params.h"
-#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -394,7 +394,8 @@ bool DemoSession::ShouldIgnorePinPolicy(const std::string& app_id_or_package) {
 void DemoSession::SetExtensionsExternalLoader(
     scoped_refptr<DemoExtensionsExternalLoader> extensions_external_loader) {
   extensions_external_loader_ = extensions_external_loader;
-  InstallAppFromUpdateUrl(GetScreensaverAppId());
+  if (!offline_enrolled_)
+    InstallAppFromUpdateUrl(GetScreensaverAppId());
 }
 
 void DemoSession::OverrideIgnorePinPolicyAppsForTesting(
@@ -411,19 +412,12 @@ base::OneShotTimer* DemoSession::GetTimerForTesting() {
   return remove_splash_screen_fallback_timer_.get();
 }
 
-void DemoSession::ActiveUserChanged(const user_manager::User* user) {
+void DemoSession::ActiveUserChanged(user_manager::User* active_user) {
   const base::RepeatingClosure hide_web_store_icon = base::BindRepeating([]() {
     ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
         prefs::kHideWebStoreIcon, true);
   });
-  user_manager::User* active_user =
-      user_manager::UserManager::Get()->GetActiveUser();
-  DCHECK_NE(active_user, user);
-  if (!active_user->is_profile_created()) {
-    active_user->AddProfileCreatedObserver(hide_web_store_icon);
-    return;
-  }
-  hide_web_store_icon.Run();
+  active_user->AddProfileCreatedObserver(hide_web_store_icon);
 }
 
 DemoSession::DemoSession()
@@ -452,8 +446,9 @@ void DemoSession::InstallDemoResources() {
   DCHECK(profile);
   const base::FilePath downloads =
       file_manager::util::GetDownloadsFolderForProfile(profile);
-  base::PostTaskWithTraits(
-      FROM_HERE, {base::TaskPriority::USER_VISIBLE, base::MayBlock()},
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::TaskPriority::USER_VISIBLE, base::MayBlock()},
       base::BindOnce(&InstallDemoMedia, demo_resources_->path(), downloads));
 }
 
@@ -570,11 +565,11 @@ void DemoSession::OnExtensionInstalled(content::BrowserContext* browser_context,
     return;
   Profile* profile = ProfileManager::GetActiveUserProfile();
   DCHECK(profile);
-  OpenApplication(
+  apps::LaunchService::Get(profile)->OpenApplication(
       AppLaunchParams(profile, extension->id(),
-                      extensions::LaunchContainer::kLaunchContainerWindow,
+                      apps::mojom::LaunchContainer::kLaunchContainerWindow,
                       WindowOpenDisposition::NEW_WINDOW,
-                      extensions::AppLaunchSource::kSourceChromeInternal));
+                      apps::mojom::AppLaunchSource::kSourceChromeInternal));
 }
 
 void DemoSession::OnAppWindowActivated(extensions::AppWindow* app_window) {

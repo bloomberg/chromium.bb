@@ -968,6 +968,15 @@ class IncludeGuardTest(unittest.TestCase):
           'struct SomeFileFoo;',
           '#endif  // REQUIRED_RPCNDR_H_',
         ]),
+        # Not having proper include guard in *_message_generator.h
+        # for old IPC messages is allowed.
+        MockAffectedFile('content/common/content_message_generator.h', [
+          '#undef CONTENT_COMMON_FOO_MESSAGES_H_',
+          '#include "content/common/foo_messages.h"',
+          '#ifndef CONTENT_COMMON_FOO_MESSAGES_H_',
+          '#error "Failed to include content/common/foo_messages.h"',
+          '#endif',
+        ]),
       ]
     msgs = PRESUBMIT._CheckForIncludeGuards(
         mock_input_api, mock_output_api)
@@ -2457,6 +2466,44 @@ class BuildtoolsRevisionsAreInSyncTest(unittest.TestCase):
         "buildtools/DEPS": "'libunwind_revision': 'anotherrev'",
     })
     self.assertNotEqual(results, [])
+
+
+class CheckFuzzTargetsTest(unittest.TestCase):
+
+  def _check(self, files):
+    mock_input_api = MockInputApi()
+    mock_input_api.files = []
+    for fname, contents in files.items():
+      mock_input_api.files.append(MockFile(fname, contents.splitlines()))
+    return PRESUBMIT._CheckFuzzTargets(mock_input_api, MockOutputApi())
+
+  def testLibFuzzerSourcesIgnored(self):
+    results = self._check({
+        "third_party/lib/Fuzzer/FuzzerDriver.cpp": "LLVMFuzzerInitialize",
+    })
+    self.assertEqual(results, [])
+
+  def testNonCodeFilesIgnored(self):
+    results = self._check({
+        "README.md": "LLVMFuzzerInitialize",
+    })
+    self.assertEqual(results, [])
+
+  def testNoErrorHeaderPresent(self):
+    results = self._check({
+        "fuzzer.cc": (
+            "#include \"testing/libfuzzer/libfuzzer_exports.h\"\n" +
+            "LLVMFuzzerInitialize"
+        )
+    })
+    self.assertEqual(results, [])
+
+  def testErrorMissingHeader(self):
+    results = self._check({
+        "fuzzer.cc": "LLVMFuzzerInitialize"
+    })
+    self.assertEqual(len(results), 1)
+    self.assertEqual(results[0].items, ['fuzzer.cc'])
 
 
 if __name__ == '__main__':

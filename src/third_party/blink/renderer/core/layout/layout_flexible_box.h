@@ -45,7 +45,7 @@ struct MinMaxSize;
 
 class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
  public:
-  LayoutFlexibleBox(Element*);
+  explicit LayoutFlexibleBox(Element*);
   ~LayoutFlexibleBox() override;
 
   const char* GetName() const override { return "LayoutFlexibleBox"; }
@@ -172,8 +172,6 @@ class CORE_EXPORT LayoutFlexibleBox : public LayoutBlock {
 
   void LayoutFlexItems(bool relayout_children, SubtreeLayoutScope&);
   bool HasAutoMarginsInCrossAxis(const LayoutBox& child) const;
-  bool UpdateAutoMarginsInCrossAxis(LayoutBox& child,
-                                    LayoutUnit available_alignment_space);
   void RepositionLogicalHeightDependentFlexItems(
       FlexLayoutAlgorithm& algorithm);
   LayoutUnit ClientLogicalBottomAfterRepositioning();

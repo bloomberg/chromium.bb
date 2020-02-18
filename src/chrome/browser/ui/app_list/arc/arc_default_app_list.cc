@@ -139,9 +139,7 @@ void ArcDefaultAppList::RegisterProfilePrefs(
 
 ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
                                      base::OnceClosure ready_callback)
-    : profile_(profile),
-      ready_callback_(std::move(ready_callback)),
-      weak_ptr_factory_(this) {
+    : profile_(profile), ready_callback_(std::move(ready_callback)) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::UI));
 
   // Load default apps from two sources.
@@ -175,8 +173,9 @@ ArcDefaultAppList::ArcDefaultAppList(Profile* profile,
 
   // Once ready OnAppsReady is called.
   for (const auto& source : sources) {
-    base::PostTaskWithTraitsAndReplyWithResult(
-        FROM_HERE, {base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+    base::PostTaskAndReplyWithResult(
+        FROM_HERE,
+        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
         base::BindOnce(&ReadAppsFromFileThread, source),
         base::BindOnce(&ArcDefaultAppList::OnAppsRead,
                        weak_ptr_factory_.GetWeakPtr()));

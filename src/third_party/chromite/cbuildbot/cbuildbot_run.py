@@ -23,18 +23,13 @@ all, as intended.
 
 from __future__ import print_function
 
-import cPickle
 import functools
 import os
+import pickle
 import re
-try:
-  import Queue
-except ImportError:
-  # Python-3 renamed to "queue".  We still use Queue to avoid collisions
-  # with naming variables as "queue".  Maybe we'll transition at some point.
-  # pylint: disable=import-error
-  import queue as Queue
 import types
+
+from six.moves import queue as Queue
 
 from chromite.cbuildbot import archive_lib
 from chromite.lib import buildstore
@@ -383,8 +378,8 @@ class RunAttributes(object):
     # Confirm that value can be pickled, because otherwise it will fail
     # in the queue.
     try:
-      cPickle.dumps(value, cPickle.HIGHEST_PROTOCOL)
-    except cPickle.PicklingError:
+      pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
+    except pickle.PicklingError:
       raise AttrNotPickleableError(attr, value)
 
     queue = self._GetQueue(attr, strict=True)
@@ -824,9 +819,10 @@ class _BuilderRunBase(object):
     """Returns the Android variant in use by the active container ebuild."""
     try:
       android_package = self.DetermineAndroidPackage(board)
-    except cros_build_lib.RunCommandError:
+    except cros_build_lib.RunCommandError as rce:
       raise NoAndroidVariantError(
-          'Android Variant could not be determined for %s' % board)
+          'Android Variant could not be determined for %s; original error: %s' %
+          (board, rce))
     if not android_package:
       raise NoAndroidVariantError(
           'Android Variant could not be determined for %s (no package?)' %

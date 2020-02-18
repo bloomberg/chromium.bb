@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_builder.h"
@@ -38,8 +38,7 @@ constexpr int kRouteId = 789;
 class CorsURLLoaderFactoryTest : public testing::Test {
  public:
   CorsURLLoaderFactoryTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO),
         resource_scheduler_(true) {
     net::URLRequestContextBuilder context_builder;
     context_builder.set_proxy_resolution_service(
@@ -91,7 +90,7 @@ class CorsURLLoaderFactoryTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
 
   // Test environment.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::unique_ptr<net::URLRequestContext> url_request_context_;
   ResourceScheduler resource_scheduler_;
   std::unique_ptr<NetworkService> network_service_;
@@ -120,7 +119,6 @@ TEST_F(CorsURLLoaderFactoryTest, DestructionOrder) {
   GURL url("http://localhost");
   request.mode = mojom::RequestMode::kNoCors;
   request.credentials_mode = mojom::CredentialsMode::kOmit;
-  request.allow_credentials = false;
   request.method = net::HttpRequestHeaders::kGetMethod;
   request.url = url;
   request.request_initiator = url::Origin::Create(url);

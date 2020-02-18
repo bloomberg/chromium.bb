@@ -42,28 +42,40 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         sClock = clock;
     }
 
-    static BackgroundTask getBackgroundTaskFromTaskParams(@NonNull TaskParams taskParams) {
-        String backgroundTaskClassName = getBackgroundTaskClassFromTaskParams(taskParams);
-        return BackgroundTaskReflection.getBackgroundTaskFromClassName(backgroundTaskClassName);
-    }
-
-    private static String getBackgroundTaskClassFromTaskParams(@NonNull TaskParams taskParams) {
+    /**
+     * Checks if a task expired, based on the current time of the service.
+     *
+     * @param taskParams parameters sent to the service, which contain the scheduling information
+     * regarding expiration.
+     * @param currentTimeMs the current time of the service.
+     * @return true if the task expired and false otherwise.
+     */
+    static boolean didTaskExpire(TaskParams taskParams, long currentTimeMs) {
         Bundle extras = taskParams.getExtras();
-        if (extras == null) return null;
-        return extras.getString(BACKGROUND_TASK_CLASS_KEY);
-    }
-
-    static Long getDeadlineTimeFromTaskParams(@NonNull TaskParams taskParams) {
-        Bundle extras = taskParams.getExtras();
-        if (extras == null || !extras.containsKey(BACKGROUND_TASK_DEADLINE_KEY)) {
-            return null;
+        if (extras == null || !extras.containsKey(BACKGROUND_TASK_SCHEDULE_TIME_KEY)) {
+            return false;
         }
-        return extras.getLong(BACKGROUND_TASK_DEADLINE_KEY);
-    }
 
-    private static long getDeadlineTime(TaskInfo taskInfo) {
-        long windowEndTimeMs = taskInfo.getOneOffInfo().getWindowEndTimeMs();
-        return sClock.currentTimeMillis() + windowEndTimeMs;
+        long scheduleTimeMs = extras.getLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY);
+        if (extras.containsKey(BACKGROUND_TASK_END_TIME_KEY)) {
+            long endTimeMs =
+                    extras.getLong(BackgroundTaskSchedulerDelegate.BACKGROUND_TASK_END_TIME_KEY);
+            return TaskInfo.OneOffInfo.getExpirationStatus(
+                    scheduleTimeMs, endTimeMs, currentTimeMs);
+        } else {
+            long intervalTimeMs = extras.getLong(BACKGROUND_TASK_INTERVAL_TIME_KEY);
+
+            // If flex is never set, it is given a default value of 10% of the period time, as
+            // per the GcmNetworkManager behaviour. This default value is set in
+            // https://developers.google.com/android/reference/com/google/android/gms/gcm/PeriodicTask.
+            double defaultFlexAsFractionOfInterval = 0.1f;
+
+            long flexTimeMs = extras.getLong(BACKGROUND_TASK_FLEX_TIME_KEY,
+                    /*defaultValue=*/(long) (defaultFlexAsFractionOfInterval * intervalTimeMs));
+
+            return TaskInfo.PeriodicInfo.getExpirationStatus(
+                    scheduleTimeMs, intervalTimeMs, flexTimeMs, currentTimeMs);
+        }
     }
 
     /**
@@ -95,22 +107,13 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
     @VisibleForTesting
     static Task createTaskFromTaskInfo(@NonNull TaskInfo taskInfo) {
         Bundle taskExtras = new Bundle();
-        taskExtras.putString(
-                BACKGROUND_TASK_CLASS_KEY, taskInfo.getBackgroundTaskClass().getName());
-        if (!taskInfo.isPeriodic() && taskInfo.getOneOffInfo().expiresAfterWindowEndTime()) {
-            taskExtras.putLong(BACKGROUND_TASK_DEADLINE_KEY, getDeadlineTime(taskInfo));
-        }
         taskExtras.putBundle(BACKGROUND_TASK_EXTRAS_KEY, taskInfo.getExtras());
 
-        Task.Builder builder;
-        if (taskInfo.isPeriodic()) {
-            builder = getPeriodicTaskBuilder(taskInfo.getPeriodicInfo());
-        } else {
-            builder = getOneOffTaskBuilder(taskInfo.getOneOffInfo());
-        }
+        TaskBuilderVisitor taskBuilderVisitor = new TaskBuilderVisitor(taskExtras);
+        taskInfo.getTimingInfo().accept(taskBuilderVisitor);
+        Task.Builder builder = taskBuilderVisitor.getBuilder();
 
-        builder.setExtras(taskExtras)
-                .setPersisted(taskInfo.isPersisted())
+        builder.setPersisted(taskInfo.isPersisted())
                 .setRequiredNetwork(getGcmNetworkManagerNetworkTypeFromTypeFromTaskNetworkType(
                         taskInfo.getRequiredNetworkType()))
                 .setRequiresCharging(taskInfo.requiresCharging())
@@ -121,27 +124,65 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
         return builder.build();
     }
 
-    private static Task.Builder getPeriodicTaskBuilder(TaskInfo.PeriodicInfo periodicInfo) {
-        PeriodicTask.Builder builder = new PeriodicTask.Builder();
-        builder.setPeriod(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getIntervalMs()));
-        if (periodicInfo.hasFlex()) {
-            builder.setFlex(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getFlexMs()));
-        }
-        return builder;
-    }
+    private static class TaskBuilderVisitor implements TaskInfo.TimingInfoVisitor {
+        private Task.Builder mBuilder;
+        private final Bundle mTaskExtras;
 
-    private static Task.Builder getOneOffTaskBuilder(TaskInfo.OneOffInfo oneOffInfo) {
-        OneoffTask.Builder builder = new OneoffTask.Builder();
-        long windowStartSeconds = oneOffInfo.hasWindowStartTimeConstraint()
-                ? TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowStartTimeMs())
-                : 0;
-        long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
-        if (oneOffInfo.expiresAfterWindowEndTime()) {
-            windowEndTimeMs += DEADLINE_DELTA_MS;
+        TaskBuilderVisitor(Bundle taskExtras) {
+            mTaskExtras = taskExtras;
         }
-        builder.setExecutionWindow(
-                windowStartSeconds, TimeUnit.MILLISECONDS.toSeconds(windowEndTimeMs));
-        return builder;
+
+        // Only valid after a TimingInfo object was visited.
+        Task.Builder getBuilder() {
+            return mBuilder;
+        }
+
+        @Override
+        public void visit(TaskInfo.OneOffInfo oneOffInfo) {
+            if (oneOffInfo.expiresAfterWindowEndTime()) {
+                mTaskExtras.putLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY, sClock.currentTimeMillis());
+                mTaskExtras.putLong(BACKGROUND_TASK_END_TIME_KEY, oneOffInfo.getWindowEndTimeMs());
+            }
+
+            OneoffTask.Builder builder = new OneoffTask.Builder();
+            long windowStartSeconds = oneOffInfo.hasWindowStartTimeConstraint()
+                    ? TimeUnit.MILLISECONDS.toSeconds(oneOffInfo.getWindowStartTimeMs())
+                    : 0;
+            long windowEndTimeMs = oneOffInfo.getWindowEndTimeMs();
+            if (oneOffInfo.expiresAfterWindowEndTime()) {
+                windowEndTimeMs += DEADLINE_DELTA_MS;
+            }
+            builder.setExecutionWindow(
+                    windowStartSeconds, TimeUnit.MILLISECONDS.toSeconds(windowEndTimeMs));
+            builder.setExtras(mTaskExtras);
+            mBuilder = builder;
+        }
+
+        @Override
+        public void visit(TaskInfo.PeriodicInfo periodicInfo) {
+            if (periodicInfo.expiresAfterWindowEndTime()) {
+                mTaskExtras.putLong(BACKGROUND_TASK_SCHEDULE_TIME_KEY, sClock.currentTimeMillis());
+                mTaskExtras.putLong(
+                        BACKGROUND_TASK_INTERVAL_TIME_KEY, periodicInfo.getIntervalMs());
+                if (periodicInfo.hasFlex()) {
+                    mTaskExtras.putLong(BACKGROUND_TASK_FLEX_TIME_KEY, periodicInfo.getFlexMs());
+                }
+            }
+
+            PeriodicTask.Builder builder = new PeriodicTask.Builder();
+            builder.setPeriod(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getIntervalMs()));
+            if (periodicInfo.hasFlex()) {
+                builder.setFlex(TimeUnit.MILLISECONDS.toSeconds(periodicInfo.getFlexMs()));
+            }
+            builder.setExtras(mTaskExtras);
+            mBuilder = builder;
+        }
+
+        @Override
+        public void visit(TaskInfo.ExactInfo exactInfo) {
+            throw new RuntimeException("Exact tasks should not be scheduled with "
+                    + "GcmNetworkManager.");
+        }
     }
 
     private static int getGcmNetworkManagerNetworkTypeFromTypeFromTaskNetworkType(
@@ -163,13 +204,6 @@ class BackgroundTaskSchedulerGcmNetworkManager implements BackgroundTaskSchedule
     @Override
     public boolean schedule(Context context, @NonNull TaskInfo taskInfo) {
         ThreadUtils.assertOnUiThread();
-        if (!BackgroundTaskReflection.hasParameterlessPublicConstructor(
-                    taskInfo.getBackgroundTaskClass())) {
-            Log.e(TAG,
-                    "BackgroundTask " + taskInfo.getBackgroundTaskClass()
-                            + " has no parameterless public constructor.");
-            return false;
-        }
 
         GcmNetworkManager gcmNetworkManager = getGcmNetworkManager(context);
         if (gcmNetworkManager == null) {

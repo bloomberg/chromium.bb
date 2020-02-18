@@ -14,35 +14,27 @@ _NEGATIVE_FILTER = [
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2532
     'SlowLoadingPageTest.testRefreshShouldBlockUntilPageLoads',
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToRefresh',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2854
-    'ChromeOptionsFunctionalTest.canSetAcceptInsecureCerts',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2858
-    'ElementFindingTest.testFindingMultipleElementsByInvalidClassNameShouldThrow',
-    'ElementFindingTest.testFindingMultipleElementsByCompoundClassNameShouldThrow',
-    'ElementFindingTest.testFindingMultipleElementsByEmptyIdShouldReturnEmptyList',
-    'FormHandlingTest.testShouldNotBeAbleToSubmitAFormThatDoesNotExist',
-    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInAFrame',
-    'PositionAndSizeTest.testShouldGetCoordinatesInViewPortOfAnElementInANestedFrame',
-    'DragAndDropTest.testDragAndDropElementWithOffsetInScrolledDiv',
-    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
-    'LocationContextTest.testShouldSetAndGetLatitude',
-    'LocationContextTest.testShouldSetAndGetLongitude',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=1960
-    'CombinedInputActionsTest.testChordControlCutAndPaste',
-
-    #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2971
-    'ChromeDevToolsProfilerTest.sampleProfileEvents',
 ]
 
 _READY_TO_RUN_FILTER = [
     # marked as not yet implemented with chrome but already works
-    'ProxySettingTest.canUsePACThatOnlyProxiesCertainHosts',
+    'AlertsTest.testIncludesAlertTextInUnhandledAlertException',
+    'BasicKeyboardInterfaceTest.testSelectionSelectBySymbol',
+    'BasicKeyboardInterfaceTest.testSelectionSelectByWord',
+    'BasicMouseInterfaceTest.testCanMoveOverAndOutOfAnElement',
+    'BasicMouseInterfaceTest.testMoveMouseByOffsetOverAndOutOfAnElement',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeElementOffset',
+    'BasicMouseInterfaceTest.testMovingMouseToRelativeZeroElementOffset',
+    'CombinedInputActionsTest.testClickAfterMoveToAnElementWithAnOffsetShouldUseLastMousePosition',
+    'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
     'ContentEditableTest.testShouldAppendToTinyMCE',
     'ContentEditableTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
-    'ContentEditableTest.appendsTextToEndOfContentEditableWithMultipleTextNodes',
+    'CookieImplementationTest.canHandleHttpOnlyCookie',
+    'DragAndDropTest.canDragAnElementNotVisibleInTheCurrentViewportDueToAParentOverflow',
+    'ExecutingJavascriptTest.testShouldBeAbleToReturnADateObject',
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResources',
+    'PageLoadingTest.testEagerStrategyShouldNotWaitForResourcesOnRefresh',
+    'PageLoadingTest.testEagerStrategyShouldWaitForDocumentToBeLoaded',
     'WindowSwitchingTest.canOpenANewWindow',
 ]
 
@@ -102,8 +94,10 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     'ReferrerTest.crossDomainHistoryNavigationWithoutAProxy',
     'ReferrerTest.basicHistoryNavigationWithoutAProxy',
 
-    # Test with file upload not supported on Android
+    # Test using local files; not supported on Android
+    'UploadTest.testFileUploading',
     'UploadTest.testUploadingWithHiddenFileInput',
+    'UploadTest.testUploadingWithInvisibleFileInput',
 
     # This tests are failing because of Keys.CONTROL/SHIFT/.. are not being supported for drop down items.
     'CombinedInputActionsTest.testControlClickingOnMultiSelectionList',
@@ -129,8 +123,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
     "GetLogsTest.turningOffLogShouldMeanNoLogMessages",
     "SessionHandlingTest.callingAnyOperationAfterQuitShouldThrowAnException",
     "SessionHandlingTest.callingQuitMoreThanOnceOnASessionIsANoOp",
-    # Test is written using local files; doesn't work on Android.
-    'UploadTest.testFileUploading',
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2861
     'PageLoadingTest.testShouldTimeoutIfAPageTakesTooLongToLoadAfterClick',
@@ -196,9 +188,6 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2697
     'CorrectEventFiringTest.testShouldEmitClickEventWhenClickingOnATextInputElement',
-
-    # https://bugs.chromium.org/p/chromedriver/issues/detail?id=2860
-    'UploadTest.testUploadingWithInvisibleFileInput',
 ]
 
 _OS_NEGATIVE_FILTER['android:chrome_stable'] = (

@@ -89,7 +89,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
     // animations. This is used when performing the desk switch animation when
     // the source desk is in overview mode, while the target desk is not.
     // This should not be used for entering overview mode.
-    kImmediateExit
+    kImmediateExit,
   };
 
   // Callback which fills out the passed settings object. Used by several
@@ -112,9 +112,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Called when the last overview item from a grid is deleted.
   void OnGridEmpty();
 
-  // Moves the current selection by |increment| items. Positive values of
-  // |increment| move the selection forward, negative values move it backward.
-  void IncrementSelection(int increment);
+  // Moves the current selection forwards or backwards.
+  void IncrementSelection(bool forward);
 
   // Accepts current selection if any. Returns true if a selection was made,
   // false otherwise.
@@ -155,7 +154,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   void InitiateDrag(OverviewItem* item,
                     const gfx::PointF& location_in_screen,
-                    bool allow_drag_to_close);
+                    bool is_touch_dragging);
   void Drag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void CompleteDrag(OverviewItem* item, const gfx::PointF& location_in_screen);
   void StartNormalDragMode(const gfx::PointF& location_in_screen);
@@ -212,8 +211,12 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Updates all the overview items' mask and shadow.
   void UpdateRoundedCornersAndShadow();
 
-  // Called when the overview mode starting animation completes.
-  void OnStartingAnimationComplete(bool canceled);
+  // Called when the overview mode starting animation completes. |canceled| is
+  // true when the starting animation is interrupted by ending overview mode. If
+  // |canceled| is false and |should_focus_overview| is true, then
+  // |overview_focus_widget_| shall gain focus. |should_focus_overview| has no
+  // effect when |canceled| is true.
+  void OnStartingAnimationComplete(bool canceled, bool should_focus_overview);
 
   // Called when windows are being activated/deactivated during
   // overview mode.
@@ -240,6 +243,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnHighlightedItemClosed(OverviewItem* item);
 
   // display::DisplayObserver:
+  void OnDisplayAdded(const display::Display& display) override;
   void OnDisplayRemoved(const display::Display& display) override;
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t metrics) override;
@@ -250,6 +254,7 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
 
   // ShelObserver:
   void OnShellDestroying() override;
+  void OnShelfAlignmentChanged(aura::Window* root_window) override;
 
   // ui::EventHandler:
   void OnKeyEvent(ui::KeyEvent* event) override;
@@ -305,6 +310,10 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   // Helper function that moves the selection widget to forward or backward on
   // the corresponding window grid.
   void Move(bool reverse);
+
+  // Helper function that processes a key event and maybe scrolls the overview
+  // grid on the primary display.
+  bool ProcessForScrolling(const ui::KeyEvent& event);
 
   // Removes all observers that were registered during construction and/or
   // initialization.

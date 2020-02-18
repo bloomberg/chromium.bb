@@ -17,6 +17,12 @@
 
 namespace quic {
 
+namespace test {
+
+class QpackHeaderTablePeer;
+
+}  // namespace test
+
 using QpackEntry = spdy::HpackEntry;
 
 // This class manages the QPACK static and dynamic tables.  For dynamic entries,
@@ -70,6 +76,12 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // is larger than the capacity of the dynamic table.
   const QpackEntry* InsertEntry(QuicStringPiece name, QuicStringPiece value);
 
+  // Returns the size of the largest entry that could be inserted into the
+  // dynamic table without evicting entry |index|.  |index| might be larger than
+  // inserted_entry_count(), in which case the capacity of the table is
+  // returned.  |index| must not be smaller than dropped_entry_count().
+  uint64_t MaxInsertSizeWithoutEvictingGivenEntry(uint64_t index) const;
+
   // Change dynamic table capacity to |capacity|.  Returns true on success.
   // Returns false is |capacity| exceeds maximum dynamic table capacity.
   bool SetDynamicTableCapacity(uint64_t capacity);
@@ -99,7 +111,17 @@ class QUIC_EXPORT_PRIVATE QpackHeaderTable {
   // The number of entries dropped from the dynamic table.
   uint64_t dropped_entry_count() const { return dropped_entry_count_; }
 
+  // Returns the draining index described at
+  // https://quicwg.org/base-drafts/draft-ietf-quic-qpack.html#avoiding-blocked-insertions.
+  // Entries with an index larger than or equal to the draining index take up
+  // approximately |1.0 - draining_fraction| of dynamic table capacity.  The
+  // remaining capacity is taken up by draining entries and unused space.
+  // The returned index might not be the index of a valid entry.
+  uint64_t draining_index(float draining_fraction) const;
+
  private:
+  friend class test::QpackHeaderTablePeer;
+
   // Evict entries from the dynamic table until table size is less than or equal
   // to current value of |dynamic_table_capacity_|.
   void EvictDownToCurrentCapacity();

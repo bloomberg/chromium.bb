@@ -335,10 +335,6 @@ void WebSettingsImpl::SetJavaScriptCanAccessClipboard(bool enabled) {
   settings_->SetJavaScriptCanAccessClipboard(enabled);
 }
 
-void WebSettingsImpl::SetXSSAuditorEnabled(bool enabled) {
-  settings_->SetXSSAuditorEnabled(enabled);
-}
-
 void WebSettingsImpl::SetTextTrackKindUserPreference(
     TextTrackKindUserPreference preference) {
   settings_->SetTextTrackKindUserPreference(
@@ -491,10 +487,6 @@ void WebSettingsImpl::SetAntialiasedClips2dCanvasEnabled(bool enabled) {
 
 void WebSettingsImpl::SetPreferCompositingToLCDTextEnabled(bool enabled) {
   dev_tools_emulator_->SetPreferCompositingToLCDTextEnabled(enabled);
-}
-
-void WebSettingsImpl::SetMinimumAccelerated2dCanvasSize(int num_pixels) {
-  settings_->SetMinimumAccelerated2dCanvasSize(num_pixels);
 }
 
 void WebSettingsImpl::SetHideDownloadUI(bool hide) {

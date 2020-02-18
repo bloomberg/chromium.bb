@@ -208,7 +208,9 @@ class InitialEnrollmentTest : public EnrollmentLocalPolicyServerBase {
 };
 
 // Simple manual enrollment.
-IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase, ManualEnrollment) {
+// TODO(https://crbug.com/992022#c5): Re-enable this test.
+IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
+                       DISABLED_ManualEnrollment) {
   TriggerEnrollmentAndSignInSuccessfully();
 
   enrollment_ui_.WaitForStep(test::ui::kEnrollmentStepSuccess);
@@ -377,8 +379,9 @@ IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
 }
 
 // Error during enrollment : 500 - Consumer account with packaged license.
+// TODO(https://crbug.com/992022#c4): Re-enable this test.
 IN_PROC_BROWSER_TEST_F(EnrollmentLocalPolicyServerBase,
-                       EnrollmentErrorServerError) {
+                       DISABLED_EnrollmentErrorServerError) {
   policy_server_.SetExpectedDeviceEnrollmentError(500);
 
   TriggerEnrollmentAndSignInSuccessfully();
@@ -552,14 +555,17 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FREExplicitlyRequired) {
 
 // FRE not explicitly required and the state keys are missing. Should proceed to
 // normal signin.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, FRENotRequired) {
+// Test is flaky, and crashes occasionally. https://crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentNoStateKeys, DISABLED_FRENotRequired) {
   host()->StartWizard(AutoEnrollmentCheckScreenView::kScreenId);
   OobeScreenWaiter(GaiaView::kScreenId).Wait();
 }
 
 // FRE explicitly not required in VPD, so it should not even contact the policy
 // server.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, FREExplicitlyNotRequired) {
+// Test is flaky, and crashes occasionally. https://crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics,
+                       DISABLED_FREExplicitlyNotRequired) {
   SetFRERequiredKey("0");
 
   // Should be ignored.
@@ -574,7 +580,9 @@ IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, FREExplicitlyNotRequired) {
 }
 
 // FRE is not required when VPD is valid and activate date is not there.
-IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics, MachineNotActivated) {
+// Test is flaky, and crashes occasionally. https://crbug.com/992022
+IN_PROC_BROWSER_TEST_F(AutoEnrollmentWithStatistics,
+                       DISABLED_MachineNotActivated) {
   // Should be ignored.
   EXPECT_TRUE(policy_server_.SetDeviceStateRetrievalResponse(
       state_keys_broker(),

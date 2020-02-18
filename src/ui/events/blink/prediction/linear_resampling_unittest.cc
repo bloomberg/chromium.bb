@@ -109,5 +109,18 @@ TEST_F(LinearResamplingTest, ResamplingBoundLastDelta) {
   ValidatePredictor(x, y, t, pred_ts, pred_x, pred_y);
 }
 
+// Test time interval in first order
+TEST_F(LinearResamplingTest, TimeInterval) {
+  EXPECT_EQ(predictor_->TimeInterval(), kExpectedDefaultTimeInterval);
+  std::vector<double> x = {10, 20};
+  std::vector<double> y = {5, 25};
+  std::vector<double> t = {17, 33};
+  for (size_t i = 0; i < t.size(); i++) {
+    predictor_->Update({gfx::PointF(x[i], y[i]), FromMilliseconds(t[i])});
+  }
+  EXPECT_EQ(predictor_->TimeInterval(),
+            base::TimeDelta::FromMilliseconds(t[1] - t[0]));
+}
+
 }  // namespace test
 }  // namespace ui

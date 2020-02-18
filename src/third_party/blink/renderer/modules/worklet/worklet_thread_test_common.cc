@@ -33,13 +33,13 @@ CreateAnimationAndPaintWorkletThread(
           document->UserAgent(), nullptr /* web_worker_fetch_context */,
           Vector<CSPHeaderAndType>(), document->GetReferrerPolicy(),
           document->GetSecurityOrigin(), document->IsSecureContext(),
-          document->GetHttpsState(), clients, document->AddressSpace(),
+          document->GetHttpsState(), clients,
+          nullptr /* content_settings_client */, document->AddressSpace(),
           OriginTrialContext::GetTokens(document).get(),
           base::UnguessableToken::Create(), nullptr /* worker_settings */,
           kV8CacheOptionsDefault,
           MakeGarbageCollected<WorkletModuleResponsesMap>()),
-      base::nullopt, std::make_unique<WorkerDevToolsParams>(),
-      ParentExecutionContextTaskRunners::Create());
+      base::nullopt, std::make_unique<WorkerDevToolsParams>());
   return thread;
 }
 

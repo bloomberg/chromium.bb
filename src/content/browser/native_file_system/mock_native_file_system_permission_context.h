@@ -49,16 +49,31 @@ class MockNativeFileSystemPermissionContext
   void ConfirmSensitiveDirectoryAccess(
       const url::Origin& origin,
       const std::vector<base::FilePath>& paths,
+      bool is_directory,
       int process_id,
       int frame_id,
       base::OnceCallback<void(SensitiveDirectoryResult)> callback) override;
-  MOCK_METHOD5(
+  MOCK_METHOD6(
       ConfirmSensitiveDirectoryAccess_,
       void(const url::Origin& origin,
            const std::vector<base::FilePath>& paths,
+           bool is_directory,
            int process_id,
            int frame_id,
            base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
+
+  void PerformSafeBrowsingChecks(
+      std::unique_ptr<NativeFileSystemWriteItem> item,
+      int process_id,
+      int frame_id,
+      base::OnceCallback<void(SafeBrowsingResult)> callback) override;
+  MOCK_METHOD4(PerformSafeBrowsingChecks_,
+               void(NativeFileSystemWriteItem* item,
+                    int process_id,
+                    int frame_id,
+                    base::OnceCallback<void(SafeBrowsingResult)>& callback));
+
+  MOCK_METHOD1(CanRequestWritePermission, bool(const url::Origin& origin));
 };
 
 }  // namespace content

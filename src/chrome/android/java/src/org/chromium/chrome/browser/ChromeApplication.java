@@ -32,6 +32,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.build.BuildHooks;
 import org.chromium.build.BuildHooksAndroid;
 import org.chromium.build.BuildHooksConfig;
+import org.chromium.chrome.browser.background_task_scheduler.ChromeBackgroundTaskFactory;
 import org.chromium.chrome.browser.crash.ApplicationStatusTracker;
 import org.chromium.chrome.browser.crash.FirebaseConfig;
 import org.chromium.chrome.browser.crash.PureJavaExceptionHandler;
@@ -122,6 +123,9 @@ public class ChromeApplication extends Application {
             // Record via UMA all modules that have been requested and are currently installed. This
             // will tell us the install penetration of each module over time.
             ModuleInstaller.getInstance().recordModuleAvailability();
+
+            // Set Chrome factory for mapping BackgroundTask classes to TaskIds.
+            ChromeBackgroundTaskFactory.setAsDefault();
         }
 
         // Write installed modules to crash keys. This needs to be done as early as possible so that

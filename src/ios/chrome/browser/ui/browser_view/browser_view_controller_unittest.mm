@@ -13,6 +13,7 @@
 #include "components/search_engines/template_url_service.h"
 #import "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
+#import "ios/chrome/browser/main/test_browser.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/sessions/ios_chrome_tab_restore_service_factory.h"
 #import "ios/chrome/browser/tabs/tab_helper_util.h"
@@ -33,8 +34,8 @@
 #include "ios/chrome/test/block_cleanup_test.h"
 #include "ios/chrome/test/ios_chrome_scoped_testing_local_state.h"
 #import "ios/testing/ocmock_complex_type_helper.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/web_state.h"
+#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gtest_mac.h"
@@ -134,6 +135,9 @@ class BrowserViewControllerTest : public BlockCleanupTest {
     [[tabModel stub] saveSessionImmediately:NO];
     [[tabModel stub] closeAllTabs];
 
+    browser_ =
+        std::make_unique<TestBrowser>(chrome_browser_state_.get(), tabModel_);
+
     // Create three web states.
     for (int i = 0; i < 3; i++) {
       web::WebState::CreateParams params(chrome_browser_state_.get());
@@ -152,8 +156,7 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
     // Instantiate the BVC.
     bvc_ = [[BrowserViewController alloc]
-                      initWithTabModel:tabModel_
-                          browserState:chrome_browser_state_.get()
+                       initWithBrowser:browser_.get()
                      dependencyFactory:factory
             applicationCommandEndpoint:mockApplicationCommandHandler
                      commandDispatcher:command_dispatcher_
@@ -184,10 +187,11 @@ class BrowserViewControllerTest : public BlockCleanupTest {
 
   MOCK_METHOD0(OnCompletionCalled, void());
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingLocalState local_state_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   TabModel* tabModel_;
+  std::unique_ptr<Browser> browser_;
   BrowserViewControllerHelper* bvcHelper_;
   PKAddPassesViewController* passKitViewController_;
   OCMockObject* dependencyFactory_;

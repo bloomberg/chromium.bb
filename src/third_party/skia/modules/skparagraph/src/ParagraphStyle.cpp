@@ -11,8 +11,9 @@ StrutStyle::StrutStyle() {
     fFontSize = 14;
     fHeight = 1;
     fLeading = -1;
-    fForceStrutHeight = false;
-    fStrutEnabled = false;
+    fForceHeight = false;
+    fHeightOverride = false;
+    fEnabled = false;
 }
 
 ParagraphStyle::ParagraphStyle() {

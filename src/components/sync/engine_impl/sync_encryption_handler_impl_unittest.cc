@@ -16,7 +16,7 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/sync/base/fake_encryptor.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/base/passphrase_enums.h"
@@ -170,7 +170,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   }
   SyncEncryptionHandlerObserverMock* observer() { return &observer_; }
   Cryptographer* GetCryptographer() {
-    return encryption_handler_->GetCryptographerUnsafe();
+    return encryption_handler_->GetMutableCryptographerForTesting();
   }
 
   sync_pb::NigoriSpecifics ReadNigoriSpecifics() {
@@ -582,7 +582,7 @@ class SyncEncryptionHandlerImplTest : public ::testing::Test {
   std::unique_ptr<SyncEncryptionHandlerImpl> encryption_handler_;
   StrictMock<SyncEncryptionHandlerObserverMock> observer_;
   TestIdFactory ids_;
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
   base::RepeatingCallback<std::string()> fake_random_salt_generator_;
 };

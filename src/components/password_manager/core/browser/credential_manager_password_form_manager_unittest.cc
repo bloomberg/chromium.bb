@@ -9,7 +9,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/fake_form_fetcher.h"
 #include "components/password_manager/core/browser/stub_form_saver.h"
@@ -47,7 +47,7 @@ class MockFormSaver : public StubFormSaver {
                     const base::string16& old_password));
 
   // Convenience downcasting method.
-  static MockFormSaver& Get(NewPasswordFormManager* form_manager) {
+  static MockFormSaver& Get(PasswordFormManager* form_manager) {
     return *static_cast<MockFormSaver*>(form_manager->form_saver());
   }
 
@@ -97,7 +97,7 @@ class CredentialManagerPasswordFormManagerTest : public testing::Test {
   }
 
   // Necessary for callbacks, and for TestAutofillDriver.
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
 
   StubPasswordManagerClient client_;
   MockDelegate delegate_;

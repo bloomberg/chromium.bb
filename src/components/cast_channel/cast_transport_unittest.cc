@@ -14,8 +14,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "components/cast_channel/cast_framer.h"
 #include "components/cast_channel/cast_socket.h"
 #include "components/cast_channel/cast_test_util.h"
@@ -166,7 +166,7 @@ class CastTransportTest : public testing::Test {
     run_loop.RunUntilIdle();
   }
 
-  base::test::ScopedTaskEnvironment task_environment_;
+  base::test::TaskEnvironment task_environment_;
   MockCastTransportDelegate* delegate_;
   MockSocket mock_socket_;
   Logger* logger_;

@@ -63,7 +63,7 @@ namespace dawn_native { namespace d3d12 {
         const PlatformFunctions* functions = GetBackend()->GetFunctions();
         if (FAILED(functions->d3d12CreateDevice(GetHardwareAdapter(), D3D_FEATURE_LEVEL_11_0,
                                                 _uuidof(ID3D12Device), &mD3d12Device))) {
-            return DAWN_CONTEXT_LOST_ERROR("D3D12CreateDevice failed");
+            return DAWN_DEVICE_LOST_ERROR("D3D12CreateDevice failed");
         }
 
         DAWN_TRY_ASSIGN(mDeviceInfo, GatherDeviceInfo(*this));
@@ -84,7 +84,13 @@ namespace dawn_native { namespace d3d12 {
             "Error converting");
         mPCIInfo.name = converter.to_bytes(adapterDesc.Description);
 
+        InitializeSupportedExtensions();
+
         return {};
+    }
+
+    void Adapter::InitializeSupportedExtensions() {
+        mSupportedExtensions.EnableExtension(Extension::TextureCompressionBC);
     }
 
     ResultOrError<DeviceBase*> Adapter::CreateDeviceImpl(const DeviceDescriptor* descriptor) {

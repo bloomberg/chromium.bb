@@ -6,13 +6,14 @@
 
 #include <lib/sys/cpp/outgoing_directory.h>
 #include <lib/zx/channel.h>
+
 #include <utility>
 
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/test_interface_impl.h"
 #include "base/fuchsia/testfidl/cpp/fidl.h"
-#include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -54,7 +55,9 @@ class ServiceProviderImplTest : public testing::Test {
   }
 
  protected:
-  MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::ThreadingMode::MAIN_THREAD_ONLY,
+      base::test::TaskEnvironment::MainThreadType::IO};
   TestInterfaceImpl test_service_;
 
   sys::OutgoingDirectory service_directory_;

@@ -13,13 +13,9 @@
 #endif
 
 void CustomizeUIAppearance() {
-  Class containerClass = [TableViewNavigationController class];
-  UIBarButtonItem* barButtonItemAppearance = [UIBarButtonItem
-      appearanceWhenContainedInInstancesOfClasses:@[ containerClass ]];
-  barButtonItemAppearance.tintColor = [UIColor colorNamed:kTintColor];
-
-  Class navigationBarClass = [SettingsNavigationController class];
-  UINavigationBar* navigationBarAppearance = [UINavigationBar
-      appearanceWhenContainedInInstancesOfClasses:@[ navigationBarClass ]];
-  navigationBarAppearance.tintColor = [UIColor colorNamed:kTintColor];
+  // Set fallback tint color for all windows in the app.
+  for (UIWindow* window in UIApplication.sharedApplication.windows) {
+    window.tintColor = [UIColor colorNamed:kBlueColor];
+  }
+  UISwitch.appearance.onTintColor = [UIColor colorNamed:kBlueColor];
 }

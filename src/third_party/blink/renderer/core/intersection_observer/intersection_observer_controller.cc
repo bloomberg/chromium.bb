@@ -23,19 +23,15 @@ IntersectionObserverController::IntersectionObserverController(
 
 IntersectionObserverController::~IntersectionObserverController() = default;
 
-void IntersectionObserverController::PostTaskToDeliverObservations() {
+void IntersectionObserverController::PostTaskToDeliverNotifications() {
   DCHECK(GetExecutionContext());
-  // TODO(ojan): These tasks decide whether to throttle a subframe, so they
-  // need to be unthrottled, but we should throttle all the other tasks
-  // (e.g. ones coming from the web page).
   GetExecutionContext()
       ->GetTaskRunner(TaskType::kInternalIntersectionObserver)
       ->PostTask(
           FROM_HERE,
-          WTF::Bind(
-              &IntersectionObserverController::DeliverIntersectionObservations,
-              WrapWeakPersistent(this),
-              IntersectionObserver::kPostTaskToDeliver));
+          WTF::Bind(&IntersectionObserverController::DeliverNotifications,
+                    WrapWeakPersistent(this),
+                    IntersectionObserver::kPostTaskToDeliver));
 }
 
 void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
@@ -43,54 +39,50 @@ void IntersectionObserverController::ScheduleIntersectionObserverForDelivery(
   pending_intersection_observers_.insert(&observer);
   if (observer.GetDeliveryBehavior() ==
       IntersectionObserver::kPostTaskToDeliver)
-    PostTaskToDeliverObservations();
+    PostTaskToDeliverNotifications();
 }
 
-void IntersectionObserverController::DeliverIntersectionObservations(
+void IntersectionObserverController::DeliverNotifications(
     IntersectionObserver::DeliveryBehavior behavior) {
   ExecutionContext* context = GetExecutionContext();
   if (!context) {
     pending_intersection_observers_.clear();
     return;
   }
-  // TODO(yukishiino): Remove this CHECK once https://crbug.com/809784 gets
-  // resolved.
-  CHECK(!context->IsContextDestroyed());
+  HeapVector<Member<IntersectionObserver>> intersection_observers_being_invoked;
   for (auto& observer : pending_intersection_observers_) {
     if (observer->GetDeliveryBehavior() == behavior)
-      intersection_observers_being_invoked_.push_back(observer);
+      intersection_observers_being_invoked.push_back(observer);
   }
-  for (auto& observer : intersection_observers_being_invoked_) {
+  for (auto& observer : intersection_observers_being_invoked) {
     pending_intersection_observers_.erase(observer);
     observer->Deliver();
   }
-  intersection_observers_being_invoked_.clear();
 }
 
-bool IntersectionObserverController::ComputeTrackedIntersectionObservations(
-    unsigned flags) {
+bool IntersectionObserverController::ComputeIntersections(unsigned flags) {
   needs_occlusion_tracking_ = false;
   if (Document* document = To<Document>(GetExecutionContext())) {
     TRACE_EVENT0("blink",
                  "IntersectionObserverController::"
-                 "computeTrackedIntersectionObservations");
+                 "computeIntersections");
     HeapVector<Member<Element>> elements_to_process;
-    CopyToVector(tracked_observation_targets_, elements_to_process);
+    CopyToVector(tracked_elements_, elements_to_process);
     for (auto& element : elements_to_process) {
       needs_occlusion_tracking_ |=
-          element->ComputeIntersectionObservations(flags);
+          element->ComputeIntersectionsForLifecycleUpdate(flags);
     }
   }
   return needs_occlusion_tracking_;
 }
 
-void IntersectionObserverController::AddTrackedTarget(Element& target,
-                                                      bool track_occlusion) {
-  tracked_observation_targets_.insert(&target);
+void IntersectionObserverController::AddTrackedElement(Element& element,
+                                                       bool track_occlusion) {
+  tracked_elements_.insert(&element);
   if (!track_occlusion)
     return;
   needs_occlusion_tracking_ = true;
-  if (LocalFrameView* frame_view = target.GetDocument().View()) {
+  if (LocalFrameView* frame_view = element.GetDocument().View()) {
     if (FrameOwner* frame_owner = frame_view->GetFrame().Owner()) {
       // Set this bit as early as possible, rather than waiting for a lifecycle
       // update to recompute it.
@@ -99,19 +91,18 @@ void IntersectionObserverController::AddTrackedTarget(Element& target,
   }
 }
 
-void IntersectionObserverController::RemoveTrackedTarget(Element& target) {
+void IntersectionObserverController::RemoveTrackedElement(Element& target) {
   // Note that we don't try to opportunistically turn off the 'needs occlusion
   // tracking' bit here, like the way we turn it on in AddTrackedTarget. The
   // bit will get recomputed on the next lifecycle update; there's no
   // compelling reason to do it here, so we avoid the iteration through targets
   // and observations here.
-  tracked_observation_targets_.erase(&target);
+  tracked_elements_.erase(&target);
 }
 
 void IntersectionObserverController::Trace(blink::Visitor* visitor) {
-  visitor->Trace(tracked_observation_targets_);
+  visitor->Trace(tracked_elements_);
   visitor->Trace(pending_intersection_observers_);
-  visitor->Trace(intersection_observers_being_invoked_);
   ContextClient::Trace(visitor);
 }
 

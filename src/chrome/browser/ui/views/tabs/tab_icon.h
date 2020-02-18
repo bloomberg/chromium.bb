@@ -64,8 +64,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   // strip in order to keep the throbbers in sync.
   void StepLoadingAnimation(const base::TimeDelta& elapsed_time);
 
-  void SetBackgroundColor(SkColor color);
-
  private:
   class CrashAnimation;
   friend CrashAnimation;
@@ -123,8 +121,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   bool is_crashed_ = false;
   int attention_types_ = 0;  // Bitmask of AttentionType.
 
-  const bool use_new_loading_animation_;
-
   // Value from last call to SetNetworkState. When true, the network loading
   // animation will not be shown.
   bool inhibit_loading_animation_ = false;
@@ -160,8 +156,6 @@ class TabIcon : public views::View, public views::AnimationDelegateViews {
   std::unique_ptr<CrashAnimation> crash_animation_;
 
   bool can_paint_to_layer_ = false;
-
-  SkColor bg_color_ = SK_ColorBLACK;
 
   bool has_tab_renderer_data_ = false;
 

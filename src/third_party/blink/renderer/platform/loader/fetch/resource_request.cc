@@ -64,7 +64,6 @@ ResourceRequest::ResourceRequest(const KURL& url)
       priority_(ResourceLoadPriority::kUnresolved),
       intra_priority_value_(0),
       requestor_id_(0),
-      plugin_child_id_(-1),
       previews_state_(WebURLRequest::kPreviewsUnspecified),
       request_context_(mojom::RequestContextType::UNSPECIFIED),
       mode_(network::mojom::RequestMode::kNoCors),
@@ -103,8 +102,7 @@ std::unique_ptr<ResourceRequest> ResourceRequest::CreateRedirectRequest(
       new_referrer.IsEmpty() ? Referrer::NoReferrer() : String(new_referrer);
   // TODO(domfarolino): Stop storing ResourceRequest's generated referrer as a
   // header and instead use a separate member. See https://crbug.com/850813.
-  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy),
-                           SetHttpReferrerLocation::kCreateRedirectRequest);
+  request->SetHttpReferrer(Referrer(referrer, new_referrer_policy));
   request->SetSkipServiceWorker(skip_service_worker);
   request->SetRedirectStatus(RedirectStatus::kFollowedRedirect);
 
@@ -221,10 +219,7 @@ void ResourceRequest::SetHttpHeaderField(const AtomicString& name,
   http_header_fields_.Set(name, value);
 }
 
-void ResourceRequest::SetHttpReferrer(
-    const Referrer& referrer,
-    SetHttpReferrerLocation set_http_referrer_location) {
-  set_http_referrer_location_ = set_http_referrer_location;
+void ResourceRequest::SetHttpReferrer(const Referrer& referrer) {
   if (referrer.referrer.IsEmpty())
     http_header_fields_.Remove(http_names::kReferer);
   else
@@ -317,14 +312,16 @@ void ResourceRequest::ClearHttpHeaderField(const AtomicString& name) {
 }
 
 void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
-    mojom::IPAddressSpace requestor_space) {
-  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPrivate,
+    network::mojom::IPAddressSpace requestor_space) {
+  static_assert(network::mojom::IPAddressSpace::kLocal <
+                    network::mojom::IPAddressSpace::kPrivate,
                 "Local is inside Private");
-  static_assert(mojom::IPAddressSpace::kLocal < mojom::IPAddressSpace::kPublic,
+  static_assert(network::mojom::IPAddressSpace::kLocal <
+                    network::mojom::IPAddressSpace::kPublic,
                 "Local is inside Public");
-  static_assert(
-      mojom::IPAddressSpace::kPrivate < mojom::IPAddressSpace::kPublic,
-      "Private is inside Public");
+  static_assert(network::mojom::IPAddressSpace::kPrivate <
+                    network::mojom::IPAddressSpace::kPublic,
+                "Private is inside Public");
 
   // TODO(mkwst): This only checks explicit IP addresses. We'll have to move all
   // this up to //net and //content in order to have any real impact on gateway
@@ -334,11 +331,12 @@ void ResourceRequest::SetExternalRequestStateFromRequestorAddressSpace(
     return;
   }
 
-  mojom::IPAddressSpace target_space = mojom::IPAddressSpace::kPublic;
+  network::mojom::IPAddressSpace target_space =
+      network::mojom::IPAddressSpace::kPublic;
   if (network_utils::IsReservedIPAddress(url_.Host()))
-    target_space = mojom::IPAddressSpace::kPrivate;
+    target_space = network::mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(url_)->IsLocalhost())
-    target_space = mojom::IPAddressSpace::kLocal;
+    target_space = network::mojom::IPAddressSpace::kLocal;
 
   is_external_request_ = requestor_space > target_space;
 }

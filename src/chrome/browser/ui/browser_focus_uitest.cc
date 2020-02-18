@@ -262,7 +262,13 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, BrowsersRememberFocus) {
 }
 
 // Tabs remember focus.
-IN_PROC_BROWSER_TEST_F(BrowserFocusTest, TabsRememberFocus) {
+#if defined(THREAD_SANITIZER)
+// TODO(crbug.com/995181): This test is flaky on Linux TSan.
+#define MAYBE_TabsRememberFocus DISABLED_TabsRememberFocus
+#else
+#define MAYBE_TabsRememberFocus TabsRememberFocus
+#endif
+IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_TabsRememberFocus) {
   ASSERT_TRUE(ui_test_utils::BringBrowserWindowToFront(browser()));
   const GURL url = embedded_test_server()->GetURL(kSimplePage);
   ui_test_utils::NavigateToURL(browser(), url);
@@ -499,19 +505,19 @@ IN_PROC_BROWSER_TEST_F(BrowserFocusTest, MAYBE_FindFocusTest) {
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   chrome::FocusLocationBar(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_OMNIBOX));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 
   ClickOnView(VIEW_ID_TAB_CONTAINER);
   EXPECT_TRUE(IsViewFocused(VIEW_ID_TAB_CONTAINER));
 
-  chrome::ShowFindBar(browser());
+  chrome::Find(browser());
   EXPECT_TRUE(IsViewFocused(VIEW_ID_FIND_IN_PAGE_TEXT_FIELD));
 }
 

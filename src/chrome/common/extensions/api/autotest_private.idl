@@ -13,6 +13,40 @@ namespace autotestPrivate {
     Bottom, Left, Right
   };
 
+  // A mapping of ash::ShelfItemType.
+  enum ShelfItemType {
+    App,
+    PinnedApp,
+    BrowserShortcut,
+    Dialog
+  };
+
+  // A mapping of ash::ShelfItemStatus.
+  enum ShelfItemStatus {
+    Closed,
+    Running,
+    Attention
+  };
+
+  // A mapping of apps::mojom::Type
+  enum AppType {
+    Arc,
+    BuiltIn,
+    Crostini,
+    Extension,
+    Web
+  };
+
+  // A mapping of apps::mojom::Readiness
+  enum AppReadiness {
+    Ready,
+    DisabledByBlacklist,
+    DisabledByPolicy,
+    DisabledByUser,
+    Terminated,
+    UninstalledByUser
+  };
+
   // A subset of Window State types in ash::WindowStateType. We may add more
   // into the set in the future.
   enum WindowStateType {
@@ -21,7 +55,8 @@ namespace autotestPrivate {
     Maximized,
     Fullscreen,
     LeftSnapped,
-    RightSnapped
+    RightSnapped,
+    PIP
   };
 
   // A subset of WM event types in ash::WMEventType. We may add more in the
@@ -70,7 +105,7 @@ namespace autotestPrivate {
   callback LoginStatusCallback = void (LoginStatusDict status);
 
   // |all_policies| will be the full list of policies as returned by the
-  // GetAllPolicyValuesAsArray function.
+  // DictionaryPolicyConversions.ToValue function.
   callback AllEnterprisePoliciesCallback = void (any all_policies);
 
   dictionary ExtensionInfoDict {
@@ -118,6 +153,8 @@ namespace autotestPrivate {
     DOMString? printerPpd;
   };
   callback PrinterArrayCallback = void (Printer[] printers);
+
+  callback ArcStartTimeCallback = void (double startTime);
 
   dictionary ArcState {
     // Whether the ARC is provisioned.
@@ -192,6 +229,20 @@ namespace autotestPrivate {
   };
   callback GetArcPackageCallback = void (ArcPackageDict package);
 
+  dictionary Bounds {
+    double left;
+    double top;
+    double width;
+    double height;
+  };
+
+  dictionary ArcAppWindowInfo {
+    Bounds bounds;
+    boolean isAnimating;
+    DOMString displayId;
+  };
+  callback GetArcAppWindowInfoCallback = void (ArcAppWindowInfo info);
+
   callback LaunchArcAppCallback = void (boolean appLaunched);
 
   callback TakeScreenshotCallback = void (DOMString base64Png);
@@ -202,11 +253,39 @@ namespace autotestPrivate {
 
   callback SetTabletModeEnabledCallback = void(boolean enabled);
 
+  callback SetOverviewModeStateCallback = void(boolean finished);
+
+  dictionary App {
+    DOMString appId;
+    DOMString name;
+    DOMString shortName;
+    AppType? type;
+    AppReadiness? readiness;
+    DOMString[] additionalSearchTerms;
+    boolean? showInLauncher;
+    boolean? showInSearch;
+  };
+
+  callback GetAllInstalledAppsCallback = void (App[] apps);
+
+  dictionary ShelfItem {
+    DOMString appId;
+    DOMString launchId;
+    DOMString title;
+    ShelfItemType? type;
+    ShelfItemStatus status;
+    boolean showsTooltip;
+    boolean pinnedByPolicy;
+    boolean hasNotification;
+  };
+
+  callback GetShelfItemsCallback = void (ShelfItem[] items);
+
   callback GetShelfAutoHideBehaviorCallback = void (DOMString behavior);
 
   callback GetShelfAlignmentCallback = void (ShelfAlignmentType alignment);
 
-  callback WindowStateChangedCallback = void (WindowStateType currentType);
+  callback WindowStateCallback = void (WindowStateType currentType);
 
   callback VoidCallback = void ();
 
@@ -274,6 +353,9 @@ namespace autotestPrivate {
 
     // Get visible notifications on the system.
     static void getVisibleNotifications(NotificationArrayCallback callback);
+
+    // Get ARC start time.
+    static void getArcStartTime(ArcStartTimeCallback callback);
 
     // Get state of the ARC session.
     static void getArcState(ArcStateCallback callback);
@@ -351,6 +433,11 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void importCrostini(DOMString path, VoidCallback callback);
 
+    // Register a component with CrOSComponentManager.
+    // |name|: The name of the component.
+    // |path|: Path to the component.
+    static void registerComponent(DOMString name, DOMString path);
+
     // Takes a screenshot and returns the data in base64 encoded PNG format.
     static void takeScreenshot(TakeScreenshotCallback callback);
 
@@ -398,6 +485,12 @@ namespace autotestPrivate {
     static void setTabletModeEnabled(boolean enabled,
         SetTabletModeEnabledCallback callback);
 
+    // Get the list of all installed applications
+    static void getAllInstalledApps(GetAllInstalledAppsCallback callback);
+
+    // Get the list of all shelf items
+    static void getShelfItems(GetShelfItemsCallback callback);
+
     // Get the shelf auto hide behavior.
     // |displayId|: display that contains the shelf.
     // |callback| is invoked with the shelf auto hide behavior. Possible
@@ -425,15 +518,42 @@ namespace autotestPrivate {
     static void setShelfAlignment(DOMString displayId,
         ShelfAlignmentType alignment, VoidCallback callback);
 
+    // Enter or exit the overview mode.
+    // |start|: whether entering to or exiting from the overview mode.
+    // |callback|: called after the overview mode switch finishes.
+    static void setOverviewModeState(boolean start,
+        SetOverviewModeStateCallback callback);
+
     // Show virtual keyboard of the current input method if it's available.
     static void showVirtualKeyboardIfEnabled();
 
-    // Sends WM event to change the ARC app window's window state.
+    // Send WM event to change the ARC app window's window state.
     // |packageName|: the package name of the ARC app window.
     // |eventType|: WM event type to send to the ARC app window.
     // |callback|: called when the window state is changed.
     static void setArcAppWindowState(DOMString packageName,
                                      WindowStateChangeDict change,
-                                     WindowStateChangedCallback callback);
+                                     WindowStateCallback callback);
+
+    // Get ARC app window's window state.
+    // |packageName|: the package name of the ARC app window.
+    // |callback| is invoked with the window state.
+    static void getArcAppWindowState(DOMString packageName, WindowStateCallback callback);
+
+    // Get various information on an ARC window.
+    // |packageName|: the package name of the ARC app window.
+    // |callback|: called when the operation has completed.
+    static void getArcAppWindowInfo(DOMString packageName,
+                                    GetArcAppWindowInfoCallback callback);
+
+    // Swap the windows in the split view.
+    // |callback|: Called when the operation has completed.
+    static void swapWindowsInSplitView(VoidCallback callback);
+
+    // Set ARC app window focused.
+    // |packageName|: the package name of the ARC app window.
+    // |callback|: called when the operation has completed.
+    static void setArcAppWindowFocus(DOMString packageName,
+                                     VoidCallback callback);
   };
 };

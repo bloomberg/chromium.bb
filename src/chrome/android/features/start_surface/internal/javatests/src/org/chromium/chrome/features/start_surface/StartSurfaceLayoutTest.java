@@ -4,6 +4,10 @@
 
 package org.chromium.chrome.features.start_surface;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.action.ViewActions.click;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
@@ -13,16 +17,19 @@ import static org.chromium.chrome.browser.util.UrlConstants.NTP_URL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL;
 import static org.chromium.content_public.browser.test.util.CriteriaHelper.DEFAULT_POLLING_INTERVAL;
 
+import android.animation.ValueAnimator;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.test.InstrumentationRegistry;
-import android.support.test.espresso.Espresso;
-import android.support.test.espresso.action.ViewActions;
+import android.support.test.espresso.NoMatchingViewException;
+import android.support.test.espresso.ViewAssertion;
 import android.support.test.espresso.contrib.RecyclerViewActions;
-import android.support.test.espresso.matcher.ViewMatchers;
 import android.support.test.filters.MediumTest;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
+import android.view.View;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -37,6 +44,7 @@ import org.chromium.base.GarbageCollectionTestUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
+import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -71,7 +79,6 @@ import java.util.List;
         "force-fieldtrials=Study/Group"})
 @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
 public class StartSurfaceLayoutTest {
-    private static final String TAG = "SSLayoutTest";
     private static final String BASE_PARAMS = "force-fieldtrial-params="
             + "Study.Group:soft-cleanup-delay/0/cleanup-delay/0/skip-slow-zooming/false"
             + "/zooming-min-sdk-version/19/zooming-min-memory-mb/512";
@@ -92,6 +99,7 @@ public class StartSurfaceLayoutTest {
     @Before
     public void setUp() throws InterruptedException {
         FeatureUtilities.setGridTabSwitcherEnabledForTesting(true);
+
         EmbeddedTestServer testServer =
                 EmbeddedTestServer.createAndStartServer(InstrumentationRegistry.getContext());
         mActivityTestRule.startMainActivityFromLauncher();
@@ -109,12 +117,21 @@ public class StartSurfaceLayoutTest {
 
         mActivityTestRule.getActivity().getTabContentManager().setCaptureMinRequestTimeForTesting(
                 0);
+
+        CriteriaHelper.pollUiThread(Criteria.equals(true,
+                mActivityTestRule.getActivity()
+                        .getTabModelSelector()
+                        .getTabModelFilterProvider()
+                        .getCurrentTabModelFilter()::isTabModelRestored));
     }
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS})
     public void testTabToGridFromLiveTab() throws InterruptedException {
+        // clang-format on
         TabSwitcher.TabListDelegate delegate =
                 mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(0, delegate.getSoftCleanupDelayForTesting());
@@ -130,6 +147,8 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @DisabledTest(message = "crbug.com/991852 This test is flaky")
     public void testTabToGridFromLiveTabAnimation() throws InterruptedException {
         // clang-format on
         assertTrue(FeatureUtilities.isTabToGtsAnimationEnabled());
@@ -141,8 +160,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabWarm() throws InterruptedException {
+        // clang-format on
         TabSwitcher.TabListDelegate delegate =
                 mStartSurfaceLayout.getStartSurfaceForTesting().getTabListDelegate();
         assertEquals(10000, delegate.getSoftCleanupDelayForTesting());
@@ -157,6 +179,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/soft-cleanup-delay/10000/cleanup-delay/10000"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabWarmAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -165,8 +188,11 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    // clang-format off
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
     public void testTabToGridFromLiveTabSoft() throws InterruptedException {
+        // clang-format on
         prepareTabs(2, NTP_URL);
         testTabToGrid(mUrl);
     }
@@ -176,6 +202,7 @@ public class StartSurfaceLayoutTest {
     // clang-format off
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
     @CommandLineFlags.Add({BASE_PARAMS + "/cleanup-delay/10000"})
+    @MinAndroidSdkLevel(Build.VERSION_CODES.M) // TODO(crbug.com/997065#c8): remove SDK restriction.
     public void testTabToGridFromLiveTabSoftAnimation() throws InterruptedException {
         // clang-format on
         prepareTabs(2, NTP_URL);
@@ -303,6 +330,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToCurrentLive() throws InterruptedException {
         prepareTabs(1, mUrl);
         testGridToTab(false, false);
@@ -310,6 +338,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     @DisabledTest(message = "crbug.com/986047. This works on emulators but not on real devices.")
     public void testGridToTabToCurrentLiveDetached() throws Exception {
         for (int i = 0; i < 10; i++) {
@@ -321,8 +350,9 @@ public class StartSurfaceLayoutTest {
             if (mActivityTestRule.getActivity()
                             .getTabContentManager()
                             .getPendingReadbacksForTesting()
-                    > 0)
+                    > 0) {
                 break;
+            }
 
             // Restart Chrome.
             // Although we're destroying the activity, the Application will still live on since its
@@ -344,7 +374,8 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @DisabledTest(message = "crbug.com/981409")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToCurrentLiveWithAnimation() throws InterruptedException {
         prepareTabs(1, mUrl);
         testGridToTab(false, false);
@@ -352,6 +383,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherLive() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, false);
@@ -360,7 +392,8 @@ public class StartSurfaceLayoutTest {
     @Test
     @MediumTest
     @Features.EnableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION + "<Study")
-    @DisabledTest(message = "crbug.com/981341")
+    @MinAndroidSdkLevel(Build.VERSION_CODES.LOLLIPOP)
+    @DisabledTest(message = "crbug.com/993201 This test fails deterministically on Nexus 5X")
     public void testGridToTabToOtherLiveWithAnimation() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, false);
@@ -368,6 +401,7 @@ public class StartSurfaceLayoutTest {
 
     @Test
     @MediumTest
+    @Features.DisableFeatures(ChromeFeatureList.TAB_TO_GTS_ANIMATION)
     public void testGridToTabToOtherFrozen() throws InterruptedException {
         prepareTabs(2, mUrl);
         testGridToTab(true, true);
@@ -392,9 +426,8 @@ public class StartSurfaceLayoutTest {
                 waitForCaptureRateControl();
             }
             int count = getCaptureCount();
-            Espresso.onView(ViewMatchers.withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
-                    .perform(RecyclerViewActions.actionOnItemAtPosition(
-                            targetIndex, ViewActions.click()));
+            onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                    .perform(RecyclerViewActions.actionOnItemAtPosition(targetIndex, click()));
             CriteriaHelper.pollUiThread(() -> {
                 boolean doneHiding =
                         !mActivityTestRule.getActivity().getLayoutManager().overviewVisible();
@@ -509,14 +542,66 @@ public class StartSurfaceLayoutTest {
         Assert.assertEquals(0, mAllBitmaps.size() - count);
     }
 
+    @Test
+    @MediumTest
+    @CommandLineFlags.Add({BASE_PARAMS})
+    // clang-format off
+    @DisabledTest(message = "http://crbug/1005865 - Test was previously flaky but only on bots."
+            + "Was not locally reproducible. Disabling until verified that it's deflaked on bots.")
+    public void testIncognitoEnterGts() throws Exception {
+        // clang-format on
+        mActivityTestRule.newIncognitoTabFromMenu();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                .check(TabCountAssertion.havingTabCount(1));
+
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                .perform(RecyclerViewActions.actionOnItemAtPosition(0, click()));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> !mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mActivityTestRule.getActivity().getLayoutManager().showOverview(false));
+        CriteriaHelper.pollInstrumentationThread(
+                () -> mActivityTestRule.getActivity().getLayoutManager().overviewVisible());
+
+        onView(withId(org.chromium.chrome.tab_ui.R.id.tab_list_view))
+                .check(TabCountAssertion.havingTabCount(1));
+    }
+
+    private static class TabCountAssertion implements ViewAssertion {
+        private int mExpectedCount;
+
+        public static TabCountAssertion havingTabCount(int tabCount) {
+            return new TabCountAssertion(tabCount);
+        }
+
+        public TabCountAssertion(int expectedCount) {
+            mExpectedCount = expectedCount;
+        }
+
+        @Override
+        public void check(View view, NoMatchingViewException noMatchException) {
+            if (noMatchException != null) throw noMatchException;
+
+            RecyclerView.Adapter adapter = ((RecyclerView) view).getAdapter();
+            assertEquals(mExpectedCount, adapter.getItemCount());
+        }
+    }
+
     private void enterGTS() throws InterruptedException {
         Tab currentTab = mActivityTestRule.getActivity().getTabModelSelector().getCurrentTab();
         // Native tabs need to be invalidated first to trigger thumbnail taking, so skip them.
         boolean checkThumbnail = !currentTab.isNativePage();
 
-        if (checkThumbnail)
+        if (checkThumbnail) {
             mActivityTestRule.getActivity().getTabContentManager().removeTabThumbnail(
                     currentTab.getId());
+        }
 
         int count = getCaptureCount();
         waitForCaptureRateControl();

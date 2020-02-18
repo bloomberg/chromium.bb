@@ -9,12 +9,14 @@
 
 #include "base/optional.h"
 #include "device/vr/public/mojom/vr_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/geometry/dom_point_read_only.h"
 #include "third_party/blink/renderer/platform/transforms/transformation_matrix.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
+class XRRigidTransform;
 class XRSession;
 class XRSpace;
 
@@ -24,14 +26,18 @@ class XRPlane : public ScriptWrappable {
  public:
   enum Orientation { kHorizontal, kVertical };
 
-  XRPlane(XRSession* session,
+  XRPlane(int32_t id,
+          XRSession* session,
           const device::mojom::blink::XRPlaneDataPtr& plane_data,
           double timestamp);
-  XRPlane(XRSession* session,
+  XRPlane(int32_t id,
+          XRSession* session,
           const base::Optional<Orientation>& orientation,
           const TransformationMatrix& pose_matrix,
           const HeapVector<Member<DOMPointReadOnly>>& polygon,
           double timestamp);
+
+  int32_t id() const;
 
   XRSpace* planeSpace() const;
 
@@ -40,6 +46,10 @@ class XRPlane : public ScriptWrappable {
   String orientation() const;
   HeapVector<Member<DOMPointReadOnly>> polygon() const;
   double lastChangedTime() const;
+
+  ScriptPromise createAnchor(ScriptState* script_state,
+                             XRRigidTransform* initial_pose,
+                             XRSpace* space);
 
   // Updates plane data from passed in |plane_data|. The resulting instance
   // should be equivalent to the instance that would be create by calling
@@ -50,6 +60,7 @@ class XRPlane : public ScriptWrappable {
   void Trace(blink::Visitor* visitor) override;
 
  private:
+  const int32_t id_;
   HeapVector<Member<DOMPointReadOnly>> polygon_;
   base::Optional<Orientation> orientation_;
 

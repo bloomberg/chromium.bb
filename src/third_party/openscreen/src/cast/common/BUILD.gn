@@ -9,6 +9,8 @@ source_set("mdns") {
     "mdns/mdns_constants.h",
     "mdns/mdns_reader.cc",
     "mdns/mdns_reader.h",
+    "mdns/mdns_receiver.cc",
+    "mdns/mdns_receiver.h",
     "mdns/mdns_records.cc",
     "mdns/mdns_records.h",
     "mdns/mdns_sender.cc",
@@ -31,6 +33,7 @@ source_set("mdns_unittests") {
 
   sources = [
     "mdns/mdns_reader_unittest.cc",
+    "mdns/mdns_receiver_unittest.cc",
     "mdns/mdns_records_unittest.cc",
     "mdns/mdns_sender_unittest.cc",
     "mdns/mdns_writer_unittest.cc",

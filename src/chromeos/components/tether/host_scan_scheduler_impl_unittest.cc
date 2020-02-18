@@ -9,8 +9,8 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/tether/fake_host_scanner.h"
@@ -163,7 +163,7 @@ class HostScanSchedulerImplTest : public testing::Test {
     return helper_->network_state_handler();
   }
 
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  base::test::TaskEnvironment task_environment_;
   std::string ethernet_service_path_;
 
   std::unique_ptr<NetworkStateTestHelper> helper_;

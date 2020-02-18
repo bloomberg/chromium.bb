@@ -540,6 +540,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       isolate_(v8::Isolate::GetCurrent()),
       is_deleted_(false),
       initialized_(false),
+      created_in_process_instance_(false),
       audio_controller_(std::make_unique<PepperAudioController>(this)) {
   pp_instance_ = HostGlobals::Get()->AddInstance(this);
 
@@ -555,6 +556,7 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
     SetContentAreaFocus(render_frame_->GetLocalRootRenderWidget()->has_focus());
 
     if (!module_->IsProxied()) {
+      created_in_process_instance_ = true;
       PepperBrowserConnection* browser_connection =
           PepperBrowserConnection::Get(render_frame_);
       browser_connection->DidCreateInProcessInstance(
@@ -600,7 +602,7 @@ PepperPluginInstanceImpl::~PepperPluginInstanceImpl() {
   if (render_frame_)
     render_frame_->PepperInstanceDeleted(this);
 
-  if (!module_->IsProxied() && render_frame_) {
+  if (created_in_process_instance_) {
     PepperBrowserConnection* browser_connection =
         PepperBrowserConnection::Get(render_frame_);
     browser_connection->DidDeleteInProcessInstance(pp_instance());
@@ -1567,6 +1569,14 @@ void PepperPluginInstanceImpl::Redo() {
   plugin_pdf_interface_->Redo(pp_instance());
 }
 
+void PepperPluginInstanceImpl::HandleAccessibilityAction(
+    const PP_PdfAccessibilityActionData& action_data) {
+  if (!LoadPdfInterface())
+    return;
+
+  plugin_pdf_interface_->HandleAccessibilityAction(pp_instance(), action_data);
+}
+
 void PepperPluginInstanceImpl::RequestSurroundingText(
     size_t desired_number_of_characters) {
   // Keep a reference on the stack. See NOTE above.
@@ -2129,7 +2139,7 @@ void PepperPluginInstanceImpl::UpdateFlashFullscreenState(
             ppapi::PERMISSION_BYPASS_USER_GESTURE)) {
       lock_mouse_callback_->Run(PP_ERROR_NO_USER_GESTURE);
     } else {
-      if (!LockMouse())
+      if (!LockMouse(/*request_unadjusted_movement=*/false))
         lock_mouse_callback_->Run(PP_ERROR_FAILED);
     }
   }
@@ -2147,8 +2157,7 @@ bool PepperPluginInstanceImpl::IsViewAccelerated() {
   if (!frame)
     return false;
 
-  WebView* view = frame->View();
-  return view && view->MainFrameWidget()->IsAcceleratedCompositingActive();
+  return frame->FrameWidget()->IsAcceleratedCompositingActive();
 }
 
 void PepperPluginInstanceImpl::UpdateLayer(bool force_creation) {
@@ -2758,7 +2767,7 @@ int32_t PepperPluginInstanceImpl::LockMouse(
   // Attempt mouselock only if Flash isn't waiting on fullscreen, otherwise
   // we wait and call LockMouse() in UpdateFlashFullscreenState().
   if (!FlashIsFullscreenOrPending() || flash_fullscreen_) {
-    if (!LockMouse())
+    if (!LockMouse(false))
       return PP_ERROR_FAILED;
   }
 
@@ -3267,10 +3276,11 @@ bool PepperPluginInstanceImpl::IsMouseLocked() {
       GetOrCreateLockTargetAdapter());
 }
 
-bool PepperPluginInstanceImpl::LockMouse() {
+bool PepperPluginInstanceImpl::LockMouse(bool request_unadjusted_movement) {
   WebLocalFrame* requester_frame = container_->GetDocument().GetFrame();
   return GetMouseLockDispatcher()->LockMouse(GetOrCreateLockTargetAdapter(),
-                                             requester_frame);
+                                             requester_frame,
+                                             request_unadjusted_movement);
 }
 
 MouseLockDispatcher::LockTarget*

@@ -18,6 +18,8 @@
 #include "base/optional.h"
 #include "base/unguessable_token.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "net/base/load_states.h"
@@ -41,6 +43,10 @@ class URLRequestContext;
 
 namespace network {
 
+namespace mojom {
+class OriginPolicyManager;
+}
+
 constexpr size_t kMaxFileUploadRequestsPerBatch = 64;
 
 class NetToMojoPendingBuffer;
@@ -48,6 +54,7 @@ class NetworkUsageAccumulator;
 class KeepaliveStatisticsRecorder;
 struct ResourceResponse;
 class ScopedThrottlingToken;
+struct OriginPolicy;
 
 class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     : public mojom::URLLoader,
@@ -59,6 +66,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // |delete_callback| tells the URLLoader's owner to destroy the URLLoader.
   // The URLLoader must be destroyed before the |url_request_context|.
+  // The |origin_policy_manager| must always be provided for requests that
+  // have the |obey_origin_policy| flag set.
   URLLoader(
       net::URLRequestContext* url_request_context,
       mojom::NetworkServiceClient* network_service_client,
@@ -74,14 +83,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
       scoped_refptr<ResourceSchedulerClient> resource_scheduler_client,
       base::WeakPtr<KeepaliveStatisticsRecorder> keepalive_statistics_recorder,
       base::WeakPtr<NetworkUsageAccumulator> network_usage_accumulator,
-      mojom::TrustedURLLoaderHeaderClient* url_loader_header_client);
+      mojom::TrustedURLLoaderHeaderClient* url_loader_header_client,
+      mojom::OriginPolicyManager* origin_policy_manager);
   ~URLLoader() override;
 
   // mojom::URLLoader implementation:
   void FollowRedirect(const std::vector<std::string>& removed_headers,
                       const net::HttpRequestHeaders& modified_headers,
                       const base::Optional<GURL>& new_url) override;
-  void ProceedWithResponse() override;
   void SetPriority(net::RequestPriority priority,
                    int32_t intra_priority_value) override;
   void PauseReadingBodyFromNet() override;
@@ -234,6 +243,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   BlockResponseForCorbResult BlockResponseForCorb();
 
   void ReportFlaggedResponseCookies();
+  void StartReading();
+  void OnOriginPolicyManagerRetrieveDone(const OriginPolicy& origin_policy);
 
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
@@ -255,10 +266,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   const bool do_not_prompt_for_login_;
   std::unique_ptr<net::URLRequest> url_request_;
   mojo::Binding<mojom::URLLoader> binding_;
-  mojo::Binding<mojom::AuthChallengeResponder>
-      auth_challenge_responder_binding_;
-  mojo::Binding<mojom::ClientCertificateResponder>
-      client_cert_responder_binding_;
+  mojo::Receiver<mojom::AuthChallengeResponder>
+      auth_challenge_responder_receiver_{this};
+  mojo::Receiver<mojom::ClientCertificateResponder>
+      client_cert_responder_receiver_{this};
   mojom::URLLoaderClientPtr url_loader_client_;
   int64_t total_written_bytes_ = 0;
 
@@ -349,7 +360,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // network::ResourceRequest::fetch_window_id for details.
   base::Optional<base::UnguessableToken> fetch_window_id_;
 
-  mojom::TrustedHeaderClientPtr header_client_;
+  mojo::Remote<mojom::TrustedHeaderClient> header_client_;
 
   std::unique_ptr<FileOpenerForUpload> file_opener_for_upload_;
 
@@ -357,6 +368,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // mojom::network::URLRequest::update_network_isolation_key_on_redirect.
   mojom::UpdateNetworkIsolationKeyOnRedirect
       update_network_isolation_key_on_redirect_;
+
+  // Will only be set for requests that have |obey_origin_policy| set.
+  mojom::OriginPolicyManager* origin_policy_manager_;
 
   base::WeakPtrFactory<URLLoader> weak_ptr_factory_{this};
 

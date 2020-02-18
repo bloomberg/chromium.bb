@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-#include <gtest/gtest.h>
 #include <stdlib.h>
 #include <sys/system_properties.h>
 #include <sys/types.h>
@@ -24,9 +23,10 @@
 #include "perfetto/base/logging.h"
 #include "perfetto/tracing/core/data_source_config.h"
 #include "src/base/test/test_task_runner.h"
+#include "test/gtest_and_gmock.h"
 #include "test/test_helper.h"
 
-#include "perfetto/config/profiling/heapprofd_config.pb.h"
+#include "protos/perfetto/config/profiling/heapprofd_config.pb.h"
 
 namespace perfetto {
 namespace {
@@ -144,7 +144,7 @@ std::vector<protos::TracePacket> ProfileRuntime(std::string app_name) {
 
   // start tracing
   helper.StartTracing(trace_config);
-  helper.WaitForTracingDisabled(4000 /*ms*/);
+  helper.WaitForTracingDisabled(10000 /*ms*/);
   helper.ReadData();
   helper.WaitForReadData();
 

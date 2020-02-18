@@ -13,8 +13,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/native_file_system_entry_factory.h"
 #include "content/public/browser/native_file_system_permission_context.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_file_writer.mojom.h"
 #include "third_party/blink/public/mojom/native_file_system/native_file_system_manager.mojom.h"
@@ -74,15 +76,17 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   NativeFileSystemManagerImpl(
       scoped_refptr<storage::FileSystemContext> context,
       scoped_refptr<ChromeBlobStorageContext> blob_context,
-      NativeFileSystemPermissionContext* permission_context);
+      NativeFileSystemPermissionContext* permission_context,
+      bool off_the_record);
 
-  void BindRequest(const BindingContext& binding_context,
-                   blink::mojom::NativeFileSystemManagerRequest request);
+  void BindReceiver(
+      const BindingContext& binding_context,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
-  static void BindRequestFromUIThread(
+  static void BindReceiverFromUIThread(
       StoragePartitionImpl* storage_partition,
       const BindingContext& binding_context,
-      blink::mojom::NativeFileSystemManagerRequest request);
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemManager> receiver);
 
   // blink::mojom::NativeFileSystemManager:
   void GetSandboxedFileSystem(GetSandboxedFileSystemCallback callback) override;
@@ -109,10 +113,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
 
   // Creates a new NativeFileSystemFileHandleImpl for a given url. Assumes the
   // passed in URL is valid and represents a file.
-  blink::mojom::NativeFileSystemFileHandlePtr CreateFileHandle(
-      const BindingContext& binding_context,
-      const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state);
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileHandle>
+  CreateFileHandle(const BindingContext& binding_context,
+                   const storage::FileSystemURL& url,
+                   const SharedHandleState& handle_state);
 
   // Creates a new NativeFileSystemDirectoryHandleImpl for a given url. Assumes
   // the passed in URL is valid and represents a directory.
@@ -121,12 +125,13 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const storage::FileSystemURL& url,
       const SharedHandleState& handle_state);
 
-  // Creates a new NativeFileSystemFileWriterImpl for a given url. Assumes the
-  // passed in URL is valid and represents a file.
-  blink::mojom::NativeFileSystemFileWriterPtr CreateFileWriter(
-      const BindingContext& binding_context,
-      const storage::FileSystemURL& url,
-      const SharedHandleState& handle_state);
+  // Creates a new NativeFileSystemFileWriterImpl for a given target and
+  // swap file URLs. Assumes the passed in URLs are valid and represent files.
+  mojo::PendingRemote<blink::mojom::NativeFileSystemFileWriter>
+  CreateFileWriter(const BindingContext& binding_context,
+                   const storage::FileSystemURL& url,
+                   const storage::FileSystemURL& swap_url,
+                   const SharedHandleState& handle_state);
 
   // Create a transfer token for a specific file or directory.
   void CreateTransferToken(
@@ -154,12 +159,20 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
   }
   storage::FileSystemOperationRunner* operation_runner();
 
+  NativeFileSystemPermissionContext* permission_context() {
+    return permission_context_;
+  }
+
+  bool is_off_the_record() const { return off_the_record_; }
+
   void SetPermissionContextForTesting(
       NativeFileSystemPermissionContext* permission_context) {
     permission_context_ = permission_context;
   }
 
  private:
+  friend class NativeFileSystemFileHandleImpl;
+
   ~NativeFileSystemManagerImpl() override;
   void DidOpenSandboxedFileSystem(const BindingContext& binding_context,
                                   GetSandboxedFileSystemCallback callback,
@@ -178,6 +191,10 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       ChooseEntriesCallback callback,
       std::vector<base::FilePath> entries,
       NativeFileSystemPermissionContext::SensitiveDirectoryResult result);
+  void DidCreateOrTruncateSaveFile(const BindingContext& binding_context,
+                                   const base::FilePath& path,
+                                   ChooseEntriesCallback callback,
+                                   bool success);
   void DidChooseDirectory(
       const BindingContext& binding_context,
       const base::FilePath& path,
@@ -209,26 +226,37 @@ class CONTENT_EXPORT NativeFileSystemManagerImpl
       const base::FilePath& file_path,
       NativeFileSystemPermissionContext::UserAction user_action);
 
+  void CreateFileWriterImpl(
+      const BindingContext& binding_context,
+      const storage::FileSystemURL& url,
+      const storage::FileSystemURL& swap_url,
+      const SharedHandleState& handle_state,
+      mojo::PendingReceiver<blink::mojom::NativeFileSystemFileWriter>
+          writer_receiver,
+      bool has_transient_user_activation);
+
   const scoped_refptr<storage::FileSystemContext> context_;
   const scoped_refptr<ChromeBlobStorageContext> blob_context_;
   std::unique_ptr<storage::FileSystemOperationRunner> operation_runner_;
   NativeFileSystemPermissionContext* permission_context_;
 
-  // All the mojo bindings for this NativeFileSystemManager itself. Keeps track
+  // All the mojo receivers for this NativeFileSystemManager itself. Keeps track
   // of associated origin and other state as well to not have to rely on the
   // renderer passing that in, and to be able to do security checks around
   // transferability etc.
-  mojo::BindingSet<blink::mojom::NativeFileSystemManager, BindingContext>
-      bindings_;
+  mojo::ReceiverSet<blink::mojom::NativeFileSystemManager, BindingContext>
+      receivers_;
 
-  // All the bindings for file and directory handles that have references to
-  // them.
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileHandle>
-      file_bindings_;
+  // All the bindings and receivers for file and directory handles that have
+  // references to them.
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileHandle>
+      file_receivers_;
   mojo::StrongBindingSet<blink::mojom::NativeFileSystemDirectoryHandle>
       directory_bindings_;
-  mojo::StrongBindingSet<blink::mojom::NativeFileSystemFileWriter>
-      writer_bindings_;
+  mojo::UniqueReceiverSet<blink::mojom::NativeFileSystemFileWriter>
+      writer_receivers_;
+
+  bool off_the_record_;
 
   // Transfer token bindings are stored in what is effectively a
   // StrongBindingMap. The Binding instances own the implementation, and tokens

@@ -36,7 +36,6 @@
 #include "chrome/browser/net/profile_network_context_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_features.h"
@@ -47,14 +46,11 @@
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/cookie_config/cookie_store_util.h"
-#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/dom_distiller/core/url_constants.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/net_log/chrome_net_log.h"
 #include "components/policy/core/common/cloud/user_cloud_policy_manager.h"
-#include "components/prefs/pref_service.h"
-#include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "components/url_formatter/url_fixer.h"
@@ -88,8 +84,6 @@
 #include "chrome/browser/chromeos/login/startup_utils.h"
 #include "chrome/browser/chromeos/net/client_cert_filter_chromeos.h"
 #include "chrome/browser/chromeos/net/client_cert_store_chromeos.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service.h"
-#include "chrome/browser/chromeos/policy/policy_cert_service_factory.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
 #include "chrome/browser/net/nss_context.h"
@@ -170,10 +164,9 @@ void DidGetTPMInfoForUserOnUIThread(
   if (token_info.has_value() && token_info->slot != -1) {
     DVLOG(1) << "Got TPM slot for " << username_hash << ": "
              << token_info->slot;
-    base::PostTaskWithTraits(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&crypto::InitializeTPMForChromeOSUser, username_hash,
-                       token_info->slot));
+    base::PostTask(FROM_HERE, {BrowserThread::IO},
+                   base::BindOnce(&crypto::InitializeTPMForChromeOSUser,
+                                  username_hash, token_info->slot));
   } else {
     NOTREACHED() << "TPMTokenInfoGetter reported invalid token.";
   }
@@ -204,7 +197,7 @@ void StartTPMSlotInitializationOnIOThread(const AccountId& account_id,
                                           const std::string& username_hash) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {BrowserThread::UI},
       base::BindOnce(&GetTPMInfoForUserOnUIThread, account_id, username_hash));
 }
@@ -245,7 +238,6 @@ void StartNSSInitOnIOThread(const AccountId& account_id,
 
 void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  PrefService* pref_service = profile->GetPrefs();
 
   std::unique_ptr<ProfileParams> params(new ProfileParams);
   params->path = profile->GetPath();
@@ -259,15 +251,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
       extensions::ExtensionSystem::Get(profile)->info_map();
 #endif
 
-  params->account_consistency =
-      AccountConsistencyModeManager::GetMethodForProfile(profile);
-
   ProtocolHandlerRegistry* protocol_handler_registry =
       ProtocolHandlerRegistryFactory::GetForBrowserContext(profile);
   DCHECK(protocol_handler_registry);
-
-  protocol_handler_registry_io_thread_delegate_ =
-      protocol_handler_registry->io_thread_delegate();
 
 #if defined(OS_CHROMEOS)
   // Enable client certificates for the Chrome OS sign-in frame, if this feature
@@ -293,7 +279,7 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
     if (user && !user->username_hash().empty()) {
       params->username_hash = user->username_hash();
       DCHECK(!params->username_hash.empty());
-      base::PostTaskWithTraits(
+      base::PostTask(
           FROM_HERE, {BrowserThread::IO},
           base::BindOnce(&StartNSSInitOnIOThread, user->GetAccountId(),
                          user->username_hash(), profile->GetPath()));
@@ -319,79 +305,28 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   params->profile = profile;
   profile_params_ = std::move(params);
 
-  force_google_safesearch_.Init(prefs::kForceGoogleSafeSearch, pref_service);
-  force_google_safesearch_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  force_youtube_restrict_.Init(prefs::kForceYouTubeRestrict, pref_service);
-  force_youtube_restrict_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  allowed_domains_for_apps_.Init(prefs::kAllowedDomainsForApps, pref_service);
-  allowed_domains_for_apps_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-  signed_exchange_enabled_.Init(prefs::kSignedHTTPExchangeEnabled,
-                                pref_service);
-  signed_exchange_enabled_.MoveToSequence(
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO}));
-
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner =
-      base::CreateSingleThreadTaskRunnerWithTraits({BrowserThread::IO});
-
-  // These members are used only for sign in, which is not enabled in incognito
-  // and guest modes. So no need to initialize them.
-  if (!IsOffTheRecord()) {
-    google_services_user_account_id_.Init(prefs::kGoogleServicesUserAccountId,
-                                          pref_service);
-    google_services_user_account_id_.MoveToSequence(io_task_runner);
-    sync_requested_.Init(syncer::prefs::kSyncRequested, pref_service);
-    sync_requested_.MoveToSequence(io_task_runner);
-    sync_first_setup_complete_.Init(syncer::prefs::kSyncFirstSetupComplete,
-                                    pref_service);
-    sync_first_setup_complete_.MoveToSequence(io_task_runner);
-  }
-
-#if !defined(OS_CHROMEOS)
-  signin_scoped_device_id_.Init(prefs::kGoogleServicesSigninScopedDeviceId,
-                                pref_service);
-  signin_scoped_device_id_.MoveToSequence(io_task_runner);
-#endif
-
-  network_prediction_options_.Init(prefs::kNetworkPredictionOptions,
-                                   pref_service);
-
-  network_prediction_options_.MoveToSequence(io_task_runner);
-
-  incognito_availibility_pref_.Init(prefs::kIncognitoModeAvailability,
-                                    pref_service);
-  incognito_availibility_pref_.MoveToSequence(io_task_runner);
-
-#if defined(OS_CHROMEOS)
-  account_consistency_mirror_required_pref_.Init(
-      prefs::kAccountConsistencyMirrorRequired, pref_service);
-  account_consistency_mirror_required_pref_.MoveToSequence(io_task_runner);
-#endif
+      base::CreateSingleThreadTaskRunner({BrowserThread::IO});
 
   // We need to make sure that content initializes its own data structures that
   // are associated with each ResourceContext because we might post this
   // object to the IO thread after this function.
   BrowserContext::EnsureResourceContextInitialized(profile);
 
-  base::PostTaskWithTraits(
-      FROM_HERE, {BrowserThread::IO},
-      base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
+  base::PostTask(FROM_HERE, {BrowserThread::IO},
+                 base::BindOnce(&ProfileIOData::Init, base::Unretained(this)));
 }
 
 ProfileIOData::ProfileParams::ProfileParams() = default;
 
 ProfileIOData::ProfileParams::~ProfileParams() = default;
 
-ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
+ProfileIOData::ProfileIOData()
     : initialized_(false),
-      account_consistency_(signin::AccountConsistencyMethod::kDisabled),
 #if defined(OS_CHROMEOS)
       system_key_slot_use_type_(SystemKeySlotUseType::kNone),
 #endif
-      resource_context_(new ResourceContext(this)),
-      profile_type_(profile_type) {
+      resource_context_(new ResourceContext(this)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -473,21 +408,6 @@ HostContentSettingsMap* ProfileIOData::GetHostContentSettingsMap() const {
   return host_content_settings_map_.get();
 }
 
-bool ProfileIOData::IsSyncEnabled() const {
-  return sync_first_setup_complete_.GetValue() && sync_requested_.GetValue();
-}
-
-#if !defined(OS_CHROMEOS)
-std::string ProfileIOData::GetSigninScopedDeviceId() const {
-  return signin_scoped_device_id_.GetValue();
-}
-#endif
-
-bool ProfileIOData::IsOffTheRecord() const {
-  return profile_type() == Profile::INCOGNITO_PROFILE ||
-         profile_type() == Profile::GUEST_PROFILE;
-}
-
 std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
   if (!client_cert_store_factory_.is_null())
     return client_cert_store_factory_.Run();
@@ -521,12 +441,6 @@ std::unique_ptr<net::ClientCertStore> ProfileIOData::CreateClientCertStore() {
 #endif
 }
 
-void ProfileIOData::set_data_reduction_proxy_io_data(
-    std::unique_ptr<data_reduction_proxy::DataReductionProxyIOData>
-        data_reduction_proxy_io_data) const {
-  data_reduction_proxy_io_data_ = std::move(data_reduction_proxy_io_data);
-}
-
 ProfileIOData::ResourceContext::ResourceContext(ProfileIOData* io_data)
     : io_data_(io_data) {
   DCHECK(io_data);
@@ -541,8 +455,6 @@ void ProfileIOData::Init() const {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(!initialized_);
   DCHECK(profile_params_.get());
-
-  account_consistency_ = profile_params_->account_consistency;
 
   // Take ownership over these parameters.
   cookie_settings_ = profile_params_->cookie_settings;
@@ -574,26 +486,7 @@ void ProfileIOData::Init() const {
 void ProfileIOData::ShutdownOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  google_services_user_account_id_.Destroy();
-  sync_requested_.Destroy();
-  sync_first_setup_complete_.Destroy();
-#if !defined(OS_CHROMEOS)
-  signin_scoped_device_id_.Destroy();
-#endif
-  force_google_safesearch_.Destroy();
-  force_youtube_restrict_.Destroy();
-  allowed_domains_for_apps_.Destroy();
   safe_browsing_enabled_.Destroy();
-  safe_browsing_whitelist_domains_.Destroy();
-  network_prediction_options_.Destroy();
-  incognito_availibility_pref_.Destroy();
-  signed_exchange_enabled_.Destroy();
-#if BUILDFLAG(ENABLE_PLUGINS)
-  always_open_pdf_externally_.Destroy();
-#endif
-#if defined(OS_CHROMEOS)
-  account_consistency_mirror_required_pref_.Destroy();
-#endif
 
   bool posted = BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
   if (!posted)

@@ -34,12 +34,11 @@ class NGLineBreakerTest : public NGLayoutTest {
 
     node.PrepareLayoutIfNeeded();
 
-    NGConstraintSpace space =
-        NGConstraintSpaceBuilder(WritingMode::kHorizontalTb,
-                                 WritingMode::kHorizontalTb,
-                                 /* is_new_fc */ false)
-            .SetAvailableSize({available_width, kIndefiniteSize})
-            .ToConstraintSpace();
+    NGConstraintSpaceBuilder builder(WritingMode::kHorizontalTb,
+                                     WritingMode::kHorizontalTb,
+                                     /* is_new_fc */ false);
+    builder.SetAvailableSize({available_width, kIndefiniteSize});
+    NGConstraintSpace space = builder.ToConstraintSpace();
 
     scoped_refptr<NGInlineBreakToken> break_token;
 
@@ -305,6 +304,26 @@ TEST_F(NGLineBreakerTest, WrapLastWord) {
   EXPECT_EQ(2u, lines.size());
   EXPECT_EQ("AAA AAA", ToString(lines[0], node));
   EXPECT_EQ("AAA BB CC", ToString(lines[1], node));
+}
+
+TEST_F(NGLineBreakerTest, WrapLetterSpacing) {
+  NGInlineNode node = CreateInlineNode(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      font: 10px/1 Times;
+      letter-spacing: 10px;
+      width: 0px;
+    }
+    </style>
+    <div id=container>Star Wars</div>
+  )HTML");
+
+  Vector<NGInlineItemResults> lines;
+  lines = BreakLines(node, LayoutUnit(100));
+  EXPECT_EQ(2u, lines.size());
+  EXPECT_EQ("Star", ToString(lines[0], node));
+  EXPECT_EQ("Wars", ToString(lines[1], node));
 }
 
 TEST_F(NGLineBreakerTest, BoundaryInWord) {

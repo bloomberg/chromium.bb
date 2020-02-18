@@ -8,13 +8,15 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_mock_clock_override.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -28,7 +30,7 @@
 #include "components/history/core/test/test_history_database.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_recorder_impl.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/metrics/public/mojom/ukm_interface.mojom.h"
@@ -142,6 +144,10 @@ class SearchRankingEventLoggerTest : public testing::Test {
         base::BindRepeating(&BuildHistoryService));
     profile_ = profile_builder.Build();
 
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {}, {app_list_features::kEnableQueryBasedMixedTypesRanker,
+             app_list_features::kEnableAppRanker});
+
     search_controller_ = std::make_unique<SearchControllerFake>(profile_.get());
 
     logger_ = std::make_unique<SearchRankingEventLogger>(
@@ -196,7 +202,7 @@ class SearchRankingEventLoggerTest : public testing::Test {
   // all tasks and then all the tasks on the current one to complete as well.
   void Wait() {
     history::BlockUntilHistoryProcessesPendingRequests(history_service_.get());
-    thread_bundle_.RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
   // Wait for a background UKM event to finish processing. This is necessary if
@@ -211,9 +217,10 @@ class SearchRankingEventLoggerTest : public testing::Test {
     run_loop.Run();
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   base::ScopedMockClockOverride time_;
   base::ScopedTempDir history_dir_;
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   ukm::TestAutoSetUkmRecorder recorder_;
 

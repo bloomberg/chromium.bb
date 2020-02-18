@@ -1266,8 +1266,13 @@ void DrawImageRectOp::RasterWithFlags(const DrawImageRectOp* op,
         SkMatrix::MakeRectToRect(op->src, op->dst, SkMatrix::kFill_ScaleToFit));
     canvas->clipRect(op->src);
     canvas->saveLayer(&op->src, &paint);
-    DCHECK(result && result.paint_record());
-    result.paint_record()->Playback(canvas, params);
+    // Compositor thread animations can cause PaintWorklet jobs to be dispatched
+    // to the worklet thread even after main has torn down the worklet (e.g.
+    // because a navigation is happening). In that case the PaintWorklet jobs
+    // will fail and there will be no result to raster here. This state is
+    // transient as the next main frame commit will remove the PaintWorklets.
+    if (result && result.paint_record())
+      result.paint_record()->Playback(canvas, params);
     return;
   }
 
@@ -1928,9 +1933,9 @@ size_t PaintOp::Serialize(void* memory,
     return 0u;
 
   // Update skip and type now that the size is known.
-  uint32_t skip = static_cast<uint32_t>(aligned_written);
-  static_cast<uint32_t*>(memory)[0] = type | skip << 8;
-  return skip;
+  uint32_t bytes_to_skip = static_cast<uint32_t>(aligned_written);
+  static_cast<uint32_t*>(memory)[0] = type | bytes_to_skip << 8;
+  return bytes_to_skip;
 }
 
 PaintOp* PaintOp::Deserialize(const volatile void* input,
@@ -1986,7 +1991,7 @@ bool PaintOp::GetBounds(const PaintOp* op, SkRect* rect) {
     }
     case PaintOpType::DrawLine: {
       auto* line_op = static_cast<const DrawLineOp*>(op);
-      rect->set(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
+      rect->setLTRB(line_op->x0, line_op->y0, line_op->x1, line_op->y1);
       rect->sort();
       return true;
     }
@@ -2085,9 +2090,9 @@ bool PaintOpWithFlags::HasDiscardableImagesFromFlags() const {
 }
 
 void PaintOpWithFlags::RasterWithFlags(SkCanvas* canvas,
-                                       const PaintFlags* flags,
+                                       const PaintFlags* raster_flags,
                                        const PlaybackParams& params) const {
-  g_raster_with_flags_functions[type](this, flags, canvas, params);
+  g_raster_with_flags_functions[type](this, raster_flags, canvas, params);
 }
 
 int ClipPathOp::CountSlowPaths() const {

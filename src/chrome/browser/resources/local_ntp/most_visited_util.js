@@ -60,6 +60,12 @@ function convertArrayToRGBAColor(rgbaColor) {
  * Parses query parameters from Location.
  * @param {!Location} location The URL to generate the CSS url for.
  * @return {Object} Dictionary containing name value pairs for URL.
+ *
+ * TODO(dbeam): we should update callers of this method to use
+ * URLSearchParams#get() instead (which I have a higher confidence handles
+ * escaping and edge cases correctly). Note: that calling URLSearchParams#get()
+ * also has the behavior of only returning the first &param= in the URL (i.e.
+ * ?param=1&param=2 + .get('param') would return '1').
  */
 function parseQueryParams(location) {
   const params = Object.create(null);
@@ -169,7 +175,7 @@ function getTextColor(params, isTitle) {
   // For backward compatibility with server-side NTP, look at themes directly
   // and use param.c for non-title or as fallback.
   const apiHandle = chrome.embeddedSearch.newTabPage;
-  const themeInfo = apiHandle.themeBackgroundInfo;
+  const themeInfo = assert(apiHandle.themeBackgroundInfo);
   let c = '#777';
   if (isTitle && themeInfo && !themeInfo.usingDefaultTheme) {
     // Read from theme directly

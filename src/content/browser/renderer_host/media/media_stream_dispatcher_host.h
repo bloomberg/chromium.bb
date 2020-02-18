@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "content/browser/media/media_devices_util.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/common/mediastream/media_stream_controls.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom.h"
 
@@ -30,10 +30,11 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
                             int render_frame_id,
                             MediaStreamManager* media_stream_manager);
   ~MediaStreamDispatcherHost() override;
-  static void Create(int render_process_id,
-                     int render_frame_id,
-                     MediaStreamManager* media_stream_manager,
-                     blink::mojom::MediaStreamDispatcherHostRequest request);
+  static void Create(
+      int render_process_id,
+      int render_frame_id,
+      MediaStreamManager* media_stream_manager,
+      mojo::PendingReceiver<blink::mojom::MediaStreamDispatcherHost> receiver);
 
   void set_salt_and_origin_callback_for_testing(
       MediaDeviceSaltAndOriginCallback callback) {
@@ -53,28 +54,34 @@ class CONTENT_EXPORT MediaStreamDispatcherHost
   void CancelAllRequests();
 
   // mojom::MediaStreamDispatcherHost implementation
-  void GenerateStream(int32_t request_id,
-                      const blink::StreamControls& controls,
-                      bool user_gesture,
-                      GenerateStreamCallback callback) override;
+  void GenerateStream(
+      int32_t request_id,
+      const blink::StreamControls& controls,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback callback) override;
   void CancelRequest(int32_t request_id) override;
-  void StopStreamDevice(const std::string& device_id,
-                        int32_t session_id) override;
+  void StopStreamDevice(
+      const std::string& device_id,
+      const base::Optional<base::UnguessableToken>& session_id) override;
   void OpenDevice(int32_t request_id,
                   const std::string& device_id,
                   blink::mojom::MediaStreamType type,
                   OpenDeviceCallback callback) override;
   void CloseDevice(const std::string& label) override;
-  void SetCapturingLinkSecured(int32_t session_id,
-                               blink::mojom::MediaStreamType type,
-                               bool is_secure) override;
+  void SetCapturingLinkSecured(
+      const base::Optional<base::UnguessableToken>& session_id,
+      blink::mojom::MediaStreamType type,
+      bool is_secure) override;
   void OnStreamStarted(const std::string& label) override;
 
-  void DoGenerateStream(int32_t request_id,
-                        const blink::StreamControls& controls,
-                        bool user_gesture,
-                        GenerateStreamCallback callback,
-                        MediaDeviceSaltAndOrigin salt_and_origin);
+  void DoGenerateStream(
+      int32_t request_id,
+      const blink::StreamControls& controls,
+      bool user_gesture,
+      blink::mojom::StreamSelectionInfoPtr audio_stream_selection_info_ptr,
+      GenerateStreamCallback callback,
+      MediaDeviceSaltAndOrigin salt_and_origin);
   void DoOpenDevice(int32_t request_id,
                     const std::string& device_id,
                     blink::mojom::MediaStreamType type,

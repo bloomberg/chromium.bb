@@ -9,7 +9,6 @@
 
 #include "base/callback_forward.h"
 #include "chrome/browser/installable/installable_metrics.h"
-#include "chrome/browser/web_applications/components/web_app_constants.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 
 struct WebApplicationInfo;
@@ -21,6 +20,8 @@ class WebContents;
 namespace web_app {
 
 enum class InstallResultCode;
+class AppRegistrar;
+class WebAppUiManager;
 
 // An abstract finalizer for the installation process, represents the last step.
 // Takes WebApplicationInfo as input, writes data to disk (e.g icons, shortcuts)
@@ -29,18 +30,13 @@ class InstallFinalizer {
  public:
   using InstallFinalizedCallback =
       base::OnceCallback<void(const AppId& app_id, InstallResultCode code)>;
-  using UninstallExternalWebAppCallback =
-      base::OnceCallback<void(bool uninstalled)>;
+  using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
   using CreateOsShortcutsCallback =
       base::OnceCallback<void(bool shortcuts_created)>;
 
   struct FinalizeOptions {
-    // If |force_launch_container| defined as non-kDefault then the installed
-    // app will launch in |force_launch_container|.
-    LaunchContainer force_launch_container = LaunchContainer::kDefault;
     WebappInstallSource install_source = WebappInstallSource::COUNT;
     bool locally_installed = true;
-    bool no_network_install = false;
   };
 
   // Write the WebApp data to disk and register the app.
@@ -51,20 +47,26 @@ class InstallFinalizer {
   // Removes the external app for |app_url| from disk and registrar. Fails if
   // there is no installed external app for |app_url|.
   virtual void UninstallExternalWebApp(const GURL& app_url,
-                                       UninstallExternalWebAppCallback) = 0;
+                                       UninstallWebAppCallback) = 0;
+
+  // Removes the web app with |app_id| from disk, registrar and all sync'd
+  // devices.
+  virtual void UninstallWebApp(const AppId& app_id,
+                               UninstallWebAppCallback) = 0;
 
   virtual bool CanCreateOsShortcuts() const = 0;
   virtual void CreateOsShortcuts(const AppId& app_id,
                                  bool add_to_desktop,
                                  CreateOsShortcutsCallback callback) = 0;
+  // |virtual| for testing.
+  virtual bool CanAddAppToQuickLaunchBar() const;
+  virtual void AddAppToQuickLaunchBar(const AppId& app_id);
 
-  virtual bool CanPinAppToShelf() const = 0;
-  virtual void PinAppToShelf(const AppId& app_id) = 0;
-
-  virtual bool CanReparentTab(const AppId& app_id,
-                              bool shortcut_created) const = 0;
+  // |virtual| for testing.
+  virtual bool CanReparentTab(const AppId& app_id, bool shortcut_created) const;
   virtual void ReparentTab(const AppId& app_id,
-                           content::WebContents* web_contents) = 0;
+                           bool shortcut_created,
+                           content::WebContents* web_contents);
 
   virtual bool CanRevealAppShim() const = 0;
   virtual void RevealAppShim(const AppId& app_id) = 0;
@@ -73,7 +75,23 @@ class InstallFinalizer {
       const AppId& app_id,
       const WebApplicationInfo& web_app_info) const = 0;
 
+  virtual bool CanUserUninstallFromSync(const AppId& app_id) const = 0;
+
+  // TODO(loyso): This method should be protected and subclasses should call it
+  // (upcasting their final registrar type). Subclassing WebAppProvider will fix
+  // this.
+  virtual void SetSubsystems(AppRegistrar* registrar,
+                             WebAppUiManager* ui_manager);
+
   virtual ~InstallFinalizer() = default;
+
+ protected:
+  AppRegistrar& registrar() const { return *registrar_; }
+  WebAppUiManager& ui_manager() const { return *ui_manager_; }
+
+ private:
+  AppRegistrar* registrar_ = nullptr;
+  WebAppUiManager* ui_manager_ = nullptr;
 };
 
 }  // namespace web_app

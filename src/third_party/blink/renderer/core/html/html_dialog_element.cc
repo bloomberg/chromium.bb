@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_control_element.h"
 #include "third_party/blink/renderer/core/html/html_frame_owner_element.h"
@@ -50,7 +51,7 @@ static void SetFocusForDialog(HTMLDialogElement* dialog) {
   // currently specified.  This may change at any time.
   // See crbug/383230 and https://github.com/whatwg/html/issues/2393 .
   for (Node* node = FlatTreeTraversal::FirstChild(*dialog); node; node = next) {
-    next = IsHTMLDialogElement(*node)
+    next = IsA<HTMLDialogElement>(*node)
                ? FlatTreeTraversal::NextSkippingChildren(*node, dialog)
                : FlatTreeTraversal::Next(*node, dialog);
 

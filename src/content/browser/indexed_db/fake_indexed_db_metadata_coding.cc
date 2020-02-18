@@ -3,6 +3,9 @@
 // found in the LICENSE file.
 
 #include "content/browser/indexed_db/fake_indexed_db_metadata_coding.h"
+
+#include <utility>
+
 #include "third_party/blink/public/common/indexeddb/indexeddb_key_path.h"
 #include "third_party/blink/public/common/indexeddb/indexeddb_metadata.h"
 
@@ -43,12 +46,13 @@ leveldb::Status FakeIndexedDBMetadataCoding::CreateDatabase(
   return Status::OK();
 }
 
-void FakeIndexedDBMetadataCoding::SetDatabaseVersion(
+leveldb::Status FakeIndexedDBMetadataCoding::SetDatabaseVersion(
     TransactionalLevelDBTransaction* transaction,
     int64_t row_id,
     int64_t version,
     IndexedDBDatabaseMetadata* metadata) {
   metadata->version = version;
+  return leveldb::Status::OK();
 }
 
 leveldb::Status FakeIndexedDBMetadataCoding::FindDatabaseId(

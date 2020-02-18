@@ -20,7 +20,6 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_rules_registry.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/features/feature.h"
 #include "extensions/common/features/feature_provider.h"
@@ -44,7 +43,6 @@ const int RulesRegistryService::kInvalidRulesRegistryID = -1;
 RulesRegistryService::RulesRegistryService(content::BrowserContext* context)
     : current_rules_registry_id_(kDefaultRulesRegistryID),
       content_rules_registry_(NULL),
-      extension_registry_observer_(this),
       browser_context_(context) {
   if (browser_context_) {
     extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
@@ -231,10 +229,10 @@ void RulesRegistryService::NotifyRegistriesHelper(
     if (content::BrowserThread::CurrentlyOn(registry->owner_thread())) {
       (registry.get()->*notification_callback)(extension);
     } else {
-      base::PostTaskWithTraits(FROM_HERE, {registry->owner_thread()},
-                               base::BindOnce(&NotifyWithExtensionSafe,
-                                              base::WrapRefCounted(extension),
-                                              notification_callback, registry));
+      base::PostTask(FROM_HERE, {registry->owner_thread()},
+                     base::BindOnce(&NotifyWithExtensionSafe,
+                                    base::WrapRefCounted(extension),
+                                    notification_callback, registry));
     }
   }
 }

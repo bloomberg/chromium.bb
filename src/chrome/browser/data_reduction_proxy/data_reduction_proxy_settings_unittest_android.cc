@@ -16,9 +16,9 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/base64.h"
 #include "base/memory/ref_counted.h"
-#include "base/message_loop/message_loop.h"
 #include "base/strings/string_piece.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/time/time.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
@@ -71,6 +71,13 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
     base::Clock* clock) {
   MockDataReductionProxySettings<C>* settings =
       new MockDataReductionProxySettings<C>();
+  if (settings_) {
+    settings->data_reduction_proxy_service_ =
+        std::move(settings_->data_reduction_proxy_service_);
+  } else {
+    settings->data_reduction_proxy_service_ = test_context_->TakeService();
+  }
+  settings->data_reduction_proxy_service_->SetSettingsForTesting(settings);
   settings->config_ = test_context_->config();
   test_context_->config()->ResetParamFlagsForTest();
   EXPECT_CALL(*settings, GetOriginalProfilePrefs())
@@ -80,8 +87,6 @@ void data_reduction_proxy::DataReductionProxySettingsTestBase::ResetSettings(
       .Times(AnyNumber())
       .WillRepeatedly(Return(test_context_->pref_service()));
   settings_.reset(settings);
-  settings_->data_reduction_proxy_service_ =
-      test_context_->CreateDataReductionProxyService(settings_.get());
 }
 
 template void data_reduction_proxy::DataReductionProxySettingsTestBase::
@@ -178,7 +183,8 @@ class DataReductionProxySettingsAndroidTest : public ::testing::Test {
   }
 
  private:
-  base::MessageLoopForIO message_loop_;
+  base::test::TaskEnvironment task_environment_{
+      base::test::TaskEnvironment::MainThreadType::IO};
   JNIEnv* env_;
   net::MockClientSocketFactory mock_socket_factory_;
   std::unique_ptr<data_reduction_proxy::DataReductionProxyTestContext>

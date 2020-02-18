@@ -15,26 +15,26 @@ So what makes a good test, and how does googletest fit in? We believe:
     that succeeds or fails as a result of other tests. googletest isolates the
     tests by running each of them on a different object. When a test fails,
     googletest allows you to run it in isolation for quick debugging.
-1.  Tests should be well *organized* and reflect the structure of the tested
+2.  Tests should be well *organized* and reflect the structure of the tested
     code. googletest groups related tests into test suites that can share data
     and subroutines. This common pattern is easy to recognize and makes tests
     easy to maintain. Such consistency is especially helpful when people switch
     projects and start to work on a new code base.
-1.  Tests should be *portable* and *reusable*. Google has a lot of code that is
+3.  Tests should be *portable* and *reusable*. Google has a lot of code that is
     platform-neutral, its tests should also be platform-neutral. googletest
     works on different OSes, with different compilers, with or without
     exceptions, so googletest tests can work with a variety of configurations.
-1.  When tests fail, they should provide as much *information* about the problem
+4.  When tests fail, they should provide as much *information* about the problem
     as possible. googletest doesn't stop at the first test failure. Instead, it
     only stops the current test and continues with the next. You can also set up
     tests that report non-fatal failures after which the current test continues.
     Thus, you can detect and fix multiple bugs in a single run-edit-compile
     cycle.
-1.  The testing framework should liberate test writers from housekeeping chores
+5.  The testing framework should liberate test writers from housekeeping chores
     and let them focus on the test *content*. googletest automatically keeps
     track of all tests defined, and doesn't require the user to enumerate them
     in order to run them.
-1.  Tests should be *fast*. With googletest, you can reuse shared resources
+6.  Tests should be *fast*. With googletest, you can reuse shared resources
     across tests and pay for the set-up/tear-down only once, without making
     tests depend on each other.
 
@@ -51,26 +51,32 @@ of misunderstanding these.
 Historically, googletest started to use the term _Test Case_ for grouping
 related tests, whereas current publications including the International Software
 Testing Qualifications Board ([ISTQB](http://www.istqb.org/)) and various
-textbooks on Software Quality use the term _[Test
-Suite](http://glossary.istqb.org/search/test%20suite)_ for this.
+textbooks on Software Quality use the term _[Test Suite][istqb test suite]_ for
+this.
 
 The related term _Test_, as it is used in the googletest, is corresponding to
-the term _[Test Case](http://glossary.istqb.org/search/test%20case)_ of ISTQB
-and others.
+the term _[Test Case][istqb test case]_ of ISTQB and others.
 
 The term _Test_ is commonly of broad enough sense, including ISTQB's definition
 of _Test Case_, so it's not much of a problem here. But the term _Test Case_ as
 was used in Google Test is of contradictory sense and thus confusing.
 
-googletest recently started replacing the term _Test Case_ by _Test Suite_ The
-preferred API is TestSuite*. The older TestCase* API is being slowly deprecated
-and refactored away
+googletest recently started replacing the term _Test Case_ with _Test Suite_.
+The preferred API is *TestSuite*. The older TestCase API is being slowly
+deprecated and refactored away.
 
 So please be aware of the different definitions of the terms:
 
+<!-- mdformat off(github rendering does not support multiline tables) -->
+
 Meaning                                                                              | googletest Term         | [ISTQB](http://www.istqb.org/) Term
 :----------------------------------------------------------------------------------- | :---------------------- | :----------------------------------
-Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests) | [Test Case](http://glossary.istqb.org/search/test%20case)
+Exercise a particular program path with specific input values and verify the results | [TEST()](#simple-tests) | [Test Case][istqb test case]
+
+<!-- mdformat on -->
+
+[istqb test case]: http://glossary.istqb.org/en/search/test%20case
+[istqb test suite]: http://glossary.istqb.org/en/search/test%20suite
 
 ## Basic Concepts
 
@@ -193,7 +199,7 @@ objects, you should use `ASSERT_EQ`.
 
 When doing pointer comparisons use `*_EQ(ptr, nullptr)` and `*_NE(ptr, nullptr)`
 instead of `*_EQ(ptr, NULL)` and `*_NE(ptr, NULL)`. This is because `nullptr` is
-typed while `NULL` is not. See [FAQ](faq.md)for more details.
+typed while `NULL` is not. See [FAQ](faq.md) for more details.
 
 If you're working with floating point numbers, you may want to use the floating
 point variations of some of these macros in order to avoid problems caused by
@@ -213,18 +219,16 @@ as `ASSERT_EQ(expected, actual)`, so lots of existing code uses this order. Now
 The assertions in this group compare two **C strings**. If you want to compare
 two `string` objects, use `EXPECT_EQ`, `EXPECT_NE`, and etc instead.
 
-| Fatal assertion         | Nonfatal assertion      | Verifies               |
-| ----------------------- | ----------------------- | ---------------------- |
-| `ASSERT_STREQ(str1,     | `EXPECT_STREQ(str1,     | the two C strings have |
-: str2);`                 : str2);`                 : the same content       :
-| `ASSERT_STRNE(str1,     | `EXPECT_STRNE(str1,     | the two C strings have |
-: str2);`                 : str2);`                 : different contents     :
-| `ASSERT_STRCASEEQ(str1, | `EXPECT_STRCASEEQ(str1, | the two C strings have |
-: str2);`                 : str2);`                 : the same content,      :
-:                         :                         : ignoring case          :
-| `ASSERT_STRCASENE(str1, | `EXPECT_STRCASENE(str1, | the two C strings have |
-: str2);`                 : str2);`                 : different contents,    :
-:                         :                         : ignoring case          :
+<!-- mdformat off(github rendering does not support multiline tables) -->
+
+| Fatal assertion                | Nonfatal assertion             | Verifies                                                 |
+| --------------------------     | ------------------------------ | -------------------------------------------------------- |
+| `ASSERT_STREQ(str1,str2);`     | `EXPECT_STREQ(str1,str2);`     | the two C strings have the same content   		     |
+| `ASSERT_STRNE(str1,str2);`     | `EXPECT_STRNE(str1,str2);`     | the two C strings have different contents 		     |
+| `ASSERT_STRCASEEQ(str1,str2);` | `EXPECT_STRCASEEQ(str1,str2);` | the two C strings have the same content, ignoring case   |
+| `ASSERT_STRCASENE(str1,str2);` | `EXPECT_STRCASENE(str1,str2);` | the two C strings have different contents, ignoring case |
+
+<!-- mdformat on-->
 
 Note that "CASE" in an assertion name means that case is ignored. A `NULL`
 pointer and an empty string are considered *different*.
@@ -235,9 +239,8 @@ of two wide strings fails, their values will be printed as UTF-8 narrow strings.
 **Availability**: Linux, Windows, Mac.
 
 **See also**: For more string comparison tricks (substring, prefix, suffix, and
-regular expression matching, for example), see
-[this](https://github.com/google/googletest/blob/master/googletest/docs/advanced.md)
-in the Advanced googletest Guide.
+regular expression matching, for example), see [this](advanced.md) in the
+Advanced googletest Guide.
 
 ## Simple Tests
 
@@ -245,9 +248,9 @@ To create a test:
 
 1.  Use the `TEST()` macro to define and name a test function, These are
     ordinary C++ functions that don't return a value.
-1.  In this function, along with any valid C++ statements you want to include,
+2.  In this function, along with any valid C++ statements you want to include,
     use the various googletest assertions to check values.
-1.  The test's result is determined by the assertions; if any assertion in the
+3.  The test's result is determined by the assertions; if any assertion in the
     test fails (either fatally or non-fatally), or if the test crashes, the
     entire test fails. Otherwise, it succeeds.
 
@@ -309,16 +312,16 @@ To create a fixture:
 
 1.  Derive a class from `::testing::Test` . Start its body with `protected:` as
     we'll want to access fixture members from sub-classes.
-1.  Inside the class, declare any objects you plan to use.
-1.  If necessary, write a default constructor or `SetUp()` function to prepare
+2.  Inside the class, declare any objects you plan to use.
+3.  If necessary, write a default constructor or `SetUp()` function to prepare
     the objects for each test. A common mistake is to spell `SetUp()` as
     **`Setup()`** with a small `u` - Use `override` in C++11 to make sure you
     spelled it correctly
-1.  If necessary, write a destructor or `TearDown()` function to release any
+4.  If necessary, write a destructor or `TearDown()` function to release any
     resources you allocated in `SetUp()` . To learn when you should use the
     constructor/destructor and when you should use `SetUp()/TearDown()`, read
     the [FAQ](faq.md).
-1.  If needed, define subroutines for your tests to share.
+5.  If needed, define subroutines for your tests to share.
 
 When using a fixture, use `TEST_F()` instead of `TEST()` as it allows you to
 access objects and subroutines in the test fixture:
@@ -422,11 +425,11 @@ would lead to a segfault when `n` is `NULL`.
 When these tests run, the following happens:
 
 1.  googletest constructs a `QueueTest` object (let's call it `t1` ).
-1.  `t1.SetUp()` initializes `t1` .
-1.  The first test ( `IsEmptyInitially` ) runs on `t1` .
-1.  `t1.TearDown()` cleans up after the test finishes.
-1.  `t1` is destructed.
-1.  The above steps are repeated on another `QueueTest` object, this time
+2.  `t1.SetUp()` initializes `t1` .
+3.  The first test ( `IsEmptyInitially` ) runs on `t1` .
+4.  `t1.TearDown()` cleans up after the test finishes.
+5.  `t1` is destructed.
+6.  The above steps are repeated on another `QueueTest` object, this time
     running the `DequeueWorks` test.
 
 **Availability**: Linux, Windows, Mac.
@@ -456,7 +459,7 @@ When invoked, the `RUN_ALL_TESTS()` macro:
 
 *   Deletes the fixture.
 
-*   Restores the state of all all googletest flags
+*   Restores the state of all googletest flags
 
 *   Repeats the above steps for the next test, until all tests have run.
 

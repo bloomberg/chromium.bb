@@ -49,6 +49,12 @@ _ARCH_TO_STACK_TOOL_ARCH = {
     'armeabi-v7a': 'arm',
     'arm64-v8a': 'arm64',
 }
+_MAP_TO_USER_FRIENDLY_NAMES = {
+    'gobo': 'go',
+    'W6210': 'one',
+    'AOSP on Shamu': 'nexus 6',
+    'AOSP on BullHead': 'nexus 5x'
+}
 _DEVICE_COPY_SCRIPT_FILE = os.path.abspath(os.path.join(
     os.path.dirname(__file__), 'efficient_android_directory_copy.sh'))
 _DEVICE_COPY_SCRIPT_LOCATION = (
@@ -142,10 +148,16 @@ class AndroidPlatformBackend(
         self._device, package, filename, use_encrypted_path=use_encrypted_path)
 
   def IsSvelte(self):
+    # TODO (crbug.com/973936) This function is used to find out if expectations
+    # with the Android_Svelte tag should apply to a certain build in the old
+    # expectations format. Instead of eliminating the Android_Svelte tag in the
+    # old format, we should wait until we change the expectations into the new
+    # format. And then we can get rid of this function.
     description = self._device.GetProp('ro.build.description', cache=True)
-    if description is not None:
-      return 'svelte' in description
-    return False
+    return description and 'svelte' in description
+
+  def IsLowEnd(self):
+    return self.IsSvelte() or self.GetDeviceTypeName() in ('gobo', 'W6210')
 
   def IsAosp(self):
     description = self._device.GetProp('ro.build.description', cache=True)
@@ -261,12 +273,15 @@ class AndroidPlatformBackend(
 
   def GetTypExpectationsTags(self):
     # telemetry benchmark's expectations need to know the model name
-    # and if it is a svelte (low memory) build
+    # and if it is a low end device
     tags = super(AndroidPlatformBackend, self).GetTypExpectationsTags()
+    device_type_name = self.GetDeviceTypeName()
     tags += test_utils.sanitizeTypExpectationsTags(
-        ['android-' + self.GetDeviceTypeName()])
-    if self.IsSvelte():
-      tags.append('android-svelte')
+        ['android-' + _MAP_TO_USER_FRIENDLY_NAMES.get(
+            device_type_name, device_type_name)])
+    if self.IsLowEnd():
+      tags.append('android-low-end')
+    tags.append('mobile')
     return tags
 
   @decorators.Cache

@@ -39,7 +39,7 @@
 #include "components/prefs/pref_member.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/browser/api/web_request/upload_data_presenter.h"
 #include "extensions/browser/api/web_request/web_request_api.h"
 #include "extensions/browser/api/web_request/web_request_api_constants.h"
@@ -154,7 +154,7 @@ class TestIPCSender : public IPC::Sender {
 class ExtensionWebRequestTest : public testing::Test {
  public:
   ExtensionWebRequestTest()
-      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
+      : task_environment_(content::BrowserTaskEnvironment::IO_MAINLOOP),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
 
  protected:
@@ -162,7 +162,7 @@ class ExtensionWebRequestTest : public testing::Test {
     ASSERT_TRUE(profile_manager_.SetUp());
   }
 
-  content::TestBrowserThreadBundle thread_bundle_;
+  content::BrowserTaskEnvironment task_environment_;
   TestingProfile profile_;
   TestingProfileManager profile_manager_;
 };

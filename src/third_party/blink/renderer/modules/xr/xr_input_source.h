@@ -55,6 +55,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   XRSpace* targetRaySpace() const;
   XRSpace* gripSpace() const;
   Gamepad* gamepad() const { return gamepad_; }
+  Vector<String> profiles() const { return state_.profiles; }
 
   uint32_t source_id() const { return state_.source_id; }
 
@@ -101,6 +102,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
     device::mojom::XRTargetRayMode target_ray_mode;
     bool emulated_position = false;
     base::TimeTicks base_timestamp;
+    Vector<String> profiles;
 
     InternalState(uint32_t source_id,
                   device::mojom::XRTargetRayMode,

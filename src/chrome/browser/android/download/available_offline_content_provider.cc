@@ -13,7 +13,8 @@
 #include "base/strings/strcat.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#include "chrome/browser/android/download/download_manager_service.h"
+#include "chrome/browser/android/download/download_open_source.h"
+#include "chrome/browser/android/download/download_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
@@ -215,7 +216,7 @@ chrome::mojom::AvailableOfflineContentPtr CreateAvailableOfflineContent(
 
 AvailableOfflineContentProvider::AvailableOfflineContentProvider(
     Profile* profile)
-    : profile_(profile), weak_ptr_factory_(this) {}
+    : profile_(profile) {}
 
 AvailableOfflineContentProvider::~AvailableOfflineContentProvider() = default;
 
@@ -247,8 +248,9 @@ void AvailableOfflineContentProvider::LaunchItem(
 
 void AvailableOfflineContentProvider::LaunchDownloadsPage(
     bool open_prefetched_articles_tab) {
-  DownloadManagerService::GetInstance()->ShowDownloadManager(
-      open_prefetched_articles_tab);
+  DownloadUtils::ShowDownloadManager(
+      open_prefetched_articles_tab,
+      DownloadOpenSource::kDinoPageOfflineContent);
 }
 
 void AvailableOfflineContentProvider::ListVisibilityChanged(bool is_visible) {

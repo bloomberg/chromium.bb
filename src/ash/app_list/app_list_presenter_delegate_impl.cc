@@ -19,7 +19,6 @@
 #include "ash/root_window_controller.h"
 #include "ash/shelf/back_button.h"
 #include "ash/shelf/home_button.h"
-#include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
@@ -38,8 +37,7 @@ namespace ash {
 namespace {
 
 // Whether the shelf is oriented on the side, not on the bottom.
-bool IsSideShelf(aura::Window* root_window) {
-  Shelf* shelf = Shelf::ForWindow(root_window);
+bool IsSideShelf(Shelf* shelf) {
   switch (shelf->alignment()) {
     case SHELF_ALIGNMENT_BOTTOM:
     case SHELF_ALIGNMENT_BOTTOM_LOCKED:
@@ -51,6 +49,23 @@ bool IsSideShelf(aura::Window* root_window) {
   return false;
 }
 
+// Whether the shelf background type indicates that shelf has rounded corners.
+bool IsShelfBackgroundTypeWithRoundedCorners(
+    ShelfBackgroundType background_type) {
+  switch (background_type) {
+    case SHELF_BACKGROUND_DEFAULT:
+    case SHELF_BACKGROUND_APP_LIST:
+    case SHELF_BACKGROUND_OVERVIEW:
+      return true;
+    case SHELF_BACKGROUND_MAXIMIZED:
+    case SHELF_BACKGROUND_MAXIMIZED_WITH_APP_LIST:
+    case SHELF_BACKGROUND_OOBE:
+    case SHELF_BACKGROUND_LOGIN:
+    case SHELF_BACKGROUND_LOGIN_NONBLURRED_WALLPAPER:
+      return false;
+  }
+}
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -58,7 +73,7 @@ bool IsSideShelf(aura::Window* root_window) {
 
 AppListPresenterDelegateImpl::AppListPresenterDelegateImpl(
     AppListControllerImpl* controller)
-    : controller_(controller), display_observer_(this) {
+    : controller_(controller) {
   display_observer_.Add(display::Screen::GetScreen());
 }
 
@@ -94,8 +109,15 @@ void AppListPresenterDelegateImpl::ShowForDisplay(int64_t display_id) {
   Shell::GetPrimaryRootWindowController()
       ->GetShelfLayoutManager()
       ->UpdateAutoHideState();
-  view_->Show(IsSideShelf(view_->GetWidget()->GetNativeView()->GetRootWindow()),
-              IsTabletMode());
+
+  Shelf* shelf =
+      Shelf::ForWindow(view_->GetWidget()->GetNativeView()->GetRootWindow());
+  if (!shelf_observer_.IsObserving(shelf))
+    shelf_observer_.Add(shelf);
+
+  view_->SetShelfHasRoundedCorners(
+      IsShelfBackgroundTypeWithRoundedCorners(shelf->GetBackgroundType()));
+  view_->Show(IsSideShelf(shelf), IsTabletMode());
 
   SnapAppListBoundsToDisplayEdge();
 
@@ -112,6 +134,8 @@ void AppListPresenterDelegateImpl::OnClosing() {
 }
 
 void AppListPresenterDelegateImpl::OnClosed() {
+  if (!is_visible_)
+    shelf_observer_.RemoveAll();
   controller_->ViewClosed();
 }
 
@@ -150,6 +174,13 @@ void AppListPresenterDelegateImpl::OnDisplayMetricsChanged(
 
   view_->OnParentWindowBoundsChanged();
   SnapAppListBoundsToDisplayEdge();
+}
+
+void AppListPresenterDelegateImpl::OnBackgroundTypeChanged(
+    ShelfBackgroundType background_type,
+    AnimationChangeType change_type) {
+  view_->SetShelfHasRoundedCorners(
+      IsShelfBackgroundTypeWithRoundedCorners(background_type));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -202,7 +233,6 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
       !app_list::switches::ShouldNotDismissOnBlur() && !IsTabletMode()) {
     const aura::Window* status_window =
         shelf->shelf_widget()->status_area_widget()->GetNativeWindow();
-    const aura::Window* shelf_window = shelf->shelf_widget()->GetNativeWindow();
     // Don't dismiss the auto-hide shelf if event happened in status area. Then
     // the event can still be propagated to the status area tray to open the
     // corresponding tray bubble.
@@ -210,8 +240,10 @@ void AppListPresenterDelegateImpl::ProcessLocatedEvent(
     if (status_window && status_window->Contains(target))
       auto_hide_lock.emplace(shelf);
 
-    // Keep app list opened if event happened in the shelf area.
-    if (!shelf_window || !shelf_window->Contains(target))
+    // Keep the app list open if the event happened in the shelf area.
+    const aura::Window* hotseat_window =
+        shelf->shelf_widget()->hotseat_widget()->GetNativeWindow();
+    if (!hotseat_window || !hotseat_window->Contains(target))
       presenter_->Dismiss(event->time_stamp());
   }
 

@@ -26,11 +26,13 @@ if(SPIRV_BUILD_FUZZER)
   )
 
   set(SPIRV_TOOLS_FUZZ_SOURCES
+        data_descriptor.h
         fact_manager.h
         fuzzer.h
         fuzzer_context.h
         fuzzer_pass.h
         fuzzer_pass_add_dead_breaks.h
+        fuzzer_pass_add_dead_continues.h
         fuzzer_pass_add_useful_constructs.h
         fuzzer_pass_obfuscate_constants.h
         fuzzer_pass_permute_blocks.h
@@ -46,10 +48,12 @@ if(SPIRV_BUILD_FUZZER)
         transformation_add_constant_boolean.h
         transformation_add_constant_scalar.h
         transformation_add_dead_break.h
+        transformation_add_dead_continue.h
         transformation_add_type_boolean.h
         transformation_add_type_float.h
         transformation_add_type_int.h
         transformation_add_type_pointer.h
+        transformation_copy_object.h
         transformation_move_block_down.h
         transformation_replace_boolean_constant_with_constant_binary.h
         transformation_replace_constant_with_uniform.h
@@ -57,11 +61,13 @@ if(SPIRV_BUILD_FUZZER)
         uniform_buffer_element_descriptor.h
         ${CMAKE_CURRENT_BINARY_DIR}/protobufs/spvtoolsfuzz.pb.h
 
+        data_descriptor.cpp
         fact_manager.cpp
         fuzzer.cpp
         fuzzer_context.cpp
         fuzzer_pass.cpp
         fuzzer_pass_add_dead_breaks.cpp
+        fuzzer_pass_add_dead_continues.cpp
         fuzzer_pass_add_useful_constructs.cpp
         fuzzer_pass_obfuscate_constants.cpp
         fuzzer_pass_permute_blocks.cpp
@@ -76,10 +82,12 @@ if(SPIRV_BUILD_FUZZER)
         transformation_add_constant_boolean.cpp
         transformation_add_constant_scalar.cpp
         transformation_add_dead_break.cpp
+        transformation_add_dead_continue.cpp
         transformation_add_type_boolean.cpp
         transformation_add_type_float.cpp
         transformation_add_type_int.cpp
         transformation_add_type_pointer.cpp
+        transformation_copy_object.cpp
         transformation_move_block_down.cpp
         transformation_replace_boolean_constant_with_constant_binary.cpp
         transformation_replace_constant_with_uniform.cpp
@@ -110,8 +118,12 @@ if(SPIRV_BUILD_FUZZER)
   endif()
 
   target_include_directories(SPIRV-Tools-fuzz
-        PUBLIC ${spirv-tools_SOURCE_DIR}/include
-        PUBLIC ${SPIRV_HEADER_INCLUDE_DIR}
+		PUBLIC
+			$<BUILD_INTERFACE:${spirv-tools_SOURCE_DIR}/include>
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>
+		PUBLIC
+			$<BUILD_INTERFACE:${SPIRV_HEADER_INCLUDE_DIR}>
+			$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
         PRIVATE ${spirv-tools_BINARY_DIR}
         PRIVATE ${CMAKE_BINARY_DIR})
 
@@ -125,10 +137,11 @@ if(SPIRV_BUILD_FUZZER)
   spvtools_check_symbol_exports(SPIRV-Tools-fuzz)
 
   if(ENABLE_SPIRV_TOOLS_INSTALL)
-      install(TARGETS SPIRV-Tools-fuzz
+      install(TARGETS SPIRV-Tools-fuzz EXPORT SPIRV-Tools-fuzzTargets
             RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
             LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
             ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR})
+	  install(EXPORT SPIRV-Tools-fuzzTargets DESTINATION lib/cmake)
   endif(ENABLE_SPIRV_TOOLS_INSTALL)
 
 endif(SPIRV_BUILD_FUZZER)

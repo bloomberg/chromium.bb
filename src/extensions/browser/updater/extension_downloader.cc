@@ -119,8 +119,8 @@ ExtensionDownloaderTestDelegate* g_test_delegate = nullptr;
 bool ShouldRetryRequest(const network::SimpleURLLoader* loader) {
   DCHECK(loader);
 
-  // Since HTTP errors are now presented as ERR_FAILED by default, this will
-  // let both network and HTTP errors through.
+  // Since HTTP errors are now presented as ERR_HTTP_RESPONSE_CODE_FAILURE
+  // by default, this will let both network and HTTP errors through.
   if (loader->NetError() == net::OK)
     return false;
 
@@ -572,9 +572,8 @@ void ExtensionDownloader::CreateManifestLoader() {
         })");
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = active_request->full_url(),
-  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
-                                 net::LOAD_DO_NOT_SAVE_COOKIES |
-                                 net::LOAD_DISABLE_CACHE;
+  resource_request->load_flags = net::LOAD_DISABLE_CACHE;
+  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
 
   // Send traffic-management headers to the webstore.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=647516
@@ -955,7 +954,7 @@ void ExtensionDownloader::NotifyDelegateDownloadFinished(
   const std::set<int>& request_ids = fetch_data->request_ids;
   const crx_file::VerifierFormat required_format =
       extension_urls::IsWebstoreUpdateUrl(fetch_data->url)
-          ? GetWebstoreVerifierFormat()
+          ? GetWebstoreVerifierFormat(false)
           : crx_format_requirement_;
   delegate_->OnExtensionDownloadFinished(
       CRXFileInfo(id, crx_path, package_hash, required_format),
@@ -988,10 +987,11 @@ void ExtensionDownloader::CreateExtensionLoader() {
 
   int load_flags = net::LOAD_DISABLE_CACHE;
   bool is_secure = fetch->url.SchemeIsCryptographic();
-  if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
-    load_flags |= net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
-  }
   extension_loader_resource_request_->load_flags = load_flags;
+  if (fetch->credentials != ExtensionFetch::CREDENTIALS_COOKIES || !is_secure) {
+    extension_loader_resource_request_->credentials_mode =
+        network::mojom::CredentialsMode::kOmit;
+  }
 
   if (fetch->credentials == ExtensionFetch::CREDENTIALS_OAUTH2_TOKEN &&
       is_secure) {

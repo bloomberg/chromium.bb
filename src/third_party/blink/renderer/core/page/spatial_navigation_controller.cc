@@ -501,7 +501,7 @@ bool SpatialNavigationController::IsValidCandidate(
   // issues since the document/body will likely contain most of the other
   // content on the page.
   if (frame->IsMainFrame()) {
-    if (IsHTMLHtmlElement(element) || IsHTMLBodyElement(element))
+    if (IsA<HTMLHtmlElement>(element) || IsA<HTMLBodyElement>(element))
       return false;
   }
 
@@ -579,7 +579,7 @@ void SpatialNavigationController::OnSpatialNavigationStateChanged() {
 }
 
 bool SpatialNavigationController::UpdateCanExitFocus(Element* element) {
-  bool can_exit_focus = IsFocused(element) && !IsHTMLBodyElement(element);
+  bool can_exit_focus = IsFocused(element) && !IsA<HTMLBodyElement>(element);
   if (can_exit_focus == spatial_navigation_state_->can_exit_focus)
     return false;
   spatial_navigation_state_->can_exit_focus = can_exit_focus;
@@ -632,7 +632,7 @@ bool SpatialNavigationController::UpdateHasDefaultVideoControls(
   return true;
 }
 
-const mojom::blink::SpatialNavigationHostPtr&
+const mojo::Remote<mojom::blink::SpatialNavigationHost>&
 SpatialNavigationController::GetSpatialNavigationHost() {
   if (!spatial_navigation_host_.is_bound()) {
     LocalFrame* frame = DynamicTo<LocalFrame>(page_->MainFrame());
@@ -640,8 +640,8 @@ SpatialNavigationController::GetSpatialNavigationHost() {
       return spatial_navigation_host_;
 
     frame->GetInterfaceProvider().GetInterface(
-        mojo::MakeRequest(&spatial_navigation_host_,
-                          frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
+        spatial_navigation_host_.BindNewPipeAndPassReceiver(
+            frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return spatial_navigation_host_;
 }

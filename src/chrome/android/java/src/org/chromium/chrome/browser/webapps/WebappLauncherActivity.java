@@ -12,7 +12,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.StrictMode;
 import android.os.SystemClock;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
@@ -67,7 +66,7 @@ public class WebappLauncherActivity extends Activity {
     public static Intent createRelaunchWebApkIntent(Intent sourceIntent, WebApkInfo webApkInfo) {
         assert webApkInfo != null;
 
-        Intent intent = new Intent(Intent.ACTION_VIEW, webApkInfo.uri());
+        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(webApkInfo.url()));
         intent.setPackage(webApkInfo.webApkPackageName());
         intent.setFlags(
                 Intent.FLAG_ACTIVITY_NEW_TASK | ApiCompatibilityUtils.getActivityNewDocumentFlag());
@@ -169,7 +168,7 @@ public class WebappLauncherActivity extends Activity {
             return true;
         }
 
-        String webappUrl = webappInfo.uri().toString();
+        String webappUrl = webappInfo.url();
         String webappMac = IntentUtils.safeGetStringExtra(intent, ShortcutHelper.EXTRA_MAC);
 
         return (webappInfo.isForWebApk() || isValidMacForUrl(webappUrl, webappMac)
@@ -178,18 +177,7 @@ public class WebappLauncherActivity extends Activity {
 
     private static void launchWebapp(Activity launchingActivity, Intent intent,
             @NonNull WebappInfo webappInfo, long createTimestamp) {
-        String webappUrl = webappInfo.uri().toString();
-        int webappSource = webappInfo.source();
-
-        // Retrieves the source of the WebAPK from WebappDataStorage if it is unknown. The
-        // {@link webappSource} is only known in the cases of an external intent or a
-        // notification that launches a WebAPK. Otherwise, it's not trustworthy and we must read
-        // the SharedPreference to get the installation source.
-        if (webappInfo.isForWebApk() && webappSource == ShortcutSource.UNKNOWN) {
-            webappSource = getWebApkSource(webappInfo);
-        }
-        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(
-                webappUrl, webappSource, webappInfo.displayMode());
+        LaunchMetrics.recordHomeScreenLaunchIntoStandaloneActivity(webappInfo);
 
         // Add all information needed to launch WebappActivity without {@link
         // WebappActivity#sWebappInfoMap} to launch intent. When the Android OS has killed a
@@ -205,27 +193,6 @@ public class WebappLauncherActivity extends Activity {
             launchingActivity.finish();
             launchingActivity.overridePendingTransition(0, R.anim.no_anim);
         }
-    }
-
-    // Gets the source of a WebAPK from the WebappDataStorage if the source has been stored before.
-    private static int getWebApkSource(WebappInfo webappInfo) {
-        WebappDataStorage storage = null;
-
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            WebappRegistry.warmUpSharedPrefsForId(webappInfo.id());
-            storage = WebappRegistry.getInstance().getWebappDataStorage(webappInfo.id());
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-
-        if (storage != null) {
-            int source = storage.getSource();
-            if (source != ShortcutSource.UNKNOWN) {
-                return source;
-            }
-        }
-        return ShortcutSource.WEBAPK_UNKNOWN;
     }
 
     /**
@@ -368,8 +335,8 @@ public class WebappLauncherActivity extends Activity {
         // CustomTabActivity activity and go back to the WebAPK activity. It is intentional that
         // Custom Tab will not be reachable with a back button.
         if (webappInfo.isSplashProvidedByWebApk()) {
-            launchIntent.setFlags(
-                    Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION);
+            launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    | Intent.FLAG_ACTIVITY_FORWARD_RESULT);
         } else {
             launchIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | ApiCompatibilityUtils.getActivityNewDocumentFlag()

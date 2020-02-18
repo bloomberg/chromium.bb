@@ -20,7 +20,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_response_headers.h"
-#include "net/http/http_server_properties_impl.h"
+#include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
 #include "net/proxy_resolution/proxy_retry_info.h"
 #include "net/url_request/static_http_user_agent_settings.h"
@@ -98,7 +98,7 @@ void TestURLRequestContext::Init() {
   }
   if (!http_server_properties()) {
     context_storage_.set_http_server_properties(
-        std::unique_ptr<HttpServerProperties>(new HttpServerPropertiesImpl()));
+        std::make_unique<HttpServerProperties>());
   }
   // In-memory cookie store.
   if (!cookie_store()) {
@@ -217,20 +217,12 @@ void TestDelegate::RunUntilAuthRequired() {
   run_loop.Run();
 }
 
-void TestDelegate::ClearFullRequestHeaders() {
-  full_request_headers_.Clear();
-  have_full_request_headers_ = false;
-}
-
 void TestDelegate::OnReceivedRedirect(URLRequest* request,
                                       const RedirectInfo& redirect_info,
                                       bool* defer_redirect) {
   EXPECT_TRUE(request->is_redirecting());
 
   redirect_info_ = redirect_info;
-
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
 
   received_redirect_count_++;
   if (on_redirect_) {
@@ -275,9 +267,6 @@ void TestDelegate::OnResponseStarted(URLRequest* request, int net_error) {
   DCHECK_NE(ERR_IO_PENDING, net_error);
   EXPECT_FALSE(request->is_redirecting());
 
-  have_full_request_headers_ =
-      request->GetFullRequestHeaders(&full_request_headers_);
-
   response_started_count_++;
   request_status_ = net_error;
   if (cancel_in_rs_) {
@@ -299,6 +288,12 @@ void TestDelegate::OnResponseStarted(URLRequest* request, int net_error) {
 void TestDelegate::OnReadCompleted(URLRequest* request, int bytes_read) {
   // It doesn't make sense for the request to have IO pending at this point.
   DCHECK_NE(bytes_read, ERR_IO_PENDING);
+
+  // If you've reached this, you've either called "RunUntilComplete" or are
+  // using legacy "QuitCurrent*Deprecated". If this DCHECK fails, that probably
+  // means you've run "RunUntilRedirect" or "RunUntilAuthRequired" and haven't
+  // redirected/auth-challenged
+  DCHECK(on_complete_ || use_legacy_on_complete_);
 
   // If the request was cancelled in a redirect, it should not signal
   // OnReadCompleted. Note that |cancel_in_rs_| may be true due to

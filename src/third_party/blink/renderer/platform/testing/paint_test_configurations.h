@@ -12,25 +12,30 @@
 namespace blink {
 
 enum {
-  kBlinkGenPropertyTrees = 1 << 0,
-  kCompositeAfterPaint = 1 << 1,
-  kUnderInvalidationChecking = 1 << 2,
-  kFastBorderRadius = 1 << 3,
+  kCompositeAfterPaint = 1 << 0,
+  kUnderInvalidationChecking = 1 << 1,
+  kFastBorderRadius = 1 << 2,
+  kPaintNonFastScrollableRegions = 1 << 3,
 };
 
 class PaintTestConfigurations
     : public testing::WithParamInterface<unsigned>,
-      private ScopedBlinkGenPropertyTreesForTest,
       private ScopedCompositeAfterPaintForTest,
       private ScopedPaintUnderInvalidationCheckingForTest,
-      private ScopedFastBorderRadiusForTest {
+      private ScopedFastBorderRadiusForTest,
+      private ScopedPaintNonFastScrollableRegionsForTest {
  public:
   PaintTestConfigurations()
-      : ScopedBlinkGenPropertyTreesForTest(GetParam() & kBlinkGenPropertyTrees),
-        ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint),
+      : ScopedCompositeAfterPaintForTest(GetParam() & kCompositeAfterPaint),
         ScopedPaintUnderInvalidationCheckingForTest(GetParam() &
                                                     kUnderInvalidationChecking),
-        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius) {}
+        ScopedFastBorderRadiusForTest(GetParam() & kFastBorderRadius),
+        // Because PaintNonFastScrollableRegions is implied by
+        // CompositeAfterPaint (see: runtime_eanbled_features.json5), we must
+        // enable the scoped flag for (PNFSR || CAP).
+        ScopedPaintNonFastScrollableRegionsForTest(
+            GetParam() & kPaintNonFastScrollableRegions ||
+            GetParam() & kCompositeAfterPaint) {}
   ~PaintTestConfigurations() {
     // Must destruct all objects before toggling back feature flags.
     WebHeap::CollectAllGarbageForTesting();
@@ -38,22 +43,22 @@ class PaintTestConfigurations
 };
 
 #define INSTANTIATE_PAINT_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(                        \
-      All, test_class,                             \
-      ::testing::Values(0, kBlinkGenPropertyTrees, \
-                        kBlinkGenPropertyTrees | kCompositeAfterPaint))
+  INSTANTIATE_TEST_SUITE_P(All, test_class,        \
+                           ::testing::Values(0, kCompositeAfterPaint))
 
 #define INSTANTIATE_CAP_TEST_SUITE_P(test_class) \
-  INSTANTIATE_TEST_SUITE_P(                      \
-      All, test_class,                           \
-      ::testing::Values(kBlinkGenPropertyTrees | kCompositeAfterPaint))
+  INSTANTIATE_TEST_SUITE_P(All, test_class,      \
+                           ::testing::Values(kCompositeAfterPaint))
 
-#define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class)                \
-  INSTANTIATE_TEST_SUITE_P(                                            \
-      All, test_class,                                                 \
-      ::testing::Values(kBlinkGenPropertyTrees,                        \
-                        kBlinkGenPropertyTrees | kCompositeAfterPaint, \
-                        kBlinkGenPropertyTrees | kFastBorderRadius))
+#define INSTANTIATE_LAYER_LIST_TEST_SUITE_P(test_class) \
+  INSTANTIATE_TEST_SUITE_P(                             \
+      All, test_class,                                  \
+      ::testing::Values(0, kCompositeAfterPaint, kFastBorderRadius))
+
+#define INSTANTIATE_SCROLL_HIT_TEST_SUITE_P(test_class) \
+  INSTANTIATE_TEST_SUITE_P(                             \
+      All, test_class,                                  \
+      ::testing::Values(kPaintNonFastScrollableRegions, kCompositeAfterPaint))
 
 }  // namespace blink
 

@@ -12,7 +12,9 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/synchronization/lock.h"
+#include "base/time/time.h"
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,12 +53,6 @@ class DelayedCookieMonster : public CookieStore {
   // invoke the internal callback.
   // Post a delayed task to invoke the original callback with the results.
 
-  void SetCookieWithOptionsAsync(
-      const GURL& url,
-      const std::string& cookie_line,
-      const CookieOptions& options,
-      CookieMonster::SetCookiesCallback callback) override;
-
   void SetCanonicalCookieAsync(std::unique_ptr<CanonicalCookie> cookie,
                                std::string source_scheme,
                                const CookieOptions& options,
@@ -66,11 +62,7 @@ class DelayedCookieMonster : public CookieStore {
                                      const CookieOptions& options,
                                      GetCookieListCallback callback) override;
 
-  void GetAllCookiesAsync(GetCookieListCallback callback) override;
-
-  virtual bool SetCookieWithOptions(const GURL& url,
-                                    const std::string& cookie_line,
-                                    const CookieOptions& options);
+  void GetAllCookiesAsync(GetAllCookiesCallback callback) override;
 
   void DeleteCanonicalCookieAsync(const CanonicalCookie& cookie,
                                   DeleteCallback callback) override;
@@ -99,7 +91,7 @@ class DelayedCookieMonster : public CookieStore {
 
   void GetCookiesWithOptionsInternalCallback(const std::string& cookie);
   void GetCookieListWithOptionsInternalCallback(
-      const CookieList& cookie,
+      const CookieStatusList& cookie,
       const CookieStatusList& excluded_cookies);
 
   // Invoke the original callbacks.
@@ -118,6 +110,7 @@ class DelayedCookieMonster : public CookieStore {
   CanonicalCookie::CookieInclusionStatus result_;
   std::string cookie_;
   std::string cookie_line_;
+  CookieStatusList cookie_status_list_;
   CookieList cookie_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DelayedCookieMonster);

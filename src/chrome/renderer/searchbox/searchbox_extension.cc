@@ -46,6 +46,7 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/events/keycodes/keyboard_codes.h"
@@ -94,7 +95,7 @@ SkColor GetIconColor(const ThemeBackgroundInfo& theme_info) {
   if (has_background_image)
     return kNTPLightIconColor;
 
-  if (theme_info.using_dark_mode && theme_info.using_default_theme)
+  if (theme_info.using_dark_colors && theme_info.using_default_theme)
     return kNTPDarkIconColor;
 
   SkColor bg_color = theme_info.background_color;
@@ -732,7 +733,7 @@ class NewTabPageBindings : public gin::Wrappable<NewTabPageBindings> {
       int tile_source,
       int tile_type,
       v8::Local<v8::Value> data_generation_time);
-  static void SetCustomBackgroundURL(const std::string& background_url);
+  static void ResetCustomBackgroundInfo();
   static void SetCustomBackgroundInfo(const std::string& background_url,
                                       const std::string& attribution_line_1,
                                       const std::string& attribution_line_2,
@@ -805,8 +806,8 @@ gin::ObjectTemplateBuilder NewTabPageBindings::GetObjectTemplateBuilder(
                  &NewTabPageBindings::LogMostVisitedImpression)
       .SetMethod("logMostVisitedNavigation",
                  &NewTabPageBindings::LogMostVisitedNavigation)
-      .SetMethod("setBackgroundURL",
-                 &NewTabPageBindings::SetCustomBackgroundURL)
+      .SetMethod("resetBackgroundInfo",
+                 &NewTabPageBindings::ResetCustomBackgroundInfo)
       .SetMethod("setBackgroundInfo",
                  &NewTabPageBindings::SetCustomBackgroundInfo)
       .SetMethod("selectLocalBackgroundImage",
@@ -894,8 +895,10 @@ v8::Local<v8::Value> NewTabPageBindings::GetThemeBackgroundInfo(
   const SearchBox* search_box = GetSearchBoxForCurrentContext();
   if (!search_box)
     return v8::Null(isolate);
-  const ThemeBackgroundInfo& theme_info = search_box->GetThemeBackgroundInfo();
-  return GenerateThemeBackgroundInfo(isolate, theme_info);
+  const ThemeBackgroundInfo* theme_info = search_box->GetThemeBackgroundInfo();
+  if (!theme_info)
+    return v8::Null(isolate);
+  return GenerateThemeBackgroundInfo(isolate, *theme_info);
 }
 
 // static
@@ -1149,9 +1152,8 @@ void NewTabPageBindings::LogMostVisitedNavigation(
 }
 
 // static
-void NewTabPageBindings::SetCustomBackgroundURL(
-    const std::string& background_url) {
-  SetCustomBackgroundInfo(background_url, std::string(), std::string(),
+void NewTabPageBindings::ResetCustomBackgroundInfo() {
+  SetCustomBackgroundInfo(std::string(), std::string(), std::string(),
                           std::string(), std::string());
 }
 
@@ -1303,7 +1305,7 @@ v8::Local<v8::Value> NewTabPageBindings::GetColorsInfo(v8::Isolate* isolate) {
         gin::DataObjectBuilder(isolate)
             .Set("id", color_info.id)
             .Set("color", SkColorToArray(isolate, color_info.color))
-            .Set("label", std::string(color_info.label))
+            .Set("label", l10n_util::GetStringUTF16(color_info.label_id))
             .Set("icon", std::string(color_info.icon_data))
             .Build();
     v8_colors->CreateDataProperty(context, i++, v8_color_info).Check();

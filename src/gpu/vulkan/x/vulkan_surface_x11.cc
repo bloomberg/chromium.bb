@@ -8,7 +8,7 @@
 #include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/x11/x11_event_source_libevent.h"
+#include "ui/events/platform/x11/x11_event_source.h"
 
 namespace gpu {
 
@@ -49,14 +49,14 @@ class VulkanSurfaceX11::ExposeEventForwarder
 class VulkanSurfaceX11::ExposeEventForwarder : public ui::XEventDispatcher {
  public:
   explicit ExposeEventForwarder(VulkanSurfaceX11* surface) : surface_(surface) {
-    if (auto* event_source = ui::X11EventSourceLibevent::GetInstance()) {
+    if (auto* event_source = ui::X11EventSource::GetInstance()) {
       XSelectInput(gfx::GetXDisplay(), surface_->window_, ExposureMask);
       event_source->AddXEventDispatcher(this);
     }
   }
 
   ~ExposeEventForwarder() override {
-    if (auto* event_source = ui::X11EventSourceLibevent::GetInstance())
+    if (auto* event_source = ui::X11EventSource::GetInstance())
       event_source->RemoveXEventDispatcher(this);
   }
 
@@ -120,7 +120,7 @@ VulkanSurfaceX11::VulkanSurfaceX11(VkInstance vk_instance,
                                    VkSurfaceKHR vk_surface,
                                    Window parent_window,
                                    Window window)
-    : VulkanSurface(vk_instance, vk_surface),
+    : VulkanSurface(vk_instance, vk_surface, false /* use_protected_memory */),
       parent_window_(parent_window),
       window_(window),
       expose_event_forwarder_(new ExposeEventForwarder(this)) {}

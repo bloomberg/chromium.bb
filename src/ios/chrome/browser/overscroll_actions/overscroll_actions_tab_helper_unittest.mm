@@ -10,13 +10,13 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_controller.h"
 #import "ios/chrome/browser/ui/overscroll_actions/overscroll_actions_view.h"
-#import "ios/chrome/common/colors/incognito_color_util.h"
+#import "ios/chrome/common/colors/dynamic_color_util.h"
 #import "ios/chrome/common/colors/semantic_color_names.h"
 #import "ios/chrome/test/fakes/fake_overscroll_actions_controller_delegate.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
-#include "ios/web/public/test/test_web_thread_bundle.h"
-#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
-#import "ios/web/public/web_state/ui/crw_web_view_scroll_view_proxy.h"
+#include "ios/web/public/test/web_task_environment.h"
+#import "ios/web/public/ui/crw_web_view_proxy.h"
+#import "ios/web/public/ui/crw_web_view_scroll_view_proxy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -72,7 +72,7 @@ class OverscrollActionsTabHelperTest : public PlatformTest {
                                   willDecelerate:NO];
   }
 
-  web::TestWebThreadBundle thread_bundle_;
+  web::WebTaskEnvironment task_environment_;
   std::unique_ptr<ios::ChromeBrowserState> browser_state_;
   web::TestWebState web_state_;
   FakeOverscrollActionsControllerDelegate* overscroll_delegate_;
@@ -138,8 +138,8 @@ TEST_F(OverscrollActionsTabHelperTest,
   // For iOS 13 and dark mode, the incognito overscroll actions view uses a
   // dynamic color.
   UIColor* expected_color =
-      color::IncognitoDynamicColor(true, [UIColor colorNamed:kBackgroundColor],
-                                   [UIColor colorNamed:kBackgroundDarkColor]);
+      color::DarkModeDynamicColor([UIColor colorNamed:kBackgroundColor], true,
+                                  [UIColor colorNamed:kBackgroundDarkColor]);
   EXPECT_TRUE(action_view());
   EXPECT_NSEQ(expected_color, action_view().backgroundColor);
 }

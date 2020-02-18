@@ -944,6 +944,32 @@ void SetWMSpecState(XID window, bool enabled, XAtom state1, XAtom state2) {
              SubstructureRedirectMask | SubstructureNotifyMask, &xclient);
 }
 
+void DoWMMoveResize(XDisplay* display,
+                    XID root_window,
+                    XID window,
+                    const gfx::Point& location_px,
+                    int direction) {
+  // This handler is usually sent when the window has the implicit grab.  We
+  // need to dump it because what we're about to do is tell the window manager
+  // that it's now responsible for moving the window around; it immediately
+  // grabs when it receives the event below.
+  XUngrabPointer(display, x11::CurrentTime);
+
+  XEvent event;
+  memset(&event, 0, sizeof(event));
+  event.xclient.type = ClientMessage;
+  event.xclient.display = display;
+  event.xclient.window = window;
+  event.xclient.message_type = gfx::GetAtom("_NET_WM_MOVERESIZE");
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = location_px.x();
+  event.xclient.data.l[1] = location_px.y();
+  event.xclient.data.l[2] = direction;
+
+  XSendEvent(display, root_window, x11::False,
+             SubstructureRedirectMask | SubstructureNotifyMask, &event);
+}
+
 bool HasWMSpecProperty(const base::flat_set<XAtom>& properties, XAtom atom) {
   return properties.find(atom) != properties.end();
 }
@@ -1399,7 +1425,8 @@ XVisualManager::XVisualManager()
   gfx::XScopedPtr<XVisualInfo[]> visual_list(XGetVisualInfo(
       display_, VisualScreenMask, &visual_template, &visuals_len));
   for (int i = 0; i < visuals_len; ++i)
-    visuals_[visual_list[i].visualid].reset(new XVisualData(visual_list[i]));
+    visuals_[visual_list[i].visualid] =
+        std::make_unique<XVisualData>(visual_list[i]);
 
   XAtom NET_WM_CM_S0 = gfx::GetAtom("_NET_WM_CM_S0");
   using_compositing_wm_ =

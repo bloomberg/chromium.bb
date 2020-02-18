@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequence_local_storage_slot.h"
 #include "build/build_config.h"
@@ -97,16 +98,18 @@ network::mojom::NetworkServiceParamsPtr CreateNetworkServiceParams() {
   return network_service_params;
 }
 
-void CreateNetworkServiceOnIO(network::mojom::NetworkServiceRequest request) {
+void CreateNetworkServiceOnIOForTesting(
+    network::mojom::NetworkServiceRequest request,
+    base::WaitableEvent* completion_event) {
   if (GetLocalNetworkService()) {
-    // GetNetworkServiceImpl() was already called and created the object, so
-    // just bind it.
     GetLocalNetworkService()->Bind(std::move(request));
     return;
   }
 
   GetLocalNetworkService() =
       std::make_unique<network::NetworkService>(nullptr, std::move(request));
+  if (completion_event)
+    completion_event->Signal();
 }
 
 void BindNetworkChangeManagerRequest(
@@ -166,27 +169,6 @@ net::NetLogCaptureMode GetNetCaptureModeFromCommandLine(
 }  // namespace
 
 network::mojom::NetworkService* GetNetworkService() {
-  service_manager::Connector* connector = nullptr;
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService) &&
-      GetSystemConnector() &&  // null in unit tests.
-      !g_force_create_network_service_directly) {
-    connector = GetSystemConnector();
-  }
-  return GetNetworkServiceFromConnector(connector);
-}
-
-CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
-    service_manager::Connector* connector) {
-  const bool is_network_service_enabled =
-      base::FeatureList::IsEnabled(network::features::kNetworkService);
-  // The DCHECK for thread is only done without network service enabled. This is
-  // because the connector and the pre-existing |g_network_service_ptr| are
-  // bound to the right thread in the network service case, and this allows
-  // Android to instantiate the NetworkService before UI thread is promoted to
-  // BrowserThread::UI.
-  if (!is_network_service_enabled)
-    DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
-
   if (!g_network_service_ptr)
     g_network_service_ptr = new network::mojom::NetworkServicePtr;
   static NetworkServiceClient* g_client;
@@ -201,16 +183,27 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
       auto request = mojo::MakeRequest(g_network_service_ptr);
       auto leaked_pipe = request.PassMessagePipe().release();
     } else {
-      if (is_network_service_enabled && connector) {
-        connector->BindInterface(mojom::kNetworkServiceName,
-                                 g_network_service_ptr);
+      if (GetSystemConnector() &&  // null in unit tests.
+          !g_force_create_network_service_directly) {
+        GetSystemConnector()->BindInterface(mojom::kNetworkServiceName,
+                                            g_network_service_ptr);
         g_network_service_ptr->set_connection_error_handler(
             base::BindOnce(&OnNetworkServiceCrash));
       } else {
-        base::PostTaskWithTraits(
-            FROM_HERE, {BrowserThread::IO},
-            base::BindOnce(CreateNetworkServiceOnIO,
-                           mojo::MakeRequest(g_network_service_ptr)));
+        // This should only be reached in unit tests.
+        if (BrowserThread::CurrentlyOn(BrowserThread::IO)) {
+          CreateNetworkServiceOnIOForTesting(
+              mojo::MakeRequest(g_network_service_ptr),
+              /*completion_event=*/nullptr);
+        } else {
+          base::WaitableEvent event;
+          base::PostTaskWithTraits(
+              FROM_HERE, {BrowserThread::IO},
+              base::BindOnce(CreateNetworkServiceOnIOForTesting,
+                             mojo::MakeRequest(g_network_service_ptr),
+                             base::Unretained(&event)));
+          event.Wait();
+        }
       }
 
       AddNetworkServiceDebugEvent("START");
@@ -243,47 +236,60 @@ CONTENT_EXPORT network::mojom::NetworkService* GetNetworkServiceFromConnector(
 
       const base::CommandLine* command_line =
           base::CommandLine::ForCurrentProcess();
-      if (is_network_service_enabled) {
-        if (command_line->HasSwitch(network::switches::kLogNetLog)) {
-          base::FilePath log_path =
-              command_line->GetSwitchValuePath(network::switches::kLogNetLog);
+      if (command_line->HasSwitch(network::switches::kLogNetLog)) {
+        base::FilePath log_path =
+            command_line->GetSwitchValuePath(network::switches::kLogNetLog);
 
-          base::DictionaryValue client_constants =
-              GetContentClient()->GetNetLogConstants();
+        base::DictionaryValue client_constants =
+            GetContentClient()->GetNetLogConstants();
 
-          base::File file(log_path, base::File::FLAG_CREATE_ALWAYS |
-                                        base::File::FLAG_WRITE);
-          if (!file.IsValid()) {
-            LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
-          } else {
-            (*g_network_service_ptr)
-                ->StartNetLog(std::move(file),
-                              GetNetCaptureModeFromCommandLine(*command_line),
-                              std::move(client_constants));
-          }
+        base::File file(
+            log_path, base::File::FLAG_CREATE_ALWAYS | base::File::FLAG_WRITE);
+        if (!file.IsValid()) {
+          LOG(ERROR) << "Failed opening NetLog: " << log_path.value();
+        } else {
+          (*g_network_service_ptr)
+              ->StartNetLog(std::move(file),
+                            GetNetCaptureModeFromCommandLine(*command_line),
+                            std::move(client_constants));
         }
       }
 
+      base::FilePath ssl_key_log_path;
       if (command_line->HasSwitch(network::switches::kSSLKeyLogFile)) {
-        base::FilePath log_path =
+        UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                  SSLKeyLogFileAction::kSwitchFound);
+        ssl_key_log_path =
             command_line->GetSwitchValuePath(network::switches::kSSLKeyLogFile);
-        LOG_IF(WARNING, log_path.empty())
+        LOG_IF(WARNING, ssl_key_log_path.empty())
             << "ssl-key-log-file argument missing";
-        if (!log_path.empty())
-          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      } else {
+        std::unique_ptr<base::Environment> env(base::Environment::Create());
+        std::string env_str;
+        if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
+          UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                    SSLKeyLogFileAction::kEnvVarFound);
+#if defined(OS_WIN)
+          // base::Environment returns environment variables in UTF-8 on
+          // Windows.
+          ssl_key_log_path = base::FilePath(base::UTF8ToUTF16(env_str));
+#else
+          ssl_key_log_path = base::FilePath(env_str);
+#endif
+        }
       }
 
-      std::unique_ptr<base::Environment> env(base::Environment::Create());
-      std::string env_str;
-      if (env->GetVar("SSLKEYLOGFILE", &env_str)) {
-#if defined(OS_WIN)
-        // base::Environment returns environment variables in UTF-8 on Windows.
-        base::FilePath log_path(base::UTF8ToUTF16(env_str));
-#else
-        base::FilePath log_path(env_str);
-#endif
-        if (!log_path.empty())
-          (*g_network_service_ptr)->SetSSLKeyLogFile(log_path);
+      if (!ssl_key_log_path.empty()) {
+        base::File file(ssl_key_log_path,
+                        base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_APPEND);
+        if (!file.IsValid()) {
+          LOG(ERROR) << "Failed opening SSL key log file: "
+                     << ssl_key_log_path.value();
+        } else {
+          UMA_HISTOGRAM_ENUMERATION(kSSLKeyLogFileHistogram,
+                                    SSLKeyLogFileAction::kLogFileEnabled);
+          (*g_network_service_ptr)->SetSSLKeyLogFile(std::move(file));
+        }
       }
 
       GetContentClient()->browser()->OnNetworkServiceCreated(
@@ -298,21 +304,7 @@ RegisterNetworkServiceCrashHandler(base::RepeatingClosure handler) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
   DCHECK(!handler.is_null());
 
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
-    return GetCrashHandlersList().Add(std::move(handler));
-
-  return nullptr;
-}
-
-network::NetworkService* GetNetworkServiceImpl() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
-  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
-  if (!GetLocalNetworkService()) {
-    GetLocalNetworkService() =
-        std::make_unique<network::NetworkService>(nullptr, nullptr);
-  }
-
-  return GetLocalNetworkService().get();
+  return GetCrashHandlersList().Add(std::move(handler));
 }
 
 #if defined(OS_CHROMEOS)
@@ -356,7 +348,7 @@ void GetNetworkConnectionTrackerFromUIThread(
     return;
   }
 
-  base::PostTaskWithTraitsAndReplyWithResult(
+  base::PostTaskAndReplyWithResult(
       FROM_HERE, {BrowserThread::UI, base::TaskPriority::BEST_EFFORT},
       base::BindOnce(&GetNetworkConnectionTracker), std::move(callback));
 }

@@ -4,8 +4,11 @@
 
 package org.chromium.chrome.browser;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.support.annotation.Nullable;
+import android.view.View;
+import android.view.View.OnAttachStateChangeListener;
 import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 
@@ -15,9 +18,10 @@ import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegate;
+import org.chromium.chrome.browser.gesturenav.HistoryNavigationDelegateFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationGlowFactory;
 import org.chromium.chrome.browser.gesturenav.NavigationHandler;
-import org.chromium.chrome.browser.gesturenav.TabbedActionDelegate;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -34,9 +38,8 @@ import org.chromium.ui.OverscrollRefreshHandler;
  * An overscroll handler implemented in terms a modified version of the Android
  * compat library's SwipeRefreshLayout effect.
  */
-public class SwipeRefreshHandler
-        extends TabWebContentsUserData implements OverscrollRefreshHandler {
-
+public class SwipeRefreshHandler extends TabWebContentsUserData
+        implements OverscrollRefreshHandler, OnAttachStateChangeListener {
     private static final Class<SwipeRefreshHandler> USER_DATA_KEY = SwipeRefreshHandler.class;
 
     // Synthetic delay between the {@link #didStopRefreshing()} signal and the
@@ -48,8 +51,6 @@ public class SwipeRefreshHandler
     private static final int MAX_REFRESH_ANIMATION_DURATION_MS = 7500;
 
     private @OverscrollAction int mSwipeType;
-
-    private final boolean mNavigationEnabled;
 
     // The modified AppCompat version of the refresh effect, handling all core
     // logic, rendering and animation.
@@ -75,8 +76,14 @@ public class SwipeRefreshHandler
     // Accessibility utterance used to indicate refresh activation.
     private String mAccessibilityRefreshString;
 
+    // Overscroll Navigation delegate providing info/object constructor.
+    private HistoryNavigationDelegate mNavigationDelegate =
+            HistoryNavigationDelegateFactory.DEFAULT;
+
     // Handles overscroll history navigation.
     private NavigationHandler mNavigationHandler;
+
+    private NavigationHandler.ActionDelegate mActionDelegate;
 
     public static SwipeRefreshHandler from(Tab tab) {
         SwipeRefreshHandler handler = get(tab);
@@ -113,8 +120,7 @@ public class SwipeRefreshHandler
             }
         };
         mTab.addObserver(mTabObserver);
-        mNavigationEnabled =
-                ChromeFeatureList.isEnabled(ChromeFeatureList.OVERSCROLL_HISTORY_NAVIGATION);
+        mNavigationDelegate = HistoryNavigationDelegateFactory.create(tab);
     }
 
     private void initSwipeRefreshLayout(final Context context) {
@@ -148,23 +154,39 @@ public class SwipeRefreshHandler
         });
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void initWebContents(WebContents webContents) {
         webContents.setOverscrollRefreshHandler(this);
         mContainerView = mTab.getContentView();
+        mContainerView.addOnAttachStateChangeListener(this);
+        mNavigationDelegate.setWindowInsetsChangeObserver(
+                mContainerView, () -> updateNavigationHandler());
         setEnabled(true);
     }
 
+    @SuppressLint("NewApi")
     @Override
     public void cleanupWebContents(WebContents webContents) {
         if (mSwipeRefreshLayout != null) detachSwipeRefreshLayoutIfNecessary();
+        mContainerView.removeOnAttachStateChangeListener(this);
+        mNavigationDelegate.setWindowInsetsChangeObserver(mContainerView, null);
         mContainerView = null;
         if (mNavigationHandler != null) {
             mNavigationHandler.destroy();
             mNavigationHandler = null;
+            mActionDelegate = null;
         }
         setEnabled(false);
     }
+
+    @Override
+    public void onViewAttachedToWindow(View v) {
+        updateNavigationHandler();
+    }
+
+    @Override
+    public void onViewDetachedFromWindow(View v) {}
 
     @Override
     public void destroyInternal() {
@@ -199,25 +221,38 @@ public class SwipeRefreshHandler
             if (mSwipeRefreshLayout == null) initSwipeRefreshLayout(mTab.getContext());
             attachSwipeRefreshLayoutIfNecessary();
             return mSwipeRefreshLayout.start();
-        } else if (type == OverscrollAction.HISTORY_NAVIGATION && mNavigationEnabled) {
-            if (mNavigationHandler == null) {
-                mNavigationHandler =
-                        new NavigationHandler(mContainerView, new TabbedActionDelegate(mTab),
-                                NavigationGlowFactory.forRenderedPage(
-                                        mContainerView, mTab.getWebContents()));
+        } else if (type == OverscrollAction.HISTORY_NAVIGATION) {
+            if (mNavigationHandler != null) {
+                boolean navigable = mActionDelegate.canNavigate(navigateForward);
+                boolean showGlow = navigateForward && !mTab.canGoForward();
+                mNavigationHandler.onDown(); // Simulates the initial onDown event.
+                if (navigable) {
+                    mNavigationHandler.showArrowWidget(navigateForward);
+                } else if (showGlow) {
+                    mNavigationHandler.showGlow(startX, startY);
+                }
+                return navigable || showGlow;
             }
-            boolean navigable = navigateForward ? mTab.canGoForward() : mTab.canGoBack();
-            boolean showGlow = navigateForward && !mTab.canGoForward();
-            mNavigationHandler.onDown(); // Simulates the initial onDown event.
-            if (navigable) {
-                mNavigationHandler.showArrowWidget(navigateForward);
-            } else if (showGlow) {
-                mNavigationHandler.showGlow(startX, startY);
-            }
-            return navigable || showGlow;
         }
         mSwipeType = OverscrollAction.NONE;
         return false;
+    }
+
+    private void updateNavigationHandler() {
+        if (mNavigationDelegate.isNavigationEnabled(mContainerView)) {
+            if (mNavigationHandler == null) {
+                mActionDelegate = mNavigationDelegate.createActionDelegate();
+                mNavigationHandler = new NavigationHandler(mContainerView, mTab.getContext(),
+                        mNavigationDelegate,
+                        NavigationGlowFactory.forRenderedPage(
+                                mContainerView, mTab.getWebContents()));
+            }
+        } else {
+            if (mNavigationHandler != null) {
+                mNavigationHandler.destroy();
+                mNavigationHandler = null;
+            }
+        }
     }
 
     @Override
@@ -226,7 +261,7 @@ public class SwipeRefreshHandler
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.pull(yDelta);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            mNavigationHandler.pull(xDelta);
+            if (mNavigationHandler != null) mNavigationHandler.pull(xDelta);
         }
         TraceEvent.end("SwipeRefreshHandler.pull");
     }
@@ -237,7 +272,7 @@ public class SwipeRefreshHandler
         if (mSwipeType == OverscrollAction.PULL_TO_REFRESH) {
             mSwipeRefreshLayout.release(allowRefresh);
         } else if (mSwipeType == OverscrollAction.HISTORY_NAVIGATION) {
-            mNavigationHandler.release(allowRefresh);
+            if (mNavigationHandler != null) mNavigationHandler.release(allowRefresh);
         }
         TraceEvent.end("SwipeRefreshHandler.release");
     }

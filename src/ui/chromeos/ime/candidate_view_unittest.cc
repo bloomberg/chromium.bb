@@ -57,12 +57,12 @@ class CandidateViewTest : public views::ViewsTestBase,
     }
 
     widget_ = new views::Widget();
-    widget_->Init(init_params);
+    widget_->Init(std::move(init_params));
     widget_->Show();
 
     aura::Window* native_window = widget_->GetNativeWindow();
-    event_generator_.reset(new ui::test::EventGenerator(
-        native_window->GetRootWindow(), native_window));
+    event_generator_ = std::make_unique<ui::test::EventGenerator>(
+        native_window->GetRootWindow(), native_window);
   }
 
   void TearDown() override {

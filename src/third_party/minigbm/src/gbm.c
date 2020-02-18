@@ -188,9 +188,12 @@ PUBLIC struct gbm_bo *gbm_bo_import(struct gbm_device *gbm, uint32_t type, void 
 		drv_data.height = fd_modifier_data->height;
 		drv_data.format = fd_modifier_data->format;
 		num_planes = drv_num_planes_from_format(drv_data.format);
-		num_fds = fd_modifier_data->num_fds;
+		assert(num_planes);
 
-		assert(num_fds > 0 && num_fds <= num_planes);
+		num_fds = fd_modifier_data->num_fds;
+		if (!num_fds || num_fds > num_planes)
+			return NULL;
+
 		for (i = 0; i < num_planes; i++) {
 			if (num_fds != num_planes)
 				drv_data.fds[i] = fd_modifier_data->fds[0];
@@ -267,7 +270,7 @@ PUBLIC void *gbm_bo_map(struct gbm_bo *bo, uint32_t x, uint32_t y, uint32_t widt
 	*stride = ((struct mapping *)*map_data)->vma->map_strides[plane];
 
 	offset = *stride * rect.y;
-	offset += drv_stride_from_format(bo->gbm_format, rect.x, plane);
+	offset += rect.x * drv_bytes_per_pixel_from_format(bo->gbm_format, plane);
 	return (void *)((uint8_t *)addr + offset);
 }
 

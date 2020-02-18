@@ -25,11 +25,11 @@
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/linked_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace {
 const size_t kHardMaxCachedFonts = 250;
 const size_t kMaxCachedFonts = 25;
+const float kUMASampleProbability = 0.01;
 
 class OffscreenFontCache {
  public:
@@ -78,7 +78,9 @@ OffscreenCanvasRenderingContext2D::~OffscreenCanvasRenderingContext2D() =
 OffscreenCanvasRenderingContext2D::OffscreenCanvasRenderingContext2D(
     OffscreenCanvas* canvas,
     const CanvasContextCreationAttributesCore& attrs)
-    : CanvasRenderingContext(canvas, attrs) {
+    : CanvasRenderingContext(canvas, attrs),
+      random_generator_((uint32_t)base::RandUint64()),
+      bernoulli_distribution_(kUMASampleProbability) {
   ExecutionContext* execution_context = canvas->GetTopExecutionContext();
   if (auto* document = DynamicTo<Document>(execution_context)) {
     Settings* settings = document->GetSettings();
@@ -130,6 +132,8 @@ int OffscreenCanvasRenderingContext2D::Height() const {
 
 bool OffscreenCanvasRenderingContext2D::CanCreateCanvas2dResourceProvider()
     const {
+  if (!Host() || Host()->Size().IsEmpty())
+    return false;
   return !!offscreenCanvasForBinding()->GetOrCreateResourceProvider();
 }
 
@@ -223,7 +227,7 @@ cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
 
 void OffscreenCanvasRenderingContext2D::DidDraw() {
   Host()->DidDraw();
-  dirty_rect_for_commit_.set(0, 0, Width(), Height());
+  dirty_rect_for_commit_.setWH(Width(), Height());
 }
 
 void OffscreenCanvasRenderingContext2D::DidDraw(const SkIRect& dirty_rect) {
@@ -257,7 +261,7 @@ bool OffscreenCanvasRenderingContext2D::isContextLost() const {
 }
 
 bool OffscreenCanvasRenderingContext2D::IsPaintable() const {
-  return offscreenCanvasForBinding()->ResourceProvider();
+  return Host()->ResourceProvider();
 }
 
 String OffscreenCanvasRenderingContext2D::ColorSpaceAsString() const {
@@ -363,9 +367,11 @@ void OffscreenCanvasRenderingContext2D::setFont(const String& new_font) {
     ModifiableState().SetFont(font, Host()->GetFontSelector());
   }
   ModifiableState().SetUnparsedFont(new_font);
-  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-      "OffscreenCanvas.TextMetrics.SetFont", elapsed);
+  if (bernoulli_distribution_(random_generator_)) {
+    base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
+    base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
+        "OffscreenCanvas.TextMetrics.SetFont", elapsed);
+  }
 }
 
 static inline TextDirection ToTextDirection(
@@ -522,7 +528,6 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
 
 TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
     const String& text) {
-  base::TimeTicks start_time = base::TimeTicks::Now();
   const Font& font = AccessFont();
 
   TextDirection direction;
@@ -532,13 +537,9 @@ TextMetrics* OffscreenCanvasRenderingContext2D::measureText(
   else
     direction = ToTextDirection(GetState().GetDirection());
 
-  TextMetrics* text_metrics = MakeGarbageCollected<TextMetrics>(
-      font, direction, GetState().GetTextBaseline(), GetState().GetTextAlign(),
-      text);
-  base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
-  base::UmaHistogramMicrosecondsTimesUnderTenMilliseconds(
-      "OffscreenCanvas.TextMetrics.MeasureText", elapsed);
-  return text_metrics;
+  return MakeGarbageCollected<TextMetrics>(font, direction,
+                                           GetState().GetTextBaseline(),
+                                           GetState().GetTextAlign(), text);
 }
 
 const Font& OffscreenCanvasRenderingContext2D::AccessFont() {

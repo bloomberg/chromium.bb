@@ -32,13 +32,13 @@
 #include "include/core/SkTypes.h"
 #include "include/core/SkVertices.h"
 #include "include/docs/SkPDFDocument.h"
-#include "include/effects/SkBlurImageFilter.h"
-#include "include/effects/SkPaintImageFilter.h"
+#include "include/effects/SkImageFilters.h"
 #include "include/private/SkMalloc.h"
 #include "include/private/SkTemplates.h"
 #include "include/utils/SkNWayCanvas.h"
 #include "include/utils/SkPaintFilterCanvas.h"
 #include "src/core/SkClipOpPriv.h"
+#include "src/core/SkImageFilter_Base.h"
 #include "src/core/SkSpecialImage.h"
 #include "src/utils/SkCanvasStack.h"
 #include "tests/Test.h"
@@ -595,12 +595,12 @@ DEF_TEST(Canvas_LegacyColorBehavior, r) {
 
 namespace {
 
-class ZeroBoundsImageFilter : public SkImageFilter {
+class ZeroBoundsImageFilter : public SkImageFilter_Base {
 public:
     static sk_sp<SkImageFilter> Make() { return sk_sp<SkImageFilter>(new ZeroBoundsImageFilter); }
 
 protected:
-    sk_sp<SkSpecialImage> onFilterImage(SkSpecialImage*, const Context&, SkIPoint*) const override {
+    sk_sp<SkSpecialImage> onFilterImage(const Context&, SkIPoint*) const override {
         return nullptr;
     }
     SkIRect onFilterNodeBounds(const SkIRect&, const SkMatrix&,
@@ -613,7 +613,7 @@ private:
 
     ZeroBoundsImageFilter() : INHERITED(nullptr, 0, nullptr) {}
 
-    typedef SkImageFilter INHERITED;
+    typedef SkImageFilter_Base INHERITED;
 };
 
 sk_sp<SkFlattenable> ZeroBoundsImageFilter::CreateProc(SkReadBuffer& buffer) {
@@ -639,7 +639,7 @@ DEF_TEST(Canvas_degenerate_dimension, reporter) {
     // Need a paint that will sneak us past the quickReject in SkCanvas, so we can test the
     // raster code further downstream.
     SkPaint paint;
-    paint.setImageFilter(SkPaintImageFilter::Make(SkPaint(), nullptr));
+    paint.setImageFilter(SkImageFilters::Paint(SkPaint(), nullptr));
     REPORTER_ASSERT(reporter, !paint.canComputeFastBounds());
 
     const int big = 100 * 1024; // big enough to definitely trigger tiling
@@ -657,7 +657,7 @@ DEF_TEST(Canvas_ClippedOutImageFilter, reporter) {
 
     SkPaint p;
     p.setColor(SK_ColorGREEN);
-    p.setImageFilter(SkBlurImageFilter::Make(3.0f, 3.0f, nullptr, nullptr));
+    p.setImageFilter(SkImageFilters::Blur(3.0f, 3.0f, nullptr, nullptr));
 
     SkRect blurredRect = SkRect::MakeXYWH(60, 10, 30, 30);
 

@@ -187,7 +187,8 @@ HttpProxyConnectJob::HttpProxyConnectJob(
                          GetDestination().ToString()),
                     common_connect_job_params->http_auth_cache,
                     common_connect_job_params->http_auth_handler_factory,
-                    host_resolver())
+                    host_resolver(),
+                    HttpAuthPreferences::ALLOW_DEFAULT_CREDENTIALS)
               : nullptr) {}
 
 HttpProxyConnectJob::~HttpProxyConnectJob() {}
@@ -698,7 +699,8 @@ int HttpProxyConnectJob::DoQuicProxyCreateStreamComplete(int result) {
 
   spdy::SpdyPriority spdy_priority =
       ConvertRequestPriorityToQuicPriority(kH2QuicTunnelPriority);
-  quic_stream->SetPriority(spdy_priority);
+  spdy::SpdyStreamPrecedence precedence(spdy_priority);
+  quic_stream->SetPriority(precedence);
 
   transport_socket_ = std::make_unique<QuicProxyClientSocket>(
       std::move(quic_stream), std::move(quic_session_), GetUserAgent(),

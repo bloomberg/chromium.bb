@@ -40,7 +40,6 @@
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/extensions/browsertest_util.h"
@@ -114,6 +113,7 @@
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/browser/notification_details.h"
 #include "content/public/browser/notification_service.h"
+#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
@@ -475,8 +475,7 @@ std::unique_ptr<net::test_server::HttpResponse> WaitForJsonRequest(
       json_reader.ReadToValueDeprecated(request.content);
   EXPECT_TRUE(value);
 
-  base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::UI},
-                           quit_closure);
+  base::PostTask(FROM_HERE, {content::BrowserThread::UI}, quit_closure);
 
   if (hung_response)
     return std::make_unique<net::test_server::HungResponse>();
@@ -590,9 +589,6 @@ class SSLUITestBase : public InProcessBrowserTest,
                                       int expected_authentication_state) {
     CheckSecurityState(tab, error, security_state::DANGEROUS,
                        expected_authentication_state);
-    // CERT_STATUS_UNABLE_TO_CHECK_REVOCATION doesn't lower the security level
-    // to DANGEROUS.
-    ASSERT_NE(net::CERT_STATUS_UNABLE_TO_CHECK_REVOCATION, error);
   }
 
   void ProceedThroughInterstitial(WebContents* tab) {
@@ -935,8 +931,8 @@ class SSLUITestBase : public InProcessBrowserTest,
 
   void RunOnIOThreadBlocking(base::OnceClosure task) {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                     std::move(task), run_loop.QuitClosure());
+    base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
+                           std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -1853,8 +1849,14 @@ class CertificateTransparencySSLUITest : public CertVerifierBrowserTest {
  public:
   CertificateTransparencySSLUITest()
       : CertVerifierBrowserTest(),
-        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
-  ~CertificateTransparencySSLUITest() override {}
+        https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        true);
+  }
+  ~CertificateTransparencySSLUITest() override {
+    SystemNetworkContextManager::SetEnableCertificateTransparencyForTesting(
+        base::nullopt);
+  }
 
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
@@ -1973,6 +1975,47 @@ IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
       browser()->profile()->GetPrefs(),
       policy::key::kCertificateTransparencyEnforcementDisabledForCas,
       certificate_transparency::prefs::kCTExcludedSPKIs,
+      {verify_result.public_key_hashes.back().ToString()}));
+
+  ui_test_utils::NavigateToURL(browser(),
+                               https_server()->GetURL("/ssl/google.html"));
+  CheckSecurityState(browser()->tab_strip_model()->GetActiveWebContents(),
+                     CertError::NONE, security_state::SECURE, AuthState::NONE);
+}
+
+// Visit an HTTPS page that has a certificate issued by a certificate authority
+// that is trusted in a root store that Chrome does not consider consistently
+// secure. In the case where the certificate was issued after the Certificate
+// Transparency requirement date of April 2018 the connection would normally be
+// blocked, as the server will not be providing CT details, and the Chrome CT
+// Policy should be being enforced; however, because a policy configuration
+// exists that disables CT enforcement for that Legacy cert, the connection
+// should succeed. For more detail, see /net/docs/certificate-transparency.md
+IN_PROC_BROWSER_TEST_F(CertificateTransparencySSLUITest,
+                       LegacyEnforcedAfterApril2018UnlessPoliciesSet) {
+  ASSERT_TRUE(https_server()->Start());
+
+  net::CertVerifyResult verify_result;
+  verify_result.verified_cert =
+      net::ImportCertFromFile(net::GetTestCertsDirectory(), "may_2018.pem");
+  ASSERT_TRUE(verify_result.verified_cert);
+  verify_result.is_issued_by_known_root = true;
+
+  // We'll use a SPKI hash corresponding to the Federal Common Policy CA as
+  // captured at https://fpki.idmanagement.gov/announcements/mspkichanges/
+  const net::SHA256HashValue legacy_spki_hash = {
+      0x8e, 0x8b, 0x56, 0xf5, 0x91, 0x8a, 0x25, 0xbd, 0x85, 0xdc, 0xe7,
+      0x66, 0x63, 0xfd, 0x94, 0xcc, 0x23, 0x69, 0x0f, 0x10, 0xea, 0x95,
+      0x86, 0x61, 0x31, 0x71, 0xc6, 0xf8, 0x37, 0x88, 0x90, 0xd5};
+  verify_result.public_key_hashes.push_back(net::HashValue(legacy_spki_hash));
+
+  mock_cert_verifier()->AddResultForCert(https_server()->GetCertificate().get(),
+                                         verify_result, net::OK);
+
+  ASSERT_NO_FATAL_FAILURE(ConfigureStringListPolicy(
+      browser()->profile()->GetPrefs(),
+      policy::key::kCertificateTransparencyEnforcementDisabledForLegacyCas,
+      certificate_transparency::prefs::kCTExcludedLegacySPKIs,
       {verify_result.public_key_hashes.back().ToString()}));
 
   ui_test_utils::NavigateToURL(browser(),
@@ -3312,8 +3355,8 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestGoodFrameNavigation) {
   // SetUpOnMainThread adds this hostname to the resolver so that it's not
   // blocked (browser_test_base.cc has a resolver that blocks all non-local
   // hostnames by default to ensure tests don't hit the network). This is
-  // critical to do because for PlzNavigate the request would otherwise get
-  // cancelled in the browser before the renderer sees it.
+  // critical to do because the request would otherwise get cancelled in the
+  // browser before the renderer sees it.
 
   std::string top_frame_path = GetTopFramePath(
       *embedded_test_server(), https_server_, https_server_expired_);
@@ -4993,14 +5036,14 @@ class CommonNameMismatchBrowserTest : public CertVerifierBrowserTest {
   void SetUpOnMainThread() override {
     CertVerifierBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    base::PostTaskWithTraits(
+    base::PostTask(
         FROM_HERE, {content::BrowserThread::IO},
         base::BindOnce(&SetUpHttpNameMismatchPingInterceptorOnIOThread));
   }
 
   void TearDownOnMainThread() override {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&CleanUpOnIOThread));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
@@ -5531,14 +5574,12 @@ void SetupRestoredTabWithNavigation(
   WebContents* blank_tab = browser->tab_strip_model()->GetActiveWebContents();
 
   // Restore the tab.
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser);
   content::WindowedNotificationObserver tab_loaded_observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
   chrome::RestoreTab(browser);
-  tab_added_observer.Wait();
+  tab_added_waiter.Wait();
   tab_loaded_observer.Wait();
 
   tab = browser->tab_strip_model()->GetActiveWebContents();
@@ -5664,11 +5705,9 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, DISABLED_RestoreThenNavigateHasSSLState) {
   ui_test_utils::NavigateToURL(browser(), url2);
   chrome::CloseTab(browser());
 
-  content::WindowedNotificationObserver tab_added_observer(
-      chrome::NOTIFICATION_TAB_PARENTED,
-      content::NotificationService::AllSources());
+  ui_test_utils::TabAddedWaiter tab_added_waiter(browser());
   chrome::RestoreTab(browser());
-  tab_added_observer.Wait();
+  tab_added_waiter.Wait();
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
   content::TestNavigationManager observer(tab, url1);
@@ -7059,7 +7098,7 @@ void SetShouldNotRequireCTForTesting() {
     return;
   }
 
-  base::PostTaskWithTraits(
+  base::PostTask(
       FROM_HERE, {content::BrowserThread::IO},
       base::BindOnce(&net::TransportSecurityState::SetShouldRequireCTForTesting,
                      base::Owned(new bool(false))));
@@ -7714,8 +7753,8 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
  private:
   void RunOnIOThreadBlocking(base::OnceClosure task) {
     base::RunLoop run_loop;
-    base::PostTaskWithTraitsAndReply(FROM_HERE, {content::BrowserThread::IO},
-                                     std::move(task), run_loop.QuitClosure());
+    base::PostTaskAndReply(FROM_HERE, {content::BrowserThread::IO},
+                           std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
 
@@ -7813,8 +7852,8 @@ class RecurrentInterstitialBrowserTest : public CertVerifierBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    base::PostTaskWithTraits(FROM_HERE, {content::BrowserThread::IO},
-                             base::BindOnce(&CleanUpOnIOThread));
+    base::PostTask(FROM_HERE, {content::BrowserThread::IO},
+                   base::BindOnce(&CleanUpOnIOThread));
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 

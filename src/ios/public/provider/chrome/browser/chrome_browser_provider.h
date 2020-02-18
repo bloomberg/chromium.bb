@@ -23,7 +23,6 @@ class FullscreenProvider;
 class MailtoHandlerProvider;
 class OmahaServiceProvider;
 class OverridesProvider;
-class SpecialUserProvider;
 class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
@@ -37,7 +36,6 @@ class WebState;
 }
 
 @protocol LogoVendor;
-@protocol TextFieldStyling;
 @class TabModel;
 @class UITextField;
 @class UIView;
@@ -108,9 +106,8 @@ class ChromeBrowserProvider {
   virtual GeolocationUpdaterProvider* GetGeolocationUpdaterProvider();
   // Returns risk data used in Wallet requests.
   virtual std::string GetRiskData();
-  // Creates and returns a new styled text field with the given |frame|.
-  virtual UITextField<TextFieldStyling>* CreateStyledTextField(
-      CGRect frame) const NS_RETURNS_RETAINED;
+  // Creates and returns a new styled text field.
+  virtual UITextField* CreateStyledTextField() const NS_RETURNS_RETAINED;
 
   // Initializes the cast service.  Should be called soon after the given
   // |main_tab_model| is created.
@@ -135,9 +132,6 @@ class ChromeBrowserProvider {
 
   // Returns an instance of the user feedback provider.
   virtual UserFeedbackProvider* GetUserFeedbackProvider() const;
-
-  // Returns an instance of the special user provider.
-  virtual SpecialUserProvider* GetSpecialUserProvider() const;
 
   // Returns an instance of the branded image provider.
   virtual BrandedImageProvider* GetBrandedImageProvider() const;

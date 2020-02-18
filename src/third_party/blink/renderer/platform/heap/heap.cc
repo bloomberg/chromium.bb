@@ -37,6 +37,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
+#include "third_party/blink/renderer/platform/bindings/trace_wrapper_v8_reference.h"
 #include "third_party/blink/renderer/platform/heap/address_cache.h"
 #include "third_party/blink/renderer/platform/heap/blink_gc_memory_dump_provider.h"
 #include "third_party/blink/renderer/platform/heap/heap_compact.h"
@@ -45,6 +46,7 @@
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 #include "third_party/blink/renderer/platform/heap/page_pool.h"
 #include "third_party/blink/renderer/platform/heap/thread_state_scopes.h"
+#include "third_party/blink/renderer/platform/heap/unified_heap_marking_visitor.h"
 #include "third_party/blink/renderer/platform/instrumentation/histogram.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/web_memory_allocator_dump.h"
@@ -52,7 +54,6 @@
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "third_party/blink/renderer/platform/wtf/leak_annotations.h"
-#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
@@ -100,6 +101,9 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       not_fully_constructed_worklist_(nullptr),
       weak_callback_worklist_(nullptr),
       movable_reference_worklist_(nullptr),
+      weak_table_worklist_(nullptr),
+      backing_store_callback_worklist_(nullptr),
+      v8_references_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0) {
   if (ThreadState::Current()->IsMainThread())
@@ -151,18 +155,6 @@ Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
   return nullptr;
 }
 
-void ThreadHeap::RegisterWeakTable(void* table,
-                                   EphemeronCallback iteration_callback) {
-  DCHECK(thread_state_->InAtomicMarkingPause());
-#if DCHECK_IS_ON()
-  auto result = ephemeron_callbacks_.insert(table, iteration_callback);
-  DCHECK(result.is_new_entry ||
-         result.stored_value->value == iteration_callback);
-#else
-  ephemeron_callbacks_.insert(table, iteration_callback);
-#endif  // DCHECK_IS_ON()
-}
-
 void ThreadHeap::SetupWorklists() {
   marking_worklist_.reset(new MarkingWorklist());
   not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
@@ -170,6 +162,9 @@ void ThreadHeap::SetupWorklists() {
       new NotFullyConstructedWorklist());
   weak_callback_worklist_.reset(new WeakCallbackWorklist());
   movable_reference_worklist_.reset(new MovableReferenceWorklist());
+  weak_table_worklist_.reset(new WeakTableWorklist);
+  backing_store_callback_worklist_.reset(new BackingStoreCallbackWorklist());
+  v8_references_worklist_.reset(new V8ReferencesWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
@@ -177,6 +172,8 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
   marking_worklist_.reset(nullptr);
   previously_not_fully_constructed_worklist_.reset(nullptr);
   weak_callback_worklist_.reset(nullptr);
+  weak_table_worklist_.reset();
+  v8_references_worklist_.reset();
   ephemeron_callbacks_.clear();
 
   // The fixed point iteration may have found not-fully-constructed objects.
@@ -210,6 +207,7 @@ void ThreadHeap::DestroyMarkingWorklists(BlinkGC::StackState stack_state) {
 
 void ThreadHeap::DestroyCompactionWorklists() {
   movable_reference_worklist_.reset();
+  backing_store_callback_worklist_.reset();
 }
 
 HeapCompact* ThreadHeap::Compaction() {
@@ -218,14 +216,8 @@ HeapCompact* ThreadHeap::Compaction() {
   return compaction_.get();
 }
 
-bool ThreadHeap::ShouldRegisterMovingObjectReference(MovableReference* slot) {
-  return Compaction()->ShouldRegisterMovingObjectReference(slot);
-}
-
-void ThreadHeap::RegisterMovingObjectCallback(MovableReference* slot,
-                                              MovingObjectCallback callback,
-                                              void* callback_data) {
-  Compaction()->RegisterMovingObjectCallback(slot, callback, callback_data);
+bool ThreadHeap::ShouldRegisterMovingAddress(Address address) {
+  return Compaction()->ShouldRegisterMovingAddress(address);
 }
 
 void ThreadHeap::FlushNotFullyConstructedObjects() {
@@ -243,6 +235,7 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
       stats_collector(),
       ThreadHeapStatsCollector::kMarkNotFullyConstructedObjects);
 
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
   NotFullyConstructedItem item;
   while (
       not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
@@ -251,28 +244,41 @@ void ThreadHeap::MarkNotFullyConstructedObjects(MarkingVisitor* visitor) {
   }
 }
 
-void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
+void ThreadHeap::InvokeEphemeronCallbacks(MarkingVisitor* visitor) {
   // Mark any strong pointers that have now become reachable in ephemeron maps.
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(),
       ThreadHeapStatsCollector::kMarkInvokeEphemeronCallbacks);
 
-  // Avoid supporting a subtle scheme that allows insertion while iterating
-  // by just creating temporary lists for iteration and sinking.
-  WTF::HashMap<void*, EphemeronCallback> iteration_set;
-  WTF::HashMap<void*, EphemeronCallback> final_set;
+  // MarkingVisitor records callbacks for weak tables in a worklist.
+  // ThreadHeap reads from the worklist before invoking ephemeron callbacks.
+  // We need to flush the callback worklist so ThreadHeap can access it.
+  //
+  // TODO(omerkatz): In concurrent marking, this should flush all visitors.
+  if (thread_state_->in_atomic_pause())
+    visitor->FlushWeakTableCallbacks();
 
-  bool found_new = false;
-  do {
-    iteration_set = std::move(ephemeron_callbacks_);
-    ephemeron_callbacks_.clear();
-    for (auto& tuple : iteration_set) {
-      final_set.insert(tuple.key, tuple.value);
-      tuple.value(visitor, tuple.key);
+  // We first reiterate over known callbacks from previous iterations.
+  for (auto& tuple : ephemeron_callbacks_)
+    tuple.value(visitor, tuple.key);
+
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
+
+  // Then we iterate over the new callbacks found by the marking visitor.
+  while (!weak_table_worklist_->IsGlobalEmpty()) {
+    // Read ephemeron callbacks from worklist to ephemeron_callbacks_ hashmap.
+    WeakTableWorklist::View ephemerons_worklist(weak_table_worklist_.get(),
+                                                WorklistTaskId::MainThread);
+    WeakTableItem item;
+    while (ephemerons_worklist.Pop(&item)) {
+      auto result = ephemeron_callbacks_.insert(item.object, item.callback);
+      DCHECK(result.is_new_entry ||
+             result.stored_value->value == item.callback);
+      if (result.is_new_entry) {
+        item.callback(visitor, item.object);
+      }
     }
-    found_new = !ephemeron_callbacks_.IsEmpty();
-  } while (found_new);
-  ephemeron_callbacks_ = std::move(final_set);
+  }
 }
 
 namespace {
@@ -280,12 +286,13 @@ namespace {
 template <typename Worklist, typename Callback>
 bool DrainWorklistWithDeadline(base::TimeTicks deadline,
                                Worklist* worklist,
-                               Callback callback) {
+                               Callback callback,
+                               int task_id) {
   const size_t kDeadlineCheckInterval = 2500;
 
   size_t processed_callback_count = 0;
   typename Worklist::EntryType item;
-  while (worklist->Pop(WorklistTaskId::MainThread, &item)) {
+  while (worklist->Pop(task_id, &item)) {
     callback(item);
     processed_callback_count++;
     if (++processed_callback_count == kDeadlineCheckInterval) {
@@ -302,6 +309,10 @@ bool DrainWorklistWithDeadline(base::TimeTicks deadline,
 
 bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
                                 base::TimeTicks deadline) {
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
+
+  FlushV8References(visitor);
+
   bool finished;
   // Ephemeron fixed point loop.
   do {
@@ -317,7 +328,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
             DCHECK(!HeapObjectHeader::FromPayload(item.object)
                         ->IsInConstruction());
             item.callback(visitor, item.object);
-          });
+          },
+          WorklistTaskId::MainThread);
       if (!finished)
         return false;
 
@@ -328,7 +340,8 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
           deadline, previously_not_fully_constructed_worklist_.get(),
           [visitor](const NotFullyConstructedItem& item) {
             visitor->DynamicallyMarkAddress(reinterpret_cast<Address>(item));
-          });
+          },
+          WorklistTaskId::MainThread);
       if (!finished)
         return false;
     }
@@ -337,17 +350,24 @@ bool ThreadHeap::AdvanceMarking(MarkingVisitor* visitor,
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_worklist_->IsGlobalEmpty());
+
+  // In case we reached here, we might not enter these method again for a
+  // while. Flush all V8 references before returning so we don't get left with
+  /// unflushed references.
+  FlushV8References(visitor);
+
   return true;
 }
 
-void ThreadHeap::WeakProcessing(Visitor* visitor) {
+void ThreadHeap::WeakProcessing(MarkingVisitor* visitor) {
   ThreadHeapStatsCollector::Scope stats_scope(
       stats_collector(), ThreadHeapStatsCollector::kMarkWeakProcessing);
 
   // Weak processing may access unmarked objects but are forbidden from
-  // ressurecting them.
-  ThreadState::ObjectResurrectionForbiddenScope object_resurrection_forbidden(
-      ThreadState::Current());
+  // resurrecting them or allocating new ones.
+  ThreadState::NoAllocationScope allocation_forbidden(ThreadState::Current());
+
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
   CustomCallbackItem item;
@@ -366,6 +386,7 @@ void ThreadHeap::VerifyMarking() {
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
+  ScriptForbiddenScope script_forbidden_scope;
   size_t object_payload_size = 0;
   thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
   thread_state_->Heap().MakeConsistentForGC();
@@ -497,19 +518,10 @@ void ThreadHeap::PromptlyFreed(uint32_t gc_info_index) {
 }
 
 #if defined(ADDRESS_SANITIZER)
-void ThreadHeap::PoisonAllHeaps() {
-  // This lock must be held because other threads may access cross-thread
-  // persistents and should not observe them in a poisoned state.
-  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
-
+void ThreadHeap::PoisonUnmarkedObjects() {
   // Poisoning all unmarked objects in the other arenas.
   for (int i = 1; i < BlinkGC::kNumberOfArenas; i++)
-    arenas_[i]->PoisonArena();
-  // CrossThreadPersistents in unmarked objects may be accessed from other
-  // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
-  // that would be fine.
-  ProcessHeap::GetCrossThreadPersistentRegion()
-      .UnpoisonCrossThreadPersistents();
+    arenas_[i]->PoisonUnmarkedObjects();
 }
 #endif
 
@@ -623,6 +635,34 @@ void ThreadHeap::ConcurrentSweep() {
   for (size_t i = BlinkGC::kNormalPage1ArenaIndex;
        i < BlinkGC::kNumberOfArenas; i++) {
     arenas_[i]->SweepOnConcurrentThread();
+  }
+}
+
+// TODO(omerkatz): Temporary solution until concurrent marking is ready. see
+// https://crrev.com/c/1730054 for details. Eventually this will be removed.
+void ThreadHeap::FlushV8References(MarkingVisitor* visitor) {
+  if (!thread_state_->IsUnifiedGCMarkingInProgress())
+    return;
+
+  UnifiedHeapMarkingVisitor* unified_visitor =
+      reinterpret_cast<UnifiedHeapMarkingVisitor*>(visitor);
+
+  DCHECK((unified_visitor->task_id() != WorklistTaskId::MainThread) ||
+         v8_references_worklist_->IsGlobalEmpty());
+
+  // TODO(omerkatz): In concurrent marking, this should flush all visitors
+  unified_visitor->FlushV8References();
+
+  DCHECK_EQ(WorklistTaskId::MainThread, visitor->task_id());
+
+  V8ReferencesWorklist::View v8_references(v8_references_worklist_.get(),
+                                           WorklistTaskId::MainThread);
+  V8Reference reference;
+  v8::EmbedderHeapTracer* controller =
+      reinterpret_cast<v8::EmbedderHeapTracer*>(
+          thread_state_->unified_heap_controller());
+  while (v8_references.Pop(&reference)) {
+    controller->RegisterEmbedderReference(reference->Get());
   }
 }
 

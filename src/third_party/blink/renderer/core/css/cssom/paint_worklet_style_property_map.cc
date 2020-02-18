@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/css/cssom/paint_worklet_style_property_map.h"
 
+#include "third_party/blink/renderer/core/animation/compositor_animations.h"
 #include "third_party/blink/renderer/core/css/css_custom_property_declaration.h"
 #include "third_party/blink/renderer/core/css/css_variable_data.h"
 #include "third_party/blink/renderer/core/css/cssom/computed_style_property_map.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/css/cssom/css_unsupported_style_value.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -55,7 +57,6 @@ class PaintWorkletStylePropertyMapIterationSource final
 };
 
 bool BuildNativeValues(const ComputedStyle& style,
-                       Node* styled_node,
                        const Vector<CSSPropertyID>& native_properties,
                        PaintWorkletStylePropertyMap::CrossThreadData& data) {
   DCHECK(IsMainThread());
@@ -68,7 +69,7 @@ bool BuildNativeValues(const ComputedStyle& style,
     std::unique_ptr<CrossThreadStyleValue> value =
         CSSProperty::Get(property_id)
             .CrossThreadStyleValueFromComputedStyle(
-                style, /* layout_object */ nullptr, styled_node,
+                style, /* layout_object */ nullptr,
                 /* allow_visited_style */ false);
     if (value->GetType() == CrossThreadStyleValue::StyleValueType::kUnknownType)
       return false;
@@ -80,20 +81,34 @@ bool BuildNativeValues(const ComputedStyle& style,
   return true;
 }
 
-bool BuildCustomValues(const Document& document,
-                       const ComputedStyle& style,
-                       Node* styled_node,
-                       const Vector<AtomicString>& custom_properties,
-                       PaintWorkletStylePropertyMap::CrossThreadData& data) {
+bool BuildCustomValues(
+    const Document& document,
+    UniqueObjectId unique_object_id,
+    const ComputedStyle& style,
+    const Vector<AtomicString>& custom_properties,
+    PaintWorkletStylePropertyMap::CrossThreadData& data,
+    CompositorPaintWorkletInput::PropertyKeys& input_property_keys) {
   DCHECK(IsMainThread());
   for (const auto& property_name : custom_properties) {
     CSSPropertyRef ref(property_name, document);
     std::unique_ptr<CrossThreadStyleValue> value =
         ref.GetProperty().CrossThreadStyleValueFromComputedStyle(
-            style, /* layout_object */ nullptr, styled_node,
+            style, /* layout_object */ nullptr,
             /* allow_visited_style */ false);
     if (value->GetType() == CrossThreadStyleValue::StyleValueType::kUnknownType)
       return false;
+    // In order to animate properties, we need to track the compositor element
+    // id on which they will be animated.
+    const bool animatable_property =
+        value->GetType() == CrossThreadStyleValue::StyleValueType::kUnitType ||
+        value->GetType() == CrossThreadStyleValue::StyleValueType::kColorType;
+    if (animatable_property) {
+      CompositorElementId element_id = CompositorElementIdFromUniqueObjectId(
+          unique_object_id,
+          CompositorAnimations::CompositorElementNamespaceForProperty(
+              ref.GetProperty().PropertyID()));
+      input_property_keys.emplace_back(property_name.Utf8(), element_id);
+    }
     // Ensure that the String can be safely passed cross threads.
     String key = property_name.GetString();
     if (!key.IsSafeToSendToAnotherThread())
@@ -109,17 +124,19 @@ bool BuildCustomValues(const Document& document,
 base::Optional<PaintWorkletStylePropertyMap::CrossThreadData>
 PaintWorkletStylePropertyMap::BuildCrossThreadData(
     const Document& document,
+    UniqueObjectId unique_object_id,
     const ComputedStyle& style,
-    Node* styled_node,
     const Vector<CSSPropertyID>& native_properties,
-    const Vector<AtomicString>& custom_properties) {
+    const Vector<AtomicString>& custom_properties,
+    CompositorPaintWorkletInput::PropertyKeys& input_property_keys) {
   DCHECK(IsMainThread());
   PaintWorkletStylePropertyMap::CrossThreadData data;
   data.ReserveCapacityForSize(native_properties.size() +
                               custom_properties.size());
-  if (!BuildNativeValues(style, styled_node, native_properties, data))
+  if (!BuildNativeValues(style, native_properties, data))
     return base::nullopt;
-  if (!BuildCustomValues(document, style, styled_node, custom_properties, data))
+  if (!BuildCustomValues(document, unique_object_id, style, custom_properties,
+                         data, input_property_keys))
     return base::nullopt;
   return data;
 }

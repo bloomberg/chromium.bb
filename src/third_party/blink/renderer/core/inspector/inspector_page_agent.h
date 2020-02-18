@@ -56,7 +56,6 @@ class InspectedFrames;
 class InspectorResourceContentLoader;
 class LocalFrame;
 class ScriptSourceCode;
-class SharedBuffer;
 enum class ResourceType : uint8_t;
 
 using blink::protocol::Maybe;
@@ -184,7 +183,7 @@ class CORE_EXPORT InspectorPageAgent final
                                 ClientNavigationReason);
   void FrameScheduledNavigation(LocalFrame*,
                                 const KURL&,
-                                double delay,
+                                base::TimeDelta delay,
                                 ClientNavigationReason);
   void FrameClearedScheduledNavigation(LocalFrame*);
   void WillRunJavaScriptDialog();

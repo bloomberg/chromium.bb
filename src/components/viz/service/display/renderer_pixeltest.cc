@@ -28,6 +28,7 @@
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/service/display/gl_renderer.h"
+#include "components/viz/service/display/software_renderer.h"
 #include "components/viz/test/test_in_process_context_provider.h"
 #include "components/viz/test/test_shared_bitmap_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -1320,8 +1321,7 @@ using GLRendererTypes =
     ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
 
 TYPED_TEST_SUITE(IntersectingQuadPixelTest, RendererTypes);
-// TODO(crbug.gom/939442): Enable these tests for SkiaRenderer.
-TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GLRendererTypes);
+TYPED_TEST_SUITE(IntersectingVideoQuadPixelTest, GPURendererTypes);
 TYPED_TEST_SUITE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
 TYPED_TEST(IntersectingQuadPixelTest, SolidColorQuads) {
@@ -1533,7 +1533,7 @@ TYPED_TEST(IntersectingVideoQuadPixelTest, YUVVideoQuads) {
       this->child_context_provider_.get());
 
   this->AppendBackgroundAndRunTest(
-      cc::FuzzyPixelOffByOneComparator(false),
+      cc::FuzzyPixelComparator(true, 0.50f, 0.f, 1.2f, 2, 0),
       FILE_PATH_LITERAL("intersecting_blue_green_squares_video.png"));
 }
 
@@ -2954,8 +2954,8 @@ class RendererPixelTestWithBackdropFilter
   gfx::Rect filter_pass_layer_rect_;
 };
 
-// TODO(916318): The software renderer does not support background filters yet.
 using BackdropFilterRendererTypes = ::testing::Types<GLRenderer,
+                                                     SoftwareRenderer,
                                                      SkiaRenderer
 #if defined(ENABLE_VIZ_VULKAN_TESTS)
                                                      ,
@@ -2998,7 +2998,7 @@ TYPED_TEST(RendererPixelTestWithBackdropFilter, InvertFilterWithMask) {
   EXPECT_TRUE(this->RunPixelTest(
       &this->pass_list_,
       base::FilePath(FILE_PATH_LITERAL("backdrop_filter_masked.png")),
-      cc::ExactPixelComparator(true)));
+      cc::FuzzyPixelOffByOneComparator(false)));
 }
 
 template <typename RendererType>

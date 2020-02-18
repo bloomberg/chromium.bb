@@ -5,13 +5,15 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <fuzzer/FuzzedDataProvider.h>
+
 #include <memory>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "base/test/task_environment.h"
 #include "net/base/address_family.h"
 #include "net/base/address_list.h"
 #include "net/base/net_errors.h"
@@ -22,7 +24,6 @@
 #include "net/log/net_log_with_source.h"
 #include "net/log/test_net_log.h"
 #include "net/net_buildflags.h"
-#include "third_party/libFuzzer/src/utils/FuzzedDataProvider.h"
 
 namespace {
 
@@ -205,7 +206,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
     net::HostResolver::ManagerOptions options;
     options.max_concurrent_resolves =
         data_provider.ConsumeIntegralInRange(1, 8);
-    options.dns_client_enabled = data_provider.ConsumeBool();
+    options.insecure_dns_client_enabled = data_provider.ConsumeBool();
     bool enable_caching = data_provider.ConsumeBool();
     std::unique_ptr<net::ContextHostResolver> host_resolver =
         net::CreateFuzzedContextHostResolver(options, &net_log, &data_provider,

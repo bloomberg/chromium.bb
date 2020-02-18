@@ -65,8 +65,9 @@ void CPWL_List_Notify::IOnInvalidateRect(CFX_FloatRect* pRect) {
   m_pList->InvalidateRect(pRect);
 }
 
-CPWL_ListBox::CPWL_ListBox(const CreateParams& cp,
-                           std::unique_ptr<PrivateData> pAttachedData)
+CPWL_ListBox::CPWL_ListBox(
+    const CreateParams& cp,
+    std::unique_ptr<IPWL_SystemHandler::PerWindowData> pAttachedData)
     : CPWL_Wnd(cp, std::move(pAttachedData)),
       m_pList(pdfium::MakeUnique<CPWL_ListCtrl>()) {}
 
@@ -107,15 +108,13 @@ void CPWL_ListBox::DrawThisAppearance(CFX_RenderDevice* pDevice,
     CFX_PointF ptOffset(rcItem.left, (rcItem.top + rcItem.bottom) * 0.5f);
     if (CPWL_EditImpl* pEdit = m_pList->GetItemEdit(i)) {
       CFX_FloatRect rcContent = pEdit->GetContentRect();
-      if (rcContent.Width() > rcClient.Width())
-        rcItem.Intersect(rcList);
-      else
-        rcItem.Intersect(rcClient);
+      rcItem.Intersect(rcContent.Width() > rcClient.Width() ? rcList
+                                                            : rcClient);
     }
 
+    IPWL_SystemHandler* pSysHandler = GetSystemHandler();
     if (m_pList->IsItemSelected(i)) {
-      CFX_SystemHandler* pSysHandler = GetSystemHandler();
-      if (pSysHandler && pSysHandler->IsSelectionImplemented()) {
+      if (pSysHandler->IsSelectionImplemented()) {
         CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device, m_pList->GetItemEdit(i),
                                 GetTextColor().ToFXColor(255), rcList, ptOffset,
                                 nullptr, pSysHandler, m_pFormFiller.Get());
@@ -129,7 +128,6 @@ void CPWL_ListBox::DrawThisAppearance(CFX_RenderDevice* pDevice,
                                 m_pFormFiller.Get());
       }
     } else {
-      CFX_SystemHandler* pSysHandler = GetSystemHandler();
       CPWL_EditImpl::DrawEdit(pDevice, mtUser2Device, m_pList->GetItemEdit(i),
                               GetTextColor().ToFXColor(255), rcList, ptOffset,
                               nullptr, pSysHandler, nullptr);

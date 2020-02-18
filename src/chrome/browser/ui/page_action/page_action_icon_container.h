@@ -16,10 +16,12 @@ enum class PageActionIconType {
   kReaderMode,
   kSaveCard,
   kSendTabToSelf,
+  kSharedClipboard,
   kTranslate,
   kZoom,
   kNativeFileSystemAccess,
   kClickToCall,
+  kCookieControls,
 };
 
 class PageActionIconContainer {

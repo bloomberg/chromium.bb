@@ -29,7 +29,7 @@ class ColorStateTest : public DawnTest {
     void SetUp() override {
         DawnTest::SetUp();
 
-        vsModule = utils::CreateShaderModule(device, utils::ShaderStage::Vertex, R"(
+        vsModule = utils::CreateShaderModule(device, utils::SingleShaderStage::Vertex, R"(
                 #version 450
                 void main() {
                     const vec2 pos[3] = vec2[3](vec2(-1.f, -1.f), vec2(3.f, -1.f), vec2(-1.f, 3.f));
@@ -39,7 +39,7 @@ class ColorStateTest : public DawnTest {
 
         bindGroupLayout = utils::MakeBindGroupLayout(
             device, {
-                        {0, dawn::ShaderStageBit::Fragment, dawn::BindingType::UniformBuffer},
+                        {0, dawn::ShaderStage::Fragment, dawn::BindingType::UniformBuffer},
                     });
 
         pipelineLayout = utils::MakeBasicPipelineLayout(device, &bindGroupLayout);
@@ -56,7 +56,7 @@ class ColorStateTest : public DawnTest {
     // attachment. basePipeline has no blending
     void SetupSingleSourcePipelines(dawn::ColorStateDescriptor colorStateDescriptor) {
         dawn::ShaderModule fsModule =
-            utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+            utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
                 #version 450
                 layout(set = 0, binding = 0) uniform myBlock {
                     vec4 color;
@@ -71,7 +71,7 @@ class ColorStateTest : public DawnTest {
 
         utils::ComboRenderPipelineDescriptor baseDescriptor(device);
         baseDescriptor.layout = pipelineLayout;
-        baseDescriptor.cVertexStage.module = vsModule;
+        baseDescriptor.vertexStage.module = vsModule;
         baseDescriptor.cFragmentStage.module = fsModule;
         baseDescriptor.cColorStates[0]->format = renderPass.colorFormat;
 
@@ -79,7 +79,7 @@ class ColorStateTest : public DawnTest {
 
         utils::ComboRenderPipelineDescriptor testDescriptor(device);
         testDescriptor.layout = pipelineLayout;
-        testDescriptor.cVertexStage.module = vsModule;
+        testDescriptor.vertexStage.module = vsModule;
         testDescriptor.cFragmentStage.module = fsModule;
         testDescriptor.cColorStates[0] = &colorStateDescriptor;
         testDescriptor.cColorStates[0]->format = renderPass.colorFormat;
@@ -101,7 +101,7 @@ class ColorStateTest : public DawnTest {
         uint32_t bufferSize = static_cast<uint32_t>(4 * N * sizeof(float));
 
         dawn::Buffer buffer =
-            utils::CreateBufferFromData(device, &data, bufferSize, dawn::BufferUsageBit::Uniform);
+            utils::CreateBufferFromData(device, &data, bufferSize, dawn::BufferUsage::Uniform);
         return utils::MakeBindGroup(device, bindGroupLayout, {{0, buffer, 0, bufferSize}});
     }
 
@@ -762,18 +762,18 @@ TEST_P(ColorStateTest, IndependentColorState) {
     descriptor.sampleCount = 1;
     descriptor.format = dawn::TextureFormat::RGBA8Unorm;
     descriptor.mipLevelCount = 1;
-    descriptor.usage = dawn::TextureUsageBit::OutputAttachment | dawn::TextureUsageBit::CopySrc;
+    descriptor.usage = dawn::TextureUsage::OutputAttachment | dawn::TextureUsage::CopySrc;
 
     for (uint32_t i = 0; i < 4; ++i) {
         renderTargets[i] = device.CreateTexture(&descriptor);
-        renderTargetViews[i] = renderTargets[i].CreateDefaultView();
+        renderTargetViews[i] = renderTargets[i].CreateView();
     }
 
     utils::ComboRenderPassDescriptor renderPass({renderTargetViews[0], renderTargetViews[1],
                                                 renderTargetViews[2], renderTargetViews[3]});
 
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(set = 0, binding = 0) uniform myBlock {
             vec4 color0;
@@ -797,7 +797,7 @@ TEST_P(ColorStateTest, IndependentColorState) {
 
     utils::ComboRenderPipelineDescriptor baseDescriptor(device);
     baseDescriptor.layout = pipelineLayout;
-    baseDescriptor.cVertexStage.module = vsModule;
+    baseDescriptor.vertexStage.module = vsModule;
     baseDescriptor.cFragmentStage.module = fsModule;
     baseDescriptor.colorStateCount = 4;
 
@@ -805,7 +805,7 @@ TEST_P(ColorStateTest, IndependentColorState) {
 
     utils::ComboRenderPipelineDescriptor testDescriptor(device);
     testDescriptor.layout = pipelineLayout;
-    testDescriptor.cVertexStage.module = vsModule;
+    testDescriptor.vertexStage.module = vsModule;
     testDescriptor.cFragmentStage.module = fsModule;
     testDescriptor.colorStateCount = 4;
 
@@ -884,7 +884,7 @@ TEST_P(ColorStateTest, IndependentColorState) {
 // Test that the default blend color is correctly set at the beginning of every subpass
 TEST_P(ColorStateTest, DefaultBlendColor) {
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(set = 0, binding = 0) uniform myBlock {
             vec4 color;
@@ -899,7 +899,7 @@ TEST_P(ColorStateTest, DefaultBlendColor) {
 
     utils::ComboRenderPipelineDescriptor baseDescriptor(device);
     baseDescriptor.layout = pipelineLayout;
-    baseDescriptor.cVertexStage.module = vsModule;
+    baseDescriptor.vertexStage.module = vsModule;
     baseDescriptor.cFragmentStage.module = fsModule;
     baseDescriptor.cColorStates[0]->format = renderPass.colorFormat;
 
@@ -907,7 +907,7 @@ TEST_P(ColorStateTest, DefaultBlendColor) {
 
     utils::ComboRenderPipelineDescriptor testDescriptor(device);
     testDescriptor.layout = pipelineLayout;
-    testDescriptor.cVertexStage.module = vsModule;
+    testDescriptor.vertexStage.module = vsModule;
     testDescriptor.cFragmentStage.module = fsModule;
     testDescriptor.cColorStates[0]->format = renderPass.colorFormat;
 
@@ -1008,7 +1008,7 @@ TEST_P(ColorStateTest, DefaultBlendColor) {
 // attachment.
 TEST_P(ColorStateTest, ColorWriteMaskDoesNotAffectRenderPassLoadOpClear) {
     dawn::ShaderModule fsModule =
-        utils::CreateShaderModule(device, utils::ShaderStage::Fragment, R"(
+        utils::CreateShaderModule(device, utils::SingleShaderStage::Fragment, R"(
         #version 450
         layout(set = 0, binding = 0) uniform myBlock {
             vec4 color;
@@ -1023,7 +1023,7 @@ TEST_P(ColorStateTest, ColorWriteMaskDoesNotAffectRenderPassLoadOpClear) {
 
     utils::ComboRenderPipelineDescriptor baseDescriptor(device);
     baseDescriptor.layout = pipelineLayout;
-    baseDescriptor.cVertexStage.module = vsModule;
+    baseDescriptor.vertexStage.module = vsModule;
     baseDescriptor.cFragmentStage.module = fsModule;
     baseDescriptor.cColorStates[0]->format = renderPass.colorFormat;
 
@@ -1031,7 +1031,7 @@ TEST_P(ColorStateTest, ColorWriteMaskDoesNotAffectRenderPassLoadOpClear) {
 
     utils::ComboRenderPipelineDescriptor testDescriptor(device);
     testDescriptor.layout = pipelineLayout;
-    testDescriptor.cVertexStage.module = vsModule;
+    testDescriptor.vertexStage.module = vsModule;
     testDescriptor.cFragmentStage.module = fsModule;
     testDescriptor.cColorStates[0]->format = renderPass.colorFormat;
     testDescriptor.cColorStates[0]->writeMask = dawn::ColorWriteMask::Red;

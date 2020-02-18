@@ -10,11 +10,7 @@
 // NativeThemeWin::instance().
 // For more information on visual style parts and states, see:
 // http://msdn.microsoft.com/library/default.asp?url=/library/en-us/shellcc/platform/commctls/userex/topics/partsandstates.asp
-
-#include <map>
-
 #include <windows.h>
-#include <uxtheme.h>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -75,12 +71,14 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
              Part part,
              State state,
              const gfx::Rect& rect,
-             const ExtraParams& extra) const override;
-  SkColor GetSystemColor(ColorId color_id) const override;
+             const ExtraParams& extra,
+             ColorScheme color_scheme) const override;
+  SkColor GetSystemColor(ColorId color_id,
+                         ColorScheme color_scheme) const override;
   bool SupportsNinePatch(Part part) const override;
   gfx::Size GetNinePatchCanvasSize(Part part) const override;
   gfx::Rect GetNinePatchAperture(Part part) const override;
-  bool SystemDarkModeEnabled() const override;
+  bool ShouldUseDarkColors() const override;
   bool SystemDarkModeSupported() const override;
   PreferredColorScheme CalculatePreferredColorScheme() const override;
 
@@ -92,8 +90,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   NativeThemeWin();
   ~NativeThemeWin() override;
-
-  mutable std::map<int, SkColor> system_colors_;
 
  private:
   bool IsUsingHighContrastThemeInternal() const;
@@ -107,10 +103,14 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   // Painting functions that paint to PaintCanvas.
   void PaintMenuSeparator(cc::PaintCanvas* canvas,
-                          const MenuSeparatorExtraParams& params) const;
-  void PaintMenuGutter(cc::PaintCanvas* canvas, const gfx::Rect& rect) const;
+                          const MenuSeparatorExtraParams& params,
+                          ColorScheme color_scheme) const;
+  void PaintMenuGutter(cc::PaintCanvas* canvas,
+                       const gfx::Rect& rect,
+                       ColorScheme color_scheme) const;
   void PaintMenuBackground(cc::PaintCanvas* canvas,
-                           const gfx::Rect& rect) const;
+                           const gfx::Rect& rect,
+                           ColorScheme color_scheme) const;
 
   // Paint directly to canvas' HDC.
   void PaintDirect(SkCanvas* destination_canvas,
@@ -128,14 +128,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
                      State state,
                      const gfx::Rect& rect,
                      const ExtraParams& extra) const;
-
-  HRESULT GetThemePartSize(ThemeName themeName,
-                           HDC hdc,
-                           int part_id,
-                           int state_id,
-                           RECT* rect,
-                           int ts,
-                           SIZE* size) const;
 
   HRESULT PaintButton(HDC hdc,
                       State state,
@@ -267,60 +259,6 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
 
   void RegisterThemeRegkeyObserver();
   void UpdateDarkModeStatus();
-
-  typedef HRESULT (WINAPI* DrawThemeBackgroundPtr)(HANDLE theme,
-                                                   HDC hdc,
-                                                   int part_id,
-                                                   int state_id,
-                                                   const RECT* rect,
-                                                   const RECT* clip_rect);
-  typedef HRESULT (WINAPI* DrawThemeBackgroundExPtr)(HANDLE theme,
-                                                     HDC hdc,
-                                                     int part_id,
-                                                     int state_id,
-                                                     const RECT* rect,
-                                                     const DTBGOPTS* opts);
-  typedef HRESULT (WINAPI* GetThemeColorPtr)(HANDLE hTheme,
-                                             int part_id,
-                                             int state_id,
-                                             int prop_id,
-                                             COLORREF* color);
-  typedef HRESULT (WINAPI* GetThemeContentRectPtr)(HANDLE hTheme,
-                                                   HDC hdc,
-                                                   int part_id,
-                                                   int state_id,
-                                                   const RECT* rect,
-                                                   RECT* content_rect);
-  typedef HRESULT (WINAPI* GetThemePartSizePtr)(HANDLE hTheme,
-                                                HDC hdc,
-                                                int part_id,
-                                                int state_id,
-                                                RECT* rect,
-                                                int ts,
-                                                SIZE* size);
-  typedef HANDLE (WINAPI* OpenThemeDataPtr)(HWND window,
-                                            LPCWSTR class_list);
-  typedef HRESULT (WINAPI* CloseThemeDataPtr)(HANDLE theme);
-
-  typedef void (WINAPI* SetThemeAppPropertiesPtr) (DWORD flags);
-  typedef BOOL (WINAPI* IsThemeActivePtr)();
-  typedef HRESULT (WINAPI* GetThemeIntPtr)(HANDLE hTheme,
-                                           int part_id,
-                                           int state_id,
-                                           int prop_id,
-                                           int *value);
-
-  // Function pointers into uxtheme.dll.
-  DrawThemeBackgroundPtr draw_theme_;
-  DrawThemeBackgroundExPtr draw_theme_ex_;
-  GetThemeColorPtr get_theme_color_;
-  GetThemeContentRectPtr get_theme_content_rect_;
-  GetThemePartSizePtr get_theme_part_size_;
-  OpenThemeDataPtr open_theme_;
-  CloseThemeDataPtr close_theme_;
-
-  // Handle to uxtheme.dll.
-  HMODULE theme_dll_;
 
   // Dark Mode registry key.
   base::win::RegKey hkcu_themes_regkey_;

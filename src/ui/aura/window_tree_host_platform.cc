@@ -34,7 +34,7 @@
 #endif
 
 #if defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"
+#include "ui/platform_window/x11/x11_window.h"  // nogncheck
 #endif
 
 namespace aura {
@@ -50,12 +50,13 @@ std::unique_ptr<WindowTreeHost> WindowTreeHost::Create(
 WindowTreeHostPlatform::WindowTreeHostPlatform(
     ui::PlatformWindowInitProperties properties,
     std::unique_ptr<Window> window,
-    const char* trace_environment_name)
+    const char* trace_environment_name,
+    ui::ExternalBeginFrameClient* external_begin_frame_client)
     : WindowTreeHost(std::move(window)) {
   bounds_in_pixels_ = properties.bounds;
   CreateCompositor(viz::FrameSinkId(),
                    /* force_software_compositor */ false,
-                   /* external_begin_frames_enabled */ nullptr,
+                   external_begin_frame_client,
                    /* are_events_in_pixels */ true, trace_environment_name);
   CreateAndSetPlatformWindow(std::move(properties));
 }
@@ -73,7 +74,9 @@ void WindowTreeHostPlatform::CreateAndSetPlatformWindow(
 #elif defined(OS_WIN)
   platform_window_.reset(new ui::WinWindow(this, properties.bounds));
 #elif defined(USE_X11)
-  platform_window_.reset(new ui::X11Window(this, properties.bounds));
+  auto x11_window = std::make_unique<ui::X11Window>(this);
+  x11_window->Initialize(std::move(properties));
+  SetPlatformWindow(std::move(x11_window));
 #else
   NOTIMPLEMENTED();
 #endif
@@ -242,12 +245,7 @@ void WindowTreeHostPlatform::DispatchEvent(ui::Event* event) {
 }
 
 void WindowTreeHostPlatform::OnCloseRequest() {
-#if defined(OS_WIN)
-  // TODO: this obviously shouldn't be here.
-  base::RunLoop::QuitCurrentWhenIdleDeprecated();
-#else
   OnHostCloseRequested();
-#endif
 }
 
 void WindowTreeHostPlatform::OnClosed() {}
@@ -273,7 +271,6 @@ void WindowTreeHostPlatform::OnAcceleratedWidgetDestroyed() {
   widget_ = gfx::kNullAcceleratedWidget;
 }
 
-void WindowTreeHostPlatform::OnActivationChanged(bool active) {
-}
+void WindowTreeHostPlatform::OnActivationChanged(bool active) {}
 
 }  // namespace aura

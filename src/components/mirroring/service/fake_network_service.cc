@@ -11,8 +11,8 @@
 namespace mirroring {
 
 MockUdpSocket::MockUdpSocket(network::mojom::UDPSocketRequest request,
-                             network::mojom::UDPSocketReceiverPtr receiver)
-    : binding_(this, std::move(request)), receiver_(std::move(receiver)) {}
+                             network::mojom::UDPSocketListenerPtr listener)
+    : binding_(this, std::move(request)), listener_(std::move(listener)) {}
 
 MockUdpSocket::~MockUdpSocket() {}
 
@@ -38,7 +38,7 @@ void MockUdpSocket::Send(
 
 void MockUdpSocket::OnReceivedPacket(const media::cast::Packet& packet) {
   if (num_ask_for_receive_) {
-    receiver_->OnReceived(
+    listener_->OnReceived(
         net::OK, base::nullopt,
         base::span<const uint8_t>(
             reinterpret_cast<const uint8_t*>(packet.data()), packet.size()));
@@ -53,15 +53,15 @@ void MockUdpSocket::VerifySendingPacket(const media::cast::Packet& packet) {
 }
 
 MockNetworkContext::MockNetworkContext(
-    network::mojom::NetworkContextRequest request)
-    : binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<network::mojom::NetworkContext> receiver)
+    : receiver_(this, std::move(receiver)) {}
 MockNetworkContext::~MockNetworkContext() {}
 
 void MockNetworkContext::CreateUDPSocket(
     network::mojom::UDPSocketRequest request,
-    network::mojom::UDPSocketReceiverPtr receiver) {
+    network::mojom::UDPSocketListenerPtr listener) {
   udp_socket_ =
-      std::make_unique<MockUdpSocket>(std::move(request), std::move(receiver));
+      std::make_unique<MockUdpSocket>(std::move(request), std::move(listener));
   OnUDPSocketCreated();
 }
 

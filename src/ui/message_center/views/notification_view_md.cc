@@ -453,7 +453,7 @@ bool NotificationInputContainerMD::HandleKeyEvent(views::Textfield* sender,
   if (event.type() == ui::ET_KEY_PRESSED &&
       event.key_code() == ui::VKEY_RETURN) {
     delegate_->OnNotificationInputSubmit(
-        textfield_->GetProperty(kTextfieldIndexKey), textfield_->text());
+        textfield_->GetProperty(kTextfieldIndexKey), textfield_->GetText());
     textfield_->SetText(base::string16());
     return true;
   }
@@ -465,7 +465,7 @@ void NotificationInputContainerMD::OnAfterUserAction(views::Textfield* sender) {
   button_->SetImage(
       views::Button::STATE_NORMAL,
       gfx::CreateVectorIcon(kNotificationInlineReplyIcon, kInputReplyButtonSize,
-                            textfield_->text().empty()
+                            textfield_->GetText().empty()
                                 ? kTextfieldPlaceholderIconColorMD
                                 : SK_ColorWHITE));
 }
@@ -474,7 +474,7 @@ void NotificationInputContainerMD::ButtonPressed(views::Button* sender,
                                                  const ui::Event& event) {
   if (sender == button_) {
     delegate_->OnNotificationInputSubmit(
-        textfield_->GetProperty(kTextfieldIndexKey), textfield_->text());
+        textfield_->GetProperty(kTextfieldIndexKey), textfield_->GetText());
   }
 }
 
@@ -765,7 +765,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
     if (placeholder) {
       inline_reply_->textfield()->SetProperty(kTextfieldIndexKey,
                                               static_cast<int>(i));
-      inline_reply_->textfield()->set_placeholder_text(
+      inline_reply_->textfield()->SetPlaceholderText(
           placeholder->empty()
               ? l10n_util::GetStringUTF16(
                     IDS_MESSAGE_CENTER_NOTIFICATION_INLINE_REPLY_PLACEHOLDER)

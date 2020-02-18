@@ -36,6 +36,8 @@
 #include "components/data_reduction_proxy/core/common/uma_util.h"
 #include "components/data_reduction_proxy/proto/client_config.pb.h"
 #include "components/prefs/pref_service.h"
+#include "components/previews/core/previews_experiments.h"
+#include "components/previews/core/previews_features.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "components/variations/variations_associated_data.h"
@@ -140,6 +142,40 @@ ClientConfig CreateEmptyConfig() {
   return CreateEmptyProxyConfig(kSessionKey, 1000, 0, 0.5f, false);
 }
 
+// Waits for a new config to be pushed to throttles. When a throttle config
+// observer is added, the current config is sent immediately. This class makes
+// sure a new config has been sent that is different from the original config.
+class ScopedConfigWaiter
+    : public mojom::DataReductionProxyThrottleConfigObserver {
+ public:
+  explicit ScopedConfigWaiter(Profile* profile) : binding_(this) {
+    mojom::DataReductionProxyThrottleConfigObserverPtr observer;
+    binding_.Bind(mojo::MakeRequest(&observer));
+    DataReductionProxyChromeSettingsFactory::GetForBrowserContext(profile)
+        ->data_reduction_proxy_service()
+        ->AddThrottleConfigObserver(std::move(observer));
+  }
+
+  ~ScopedConfigWaiter() override { run_loop_.Run(); }
+
+ private:
+  // mojom::DataReductionProxyThrottleConfigObserver:
+  void OnThrottleConfigChanged(
+      mojom::DataReductionProxyThrottleConfigPtr config) override {
+    if (!initial_config_) {
+      initial_config_ = std::move(config);
+      return;
+    }
+
+    if (!config->Equals(*initial_config_))
+      run_loop_.Quit();
+  }
+
+  mojom::DataReductionProxyThrottleConfigPtr initial_config_;
+  mojo::Binding<mojom::DataReductionProxyThrottleConfigObserver> binding_;
+  base::RunLoop run_loop_;
+};
+
 }  // namespace
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_CHROMEOS)
@@ -170,8 +206,6 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   }
 
   void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kDataReductionProxyEnabledWithNetworkService);
     InProcessBrowserTest::SetUp();
   }
 
@@ -188,13 +222,7 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
     host_resolver()->AddRule(kMockHost, "127.0.0.1");
 
     EnableDataSaver(true);
-    // Make sure initial config has been loaded. Config is fetched only if
-    // kDataReductionProxyEnabledWithNetworkService are enabled.
-    if (base::FeatureList::IsEnabled(
-            data_reduction_proxy::features::
-                kDataReductionProxyEnabledWithNetworkService)) {
-      WaitForConfig();
-    }
+    WaitForConfig();
   }
 
   // Verifies that the |request| has the Chrome-Proxy headers, and caches the
@@ -288,15 +316,29 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   }
 
   void SetConfig(const ClientConfig& config) {
-    config_run_loop_ = std::make_unique<base::RunLoop>();
     config_ = config;
+    // Config is not fetched if the holdback group is enabled and lite page
+    // redirect previews are not enabled. So, return early.
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
+        !previews::params::IsLitePageServerPreviewsEnabled()) {
+      return;
+    }
+
+    config_waiter_ = std::make_unique<ScopedConfigWaiter>(browser()->profile());
   }
 
   void WaitForConfig() {
-    // Config is not fetched in the holdback group. So, return early.
-    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial())
+    // Config is not fetched if the holdback group is enabled and lite page
+    // redirect previews are not enabled. So, return early.
+    if (data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() &&
+        !previews::params::IsLitePageServerPreviewsEnabled()) {
       return;
-    config_run_loop_->Run();
+    }
+    // Destructor of |config_waiter_| waits for the config fetch request to
+    // arrive. For that check to work correctly, |config_waiter_| should be
+    // non-null.
+    ASSERT_TRUE(config_waiter_ != nullptr);
+    config_waiter_.reset();
   }
 
   std::string expect_exp_value_in_request_header_;
@@ -306,22 +348,23 @@ class DataReductionProxyBrowsertestBase : public InProcessBrowserTest {
   base::test::ScopedFeatureList scoped_feature_list_;
 
  private:
+  // Called when |config_server_| receives a request for config fetch.
   std::unique_ptr<net::test_server::HttpResponse> GetConfigResponse(
       const net::test_server::HttpRequest& request) {
-    // Config should not be fetched when in holdback.
-    EXPECT_FALSE(
-        data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial());
+    // Config should be fetched only when holdback is disabled or lite page
+    // redirect previews are enabled.
+    EXPECT_TRUE(
+        !data_reduction_proxy::params::IsIncludedInHoldbackFieldTrial() ||
+        previews::params::IsLitePageServerPreviewsEnabled());
 
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_content(config_.SerializeAsString());
     response->set_content_type("text/plain");
-    if (config_run_loop_)
-      config_run_loop_->Quit();
     return response;
   }
 
   ClientConfig config_;
-  std::unique_ptr<base::RunLoop> config_run_loop_;
+  std::unique_ptr<ScopedConfigWaiter> config_waiter_;
   base::test::ScopedFeatureList param_feature_list_;
   net::EmbeddedTestServer secure_proxy_check_server_;
   net::EmbeddedTestServer config_server_;
@@ -646,34 +689,38 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, UMAMetricsRecorded) {
       1);
 }
 
-// Test that enabling the holdback disables the proxy.
-// Parameter is true if the data reduction proxy holdback should be enabled.
+// Test that enabling the holdback disables the proxy and that the client config
+// is fetched when lite page redirect preview is enabled.
+// First parameter is true if the data reduction proxy holdback should be
+// enabled. Second parameter is true if lite page redirect preview is enabled.
 class DataReductionProxyWithHoldbackBrowsertest
-    : public ::testing::WithParamInterface<bool>,
+    : public ::testing::WithParamInterface<std::tuple<bool, bool>>,
       public DataReductionProxyBrowsertest {
  public:
   DataReductionProxyWithHoldbackBrowsertest()
       : DataReductionProxyBrowsertest(),
-        data_reduction_proxy_holdback_enabled_(GetParam()) {}
+        data_reduction_proxy_holdback_enabled_(std::get<0>(GetParam())),
+        lite_page_redirect_previews_enabled_(std::get<1>(GetParam())) {}
 
   void SetUp() override {
     if (data_reduction_proxy_holdback_enabled_) {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kDataReductionProxyEnabledWithNetworkService,
-           data_reduction_proxy::features::kDataReductionProxyHoldback},
-          {});
-    } else {
-      scoped_feature_list_.InitWithFeatures(
-          {features::kDataReductionProxyEnabledWithNetworkService}, {});
+      scoped_feature_list_.InitAndEnableFeature(
+          data_reduction_proxy::features::kDataReductionProxyHoldback);
+    }
+    if (lite_page_redirect_previews_enabled_) {
+      previews_lite_page_redirect_feature_list_.InitAndEnableFeature(
+          previews::features::kLitePageServerPreviews);
     }
 
     InProcessBrowserTest::SetUp();
   }
 
   const bool data_reduction_proxy_holdback_enabled_;
+  const bool lite_page_redirect_previews_enabled_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedFeatureList previews_lite_page_redirect_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
@@ -690,6 +737,8 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   // A network change forces the config to be fetched.
   SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
 
+  // Ensure that the client config is fetched when lite page redirect preview is
+  // enabled or DRP holdback is disabled.
   WaitForConfig();
 
   // Load a webpage in holdback group as well. This ensures that while in
@@ -698,17 +747,19 @@ IN_PROC_BROWSER_TEST_P(DataReductionProxyWithHoldbackBrowsertest,
   // holdback is not enabled would trigger and cause the test to fail.
   ui_test_utils::NavigateToURL(browser(), GURL("http://does.not.resolve/foo"));
 
-  if (GetParam()) {
+  if (data_reduction_proxy_holdback_enabled_) {
     EXPECT_NE(GetBody(), kPrimaryResponse);
   } else {
     EXPECT_EQ(GetBody(), kPrimaryResponse);
   }
 }
 
-// Parameter is true if the data reduction proxy holdback should be enabled.
+// First parameter is true if the data reduction proxy holdback should be
+// enabled. Second parameter is true if lite page redirect preview is enabled.
 INSTANTIATE_TEST_SUITE_P(,
                          DataReductionProxyWithHoldbackBrowsertest,
-                         ::testing::Values(false, true));
+                         ::testing::Combine(::testing::Bool(),
+                                            ::testing::Bool()));
 
 class DataReductionProxyExpBrowsertest : public DataReductionProxyBrowsertest {
  public:
@@ -751,11 +802,11 @@ class DataReductionProxyExpFeatureBrowsertest
         experiment_name;
 
     scoped_feature_list_.InitWithFeaturesAndParameters(
-        {{data_reduction_proxy::features::kDataReductionProxyServerExperiments,
-          {field_trial_params}},
-         {data_reduction_proxy::features::
-              kDataReductionProxyEnabledWithNetworkService,
-          {}}},
+        {
+            {data_reduction_proxy::features::
+                 kDataReductionProxyServerExperiments,
+             {field_trial_params}},
+        },
         {});
 
     InProcessBrowserTest::SetUp();
@@ -1543,13 +1594,13 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, SimpleURLLoader) {
       base::BindRepeating(&BasicResponse, kPrimaryResponse));
   ASSERT_TRUE(proxy_server.Start());
 
-  for (const bool set_render_frame_id : {false, true}) {
-    // Set config to |proxy_server|.
-    SetConfig(CreateConfigForServer(proxy_server));
-    // A network change forces the config to be fetched.
-    SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
-    WaitForConfig();
+  // Set config to |proxy_server|.
+  SetConfig(CreateConfigForServer(proxy_server));
+  // A network change forces the config to be fetched.
+  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
+  WaitForConfig();
 
+  for (const bool set_render_frame_id : {false, true}) {
     auto resource_request = std::make_unique<network::ResourceRequest>();
     if (set_render_frame_id)
       resource_request->render_frame_id = MSG_ROUTING_CONTROL;
@@ -1774,74 +1825,5 @@ IN_PROC_BROWSER_TEST_F(DataReductionProxyBrowsertest, NestedWebWorker) {
       browser()->tab_strip_model()->GetActiveWebContents(), kExpectedTitle);
   EXPECT_EQ(title_watcher.WaitAndGetTitle(), kExpectedTitle);
 }
-
-// Test that disabling the kDataReductionProxyEnabledWithNetworkService disables
-// the proxy.
-class DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest
-    : public ::testing::WithParamInterface<bool>,
-      public DataReductionProxyBrowsertest {
- public:
-  void SetUp() override {
-    if (GetParam()) {
-      // Disable kDataReductionProxyEnabledWithNetworkService.
-      scoped_feature_list_.InitWithFeatures(
-          {}, {data_reduction_proxy::features::
-                   kDataReductionProxyEnabledWithNetworkService});
-    } else {
-      // Enable kDataReductionProxyEnabledWithNetworkService.
-      scoped_feature_list_.InitWithFeatures(
-          {data_reduction_proxy::features::
-               kDataReductionProxyEnabledWithNetworkService},
-          {});
-    }
-
-    InProcessBrowserTest::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(
-    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
-    ProxyUsed) {
-  const bool holdback_enabled = GetParam();
-
-  net::EmbeddedTestServer origin_server;
-  origin_server.RegisterRequestHandler(
-      base::BindRepeating(&BasicResponse, kDummyBody));
-  ASSERT_TRUE(origin_server.Start());
-
-  net::EmbeddedTestServer proxy_server;
-  proxy_server.RegisterRequestHandler(
-      base::BindRepeating(&BasicResponse, kPrimaryResponse));
-  ASSERT_TRUE(proxy_server.Start());
-
-  SetConfig(CreateConfigForServer(proxy_server));
-  // A network change forces the config to be fetched.
-  SimulateNetworkChange(network::mojom::ConnectionType::CONNECTION_3G);
-  if (!holdback_enabled) {
-    WaitForConfig();
-  }
-
-  ui_test_utils::NavigateToURL(
-      browser(), GetURLWithMockHost(origin_server, "/echoheader?Chrome-Proxy"));
-
-  if (holdback_enabled) {
-    // Proxy should not be used.
-    EXPECT_EQ(GetBody(), kDummyBody);
-  } else {
-    // Proxy should be used.
-    EXPECT_EQ(GetBody(), kPrimaryResponse);
-  }
-}
-
-// Parameter is true if kDataReductionProxyEnabledWithNetworkService is
-// disabled. Disabling kDataReductionProxyEnabledWithNetworkService should
-// disable data reduction proxy when network servicification is enabled.
-INSTANTIATE_TEST_SUITE_P(
-    ,
-    DataReductionProxyEnabledWithNetworkServiceHoldbackBrowserTest,
-    ::testing::Bool());
 
 }  // namespace data_reduction_proxy

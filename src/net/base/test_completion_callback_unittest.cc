@@ -13,7 +13,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/completion_once_callback.h"
-#include "net/test/test_with_scoped_task_environment.h"
+#include "net/test/test_with_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -111,7 +111,7 @@ bool ExampleEmployer::DoSomething(CompletionOnceCallback callback) {
 }  // namespace
 
 class TestCompletionCallbackTest : public PlatformTest,
-                                   public WithScopedTaskEnvironment {};
+                                   public WithTaskEnvironment {};
 
 TEST_F(TestCompletionCallbackTest, Simple) {
   ExampleEmployer boss;
