@@ -525,7 +525,7 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
     ebuild_file = toolchain_util._FindEbuildPath(self.chrome_package)
     cmd = ['equery', 'w', self.chrome_package]
     self.mock_command.assert_called_with(
-        cmd, enter_chroot=True, stdout=True)
+        cmd, enter_chroot=True, stdout=True, encoding='utf-8')
     self.assertEqual(ebuild_file, self.chrome_ebuild)
 
   def testKernelPackagePass(self):
@@ -538,7 +538,7 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
     ebuild_file = toolchain_util._FindEbuildPath(self.kernel_package)
     cmd = ['equery', 'w', self.kernel_package]
     mock_command.assert_called_with(
-        cmd, enter_chroot=True, stdout=True)
+        cmd, enter_chroot=True, stdout=True, encoding='utf-8')
     self.assertEqual(ebuild_file, ebuild_path)
 
   def testPassWithBoardName(self):
@@ -547,7 +547,7 @@ class FindEbuildPathTest(cros_test_lib.MockTempDirTestCase):
         self.chrome_package, board='board')
     cmd = ['equery-board', 'w', self.chrome_package]
     self.mock_command.assert_called_with(
-        cmd, enter_chroot=True, stdout=True)
+        cmd, enter_chroot=True, stdout=True, encoding='utf-8')
     self.assertEqual(ebuild_file, self.chrome_ebuild)
 
   def testReturnPathOutsideChroot(self):

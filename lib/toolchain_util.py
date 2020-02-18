@@ -310,7 +310,8 @@ def _FindEbuildPath(package, buildroot=None, board=None):
     equery_prog = 'equery'
   equery_cmd = [equery_prog, 'w', package]
   ebuild_file = cros_build_lib.run(
-      equery_cmd, enter_chroot=True, stdout=True).output.rstrip()
+      equery_cmd, enter_chroot=True, stdout=True,
+      encoding='utf-8').output.rstrip()
   if not buildroot:
     return ebuild_file
 
