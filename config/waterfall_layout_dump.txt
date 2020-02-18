@@ -1063,12 +1063,6 @@
   fizz-payloads-tryjob
   fizz-release-tryjob
   fizz-unittest-stress
-  flapjack-full-tryjob
-  flapjack-llvm-next-toolchain-tryjob
-  flapjack-llvm-toolchain-tryjob
-  flapjack-payloads-tryjob
-  flapjack-release-tryjob
-  flapjack-unittest-stress
   gale-factory-gale-8743.19.B-factorybranch-tryjob
   gale-full-tryjob
   gale-llvm-next-toolchain-tryjob

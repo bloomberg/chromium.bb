@@ -34,7 +34,6 @@ arm_internal_release_boards = frozenset([
     'cheza64',
     'cobblepot',
     'elm',
-    'flapjack',
     'gale',
     'gonzo',
     'hana',

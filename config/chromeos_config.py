@@ -2640,10 +2640,6 @@ def ApplyCustomOverrides(site_config):
           'hw_tests_disabled_bug': 'https://crbug.com/1048213',
       },
 
-      'flapjack-release': {
-          'sign_types': ['recovery', 'factory'],
-      },
-
       # See go/cros-fingerprint-firmware-branching-and-signing for details on
       # accessory_rwsig signing.
       'hatch-release': {
