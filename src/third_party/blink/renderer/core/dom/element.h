@@ -346,6 +346,15 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   // LayoutTextControlSingleLine, it will return its |InnerEditorElement|'s.
   virtual PaintLayerScrollableArea* GetScrollableArea() const;
 
+
+
+  // patch section: element-extensions
+
+
+  // patch section: spellcheck
+
+
+
   IntRect BoundsInViewport() const;
   // Returns an intersection rectangle of the bounds rectangle and the visual
   // viewport's rectangle in the visual viewport's coordinate space.

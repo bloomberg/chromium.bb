@@ -451,6 +451,16 @@ blink_core_sources("css") {
     "properties/css_unresolved_property.cc",
     "properties/css_unresolved_property.h",
     "properties/longhand.h",
+
+
+
+    # patch section: lcd-text background
+
+
+    # patch section: suppress-needs-compositing-input-update
+
+
+
     "properties/longhands/custom_property.cc",
     "properties/longhands/custom_property.h",
     "properties/longhands/longhands_custom.cc",
