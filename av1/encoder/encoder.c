@@ -6809,10 +6809,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   }
 
 #if CONFIG_TUNE_VMAF
-  if (oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
-      oxcf->tuning == AOM_TUNE_VMAF_MAX_GAIN) {
-    update_vmaf_curve(cpi, cpi->source, &cpi->common.cur_frame->buf);
+  if (!is_stat_generation_stage(cpi) &&
+      (oxcf->tuning == AOM_TUNE_VMAF_WITH_PREPROCESSING ||
+       oxcf->tuning == AOM_TUNE_VMAF_WITHOUT_PREPROCESSING ||
+       oxcf->tuning == AOM_TUNE_VMAF_MAX_GAIN)) {
+    av1_update_vmaf_curve(cpi, cpi->source, &cpi->common.cur_frame->buf);
   }
 #endif
 

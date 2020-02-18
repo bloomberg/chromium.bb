@@ -28,7 +28,7 @@ void av1_set_vmaf_rdmult(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
 
 int av1_get_vmaf_base_qindex(const AV1_COMP *cpi, int current_qindex);
 
-void update_vmaf_curve(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
-                       YV12_BUFFER_CONFIG *recon);
+void av1_update_vmaf_curve(AV1_COMP *cpi, YV12_BUFFER_CONFIG *source,
+                           YV12_BUFFER_CONFIG *recon);
 
 #endif  // AOM_AV1_ENCODER_TUNE_VMAF_H_
